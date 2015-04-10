@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.PropertyFeatures.*;
@@ -54,6 +55,100 @@ import static org.junit.Assert.*;
  */
 @RunWith(Enclosed.class)
 public class VertexTest {
+
+    public static class AddEdgeTest extends AbstractGremlinTest {
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_NUMERIC_IDS)
+        public void shouldAddEdgeWithUserSuppliedNumericId() {
+            final Vertex v = graph.addVertex();
+            v.addEdge("self", v, T.id, 1000l);
+            tryCommit(graph, graph -> {
+                final Edge e = graph.edges(1000l).next();
+                assertEquals(1000l, e.id());
+            });
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_STRING_IDS)
+        public void shouldAddEdgeWithUserSuppliedStringId() {
+            final Vertex v = graph.addVertex();
+            v.addEdge("self", v, T.id, "1000");
+            tryCommit(graph, graph -> {
+                final Edge e = graph.edges("1000").next();
+                assertEquals("1000", e.id());
+            });
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_UUID_IDS)
+        public void shouldAddEdgeWithUserSuppliedUuidId() {
+            final UUID uuid = UUID.randomUUID();
+            final Vertex v = graph.addVertex();
+            v.addEdge("self", v, T.id, uuid);
+            tryCommit(graph, graph -> {
+                final Edge e = graph.edges(uuid).next();
+                assertEquals(uuid, e.id());
+            });
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ANY_IDS)
+        public void shouldAddEdgeWithUserSuppliedAnyIdUsingUuid() {
+            final UUID uuid = UUID.randomUUID();
+            final Vertex v = graph.addVertex();
+            v.addEdge("self", v, T.id, uuid);
+            tryCommit(graph, graph -> {
+                final Edge e = graph.edges(uuid).next();
+                assertEquals(uuid, e.id());
+            });
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ANY_IDS)
+        public void shouldAddEdgeWithUserSuppliedAnyIdUsingString() {
+            final UUID uuid = UUID.randomUUID();
+            final Vertex v = graph.addVertex();
+            v.addEdge("self", v, T.id, uuid.toString());
+            tryCommit(graph, graph -> {
+                final Edge e = graph.edges(uuid.toString()).next();
+                assertEquals(uuid.toString(), e.id());
+            });
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ANY_IDS)
+        public void shouldAddEdgeWithUserSuppliedAnyIdUsingAnyObject() {
+            final UUID uuid = UUID.randomUUID();
+
+            // this is different from "FEATURE_CUSTOM_IDS" as TinkerGraph does not define a specific id class
+            // (i.e. TinkerId) for the identifier.
+            final IoTest.CustomId customId = new IoTest.CustomId("test", uuid);
+            final Vertex v = graph.addVertex();
+            v.addEdge("self", v, T.id, customId);
+            tryCommit(graph, graph -> {
+                final Edge e = graph.edges(customId).next();
+                assertEquals(customId, e.id());
+            });
+        }
+    }
 
     @ExceptionCoverage(exceptionClass = Edge.Exceptions.class, methods = {
             "userSuppliedIdsNotSupported"

@@ -89,11 +89,21 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
                 add("shouldIterateVerticesWithNumericIdSupportUsingFloatRepresentations");
                 add("shouldIterateVerticesWithNumericIdSupportUsingStringRepresentation");
                 add("shouldIterateVerticesWithNumericIdSupportUsingStringRepresentations");
+                add("shouldIterateEdgesWithNumericIdSupportUsingDoubleRepresentation");
+                add("shouldIterateEdgesWithNumericIdSupportUsingDoubleRepresentations");
+                add("shouldIterateEdgesWithNumericIdSupportUsingIntegerRepresentation");
+                add("shouldIterateEdgesWithNumericIdSupportUsingIntegerRepresentations");
+                add("shouldIterateEdgesWithNumericIdSupportUsingFloatRepresentation");
+                add("shouldIterateEdgesWithNumericIdSupportUsingFloatRepresentations");
+                add("shouldIterateEdgesWithNumericIdSupportUsingStringRepresentation");
+                add("shouldIterateEdgesWithNumericIdSupportUsingStringRepresentations");
             }};
 
             final Set<String> testsThatNeedUuidIdManager = new HashSet<String>(){{
                 add("shouldIterateVerticesWithUuidIdSupportUsingStringRepresentation");
                 add("shouldIterateVerticesWithUuidIdSupportUsingStringRepresentations");
+                add("shouldIterateEdgesWithUuidIdSupportUsingStringRepresentation");
+                add("shouldIterateEdgesWithUuidIdSupportUsingStringRepresentations");
             }};
 
             if (testsThatNeedLongIdManager.contains(testMethodName))
