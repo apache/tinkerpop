@@ -488,7 +488,9 @@ public class TinkerGraph implements Graph {
 
             @Override
             public Object convert(final Object id) {
-                if (id instanceof Number)
+                if (id instanceof Long)
+                    return id;
+                else if (id instanceof Number)
                     return ((Number) id).longValue();
                 else if (id instanceof String)
                     return Long.parseLong((String) id);
@@ -509,7 +511,9 @@ public class TinkerGraph implements Graph {
 
             @Override
             public Object convert(final Object id) {
-                if (id instanceof Number)
+                if (id instanceof Integer)
+                    return id;
+                else if (id instanceof Number)
                     return ((Number) id).intValue();
                 else if (id instanceof String)
                     return Integer.parseInt((String) id);
