@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Order;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
@@ -34,6 +35,7 @@ import java.util.*;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.junit.Assert.*;
 
@@ -64,6 +66,26 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by();
+
+    // below we original back()-tests
+
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_selectXhereX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX(final Object v4Id);
+
+    public abstract Traversal<Vertex, String> get_g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX_name(final Object v4Id);
+
+    public abstract Traversal<Vertex, Edge> get_g_VX1X_outE_asXhereX_inV_hasXname_vadasX_selectXhereX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_selectXhereX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_selectXhereX();
+
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -114,7 +136,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    //@IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -206,8 +228,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
+    @Ignore("There is a HashMap to Element cast problem happening here for some reason in both OLTP and OLAP")  // TODO: dkuppitz this has been ignored for some time now -- don't know if the test is bad or the code is bad.
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by();
@@ -247,6 +269,114 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
         assertFalse(traversal.hasNext());
         assertEquals(4, persons.size());
+    }
+
+    //
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_asXhereX_out_selectXhereX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_asXhereX_out_selectXhereX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            assertEquals("marko", traversal.next().<String>value("name"));
+        }
+        assertEquals(3, counter);
+    }
+
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX(convertToVertexId("josh"));
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            final Vertex vertex = traversal.next();
+            assertEquals("java", vertex.<String>value("lang"));
+            assertTrue(vertex.value("name").equals("ripple") || vertex.value("name").equals("lop"));
+        }
+        assertEquals(2, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_outE_asXhereX_inV_hasXname_vadasX_selectXhereX() {
+        final Traversal<Vertex, Edge> traversal = get_g_VX1X_outE_asXhereX_inV_hasXname_vadasX_selectXhereX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        final Edge edge = traversal.next();
+        assertEquals("knows", edge.label());
+        assertEquals(convertToVertexId("vadas"), edge.inVertex().id());
+        assertEquals(convertToVertexId("marko"), edge.outVertex().id());
+        assertEquals(0.5d, edge.<Double>value("weight"), 0.0001d);
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX_name(convertToVertexId("josh"));
+        printTraversalForm(traversal);
+        int counter = 0;
+        final Set<String> names = new HashSet<>();
+        while (traversal.hasNext()) {
+            counter++;
+            names.add(traversal.next());
+        }
+        assertEquals(2, counter);
+        assertEquals(2, names.size());
+        assertTrue(names.contains("ripple"));
+        assertTrue(names.contains("lop"));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX() {
+        final List<Traversal<Vertex, Edge>> traversals = Arrays.asList(
+                get_g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX(convertToVertexId("marko")),
+                get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_selectXhereX(convertToVertexId("marko")),
+                get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX(convertToVertexId("marko")));
+        traversals.forEach(traversal -> {
+            printTraversalForm(traversal);
+            assertTrue(traversal.hasNext());
+            assertTrue(traversal.hasNext());
+            final Edge edge = traversal.next();
+            assertEquals("knows", edge.label());
+            assertEquals(1.0d, edge.<Double>value("weight"), 0.00001d);
+            assertFalse(traversal.hasNext());
+            assertFalse(traversal.hasNext());
+        });
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXhereXout_name_selectXhereX() {
+        Traversal<Vertex, Vertex> traversal = get_g_V_asXhereXout_name_selectXhereX();
+        printTraversalForm(traversal);
+        super.checkResults(new HashMap<Vertex, Long>() {{
+            put(convertToVertex(graph, "marko"), 3l);
+            put(convertToVertex(graph, "josh"), 2l);
+            put(convertToVertex(graph, "peter"), 1l);
+        }}, traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.STANDARD)  // TODO: dkuppitz this fails on OLTP, but passes on OLAP
+    public void g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX() {
+        List<Traversal<Vertex, Map<String, Long>>> traversals = Arrays.asList(get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX());
+        traversals.forEach(traversal -> {
+            printTraversalForm(traversal);
+            assertTrue(traversal.hasNext());
+            final Map<String, Long> map = traversal.next();
+            assertFalse(traversal.hasNext());
+            assertEquals(2, map.size());
+            assertEquals(1l, map.get("ripple").longValue());
+            assertEquals(6l, map.get("lop").longValue());
+        });
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
@@ -305,6 +435,55 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
             return g.V().hasLabel("person").as("person").local(__.bothE().label().groupCount()).as("relations").select().by("name").by();
+        }
+
+        //
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_selectXhereX(final Object v1Id) {
+            return g.V(v1Id).as("here").out().select("here");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX(final Object v4Id) {
+            return g.V(v4Id).out().as("here").has("lang", "java").select("here");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX_name(final Object v4Id) {
+            return g.V(v4Id).out().as("here").has("lang", "java").select("here").values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outE_asXhereX_inV_hasXname_vadasX_selectXhereX(final Object v1Id) {
+            return g.V(v1Id).outE().as("here").inV().has("name", "vadas").select("here");
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX(final Object v1Id) {
+            return g.V(v1Id).outE("knows").has("weight", 1.0d).as("here").inV().has("name", "josh").select("here");
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_selectXhereX(final Object v1Id) {
+            return g.V(v1Id).outE("knows").as("here").has("weight", 1.0d).inV().has("name", "josh").<Edge>select("here");
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX(final Object v1Id) {
+            return g.V(v1Id).outE("knows").as("here").has("weight", 1.0d).as("fake").inV().has("name", "josh").<Edge>select("here");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_selectXhereX() {
+            return g.V().as("here").out().values("name").select("here");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX() {
+            return (Traversal) g.V().out("created")
+                    .union(as("project").in("created").has("name", "marko").select("project"),
+                            as("project").in("created").in("knows").has("name", "marko").select("project")).groupCount().by("name");
         }
     }
 }

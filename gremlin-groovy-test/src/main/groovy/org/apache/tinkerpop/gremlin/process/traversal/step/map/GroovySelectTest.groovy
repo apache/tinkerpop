@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Order
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
@@ -93,6 +94,60 @@ public abstract class GroovySelectTest {
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
             return g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount()).as('relations').select().by('name').by()
         }
+
+        //
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_selectXhereX(final Object v1Id) {
+            g.V(v1Id).as('here').out.select('here')
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX(final Object v4Id) {
+            g.V(v4Id).out.as('here').has('lang', 'java').select('here')
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX_name(
+                final Object v4Id) {
+            g.V(v4Id).out.as('here').has('lang', 'java').select('here').name
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outE_asXhereX_inV_hasXname_vadasX_selectXhereX(final Object v1Id) {
+            g.V(v1Id).outE.as('here').inV.has('name', 'vadas').select('here')
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX(
+                final Object v1Id) {
+            g.V(v1Id).outE('knows').has('weight', 1.0d).as('here').inV.has('name', 'josh').select('here')
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_selectXhereX(
+                final Object v1Id) {
+            g.V(v1Id).outE('knows').as('here').has('weight', 1.0d).inV.has('name', 'josh').select('here')
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX(
+                final Object v1Id) {
+            g.V(v1Id).outE("knows").as('here').has('weight', 1.0d).as('fake').inV.has("name", 'josh').select('here')
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_selectXhereX() {
+            g.V().as("here").out.name.select("here");
+        }
+
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX() {
+            g.V.out('created')
+                    .union(__.as('project').in('created').has('name', 'marko').select('project'),
+                    __.as('project').in('created').in('knows').has('name', 'marko').select('project')).groupCount().by('name');
+        }
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
@@ -129,7 +184,7 @@ public abstract class GroovySelectTest {
         @Override
         @Test
         @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        void g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
+        public void g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
         }
 
         @Override
@@ -201,6 +256,61 @@ public abstract class GroovySelectTest {
         Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
             // override with nothing until the test itself is supported
             return null
+        }
+
+        //
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_selectXhereX(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).as('here').out.select('here')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX(final Object v4Id) {
+            ComputerTestHelper.compute("g.V(${v4Id}).out.as('here').has('lang', 'java').select('here')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX4X_out_asXhereX_hasXlang_javaX_selectXhereX_name(
+                final Object v4Id) {
+            ComputerTestHelper.compute("g.V(${v4Id}).out.as('here').has('lang', 'java').select('here').name", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outE_asXhereX_inV_hasXname_vadasX_selectXhereX(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).outE.as('here').inV.has('name', 'vadas').select('here')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX(
+                final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).outE('knows').has('weight', 1.0d).as('here').inV.has('name', 'josh').select('here')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_selectXhereX(
+                final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).outE('knows').as('here').has('weight', 1.0d).inV.has('name','josh').select('here')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX(
+                final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).outE('knows').as('here').has('weight', 1.0d).as('fake').inV.has('name','josh').select('here')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_selectXhereX() {
+            ComputerTestHelper.compute("g.V().as('here').out.name.select('here')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX() {
+            ComputerTestHelper.compute("""
+            g.V.out('created')
+                    .union(__.as('project').in('created').has('name', 'marko').select('project'),
+                    __.as('project').in('created').in('knows').has('name', 'marko').select('project')).groupCount().by('name');
+            """, g)
         }
     }
 }

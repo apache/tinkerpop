@@ -46,7 +46,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathTest
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.BackTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldTest;
@@ -77,8 +76,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.TraversalVerificationStrategyTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -148,7 +147,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             // map
             AddEdgeTest.Traversals.class,
             AddVertexTest.Traversals.class,
-            BackTest.Traversals.class,
             CoalesceTest.Traversals.class,
             CountTest.Traversals.class,
             FoldTest.Traversals.class,
