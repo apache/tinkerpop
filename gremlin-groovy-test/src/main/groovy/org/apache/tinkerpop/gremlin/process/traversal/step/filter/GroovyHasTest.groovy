@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.traversal.T
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
@@ -33,6 +34,11 @@ public abstract class GroovyHasTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     public static class StandardTraversals extends HasTest {
+
+        @Override
+        public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e8Id) {
+            g.E(e11Id).outV.outE.has(T.id, e8Id);
+        }
 
         @Override
         public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_name() {
@@ -112,6 +118,10 @@ public abstract class GroovyHasTest {
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class ComputerTraversals extends HasTest {
+        @Override
+        public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e8Id) {
+            ComputerTestHelper.compute("g.E($e11Id).outV.outE.has(T.id, $e8Id)", g);
+        }
 
         @Override
         public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_name() {

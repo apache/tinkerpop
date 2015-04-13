@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
@@ -27,12 +28,10 @@ import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -67,6 +66,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id);
 
     public abstract Traversal<Edge, Edge> get_g_E_hasLabelXknowsX();
+
+    public abstract Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e8Id);
 
     public abstract Traversal<Edge, Edge> get_g_E_hasLabelXuses_traversesX();
 
@@ -255,9 +256,40 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_EX11X_outV_outE_hasXid_10X() {
+        final Object edgeId11 = convertToEdgeId("josh", "created", "lop");
+        final Object edgeId10 = convertToEdgeId("josh", "created", "ripple");
+        final Traversal<Edge, Edge> traversal = get_g_EX11X_outV_outE_hasXid_10X(edgeId11, edgeId10);
+        assert_g_EX11X(edgeId10, traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_EX11X_outV_outE_hasXid_10AsStringX() {
+        final Object edgeId11 = convertToEdgeId("josh", "created", "lop");
+        final Object edgeId10 = convertToEdgeId("josh", "created", "ripple");
+        final Traversal<Edge, Edge> traversal = get_g_EX11X_outV_outE_hasXid_10X(edgeId11.toString(), edgeId10.toString());
+        assert_g_EX11X(edgeId10, traversal);
+    }
+
+    private void assert_g_EX11X(final Object edgeId, final Traversal<Edge, Edge> traversal) {
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Edge e = traversal.next();
+        assertEquals(edgeId, e.id());
+        assertFalse(traversal.hasNext());
+    }
+
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class Traversals extends HasTest {
+        @Override
+        public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e8Id) {
+            return g.E(e11Id).outV().outE().has(T.id, e8Id);
+        }
+
         @Override
         public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_name() {
             return g.V().out("knows").has(out("created")).values("name");
