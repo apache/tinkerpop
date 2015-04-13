@@ -30,15 +30,21 @@ fi
 mkdir -p target/postprocess-asciidoc
 
 rm -rf target/postprocess-asciidoc/*
+mkdir target/postprocess-asciidoc/tmp
 cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
 
-for input in $(find docs/src/ -name "*.asciidoc")
+TP_HOME=`pwd`
+
+cd target/postprocess-asciidoc/tmp
+ln -s ../../../data data
+
+for input in $(find "${TP_HOME}/docs/src/" -name "*.asciidoc")
 do
   name=`basename $input`
-  output="target/postprocess-asciidoc/${name}"
+  output="${TP_HOME}/target/postprocess-asciidoc/${name}"
   echo "${input} > ${output}"
   if [ $(grep -c '^\[gremlin' $input) -gt 0 ]; then
-    bin/gremlin.sh -e docs/preprocessor/processor.groovy $input > $output
+    ${TP_HOME}/bin/gremlin.sh -e ${TP_HOME}/docs/preprocessor/processor.groovy $input > $output
     ec=$?
     if [ $ec -ne 0 ]; then
       popd > /dev/null
