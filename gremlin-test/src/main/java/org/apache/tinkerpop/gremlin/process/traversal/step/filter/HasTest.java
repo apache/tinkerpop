@@ -153,6 +153,17 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_hasXid_2X() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_hasIdX2X(convertToVertexId("marko"), convertToVertexId("vadas"));
+        assert_g_VX1X_out_hasXid_2X(traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1AsStringX_out_hasXid_2AsStringX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_hasIdX2X(convertToVertexId("marko").toString(), convertToVertexId("vadas").toString());
+        assert_g_VX1X_out_hasXid_2X(traversal);
+    }
+
+    private void assert_g_VX1X_out_hasXid_2X(Traversal<Vertex, Vertex> traversal) {
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals(convertToVertexId("vadas"), traversal.next().id());
