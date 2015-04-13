@@ -164,6 +164,31 @@ public class VertexTest {
     public static class BasicVertexTest extends AbstractGremlinTest {
         @Test
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldValidateEquality() {
+            final Vertex v1 = graph.addVertex();
+            final Vertex v2 = graph.addVertex();
+
+            assertEquals(v1, v1);
+            assertEquals(v2, v2);
+            assertNotEquals(v1, v2);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldValidateIdEquality() {
+            final Vertex v1 = graph.addVertex();
+            final Vertex v2 = graph.addVertex();
+
+            assertEquals(v1.id(), v1.id());
+            assertEquals(v2.id(), v2.id());
+            assertEquals(v1.id().toString(), v1.id().toString());
+            assertEquals(v2.id().toString(), v2.id().toString());
+            assertNotEquals(v1.id(), v2.id());
+            assertNotEquals(v1.id().toString(), v2.id().toString());
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldHaveExceptionConsistencyWhenUsingNullVertexLabel() {
             try {
                 graph.addVertex(T.label, null);

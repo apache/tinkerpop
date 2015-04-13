@@ -54,6 +54,35 @@ public class EdgeTest {
     })
     public static class BasicEdgeTest extends AbstractGremlinTest {
         @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        public void shouldValidateEquality() {
+            final Vertex v = graph.addVertex();
+            final Edge e1 = v.addEdge("self", v);
+            final Edge e2 = v.addEdge("self", v);
+
+            assertEquals(e1, e1);
+            assertEquals(e2, e2);
+            assertNotEquals(e1, e2);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        public void shouldValidateIdEquality() {
+            final Vertex v = graph.addVertex();
+            final Edge e1 = v.addEdge("self", v);
+            final Edge e2 = v.addEdge("self", v);
+
+            assertEquals(e1.id(), e1.id());
+            assertEquals(e2.id(), e2.id());
+            assertEquals(e1.id().toString(), e1.id().toString());
+            assertEquals(e2.id().toString(), e2.id().toString());
+            assertNotEquals(e1.id(), e2.id());
+            assertNotEquals(e1.id().toString(), e2.id().toString());
+        }
+
+        @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldHaveStandardStringRepresentation() {

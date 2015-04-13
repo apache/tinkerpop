@@ -49,6 +49,37 @@ import static org.junit.Assert.*;
 @RunWith(Enclosed.class)
 public class VertexPropertyTest extends AbstractGremlinTest {
 
+    public static class BasicVertexProperty extends AbstractGremlinTest {
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+        public void shouldValidateEquality() {
+            final Vertex v = graph.addVertex();
+            final VertexProperty vp1 = v.property("x", 0);
+            final VertexProperty vp2 = v.property("y", 1);
+
+            assertEquals(vp1, vp1);
+            assertEquals(vp2, vp2);
+            assertNotEquals(vp1, vp2);
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
+        public void shouldValidateIdEquality() {
+            final Vertex v = graph.addVertex();
+            final VertexProperty vp1 = v.property("x", 0);
+            final VertexProperty vp2 = v.property("y", 1);
+
+            assertEquals(vp1.id(), vp1.id());
+            assertEquals(vp2.id(), vp2.id());
+            assertEquals(vp1.id().toString(), vp1.id().toString());
+            assertEquals(vp2.id().toString(), vp2.id().toString());
+            assertNotEquals(vp1.id(), vp2.id());
+            assertNotEquals(vp1.id().toString(), vp2.id().toString());
+        }
+    }
+
     public static class VertexPropertyAddition extends AbstractGremlinTest {
 
         @Test
