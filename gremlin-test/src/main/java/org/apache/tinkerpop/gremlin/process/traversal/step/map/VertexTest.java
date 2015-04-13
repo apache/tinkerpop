@@ -103,7 +103,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V();
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<>();
+        final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
             vertices.add(traversal.next());
@@ -122,7 +122,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     private void assert_g_v1_out(final Traversal<Vertex, Vertex> traversal) {
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<>();
+        final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
             Vertex vertex = traversal.next();
@@ -158,10 +158,10 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_VX4X_both(convertToVertexId("josh"));
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<>();
+        final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = traversal.next();
+            final Vertex vertex = traversal.next();
             vertices.add(vertex);
             assertTrue(vertex.value("name").equals("marko") ||
                     vertex.value("name").equals("ripple") ||
@@ -179,7 +179,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Traversal<Edge, Edge> traversal = get_g_E();
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Edge> edges = new HashSet<>();
+        final Set<Edge> edges = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
             edges.add(traversal.next());
@@ -194,10 +194,10 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Edge> traversal = get_g_VX1X_outE(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Edge> edges = new HashSet<>();
+        final Set<Edge> edges = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            Edge edge = traversal.next();
+            final Edge edge = traversal.next();
             edges.add(edge);
             assertTrue(edge.label().equals("knows") || edge.label().equals("created"));
         }
@@ -224,10 +224,10 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Edge> traversal = get_g_VX4X_bothEXcreatedX(convertToVertexId("josh"));
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Edge> edges = new HashSet<>();
+        final Set<Edge> edges = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            Edge edge = traversal.next();
+            final Edge edge = traversal.next();
             edges.add(edge);
             assertTrue(edge.label().equals("created"));
             assertEquals(edge.outVertex().id(), convertToVertexId("josh"));
@@ -242,10 +242,10 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Edge> traversal = get_g_VX4X_bothE(convertToVertexId("josh"));
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Edge> edges = new HashSet<>();
+        final Set<Edge> edges = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            Edge edge = traversal.next();
+            final Edge edge = traversal.next();
             edges.add(edge);
             assertTrue(edge.label().equals("knows") || edge.label().equals("created"));
         }
@@ -275,7 +275,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_outE_hasXweight_1X_outV();
         printTraversalForm(traversal);
         int counter = 0;
-        Map<Object, Integer> counts = new HashMap<>();
+        final Map<Object, Integer> counts = new HashMap<>();
         while (traversal.hasNext()) {
             final Object id = traversal.next().id();
             int previousCount = counts.getOrDefault(id, 0);
@@ -296,10 +296,10 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, String> traversal = get_g_V_out_outE_inV_inE_inV_both_name();
         printTraversalForm(traversal);
         int counter = 0;
-        Map<String, Integer> counts = new HashMap<>();
+        final Map<String, Integer> counts = new HashMap<>();
         while (traversal.hasNext()) {
             final String key = traversal.next();
-            int previousCount = counts.getOrDefault(key, 0);
+            final int previousCount = counts.getOrDefault(key, 0);
             counts.put(key, previousCount + 1);
             counter++;
         }
@@ -317,7 +317,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     public void g_VX1X_outEXknowsX_bothV_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_outEXknowsX_bothV_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
-        List<String> names = traversal.toList();
+        final List<String> names = traversal.toList();
         assertEquals(4, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("josh"));
@@ -338,10 +338,10 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_outE_otherV(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<>();
+        final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = traversal.next();
+            final Vertex vertex = traversal.next();
             vertices.add(vertex);
             assertTrue(vertex.value("name").equals("vadas") ||
                     vertex.value("name").equals("josh") ||
@@ -384,13 +384,13 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         assert_g_v1_outXknowsX(traversal);
     }
 
-    private void assert_g_v1_outXknowsX(Traversal<Vertex, Vertex> traversal) {
+    private void assert_g_v1_outXknowsX(final Traversal<Vertex, Vertex> traversal) {
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<>();
+        final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = traversal.next();
+            final Vertex vertex = traversal.next();
             vertices.add(vertex);
             assertTrue(vertex.value("name").equals("vadas") ||
                     vertex.value("name").equals("josh"));
@@ -426,10 +426,10 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_out_out();
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<>();
+        final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = traversal.next();
+            final Vertex vertex = traversal.next();
             vertices.add(vertex);
             assertTrue(vertex.value("name").equals("lop") ||
                     vertex.value("name").equals("ripple"));
@@ -453,10 +453,10 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, String> traversal = get_g_VX1X_out_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int counter = 0;
-        Set<String> names = new HashSet<>();
+        final Set<String> names = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            String name = traversal.next();
+            final String name = traversal.next();
             names.add(name);
             assertTrue(name.equals("vadas") ||
                     name.equals("josh") ||
@@ -474,14 +474,12 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = traversal.next();
-            String name = vertex.value("name");
-            assertTrue(name.equals("vadas") ||
-                    name.equals("josh"));
+            final Vertex vertex = traversal.next();
+            final String name = vertex.value("name");
+            assertTrue(name.equals("vadas") || name.equals("josh"));
         }
         assertEquals(2, counter);
         assertFalse(traversal.hasNext());
-
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
