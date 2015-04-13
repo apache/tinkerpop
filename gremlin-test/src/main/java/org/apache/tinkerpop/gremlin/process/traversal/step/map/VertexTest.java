@@ -55,6 +55,8 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Edge, Edge> get_g_E();
 
+    public abstract Traversal<Edge, Edge> get_g_EX11X(final Object e11Id);
+
     public abstract Traversal<Vertex, Edge> get_g_VX1X_outE(final Object v1Id);
 
     public abstract Traversal<Vertex, Edge> get_g_VX2X_inE(final Object v2Id);
@@ -186,6 +188,30 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         }
         assertEquals(6, edges.size());
         assertEquals(6, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_EX11X() {
+        final Object edgeId = convertToEdgeId("josh", "created", "lop");
+        final Traversal<Edge, Edge> traversal = get_g_EX11X(edgeId);
+        assert_g_EX11X(edgeId, traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_EX11AsStringX() {
+        final Object edgeId = convertToEdgeId("josh", "created", "lop");
+        final Traversal<Edge, Edge> traversal = get_g_EX11X(edgeId.toString());
+        assert_g_EX11X(edgeId, traversal);
+    }
+
+    private void assert_g_EX11X(final Object edgeId, final Traversal<Edge, Edge> traversal) {
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Edge e = traversal.next();
+        assertEquals(edgeId, e.id());
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -381,6 +407,13 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_VX1X_outXknowsX() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_outXknowsX(convertToVertexId("marko"));
+        assert_g_v1_outXknowsX(traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_outXknowsAsStringIdX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_outXknowsX(convertToVertexId("marko").toString());
         assert_g_v1_outXknowsX(traversal);
     }
 
@@ -608,6 +641,11 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_to_XOUT_knowsX(final Object v1Id) {
             return g.V(v1Id).to(Direction.OUT, "knows");
+        }
+
+        @Override
+        public Traversal<Edge, Edge> get_g_EX11X(final Object e11Id) {
+            return g.E(e11Id);
         }
     }
 }
