@@ -53,9 +53,9 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldLoadVerticesViaIds() {
-        List<Vertex> vertices = g.V().toList();
-        List<Object> ids = vertices.stream().map(v->v.id()).collect(Collectors.toList());
-        List<Vertex> verticesReloaded = g.V(ids.toArray()).toList();
+        final List<Vertex> vertices = g.V().toList();
+        final List<Object> ids = vertices.stream().map(v->v.id()).collect(Collectors.toList());
+        final List<Vertex> verticesReloaded = g.V(ids.toArray()).toList();
         assertEquals(vertices.size(), verticesReloaded.size());
         assertEquals(new HashSet<>(vertices), new HashSet<>(verticesReloaded));
     }
@@ -63,9 +63,9 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldLoadEdgesViaIds() {
-        List<Edge> edges = g.E().toList();
-        List<Object> ids = edges.stream().map(e->e.id()).collect(Collectors.toList());
-        List<Edge> edgesReloaded = g.E(ids.toArray()).toList();
+        final List<Edge> edges = g.E().toList();
+        final List<Object> ids = edges.stream().map(e->e.id()).collect(Collectors.toList());
+        final List<Edge> edgesReloaded = g.E(ids.toArray()).toList();
         assertEquals(edges.size(), edgesReloaded.size());
         assertEquals(new HashSet<>(edges), new HashSet<>(edgesReloaded));
     }
@@ -73,8 +73,8 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldLoadVerticesViaVertices() {
-        List<Vertex> vertices = g.V().toList();
-        List<Vertex> verticesReloaded = g.V(vertices.toArray()).toList();
+        final List<Vertex> vertices = g.V().toList();
+        final List<Vertex> verticesReloaded = g.V(vertices.toArray()).toList();
         assertEquals(vertices.size(), verticesReloaded.size());
         assertEquals(new HashSet<>(vertices), new HashSet<>(verticesReloaded));
     }
@@ -82,8 +82,8 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldLoadEdgesViaEdges() {
-        List<Edge> edges = g.E().toList();
-        List<Edge> edgesReloaded = g.E(edges.toArray()).toList();
+        final List<Edge> edges = g.E().toList();
+        final List<Edge> edgesReloaded = g.E(edges.toArray()).toList();
         assertEquals(edges.size(), edgesReloaded.size());
         assertEquals(new HashSet<>(edges), new HashSet<>(edgesReloaded));
     }
@@ -91,7 +91,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldThrowExceptionWhenIdsMixed() {
-        List<Vertex> vertices = g.V().toList();
+        final List<Vertex> vertices = g.V().toList();
         try {
             g.V(vertices.get(0), vertices.get(1).id()).toList();
         } catch (Exception ex) {
