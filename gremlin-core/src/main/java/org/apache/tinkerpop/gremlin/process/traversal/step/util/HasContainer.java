@@ -62,8 +62,10 @@ public final class HasContainer implements Serializable {
 
     public boolean test(final Element element) {
         if (null != this.value) {
+            // it is OK to evaluate equality of ids via toString() now given that the toString() the test suite
+            // enforces the value of id.()toString() to be a first class representation of the identifier
             if (this.key.equals(T.id.getAccessor()))
-                return this.predicate.test(element.id(), this.value);
+                return this.predicate.test(element.id().toString(), this.value.toString());
             else if (this.key.equals(T.label.getAccessor()))
                 return this.predicate.test(element.label(), this.value);
             else if (element instanceof VertexProperty && this.key.equals(T.value.getAccessor()))

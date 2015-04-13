@@ -503,10 +503,13 @@ public final class ElementHelper {
 
     public static boolean idExists(final Object id, final Object... providedIds) {
         if (0 == providedIds.length) return true;
-        if (1 == providedIds.length) return id.equals(providedIds[0]);
+
+        // it is OK to evaluate equality of ids via toString() now given that the toString() the test suite
+        // enforces the value of id.()toString() to be a first class representation of the identifier
+        if (1 == providedIds.length) return id.toString().equals(providedIds[0].toString());
         else {
             for (final Object temp : providedIds) {
-                if (temp.equals(id))
+                if (temp.toString().equals(id.toString()))
                     return true;
             }
             return false;

@@ -62,7 +62,7 @@ public abstract class GroovyVertexTest {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_EX11X(Object e11Id) {
+        public Traversal<Edge, Edge> get_g_EX11X(final Object e11Id) {
             g.E(e11Id);
         }
 
@@ -196,7 +196,7 @@ public abstract class GroovyVertexTest {
         }
 
         @Override
-        public Traversal<Edge, Edge> get_g_EX11X(Object e11Id) {
+        public Traversal<Edge, Edge> get_g_EX11X(final Object e11Id) {
             ComputerTestHelper.compute("g.E($e11Id)", g)
         }
 
