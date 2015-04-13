@@ -65,19 +65,9 @@ public final class StarGraph implements Graph {
 
     private final Map<Object, Map<String, Object>> edgeProperties = new HashMap<>();
     private final Map<Object, Map<String, Object>> metaProperties = new HashMap<>();
-    private final Map<String, String> keysAndLabels = new HashMap<>();
 
     public StarVertex getStarVertex() {
         return this.starVertex;
-    }
-
-    private String getKeyOrLabel(final String keyOrLabel) {
-        String intern = this.keysAndLabels.get(keyOrLabel);
-        if (null == intern) {
-            this.keysAndLabels.put(keyOrLabel, keyOrLabel);
-            intern = keyOrLabel.intern();
-        }
-        return intern;
     }
 
     @Override
@@ -213,7 +203,7 @@ public final class StarGraph implements Graph {
 
         protected StarElement(final Object id, final String label) {
             this.id = id;
-            this.label = StarGraph.this.getKeyOrLabel(label);
+            this.label = label.intern();
         }
 
         @Override
@@ -625,7 +615,7 @@ public final class StarGraph implements Graph {
         private final Element element;
 
         public StarProperty(final String key, final V value, final Element element) {
-            this.key = StarGraph.this.getKeyOrLabel(key);
+            this.key = key.intern();
             this.value = value;
             this.element = element;
         }
