@@ -634,7 +634,7 @@ public final class StarGraph implements Graph {
 
         @Override
         public void remove() {
-            throw Element.Exceptions.propertyRemovalNotSupported();
+            throw Exceptions.propertyRemovalNotSupported();
         }
 
         @Override

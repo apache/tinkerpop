@@ -75,7 +75,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
 
     @Override
     public void remove() {
-        throw Element.Exceptions.propertyRemovalNotSupported();
+        throw Property.Exceptions.propertyRemovalNotSupported();
     }
 
     @Override

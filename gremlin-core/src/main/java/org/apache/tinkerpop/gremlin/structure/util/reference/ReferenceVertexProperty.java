@@ -96,7 +96,7 @@ public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty>
 
     @Override
     public void remove() {
-        throw Element.Exceptions.propertyRemovalNotSupported();
+        throw Property.Exceptions.propertyRemovalNotSupported();
     }
 
     @Override

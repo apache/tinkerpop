@@ -135,10 +135,6 @@ public abstract interface Element {
             return new IllegalStateException("Property addition is not supported");
         }
 
-        public static IllegalStateException propertyRemovalNotSupported() {
-            return new IllegalStateException("Property removal is not supported");
-        }
-
         public static IllegalArgumentException labelCanNotBeNull() {
             return new IllegalArgumentException("Label can not be null");
         }
