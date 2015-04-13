@@ -132,7 +132,6 @@ public interface Graph extends AutoCloseable {
      * @param label the label of the vertex
      * @return The newly created labeled vertex
      */
-    @Graph.Helper
     public default Vertex addVertex(final String label) {
         return this.addVertex(T.label, label);
     }
@@ -373,7 +372,6 @@ public interface Graph extends AutoCloseable {
         /**
          * Gets the variables of the {@link Graph} as a {@code Map}.
          */
-        @Graph.Helper
         public default Map<String, Object> asMap() {
             final Map<String, Object> map = keys().stream()
                     .map(key -> Pair.with(key, get(key).get()))
@@ -1144,17 +1142,5 @@ public interface Graph extends AutoCloseable {
     @Inherited
     public @interface OptOuts {
         OptOut[] value();
-    }
-
-    /**
-     * Defines a method as a "helper method".  These methods will usually be default methods in the
-     * core structure interfaces.  Any method marked with this annotation represent methods that should not
-     * be implemented by vendors.  The test suite will enforce this convention and create a failure situation
-     * if violated.
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.METHOD)
-    @Inherited
-    public @interface Helper {
     }
 }
