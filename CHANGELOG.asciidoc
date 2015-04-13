@@ -26,6 +26,8 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Removed `back()`-step as `select()`-step provides the same behavior with more intelligent optimizations and `by()`-modulation.
+* Removed `Graph.Helper` method annotation and related infrastructure in tests.
+* Moved `Exceptions.propertyRemovalNotSupported` from `Element` to `Property` for consistency.
 * `DetachedXXX` now uses the standard `structure/` exceptions for unsupported operations.
 * Added private constructors to all `Exceptions` inner classes in the respective `structure/` interfaces.
 * Re-introduced `ReferenceXXX` to ensure a smaller data footprint in OLAP situation (`DetachedXXX` uses too much data).
