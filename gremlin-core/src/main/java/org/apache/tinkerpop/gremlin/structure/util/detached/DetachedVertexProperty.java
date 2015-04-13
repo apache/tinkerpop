@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -97,7 +96,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
 
     @Override
     public void remove() {
-        throw Element.Exceptions.propertyRemovalNotSupported();
+        throw Property.Exceptions.propertyRemovalNotSupported();
     }
 
     @Override

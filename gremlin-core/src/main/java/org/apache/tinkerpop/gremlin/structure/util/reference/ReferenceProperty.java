@@ -106,6 +106,6 @@ public class ReferenceProperty<V> implements Attachable<Property>, Serializable,
 
     @Override
     public void remove() {
-        throw Element.Exceptions.propertyRemovalNotSupported();
+        throw Property.Exceptions.propertyRemovalNotSupported();
     }
 }

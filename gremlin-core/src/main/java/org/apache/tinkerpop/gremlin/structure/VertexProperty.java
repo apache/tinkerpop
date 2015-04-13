@@ -53,7 +53,6 @@ public interface VertexProperty<V> extends Property<V>, Element {
      * {@inheritDoc}
      */
     @Override
-    @Graph.Helper
     public default Graph graph() {
         return this.element().graph();
     }
@@ -62,7 +61,6 @@ public interface VertexProperty<V> extends Property<V>, Element {
      * {@inheritDoc}
      */
     @Override
-    @Graph.Helper
     public default String label() {
         return this.key();
     }

@@ -160,7 +160,9 @@ public class FeatureSupportTest {
             "vertexAdditionsNotSupported"
     })
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
-            "propertyAdditionNotSupported",
+            "propertyAdditionNotSupported"
+    })
+    @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
             "propertyRemovalNotSupported"
     })
     public static class VertexFunctionalityTest extends AbstractGremlinTest {
@@ -311,7 +313,7 @@ public class FeatureSupportTest {
                 v.property("name").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_REMOVE_PROPERTY));
             } catch (Exception e) {
-                validateException(Element.Exceptions.propertyRemovalNotSupported(), e);
+                validateException(Property.Exceptions.propertyRemovalNotSupported(), e);
             }
         }
     }
@@ -329,7 +331,9 @@ public class FeatureSupportTest {
             "userSuppliedIdsOfThisTypeNotSupported"
     })
     @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
-            "propertyAdditionNotSupported",
+            "propertyAdditionNotSupported"
+    })
+    @ExceptionCoverage(exceptionClass = Property.Exceptions.class, methods = {
             "propertyRemovalNotSupported"
     })
     public static class EdgeFunctionalityTest extends AbstractGremlinTest {
@@ -502,7 +506,7 @@ public class FeatureSupportTest {
                 e.property("name").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_REMOVE_PROPERTY));
             } catch (Exception ex) {
-                validateException(Element.Exceptions.propertyRemovalNotSupported(), ex);
+                validateException(Property.Exceptions.propertyRemovalNotSupported(), ex);
             }
         }
     }
@@ -737,7 +741,7 @@ public class FeatureSupportTest {
                 p.property("test").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_REMOVE_PROPERTY));
             } catch (Exception ex) {
-                validateException(Element.Exceptions.propertyRemovalNotSupported(), ex);
+                validateException(Property.Exceptions.propertyRemovalNotSupported(), ex);
             }
         }
 

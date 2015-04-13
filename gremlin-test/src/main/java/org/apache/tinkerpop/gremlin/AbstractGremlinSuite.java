@@ -59,18 +59,6 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinSuite extends Suite {
-
-    // todo: perhaps there is a test that validates against the implementations to be sure that the Graph constructed matches what's defined???
-    private static final Set<Class> STRUCTURE_INTERFACES = new HashSet<Class>() {{
-        add(Edge.class);
-        add(Element.class);
-        add(Graph.class);
-        add(Graph.Variables.class);
-        add(Property.class);
-        add(Vertex.class);
-        add(VertexProperty.class);
-    }};
-
     /**
      * The GraphProvider instance that will be used to generate a Graph instance.
      */
@@ -127,58 +115,11 @@ public abstract class AbstractGremlinSuite extends Suite {
 
         try {
             final GraphProvider graphProvider = pair.getValue0().newInstance();
-            validateStructureInterfacesRegistered(graphProvider);
-            validateHelpersNotImplemented(graphProvider);
-
             GraphManager.setGraphProvider(graphProvider);
             GraphManager.setTraversalEngineType(traversalEngineType);
         } catch (Exception ex) {
             throw new InitializationError(ex);
         }
-    }
-
-    /**
-     * Need to validate that structure interfaces are implemented so that checks to {@link Graph.Helper} can be
-     * properly enforced.
-     */
-    private void validateStructureInterfacesRegistered(final GraphProvider graphProvider) throws Exception {
-        final Set<Class> implementations = graphProvider.getImplementations();
-        final Set<Class> noImplementationRegistered = new HashSet<>();
-
-        final Configuration conf = graphProvider.newGraphConfiguration("prototype", AbstractGremlinSuite.class, "validateStructureInterfacesRegistered", null);
-        final Graph graph = graphProvider.openTestGraph(conf);
-        final Set<Class> structureInterfaces = new HashSet<>(STRUCTURE_INTERFACES);
-
-        // not all graphs implement all features and therefore may not have implementations of certain "core" interfaces
-        if (!graph.features().graph().variables().supportsVariables()) structureInterfaces.remove(Graph.Variables.class);
-
-        graphProvider.clear(graph, conf);
-
-        final boolean missingImplementations = structureInterfaces.stream().anyMatch(iface -> {
-            final boolean noneMatch = implementations.stream().noneMatch(c -> iface.isAssignableFrom(c));
-            if (noneMatch) noImplementationRegistered.add(iface);
-            return noneMatch;
-        });
-
-        if (missingImplementations)
-            throw new RuntimeException(String.format(
-                    "Implementations must register their implementations for the following interfaces %s",
-                    String.join(",", noImplementationRegistered.stream().map(Class::getName).collect(Collectors.toList()))));
-    }
-
-    private void validateHelpersNotImplemented(final GraphProvider graphProvider) {
-        final List<String> overridenMethods = new ArrayList<>();
-        graphProvider.getImplementations().forEach(clazz ->
-                        Stream.of(clazz.getDeclaredMethods())
-                                .filter(AbstractGremlinSuite::isHelperMethodOverriden)
-                                .map(m -> m.getDeclaringClass().getName() + "." + m.getName())
-                                .forEach(overridenMethods::add)
-        );
-
-        if (overridenMethods.size() > 0)
-            throw new RuntimeException(String.format(
-                    "Implementations cannot override methods marked by @Helper annotation - check the following methods [%s]",
-                    String.join(",", overridenMethods)));
     }
 
     private void validateOptInToSuite(final Class<? extends Graph> klass) throws InitializationError {
@@ -215,18 +156,6 @@ public abstract class AbstractGremlinSuite extends Suite {
             System.err.println(String.format("Review the testsToExecute given to the test suite as the following are missing: %s", notSupplied));
 
         return testsToExecute;
-    }
-
-    public static boolean isHelperMethodOverriden(final Method myMethod) {
-        final Class<?> declaringClass = myMethod.getDeclaringClass();
-        for (Class<?> iface : declaringClass.getInterfaces()) {
-            try {
-                return iface.getMethod(myMethod.getName(), myMethod.getParameterTypes()).isAnnotationPresent(Graph.Helper.class);
-            } catch (NoSuchMethodException ignored) {
-            }
-        }
-
-        return false;
     }
 
     public static Pair<Class<? extends GraphProvider>, Class<? extends Graph>> getGraphProviderClass(final Class<?> klass) throws InitializationError {
