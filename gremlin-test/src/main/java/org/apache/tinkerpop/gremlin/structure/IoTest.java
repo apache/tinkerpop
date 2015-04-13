@@ -2574,32 +2574,24 @@ public class IoTest extends AbstractGremlinTest {
             @Override
             public void serialize(final CustomId customId, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                     throws IOException, JsonGenerationException {
-                ser(customId, jsonGenerator, false);
+                // when types are not embedded, stringify or resort to JSON primitive representations of the
+                // type so that non-jvm languages can better interoperate with the TinkerPop stack.
+                jsonGenerator.writeString(customId.toString());
             }
 
             @Override
             public void serializeWithType(final CustomId customId, final JsonGenerator jsonGenerator,
                                           final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
-                ser(customId, jsonGenerator, true);
-            }
-
-            private void ser(final CustomId customId, final JsonGenerator jsonGenerator, final boolean includeType) throws IOException {
-                if (includeType) {
-                    // when the type is included add "class" as a key and then try to utilize as much of the
-                    // default serialization provided by jackson data-bind as possible.  for example, write
-                    // the uuid as an object so that when jackson serializes it, it uses the uuid serializer
-                    // to write it out with the type.  in this way, data-bind should be able to deserialize
-                    // it back when types are embedded.
-                    jsonGenerator.writeStartObject();
-                    jsonGenerator.writeStringField(GraphSONTokens.CLASS, CustomId.class.getName());
-                    jsonGenerator.writeStringField("cluster", customId.getCluster());
-                    jsonGenerator.writeObjectField("elementId", customId.getElementId());
-                    jsonGenerator.writeEndObject();
-                } else {
-                    // when types are not embedded, stringify or resort to JSON primitive representations of the
-                    // type so that non-jvm languages can better interoperate with the TinkerPop stack.
-                    jsonGenerator.writeString(customId.toString());
-                }
+                // when the type is included add "class" as a key and then try to utilize as much of the
+                // default serialization provided by jackson data-bind as possible.  for example, write
+                // the uuid as an object so that when jackson serializes it, it uses the uuid serializer
+                // to write it out with the type.  in this way, data-bind should be able to deserialize
+                // it back when types are embedded.
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeStringField(GraphSONTokens.CLASS, CustomId.class.getName());
+                jsonGenerator.writeStringField("cluster", customId.getCluster());
+                jsonGenerator.writeObjectField("elementId", customId.getElementId());
+                jsonGenerator.writeEndObject();
             }
         }
     }
