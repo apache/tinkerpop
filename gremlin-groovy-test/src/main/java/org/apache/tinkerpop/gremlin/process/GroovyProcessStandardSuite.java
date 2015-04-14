@@ -73,11 +73,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySide
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyStoreTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySubgraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyTreeTest;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
 /**
- * The test suite for the Groovy implementation of Gremlin Process.
+ * The {@code GroovyProcessStandardSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
+ * {@link Graph} implementation.  This test suite covers traversal operations and should be implemented by vendors
+ * to validate that their implementations are compliant with the Groovy flavor of the Gremlin language.
+ * <br/>
+ * For more information on the usage of this suite, please see {@link StructureStandardSuite}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

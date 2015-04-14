@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraphTest;
@@ -70,6 +71,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.TraversalVerificationStrategyTest;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -79,27 +82,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * The {@code ProcessComputerStandardSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
- * {@link org.apache.tinkerpop.gremlin.structure.Graph} implementation.  This specialized test suite and runner is for use
- * by Gremlin implementers to test their {@link org.apache.tinkerpop.gremlin.structure.Graph} implementations.  The
- * {@code ProcessComputerStandardSuite} ensures consistency and validity of the implementations that they test.
- * <p/>
- * To use the {@code ProcessComputerStandardSuite} define a class in a test module.  Simple naming would expect the
- * name of the implementation followed by "ProcessComputerStandardSuite".  This class should be annotated as follows
- * (note that the "Suite" implements ProcessComputerStandardSuite.GraphProvider as a convenience only. It could be
- * implemented in a separate class file):
- * <code>
+ * The {@code ProcessComputerSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
+ * {@link Graph} implementation.  This test suite covers traversal operations around {@link GraphComputer} and should
+ * be implemented by vendors to validate that their implementations are compliant with that Gremlin language.
+ * Implementations that use this test suite should return {@code true} for
+ * {@link Graph.Features.GraphFeatures#supportsComputer()}.
+ * <br/>
+ * For more information on the usage of this suite, please see {@link StructureStandardSuite}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @RunWith(ProcessComputerSuite.class)
- * @ProcessComputerSuite.GraphProviderClass(TinkerGraphProcessComputerTest.class) public class TinkerGraphProcessComputerTest implements GraphProvider {
- * }
- * </code>
- * Implementing {@link org.apache.tinkerpop.gremlin.GraphProvider} provides a way for the {@code ProcessComputerStandardSuite}
- * to instantiate {@link org.apache.tinkerpop.gremlin.structure.Graph} instances from the implementation being tested to
- * inject into tests in the suite.  The {@code ProcessComputerStandardSuite} will utilized Features defined in the
- * suite to determine which tests will be executed.
- * <br/>
  */
 public class ProcessComputerSuite extends AbstractGremlinSuite {
 

@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineIntegrateTest;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
@@ -33,6 +35,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * The {@code GroovyEnvironmentIntegrateSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
+ * {@link Graph} implementation.  This test suite covers ensures that a vendor implementation is compliant with
+ * the Groovy "environment" which will typically ensure that the {@link Graph} will work as expected in the Gremlin
+ * Console, Gremlin Server, and other Groovy environments.
+ * <br/>
+ * Note that this suite contains "long-run" tests.  At this time, this suite can be considered optional to vendors.
+ * <br/>
+ * For more information on the usage of this suite, please see {@link StructureStandardSuite}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GroovyEnvironmentIntegrateSuite extends AbstractGremlinSuite {
