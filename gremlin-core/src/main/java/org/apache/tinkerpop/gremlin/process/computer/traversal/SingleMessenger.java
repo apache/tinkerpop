@@ -38,7 +38,7 @@ public final class SingleMessenger<M> implements Messenger<M> {
     }
 
     @Override
-    public Iterator<M> receiveMessages(final MessageScope messageScope) {
+    public Iterator<M> receiveMessages() {
         return IteratorUtils.of(this.message);
     }
 

@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -67,6 +67,16 @@ public abstract class MessageScope {
         public static Global instance() {
             return INSTANCE;
         }
+
+        @Override
+        public int hashCode() {
+            return 4676576;
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            return other instanceof Global;
+        }
     }
 
     /**
@@ -82,19 +92,20 @@ public abstract class MessageScope {
     public final static class Local<M> extends MessageScope {
         public final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal;
         public final BiFunction<M, Edge, M> edgeFunction;
+        private final String toStringOfTraversal;
 
         private Local(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal) {
-            this.incidentTraversal = incidentTraversal;
-            this.edgeFunction = (final M m, final Edge e) -> m; // the default is an identity function
+            this(incidentTraversal, (final M m, final Edge e) -> m); // the default is an identity function
         }
 
         private Local(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M, Edge, M> edgeFunction) {
             this.incidentTraversal = incidentTraversal;
+            this.toStringOfTraversal = this.incidentTraversal.get().toString();
             this.edgeFunction = edgeFunction;
         }
 
         public static <M> Local<M> of(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal) {
-            return new Local(incidentTraversal);
+            return new Local<>(incidentTraversal);
         }
 
         public static <M> Local<M> of(final Supplier<? extends Traversal<Vertex, Edge>> incidentTraversal, final BiFunction<M, Edge, M> edgeFunction) {
@@ -107,6 +118,18 @@ public abstract class MessageScope {
 
         public Supplier<? extends Traversal<Vertex, Edge>> getIncidentTraversal() {
             return this.incidentTraversal;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.edgeFunction.hashCode() + this.incidentTraversal.get().toString().hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            return other instanceof Local &&
+                    ((Local<?>) other).toStringOfTraversal.equals(this.toStringOfTraversal) &&
+                    ((Local<?>) other).edgeFunction == this.edgeFunction;
         }
 
         /**

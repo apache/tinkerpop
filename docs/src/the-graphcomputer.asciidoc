@@ -85,7 +85,6 @@ result.memory().get('clusterPopulation')
 g = result.graph().traversal(standard())
 g.V().values(PeerPressureVertexProgram.CLUSTER).groupCount().next()
 g.V().valueMap()
-g.V().valueMap(true,PeerPressureVertexProgram.CLUSTER)
 ----
 
 If there are numerous statistics desired, then its possible to register as many MapReduce jobs as needed. For instance, the `ClusterCountMapReduce` determines how many unique clusters were created by the peer pressure algorithm. Below both `ClusterCountMapReduce` and `ClusterPopulationMapReduce` are computed over the resultant graph.
@@ -189,12 +188,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
             messenger.sendMessage(this.countMessageScope, 1.0d);
         } else if (1 == memory.getIteration()) {  <8>
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
-            double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(this.countMessageScope), 0.0d, (a, b) -> a + b);
+            double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
             vertex.property(PAGE_RANK, initialPageRank);
             vertex.property(EDGE_COUNT, edgeCount);
             messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
         } else { <9>
-            double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(this.incidentMessageScope), 0.0d, (a, b) -> a + b);
+            double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
             vertex.property(PAGE_RANK, newPageRank);
             messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
@@ -293,5 +292,5 @@ image::gremlin-without-a-cause.png[width=200,float=right]
  . Traversal sideEffects are represented as a distributed data structure across the graph's vertex set. It is not possible to get a global view of a sideEffect until it is aggregated via a <<mapreduce,MapReduce>> job. In some situations, the local vertex representation of the sideEffect is sufficient to ensure the intended semantics of the traversal are respected. However, this is not generally true so be wary of traversals that require global views of a sideEffect.
  . When evaluating traversals that rely on path information (i.e. the history of the traversal), practical computational limits can easily be reached due the link:http://en.wikipedia.org/wiki/Combinatorial_explosion[combinatoric explosion] of data. With path computing enabled, every traverser is unique and thus, must be enumerated as opposed to being counted/merged. The difference being a collection of paths vs. a single 64-bit long at a single vertex. For more information on this concept, please see link:http://thinkaurelius.com/2012/11/11/faunus-provides-big-graph-data-analytics/[Faunus Provides Big Graph Data].
  . When traversals of the form `x.as('a').y.someSideEffectStep('a').z` are evaluated, the `a` object is stored in the path information of the traverser and thus, such traversals (may) turn on path calculations when executed on a GraphComputer.
- . Steps that are concerned with the global ordering of traversers do not have a meaningful representation in OLAP. For example, what does <<order-step,`order()`>>-step mean when all traversers are being processed in parallel? Even if the traversers were aggregated and ordered, then at the next step they would return to being executed in parallel and thus, in an unpredictable order. Other steps of this nature include <<order-step,`order()`>>. When these steps are executed at the end of a traversal (i.e the final step), the `TraverserMapReduce` job ensures the resultant serial representation is ordered accordingly.
+ . Steps that are concerned with the global ordering of traversers do not have a meaningful representation in OLAP. For example, what does <<order-step,`order()`>>-step mean when all traversers are being processed in parallel? Even if the traversers were aggregated and ordered, then at the next step they would return to being executed in parallel and thus, in an unpredictable order. When `order()`-like steps are executed at the end of a traversal (i.e the final step), the `TraverserMapReduce` job ensures the resultant serial representation is ordered accordingly.
  . Steps that are concerned with providing a global aggregate to the next step of computation do not have a correlate in OLAP. For example, <<fold-step,`fold()`>>-step can only fold up the objects at each executing vertex. Next, even if a global fold was possible, where would it go? Which vertex would be the host of the data structure? The `fold()`-step only makes sense as an end-step whereby a MapReduce job can generate the proper global-to-local data reduction.

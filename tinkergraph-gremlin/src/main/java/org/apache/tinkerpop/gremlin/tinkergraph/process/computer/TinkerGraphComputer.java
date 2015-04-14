@@ -140,7 +140,7 @@ public class TinkerGraphComputer implements GraphComputer {
                             while (true) {
                                 final Vertex vertex = vertices.next();
                                 if (null == vertex) return;
-                                vertexProgram.execute(vertex, new TinkerMessenger(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.memory);
+                                vertexProgram.execute(vertex, new TinkerMessenger<>(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.memory);
                             }
                         });
                         workers.vertexProgramWorkerIterationEnd(this.memory.asImmutable());

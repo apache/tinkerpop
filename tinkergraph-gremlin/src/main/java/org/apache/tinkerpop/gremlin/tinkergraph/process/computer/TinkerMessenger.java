@@ -30,10 +30,13 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.MultiIterator;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Stream;
 
@@ -46,7 +49,6 @@ public class TinkerMessenger<M> implements Messenger<M> {
     private final TinkerMessageBoard<M> messageBoard;
     private final MessageCombiner<M> combiner;
 
-
     public TinkerMessenger(final Vertex vertex, final TinkerMessageBoard<M> messageBoard, final Optional<MessageCombiner<M>> combiner) {
         this.vertex = vertex;
         this.messageBoard = messageBoard;
@@ -54,30 +56,35 @@ public class TinkerMessenger<M> implements Messenger<M> {
     }
 
     @Override
-    public Iterator<M> receiveMessages(final MessageScope messageScope) {
-        if (messageScope instanceof MessageScope.Local) {
-            final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
-            final Traversal.Admin<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
-            final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
-            final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
-            return StreamFactory.stream(VertexProgramHelper.reverse(incidentTraversal.asAdmin()))
-                    .map(e -> this.messageBoard.receiveMessages.get((edge[0] = e).vertices(direction).next()))
-                    .filter(q -> null != q)
-                    .flatMap(q -> q.stream())
-                    .map(message -> localMessageScope.getEdgeFunction().apply(message, edge[0]))
-                    .iterator();
+    public Iterator<M> receiveMessages() {
+        final MultiIterator<M> multiIterator = new MultiIterator<>();
+        for (final MessageScope messageScope : this.messageBoard.previousMessageScopes) {
+            if (messageScope instanceof MessageScope.Local) {
+                final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
+                final Traversal.Admin<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
+                final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
+                final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
+                multiIterator.addIterator(StreamFactory.stream(VertexProgramHelper.reverse(incidentTraversal.asAdmin()))
+                        .map(e -> this.messageBoard.receiveMessages.get((edge[0] = e).vertices(direction).next()))
+                        .filter(q -> null != q)
+                        .flatMap(q -> q.stream())
+                        .map(message -> localMessageScope.getEdgeFunction().apply(message, edge[0]))
+                        .iterator());
 
-        } else {
-            return Stream.of(this.vertex)
-                    .map(this.messageBoard.receiveMessages::get)
-                    .filter(q -> null != q)
-                    .flatMap(q -> q.stream())
-                    .iterator();
+            } else {
+                multiIterator.addIterator(Stream.of(this.vertex)
+                        .map(this.messageBoard.receiveMessages::get)
+                        .filter(q -> null != q)
+                        .flatMap(q -> q.stream())
+                        .iterator());
+            }
         }
+        return multiIterator;
     }
 
     @Override
     public void sendMessage(final MessageScope messageScope, final M message) {
+        this.messageBoard.currentMessageScopes.add(messageScope);
         if (messageScope instanceof MessageScope.Local) {
             addMessage(this.vertex, message);
         } else {
