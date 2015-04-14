@@ -255,7 +255,7 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
 
         }
 
-        assertEquals(true, engine.eval("def isMarko(v){v.value('name')=='marko'}; isMarko(g.V(1).next())", bindings));
+        assertEquals(true, engine.eval("def isMarko(v){v.value('name')=='marko'}; isMarko(g.V(" + convertToVertexId("marko") + ").next())", bindings));
 
         try {
             engine.eval("isMarko(g.V(" + convertToVertexId("marko") + ").next())", bindings);
