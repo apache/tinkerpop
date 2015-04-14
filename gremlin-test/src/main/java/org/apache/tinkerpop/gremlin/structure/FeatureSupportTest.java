@@ -633,8 +633,8 @@ public class FeatureSupportTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_STRING_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeString() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
@@ -647,8 +647,8 @@ public class FeatureSupportTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeNumeric() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
@@ -669,8 +669,8 @@ public class FeatureSupportTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeUuid() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
@@ -684,8 +684,8 @@ public class FeatureSupportTest {
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_ANY_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_ANY_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeAny() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
@@ -698,8 +698,8 @@ public class FeatureSupportTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_STRING_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_IDS, supported = false)
         public void shouldSupportStringIdsIfStringIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
             final VertexProperty p = v.property("name", "stephen");
@@ -709,8 +709,8 @@ public class FeatureSupportTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
         public void shouldSupportUuidIdsIfUuidIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
             final VertexProperty p = v.property("name", "stephen");
@@ -720,8 +720,8 @@ public class FeatureSupportTest {
 
         @Test
         @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
-        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
         public void shouldSupportNumericIdsIfNumericIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
             final VertexProperty p = v.property("name", "stephen");
