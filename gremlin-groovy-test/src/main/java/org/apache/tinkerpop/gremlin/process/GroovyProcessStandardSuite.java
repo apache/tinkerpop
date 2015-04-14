@@ -93,7 +93,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
      * as needed to enforce tests upon implementations.
      */
-    private static final Class<?>[] testsToExecute = new Class<?>[]{
+    private static final Class<?>[] allTests = new Class<?>[]{
             // branch
             GroovyBranchTest.StandardTraversals.class,
             GroovyChooseTest.StandardTraversals.class,
@@ -155,7 +155,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
 
 
     public GroovyProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToExecute, true);
+        super(klass, builder, allTests, allTests, true);
     }
 
     @Override

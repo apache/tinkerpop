@@ -33,17 +33,18 @@ import org.junit.runners.model.RunnerBuilder;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StructurePerformanceSuite extends AbstractGremlinSuite {
+
     /**
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
      * as needed to enforce tests upon implementations.
      */
-    private static final Class<?>[] testsToExecute = new Class<?>[]{
+    private static final Class<?>[] allTests = new Class<?>[]{
             GraphWritePerformanceTest.class,
             GraphReadPerformanceTest.class
     };
 
     public StructurePerformanceSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute);
+        super(klass, builder, allTests);
     }
 
 

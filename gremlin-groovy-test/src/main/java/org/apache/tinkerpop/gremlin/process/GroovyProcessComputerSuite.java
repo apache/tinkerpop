@@ -88,7 +88,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
      * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
      * as needed to enforce tests upon implementations.
      */
-    private static final Class<?>[] testsToExecute = new Class<?>[]{
+    private static final Class<?>[] allTests = new Class<?>[]{
 
             //branch
             GroovyBranchTest.ComputerTraversals.class,
@@ -152,7 +152,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
     };
 
     public GroovyProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToExecute);
+        super(klass, builder, allTests, allTests);
     }
 
     @Override
