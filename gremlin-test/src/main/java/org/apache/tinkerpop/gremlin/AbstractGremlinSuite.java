@@ -164,13 +164,13 @@ public abstract class AbstractGremlinSuite extends Suite {
     }
 
     /**
-     * Filter a list of test classes through the gremlin.tests environment variable list.
+     * Filter a list of test classes through the gremlin_tests environment variable list.
      */
     private static Class<?>[] filterSpecifiedTests(Class<?>[] allTests) {
         if (null == allTests) return allTests;
 
         Class<?>[] filteredTests;
-        final String override = System.getenv().getOrDefault("gremlin.tests", "");
+        final String override = System.getenv().getOrDefault("gremlin_tests", "");
         if (override.equals(""))
             filteredTests = allTests;
         else {
