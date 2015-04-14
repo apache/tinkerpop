@@ -28,6 +28,7 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 * Removed `back()`-step as `select()`-step provides the same behavior with more intelligent optimizations and `by()`-modulation.
 * Removed `Graph.Helper` method annotation and related infrastructure in tests.
 * Moved `Exceptions.propertyRemovalNotSupported` from `Element` to `Property` for consistency.
+* Provided a method for Gremlin Server to bind `TraversalSource` objects for use in scripts.
 * Modified the reference implementation for dealing with "custom" identifier serialization in GraphSON - See `IoTest.CustomId` for the example.
 * Modified `g.vertices/edges` and related methods and tests to support non-type specific querying (e.g. `g.V(1)` and `g.V(1L)` should both return the same result now).
 * `TinkerGraph` supports an `IdManager` which helps enforce identifier types and improve flexibility in terms of how it will respond to queries around identifiers.
