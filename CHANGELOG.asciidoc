@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Messenger.receiveMessages()` no longer takes a `MessageScope` and thus, consistent behavior between message-passing and message-pulling systems.
 * Removed `back()`-step as `select()`-step provides the same behavior with more intelligent optimizations and `by()`-modulation.
 * Removed `Graph.Helper` method annotation and related infrastructure in tests.
 * Moved `Exceptions.propertyRemovalNotSupported` from `Element` to `Property` for consistency.
