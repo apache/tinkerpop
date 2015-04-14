@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
@@ -27,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 
@@ -39,6 +41,8 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXage_nameX_value();
 
+    public abstract Traversal<Vertex, Object> get_g_V_hasXageX_properties_hasXid_nameIdX_value(final Object nameId);
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXageX_propertiesXname_ageX_value() {
@@ -46,6 +50,22 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
             printTraversalForm(traversal);
             checkResults(Arrays.asList("marko", 29, "vadas", 27, "josh", 32, "peter", 35), traversal);
         });
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXageX_properties_hasXid_nameIdX_value() {
+        final Traversal<Vertex,Object> traversal = get_g_V_hasXageX_properties_hasXid_nameIdX_value(convertToVertexPropertyId("marko", "name").next());
+        printTraversalForm(traversal);
+        checkResults(Collections.singletonList("marko"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXageX_properties_hasXid_nameIdAsStringX_value() {
+        final Traversal<Vertex,Object> traversal = get_g_V_hasXageX_properties_hasXid_nameIdX_value(convertToVertexPropertyId("marko", "name").next().toString());
+        printTraversalForm(traversal);
+        checkResults(Collections.singletonList("marko"), traversal);
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
@@ -59,6 +79,11 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXage_nameX_value() {
             return g.V().has("age").properties("age", "name").value();
+        }
+
+        @Override
+        public Traversal<Vertex, Object> get_g_V_hasXageX_properties_hasXid_nameIdX_value(final Object nameId) {
+            return g.V().has("age").properties().has(T.id, nameId).value();
         }
     }
 }

@@ -21,10 +21,12 @@ package org.apache.tinkerpop.gremlin;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -157,6 +159,19 @@ public abstract class AbstractGremlinTest {
     public Vertex convertToVertex(final Graph graph, final String vertexName) {
         // all test graphs have "name" as a unique id which makes it easy to hardcode this...works for now
         return graph.traversal().V().has("name", vertexName).next();
+    }
+
+    public GraphTraversal<Vertex, Object> convertToVertexPropertyId(final String vertexName, final String vertexPropertyKey) {
+        return convertToVertexPropertyId(graph, vertexName, vertexPropertyKey);
+    }
+
+    public GraphTraversal<Vertex, Object> convertToVertexPropertyId(final Graph g, final String vertexName, final String vertexPropertyKey) {
+        return convertToVertexProperty(g, vertexName, vertexPropertyKey).id();
+    }
+
+    public GraphTraversal<Vertex, VertexProperty<Object>> convertToVertexProperty(final Graph graph, final String vertexName, final String vertexPropertyKey) {
+        // all test graphs have "name" as a unique id which makes it easy to hardcode this...works for now
+        return (GraphTraversal<Vertex, VertexProperty<Object>>) graph.traversal().V().has("name", vertexName).properties(vertexPropertyKey);
     }
 
     public Object convertToEdgeId(final String outVertexName, String edgeLabel, final String inVertexName) {
