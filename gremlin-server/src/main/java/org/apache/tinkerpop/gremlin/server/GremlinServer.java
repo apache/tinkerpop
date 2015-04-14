@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import io.netty.bootstrap.ServerBootstrap;
@@ -185,6 +186,14 @@ public class GremlinServer {
         gremlinExecutor.getGlobalBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof Graph)
                 .forEach(kv -> graphs.get().getGraphs().put(kv.getKey(), (Graph) kv.getValue()));
+
+        // script engine init may have constructed the TraversalSource bindings - store them in Graphs object
+        gremlinExecutor.getGlobalBindings().entrySet().stream()
+                .filter(kv -> kv.getValue() instanceof TraversalSource)
+                .forEach(kv -> {
+                    logger.info("A {} is now bound to [{}] with {}", kv.getValue().getClass().getSimpleName(), kv.getKey(), kv.getValue());
+                    graphs.get().getTraversalSources().put(kv.getKey(), (TraversalSource) kv.getValue());
+                });
 
         return gremlinExecutor;
     }

@@ -23,13 +23,14 @@ scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
 channelizer: org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer
 graphs: {
-  g: conf/tinkergraph-empty.properties}
+  graph: conf/tinkergraph-empty.properties}
 plugins:
   - tinkerpop.tinkergraph
 scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math],
-    staticImports: [java.lang.Math.PI]},
+    staticImports: [java.lang.Math.PI],
+    scripts: [scripts/empty-sample.groovy]},
   nashorn: {
       imports: [java.lang.Math],
       staticImports: [java.lang.Math.PI]}}

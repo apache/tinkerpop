@@ -23,7 +23,7 @@ scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
 channelizer: org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer
 graphs: {
-  g: conf/tinkergraph-empty.properties}
+  graph: conf/tinkergraph-empty.properties}
 plugins:
   - tinkerpop.tinkergraph
 scriptEngines: {

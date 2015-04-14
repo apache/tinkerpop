@@ -16,5 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 // Generates the modern graph into an "empty" TinkerGraph
-TinkerFactory.generateModern(g)
+TinkerFactory.generateModern(graph)
+
+// define the default TraversalSource to bind queries to.
+g = graph.traversal()

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.javatuples.Pair;
@@ -358,10 +359,11 @@ public class GremlinExecutor implements AutoCloseable {
 
                         se.eval(p.getValue1(), bindings, language);
 
-                        // re-assign graph bindings back to global bindings.  prevent assignment of non-graph
-                        // implementations just in case someone tries to overwrite them in the init
+                        // re-assign graph bindings back to global bindings and grab TraversalSource creations.
+                        // prevent assignment of non-graph implementations just in case someone tries to overwrite
+                        // them in the init
                         bindings.entrySet().stream()
-                                .filter(kv -> kv.getValue() instanceof Graph)
+                                .filter(kv -> kv.getValue() instanceof Graph || kv.getValue() instanceof TraversalSource)
                                 .forEach(kv -> this.globalBindings.put(kv.getKey(), kv.getValue()));
 
                         logger.info("Initialized {} ScriptEngine with {}", language, p.getValue0());

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.slf4j.Logger;
@@ -29,14 +30,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Traverser of {@link Graph} instances configured for the server to be passed to sessionless bindings. The
+ * {@link Graph} instances configured for the server to be passed to script engine bindings. The
  * {@link Graph} instances are read from the {@link Settings} for Gremlin Server as defined in the configuration
- * file.
+ * file. Also holds any {@link TraversalSource} objects as constructed in the server.
  */
 public class Graphs {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
 
     private final Map<String, Graph> graphs = new HashMap<>();
+    private final Map<String, TraversalSource> traversalSources = new HashMap<>();
 
     /**
      * Create a new instance using the {@link Settings} from Gremlin Server.
@@ -65,12 +67,17 @@ public class Graphs {
         return graphs;
     }
 
+    public Map<String, TraversalSource> getTraversalSources() {
+        return traversalSources;
+    }
+
     /**
-     * Get the graphs list as a set of bindings.
+     * Get the {@link Graph} and {@link TraversalSource} list as a set of bindings.
      */
     public Bindings getGraphsAsBindings() {
         final Bindings bindings = new SimpleBindings();
         graphs.forEach(bindings::put);
+        traversalSources.forEach(bindings::put);
         return bindings;
     }
 

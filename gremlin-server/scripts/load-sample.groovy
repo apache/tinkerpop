@@ -16,8 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 // An example of an initialization script that can be configured to run in Gremlin Server.
 // Functions defined here will go into global cache and will not be removed from there
 // unless there is a reset of the ScriptEngine.
-g.io().readGryo('data/sample.kryo')
+graph.io().readGryo('data/sample.kryo')
+
+// define the default TraversalSource to bind queries to.
+g = graph.traversal()
+
 def addItUp(x, y) { x + y }

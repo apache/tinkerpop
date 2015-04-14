@@ -22,7 +22,7 @@ gremlinPool: 8
 scriptEvaluationTimeout: 30000
 serializedResponseTimeout: 30000
 graphs: {
-  g: conf/tinkergraph-empty.properties}
+  graph: conf/tinkergraph-empty.properties}
 plugins:
   - tinkerpop.tinkergraph
 scriptEngines: {
