@@ -38,7 +38,7 @@ public class ReferenceVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotConstructNewWithSomethingAlreadyReferenced() {
         final Vertex v = graph.addVertex();
-        final VertexProperty vp = v.property("test", "this");
+        final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "this");
         final ReferenceVertexProperty dvp = ReferenceFactory.detach(vp);
         assertSame(dvp, ReferenceFactory.detach(dvp));
     }
@@ -47,7 +47,7 @@ public class ReferenceVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotSupportRemove() {
         final Vertex v = graph.addVertex();
-        final VertexProperty vp = v.property("test", "this");
+        final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "this");
         ReferenceFactory.detach(vp).remove();
     }
 
@@ -55,7 +55,7 @@ public class ReferenceVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldBeEqualsPropertiesAsIdIsTheSame() {
         final Vertex v = graph.addVertex();
-        final VertexProperty vp = v.property("test", "this");
+        final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "this");
         final ReferenceVertexProperty vp1 = ReferenceFactory.detach(vp);
         final ReferenceVertexProperty vp2 = ReferenceFactory.detach(vp);
         assertTrue(vp1.equals(vp2));
@@ -67,9 +67,9 @@ public class ReferenceVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotBeEqualsPropertiesAsIdIsDifferent() {
         final Vertex v = graph.addVertex();
-        final VertexProperty vp1 = v.property("test", "this");
+        final VertexProperty vp1 = v.property(VertexProperty.Cardinality.single, "test", "this");
         final ReferenceVertexProperty mp1 = ReferenceFactory.detach(vp1);
-        final VertexProperty vp2 = v.property("testing", "this");
+        final VertexProperty vp2 = v.property(VertexProperty.Cardinality.single, "testing", "this");
         final ReferenceVertexProperty mp2 = ReferenceFactory.detach(vp2);
         assertFalse(mp1.equals(mp2));
     }
@@ -78,7 +78,7 @@ public class ReferenceVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldAttachToGraph() {
         final Vertex v = graph.addVertex();
-        final VertexProperty toReference = v.property("test", "this");
+        final VertexProperty toReference = v.property(VertexProperty.Cardinality.single, "test", "this");
         final ReferenceVertexProperty rvp = ReferenceFactory.detach(toReference);
         final VertexProperty referenced = rvp.attach(graph);
 
@@ -90,7 +90,7 @@ public class ReferenceVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldAttachToVertex() {
         final Vertex v = graph.addVertex();
-        final VertexProperty toReference = v.property("test", "this");
+        final VertexProperty toReference = v.property(VertexProperty.Cardinality.single, "test", "this");
         final ReferenceVertexProperty rvp = ReferenceFactory.detach(toReference);
         final VertexProperty referenced = rvp.attach(v);
 

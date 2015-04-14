@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
@@ -130,15 +131,15 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
                 messenger.sendMessage(this.countScope, Pair.with('c', 1.0d));
             } else {
                 double voteStrength = 1.0d;
-                vertex.property(CLUSTER, vertex.id());
-                vertex.property(VOTE_STRENGTH, voteStrength);
+                vertex.property(VertexProperty.Cardinality.single, CLUSTER, vertex.id());
+                vertex.property(VertexProperty.Cardinality.single, VOTE_STRENGTH, voteStrength);
                 messenger.sendMessage(this.voteScope, new Pair<>((Serializable) vertex.id(), voteStrength));
                 memory.and(VOTE_TO_HALT, false);
             }
         } else if (1 == memory.getIteration() && this.distributeVote) {
             double voteStrength = 1.0d / IteratorUtils.reduce(IteratorUtils.map(messenger.receiveMessages(), Pair::getValue1), 0.0d, (a, b) -> a + b);
-            vertex.property(CLUSTER, vertex.id());
-            vertex.property(VOTE_STRENGTH, voteStrength);
+            vertex.property(VertexProperty.Cardinality.single, CLUSTER, vertex.id());
+            vertex.property(VertexProperty.Cardinality.single, VOTE_STRENGTH, voteStrength);
             messenger.sendMessage(this.voteScope, new Pair<>((Serializable) vertex.id(), voteStrength));
             memory.and(VOTE_TO_HALT, false);
         } else {
@@ -148,7 +149,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
             Serializable cluster = PeerPressureVertexProgram.largestCount(votes);
             if (null == cluster) cluster = (Serializable) vertex.id();
             memory.and(VOTE_TO_HALT, vertex.value(CLUSTER).equals(cluster));
-            vertex.property(CLUSTER, cluster);
+            vertex.property(VertexProperty.Cardinality.single, CLUSTER, cluster);
             messenger.sendMessage(this.voteScope, new Pair<>(cluster, vertex.<Double>value(VOTE_STRENGTH)));
         }
     }

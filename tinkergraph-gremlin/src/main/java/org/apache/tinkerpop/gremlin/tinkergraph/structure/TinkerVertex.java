@@ -83,6 +83,11 @@ public class TinkerVertex extends TinkerElement implements Vertex {
     }
 
     @Override
+    public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+        return this.property(VertexProperty.Cardinality.single,key,value,keyValues);
+    }
+
+    @Override
     public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
         if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
         ElementHelper.legalPropertyKeyValueArray(keyValues);

@@ -38,7 +38,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotConstructNewWithSomethingAlreadyDetached() {
         final Vertex v = graph.addVertex();
-        final VertexProperty vp = v.property("test", "this");
+        final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "this");
         final DetachedVertexProperty dvp = DetachedFactory.detach(vp, true);
         assertSame(dvp, DetachedFactory.detach(dvp, true));
     }
@@ -47,7 +47,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldConstructDetachedPropertyWithPropertyFromVertex() {
         final Vertex v = graph.addVertex();
-        final VertexProperty vp = v.property("test", "this");
+        final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "this");
         final DetachedVertexProperty mp = DetachedFactory.detach(vp, true);
         assertEquals("test", mp.key());
         assertEquals("this", mp.value());
@@ -58,7 +58,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldConstructDetachedPropertyWithHiddenFromVertex() {
         final Vertex v = graph.addVertex();
-        final VertexProperty vp = v.property("test", "this");
+        final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "this");
         final DetachedVertexProperty mp = DetachedFactory.detach(vp, true);
         assertEquals("test", mp.key());
         assertEquals("this", mp.value());
@@ -69,7 +69,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotSupportRemove() {
         final Vertex v = graph.addVertex();
-        final VertexProperty vp = v.property("test", "this");
+        final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "this");
         DetachedFactory.detach(vp, true).remove();
     }
 
@@ -77,7 +77,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldBeEqualsPropertiesAsIdIsTheSame() {
         final Vertex v = graph.addVertex();
-        final VertexProperty vp = v.property("test", "this");
+        final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "this");
         final DetachedVertexProperty mp1 = DetachedFactory.detach(vp, true);
         final DetachedVertexProperty mp2 = DetachedFactory.detach(vp, true);
         assertTrue(mp1.equals(mp2));
@@ -87,9 +87,9 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldNotBeEqualsPropertiesAsIdIsDifferent() {
         final Vertex v = graph.addVertex();
-        final VertexProperty vp1 = v.property("test", "this");
+        final VertexProperty vp1 = v.property(VertexProperty.Cardinality.single, "test", "this");
         final DetachedVertexProperty mp1 = DetachedFactory.detach(vp1, true);
-        final VertexProperty vp2 = v.property("testing", "this");
+        final VertexProperty vp2 = v.property(VertexProperty.Cardinality.single, "testing", "this");
         final DetachedVertexProperty mp2 = DetachedFactory.detach(vp2, true);
         assertFalse(mp1.equals(mp2));
     }
@@ -125,7 +125,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldAttachToGraph() {
         final Vertex v = graph.addVertex();
-        final VertexProperty toDetach = v.property("test", "this");
+        final VertexProperty toDetach = v.property(VertexProperty.Cardinality.single, "test", "this");
         final DetachedVertexProperty detached = DetachedFactory.detach(toDetach, true);
         final VertexProperty attached = detached.attach(graph);
 
@@ -137,7 +137,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldAttachToVertex() {
         final Vertex v = graph.addVertex();
-        final VertexProperty toDetach = v.property("test", "this");
+        final VertexProperty toDetach = v.property(VertexProperty.Cardinality.single, "test", "this");
         final DetachedVertexProperty detached = DetachedFactory.detach(toDetach, true);
         final VertexProperty attached = detached.attach(v);
 

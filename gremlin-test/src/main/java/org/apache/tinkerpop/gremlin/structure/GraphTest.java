@@ -1038,8 +1038,8 @@ public class GraphTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final Vertex u = graph.addVertex();
         if (graph.features().edge().properties().supportsStringValues()) {
-            v.property("name", "marko");
-            u.property("name", "pavel");
+            v.property(VertexProperty.Cardinality.single, "name", "marko");
+            u.property(VertexProperty.Cardinality.single, "name", "pavel");
         }
 
         final Edge e = v.addEdge(graphProvider.convertLabel("collaborator"), u);

@@ -1,3 +1,5 @@
+import org.apache.tinkerpop.gremlin.structure.VertexProperty
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -20,10 +22,10 @@ def parse(line, factory) {
     def parts = line.split(/\t/)
     def (id, label, name, x) = parts[0].split(/:/).toList()
     def v1 = factory.vertex(id, label)
-    if (name != null) v1.property("name", name)
+    if (name != null) v1.property(VertexProperty.Cardinality.single, "name", name)
     if (x != null) {
-        if (label.equals("project")) v1.property("lang", x)
-        else v1.property("age", Integer.valueOf(x))
+        if (label.equals("project")) v1.property(VertexProperty.Cardinality.single, "lang", x)
+        else v1.property(VertexProperty.Cardinality.single, "age", Integer.valueOf(x))
     }
     // process out-edges
     if (parts.length >= 2) {

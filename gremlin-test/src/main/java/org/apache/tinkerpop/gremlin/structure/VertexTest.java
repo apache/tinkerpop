@@ -334,7 +334,7 @@ public class VertexTest {
             assertVertexEdgeCounts(1, 0).accept(graph);
 
             v.properties("name").forEachRemaining(Property::remove);
-            v.property("name", "marko rodriguez");
+            v.property(VertexProperty.Cardinality.single, "name", "marko rodriguez");
             assertEquals(34, (int) v.value("age"));
             assertEquals("marko rodriguez", v.<String>value("name"));
             assertEquals(34, (int) v.property("age").value());
@@ -346,7 +346,7 @@ public class VertexTest {
             assertFalse(v.keys().contains("location"));
             assertVertexEdgeCounts(1, 0).accept(graph);
 
-            v.property("location", "santa fe");
+            v.property(VertexProperty.Cardinality.single, "location", "santa fe");
             assertEquals(3, IteratorUtils.count(v.properties()));
             assertEquals(3, v.keys().size());
             assertEquals("santa fe", v.property("location").value());
@@ -421,7 +421,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldAutotypeStringProperties() {
             final Vertex v = graph.addVertex();
-            v.property("string", "marko");
+            v.property(VertexProperty.Cardinality.single, "string", "marko");
             final String name = v.value("string");
             assertEquals(name, "marko");
 
@@ -432,7 +432,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
         public void shouldAutotypIntegerProperties() {
             final Vertex v = graph.addVertex();
-            v.property("integer", 33);
+            v.property(VertexProperty.Cardinality.single, "integer", 33);
             final Integer age = v.value("integer");
             assertEquals(Integer.valueOf(33), age);
         }
@@ -442,7 +442,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_BOOLEAN_VALUES)
         public void shouldAutotypeBooleanProperties() {
             final Vertex v = graph.addVertex();
-            v.property("boolean", true);
+            v.property(VertexProperty.Cardinality.single, "boolean", true);
             final Boolean best = v.value("boolean");
             assertEquals(best, true);
         }
@@ -452,7 +452,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_DOUBLE_VALUES)
         public void shouldAutotypeDoubleProperties() {
             final Vertex v = graph.addVertex();
-            v.property("double", 0.1d);
+            v.property(VertexProperty.Cardinality.single, "double", 0.1d);
             final Double best = v.value("double");
             assertEquals(best, Double.valueOf(0.1d));
         }
@@ -462,7 +462,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_LONG_VALUES)
         public void shouldAutotypeLongProperties() {
             final Vertex v = graph.addVertex();
-            v.property("long", 1l);
+            v.property(VertexProperty.Cardinality.single, "long", 1l);
             final Long best = v.value("long");
             assertEquals(best, Long.valueOf(1l));
         }
@@ -472,7 +472,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
         public void shouldAutotypeFloatProperties() {
             final Vertex v = graph.addVertex();
-            v.property("float", 0.1f);
+            v.property(VertexProperty.Cardinality.single, "float", 0.1f);
             final Float best = v.value("float");
             assertEquals(best, Float.valueOf(0.1f));
         }
@@ -556,7 +556,7 @@ public class VertexTest {
                     {"remove()", FunctionUtils.wrapConsumer(Vertex::remove)},
                     {"addEdge()", FunctionUtils.wrapConsumer((Vertex v) -> v.addEdge("self", v))},
                     {"property(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
-                        v.property("k", "v");
+                        v.property(VertexProperty.Cardinality.single, "k", "v");
                     })},
                     {"property(single,k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
                         v.property(VertexProperty.Cardinality.single, "k", "v");

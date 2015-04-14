@@ -259,7 +259,7 @@ public class PropertyTest {
         public void testGraphVertexSetPropertyStandard() throws Exception {
             try {
                 final Vertex v = this.graph.addVertex();
-                v.property(key, val);
+                v.property(VertexProperty.Cardinality.single, key, val);
                 fail(String.format("Call to Vertex.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
             } catch (Exception ex) {
                 validateException(expectedException, ex);
@@ -376,7 +376,7 @@ public class PropertyTest {
         public void shouldSetValueOnVertex() throws Exception {
             assumeThat(graph.features().supports(VertexPropertyFeatures.class, featureName), is(true));
             final Vertex vertex = graph.addVertex();
-            vertex.property("aKey", value);
+            vertex.property(VertexProperty.Cardinality.single, "aKey", value);
             assertPropertyValue(vertex);
         }
 

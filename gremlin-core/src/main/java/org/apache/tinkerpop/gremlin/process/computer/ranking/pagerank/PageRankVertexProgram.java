@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -129,13 +130,13 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         } else if (1 == memory.getIteration()) {
             double initialPageRank = 1.0d / this.vertexCountAsDouble;
             double edgeCount = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
-            vertex.property(PAGE_RANK, initialPageRank);
-            vertex.property(EDGE_COUNT, edgeCount);
+            vertex.property(VertexProperty.Cardinality.single, PAGE_RANK, initialPageRank);
+            vertex.property(VertexProperty.Cardinality.single, EDGE_COUNT, edgeCount);
             messenger.sendMessage(this.incidentMessageScope, initialPageRank / edgeCount);
         } else {
             double newPageRank = IteratorUtils.reduce(messenger.receiveMessages(), 0.0d, (a, b) -> a + b);
             newPageRank = (this.alpha * newPageRank) + ((1.0d - this.alpha) / this.vertexCountAsDouble);
-            vertex.property(PAGE_RANK, newPageRank);
+            vertex.property(VertexProperty.Cardinality.single, PAGE_RANK, newPageRank);
             messenger.sendMessage(this.incidentMessageScope, newPageRank / vertex.<Double>value(EDGE_COUNT));
         }
     }

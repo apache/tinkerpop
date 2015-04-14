@@ -85,7 +85,7 @@ public class TinkerGraphIdManagerTest {
         public void shouldUseLongIdManagerToCoerceTypes() {
             final Graph graph = TinkerGraph.open(longIdManagerConfig);
             final Vertex v = graph.addVertex(T.id, vertexIdValue);
-            final VertexProperty vp = v.property("test", "value", T.id, vertexPropertyIdValue);
+            final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "value", T.id, vertexPropertyIdValue);
             final Edge e = v.addEdge("self", v, T.id, edgeIdValue);
 
             assertEquals(100l, v.id());
@@ -97,7 +97,7 @@ public class TinkerGraphIdManagerTest {
         public void shouldUseIntegerIdManagerToCoerceTypes() {
             final Graph graph = TinkerGraph.open(integerIdManagerConfig);
             final Vertex v = graph.addVertex(T.id, vertexIdValue);
-            final VertexProperty vp = v.property("test", "value", T.id, vertexPropertyIdValue);
+            final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "value", T.id, vertexPropertyIdValue);
             final Edge e = v.addEdge("self", v, T.id, edgeIdValue);
 
             assertEquals(100, v.id());
@@ -147,7 +147,7 @@ public class TinkerGraphIdManagerTest {
         public void shouldUseIdManagerToCoerceTypes() {
             final Graph graph = TinkerGraph.open(idManagerConfig);
             final Vertex v = graph.addVertex(T.id, vertexIdValue);
-            final VertexProperty vp = v.property("test", "value", T.id, vertexPropertyIdValue);
+            final VertexProperty vp = v.property(VertexProperty.Cardinality.single, "test", "value", T.id, vertexPropertyIdValue);
             final Edge e = v.addEdge("self", v, T.id, edgeIdValue);
 
             assertEquals(vertexId, v.id());

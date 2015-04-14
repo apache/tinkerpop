@@ -129,7 +129,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     }
 
     public static <V> VertexProperty<V> addTo(final Vertex vertex, final DetachedVertexProperty<V> detachedVertexProperty) {
-        final VertexProperty<V> vertexProperty = vertex.property(detachedVertexProperty.key(), detachedVertexProperty.value());
+        final VertexProperty<V> vertexProperty = vertex.property(VertexProperty.Cardinality.list, detachedVertexProperty.key(), detachedVertexProperty.value());
         detachedVertexProperty.properties().forEachRemaining(property -> vertexProperty.property(property.key(), property.value()));
         return vertexProperty;
     }

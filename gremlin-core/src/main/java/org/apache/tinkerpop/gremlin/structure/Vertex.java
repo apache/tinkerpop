@@ -40,6 +40,8 @@ public interface Vertex extends Element {
      */
     public static final String DEFAULT_LABEL = "vertex";
 
+    static final Object[] EMPTY_ARGS = new Object[0];
+
     /**
      * Add an outgoing edge to the vertex with provided label and edge properties as key/value pairs.
      * These key/values must be provided in an even number where the odd numbered arguments are {@link String}
@@ -84,11 +86,13 @@ public interface Vertex extends Element {
      */
     @Override
     public default <V> VertexProperty<V> property(final String key, final V value) {
-        return this.property(VertexProperty.Cardinality.single, key, value);
+        return this.property(key, value, EMPTY_ARGS);
     }
 
     /**
-     * Set the provided key to the provided value using {@link VertexProperty.Cardinality#single}.
+     * Set the provided key to the provided value using default {@link VertexProperty.Cardinality} for that key.
+     * The default cardinality can be vendor defined and is usually tied to the graph schema.
+     * If the vendor does not have a preference, then the default cardinality should be {@link VertexProperty.Cardinality#single}.
      * The provided key/values are the properties of the newly created {@link VertexProperty}.
      * These key/values must be provided in an even number where the odd numbered arguments are {@link String}.
      *
@@ -98,9 +102,7 @@ public interface Vertex extends Element {
      * @param <V>       the type of the value of the vertex property
      * @return the newly created vertex property
      */
-    public default <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
-        return this.property(VertexProperty.Cardinality.single, key, value, keyValues);
-    }
+    public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues);
 
     /**
      * Create a new vertex property.

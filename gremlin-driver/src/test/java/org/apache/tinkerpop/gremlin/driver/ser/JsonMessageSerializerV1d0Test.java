@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -224,7 +225,7 @@ public class JsonMessageSerializerV1d0Test {
         friends.add(5);
         friends.add(map);
 
-        v.property("friends", friends);
+        v.property(VertexProperty.Cardinality.single, "friends", friends);
 
         final Iterable iterable = IteratorUtils.list(g.vertices());
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());

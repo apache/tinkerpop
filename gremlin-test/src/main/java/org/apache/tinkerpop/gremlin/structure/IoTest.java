@@ -233,7 +233,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
     public void shouldProperlyEncodeWithGraphML() throws Exception {
         final Vertex v = graph.addVertex(T.id, "1");
-        v.property("text", "\u00E9");
+        v.property(VertexProperty.Cardinality.single, "text", "\u00E9");
 
         final GraphMLWriter w = GraphMLWriter.build().create();
 
@@ -1074,7 +1074,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldReadWriteVertexMultiPropsNoEdgesToGryo() throws Exception {
         final Vertex v1 = graph.addVertex("name", "marko", "name", "mark", "acl", "rw");
-        v1.property("propsSquared", 123, "x", "a", "y", "b");
+        v1.property(VertexProperty.Cardinality.single, "propsSquared", 123, "x", "a", "y", "b");
         final Vertex v2 = graph.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5d);
 
@@ -1211,7 +1211,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void shouldReadWriteVertexMultiPropsNoEdgesToGraphSON() throws Exception {
         final Vertex v1 = graph.addVertex("name", "marko", "name", "mark", "acl", "rw");
-        v1.property("propsSquared", 123, "x", "a", "y", "b");
+        v1.property(VertexProperty.Cardinality.single, "propsSquared", 123, "x", "a", "y", "b");
         final Vertex v2 = graph.addVertex();
         v1.addEdge("friends", v2, "weight", 0.5d);
 

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -195,7 +196,7 @@ public class GryoMessageSerializerV1D0Test {
         friends.add(5);
         friends.add(map);
 
-        v.property("friends", friends);
+        v.property(VertexProperty.Cardinality.single, "friends", friends);
 
         final List list = IteratorUtils.list(g.vertices());
 

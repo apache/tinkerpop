@@ -256,6 +256,11 @@ public final class StarGraph implements Graph {
             return this.addOutEdge(label, inVertex, keyValues);
         }
 
+        @Override
+        public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+            return this.property(VertexProperty.Cardinality.single, key, value, keyValues);
+        }
+
         protected Edge addOutEdge(final String label, final Vertex inVertex, final Object... keyValues) {
             List<Edge> outE = this.outEdges.get(label);
             if (null == outE) {
@@ -445,6 +450,11 @@ public final class StarGraph implements Graph {
             if (!starVertex.equals(inVertex))
                 throw new IllegalStateException("An adjacent vertex can only connect to the star vertex: " + starVertex);
             return starVertex.addInEdge(label, this, keyValues);
+        }
+
+        @Override
+        public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+            throw Element.Exceptions.propertyAdditionNotSupported();
         }
 
         @Override

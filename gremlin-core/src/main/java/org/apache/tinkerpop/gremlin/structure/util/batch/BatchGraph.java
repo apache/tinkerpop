@@ -449,6 +449,11 @@ public class BatchGraph<G extends Graph> implements Graph {
         }
 
         @Override
+        public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+            return getCachedVertex(externalID).property(key, value, keyValues);
+        }
+
+        @Override
         public <V> V value(final String key) throws NoSuchElementException {
             return getCachedVertex(externalID).value(key);
         }

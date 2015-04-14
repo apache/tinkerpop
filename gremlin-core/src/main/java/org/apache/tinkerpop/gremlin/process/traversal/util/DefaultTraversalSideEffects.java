@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
@@ -171,7 +172,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
             this.objectMap = property.value();
         } else {
             this.objectMap = new HashMap<>();
-            vertex.property(SIDE_EFFECTS, this.objectMap);
+            vertex.property(VertexProperty.Cardinality.single, SIDE_EFFECTS, this.objectMap);
         }
     }
 

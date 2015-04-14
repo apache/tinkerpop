@@ -285,7 +285,7 @@ public class FeatureSupportTest {
         public void shouldSupportAddVertexPropertyIfItCanBeAdded() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.property("should", "not-add-property");
+                v.property(VertexProperty.Cardinality.single, "should", "not-add-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_ADD_PROPERTY));
             } catch (Exception e) {
                 validateException(Element.Exceptions.propertyAdditionNotSupported(), e);
@@ -624,7 +624,7 @@ public class FeatureSupportTest {
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssigned() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.property("name", "me", T.id, GraphManager.getGraphProvider().convertId(99999943835l, VertexProperty.class));
+                v.property(VertexProperty.Cardinality.single, "name", "me", T.id, GraphManager.getGraphProvider().convertId(99999943835l, VertexProperty.class));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsNotSupported(), ex);
@@ -638,7 +638,7 @@ public class FeatureSupportTest {
         public void shouldSupportUserSuppliedIdsOfTypeString() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.property("test", v, T.id, "this-is-a-valid-id");
+                v.property(VertexProperty.Cardinality.single, "test", v, T.id, "this-is-a-valid-id");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
@@ -652,7 +652,7 @@ public class FeatureSupportTest {
         public void shouldSupportUserSuppliedIdsOfTypeNumeric() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.property("test", v, T.id, 123456);
+                v.property(VertexProperty.Cardinality.single, "test", v, T.id, 123456);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
@@ -660,7 +660,7 @@ public class FeatureSupportTest {
 
             try {
                 final Vertex v = graph.addVertex();
-                v.property("test", v, T.id, 123456l);
+                v.property(VertexProperty.Cardinality.single, "test", v, T.id, 123456l);
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
@@ -674,7 +674,7 @@ public class FeatureSupportTest {
         public void shouldSupportUserSuppliedIdsOfTypeUuid() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.property("test", v, T.id, UUID.randomUUID());
+                v.property(VertexProperty.Cardinality.single, "test", v, T.id, UUID.randomUUID());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
@@ -689,7 +689,7 @@ public class FeatureSupportTest {
         public void shouldSupportUserSuppliedIdsOfTypeAny() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.property("test", v, T.id, new Date());
+                v.property(VertexProperty.Cardinality.single, "test", v, T.id, new Date());
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
@@ -702,7 +702,7 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_IDS, supported = false)
         public void shouldSupportStringIdsIfStringIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
-            final VertexProperty p = v.property("name", "stephen");
+            final VertexProperty p = v.property(VertexProperty.Cardinality.single, "name", "stephen");
             if (p.id() instanceof String)
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_STRING_IDS));
         }
@@ -713,7 +713,7 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
         public void shouldSupportUuidIdsIfUuidIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
-            final VertexProperty p = v.property("name", "stephen");
+            final VertexProperty p = v.property(VertexProperty.Cardinality.single, "name", "stephen");
             if (p.id() instanceof UUID)
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_UUID_IDS));
         }
@@ -724,7 +724,7 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
         public void shouldSupportNumericIdsIfNumericIdsAreGeneratedFromTheGraph() throws Exception {
             final Vertex v = graph.addVertex();
-            final VertexProperty p = v.property("name", "stephen");
+            final VertexProperty p = v.property(VertexProperty.Cardinality.single, "name", "stephen");
             if (p.id() instanceof Number)
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_NUMERIC_IDS));
         }
@@ -737,7 +737,7 @@ public class FeatureSupportTest {
         public void shouldSupportRemovePropertyIfAPropertyCanBeRemoved() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                final VertexProperty p = v.property("name", "me", "test", "this");
+                final VertexProperty p = v.property(VertexProperty.Cardinality.single, "name", "me", "test", "this");
                 p.property("test").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_REMOVE_PROPERTY));
             } catch (Exception ex) {
@@ -767,7 +767,7 @@ public class FeatureSupportTest {
         public void shouldSupportMetaPropertyIfPropertiesCanBePutOnProperties() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.property("name", "stephen", "property", "on-property");
+                v.property(VertexProperty.Cardinality.single, "name", "stephen", "property", "on-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.metaPropertiesNotSupported(), ex);

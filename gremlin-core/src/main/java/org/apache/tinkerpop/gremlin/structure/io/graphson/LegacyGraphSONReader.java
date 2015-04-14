@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
@@ -199,7 +200,7 @@ public class LegacyGraphSONReader implements GraphReader {
             final Vertex v = g.addVertex(T.id, vertexId);
 
             for (Map.Entry<String, Object> entry : props.entrySet()) {
-                v.property(entry.getKey(), entry.getValue());
+                v.property(VertexProperty.Cardinality.list, entry.getKey(), entry.getValue());
             }
 
             return v;

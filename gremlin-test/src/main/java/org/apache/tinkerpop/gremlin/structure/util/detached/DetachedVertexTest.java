@@ -260,7 +260,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     public void shouldNotAllowSetProperty() {
         final Vertex v = graph.addVertex();
         final DetachedVertex detachedVertex = DetachedFactory.detach(v, true);
-        detachedVertex.property("test", "test");
+        detachedVertex.property(VertexProperty.Cardinality.single, "test", "test");
     }
 
     @Test(expected = IllegalStateException.class)

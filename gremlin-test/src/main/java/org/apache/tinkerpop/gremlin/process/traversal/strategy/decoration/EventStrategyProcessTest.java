@@ -141,7 +141,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 .addListener(listener2).create();
 
         final Vertex vSome = graph.addVertex("some", "thing");
-        vSome.property("that", "thing");
+        vSome.property(VertexProperty.Cardinality.single, "that", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
         gts.V().addV("any", "thing").property(VertexProperty.Cardinality.single, "this", "thing").next();
 
@@ -163,7 +163,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 .addListener(listener2).create();
 
         final Vertex vSome = graph.addVertex("some", "thing");
-        vSome.property("that", "thing");
+        vSome.property(VertexProperty.Cardinality.single, "that", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
         final Vertex vAny = gts.V().addV("any", "thing").next();
         gts.V(vAny).property(VertexProperty.Cardinality.single, "any", "thing else").next();
@@ -187,7 +187,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 .addListener(listener2).create();
 
         final Vertex vSome = graph.addVertex("some", "thing");
-        vSome.property("that", "thing", "is", "good");
+        vSome.property(VertexProperty.Cardinality.single, "that", "thing", "is", "good");
         final GraphTraversalSource gts = create(eventStrategy);
         final Vertex vAny = gts.V().addV("any", "thing").next();
         gts.V(vAny).properties("any").property("is", "bad").next();
@@ -345,7 +345,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
                 .addListener(listener2).create();
 
         final Vertex vSome = graph.addVertex("some", "thing");
-        vSome.property("that", "thing", "is", "good");
+        vSome.property(VertexProperty.Cardinality.single, "that", "thing", "is", "good");
         final GraphTraversalSource gts = create(eventStrategy);
         final Vertex vAny = gts.V().addV("any", "thing").next();
         gts.V(vAny).properties("any").property("is", "bad").next();

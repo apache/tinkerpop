@@ -55,8 +55,8 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldValidateEquality() {
             final Vertex v = graph.addVertex();
-            final VertexProperty vp1 = v.property("x", 0);
-            final VertexProperty vp2 = v.property("y", 1);
+            final VertexProperty vp1 = v.property(VertexProperty.Cardinality.single, "x", 0);
+            final VertexProperty vp2 = v.property(VertexProperty.Cardinality.single, "y", 1);
 
             assertEquals(vp1, vp1);
             assertEquals(vp2, vp2);
@@ -68,8 +68,8 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_INTEGER_VALUES)
         public void shouldValidateIdEquality() {
             final Vertex v = graph.addVertex();
-            final VertexProperty vp1 = v.property("x", 0);
-            final VertexProperty vp2 = v.property("y", 1);
+            final VertexProperty vp1 = v.property(VertexProperty.Cardinality.single, "x", 0);
+            final VertexProperty vp2 = v.property(VertexProperty.Cardinality.single, "y", 1);
 
             assertEquals(vp1.id(), vp1.id());
             assertEquals(vp2.id(), vp2.id());
@@ -91,7 +91,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         public void shouldAllowIdAssignment() {
             final Vertex v = graph.addVertex();
             final Object id = graphProvider.convertId(123131231l, VertexProperty.class);
-            v.property("name", "stephen", T.id, id);
+            v.property(VertexProperty.Cardinality.single, "name", "stephen", T.id, id);
 
             tryCommit(graph, g -> assertEquals(id, v.property("name").id()));
         }
@@ -200,7 +200,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertTrue(values.contains("marko a. rodriguez"));
                 assertTrue(values.contains("marko rodriguez"));
             });
-            v.property("name", "okram", "acl", "private", "date", 2014);
+            v.property(VertexProperty.Cardinality.single, "name", "okram", "acl", "private", "date", 2014);
             tryCommit(graph, g -> {
                 assertEquals(1, IteratorUtils.count(v.properties("name")));
                 assertEquals(1, IteratorUtils.count(v.properties()));
@@ -218,7 +218,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             final Vertex u = graph.addVertex("name", "marko", "name", "marko a. rodriguez", "name", "marko rodriguez");
             tryCommit(graph);
             u.properties().forEachRemaining(Property::remove);
-            u.property("name", "okram", "acl", "private", "date", 2014);
+            u.property(VertexProperty.Cardinality.single, "name", "okram", "acl", "private", "date", 2014);
             tryCommit(graph, g -> {
                 assertEquals(1, IteratorUtils.count(u.properties("name")));
                 assertEquals(1, IteratorUtils.count(u.properties()));
@@ -500,7 +500,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
         public void shouldThrowExceptionIfVertexPropertyWasRemoved() {
             final Vertex v1 = graph.addVertex();
-            final VertexProperty p = v1.property("name", "stephen", "year", "2012");
+            final VertexProperty p = v1.property(VertexProperty.Cardinality.single, "name", "stephen", "year", "2012");
             final Object id = p.id();
             p.remove();
             tryCommit(graph, g -> {
@@ -521,7 +521,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
         public void shouldReturnEmptyIfNoMetaProperties() {
             final Vertex v = graph.addVertex();
-            final VertexProperty<String> vp = v.property("name", "marko");
+            final VertexProperty<String> vp = v.property(VertexProperty.Cardinality.single, "name", "marko");
             assertEquals(Property.empty(), vp.property("name"));
         }
 

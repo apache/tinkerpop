@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
@@ -141,7 +142,7 @@ public class ReferenceVertexTest extends AbstractGremlinTest {
     public void shouldNotAllowSetProperty() {
         final Vertex v = graph.addVertex();
         final ReferenceVertex rv = ReferenceFactory.detach(v);
-        rv.property("test", "test");
+        rv.property(VertexProperty.Cardinality.single, "test", "test");
     }
 
     @Test(expected = IllegalStateException.class)

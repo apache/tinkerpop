@@ -94,6 +94,11 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     }
 
     @Override
+    public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+        throw Element.Exceptions.propertyAdditionNotSupported();
+    }
+
+    @Override
     public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
         throw Element.Exceptions.propertyAdditionNotSupported();
     }

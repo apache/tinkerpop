@@ -281,7 +281,7 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals(v1.id(), graph.vertices(v1.id()).next().id());
         assertEquals(e1.id(), graph.edges(e1.id()).next().id());
 
-        v1.property("name", "marko");
+        v1.property(VertexProperty.Cardinality.single, "name", "marko");
         assertEquals("marko", v1.<String>value("name"));
         assertEquals("marko", graph.vertices(v1.id()).next().<String>value("name"));
         g.tx().commit();
@@ -408,8 +408,8 @@ public class TransactionTest extends AbstractGremlinTest {
                         final Edge e = a.addEdge("friend", b);
 
                         vertices.getAndAdd(2);
-                        a.property("test", this.getId());
-                        b.property("blah", random.nextDouble());
+                        a.property(VertexProperty.Cardinality.single, "test", this.getId());
+                        b.property(VertexProperty.Cardinality.single, "blah", random.nextDouble());
                         e.property("bloop", random.nextInt());
                         edges.getAndAdd(1);
                         graph.tx().commit();
@@ -418,8 +418,8 @@ public class TransactionTest extends AbstractGremlinTest {
                         final Vertex b = graph.addVertex();
                         final Edge e = a.addEdge("friend", b);
 
-                        a.property("test", this.getId());
-                        b.property("blah", random.nextDouble());
+                        a.property(VertexProperty.Cardinality.single, "test", this.getId());
+                        b.property(VertexProperty.Cardinality.single, "blah", random.nextDouble());
                         e.property("bloop", random.nextInt());
 
                         if (random.nextBoolean()) {
