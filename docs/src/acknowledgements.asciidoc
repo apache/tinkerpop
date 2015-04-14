@@ -22,6 +22,6 @@ image:yourkit-logo.png[width=200,float=left] YourKit supports the TinkerPop open
 
 image:egg-logo.png[width=200,float=left] link:http://incubator.apache.org/projects/tinkerpop.html[Apache TinkerPop] is an effort undergoing incubation at link:http://apache.org[The Apache Software Foundation] (ASF), sponsored by the Apache Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF. Apache TinkerPop is distributed under the Apache License v2.0.
 
-link:http://ketrinayim.com[Ketrina Yim] -- The TinkerPop's cartoonist and logo designer.
+image:ketrina-tinkerpop3.png[width=150,float=right] link:http://ketrinayim.tumblr.com[Ketrina Yim] -- Designing Gremlin and his friends for TinkerPop was one of my first major projects as a freelancer, and it's delightful to see them on the Web and all over the documentation! Drawing and tweaking the characters over time is like watching them grow up. They've gone from sketches on paper to full-color logos, and from logos to living characters that cheerfully greet visitors to the TinkerPop website. And it's been a great time all throughout!
 
 ...in the beginning. 
