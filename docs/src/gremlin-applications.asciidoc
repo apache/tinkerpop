@@ -210,7 +210,7 @@ image:gremlin-server.png[width=400,float=right] Gremlin Server provides a way to
 
 NOTE: Gremlin Server is the replacement for link:http://rexster.tinkerpop.com[Rexster].
 
-By default, communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and exposes a custom subprotocol for interacting with the server.
+By default, communication with Gremlin Server occurs over link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] and exposes a custom sub-protocol for interacting with the server.
 
 [[connecting-via-console]]
 Connecting via Console
@@ -228,15 +228,16 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern.yaml
 [INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
-[INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo with org.apache.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
-[INFO] GremlinServer$WebSocketServerInitializer - Configured application/vnd.gremlin-v1.0+kryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.KryoMessageSerializerV1d0
-[INFO] Graphs - Graph [g] was successfully configured via [config/tinkergraph-empty.properties].
-[INFO] GremlinExecutor - Getting dependencies for [[org.apache.commons, commons-math3, 3.2]]
+[INFO] Graphs - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
+[INFO] GremlinServer - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
+[INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
 [INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
-[INFO] GremlinServer$WebSocketServerInitializer - Initialized GremlinExecutor and configured ScriptEngines.
-[INFO] GremlinServer$WebSocketServerInitializer - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
-[INFO] GremlinServer - Gremlin Server configured with worker thread pool of 1 and boss thread pool of 1
-[INFO] GremlinServer - Channel started at port 8182.
+[INFO] GremlinServer - Initialized GremlinExecutor and configured ScriptEngines.
+[INFO] GremlinServer - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
+[INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
+[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
+[INFO] GremlinServer$1 - Channel started at port 8182.
 ----
 
 Gremlin Server is configured by the provided link:http://www.yaml.org/[YAML] file `conf/gremlin-server-modern.yaml`.  That file tells Gremlin Server many things such as:
@@ -248,14 +249,14 @@ Gremlin Server is configured by the provided link:http://www.yaml.org/[YAML] fil
 * The Gremlin `ScriptEngine` instances to expose and external dependencies to inject into them
 * `Graph` instances to expose
 
-The log messages that printed above show a number of things, but most importantly, there is a `Graph` instance named `g` that is exposed in Gremlin Server.  This graph is an in-memory TinkerGraph and was empty at the start of the server.  An initialization script at `scripts/generate-modern.groovy` was executed during startup.  It's contents are as follows:
+The log messages that printed above show a number of things, but most importantly, there is a `Graph` instance named `graph` that is exposed in Gremlin Server.  This graph is an in-memory TinkerGraph and was empty at the start of the server.  An initialization script at `scripts/generate-modern.groovy` was executed during startup.  It's contents are as follows:
 
 [source,groovy]
 ----
 include::{basedir}/gremlin-server/scripts/generate-modern.groovy[]
 ----
 
-This script loads the "modern" graph into the empty TinkerGraph instance, preparing it for use.  With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
+This script loads the "modern" graph into the empty TinkerGraph instance, preparing it for use and then creates a `TraversalSource` variable `g` from `graph`. This variable `g` will be made available on future remote script executions. Note that `Graph` and `TraversalSource` objects that are created or modified in the initialization script will become globally bound to the server. It is not possible to bind variables of other types. With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
 
 [source,text]
 ----
@@ -279,16 +280,16 @@ The `:remote` command shown above displays the current status of the remote conn
 
 [source,groovy]
 ----
-gremlin> :> g.traversal().V().values('name')
+gremlin> :> g.V().values('name')
 ==>marko
 ==>vadas
 ==>lop
 ==>josh
 ==>ripple
 ==>peter
-gremlin> :> g.traversal().V().has('name','marko').out('created').values('name')
+gremlin> :> g.V().has('name','marko').out('created').values('name')
 ==>lop
-gremlin> :> g.traversal().E().label().groupCount()
+gremlin> :> g.E().label().groupCount()
 ==>{created=4, knows=2}
 gremlin> result
 ==>result{object={created=4, knows=2} class=java.lang.String}
@@ -305,7 +306,7 @@ gremlin> :remote connect tinkerpop.server conf/remote-objects.yaml <1>
 gremlin> :remote list <2>
 ==>0 - Gremlin Server - [localhost/127.0.0.1:8182]
 ==>*1 - Gremlin Server - [localhost/127.0.0.1:8182]
-gremlin> :> g.traversal().E().label().groupCount() <3>
+gremlin> :> g.E().label().groupCount() <3>
 ==>[created:4, knows:2]
 gremlin> m = result[0].object <4>
 ==>created=4
@@ -314,18 +315,18 @@ gremlin> m.sort{it.value}
 ==>knows=2
 ==>created=4
 gremlin> script = """
-                  matthias = g.addVertex('name','matthias')
+                  matthias = graph.addVertex('name','matthias')
                   matthias.addEdge('co-creator',g.V().has('name','marko').next())
                   """
 gremlin> :> @script   <5>
 ==>e[14][12-co-creator->1]
-gremlin> :> g.traversal().V().has('name','matthias').out('co-creator').values('name')
+gremlin> :> g.V().has('name','matthias').out('co-creator').values('name')
 ==>marko
 gremlin> :remote close
 ==>Removed - gremlin server - [localhost/127.0.0.1:8182]
 ----
 
-<1> This configuration file specifies that results should be deserialized back into an `Object` in the Console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
+<1> This configuration file specifies that results should be deserialized back into an `Object` in the console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
 <2> There are now two configured remote connections.  The one marked by an asterisk is the one that was just created and denotes the current one that `:sumbit` will react to.
 <3> When the script is executed again, the `class` is no longer shown to be a `java.lang.String`.  It is instead a `java.util.HashMap`.
 <4> The last result of a remote script is always stored in the reserved variable `result`, which allows access to the `Result` and by virtue of that, the `Map` itself.
@@ -499,7 +500,7 @@ The following table describes the various configuration options that Gremlin Ser
 |scriptEngines |A `Map` of `ScriptEngine` implementations to expose through Gremlin Server, where the key is the name given by the `ScriptEngine` implementation.  The key must match the name exactly for the `ScriptEngine` to be constructed.  The value paired with this key is itself a `Map` of configuration for that `ScriptEngine`.  |_none_
 |scriptEngines.<name>.imports |A comma separated list of classes/packages to make available to the `ScriptEngine`. |_none_
 |scriptEngines.<name>.staticImports |A comma separated list of "static" imports to make available to the `ScriptEngine`. |_none_
-|scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. Modifications to `Graph` instance references will be stored globally in Gremlin Server, therefore it is possible to use initialization scripts to add Graph Strategies or create entirely new `Graph` instances all together. |_none_
+|scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. `Graph` and `TraversalSource` instance references produced from scripts will be stored globally in Gremlin Server, therefore it is possible to use initialization scripts to add Traversal Strategies or create entirely new `Graph` instances all together. |_none_
 |scriptEngines.<name>.config |A `Map` of configuration settings for the `ScriptEngine`.  These settings are dependent on the `ScriptEngine` implementation being used. |_none_
 |scriptEvaluationTimeout |The amount of time in milliseconds before a script evaluation times out. The notion of "script evaluation" refers to the time it takes for the `ScriptEngine` to do its work and *not* any additional time it takes for the result of the evaluation to be iterated and serialized. |30000
 |serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. |_none_
