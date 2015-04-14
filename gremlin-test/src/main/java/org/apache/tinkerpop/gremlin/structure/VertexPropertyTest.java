@@ -90,7 +90,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void shouldAllowIdAssignment() {
             final Vertex v = graph.addVertex();
-            final Object id = graphProvider.convertId(123131231l);
+            final Object id = graphProvider.convertId(123131231l, VertexProperty.class);
             v.property("name", "stephen", T.id, id);
 
             tryCommit(graph, g -> assertEquals(id, v.property("name").id()));

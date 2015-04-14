@@ -159,7 +159,7 @@ public interface GraphProvider {
      * consistent in the return value such that calling it with "x" should always return the same transformed
      * value.
      */
-    default public Object convertId(final Object id) {
+    default public Object convertId(final Object id, final Class<? extends Element> c) {
         return id;
     }
 

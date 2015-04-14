@@ -183,7 +183,7 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssignedToVertex() throws Exception {
             try {
-                graph.addVertex(T.id, GraphManager.getGraphProvider().convertId(99999943835l));
+                graph.addVertex(T.id, GraphManager.getGraphProvider().convertId(99999943835l, Vertex.class));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception e) {
                 validateException(Vertex.Exceptions.userSuppliedIdsNotSupported(), e);
@@ -358,7 +358,7 @@ public class FeatureSupportTest {
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssignedToEdge() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.addEdge("friend", v, T.id, GraphManager.getGraphProvider().convertId(99999943835l));
+                v.addEdge("friend", v, T.id, GraphManager.getGraphProvider().convertId(99999943835l, Edge.class));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception e) {
                 validateException(Edge.Exceptions.userSuppliedIdsNotSupported(), e);
@@ -624,7 +624,7 @@ public class FeatureSupportTest {
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssigned() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.property("name", "me", T.id, GraphManager.getGraphProvider().convertId(99999943835l));
+                v.property("name", "me", T.id, GraphManager.getGraphProvider().convertId(99999943835l, VertexProperty.class));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsNotSupported(), ex);

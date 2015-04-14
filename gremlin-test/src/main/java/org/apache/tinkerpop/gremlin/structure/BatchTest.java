@@ -50,8 +50,8 @@ public class BatchTest extends AbstractGremlinTest {
         final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true)
                 .bufferSize(1).create();
-        final Object id1 = GraphManager.getGraphProvider().convertId("1");
-        final Object id2 = GraphManager.getGraphProvider().convertId("2");
+        final Object id1 = GraphManager.getGraphProvider().convertId("1", Vertex.class);
+        final Object id2 = GraphManager.getGraphProvider().convertId("2", Vertex.class);
         batchGraph.addVertex(T.id, id1, "name", "marko", "age", 29);
         final Vertex v1 = batchGraph.addVertex(T.id, id2, "name", "stephen", "age", 37);
         final Vertex v2 = batchGraph.addVertex(T.id, id1, "name", "marko", "age", 34);
@@ -97,7 +97,7 @@ public class BatchTest extends AbstractGremlinTest {
         final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.THROW, Exists.IGNORE)
                 .bufferSize(1).create();
-        final Object id1 = GraphManager.getGraphProvider().convertId("1");
+        final Object id1 = GraphManager.getGraphProvider().convertId("1", Vertex.class);
         batchGraph.addVertex(T.id, id1, "name", "marko", "age", 29);
         try {
             batchGraph.addVertex(T.id, id1, "name", "marko", "age", 34);
@@ -133,8 +133,8 @@ public class BatchTest extends AbstractGremlinTest {
         final BatchGraph batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.OVERWRITE_SINGLE, Exists.IGNORE)
                 .bufferSize(1).create();
-        final Object id1 = GraphManager.getGraphProvider().convertId("1");
-        final Object id2 = GraphManager.getGraphProvider().convertId("2");
+        final Object id1 = GraphManager.getGraphProvider().convertId("1", Vertex.class);
+        final Object id2 = GraphManager.getGraphProvider().convertId("2", Vertex.class);
         batchGraph.addVertex(T.id, id1, "name", "marko", "age", 29);
         final Vertex v1 = batchGraph.addVertex(T.id, id2, "name", "stephen", "age", 37);
         final Vertex v2 = batchGraph.addVertex(T.id, id1, "name", "marko", "age", 34);
@@ -181,8 +181,8 @@ public class BatchTest extends AbstractGremlinTest {
         final BatchGraph<?> batchGraph = BatchGraph.build(graph)
                 .incrementalLoading(true, Exists.OVERWRITE, Exists.IGNORE)
                 .bufferSize(1).create();
-        final Object id1 = GraphManager.getGraphProvider().convertId("1");
-        final Object id2 = GraphManager.getGraphProvider().convertId("2");
+        final Object id1 = GraphManager.getGraphProvider().convertId("1", Vertex.class);
+        final Object id2 = GraphManager.getGraphProvider().convertId("2", Vertex.class);
         batchGraph.addVertex(T.id, id1, "name", "marko", "age", 29);
         final Vertex v1 = batchGraph.addVertex(T.id, id2, "name", "stephen", "age", 37);
         final Vertex v2 = batchGraph.addVertex(T.id, id1, "name", "marko", "age", 34);
@@ -240,7 +240,7 @@ public class BatchTest extends AbstractGremlinTest {
         final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
         final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
 
-        final Object id1 = GraphManager.getGraphProvider().convertId("1");
+        final Object id1 = GraphManager.getGraphProvider().convertId("1", Edge.class);
 
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, id1);
         v1.addEdge("knows", v2, "weight", 0.5d, T.id, id1); // second edge is ignored as it already exists
@@ -292,7 +292,7 @@ public class BatchTest extends AbstractGremlinTest {
                 .bufferSize(1).create();
         final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
         final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
-        final Object id1 = GraphManager.getGraphProvider().convertId("1");
+        final Object id1 = GraphManager.getGraphProvider().convertId("1", Edge.class);
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, id1);
         v1.addEdge("knows", v2, "weight", 0.5d, T.id, id1); // second edge is overwrites properties of the first
         tryCommit(batchGraph);
@@ -343,7 +343,7 @@ public class BatchTest extends AbstractGremlinTest {
                 .bufferSize(1).create();
         final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
         final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
-        final Object id1 = GraphManager.getGraphProvider().convertId("1");
+        final Object id1 = GraphManager.getGraphProvider().convertId("1", Edge.class);
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, id1);
         v1.addEdge("knows", v2, "weight", 0.5d, T.id, id1); // second edge is overwrites properties of the first
         tryCommit(batchGraph);
@@ -394,7 +394,7 @@ public class BatchTest extends AbstractGremlinTest {
                 .bufferSize(1).create();
         final Vertex v2 = batchGraph.addVertex(T.id, "marko", "age", 29);
         final Vertex v1 = batchGraph.addVertex(T.id, "stephen", "age", 37);
-        final Object id1 = GraphManager.getGraphProvider().convertId("1");
+        final Object id1 = GraphManager.getGraphProvider().convertId("1", Edge.class);
         v1.addEdge("knows", v2, "weight", 1.0d, T.id, id1);
         try {
             v1.addEdge("knows", v2, "weight", 0.5d, T.id, id1); // second edge is overwrites properties of the first

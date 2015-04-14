@@ -115,7 +115,7 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnVertex() {
-        final Object o = GraphManager.getGraphProvider().convertId("1");
+        final Object o = GraphManager.getGraphProvider().convertId("1", Vertex.class);
         graph.addVertex(T.id, o);
         try {
             graph.addVertex(T.id, o);
@@ -549,7 +549,7 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldNotMixTypesForGettingSpecificVerticesWithVertexFirst() {
         final Vertex v1 = graph.addVertex();
         try {
-            graph.vertices(v1, graphProvider.convertId("1"));
+            graph.vertices(v1, graphProvider.convertId("1", Vertex.class));
             fail("Should have thrown an exception because id arguments were mixed.");
         } catch (Exception ex) {
             final Exception expected = Graph.Exceptions.idArgsMustBeEitherIdOrElement();
@@ -563,7 +563,7 @@ public class GraphTest extends AbstractGremlinTest {
     public void shouldNotMixTypesForGettingSpecificVerticesWithStringFirst() {
         final Vertex v1 = graph.addVertex();
         try {
-            graph.vertices(graphProvider.convertId("1"), v1);
+            graph.vertices(graphProvider.convertId("1", Vertex.class), v1);
             fail("Should have thrown an exception because id arguments were mixed.");
         } catch (Exception ex) {
             final Exception expected = Graph.Exceptions.idArgsMustBeEitherIdOrElement();
@@ -814,10 +814,10 @@ public class GraphTest extends AbstractGremlinTest {
         final Vertex c;
         final Vertex d;
         if (graph.features().vertex().supportsUserSuppliedIds()) {
-            a = graph.addVertex(T.id, graphProvider.convertId("1"));
-            b = graph.addVertex(T.id, graphProvider.convertId("2"));
-            c = graph.addVertex(T.id, graphProvider.convertId("3"));
-            d = graph.addVertex(T.id, graphProvider.convertId("4"));
+            a = graph.addVertex(T.id, graphProvider.convertId("1", Vertex.class));
+            b = graph.addVertex(T.id, graphProvider.convertId("2", Vertex.class));
+            c = graph.addVertex(T.id, graphProvider.convertId("3", Vertex.class));
+            d = graph.addVertex(T.id, graphProvider.convertId("4", Vertex.class));
         } else {
             a = graph.addVertex();
             b = graph.addVertex();
@@ -844,10 +844,10 @@ public class GraphTest extends AbstractGremlinTest {
         });
 
         if (graph.features().vertex().supportsUserSuppliedIds()) {
-            final Vertex va = graph.vertices(graphProvider.convertId("1")).next();
-            final Vertex vb = graph.vertices(graphProvider.convertId("2")).next();
-            final Vertex vc = graph.vertices(graphProvider.convertId("3")).next();
-            final Vertex vd = graph.vertices(graphProvider.convertId("4")).next();
+            final Vertex va = graph.vertices(graphProvider.convertId("1", Vertex.class)).next();
+            final Vertex vb = graph.vertices(graphProvider.convertId("2", Vertex.class)).next();
+            final Vertex vc = graph.vertices(graphProvider.convertId("3", Vertex.class)).next();
+            final Vertex vd = graph.vertices(graphProvider.convertId("4", Vertex.class)).next();
 
             assertEquals(a, va);
             assertEquals(b, vb);
@@ -875,12 +875,12 @@ public class GraphTest extends AbstractGremlinTest {
             assertEquals(1l, IteratorUtils.count(vd.edges(Direction.OUT)));
 
             for (Edge x : IteratorUtils.list(a.edges(Direction.OUT))) {
-                assertTrue(x.label().equals(graphProvider.convertId("knows")) || x.label().equals(graphProvider.convertId("hates")));
+                assertTrue(x.label().equals(graphProvider.convertLabel("knows")) || x.label().equals(graphProvider.convertLabel("hates")));
             }
 
-            assertEquals(graphProvider.convertId("hates"), i.label());
-            assertEquals(graphProvider.convertId("2"), i.inVertex().id().toString());
-            assertEquals(graphProvider.convertId("1"), i.outVertex().id().toString());
+            assertEquals(graphProvider.convertLabel("hates"), i.label());
+            assertEquals(graphProvider.convertId("2", Vertex.class).toString(), i.inVertex().id().toString());
+            assertEquals(graphProvider.convertId("1", Vertex.class).toString(), i.outVertex().id().toString());
         }
 
         final Set<Object> vertexIds = new HashSet<>();
@@ -1006,15 +1006,15 @@ public class GraphTest extends AbstractGremlinTest {
         assertEquals(0l, IteratorUtils.count(start.edges(Direction.IN)));
         assertEquals(branchSize, IteratorUtils.count(start.edges(Direction.OUT)));
         for (Edge a : IteratorUtils.list(start.edges(Direction.OUT))) {
-            assertEquals(graphProvider.convertId("test1"), a.label());
+            assertEquals(graphProvider.convertLabel("test1"), a.label());
             assertEquals(branchSize, IteratorUtils.count(a.inVertex().vertices(Direction.OUT)));
             assertEquals(1, IteratorUtils.count(a.inVertex().vertices(Direction.IN)));
             for (Edge b : IteratorUtils.list(a.inVertex().edges(Direction.OUT))) {
-                assertEquals(graphProvider.convertId("test2"), b.label());
+                assertEquals(graphProvider.convertLabel("test2"), b.label());
                 assertEquals(branchSize, IteratorUtils.count(b.inVertex().vertices(Direction.OUT)));
                 assertEquals(1, IteratorUtils.count(b.inVertex().vertices(Direction.IN)));
                 for (Edge c : IteratorUtils.list(b.inVertex().edges(Direction.OUT))) {
-                    assertEquals(graphProvider.convertId("test3"), c.label());
+                    assertEquals(graphProvider.convertLabel("test3"), c.label());
                     assertEquals(0, IteratorUtils.count(c.inVertex().vertices(Direction.OUT)));
                     assertEquals(1, IteratorUtils.count(c.inVertex().vertices(Direction.IN)));
                 }
@@ -1059,7 +1059,7 @@ public class GraphTest extends AbstractGremlinTest {
         }
 
         reopenedGraph.edges().forEachRemaining(edge -> {
-            assertEquals(graphProvider.convertId("collaborator"), edge.label());
+            assertEquals(graphProvider.convertLabel("collaborator"), edge.label());
             if (graph.features().edge().properties().supportsStringValues())
                 assertEquals("internet", edge.property("location").value());
         });
@@ -1458,7 +1458,7 @@ public class GraphTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final Edge e1 = v.addEdge("self", v);
         try {
-            graph.edges(e1, graphProvider.convertId("1"));
+            graph.edges(e1, graphProvider.convertId("1", Edge.class));
             fail("Should have thrown an exception because id arguments were mixed.");
         } catch (Exception ex) {
             final Exception expected = Graph.Exceptions.idArgsMustBeEitherIdOrElement();
@@ -1474,7 +1474,7 @@ public class GraphTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final Edge e1 = v.addEdge("self", v);
         try {
-            graph.edges(graphProvider.convertId("1"), e1);
+            graph.edges(graphProvider.convertId("1", Edge.class), e1);
             fail("Should have thrown an exception because id arguments were mixed.");
         } catch (Exception ex) {
             final Exception expected = Graph.Exceptions.idArgsMustBeEitherIdOrElement();
