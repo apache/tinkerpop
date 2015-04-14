@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -350,8 +349,8 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldProcessUTF8Query() throws Exception {
-        final Vertex nonUtf8 = graph.addVertex(T.id, "1", "name", "marko", "age", 29);
-        final Vertex utf8Name = graph.addVertex(T.id, "2", "name", "轉注", "age", 32);
+        final Vertex nonUtf8 = graph.addVertex("name", "marko", "age", 29);
+        final Vertex utf8Name = graph.addVertex("name", "轉注", "age", 32);
 
         final ScriptEngine engine = new GremlinGroovyScriptEngine();
 
