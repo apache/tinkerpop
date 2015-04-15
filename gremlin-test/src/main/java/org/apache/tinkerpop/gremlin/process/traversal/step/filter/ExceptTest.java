@@ -146,7 +146,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class StandardTest extends ExceptTest {
+    public static class Traversals extends ExceptTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {

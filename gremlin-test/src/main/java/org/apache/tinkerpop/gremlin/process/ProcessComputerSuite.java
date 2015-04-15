@@ -76,9 +76,6 @@ import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -116,7 +113,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             CoinTest.Traversals.class,
             CyclicPathTest.Traversals.class,
             DedupTest.Traversals.class,
-            ExceptTest.StandardTest.class,
+            ExceptTest.Traversals.class,
             FilterTest.Traversals.class,
             HasNotTest.Traversals.class,
             HasTest.Traversals.class,

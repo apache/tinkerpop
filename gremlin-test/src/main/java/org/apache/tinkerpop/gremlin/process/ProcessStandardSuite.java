@@ -114,7 +114,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             CyclicPathTest.Traversals.class,
             DedupTest.Traversals.class,
             DropTest.Traversals.class,
-            ExceptTest.StandardTest.class,
+            ExceptTest.Traversals.class,
             FilterTest.Traversals.class,
             HasNotTest.Traversals.class,
             HasTest.Traversals.class,
