@@ -92,30 +92,28 @@ public class GraphTest extends AbstractGremlinTest {
     @Test
     public void shouldHaveExceptionConsistencyWhenFindVertexByIdThatIsNonExistentViaIterator() {
         try {
-            graph.vertices(10000l).next();
-            fail("Call to g.V(10000l) should throw an exception");
+            graph.vertices(graphProvider.convertId(10000l, Vertex.class)).next();
+            fail("Call to g.vertices(10000l) should throw an exception");
         } catch (Exception ex) {
-            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Vertex.class, 10000l).getClass()));
+            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Vertex.class, graphProvider.convertId(10000l, Vertex.class)).getClass()));
         }
-
     }
 
     @Test
     public void shouldHaveExceptionConsistencyWhenFindEdgeByIdThatIsNonExistentViaIterator() {
         try {
-            graph.edges(10000l).next();
-            fail("Call to g.E(10000l) should throw an exception");
+            graph.edges(graphProvider.convertId(10000l, Edge.class)).next();
+            fail("Call to g.edges(10000l) should throw an exception");
         } catch (Exception ex) {
-            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Edge.class, 10000l).getClass()));
+            assertThat(ex, instanceOf(Graph.Exceptions.elementNotFound(Edge.class, graphProvider.convertId(10000l, Edge.class)).getClass()));
         }
-
     }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
     public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnVertex() {
-        final Object o = GraphManager.getGraphProvider().convertId("1", Vertex.class);
+        final Object o = graphProvider.convertId("1", Vertex.class);
         graph.addVertex(T.id, o);
         try {
             graph.addVertex(T.id, o);
@@ -123,7 +121,6 @@ public class GraphTest extends AbstractGremlinTest {
         } catch (Exception ex) {
             assertThat(ex, instanceOf(Graph.Exceptions.vertexWithIdAlreadyExists(0).getClass()));
         }
-
     }
 
     @Test
