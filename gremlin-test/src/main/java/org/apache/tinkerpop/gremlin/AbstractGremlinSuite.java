@@ -19,13 +19,7 @@
 package org.apache.tinkerpop.gremlin;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.commons.configuration.Configuration;
 import org.javatuples.Pair;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -41,15 +35,11 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -80,25 +70,28 @@ public abstract class AbstractGremlinSuite extends Suite {
 
     /**
      * Indicates that this suite is for testing a gremlin flavor and is therefore not responsible for validating
-     * the suite against what the Graph implementation opts-in for.
+     * the suite against what the {@link Graph} implementation opts-in for. This setting will let Gremlin flavor
+     * developers run their test cases against a {@link Graph} without the need for the {@link Graph} to supply
+     * an {@link Graph.OptIn} annotation.  Not having that annotation is a likely case for flavors while they are
+     * under development and a {@link Graph.OptIn} is not possible.
      */
     private final boolean gremlinFlavorSuite;
 
-    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
-        this(klass, builder, testsToExecute, null);
-    }
-
-    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
-        this(klass, builder, testsToExecute, testsToEnforce, false);
-    }
-
-    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce,
-                                final boolean gremlinFlavorSuite) throws InitializationError {
-        this(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, TraversalEngine.Type.STANDARD);
-    }
-
-    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, Class<?>[] testsToExecute, final Class<?>[] testsToEnforce,
-                                final boolean gremlinFlavorSuite, TraversalEngine.Type traversalEngineType) throws InitializationError {
+    /**
+     * Constructs a Gremlin Test Suite implementation.
+     *
+     * @param klass Required for JUnit Suite construction
+     * @param builder Required for JUnit Suite construction
+     * @param testsToExecute The list of tests to execute
+     * @param testsToEnforce The list of tests to "enforce" such that a check is made to ensure that in this list,
+     *                       there exists an implementation in the testsToExecute (use {@code null} for no enforcement.
+     * @param gremlinFlavorSuite Ignore validation of {@link Graph.OptIn} annotations which is typically reserved for
+     *                           structure tests
+     * @param traversalEngineType The {@link TraversalEngine.Type} to enforce on this suite
+     */
+    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute,
+                                final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite,
+                                final TraversalEngine.Type traversalEngineType) throws InitializationError {
         super(builder, klass, enforce(testsToExecute, testsToEnforce));
 
         this.gremlinFlavorSuite = gremlinFlavorSuite;
@@ -124,8 +117,11 @@ public abstract class AbstractGremlinSuite extends Suite {
 
     private void validateOptInToSuite(final Class<? extends Graph> klass) throws InitializationError {
         final Graph.OptIn[] optIns = klass.getAnnotationsByType(Graph.OptIn.class);
-        if (!gremlinFlavorSuite && !Arrays.stream(optIns).anyMatch(optIn -> optIn.value().equals(this.getClass().getCanonicalName())))
-            throw new InitializationError("The suite will not run for this Graph until it is publicly acknowledged with the @OptIn annotation on the Graph instance itself");
+        if (!Arrays.stream(optIns).anyMatch(optIn -> optIn.value().equals(this.getClass().getCanonicalName())))
+            if (gremlinFlavorSuite)
+                System.err.println(String.format("The %s will run for this Graph as it is testing a Gremlin flavor but the Graph does not publicly acknowledged it yet with the @OptIn annotation.", this.getClass().getSimpleName()));
+            else
+                throw new InitializationError(String.format("The %s will not run for this Graph until it is publicly acknowledged with the @OptIn annotation on the Graph instance itself", this.getClass().getSimpleName()));
     }
 
     private void registerOptOuts(final Class<? extends Graph> klass) throws InitializationError {

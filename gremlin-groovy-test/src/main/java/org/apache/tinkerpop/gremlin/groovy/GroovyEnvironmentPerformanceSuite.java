@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutorPerformanceTest
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoaderPerformanceTest;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runners.model.InitializationError;
@@ -60,7 +61,7 @@ public class GroovyEnvironmentPerformanceSuite extends AbstractGremlinSuite {
     };
 
     public GroovyEnvironmentPerformanceSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, allTests);
+        super(klass, builder, allTests, null, false, TraversalEngine.Type.STANDARD);
     }
 
     @Override

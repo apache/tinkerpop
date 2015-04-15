@@ -97,8 +97,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
     // todo: all tests are not currently passing. see specific todos in each test
 
     /**
-     * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
-     * as needed to enforce tests upon implementations.
+     * This list of tests in the suite that will be executed as part of this suite.
      */
     private static final Class<?>[] allTests = new Class<?>[]{
 
@@ -175,16 +174,81 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             SubgraphStrategyProcessTest.class
     };
 
+    /**
+     * A list of the minimum set of base tests that Gremlin flavors should implement to be compliant with Gremlin.
+     */
+    private static final Class<?>[] testsToEnforce = new Class<?>[]{
+            // branch
+            BranchTest.class,
+            ChooseTest.class,
+            LocalTest.class,
+            RepeatTest.class,
+            UnionTest.class,
+
+            // filter
+            AndTest.class,
+            CoinTest.class,
+            CyclicPathTest.class,
+            DedupTest.class,
+            ExceptTest.class,
+            FilterTest.class,
+            HasNotTest.class,
+            HasTest.class,
+            IsTest.class,
+            OrTest.class,
+            RangeTest.class,
+            RetainTest.class,
+            SampleTest.class,
+            SimplePathTest.class,
+            WhereTest.class,
+
+            // map
+            CoalesceTest.class,
+            CountTest.class,
+            FoldTest.class,
+            MapTest.class,
+            MaxTest.class,
+            MeanTest.class,
+            MinTest.class,
+            SumTest.class,
+            // TODO: MatchTest.ComputerTest.class,
+            OrderTest.class,
+            PathTest.class,
+            PropertiesTest.class,
+            SelectTest.class,
+            UnfoldTest.class,
+            ValueMapTest.class,
+            VertexTest.class,
+
+            // sideEffect
+            // TODO: AddEdgeTest.ComputerTest.class,
+            AggregateTest.class,
+            GroupTest.class,
+            GroupCountTest.class,
+            // TODO: InjectTest.ComputerTest.class,
+            ProfileTest.class,
+            SackTest.class,
+            SideEffectCapTest.class,
+            // TODO: REMOVE? SideEffectTest.ComputerTest.class,
+            StoreTest.class,
+            // TODO: REMOVE? SubgraphTest.ComputerTest.class,
+            TreeTest.class
+    };
+
+    /**
+     * This constructor is used by JUnit and will run this suite with its concrete implementations of the
+     * {@code testsToEnforce}.
+     */
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
         super(klass, builder, allTests, allTests, false, TraversalEngine.Type.COMPUTER);
     }
 
-    public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce, false, TraversalEngine.Type.COMPUTER);
-    }
-
-    public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, TraversalEngine.Type.COMPUTER);
+    /**
+     * This constructor is used by Gremlin flavor implementers who supply their own implementations of the
+     * {@code testsToEnforce}.
+     */
+    public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
+        super(klass, builder, testsToExecute, testsToEnforce, true, TraversalEngine.Type.COMPUTER);
     }
 
     @Override

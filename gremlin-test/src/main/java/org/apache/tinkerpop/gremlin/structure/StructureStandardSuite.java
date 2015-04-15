@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.algorithm.generator.CommunityGeneratorTest;
 import org.apache.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdgeTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPropertyTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexPropertyTest;
@@ -96,6 +97,6 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
     };
 
     public StructureStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, allTests);
+        super(klass, builder, allTests, null, false, TraversalEngine.Type.STANDARD);
     }
 }

@@ -84,9 +84,6 @@ import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -101,8 +98,7 @@ import java.util.stream.Stream;
 public class ProcessStandardSuite extends AbstractGremlinSuite {
 
     /**
-     * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
-     * as needed to enforce tests upon implementations.
+     * This list of tests in the suite that will be executed as part of this suite.
      */
     private static final Class<?>[] allTests = new Class<?>[]{
             // branch
@@ -184,16 +180,86 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             SubgraphStrategyProcessTest.class
     };
 
+    /**
+     * A list of the minimum set of base tests that Gremlin flavors should implement to be compliant with Gremlin.
+     */
+    private static final Class<?>[] testsToEnforce = new Class<?>[]{
+            // branch
+            BranchTest.class,
+            ChooseTest.class,
+            LocalTest.class,
+            RepeatTest.class,
+            UnionTest.class,
+
+            // filter
+            AndTest.class,
+            CoinTest.class,
+            CyclicPathTest.class,
+            DedupTest.class,
+            DropTest.class,
+            ExceptTest.class,
+            FilterTest.class,
+            HasNotTest.class,
+            HasTest.class,
+            IsTest.class,
+            OrTest.class,
+            RangeTest.class,
+            RetainTest.class,
+            SampleTest.class,
+            SimplePathTest.class,
+            WhereTest.class,
+
+            // map
+            AddEdgeTest.class,
+            AddVertexTest.class,
+            CoalesceTest.class,
+            CountTest.class,
+            FoldTest.class,
+            MapTest.class,
+            MatchTest.class,
+            MaxTest.class,
+            MeanTest.class,
+            MinTest.class,
+            SumTest.class,
+            OrderTest.class,
+            PathTest.class,
+            PropertiesTest.class,
+            SelectTest.class,
+            VertexTest.class,
+            UnfoldTest.class,
+            ValueMapTest.class,
+
+            // sideEffect
+            AggregateTest.class,
+            GroupTest.class,
+            GroupCountTest.class,
+            InjectTest.class,
+            ProfileTest.class,
+            SackTest.class,
+            SideEffectCapTest.class,
+            SideEffectTest.class,
+            StoreTest.class,
+            SubgraphTest.class,
+            TreeTest.class,
+
+            // util
+            TraversalSideEffectsTest.class
+    };
+
+    /**
+     * This constructor is used by JUnit and will run this suite with its concrete implementations of the
+     * {@code testsToEnforce}.
+     */
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, allTests, allTests);
+        super(klass, builder, allTests, testsToEnforce, false, TraversalEngine.Type.STANDARD);
     }
 
-    public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce);
-    }
-
-    public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce, final boolean gremlinFlavorSuite) throws InitializationError {
-        super(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, TraversalEngine.Type.STANDARD);
+    /**
+     * This constructor is used by Gremlin flavor implementers who supply their own implementations of the
+     * {@code testsToEnforce}.
+     */
+    public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
+        super(klass, builder, testsToExecute, testsToEnforce, true, TraversalEngine.Type.STANDARD);
     }
 
     @Override

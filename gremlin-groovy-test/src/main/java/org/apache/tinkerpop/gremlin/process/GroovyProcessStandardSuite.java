@@ -153,9 +153,8 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             CoreTraversalTest.class,
     };
 
-
     public GroovyProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, allTests, allTests, true);
+        super(klass, builder, allTests);
     }
 
     @Override

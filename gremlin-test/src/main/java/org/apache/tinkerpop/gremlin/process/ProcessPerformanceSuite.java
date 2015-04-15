@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.GraphReadPerformanceTest;
 import org.apache.tinkerpop.gremlin.structure.GraphWritePerformanceTest;
@@ -47,7 +48,7 @@ public class ProcessPerformanceSuite extends AbstractGremlinSuite {
     };
 
     public ProcessPerformanceSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, allTests);
+        super(klass, builder, allTests, null, true, TraversalEngine.Type.STANDARD);
     }
 
 
