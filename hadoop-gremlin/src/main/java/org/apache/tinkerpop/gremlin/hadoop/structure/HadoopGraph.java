@@ -126,8 +126,6 @@ public class HadoopGraph implements Graph {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);
 
-    private static final HadoopGraph EMPTY = HadoopGraph.open();
-
     private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
         this.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
     }};
@@ -136,10 +134,6 @@ public class HadoopGraph implements Graph {
 
     private HadoopGraph(final Configuration configuration) {
         this.configuration = new HadoopConfiguration(configuration);
-    }
-
-    public static HadoopGraph empty() {
-        return EMPTY;
     }
 
     public static HadoopGraph open() {

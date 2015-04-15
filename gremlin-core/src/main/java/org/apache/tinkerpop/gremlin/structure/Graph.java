@@ -108,14 +108,6 @@ public interface Graph extends AutoCloseable {
         }
     }
 
-    public static <G extends Graph> G empty(final Class<G> graphClass) {
-        try {
-            return (G) graphClass.getMethod("empty").invoke(null);
-        } catch (final Exception e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
-        }
-    }
-
     /**
      * Add a {@link Vertex} to the graph given an optional series of key/value pairs.  These key/values
      * must be provided in an even number where the odd numbered arguments are {@link String} property keys and the

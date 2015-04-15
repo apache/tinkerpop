@@ -68,7 +68,7 @@ public class GraphTraversalSource implements TraversalSource {
         this.engine = engine;
         this.withStrategies = withStrategies;
         this.withoutStrategies = withoutStrategies;
-        final TraversalStrategies tempStrategies = TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass());
+        final TraversalStrategies tempStrategies = TraversalStrategies.GlobalCache.getStrategies(TraversalStrategies.GlobalCache.getGraphClass(this.graph));
         this.strategies = withStrategies.isEmpty() && withoutStrategies.isEmpty() ?
                 tempStrategies :
                 tempStrategies.clone()
@@ -137,7 +137,8 @@ public class GraphTraversalSource implements TraversalSource {
         private List<TraversalStrategy> withStrategies = null;
         private List<Class<? extends TraversalStrategy>> withoutStrategies = null;
 
-        private Builder() {}
+        private Builder() {
+        }
 
         @Override
         public Builder engine(final TraversalEngine.Builder engineBuilder) {

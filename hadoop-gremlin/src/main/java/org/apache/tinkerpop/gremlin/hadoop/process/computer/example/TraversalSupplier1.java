@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.example;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.process.computer.util.ShellGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import java.util.function.Supplier;
@@ -29,6 +30,6 @@ import java.util.function.Supplier;
 public class TraversalSupplier1 implements Supplier<Traversal> {
     @Override
     public Traversal get() {
-        return HadoopGraph.empty().traversal().V().out().out().values("name");
+        return ShellGraph.of(HadoopGraph.class).traversal().V().out().out().values("name");
     }
 }

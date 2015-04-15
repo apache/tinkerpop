@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Graph.empty()` no longer required with the introduction of `ShellGraph` which is a placeholder for a graph class and computer.
 * `VertexProperty.Cardinality` default is now vendor chosen. If the vendor has not preference, they should use `Cardinality.single`.
 * `Messenger.receiveMessages()` no longer takes a `MessageScope` and thus, consistent behavior between message-passing and message-pulling systems.
 * Changed the `gremlin.tests` environment variable for test filtering to the more standard convention of `GREMLIN_TESTS` and made it work for all test suites.

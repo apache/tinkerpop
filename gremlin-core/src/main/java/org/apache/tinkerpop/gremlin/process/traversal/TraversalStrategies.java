@@ -18,18 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComparatorHolderRemovalStrategy;
+import org.apache.tinkerpop.gremlin.process.computer.util.ShellGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ConjunctionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.DedupOptimizerStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EngineDependentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LabeledEndStepStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchWhereStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComparatorHolderRemovalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EngineDependentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LabeledEndStepStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.TraversalVerificationStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.tools.MultiMap;
@@ -189,6 +190,10 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                 else return CACHE.get(Graph.class);
             }
             return traversalStrategies;
+        }
+
+        public static Class<? extends Graph> getGraphClass(final Graph graph) {
+            return graph instanceof ShellGraph ? ((ShellGraph) graph).getGraphClass() : graph.getClass();
         }
     }
 

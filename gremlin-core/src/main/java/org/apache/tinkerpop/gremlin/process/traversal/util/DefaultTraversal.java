@@ -58,7 +58,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     public DefaultTraversal(final Graph graph) {
         this.graph = graph;
-        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass()));
+        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(TraversalStrategies.GlobalCache.getGraphClass(this.graph)));
         this.traversalEngine = StandardTraversalEngine.instance(); // TODO: remove and then clean up v.outE
     }
 
