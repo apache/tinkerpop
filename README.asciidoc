@@ -37,7 +37,6 @@ Building and Testing
 export GREMLIN_TESTS='org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest$Traversals,org.apache.tinkerpop.gremlin.process.traversal.step.util.PathTest'
 mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ----
-*** Including a specific test may require its inner class implementation (e.g. `org.apache.tinkerpop.gremlin....UnionTest$ComputerTest`).
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 * Check license headers are present: `mvn apache-rat:check`
