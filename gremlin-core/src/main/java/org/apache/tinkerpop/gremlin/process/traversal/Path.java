@@ -174,7 +174,7 @@ public interface Path extends Cloneable {
     public static class Exceptions {
 
         public static IllegalArgumentException stepWithProvidedLabelDoesNotExist(final String label) {
-            return new IllegalArgumentException("The step with label " + label + "  does not exist");
+            return new IllegalArgumentException("The step with label " + label + " does not exist");
         }
     }
 }
