@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.util.iterator;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -446,6 +447,29 @@ public class IteratorUtilsTest {
         iterable.add("3");
 
         assertEquals(new Integer(16), IteratorUtils.reduce(iterable, 10, (accumulator, val) -> accumulator + Integer.parseInt(val)));
+    }
+
+    @Test
+    public void shouldLimitIterator() {
+        List<String> list = Arrays.asList("a","b","c","d","e");
+        Iterator<String> itty = IteratorUtils.limit(list.iterator(),3);
+        assertTrue(itty.hasNext());
+        assertEquals("a", itty.next());
+        assertTrue(itty.hasNext());
+        assertEquals("b", itty.next());
+        assertTrue(itty.hasNext());
+        assertEquals("c", itty.next());
+        assertFalse(itty.hasNext());
+
+        list = Arrays.asList("a","b","c");
+        itty = IteratorUtils.limit(list.iterator(),4);
+        assertTrue(itty.hasNext());
+        assertEquals("a", itty.next());
+        assertTrue(itty.hasNext());
+        assertEquals("b", itty.next());
+        assertTrue(itty.hasNext());
+        assertEquals("c", itty.next());
+        assertFalse(itty.hasNext());
     }
 
     public <S> void assertIterator(final Iterator<S> itty, final int size) {

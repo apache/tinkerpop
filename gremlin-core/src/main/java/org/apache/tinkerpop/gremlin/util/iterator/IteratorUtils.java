@@ -86,8 +86,7 @@ public final class IteratorUtils {
 
             @Override
             public S next() {
-                this.count++;
-                if (this.count >= limit)
+                if (this.count++ >= limit)
                     throw FastNoSuchElementException.instance();
                 return iterator.next();
             }
