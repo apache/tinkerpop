@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
+import org.apache.tinkerpop.gremlin.process.traversal.GroovyTraversalSideEffectsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyBranchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyChooseTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyLocalTest;
@@ -148,6 +149,9 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyStoreTest.StandardTraversals.class,
             GroovySubgraphTest.StandardTraversals.class,
             GroovyTreeTest.StandardTraversals.class,
+
+            // util
+            GroovyTraversalSideEffectsTest.StandardTraversals.class,
 
             // compliance
             CoreTraversalTest.class,
