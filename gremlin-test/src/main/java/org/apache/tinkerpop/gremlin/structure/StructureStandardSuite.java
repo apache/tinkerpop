@@ -66,6 +66,10 @@ import java.util.stream.Stream;
  */
 public class StructureStandardSuite extends AbstractGremlinSuite {
 
+    /**
+     * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
+     * as needed to enforce tests upon implementations.
+     */
     private static final Class<?>[] allTests = new Class<?>[]{
             BatchTest.class,
             CommunityGeneratorTest.class,
@@ -91,26 +95,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             VertexTest.class
     };
 
-    /**
-     * This list of tests in the suite that will be executed.  Gremlin developers should add to this list
-     * as needed to enforce tests upon implementations.
-     */
-    private static final Class<?>[] testsToExecute;
-
-    static {
-        final String override = System.getenv().getOrDefault("gremlin.tests", "");
-        if (override.equals(""))
-            testsToExecute = allTests;
-        else {
-            final List<String> filters = Arrays.asList(override.split(","));
-            final List<Class<?>> allowed = Stream.of(allTests)
-                    .filter(c -> filters.contains(c.getName()))
-                    .collect(Collectors.toList());
-            testsToExecute = allowed.toArray(new Class<?>[allowed.size()]);
-        }
-    }
-
     public StructureStandardSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, testsToExecute);
+        super(klass, builder, allTests);
     }
 }

@@ -97,7 +97,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         this(klass, builder, testsToExecute, testsToEnforce, gremlinFlavorSuite, TraversalEngine.Type.STANDARD);
     }
 
-    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce,
+    public AbstractGremlinSuite(final Class<?> klass, final RunnerBuilder builder, Class<?>[] testsToExecute, final Class<?>[] testsToEnforce,
                                 final boolean gremlinFlavorSuite, TraversalEngine.Type traversalEngineType) throws InitializationError {
         super(builder, klass, enforce(testsToExecute, testsToEnforce));
 
@@ -144,7 +144,12 @@ public abstract class AbstractGremlinSuite extends Suite {
         }
     }
 
-    private static Class<?>[] enforce(final Class<?>[] testsToExecute, final Class<?>[] testsToEnforce) {
+    private static Class<?>[] enforce(final Class<?>[] unfilteredTestsToExecute, final Class<?>[] unfilteredTestsToEnforce) {
+        // Allow env var to filter the test lists.
+        final Class<?>[] testsToExecute = filterSpecifiedTests(unfilteredTestsToExecute);
+        final Class<?>[] testsToEnforce = filterSpecifiedTests(unfilteredTestsToEnforce);
+
+        // If there are no tests specified to enforce, enforce them all.
         if (null == testsToEnforce) return testsToExecute;
 
         // examine each test to enforce and ensure an instance of it is in the list of testsToExecute
@@ -156,6 +161,26 @@ public abstract class AbstractGremlinSuite extends Suite {
             System.err.println(String.format("Review the testsToExecute given to the test suite as the following are missing: %s", notSupplied));
 
         return testsToExecute;
+    }
+
+    /**
+     * Filter a list of test classes through the GREMLIN_TESTS environment variable list.
+     */
+    private static Class<?>[] filterSpecifiedTests(Class<?>[] allTests) {
+        if (null == allTests) return allTests;
+
+        Class<?>[] filteredTests;
+        final String override = System.getenv().getOrDefault("GREMLIN_TESTS", "");
+        if (override.equals(""))
+            filteredTests = allTests;
+        else {
+            final List<String> filters = Arrays.asList(override.split(","));
+            final List<Class<?>> allowed = Stream.of(allTests)
+                    .filter(c -> filters.contains(c.getName()))
+                    .collect(Collectors.toList());
+            filteredTests = allowed.toArray(new Class<?>[allowed.size()]);
+        }
+        return filteredTests;
     }
 
     public static Pair<Class<? extends GraphProvider>, Class<? extends Graph>> getGraphProviderClass(final Class<?> klass) throws InitializationError {

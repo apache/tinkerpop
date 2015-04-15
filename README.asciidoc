@@ -31,7 +31,13 @@ Building and Testing
 ~~~~~~~~~~~~~~~~~~~~
 
 * Build Project: `mvn clean install`
-** Specify specific tests in a TinkerPop Suite to run: `mvn test -Dgremlin.tests={test class 1, test class 2...}` - note that including a specific test may require its inner class implementation (e.g. `org.apache.tinkerpop.gremlin....UnionTest$ComputerTest`)
+** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the Maven project list argument, e.g.:
++
+----
+export GREMLIN_TESTS='org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest$Traversals,org.apache.tinkerpop.gremlin.process.traversal.step.util.PathTest'
+mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
+----
+*** Including a specific test may require its inner class implementation (e.g. `org.apache.tinkerpop.gremlin....UnionTest$ComputerTest`).
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 * Check license headers are present: `mvn apache-rat:check`
