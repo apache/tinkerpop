@@ -18,16 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.*
+import org.apache.hadoop.io.IOUtils
+import org.apache.hadoop.io.Text
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HiddenFileFilter
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.TextIterator
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator
-import org.apache.tinkerpop.gremlin.util.StreamFactory
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.*
-import org.apache.hadoop.io.IOUtils
-import org.apache.hadoop.io.Text
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -118,9 +118,9 @@ class HadoopLoader {
                 /// return StreamFactory.stream(new GiraphVertexIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
                 // } else
                 if (writableClass.equals(ObjectWritable.class)) {
-                    return StreamFactory.stream(new ObjectWritableIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
+                    return IteratorUtils.limit(new ObjectWritableIterator(((FileSystem) delegate).getConf(), new Path(path)), totalKeyValues);
                 } else {
-                    return StreamFactory.stream(new TextIterator(((FileSystem) delegate).getConf(), new Path(path))).limit(totalKeyValues).iterator();
+                    return IteratorUtils.limit(new TextIterator(((FileSystem) delegate).getConf(), new Path(path)), totalKeyValues);
                 }
         }
 

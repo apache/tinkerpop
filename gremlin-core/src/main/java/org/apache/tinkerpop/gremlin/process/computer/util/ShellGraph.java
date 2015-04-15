@@ -40,12 +40,12 @@ import java.util.concurrent.Future;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ShellGraph implements Graph, Serializable {
+public final class ShellGraph implements Graph, Serializable {
 
     private final Class<? extends Graph> graphClass;
     public static final String SHELL_GRAPH_CLASS = "shell.graphClass";
 
-    public ShellGraph(final Class<? extends Graph> graphClass) {
+    private ShellGraph(final Class<? extends Graph> graphClass) {
         this.graphClass = graphClass;
     }
 

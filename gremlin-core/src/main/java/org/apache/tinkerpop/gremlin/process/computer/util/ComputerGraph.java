@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ComputerGraph implements Graph {
+public final class ComputerGraph implements Graph {
 
     public enum State {VERTEX_PROGRAM, MAP_REDUCE, NO_OP}
 

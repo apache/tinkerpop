@@ -2189,19 +2189,19 @@ public class IoTest extends AbstractGremlinTest {
         final Vertex v9 = (Vertex) g1.traversal().V().has("name", "daniel").next();
         assertEquals("person", v9.label());
         assertEquals(2, v9.keys().size());
-        assertEquals(3, (int) StreamFactory.stream(v9.properties("location")).count());
+        assertEquals(3, (int) IteratorUtils.count(v9.properties("location")));
         v9.properties("location").forEachRemaining(vp -> {
             if (vp.value().equals("spremberg")) {
                 assertEquals(1982, (int) vp.value("startTime"));
                 assertEquals(2005, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
+                assertEquals(2, (int) IteratorUtils.count(vp.properties()));
             } else if (vp.value().equals("kaiserslautern")) {
                 assertEquals(2005, (int) vp.value("startTime"));
                 assertEquals(2009, (int) vp.value("endTime"));
-                assertEquals(2, (int) StreamFactory.stream(vp.properties()).count());
+                assertEquals(2, (int) IteratorUtils.count(vp.properties()));
             } else if (vp.value().equals("aachen")) {
                 assertEquals(2009, (int) vp.value("startTime"));
-                assertEquals(1, (int) StreamFactory.stream(vp.properties()).count());
+                assertEquals(1, (int) IteratorUtils.count(vp.properties()));
             } else {
                 fail("Found a value that should be there");
             }

@@ -37,8 +37,11 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -64,7 +67,7 @@ public class TinkerMessenger<M> implements Messenger<M> {
                 final Traversal.Admin<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
                 final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
                 final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
-                multiIterator.addIterator(StreamFactory.stream(VertexProgramHelper.reverse(incidentTraversal.asAdmin()))
+                multiIterator.addIterator(StreamSupport.stream(Spliterators.spliteratorUnknownSize(VertexProgramHelper.reverse(incidentTraversal.asAdmin()), Spliterator.IMMUTABLE | Spliterator.SIZED), false)
                         .map(e -> this.messageBoard.receiveMessages.get((edge[0] = e).vertices(direction).next()))
                         .filter(q -> null != q)
                         .flatMap(q -> q.stream())

@@ -32,9 +32,9 @@ import java.util.Iterator;
 public interface Messenger<M> {
 
     /**
-     * The currently executing vertex can receive the messages of the provided {@link MessageScope}.
+     * Receive all incoming messages to the currently executing vertex.
      *
-     * @return the messages for that vertex
+     * @return the messages for the vertex
      */
     public Iterator<M> receiveMessages();
 

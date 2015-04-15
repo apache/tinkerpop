@@ -26,7 +26,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class LambdaHolder<S> implements Supplier<S> {
+public final class LambdaHolder<S> implements Supplier<S> {
 
     public enum Type {
         OBJECT,

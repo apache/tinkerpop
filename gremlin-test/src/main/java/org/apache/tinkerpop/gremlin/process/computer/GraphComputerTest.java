@@ -644,7 +644,11 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public void reduce(NullObject key, Iterator<Integer> values, ReduceEmitter<NullObject, Integer> emitter) {
-            emitter.emit(StreamFactory.stream(values).mapToInt(i -> i).sum());
+            int sum = 0;
+            while(values.hasNext()) {
+                sum = sum + values.next();
+            }
+            emitter.emit(sum);
         }
 
         @Override
@@ -726,12 +730,16 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public void reduce(NullObject key, Iterator<Integer> values, ReduceEmitter<NullObject, Integer> emitter) {
-            emitter.emit(StreamFactory.stream(values).mapToInt(i -> i).sum());
+        public void reduce(final NullObject key, final Iterator<Integer> values, final ReduceEmitter<NullObject, Integer> emitter) {
+            int sum = 0;
+            while(values.hasNext()) {
+                sum = sum + values.next();
+            }
+            emitter.emit(sum);
         }
 
         @Override
-        public Integer generateFinalResult(Iterator<KeyValue<NullObject, Integer>> keyValues) {
+        public Integer generateFinalResult(final Iterator<KeyValue<NullObject, Integer>> keyValues) {
             return keyValues.next().getValue();
         }
 

@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
+import org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.process.computer.util.ShellGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import javax.script.Bindings;
@@ -51,7 +51,7 @@ public final class TraversalScriptSupplier<S, E> implements Supplier<Traversal.A
         try {
             final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngineName);
             final Bindings bindings = engine.createBindings();
-            bindings.put("g", this.traversalContextBuilder.create(new ShellGraph(this.graphClass)));
+            bindings.put("g", this.traversalContextBuilder.create(ShellGraph.of(this.graphClass)));
             return (Traversal.Admin<S, E>) engine.eval(this.traversalScript, bindings);
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);

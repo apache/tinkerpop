@@ -75,6 +75,25 @@ public final class IteratorUtils {
         return fill(iterator, new HashSet<>());
     }
 
+    public static <S> Iterator<S> limit(final Iterator<S> iterator, int limit) {
+        return new Iterator<S>() {
+            private int count = 0;
+
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext() && this.count < limit;
+            }
+
+            @Override
+            public S next() {
+                this.count++;
+                if (this.count >= limit)
+                    throw FastNoSuchElementException.instance();
+                return iterator.next();
+            }
+        };
+    }
+
     ///////////////////
 
     public static <T> boolean allMatch(final Iterator<T> iterator, final Predicate<T> predicate) {
