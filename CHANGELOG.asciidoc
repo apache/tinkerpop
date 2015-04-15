@@ -27,6 +27,7 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 
 * `VertexProperty.Cardinality` default is now vendor chosen. If the vendor has not preference, they should use `Cardinality.single`.
 * `Messenger.receiveMessages()` no longer takes a `MessageScope` and thus, consistent behavior between message-passing and message-pulling systems.
+* Changed the `gremlin.tests` environment variable for test filtering to the more standard convention of `GREMLIN_TESTS` and made it work for all test suites.
 * Removed `back()`-step as `select()`-step provides the same behavior with more intelligent optimizations and `by()`-modulation.
 * Removed `Graph.Helper` method annotation and related infrastructure in tests.
 * Moved `Exceptions.propertyRemovalNotSupported` from `Element` to `Property` for consistency.
