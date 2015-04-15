@@ -50,12 +50,26 @@ public class PathTest extends AbstractGremlinProcessTest {
             assertEquals(Integer.valueOf(1), path.get("a"));
             assertEquals(Integer.valueOf(2), path.get("b"));
             assertEquals(Integer.valueOf(3), path.get("c"));
+            assertEquals(Integer.valueOf(1), path.getLast("a"));
+            assertEquals(Integer.valueOf(2), path.getLast("b"));
+            assertEquals(Integer.valueOf(3), path.getLast("c"));
+            assertEquals(Arrays.asList(Integer.valueOf(1)), path.getList("a"));
+            assertEquals(Arrays.asList(Integer.valueOf(2)), path.getList("b"));
+            assertEquals(Arrays.asList(Integer.valueOf(3)), path.getList("c"));
             path.addLabel("d");
             assertEquals(3, path.size());
             assertEquals(Integer.valueOf(1), path.get("a"));
             assertEquals(Integer.valueOf(2), path.get("b"));
             assertEquals(Integer.valueOf(3), path.get("c"));
             assertEquals(Integer.valueOf(3), path.get("d"));
+            assertEquals(Integer.valueOf(1), path.getLast("a"));
+            assertEquals(Integer.valueOf(2), path.getLast("b"));
+            assertEquals(Integer.valueOf(3), path.getLast("c"));
+            assertEquals(Integer.valueOf(3), path.getLast("d"));
+            assertEquals(Arrays.asList(Integer.valueOf(1)), path.getList("a"));
+            assertEquals(Arrays.asList(Integer.valueOf(2)), path.getList("b"));
+            assertEquals(Arrays.asList(Integer.valueOf(3)), path.getList("c"));
+            assertEquals(Arrays.asList(Integer.valueOf(3)), path.getList("d"));
             assertTrue(path.hasLabel("a"));
             assertTrue(path.hasLabel("b"));
             assertTrue(path.hasLabel("c"));
@@ -89,6 +103,10 @@ public class PathTest extends AbstractGremlinProcessTest {
             assertEquals(2, path.<List<String>>get("a").size());
             assertTrue(path.<List<String>>get("a").contains("marko"));
             assertTrue(path.<List<String>>get("a").contains("matthias"));
+            // getLast should return the most recent value.
+            assertEquals("matthias", path.getLast("a"));
+            // getList should return a list of values in path order.
+            assertEquals(Arrays.asList("marko", "matthias"), path.getList("a"));
         });
 
         final Path path = g.V().as("x").repeat(out().as("y")).times(2).path().by("name").next();
@@ -98,8 +116,17 @@ public class PathTest extends AbstractGremlinProcessTest {
         assertTrue(path.get("x") instanceof String);
         assertTrue(path.get("y") instanceof List);
         assertEquals(2, path.<List<String>>get("y").size());
+        // get should return the list of both values, which, because of nondeterminism in the order in which paths are
+        // traversed, will be one of two possible values.
         assertTrue(path.<List<String>>get("y").contains("josh"));
-        assertTrue(path.<List<String>>get("y").contains("ripple") || path.<List<String>>get("y").contains("lop"));
+        assertTrue(path.<List<String>>get("y").contains("ripple") ||
+                   path.<List<String>>get("y").contains("lop"));
+        // getLast should return the most recent value (with the same nondeterminism caveat)
+        assertTrue(path.getLast("y").equals("ripple") ||
+                   path.getLast("y").equals("lop"));
+        // getList should return both values (with the same nondeterminism caveat)
+        assertTrue(path.getList("y").equals(Arrays.asList("josh", "ripple")) ||
+                   path.getList("y").equals(Arrays.asList("josh", "lop")));
     }
 
     @Test
