@@ -1209,7 +1209,7 @@ public class GraphTest extends AbstractGremlinTest {
         final Edge e2 = v.addEdge("self", v);
         v.addEdge("self", v);
         tryCommit(graph, graph -> {
-            assertEquals(2, IteratorUtils.count(graph.vertices(e1, e2)));
+            assertEquals(2, IteratorUtils.count(graph.edges(e1, e2)));
         });
     }
 
@@ -1223,7 +1223,7 @@ public class GraphTest extends AbstractGremlinTest {
         final Edge e2 = v.addEdge("self", v);
         v.addEdge("self", v);
         tryCommit(graph, graph -> {
-            assertEquals(2, IteratorUtils.count(graph.vertices(e1.id(), e2.id())));
+            assertEquals(2, IteratorUtils.count(graph.edges(e1.id(), e2.id())));
         });
     }
 
@@ -1237,7 +1237,7 @@ public class GraphTest extends AbstractGremlinTest {
         final Edge e2 = v.addEdge("self", v);
         v.addEdge("self", v);
         tryCommit(graph, graph -> {
-            assertEquals(2, IteratorUtils.count(graph.vertices(e1.id().toString(), e2.id().toString())));
+            assertEquals(2, IteratorUtils.count(graph.edges(e1.id().toString(), e2.id().toString())));
         });
     }
 
