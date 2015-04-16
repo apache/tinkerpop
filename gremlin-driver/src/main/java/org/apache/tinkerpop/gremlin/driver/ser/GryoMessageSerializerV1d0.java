@@ -178,15 +178,19 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
-                final Map<String, Object> responseData = (Map<String, Object>) kryo.readClassAndObject(input);
-                final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
-                final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
-                return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
-                        .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
-                        .statusMessage(Optional.ofNullable((String) status.get(SerTokens.TOKEN_MESSAGE)).orElse(""))
-                        .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
-                        .result(result.get(SerTokens.TOKEN_DATA))
-                        .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
+                final UUID requestId = kryo.readObjectOrNull(input, UUID.class);
+                final int status = input.readShort();
+                final String statusMsg = input.readString();
+                final Map<String,Object> statusAttributes = (Map<String,Object>) kryo.readClassAndObject(input);
+                final Object result = kryo.readClassAndObject(input);
+                final Map<String,Object> metaAttributes = (Map<String,Object>) kryo.readClassAndObject(input);
+
+                return ResponseMessage.build(requestId)
+                        .code(ResponseStatusCode.getFromValue(status))
+                        .statusMessage(statusMsg)
+                        .statusAttributes(statusAttributes)
+                        .result(result)
+                        .responseMetaData(metaAttributes)
                         .create();
             }
         } catch (Exception ex) {
@@ -199,30 +203,28 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
     public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
-            final Map<String, Object> result = new HashMap<>();
-            result.put(SerTokens.TOKEN_DATA, serializeToString ? serializeResultToString(responseMessage) : responseMessage.getResult().getData());
-            result.put(SerTokens.TOKEN_META, responseMessage.getResult().getMeta());
-
-            final Map<String, Object> status = new HashMap<>();
-            status.put(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
-            status.put(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().getValue());
-            status.put(SerTokens.TOKEN_ATTRIBUTES, responseMessage.getStatus().getAttributes());
-
-            final Map<String, Object> message = new HashMap<>();
-            message.put(SerTokens.TOKEN_STATUS, status);
-            message.put(SerTokens.TOKEN_RESULT, result);
-            message.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
-
             final Kryo kryo = kryoThreadLocal.get();
             try (final OutputStream baos = new ByteArrayOutputStream()) {
                 final Output output = new Output(baos);
-                kryo.writeClassAndObject(output, message);
+
+                // request id - if present
+                kryo.writeObjectOrNull(output, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null, UUID.class);
+
+                // status
+                output.writeShort(responseMessage.getStatus().getCode().getValue());
+                output.writeString(responseMessage.getStatus().getMessage());
+                kryo.writeClassAndObject(output, responseMessage.getStatus().getAttributes());
+
+                // result
+                kryo.writeClassAndObject(output, serializeToString ? serializeResultToString(responseMessage) : responseMessage.getResult().getData());
+                kryo.writeClassAndObject(output, responseMessage.getResult().getMeta());
 
                 final long size = output.total();
                 if (size > Integer.MAX_VALUE)
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
                 encodedMessage = allocator.buffer((int) output.total());
+                System.out.println(size);
                 encodedMessage.writeBytes(output.toBytes());
             }
 
