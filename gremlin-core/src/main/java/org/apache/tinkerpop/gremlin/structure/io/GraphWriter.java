@@ -87,7 +87,14 @@ public interface GraphWriter {
      */
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException;
 
+    /**
+     * Largely a marker interface for builder classes that construct a {@link GraphWriter}.
+     */
     public interface WriterBuilder<T extends GraphWriter> {
+        /**
+         * Creates the {@link GraphWriter} implementation given options provided to the {@link WriterBuilder}
+         * implementation.
+         */
         T create();
     }
 }
