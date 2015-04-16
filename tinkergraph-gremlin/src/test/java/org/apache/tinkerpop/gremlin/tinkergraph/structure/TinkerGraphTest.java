@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -117,7 +118,7 @@ public class TinkerGraphTest {
     public void benchmarkStandardTraversals() throws Exception {
         Graph graph = TinkerGraph.open();
         GraphTraversalSource g = graph.traversal();
-        graph.io().readGraphML("data/grateful-dead.xml");
+        graph.io(GraphMLIo.build()).read("data/grateful-dead.xml");
         final List<Supplier<Traversal>> traversals = Arrays.asList(
                 () -> g.V().outE().inV().outE().inV().outE().inV(),
                 () -> g.V().out().out().out(),
@@ -153,7 +154,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay4() throws Exception {
         Graph graph = TinkerGraph.open();
-        graph.io().readGraphML("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
+        graph.io(GraphMLIo.build()).read("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
         GraphTraversalSource g = graph.traversal();
         final List<Supplier<Traversal>> traversals = Arrays.asList(
                 () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->

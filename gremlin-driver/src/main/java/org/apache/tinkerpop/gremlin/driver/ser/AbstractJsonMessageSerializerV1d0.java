@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import groovy.json.JsonBuilder;
 import io.netty.buffer.ByteBuf;
@@ -84,7 +85,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
 
             // a graph was found so use the mapper it constructs.  this allows graphson to be auto-configured with any
             // custom classes that the implementation allows for
-            initialBuilder = g.io().graphSONMapper();
+            initialBuilder = g.io(GraphSONIo.build()).mapper();
         } else {
             // no graph was supplied so just use the default - this will likely be the case when using a graph
             // with no custom classes or a situation where the user needs complete control like when using two

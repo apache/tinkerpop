@@ -27,8 +27,11 @@ import com.carrotsearch.junitbenchmarks.annotation.LabelType;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.junit.Rule;
 import org.junit.Test;
@@ -95,7 +98,7 @@ public class GraphWritePerformanceTest {
         @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
         @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
         public void writeGryo() throws Exception {
-            final GraphWriter writer = graph.io().gryoWriter().create();
+            final GraphWriter writer = graph.io(GryoIo.build()).writer().create();
             final OutputStream os = new ByteArrayOutputStream();
             writer.writeGraph(os, graph);
         }
@@ -104,7 +107,7 @@ public class GraphWritePerformanceTest {
         @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
         @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
         public void writeGraphML() throws Exception {
-            final GraphWriter writer = graph.io().graphMLWriter().create();
+            final GraphWriter writer = graph.io(GraphMLIo.build()).writer().create();
             final OutputStream os = new ByteArrayOutputStream();
             writer.writeGraph(os, graph);
         }
@@ -113,7 +116,7 @@ public class GraphWritePerformanceTest {
         @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
         @BenchmarkOptions(benchmarkRounds = 10, warmupRounds = 0, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
         public void writeGraphSON() throws Exception {
-            final GraphWriter writer = graph.io().graphSONWriter().create();
+            final GraphWriter writer = graph.io(GraphSONIo.build()).writer().create();
             final OutputStream os = new ByteArrayOutputStream();
             writer.writeGraph(os, graph);
         }
