@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.javatuples.Pair;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,16 +53,16 @@ public class IoRegistry {
      * @param serializer a serializer implementation
      */
     public void register(final Class<? extends Io> ioClass, final Class clazz, final Object serializer) {
-        if (registeredSerializers.containsKey(ioClass))
-            registeredSerializers.get(ioClass).add(Pair.with(clazz, serializer));
-        else
-            registeredSerializers.put(ioClass, Arrays.asList(Pair.with(clazz, serializer)));
+        if (!registeredSerializers.containsKey(ioClass))
+            registeredSerializers.put(ioClass, new ArrayList<>());
+        registeredSerializers.get(ioClass).add(Pair.with(clazz, serializer));
     }
 
     /**
      * Find a list of all the serializers registered to an {@link Io} class by the {@link Graph}.
      */
     public List<Pair<Class,Object>> find(final Class<? extends Io> builderClass) {
+        if (!registeredSerializers.containsKey(builderClass)) return Collections.emptyList();
         return Collections.unmodifiableList(registeredSerializers.get(builderClass).stream()
                 .collect(Collectors.toList()));
     }
@@ -71,8 +72,9 @@ public class IoRegistry {
      * {@link Graph}.
      */
     public <S> List<Pair<Class,S>> find(final Class<? extends Io> builderClass, final Class<S> serializerType) {
+        if (!registeredSerializers.containsKey(builderClass)) return Collections.emptyList();
         return Collections.unmodifiableList(registeredSerializers.get(builderClass).stream()
-                .filter(p -> p.getValue1().getClass().isAssignableFrom(serializerType))
+                .filter(p -> serializerType.isAssignableFrom(p.getValue1().getClass()))
                 .map(p -> Pair.with(p.getValue0(), (S) p.getValue1()))
                 .collect(Collectors.toList()));
     }
