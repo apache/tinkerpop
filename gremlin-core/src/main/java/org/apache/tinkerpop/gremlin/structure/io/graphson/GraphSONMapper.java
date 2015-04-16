@@ -23,7 +23,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
+import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,13 +85,20 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         return new Builder();
     }
 
-    public static class Builder {
+    public static class Builder implements Mapper.Builder<Builder> {
         private List<SimpleModule> customModules = new ArrayList<>();
         private boolean loadCustomModules = false;
         private boolean normalize = false;
         private boolean embedTypes = false;
+        private IoRegistry registry = null;
 
         private Builder() {
+        }
+
+        @Override
+        public Builder addRegistry(final IoRegistry registry) {
+            this.registry = registry;
+            return this;
         }
 
         /**
@@ -126,6 +135,11 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         public GraphSONMapper create() {
+            if (registry != null) {
+                final List<Pair<Class, SimpleModule>> simpleModules = registry.find(GraphSONIo.class, SimpleModule.class);
+                simpleModules.stream().map(Pair::getValue1).forEach(this.customModules::add);
+            }
+
             return new GraphSONMapper(customModules, loadCustomModules, normalize, embedTypes);
         }
     }

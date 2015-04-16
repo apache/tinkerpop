@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.DefaultIo;
+import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
@@ -250,6 +251,10 @@ public interface Graph extends AutoCloseable {
      */
     public default Io io() {
         return new DefaultIo(this);
+    }
+
+    public default <I extends org.apache.tinkerpop.gremlin.structure.io.Io> I io(final org.apache.tinkerpop.gremlin.structure.io.Io.Builder<I> builder) {
+        return (I) builder.graph(this).create();
     }
 
     /**

@@ -86,4 +86,8 @@ public interface GraphWriter {
      * Write an edge to a stream.
      */
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException;
+
+    public interface WriterBuilder<T extends GraphWriter> {
+        T create();
+    }
 }

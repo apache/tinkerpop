@@ -29,4 +29,8 @@ public interface Mapper<T> {
      * Create a new instance of the internal object mapper that an implementation represents.
      */
     public T createMapper();
+
+    public interface Builder<B extends Builder> {
+        public B addRegistry(final IoRegistry registry);
+    }
 }

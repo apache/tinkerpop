@@ -30,6 +30,7 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -159,7 +160,7 @@ public class GryoWriter implements GraphWriter {
         return new Builder();
     }
 
-    public static class Builder {
+    public static class Builder implements WriterBuilder<GryoWriter> {
         /**
          * Always creates the most current version available.
          */

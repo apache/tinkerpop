@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
@@ -56,6 +57,7 @@ import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.apache.tinkerpop.shaded.kryo.util.DefaultStreamFactory;
 import org.apache.tinkerpop.shaded.kryo.util.MapReferenceResolver;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 
 import java.io.IOException;
@@ -177,7 +179,7 @@ public final class GryoMapper implements Mapper<Kryo> {
         return Version.V_1_0_0.getBuilder();
     }
 
-    public static interface Builder {
+    public static interface Builder extends Mapper.Builder<Builder> {
         /**
          * Add mapper classes to serializes with gryo using standard serialization.
          */
@@ -335,10 +337,18 @@ public final class GryoMapper implements Mapper<Kryo> {
         private byte extendedVersion = DEFAULT_EXTENDED_VERSION;
         private BiPredicate<Byte, Byte> compliant = (readExt, serExt) -> readExt.equals(serExt);
 
+        private IoRegistry registry = null;
+
         /**
          * Starts numbering classes for Gryo serialization at 65536 to leave room for future usage by TinkerPop.
          */
         private final AtomicInteger currentSerializationId = new AtomicInteger(65536);
+
+        @Override
+        public Builder addRegistry(final IoRegistry registry) {
+            this.registry = registry;
+            return this;
+        }
 
         /**
          * {@inheritDoc}
@@ -396,6 +406,20 @@ public final class GryoMapper implements Mapper<Kryo> {
 
         @Override
         public GryoMapper create() {
+            if (registry != null) {
+                final List<Pair<Class, Object>> serializers = registry.find(GryoIo.class);
+                serializers.forEach(p -> {
+                    if (null == p.getValue1())
+                        addCustom(p.getValue0());
+                    else if (p.getValue1() instanceof Serializer)
+                        addCustom(p.getValue0(), (Serializer) p.getValue1());
+                    else if (p.getValue1() instanceof Function)
+                        addCustom(p.getValue0(), (Function<Kryo, Serializer>) p.getValue1());
+                    else
+                        throw new RuntimeException("Invalid serializer"); // todo: cleanup exception handling
+                });
+            }
+
             return new GryoMapper(serializationList, this::writeHeader, this::readHeader);
         }
 

@@ -96,4 +96,7 @@ public interface GraphReader {
      */
     public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException;
 
+    public interface ReaderBuilder<T extends GraphReader> {
+        T create();
+    }
 }
