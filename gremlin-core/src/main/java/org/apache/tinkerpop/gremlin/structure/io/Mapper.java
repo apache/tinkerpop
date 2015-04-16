@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
 /**
  * Represents a low-level serialization class that can be used to map classes to serializers.  These implementation
  * create instances of serializers from other libraries (e.g. creating a {@code Kryo} instance).
@@ -30,7 +32,16 @@ public interface Mapper<T> {
      */
     public T createMapper();
 
+    /**
+     * Largely a marker interface for builders that construct {@link Mapper} instances.
+     */
     public interface Builder<B extends Builder> {
+
+        /**
+         * Adds a vendor supplied {@link IoRegistry} to the {@code Mapper.Builder} which enables it to check for
+         * vendor custom serializers to add to the {@link Mapper}.  All {@link Io} implementations should expose
+         * this method via this {@link Builder} so that it is compatible with {@link Graph#io}.
+         */
         public B addRegistry(final IoRegistry registry);
     }
 }
