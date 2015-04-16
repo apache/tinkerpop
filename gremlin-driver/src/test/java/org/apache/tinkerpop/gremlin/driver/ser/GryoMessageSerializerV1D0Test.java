@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.ser;
 
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -277,6 +278,26 @@ public class GryoMessageSerializerV1D0Test {
         assertEquals(2, deserialized.getStatus().getAttributes().get("two"));
         assertEquals(ResponseStatusCode.SUCCESS.getValue(), deserialized.getStatus().getCode().getValue());
         assertEquals("worked", deserialized.getStatus().getMessage());
+    }
+
+    @Test
+    public void serializeFullRequestMessage() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        final RequestMessage request = RequestMessage.build("try")
+                .overrideRequestId(id)
+                .processor("pro")
+                .addArg("test", "this")
+                .create();
+        final ByteBuf bb = binarySerializer.serializeRequestAsBinary(request, allocator);
+        final int mimeLen = bb.readByte();
+        bb.readBytes(new byte[mimeLen]);
+        final RequestMessage deserialized = binarySerializer.deserializeRequest(bb);
+
+        assertEquals(id, deserialized.getRequestId());
+        assertEquals("pro", deserialized.getProcessor());
+        assertEquals("try", deserialized.getOp());
+        assertEquals("this", deserialized.getArgs().get("test"));
     }
 
     private void assertCommon(final ResponseMessage response) {

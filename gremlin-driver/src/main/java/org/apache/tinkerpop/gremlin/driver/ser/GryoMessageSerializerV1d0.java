@@ -242,11 +242,17 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
-                final Map<String, Object> requestData = (Map<String, Object>) kryo.readClassAndObject(input);
-                final RequestMessage.Builder builder = RequestMessage.build((String) requestData.get(SerTokens.TOKEN_OP))
-                        .overrideRequestId((UUID) requestData.get(SerTokens.TOKEN_REQUEST))
-                        .processor((String) requestData.get(SerTokens.TOKEN_PROCESSOR));
-                final Map<String, Object> args = (Map<String, Object>) requestData.get(SerTokens.TOKEN_ARGS);
+                // by the time the message gets here, the mime length/type have been already read, so this part just
+                // needs to process the payload.
+                final UUID id = kryo.readObject(input, UUID.class);
+                final String processor = input.readString();
+                final String op = input.readString();
+
+                final RequestMessage.Builder builder = RequestMessage.build(op)
+                        .overrideRequestId(id)
+                        .processor(processor);
+
+                final Map<String, Object> args = kryo.readObject(input, HashMap.class);
                 args.forEach(builder::addArg);
                 return builder.create();
             }
@@ -267,13 +273,10 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
                 output.writeByte(mimeType.length());
                 output.write(mimeType.getBytes(UTF8));
 
-                final Map<String, Object> request = new HashMap<>();
-                request.put(SerTokens.TOKEN_REQUEST, requestMessage.getRequestId());
-                request.put(SerTokens.TOKEN_PROCESSOR, requestMessage.getProcessor());
-                request.put(SerTokens.TOKEN_OP, requestMessage.getOp());
-                request.put(SerTokens.TOKEN_ARGS, requestMessage.getArgs());
-
-                kryo.writeClassAndObject(output, request);
+                kryo.writeObject(output, requestMessage.getRequestId());
+                output.writeString(requestMessage.getProcessor());
+                output.writeString(requestMessage.getOp());
+                kryo.writeObject(output, requestMessage.getArgs());
 
                 final long size = output.total();
                 if (size > Integer.MAX_VALUE)
