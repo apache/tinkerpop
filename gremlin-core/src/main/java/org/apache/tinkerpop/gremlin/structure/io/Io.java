@@ -23,6 +23,12 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import java.io.IOException;
 
 /**
+ * Ties together the core interfaces of an IO format: {@link GraphReader}, {@link GraphWriter} and {@link Mapper}.
+ * The {@link Builder} of an {@code Io} instance is supplied to {@link Graph#io(Builder)} and the {@link Graph}
+ * implementation can then chose to supply an {@link IoRegistry} to it before returning it.  An {@link Io}
+ * implementation should use that {@link IoRegistry} to lookup custom serializers to use and register them to the
+ * internal {@link Mapper} (if the format has such capability).
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.WriterBuilder, M extends Mapper.Builder> {
@@ -63,9 +69,30 @@ public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.W
      */
     public void read(final String file) throws IOException;
 
+    /**
+     * Helps to construct an {@link Io} implementation and should be implemented by every such implementation as
+     * that class will be passed to {@link Graph#io(Builder)} by the user.
+     */
     public interface Builder<I extends Io> {
+
+        /**
+         * Vendors use this method to supply an {@link IoRegistry} to the {@link Io} implementation.  End-users
+         * should not use this method directly.  If a user wants to register custom serializers, then such things
+         * can be done via calls to {@link Io#mapper()} after the {@link Io} is constructed via
+         * {@link Graph#io(Builder)}.
+         */
         public Builder<? extends Io> registry(final IoRegistry registry);
+
+        /**
+         * Vendors use this method to supply the current instance of their {@link Graph} to the builder.  End-users
+         * should not call this method directly.
+         */
         public Builder<? extends Io> graph(final Graph g);
+
+        /**
+         * Vendors call this method in the {@link Graph#io(Builder)} method to construct the {@link Io} instance
+         * and return the value.  End-users will typically not call this method.
+         */
         public I create();
     }
 }

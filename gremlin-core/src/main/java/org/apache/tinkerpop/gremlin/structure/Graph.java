@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
 import org.javatuples.Pair;
 
@@ -236,6 +237,17 @@ public interface Graph extends AutoCloseable {
      */
     public Transaction tx();
 
+    /**
+     * Construct a particular {@link Io} implementation for reading and writing the {@code Graph} and other data.
+     * End-users will "select" the {@link Io} implementation that they want to use by supplying the {@link Io.Builder}
+     * that constructs it.  In this way, {@code Graph} vendors can supply their {@link IoRegistry} to that builder
+     * thus allowing for custom serializers to be auto-configured into the {@link Io} instance.  Registering custom
+     * serializers is particularly useful for those graphs that have complex types for {@link Element} identifiers.
+     * </br>
+     * For those graphs that do not need to register any custom serializers, the default implementation should suffice.
+     * If the default is overriden, take care to register the current graph to the {@link Io.Builder} via the
+     * {@link Io.Builder#graph(Graph)} method.
+     */
     public default <I extends Io> I io(final Io.Builder<I> builder) {
         return (I) builder.graph(this).create();
     }
