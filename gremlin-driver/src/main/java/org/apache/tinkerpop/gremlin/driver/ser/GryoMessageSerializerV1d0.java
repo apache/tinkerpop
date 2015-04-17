@@ -76,7 +76,7 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
      * will be overriden by {@link #configure} is called.
      */
     public GryoMessageSerializerV1d0() {
-        gryoMapper = GryoMapper.build(GryoMapper.Version.V_1_0_0).create();
+        gryoMapper = GryoMapper.build().create();
     }
 
     /**
@@ -89,15 +89,7 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
 
     @Override
     public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
-        final byte extendedVersion;
-        try {
-            extendedVersion = Byte.parseByte(config.getOrDefault(TOKEN_EXTENDED_VERSION, GryoMapper.DEFAULT_EXTENDED_VERSION).toString());
-        } catch (Exception ex) {
-            throw new IllegalStateException(String.format("Invalid configuration value of [%s] for [%s] setting on %s serialization configuration",
-                    config.getOrDefault(TOKEN_EXTENDED_VERSION, ""), TOKEN_EXTENDED_VERSION, this.getClass().getName()), ex);
-        }
-
-        final GryoMapper.Builder initialBuilder;
+        final GryoMapper.Builder builder;
         final Object graphToUseForMapper = config.get(TOKEN_USE_MAPPER_FROM_GRAPH);
         if (graphToUseForMapper != null) {
             if (null == graphs) throw new IllegalStateException(String.format(
@@ -110,15 +102,13 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
 
             // a graph was found so use the mapper it constructs.  this allows gryo to be auto-configured with any
             // custom classes that the implementation allows for
-            initialBuilder = g.io(GryoIo.build()).mapper();
+            builder = g.io(GryoIo.build()).mapper();
         } else {
             // no graph was supplied so just use the default - this will likely be the case when using a graph
             // with no custom classes or a situation where the user needs complete control like when using two
             // distinct implementations each with their own custom classes.
-            initialBuilder = GryoMapper.build(GryoMapper.Version.V_1_0_0);
+            builder = GryoMapper.build();
         }
-
-        final GryoMapper.Builder builder = initialBuilder.extendedVersion(extendedVersion);
 
         final List<String> classNameList;
         try {
@@ -225,7 +215,6 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
                 encodedMessage = allocator.buffer((int) output.total());
-                System.out.println(size);
                 encodedMessage.writeBytes(output.toBytes());
             }
 

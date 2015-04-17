@@ -51,14 +51,13 @@ import java.util.function.Function;
  * non-lossy in terms of Gremlin Structure to Gremlin Structure migrations (assuming both structure implementations
  * support the same graph features).
  * <br/>
- * This implementation is not thread-safe.
+ * This implementation is not thread-safe.  Have one {@code GryoReader} instance per thread.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class GryoReader implements GraphReader {
     private final Kryo kryo;
-    private final GryoMapper.HeaderReader headerReader;
 
     private final long batchSize;
     private final String vertexIdKey;
@@ -70,7 +69,6 @@ public class GryoReader implements GraphReader {
                        final String vertexIdKey, final String edgeIdKey,
                        final GryoMapper gryoMapper) {
         this.kryo = gryoMapper.createMapper();
-        this.headerReader = gryoMapper.getHeaderReader();
         this.vertexIdKey = vertexIdKey;
         this.edgeIdKey = edgeIdKey;
         this.tempFile = tempFile;
@@ -107,7 +105,7 @@ public class GryoReader implements GraphReader {
     @Override
     public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
-        this.headerReader.read(kryo, input);
+        readHeader(input);
         final Object o = kryo.readClassAndObject(input);
         return edgeMaker.apply((DetachedEdge) o);
     }
@@ -126,7 +124,7 @@ public class GryoReader implements GraphReader {
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
         final Input input = new Input(inputStream);
-        this.headerReader.read(kryo, input);
+        readHeader(input);
 
         final BatchGraph graph;
         try {
@@ -217,7 +215,7 @@ public class GryoReader implements GraphReader {
         if (null != directionRequested && null == edgeMaker)
             throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
 
-        this.headerReader.read(kryo, input);
+        readHeader(input);
 
         final Vertex vertex = vertexMaker.apply((DetachedVertex) kryo.readClassAndObject(input));
 
@@ -274,6 +272,14 @@ public class GryoReader implements GraphReader {
                 next = kryo.readClassAndObject(input);
             }
         }
+    }
+
+    private void readHeader(final Input input) throws IOException {
+        if (!Arrays.equals(GryoMapper.GIO, input.readBytes(3)))
+            throw new IOException("Invalid format - first three bytes of header do not match expected value");
+
+        // skip the next 13 bytes - for future use
+        input.readBytes(13);
     }
 
     /**
