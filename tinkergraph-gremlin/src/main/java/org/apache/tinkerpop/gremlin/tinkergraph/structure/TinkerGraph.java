@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
@@ -108,10 +109,10 @@ public class TinkerGraph implements Graph {
 
     /**
      * Open a new {@link TinkerGraph} instance.
-     * <p/>
-     * <b>Reference Implementation Help:</b> If a {@link org.apache.tinkerpop.gremlin.structure.Graph } implementation does not require a
-     * {@link org.apache.commons.configuration.Configuration} (or perhaps has a default configuration) it can choose to implement a zero argument
-     * open() method. This is an optional constructor method for TinkerGraph. It is not enforced by the Gremlin
+     * <br/>
+     * <b>Reference Implementation Help:</b> If a {@link Graph} implementation does not require a {@code Configuration}
+     * (or perhaps has a default configuration) it can choose to implement a zero argument
+     * {@code open()} method. This is an optional constructor method for TinkerGraph. It is not enforced by the Gremlin
      * Test Suite.
      */
     public static TinkerGraph open() {
@@ -119,19 +120,17 @@ public class TinkerGraph implements Graph {
     }
 
     /**
-     * Open a new {@link TinkerGraph} instance.
-     * <p/>
-     * <b>Reference Implementation Help:</b> This method is the one use by the
-     * {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory} to instantiate
-     * {@link org.apache.tinkerpop.gremlin.structure.Graph} instances.  This method must be overridden for the Structure Test
-     * Suite to pass. Implementers have latitude in terms of how exceptions are handled within this method.  Such
-     * exceptions will be considered implementation specific by the test suite as all test generate graph instances
-     * by way of {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory}. As such, the exceptions get generalized
-     * behind that facade and since {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory} is the preferred method
-     * to opening graphs it will be consistent at that level.
+     * Open a new {@code TinkerGraph} instance.
+     * <br/>
+     * <b>Reference Implementation Help:</b> This method is the one use by the {@link GraphFactory} to instantiate
+     * {@link Graph} instances.  This method must be overridden for the Structure Test Suite to pass. Implementers have
+     * latitude in terms of how exceptions are handled within this method.  Such exceptions will be considered
+     * implementation specific by the test suite as all test generate graph instances by way of
+     * {@link GraphFactory}. As such, the exceptions get generalized behind that facade and since
+     * {@link GraphFactory} is the preferred method to opening graphs it will be consistent at that level.
      *
      * @param configuration the configuration for the instance
-     * @return a newly opened {@link org.apache.tinkerpop.gremlin.structure.Graph}
+     * @return a newly opened {@link Graph}
      */
     public static TinkerGraph open(final Configuration configuration) {
         return new TinkerGraph(configuration);
@@ -254,9 +253,10 @@ public class TinkerGraph implements Graph {
 
     /**
      * Return TinkerGraph feature set.
-     * <p/>
+     * <br/>
      * <b>Reference Implementation Help:</b> Implementers only need to implement features for which there are
-     * negative or instance configured features.  By default, all {@link Features} return true.
+     * negative or instance configured features.  By default, all
+     * {@link org.apache.tinkerpop.gremlin.structure.Graph.Features} return true.
      */
     @Override
     public Features features() {
@@ -396,7 +396,7 @@ public class TinkerGraph implements Graph {
     }
 
     /**
-     * Construct an {@link TinkerGraph.IdManager} from the TinkerGraph {@link Configuration}.
+     * Construct an {@link TinkerGraph.IdManager} from the TinkerGraph {@code Configuration}.
      */
     private static IdManager<?> selectIdManager(final Configuration config, final String configKey, final Class<? extends Element> clazz) {
         final String vertexIdManagerConfigValue = config.getString(configKey, DefaultIdManager.ANY.name());

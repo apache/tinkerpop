@@ -31,14 +31,8 @@ import java.util.concurrent.TimeUnit;
  */
 public interface Metrics {
 
-
-
-
     /**
      * Get the duration of execution time taken.
-     *
-     * @param units
-     * @return
      */
     public long getDuration(TimeUnit units);
 
@@ -46,7 +40,6 @@ public interface Metrics {
      * Get the count for the corresponding countKey.
      *
      * @param countKey key for counter to get.
-     * @return
      */
     public long getCount(String countKey);
 
@@ -71,7 +64,6 @@ public interface Metrics {
      */
     public String getId();
 
-
     /**
      * Get the nested Metrics objects. Metrics will be ordered in the order they were inserted.
      *
@@ -82,7 +74,6 @@ public interface Metrics {
     /**
      * Get a nested Metrics object by Id.
      *
-     * @param metricsId
      * @return a nested Metrics object.
      */
     Metrics getNested(String metricsId);
@@ -98,7 +89,6 @@ public interface Metrics {
      * Obtain the annotation with the specified key. Values may be of type String or Number.
      *
      * @param key key of the annotation to obtain.
-     * @return
      */
     public Object getAnnotation(String key);
 }

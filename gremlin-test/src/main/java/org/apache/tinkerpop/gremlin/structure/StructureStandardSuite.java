@@ -51,16 +51,18 @@ import java.util.stream.Stream;
  * "Suite" implements {@link GraphProvider} as a convenience only. It could be implemented in a
  * separate class file):
  * <code>
- * @RunWith(StructureStandardSuite.class)
- * @StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class)
+ * &#064;RunWith(StructureStandardSuite.class)
+ * &#064;StructureStandardSuite.GraphProviderClass(TinkerGraphStructureStandardTest.class)
  * public class TinkerGraphStructureStandardTest implements GraphProvider {
  * }
  * </code>
  * Implementing {@link GraphProvider} provides a way for the {@code StructureStandardSuite} to instantiate
  * {@link Graph} instances from the implementation being tested to inject into tests in the suite.  The
- * {@code StructureStandardSuite} will utilized Features defined in the suite to determine which tests will be executed.
+ * {@code StructureStandardSuite} will utilized Features defined in the suite to determine which tests will be
+ * executed. Note that while the above example demonstrates configuration of this suite, this approach generally
+ * applies to all other test suites.
  * <br/>
- * Set the {@code gremlin.tests} environment variable to a comma separated list of test classes to execute.
+ * Set the {@code GREMLIN_TESTS} environment variable to a comma separated list of test classes to execute.
  * This setting can be helpful to restrict execution of tests to specific ones being focused on during development.
 
  * @author Stephen Mallette (http://stephen.genoprime.com)

@@ -25,9 +25,10 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import java.io.Serializable;
 
 /**
- * A {@link Traverser} represents the current state of an object flowing through a {@link Traversal}.
- * A traverser maintains a reference to the current object, a traverser-local "sack", a traversal-global sideEffect, a bulk count, and a path history.
- * <p/>
+ * A {@code Traverser} represents the current state of an object flowing through a {@link Traversal}.
+ * A traverser maintains a reference to the current object, a traverser-local "sack", a traversal-global sideEffect,
+ * a bulk count, and a path history.
+ * <br/>
  * Different types of traverser can exist depending on the semantics of the traversal and the desire for
  * space/time optimizations of the developer.
  *
@@ -149,7 +150,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
         public static final String HALT = "halt";
 
         /**
-         * When two traversers are {@link Traverser#equals} to each other, then they can be merged.
+         * When two traversers are have equality with each other, then they can be merged.
          * This method is used to merge the traversers into a single traverser.
          * This is used for optimization where instead of enumerating all traversers, they can be counted.
          *
@@ -219,7 +220,8 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
 
         /**
          * If the traverser has "no future" then it is done with its lifecycle.
-         * This does not mean that the traverser is "dead," only that it has successfully passed through a {@link Traversal}.
+         * This does not mean that the traverser is "dead," only that it has successfully passed through a
+         * {@link Traversal}.
          *
          * @return Whether the traverser is done executing or not
          */
