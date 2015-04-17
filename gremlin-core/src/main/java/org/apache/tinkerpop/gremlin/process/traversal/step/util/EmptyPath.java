@@ -57,6 +57,16 @@ public final class EmptyPath implements Path, Serializable {
     }
 
     @Override
+    public <A> A getLast(final String label) throws IllegalArgumentException {
+        return get(label);
+    }
+
+    @Override
+    public <A> List<A> getList(final String label) throws IllegalArgumentException {
+        throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
+    }
+
+    @Override
     public boolean hasLabel(final String label) {
         return false;
     }
