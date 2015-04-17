@@ -109,6 +109,7 @@ limitations under the License.
                                             <filtering>false</filtering>
                                             <excludes>
                                                 <exclude>**/*-normalized.json</exclude>
+                                                <exclude>**/sample.kryo</exclude>
                                             </excludes>
                                         </resource>
                                     </resources>
@@ -130,6 +131,33 @@ limitations under the License.
                                             <filtering>false</filtering>
                                             <includes>
                                                 <include>**/*.kryo</include>
+                                            </includes>
+                                            <excludes>
+                                                <exclude>**/sample.kryo</exclude>
+                                            </excludes>
+                                        </resource>
+                                    </resources>
+                                    <nonFilteredFileExtensions>
+                                        <nonFilteredFileExtension>kryo</nonFilteredFileExtension>
+                                    </nonFilteredFileExtensions>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>copy-gio-from-tmp-to-gremlinserver</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>
+                                        ../gremlin-server/data
+                                    </outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${io.tmp.dir}</directory>
+                                            <filtering>false</filtering>
+                                            <includes>
+                                                <include>**/sample.kryo</include>
                                             </includes>
                                         </resource>
                                     </resources>
