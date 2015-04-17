@@ -107,7 +107,7 @@ public class GryoReader implements GraphReader {
     @Override
     public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
-        this.headerReader.read(kryo, input);
+        this.headerReader.read(input);
         final Object o = kryo.readClassAndObject(input);
         return edgeMaker.apply((DetachedEdge) o);
     }
@@ -126,7 +126,7 @@ public class GryoReader implements GraphReader {
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
         final Input input = new Input(inputStream);
-        this.headerReader.read(kryo, input);
+        this.headerReader.read(input);
 
         final BatchGraph graph;
         try {
@@ -217,7 +217,7 @@ public class GryoReader implements GraphReader {
         if (null != directionRequested && null == edgeMaker)
             throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
 
-        this.headerReader.read(kryo, input);
+        this.headerReader.read(input);
 
         final Vertex vertex = vertexMaker.apply((DetachedVertex) kryo.readClassAndObject(input));
 

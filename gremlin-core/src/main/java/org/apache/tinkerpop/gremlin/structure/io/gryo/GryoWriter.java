@@ -52,7 +52,7 @@ public class GryoWriter implements GraphWriter {
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(kryo, output);
+        this.headerWriter.write(output);
 
         final boolean supportsGraphVariables = g.features().graph().variables().supportsVariables();
         output.writeBoolean(supportsGraphVariables);
@@ -73,7 +73,7 @@ public class GryoWriter implements GraphWriter {
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(kryo, output);
+        this.headerWriter.write(output);
         writeVertexToOutput(output, v, direction);
         output.flush();
     }
@@ -81,7 +81,7 @@ public class GryoWriter implements GraphWriter {
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(kryo, output);
+        this.headerWriter.write(output);
         writeVertexWithNoEdgesToOutput(output, v);
         output.flush();
     }
@@ -89,7 +89,7 @@ public class GryoWriter implements GraphWriter {
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(kryo, output);
+        this.headerWriter.write(output);
         kryo.writeClassAndObject(output, DetachedFactory.detach(e, true));
         output.flush();
     }

@@ -111,7 +111,7 @@ public final class GryoMapper implements Mapper<Kryo> {
 
         final Output out = new Output(32);
         try {
-            this.headerWriter.write(createMapper(), out);
+            this.headerWriter.write(out);
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
         }
@@ -155,12 +155,12 @@ public final class GryoMapper implements Mapper<Kryo> {
 
     @FunctionalInterface
     public interface HeaderReader {
-        public void read(final Kryo kryo, final Input input) throws IOException;
+        public void read(final Input input) throws IOException;
     }
 
     @FunctionalInterface
     public interface HeaderWriter {
-        public void write(final Kryo kryo, final Output output) throws IOException;
+        public void write(final Output output) throws IOException;
     }
 
     /**
@@ -399,7 +399,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             return new GryoMapper(serializationList, this::writeHeader, this::readHeader);
         }
 
-        private void writeHeader(final Kryo kryo, final Output output) throws IOException {
+        private void writeHeader(final Output output) throws IOException {
             // 32 byte header total
             output.writeBytes(GIO);
 
@@ -413,7 +413,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             output.writeByte(extendedVersion);
         }
 
-        private void readHeader(final Kryo kryo, final Input input) throws IOException {
+        private void readHeader(final Input input) throws IOException {
             if (!Arrays.equals(GIO, input.readBytes(3)))
                 throw new IOException("Invalid format - first three bytes of header do not match expected value");
 
