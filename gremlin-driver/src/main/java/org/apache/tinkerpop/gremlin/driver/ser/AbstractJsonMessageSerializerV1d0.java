@@ -99,21 +99,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
     public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
-            final Map<String, Object> result = new HashMap<>();
-            result.put(SerTokens.TOKEN_DATA, responseMessage.getResult().getData());
-            result.put(SerTokens.TOKEN_META, responseMessage.getResult().getMeta());
-
-            final Map<String, Object> status = new HashMap<>();
-            status.put(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
-            status.put(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().getValue());
-            status.put(SerTokens.TOKEN_ATTRIBUTES, responseMessage.getStatus().getAttributes());
-
-            final Map<String, Object> message = new HashMap<>();
-            message.put(SerTokens.TOKEN_STATUS, status);
-            message.put(SerTokens.TOKEN_RESULT, result);
-            message.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
-
-            final byte[] payload = mapper.writeValueAsBytes(message);
+            final byte[] payload = mapper.writeValueAsBytes(createResponseMessageMap(responseMessage));
             encodedMessage = allocator.buffer(payload.length);
             encodedMessage.writeBytes(payload);
 
@@ -177,6 +163,27 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
             logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
         }
+    }
+
+    /**
+     * Construct a {@link Map} from the {@link ResponseMessage} for serialization purposes.  By doing it this way,
+     * type embedding does not become overly verbose in the core structure of the message.
+     */
+    protected static Map<String, Object> createResponseMessageMap(final ResponseMessage responseMessage) {
+        final Map<String, Object> result = new HashMap<>();
+        result.put(SerTokens.TOKEN_DATA, responseMessage.getResult().getData());
+        result.put(SerTokens.TOKEN_META, responseMessage.getResult().getMeta());
+
+        final Map<String, Object> status = new HashMap<>();
+        status.put(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
+        status.put(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().getValue());
+        status.put(SerTokens.TOKEN_ATTRIBUTES, responseMessage.getStatus().getAttributes());
+
+        final Map<String, Object> message = new HashMap<>();
+        message.put(SerTokens.TOKEN_STATUS, status);
+        message.put(SerTokens.TOKEN_RESULT, result);
+        message.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
+        return message;
     }
 
     public static class GremlinServerModule extends SimpleModule {
