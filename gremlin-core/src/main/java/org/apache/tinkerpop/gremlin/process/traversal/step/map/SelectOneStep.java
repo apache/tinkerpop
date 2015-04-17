@@ -51,7 +51,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
         if (start instanceof Map && ((Map) start).containsKey(this.selectLabel))
             return (E) TraversalUtil.apply(((Map) start).get(this.selectLabel), this.selectTraversal);
         else
-            return (E) TraversalUtil.apply(traverser.path().<Object>get(this.selectLabel), this.selectTraversal);
+            return (E) TraversalUtil.apply(traverser.path().<Object>getLast(this.selectLabel), this.selectTraversal);
     }
 
     @Override
