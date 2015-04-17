@@ -297,11 +297,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final String... stepLabels) {
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), stepLabels));
+        return this.asAdmin().addStep(new SelectStep<S, E2>(this.asAdmin(), stepLabels));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String stepLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), stepLabel));
+        return this.asAdmin().addStep(new SelectOneStep<S, E2>(this.asAdmin(), stepLabel));
     }
 
     public default <E2> GraphTraversal<S, E2> unfold() {
