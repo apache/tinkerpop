@@ -59,7 +59,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         final Path path = traverser.path();
         this.selectLabels.forEach(label -> {
             if (path.hasLabel(label))
-                bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next()));
+                bindings.put(label, (E) TraversalUtil.apply(path.<Object>getLast(label), this.traversalRing.next()));
         });
 
         ////// PROCESS MAP BINDINGS
