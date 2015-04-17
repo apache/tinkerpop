@@ -235,6 +235,7 @@ limitations under the License.
                         <exclude>docs/static/**</exclude>
                         <exclude>docs/stylesheets/**</exclude>
                         <exclude>**/target/**</exclude>
+                        <exclude>data/*.txt</exclude>
                         <exclude>**/*.kryo</exclude>
                         <exclude>**/*.iml</exclude>
                         <exclude>**/*.json</exclude>
