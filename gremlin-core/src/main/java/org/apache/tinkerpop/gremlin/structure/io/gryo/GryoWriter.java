@@ -45,14 +45,6 @@ import java.util.UUID;
 public class GryoWriter implements GraphWriter {
     private Kryo kryo;
     private final GryoMapper.HeaderWriter headerWriter;
-    private static final UUID delimiter = UUID.fromString("2DEE3ABF-9963-4546-A578-C1C48690D7F7");
-    public static final byte[] DELIMITER = new byte[16];
-
-    static {
-        final ByteBuffer bb = ByteBuffer.wrap(DELIMITER);
-        bb.putLong(delimiter.getMostSignificantBits());
-        bb.putLong(delimiter.getLeastSignificantBits());
-    }
 
     private GryoWriter(final GryoMapper gryoMapper) {
         this.kryo = gryoMapper.createMapper();
