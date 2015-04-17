@@ -233,7 +233,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @Ignore("There is a HashMap to Element cast problem happening here for some reason in both OLTP and OLAP")  // TODO: dkuppitz this has been ignored for some time now -- don't know if the test is bad or the code is bad.
+    @Ignore("Even though the reduce is local, you cannot select across that barrier step")
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by();
