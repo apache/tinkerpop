@@ -61,7 +61,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      * This method must ensure that the strategies are sorted prior to application.
      *
      * @param traversal the traversal to apply the strategies to
-     * @param engine    the engine that the traversal is going to be executed on
      */
     public void applyStrategies(final Traversal.Admin<?, ?> traversal);
 
@@ -84,9 +83,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
     @SuppressWarnings("unchecked")
     public TraversalStrategies removeStrategies(final Class<? extends TraversalStrategy>... strategyClasses);
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public TraversalStrategies clone();
 

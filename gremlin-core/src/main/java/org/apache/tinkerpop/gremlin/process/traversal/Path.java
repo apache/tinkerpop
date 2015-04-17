@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
@@ -29,10 +30,9 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * A Path denotes a particular walk through a {@link org.apache.tinkerpop.gremlin.structure.Graph} as defined by a {@link Traverser}.
+ * A Path denotes a particular walk through a {@link Graph} as defined by a {@link Traverser}.
  * In abstraction, any Path implementation maintains two lists: a list of sets of labels and a list of objects.
- * The list of labels are the labels of the steps traversed.
- * The list of objects are the objects traversed.
+ * The list of labels are the labels of the steps traversed. The list of objects are the objects traversed.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -130,9 +130,6 @@ public interface Path extends Cloneable {
      */
     public List<Set<String>> labels();
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public Path clone();
 
