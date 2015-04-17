@@ -30,10 +30,8 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.UUID;
 
 /**
  * The {@link GraphWriter} for the Gremlin Structure serialization format based on Kryo.  The format is meant to be
@@ -56,10 +54,10 @@ public class GryoWriter implements GraphWriter {
         final Output output = new Output(outputStream);
         this.headerWriter.write(kryo, output);
 
-        final boolean supportsGraphMemory = g.features().graph().variables().supportsVariables();
-        output.writeBoolean(supportsGraphMemory);
-        if (supportsGraphMemory)
-            kryo.writeObject(output, new HashMap(g.variables().asMap()));
+        final boolean supportsGraphVariables = g.features().graph().variables().supportsVariables();
+        output.writeBoolean(supportsGraphVariables);
+        if (supportsGraphVariables)
+            kryo.writeObject(output, new HashMap<>(g.variables().asMap()));
 
         final Iterator<Vertex> vertices = g.vertices();
         final boolean hasSomeVertices = vertices.hasNext();
