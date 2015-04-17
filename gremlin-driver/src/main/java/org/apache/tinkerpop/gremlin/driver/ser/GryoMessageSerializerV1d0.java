@@ -63,7 +63,6 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
     private static final String MIME_TYPE = SerTokens.MIME_GRYO_V1D0;
     private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRYO_V1D0 + "-stringd";
 
-    private static final String TOKEN_EXTENDED_VERSION = "extendedVersion";
     private static final String TOKEN_CUSTOM = "custom";
     private static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
     private static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
