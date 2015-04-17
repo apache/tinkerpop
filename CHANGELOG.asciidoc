@@ -32,6 +32,8 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 * Changed the `gremlin.tests` environment variable for test filtering to the more standard convention of `GREMLIN_TESTS` and made it work for all test suites.
 * Removed `back()`-step as `select()`-step provides the same behavior with more intelligent optimizations and `by()`-modulation.
 * Removed `Graph.Helper` method annotation and related infrastructure in tests.
+* Modified header of Gryo to be 16 bytes instead of 32 (and removed the version stamp).
+* Removed the concept of handling version in Gryo via the builder as it wasn't really accomplishing the capability of ensuring backward compatibility.
 * Moved `Exceptions.propertyRemovalNotSupported` from `Element` to `Property` for consistency.
 * Provided a method for Gremlin Server to bind `TraversalSource` objects for use in scripts.
 * Modified the reference implementation for dealing with "custom" identifier serialization in GraphSON - See `IoTest.CustomId` for the example.

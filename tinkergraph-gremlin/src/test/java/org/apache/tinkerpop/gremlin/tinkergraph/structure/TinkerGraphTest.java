@@ -626,13 +626,15 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteGratefulDead() throws IOException {
         final Graph g = TinkerGraph.open();
+
         final GraphReader reader = GryoReader.build().create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/gryo/grateful-dead.kryo")) {
             reader.readGraph(stream, g);
         }
 
         /* keep this hanging around because changes to gryo format will need grateful dead generated from json so you can generate the gio
-        final GraphReader reader = GraphSONReader.build().embedTypes(true).create();
+        final GraphSONMapper mapper = GraphSONMapper.build().embedTypes(true).create();
+        final GraphReader reader = org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader.build().mapper(mapper).create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/graphson/grateful-dead.json")) {
             reader.readGraph(stream, g);
         }

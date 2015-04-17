@@ -44,17 +44,15 @@ import java.util.Iterator;
  */
 public class GryoWriter implements GraphWriter {
     private Kryo kryo;
-    private final GryoMapper.HeaderWriter headerWriter;
 
     private GryoWriter(final GryoMapper gryoMapper) {
         this.kryo = gryoMapper.createMapper();
-        this.headerWriter = gryoMapper.getHeaderWriter();
     }
 
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(output);
+        writeHeader(output);
 
         final boolean supportsGraphVariables = g.features().graph().variables().supportsVariables();
         output.writeBoolean(supportsGraphVariables);
@@ -75,7 +73,7 @@ public class GryoWriter implements GraphWriter {
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(output);
+        writeHeader(output);
         writeVertexToOutput(output, v, direction);
         output.flush();
     }
@@ -83,7 +81,7 @@ public class GryoWriter implements GraphWriter {
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(output);
+        writeHeader(output);
         writeVertexWithNoEdgesToOutput(output, v);
         output.flush();
     }
@@ -91,9 +89,13 @@ public class GryoWriter implements GraphWriter {
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(output);
+        writeHeader(output);
         kryo.writeClassAndObject(output, DetachedFactory.detach(e, true));
         output.flush();
+    }
+
+    void writeHeader(final Output output) throws IOException {
+        output.writeBytes(GryoMapper.HEADER);
     }
 
     private void writeEdgeToOutput(final Output output, final Edge e) {
