@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -67,6 +69,10 @@ public final class TraversalUtil {
         } catch (final NoSuchElementException e) {
             throw new IllegalArgumentException("The provided start does not map to a value: " + start + "->" + traversal);
         }
+    }
+
+    public static final <S, E> List<E> applyEach(final List<S> startList, final Traversal.Admin<S, E> traversal) {
+        return startList.stream().map(start -> apply(start, traversal)).collect(Collectors.toList());
     }
 
     public static final <S, E> E applyNullable(final S start, final Traversal.Admin<S, E> traversal) {
