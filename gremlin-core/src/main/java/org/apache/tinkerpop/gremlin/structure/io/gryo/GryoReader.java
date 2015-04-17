@@ -51,7 +51,7 @@ import java.util.function.Function;
  * non-lossy in terms of Gremlin Structure to Gremlin Structure migrations (assuming both structure implementations
  * support the same graph features).
  * <br/>
- * This implementation is not thread-safe.
+ * This implementation is not thread-safe.  Have one {@code GryoReader} instance per thread.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -37,6 +37,8 @@ import java.util.Iterator;
  * The {@link GraphWriter} for the Gremlin Structure serialization format based on Kryo.  The format is meant to be
  * non-lossy in terms of Gremlin Structure to Gremlin Structure migrations (assuming both structure implementations
  * support the same graph features).
+ * <br/>
+ * This implementation is not thread-safe.  Have one {@code GraphWriter} instance per thread.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
