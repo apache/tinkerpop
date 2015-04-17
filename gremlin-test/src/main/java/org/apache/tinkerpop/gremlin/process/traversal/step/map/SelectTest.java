@@ -67,6 +67,10 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX();
+
+    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXnameX();
+
     // below we original back()-tests
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_selectXhereX(final Object v1Id);
@@ -271,6 +275,34 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         assertEquals(4, persons.size());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            Vertex vertex = traversal.next();
+            assertTrue(vertex.value("name").equals("ripple") || vertex.value("name").equals("lop"));
+        }
+        assertEquals(2, counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXnameX() {
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXnameX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            counter++;
+            String name = traversal.next();
+            assertTrue(name.equals("ripple") || name.equals("lop"));
+        }
+        assertEquals(2, counter);
+    }
+
     //
 
     @Test
@@ -435,6 +467,16 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
             return g.V().hasLabel("person").as("person").local(__.bothE().label().groupCount()).as("relations").select().by("name").by();
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX() {
+            return g.V().as("a").out().as("a").out().as("a").select("a");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXnameX() {
+            return g.V().as("a").out().as("a").out().as("a").<String>select("a").by("name");
         }
 
         //
