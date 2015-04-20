@@ -30,6 +30,8 @@ Documentation
 Building and Testing
 ~~~~~~~~~~~~~~~~~~~~
 
+TinkerPop requires `Java 1.8.0_40+` for proper building and proper operations.
+
 * Build Project: `mvn clean install`
 ** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the Maven project list argument, e.g.:
 +

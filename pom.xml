@@ -223,7 +223,6 @@ limitations under the License.
                     <excludes>
                         <exclude>.repository/**</exclude>
                         <exclude>docs/static/**</exclude>
-                        <exclude>docs/stylesheets/**</exclude>
                         <exclude>**/target/**</exclude>
                         <exclude>data/*.txt</exclude>
                         <exclude>**/*.kryo</exclude>

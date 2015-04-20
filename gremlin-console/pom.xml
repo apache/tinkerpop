@@ -123,7 +123,7 @@ limitations under the License.
                         <descriptor>src/assembly/standalone.xml</descriptor>
                         <descriptor>src/assembly/distribution.xml</descriptor>
                     </descriptors>
-                    <finalName>${project.artifactId}-${project.version}</finalName>
+                    <finalName>apache-${project.artifactId}-${project.version}</finalName>
                     <outputDirectory>target</outputDirectory>
                     <workDirectory>target/assembly/work</workDirectory>
                     <tarLongFileMode>warn</tarLongFileMode>

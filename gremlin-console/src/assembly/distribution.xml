@@ -22,7 +22,7 @@ limitations under the License.
     <fileSets>
         <fileSet>
             <fileMode>0775</fileMode>
-            <directory>target/${project.artifactId}-${project.version}-standalone/bin</directory>
+            <directory>target/apache-${project.artifactId}-${project.version}-standalone/bin</directory>
             <outputDirectory>bin</outputDirectory>
             <includes>
                 <include>*.sh</include>
@@ -33,23 +33,23 @@ limitations under the License.
             <directory>conf</directory>
         </fileSet>
         <fileSet>
-            <directory>target/${project.artifactId}-${project.version}-standalone/data</directory>
+            <directory>target/apache-${project.artifactId}-${project.version}-standalone/data</directory>
             <outputDirectory>data</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>target/${project.artifactId}-${project.version}-standalone/docs</directory>
+            <directory>target/apache-${project.artifactId}-${project.version}-standalone/docs</directory>
             <outputDirectory>docs</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>target/${project.artifactId}-${project.version}-standalone/javadocs</directory>
+            <directory>target/apache-${project.artifactId}-${project.version}-standalone/javadocs</directory>
             <outputDirectory>javadocs</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>target/${project.artifactId}-${project.version}-standalone/ext</directory>
+            <directory>target/apache-${project.artifactId}-${project.version}-standalone/ext</directory>
             <outputDirectory>ext</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>target/${project.artifactId}-${project.version}-standalone/lib</directory>
+            <directory>target/apache-${project.artifactId}-${project.version}-standalone/lib</directory>
             <outputDirectory>lib</outputDirectory>
         </fileSet>
     </fileSets>
@@ -60,6 +60,10 @@ limitations under the License.
         </file>
         <file>
             <source>src/main/NOTICE</source>
+            <outputDirectory></outputDirectory>
+        </file>
+        <file>
+            <source>../DISCLAIMER</source>
             <outputDirectory></outputDirectory>
         </file>
     </files>
