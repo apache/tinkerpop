@@ -30,6 +30,8 @@ Documentation
 Building and Testing
 ~~~~~~~~~~~~~~~~~~~~
 
+TinkerPop requires `Java 1.8.0_40+` for proper building and proper operations.
+
 * Build Project: `mvn clean install`
 ** Specify specific tests in a TinkerPop Suite to run: `mvn test -Dgremlin.tests={test class 1, test class 2...}` - note that including a specific test may require its inner class implementation (e.g. `org.apache.tinkerpop.gremlin....UnionTest$ComputerTest`)
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
