@@ -65,5 +65,9 @@ limitations under the License.
             <source>src/main/NOTICE</source>
             <outputDirectory></outputDirectory>
         </file>
+        <file>
+            <source>src/main/DISCLAIMER</source>
+            <outputDirectory></outputDirectory>
+        </file>
     </files>
 </assembly>
