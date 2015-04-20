@@ -387,7 +387,10 @@ With `dedup()`-step (*filter*), repeatedly seen objects are removed from the tra
 ----
 g.V().values('lang')
 g.V().values('lang').dedup()
+g.V(1).repeat(bothE('created').dedup().otherV()).emit().path() <1>
 ----
+
+<1> Traverse all `created` edges, but don't touch any edge twice.
 
 If a by-step modulation is provided to `dedup()`, then the object is processed accordingly prior to determining if it has been seen or not.
 

@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.UseEngine
+import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -67,6 +67,12 @@ public abstract class GroovyExceptTest {
         }
 
         @Override
+        public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_dedup_otherVX_emit_path(
+                final Object v1Id) {
+            g.V(v1Id).repeat(__.bothE('created').dedup.otherV).emit.path
+        }
+
+        @Override
         public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name(final Object v1Id) {
             g.V(v1Id).as('a').out('created').in('created').except('a').name
         }
@@ -104,6 +110,12 @@ public abstract class GroovyExceptTest {
         public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(
                 final Object v1Id) {
             ComputerTestHelper.compute("g.V(${v1Id}).repeat(__.bothE('created').except('e').aggregate('e').otherV).emit.path", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_dedup_otherVX_emit_path(
+                final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).repeat(__.bothE('created').dedup.otherV).emit.path", g);
         }
 
         @Override
