@@ -113,7 +113,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             final FullHttpRequest req = (FullHttpRequest) msg;
 
             if (is100ContinueExpected(req)) {
-                ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
+                ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE), ctx.voidPromise());
             }
 
             if (req.getMethod() != GET && req.getMethod() != POST) {
@@ -168,7 +168,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
                         } else {
                             response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-                            ctx.writeAndFlush(response);
+                            ctx.writeAndFlush(response, ctx.voidPromise());
                         }
                     }
                 });

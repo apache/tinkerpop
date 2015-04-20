@@ -87,7 +87,7 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                         if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                             ctx.writeAndFlush(ResponseMessage.build(requestMessage)
                                     .code(ResponseStatusCode.SUCCESS)
-                                    .result(aggregate).create());
+                                    .result(aggregate).create(), ctx.voidPromise());
                             aggregate = new ArrayList<>(resultIterationBatchSize);
                         }
 
@@ -107,10 +107,10 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                     if (!f.isSuccess()) {
                         final String errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, f.cause().getMessage());
                         logger.warn(errorMessage);
-                        ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                        ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create(), ctx.voidPromise());
                     }
 
-                    ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResponseStatusCode.SUCCESS_TERMINATOR).create());
+                    ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResponseStatusCode.SUCCESS_TERMINATOR).create(), ctx.voidPromise());
                 });
             } finally {
                 ReferenceCountUtil.release(msg);

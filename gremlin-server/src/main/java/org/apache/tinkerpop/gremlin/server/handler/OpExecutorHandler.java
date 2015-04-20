@@ -56,10 +56,10 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
     }
 
     @Override
-    protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final Pair<RequestMessage, ThrowingConsumer<Context>> objects) throws Exception {
+    protected void channelRead0(final ChannelHandlerContext ctx, final Pair<RequestMessage, ThrowingConsumer<Context>> objects) throws Exception {
         final RequestMessage msg = objects.getValue0();
         final ThrowingConsumer<Context> op = objects.getValue1();
-        final Context gremlinServerContext = new Context(msg, channelHandlerContext,
+        final Context gremlinServerContext = new Context(msg, ctx,
                 settings, graphs, gremlinExecutor, scheduledExecutorService);
 
         try {
@@ -68,7 +68,7 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
             // Ops may choose to throw OpProcessorException or write the error ResponseMessage down the line
             // themselves
             logger.warn(ope.getMessage(), ope);
-            channelHandlerContext.writeAndFlush(ope.getResponseMessage());
+            ctx.writeAndFlush(ope.getResponseMessage(), ctx.voidPromise());
         } finally {
             ReferenceCountUtil.release(objects);
         }
