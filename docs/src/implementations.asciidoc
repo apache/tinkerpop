@@ -692,8 +692,44 @@ MapReduceGraphComputer
 Input/Output Formats
 ~~~~~~~~~~~~~~~~~~~~
 
+GraphSON IO Format
+^^^^^^^^^^^^^^^^^^
+
+* **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat`
+* **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat`
+
+GraphSON is a JSON based graph format. Hadoop-Gremlin makes use of a slight variation of the typical form that is:
+
+* **vertex-centric**: a row in a Hadoop-Gremlin GraphSON file is a vertex, its properties, and its incident edges (and their respective properties).
+* **less verbose**: a row does not include both `_inV` and `_outV` ids as one of the ids can be inferred from the incident vertex.
+
+The data below represents an adjacency list representation of the classic TinkerGraph toy graph in GraphSON format.
+
+[source,json]
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","properties":{"name":[{"id":0,"label":"name","value":"marko","properties":{}}],"age":[{"id":1,"label":"age","value":29,"properties":{}}]}}
+{"inE":[{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"vertex","type":"vertex","properties":{"name":[{"id":2,"label":"name","value":"vadas","properties":{}}],"age":[{"id":3,"label":"age","value":27,"properties":{}}]}}
+{"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","properties":{"name":[{"id":4,"label":"name","value":"lop","properties":{}}],"lang":[{"id":5,"label":"lang","value":"java","properties":{}}]}}
+{"inE":[{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}}],"id":4,"label":"vertex","type":"vertex","properties":{"name":[{"id":6,"label":"name","value":"josh","properties":{}}],"age":[{"id":7,"label":"age","value":32,"properties":{}}]}}
+{"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","properties":{"name":[{"id":8,"label":"name","value":"ripple","properties":{}}],"lang":[{"id":9,"label":"lang","value":"java","properties":{}}]}}
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","properties":{"name":[{"id":10,"label":"name","value":"peter","properties":{}}],"age":[{"id":11,"label":"age","value":35,"properties":{}}]}}
+
+GraphSON is a space-expensive graph format in that it is a text-based markup language. However, it is convenient for many developers to work with as its structure is simple (easy to create and parse).
+
+
+Gryo IO Format
+^^^^^^^^^^^^^^
+
+* **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat`
+* **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat`
+
+Gryo is a binary graph format. Given that it's compact and splittable, Gremlin-Hadoop makes use of the Gryo IO Format as the intermediate representation between consecutive Gremlin-Hadoop jobs. In other words, when a Gremlin-Hadoop job requires more than one MapReduce phase, a Gryo file representing the output of the first MapReduce job is temporarily persisted in HDFS and fed as the input to the second MapReduce job.
+
+
 Script IO Format
 ^^^^^^^^^^^^^^^^
+
+* **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptInputFormat`
+* **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptOutputFormat`
 
 `ScriptInutFormat` and `ScriptOutputFormat` take an arbitrary script and use that script to either read or write Vertex objects, respectively. This can be considered the most general `InputFormat`/`OutputFormat` possible in that link:http://www.tinkerpop.com/docs/3.0.0-SNAPSHOT/#hadoop-gremlin[Hadoop-Gremlin] uses the user provided script for all reading/writing.
 
