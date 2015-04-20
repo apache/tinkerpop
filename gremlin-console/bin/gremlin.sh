@@ -21,4 +21,4 @@
 
 OPTS=$@
 set JAVA_OPTIONS="-Dtinkerpop.ext=/../target/apache-incubating-gremlin-*-standalone/ext -Dlog4j.configuration=conf/log4j-console.properties -Dgremlin.log4j.level=$GREMLIN_LOG_LEVEL"
-`dirname $0`/../target/apache-incubating-gremlin-*-standalone/bin/gremlin.sh $OPTS
+`dirname $0`/../target/apache-gremlin-*-standalone/bin/gremlin.sh $OPTS
