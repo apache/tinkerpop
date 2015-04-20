@@ -46,18 +46,18 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     @Override
-    protected void encode(final ChannelHandlerContext channelHandlerContext, final ResponseMessage responseMessage, final ByteBuf byteBuf) throws Exception {
-        final MessageSerializer serializer = channelHandlerContext.channel().attr(StateKey.SERIALIZER).get();
-        final boolean useBinary = channelHandlerContext.channel().attr(StateKey.USE_BINARY).get();
+    protected void encode(final ChannelHandlerContext ctx, final ResponseMessage responseMessage, final ByteBuf byteBuf) throws Exception {
+        final MessageSerializer serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
+        final boolean useBinary = ctx.channel().attr(StateKey.USE_BINARY).get();
 
         try {
             if (useBinary) {
                 if (responseMessage.getStatus().getCode().isSuccess())
-                    byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, channelHandlerContext.alloc()));
+                    byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, ctx.alloc()));
                 else {
-                    byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, channelHandlerContext.alloc()));
+                    byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, ctx.alloc()));
                     final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                    byteBuf.writeBytes(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc()));
+                    byteBuf.writeBytes(serializer.serializeResponseAsBinary(terminator, ctx.alloc()));
                     errorMeter.mark();
                 }
             } else {
@@ -82,14 +82,14 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
                     .statusMessage(errorMessage)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
-                channelHandlerContext.write(serializer.serializeResponseAsBinary(error, channelHandlerContext.alloc()));
+                ctx.write(serializer.serializeResponseAsBinary(error, ctx.alloc()), ctx.voidPromise());
                 final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                channelHandlerContext.writeAndFlush(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc()));
+                ctx.writeAndFlush(serializer.serializeResponseAsBinary(terminator, ctx.alloc()), ctx.voidPromise());
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                channelHandlerContext.write(textSerializer.serializeResponseAsString(error));
+                ctx.write(textSerializer.serializeResponseAsString(error), ctx.voidPromise());
                 final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                channelHandlerContext.writeAndFlush(textSerializer.serializeResponseAsString(terminator));
+                ctx.writeAndFlush(textSerializer.serializeResponseAsString(terminator), ctx.voidPromise());
             }
         }
     }

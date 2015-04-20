@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.algorithm.generator.DistributionGenerator;
+import org.apache.tinkerpop.gremlin.algorithm.generator.PowerLawDistribution;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -50,6 +52,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.assertEquals;
@@ -619,6 +622,22 @@ public class TinkerGraphTest {
         }, 0.5).has("oid", "1").count().next());
     }
 
+    @Test
+    public void shouldWriteSampleForGremlinServer() throws IOException {
+        final Graph g = TinkerGraph.open();
+        IntStream.range(0, 10000).forEach(i -> g.addVertex("oid", i));
+        DistributionGenerator.build(g)
+                .label("knows")
+                .seedGenerator(() -> 987654321l)
+                .outDistribution(new PowerLawDistribution(2.1))
+                .inDistribution(new PowerLawDistribution(2.1))
+                .expectedNumEdges(100000).create().generate();
+
+        final OutputStream os = new FileOutputStream(tempPath + "sample.kryo");
+        GryoWriter.build().create().writeGraph(os, g);
+        os.close();
+    }
+
     /**
      * This test helps with data conversions on Grateful Dead.  No Assertions...run as needed. Never read from the
      * GraphML source as it will always use a String identifier.
@@ -626,13 +645,15 @@ public class TinkerGraphTest {
     @Test
     public void shouldWriteGratefulDead() throws IOException {
         final Graph g = TinkerGraph.open();
+
         final GraphReader reader = GryoReader.build().create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/gryo/grateful-dead.kryo")) {
             reader.readGraph(stream, g);
         }
 
         /* keep this hanging around because changes to gryo format will need grateful dead generated from json so you can generate the gio
-        final GraphReader reader = GraphSONReader.build().embedTypes(true).create();
+        final GraphSONMapper mapper = GraphSONMapper.build().embedTypes(true).create();
+        final GraphReader reader = org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader.build().mapper(mapper).create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/graphson/grateful-dead.json")) {
             reader.readGraph(stream, g);
         }

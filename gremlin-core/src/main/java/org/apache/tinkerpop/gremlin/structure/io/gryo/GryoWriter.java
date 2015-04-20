@@ -30,44 +30,34 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.UUID;
 
 /**
  * The {@link GraphWriter} for the Gremlin Structure serialization format based on Kryo.  The format is meant to be
  * non-lossy in terms of Gremlin Structure to Gremlin Structure migrations (assuming both structure implementations
  * support the same graph features).
+ * <br/>
+ * This implementation is not thread-safe.  Have one {@code GraphWriter} instance per thread.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GryoWriter implements GraphWriter {
     private Kryo kryo;
-    private final GryoMapper.HeaderWriter headerWriter;
-    private static final UUID delimiter = UUID.fromString("2DEE3ABF-9963-4546-A578-C1C48690D7F7");
-    public static final byte[] DELIMITER = new byte[16];
-
-    static {
-        final ByteBuffer bb = ByteBuffer.wrap(DELIMITER);
-        bb.putLong(delimiter.getMostSignificantBits());
-        bb.putLong(delimiter.getLeastSignificantBits());
-    }
 
     private GryoWriter(final GryoMapper gryoMapper) {
         this.kryo = gryoMapper.createMapper();
-        this.headerWriter = gryoMapper.getHeaderWriter();
     }
 
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(kryo, output);
+        writeHeader(output);
 
-        final boolean supportsGraphMemory = g.features().graph().variables().supportsVariables();
-        output.writeBoolean(supportsGraphMemory);
-        if (supportsGraphMemory)
-            kryo.writeObject(output, new HashMap(g.variables().asMap()));
+        final boolean supportsGraphVariables = g.features().graph().variables().supportsVariables();
+        output.writeBoolean(supportsGraphVariables);
+        if (supportsGraphVariables)
+            kryo.writeObject(output, new HashMap<>(g.variables().asMap()));
 
         final Iterator<Vertex> vertices = g.vertices();
         final boolean hasSomeVertices = vertices.hasNext();
@@ -83,7 +73,7 @@ public class GryoWriter implements GraphWriter {
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(kryo, output);
+        writeHeader(output);
         writeVertexToOutput(output, v, direction);
         output.flush();
     }
@@ -91,7 +81,7 @@ public class GryoWriter implements GraphWriter {
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(kryo, output);
+        writeHeader(output);
         writeVertexWithNoEdgesToOutput(output, v);
         output.flush();
     }
@@ -99,9 +89,13 @@ public class GryoWriter implements GraphWriter {
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
-        this.headerWriter.write(kryo, output);
+        writeHeader(output);
         kryo.writeClassAndObject(output, DetachedFactory.detach(e, true));
         output.flush();
+    }
+
+    void writeHeader(final Output output) throws IOException {
+        output.writeBytes(GryoMapper.HEADER);
     }
 
     private void writeEdgeToOutput(final Output output, final Edge e) {

@@ -52,13 +52,10 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProp
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.apache.tinkerpop.shaded.kryo.util.DefaultStreamFactory;
 import org.apache.tinkerpop.shaded.kryo.util.MapReferenceResolver;
 import org.javatuples.Triplet;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
@@ -83,9 +80,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -94,28 +89,12 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class GryoMapper implements Mapper<Kryo> {
-    static final byte[] GIO = "gio".getBytes();
+    public static final byte[] GIO = "gio".getBytes();
+    public static final byte[] HEADER = Arrays.copyOf(GIO, 16);
     private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList;
-    private final HeaderWriter headerWriter;
-    private final HeaderReader headerReader;
-    private final byte[] versionedHeader;
 
-    public static final byte DEFAULT_EXTENDED_VERSION = Byte.MIN_VALUE;
-
-    private GryoMapper(final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList,
-                       final HeaderWriter headerWriter,
-                       final HeaderReader headerReader) {
+    private GryoMapper(final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList) {
         this.serializationList = serializationList;
-        this.headerWriter = headerWriter;
-        this.headerReader = headerReader;
-
-        final Output out = new Output(32);
-        try {
-            this.headerWriter.write(createMapper(), out);
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
-        this.versionedHeader = out.toBytes();
     }
 
     @Override
@@ -133,107 +112,18 @@ public final class GryoMapper implements Mapper<Kryo> {
         return kryo;
     }
 
-    public HeaderWriter getHeaderWriter() {
-        return headerWriter;
-    }
-
-    public HeaderReader getHeaderReader() {
-        return headerReader;
-    }
-
     public List<Class> getRegisteredClasses() {
         return this.serializationList.stream().map(Triplet::getValue0).collect(Collectors.toList());
     }
 
-    /**
-     * Gets the header for a Gremlin Kryo file, which is based on the version of Gremlin Kryo that is constructed
-     * via the builder classes.
-     */
-    public byte[] getVersionedHeader() {
-        return versionedHeader;
-    }
-
-    @FunctionalInterface
-    public interface HeaderReader {
-        public void read(final Kryo kryo, final Input input) throws IOException;
-    }
-
-    @FunctionalInterface
-    public interface HeaderWriter {
-        public void write(final Kryo kryo, final Output output) throws IOException;
-    }
-
-    /**
-     * Use a specific version of Gryo.
-     */
-    public static Builder build(final Version version) {
-        return version.getBuilder();
-    }
-
-    /**
-     * Use the most current version of Gryo.
-     */
     public static Builder build() {
-        return Version.V_1_0_0.getBuilder();
+        return new Builder();
     }
 
-    public static interface Builder {
-        /**
-         * Add mapper classes to serializes with gryo using standard serialization.
-         */
-        public Builder addCustom(final Class... custom);
-
-        /**
-         * Add mapper class to serializes with mapper serialization.
-         */
-        public Builder addCustom(final Class clazz, final Serializer serializer);
-
-        /**
-         * Add mapper class to serializes with mapper serialization as returned from a {@link Function}.
-         */
-        public Builder addCustom(final Class clazz, final Function<Kryo, Serializer> serializer);
-
-        /**
-         * If using mapper classes it might be useful to tag the version stamped to the serialization with a mapper
-         * value, such that Gryo serialization at 1.0.0 would have a fourth byte for an extended version.  The user
-         * supplied fourth byte can then be used to ensure the right deserializer is used to read the data. If this
-         * value is not supplied then it is written as {@link Byte#MIN_VALUE}. The value supplied here should be greater
-         * than or equal to zero.
-         */
-        public Builder extendedVersion(final byte extendedVersion);
-
-        /**
-         * By default the {@link #extendedVersion(byte)} is checked against what is read from an input source and if
-         * those values are equal the version being read is considered "compliant".  To alter this behavior, supply a
-         * mapper compliance {@link Predicate} to evaluate the value read from the input source (i.e. first argument)
-         * and the value marked in the {@code GryoMapper} instance {i.e. second argument}.  Supplying this function is
-         * useful when versions require backward compatibility or other more complex checks.  This function is only used
-         * if the {@link #extendedVersion(byte)} is set to something other than its default.
-         */
-        public Builder compliant(final BiPredicate<Byte, Byte> compliant);
-
-        public GryoMapper create();
-    }
-
-    public enum Version {
-        V_1_0_0(BuilderV1d0.class);
-
-        private final Class<? extends Builder> builder;
-
-        private Version(final Class<? extends Builder> builder) {
-            this.builder = builder;
-        }
-
-        Builder getBuilder() {
-            try {
-                return builder.newInstance();
-            } catch (Exception x) {
-                throw new RuntimeException("Gryo Builder implementation cannot be instantiated", x);
-            }
-        }
-    }
-
-    public static class BuilderV1d0 implements Builder {
+    /**
+     * A builder to construct a {@link GryoMapper} instance.
+     */
+    public static class Builder {
 
         /**
          * Map with one entry that is used so that it is possible to get the class of LinkedHashMap.Entry.
@@ -328,22 +218,16 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DependantMutableMetrics.class, null, 80));
         }};
 
-        private static final byte major = 1;
-        private static final byte minor = 0;
-        private static final byte patchLevel = 0;
-
-        private byte extendedVersion = DEFAULT_EXTENDED_VERSION;
-        private BiPredicate<Byte, Byte> compliant = (readExt, serExt) -> readExt.equals(serExt);
-
         /**
          * Starts numbering classes for Gryo serialization at 65536 to leave room for future usage by TinkerPop.
          */
         private final AtomicInteger currentSerializationId = new AtomicInteger(65536);
 
+        private Builder() {}
+
         /**
-         * {@inheritDoc}
+         * Register custom classes to serializes with gryo using default serialization.
          */
-        @Override
         public Builder addCustom(final Class... custom) {
             if (custom != null && custom.length > 0)
                 serializationList.addAll(Arrays.asList(custom).stream()
@@ -353,87 +237,23 @@ public final class GryoMapper implements Mapper<Kryo> {
         }
 
         /**
-         * {@inheritDoc}
+         * Register custom class to serialize with a custom serialization class.
          */
-        @Override
         public Builder addCustom(final Class clazz, final Serializer serializer) {
             serializationList.add(Triplet.with(clazz, kryo -> serializer, currentSerializationId.getAndIncrement()));
             return this;
         }
 
         /**
-         * {@inheritDoc}
+         * Register a custom class to serialize with a custom serializer as returned from a {@link Function}.
          */
-        @Override
         public Builder addCustom(final Class clazz, final Function<Kryo, Serializer> serializer) {
             serializationList.add(Triplet.with(clazz, serializer, currentSerializationId.getAndIncrement()));
             return this;
         }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public Builder extendedVersion(final byte extendedVersion) {
-            if (extendedVersion > DEFAULT_EXTENDED_VERSION && extendedVersion < 0)
-                throw new IllegalArgumentException("The extendedVersion must be greater than zero");
-
-            this.extendedVersion = extendedVersion;
-            return this;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public Builder compliant(final BiPredicate<Byte, Byte> compliant) {
-            if (null == compliant)
-                throw new IllegalArgumentException("compliant");
-
-            this.compliant = compliant;
-            return this;
-        }
-
-        @Override
         public GryoMapper create() {
-            return new GryoMapper(serializationList, this::writeHeader, this::readHeader);
-        }
-
-        private void writeHeader(final Kryo kryo, final Output output) throws IOException {
-            // 32 byte header total
-            output.writeBytes(GIO);
-
-            // some space for later
-            output.writeBytes(new byte[25]);
-
-            // version x.y.z
-            output.writeByte(major);
-            output.writeByte(minor);
-            output.writeByte(patchLevel);
-            output.writeByte(extendedVersion);
-        }
-
-        private void readHeader(final Kryo kryo, final Input input) throws IOException {
-            if (!Arrays.equals(GIO, input.readBytes(3)))
-                throw new IOException("Invalid format - first three bytes of header do not match expected value");
-
-            // skip the next 25 bytes in v1
-            input.readBytes(25);
-
-            // final three bytes of header are the version which should be 1.0.0
-            final byte[] version = input.readBytes(3);
-            final byte extension = input.readByte();
-
-            // direct match on version for now
-            if (version[0] != major || version[1] != minor || version[2] != patchLevel)
-                throw new IOException(String.format(
-                        "The version [%s.%s.%s] in the stream cannot be understood by this reader",
-                        version[0], version[1], version[2]));
-
-            if (extendedVersion >= 0 && !compliant.test(extension, extendedVersion))
-                throw new IOException(String.format(
-                        "The extension [%s] in the input source is not compliant with this configuration of Gryo - [%s]",
-                        extension, extendedVersion));
+            return new GryoMapper(serializationList);
         }
     }
 }

@@ -67,9 +67,9 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
     }
 
     @Override
-    protected void decode(final ChannelHandlerContext channelHandlerContext, final RequestMessage msg,
+    protected void decode(final ChannelHandlerContext ctx, final RequestMessage msg,
                           final List<Object> objects) throws Exception {
-        final Context gremlinServerContext = new Context(msg, channelHandlerContext, settings,
+        final Context gremlinServerContext = new Context(msg, ctx, settings,
                 graphs, gremlinExecutor, this.scheduledExecutorService);
         try {
             // choose a processor to do the work based on the request message.
@@ -86,7 +86,7 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
         } catch (OpProcessorException ope) {
             errorMeter.mark();
             logger.warn(ope.getMessage(), ope);
-            channelHandlerContext.writeAndFlush(ope.getResponseMessage());
+            ctx.writeAndFlush(ope.getResponseMessage(), ctx.voidPromise());
         }
     }
 }

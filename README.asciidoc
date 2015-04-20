@@ -39,6 +39,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ----
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
+** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `TinkerGraphTest.shouldWriteGratefulDead`)
 * Check license headers are present: `mvn apache-rat:check`
 * Build AsciiDocs: `docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc`
 * Build JavaDocs: `mvn process-resources -Djavadoc`
@@ -46,7 +47,6 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Deploy JavaDocs/AsciiDocs: `bin/publish-docs.sh svn-username`
 * Integration Tests: `mvn verify -DskipIntegrationTests=false`
 * Performance Tests: `mvn verify -DskipPerformanceTests=false`
-* Gatling Load Tests: `mvn test -Pgatling -Dhost={hostname}`
 
 IDE Setup
 ^^^^^^^^^

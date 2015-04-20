@@ -48,10 +48,10 @@ public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMe
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     @Override
-    protected void encode(final ChannelHandlerContext channelHandlerContext, final ResponseMessage o, final List<Object> objects) throws Exception {
-        final MessageSerializer serializer = channelHandlerContext.channel().attr(StateKey.SERIALIZER).get();
-        final boolean useBinary = channelHandlerContext.channel().attr(StateKey.USE_BINARY).get();
-        final Session session = channelHandlerContext.channel().attr(StateKey.SESSION).get();
+    protected void encode(final ChannelHandlerContext ctx, final ResponseMessage o, final List<Object> objects) throws Exception {
+        final MessageSerializer serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
+        final boolean useBinary = ctx.channel().attr(StateKey.USE_BINARY).get();
+        final Session session = ctx.channel().attr(StateKey.SESSION).get();
 
         try {
             if (useBinary) {
@@ -59,16 +59,16 @@ public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMe
 
                 // if the request came in on a session then the serialization must occur in that same thread.
                 if (null == session)
-                    serialized = serializer.serializeResponseAsBinary(o, channelHandlerContext.alloc());
+                    serialized = serializer.serializeResponseAsBinary(o, ctx.alloc());
                 else
-                    serialized = session.getExecutor().submit(() -> serializer.serializeResponseAsBinary(o, channelHandlerContext.alloc())).get();
+                    serialized = session.getExecutor().submit(() -> serializer.serializeResponseAsBinary(o, ctx.alloc())).get();
 
                 if (o.getStatus().getCode().isSuccess())
                     objects.add(new BinaryWebSocketFrame(serialized));
                 else {
                     objects.add(new BinaryWebSocketFrame(serialized));
                     final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                    objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc())));
+                    objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(terminator, ctx.alloc())));
                     errorMeter.mark();
                 }
             } else {
@@ -102,14 +102,14 @@ public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMe
                     .statusMessage(errorMessage)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
-                channelHandlerContext.write(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(error, channelHandlerContext.alloc())));
+                ctx.write(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(error, ctx.alloc())), ctx.voidPromise());
                 final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                channelHandlerContext.writeAndFlush(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(terminator, channelHandlerContext.alloc())));
+                ctx.writeAndFlush(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(terminator, ctx.alloc())), ctx.voidPromise());
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                channelHandlerContext.write(new TextWebSocketFrame(textSerializer.serializeResponseAsString(error)));
+                ctx.write(new TextWebSocketFrame(textSerializer.serializeResponseAsString(error)), ctx.voidPromise());
                 final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                channelHandlerContext.writeAndFlush(new TextWebSocketFrame(textSerializer.serializeResponseAsString(terminator)));
+                ctx.writeAndFlush(new TextWebSocketFrame(textSerializer.serializeResponseAsString(terminator)), ctx.voidPromise());
             }
         }
     }

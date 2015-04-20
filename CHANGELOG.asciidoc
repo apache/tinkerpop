@@ -25,12 +25,15 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Decreased size of Gremlin Server `RequestMessage` and `ResponseMessage` serialization payloads and reduced object creation.
 * `Graph.empty()` no longer required with the introduction of `ShellGraph` which is a placeholder for a graph class and computer.
 * `VertexProperty.Cardinality` default is now vendor chosen. If the vendor has not preference, they should use `Cardinality.single`.
 * `Messenger.receiveMessages()` no longer takes a `MessageScope` and thus, consistent behavior between message-passing and message-pulling systems.
 * Changed the `gremlin.tests` environment variable for test filtering to the more standard convention of `GREMLIN_TESTS` and made it work for all test suites.
 * Removed `back()`-step as `select()`-step provides the same behavior with more intelligent optimizations and `by()`-modulation.
 * Removed `Graph.Helper` method annotation and related infrastructure in tests.
+* Modified header of Gryo to be 16 bytes instead of 32 (and removed the version stamp).
+* Removed the concept of handling version in Gryo via the builder as it wasn't really accomplishing the capability of ensuring backward compatibility.
 * Moved `Exceptions.propertyRemovalNotSupported` from `Element` to `Property` for consistency.
 * Provided a method for Gremlin Server to bind `TraversalSource` objects for use in scripts.
 * Modified the reference implementation for dealing with "custom" identifier serialization in GraphSON - See `IoTest.CustomId` for the example.

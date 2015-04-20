@@ -63,7 +63,6 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
     private static final String MIME_TYPE = SerTokens.MIME_GRYO_V1D0;
     private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRYO_V1D0 + "-stringd";
 
-    private static final String TOKEN_EXTENDED_VERSION = "extendedVersion";
     private static final String TOKEN_CUSTOM = "custom";
     private static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
     private static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
@@ -75,7 +74,7 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
      * will be overriden by {@link #configure} is called.
      */
     public GryoMessageSerializerV1d0() {
-        gryoMapper = GryoMapper.build(GryoMapper.Version.V_1_0_0).create();
+        gryoMapper = GryoMapper.build().create();
     }
 
     /**
@@ -88,15 +87,7 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
 
     @Override
     public void configure(final Map<String, Object> config, final Map<String, Graph> graphs) {
-        final byte extendedVersion;
-        try {
-            extendedVersion = Byte.parseByte(config.getOrDefault(TOKEN_EXTENDED_VERSION, GryoMapper.DEFAULT_EXTENDED_VERSION).toString());
-        } catch (Exception ex) {
-            throw new IllegalStateException(String.format("Invalid configuration value of [%s] for [%s] setting on %s serialization configuration",
-                    config.getOrDefault(TOKEN_EXTENDED_VERSION, ""), TOKEN_EXTENDED_VERSION, this.getClass().getName()), ex);
-        }
-
-        final GryoMapper.Builder initialBuilder;
+        final GryoMapper.Builder builder;
         final Object graphToUseForMapper = config.get(TOKEN_USE_MAPPER_FROM_GRAPH);
         if (graphToUseForMapper != null) {
             if (null == graphs) throw new IllegalStateException(String.format(
@@ -109,15 +100,13 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
 
             // a graph was found so use the mapper it constructs.  this allows gryo to be auto-configured with any
             // custom classes that the implementation allows for
-            initialBuilder = g.io().gryoMapper();
+            builder = g.io().gryoMapper();
         } else {
             // no graph was supplied so just use the default - this will likely be the case when using a graph
             // with no custom classes or a situation where the user needs complete control like when using two
             // distinct implementations each with their own custom classes.
-            initialBuilder = GryoMapper.build(GryoMapper.Version.V_1_0_0);
+            builder = GryoMapper.build();
         }
-
-        final GryoMapper.Builder builder = initialBuilder.extendedVersion(extendedVersion);
 
         final List<String> classNameList;
         try {
@@ -178,15 +167,19 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
-                final Map<String, Object> responseData = (Map<String, Object>) kryo.readClassAndObject(input);
-                final Map<String, Object> status = (Map<String, Object>) responseData.get(SerTokens.TOKEN_STATUS);
-                final Map<String, Object> result = (Map<String, Object>) responseData.get(SerTokens.TOKEN_RESULT);
-                return ResponseMessage.build(UUID.fromString(responseData.get(SerTokens.TOKEN_REQUEST).toString()))
-                        .code(ResponseStatusCode.getFromValue((Integer) status.get(SerTokens.TOKEN_CODE)))
-                        .statusMessage(Optional.ofNullable((String) status.get(SerTokens.TOKEN_MESSAGE)).orElse(""))
-                        .statusAttributes((Map<String, Object>) status.get(SerTokens.TOKEN_ATTRIBUTES))
-                        .result(result.get(SerTokens.TOKEN_DATA))
-                        .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
+                final UUID requestId = kryo.readObjectOrNull(input, UUID.class);
+                final int status = input.readShort();
+                final String statusMsg = input.readString();
+                final Map<String,Object> statusAttributes = (Map<String,Object>) kryo.readClassAndObject(input);
+                final Object result = kryo.readClassAndObject(input);
+                final Map<String,Object> metaAttributes = (Map<String,Object>) kryo.readClassAndObject(input);
+
+                return ResponseMessage.build(requestId)
+                        .code(ResponseStatusCode.getFromValue(status))
+                        .statusMessage(statusMsg)
+                        .statusAttributes(statusAttributes)
+                        .result(result)
+                        .responseMetaData(metaAttributes)
                         .create();
             }
         } catch (Exception ex) {
@@ -199,24 +192,21 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
     public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
-            final Map<String, Object> result = new HashMap<>();
-            result.put(SerTokens.TOKEN_DATA, serializeToString ? serializeResultToString(responseMessage) : responseMessage.getResult().getData());
-            result.put(SerTokens.TOKEN_META, responseMessage.getResult().getMeta());
-
-            final Map<String, Object> status = new HashMap<>();
-            status.put(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
-            status.put(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().getValue());
-            status.put(SerTokens.TOKEN_ATTRIBUTES, responseMessage.getStatus().getAttributes());
-
-            final Map<String, Object> message = new HashMap<>();
-            message.put(SerTokens.TOKEN_STATUS, status);
-            message.put(SerTokens.TOKEN_RESULT, result);
-            message.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
-
             final Kryo kryo = kryoThreadLocal.get();
             try (final OutputStream baos = new ByteArrayOutputStream()) {
                 final Output output = new Output(baos);
-                kryo.writeClassAndObject(output, message);
+
+                // request id - if present
+                kryo.writeObjectOrNull(output, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null, UUID.class);
+
+                // status
+                output.writeShort(responseMessage.getStatus().getCode().getValue());
+                output.writeString(responseMessage.getStatus().getMessage());
+                kryo.writeClassAndObject(output, responseMessage.getStatus().getAttributes());
+
+                // result
+                kryo.writeClassAndObject(output, serializeToString ? serializeResultToString(responseMessage) : responseMessage.getResult().getData());
+                kryo.writeClassAndObject(output, responseMessage.getResult().getMeta());
 
                 final long size = output.total();
                 if (size > Integer.MAX_VALUE)
@@ -242,11 +232,17 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
             final byte[] payload = new byte[msg.readableBytes()];
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
-                final Map<String, Object> requestData = (Map<String, Object>) kryo.readClassAndObject(input);
-                final RequestMessage.Builder builder = RequestMessage.build((String) requestData.get(SerTokens.TOKEN_OP))
-                        .overrideRequestId((UUID) requestData.get(SerTokens.TOKEN_REQUEST))
-                        .processor((String) requestData.get(SerTokens.TOKEN_PROCESSOR));
-                final Map<String, Object> args = (Map<String, Object>) requestData.get(SerTokens.TOKEN_ARGS);
+                // by the time the message gets here, the mime length/type have been already read, so this part just
+                // needs to process the payload.
+                final UUID id = kryo.readObject(input, UUID.class);
+                final String processor = input.readString();
+                final String op = input.readString();
+
+                final RequestMessage.Builder builder = RequestMessage.build(op)
+                        .overrideRequestId(id)
+                        .processor(processor);
+
+                final Map<String, Object> args = kryo.readObject(input, HashMap.class);
                 args.forEach(builder::addArg);
                 return builder.create();
             }
@@ -267,13 +263,10 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
                 output.writeByte(mimeType.length());
                 output.write(mimeType.getBytes(UTF8));
 
-                final Map<String, Object> request = new HashMap<>();
-                request.put(SerTokens.TOKEN_REQUEST, requestMessage.getRequestId());
-                request.put(SerTokens.TOKEN_PROCESSOR, requestMessage.getProcessor());
-                request.put(SerTokens.TOKEN_OP, requestMessage.getOp());
-                request.put(SerTokens.TOKEN_ARGS, requestMessage.getArgs());
-
-                kryo.writeClassAndObject(output, request);
+                kryo.writeObject(output, requestMessage.getRequestId());
+                output.writeString(requestMessage.getProcessor());
+                output.writeString(requestMessage.getOp());
+                kryo.writeObject(output, requestMessage.getArgs());
 
                 final long size = output.total();
                 if (size > Integer.MAX_VALUE)

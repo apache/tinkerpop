@@ -51,7 +51,7 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
 
     private FSDataInputStream inputStream;
 
-    private static final byte[] PATTERN = GryoMapper.build().create().getVersionedHeader();
+    private static final byte[] PATTERN = GryoMapper.HEADER;
     // this is VertexTerminator's long terminal 4185403236219066774L as an array of positive int's
     private static final int[] TERMINATOR = new int[]{58, 21, 138, 17, 112, 155, 153, 150};
 
@@ -83,10 +83,10 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
 
     private static long seekToHeader(final FSDataInputStream inputStream, final long start) throws IOException {
         long nextStart = start;
-        final byte[] buffer = new byte[32];
+        final byte[] buffer = new byte[GryoMapper.HEADER.length];
         while (true) {
             if ((buffer[0] = PATTERN[0]) == inputStream.readByte()) {
-                inputStream.read(nextStart + 1, buffer, 1, 31);
+                inputStream.read(nextStart + 1, buffer, 1, GryoMapper.HEADER.length - 1);
                 if (patternMatch(buffer)) {
                     inputStream.seek(nextStart);
                     return nextStart;
@@ -99,7 +99,7 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
     }
 
     private static boolean patternMatch(final byte[] bytes) {
-        for (int i = 0; i < 31; i++) {
+        for (int i = 0; i < GryoMapper.HEADER.length - 1; i++) {
             if (bytes[i] != PATTERN[i])
                 return false;
         }
