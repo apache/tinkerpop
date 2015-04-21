@@ -20,9 +20,7 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
@@ -65,10 +63,7 @@ public final class VertexWritable implements Writable, Serializable {
             this.vertex = HadoopPools.GRYO_POOL.doWithReader(gryoReader -> {
                 try {
                     final ByteArrayInputStream inputStream = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
-                    final StarGraph starGraph = StarGraph.open();
-                    return gryoReader.readVertex(inputStream, Direction.BOTH,
-                            detachedVertex -> detachedVertex.attach(starGraph, Attachable.Method.CREATE),
-                            detachedEdge -> detachedEdge.attach(starGraph, Attachable.Method.CREATE));
+                    return ((StarGraph) gryoReader.readObject(inputStream)).getStarVertex(); // read the star graph
                 } catch (final IOException e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }
@@ -87,7 +82,7 @@ public final class VertexWritable implements Writable, Serializable {
             HadoopPools.GRYO_POOL.doWithWriter(gryoWriter -> {
                 try {
                     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                    gryoWriter.writeVertex(outputStream, this.vertex, Direction.BOTH);
+                    gryoWriter.writeObject(outputStream, this.vertex.graph()); // write the star graph
                     WritableUtils.writeCompressedByteArray(output, outputStream.toByteArray());
                 } catch (final IOException e) {
                     throw new IllegalStateException(e.getMessage(), e);
