@@ -23,9 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 
 import java.util.Optional;
 import java.util.function.UnaryOperator;
@@ -148,13 +147,14 @@ public abstract class AbstractPathTraverser<T> implements Traverser<T>, Traverse
     }
 
     @Override
-    public Traverser.Admin<T> attach(final Vertex vertex) {
-        if (this.t instanceof DetachedElement)
-            this.t = (T) ((DetachedElement) this.t).attach(vertex);
-        else if (this.t instanceof DetachedProperty)
-            this.t = (T) ((DetachedProperty) this.t).attach(vertex);
-        // you do not want to attach a path because it will reference graph objects not at the current vertex
-        return this;
+    public T attach(final Vertex vertex, final Method method) {
+        if (this.t instanceof Attachable && !(((Attachable) this.t).getBase() instanceof Path))
+            this.t = ((Attachable<T>) this.t).attach(vertex, method);
+        return this.t;
+    }
+
+    public T getBase() {
+        return this.get();
     }
 
     /////////////////

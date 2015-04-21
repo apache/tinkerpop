@@ -38,7 +38,7 @@ public class ReferencePath extends MutablePath implements Attachable<Path> {
 
     }
 
-    public Path get() {
+    public Path getBase() {
         return this;
     }
 

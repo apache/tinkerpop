@@ -128,9 +128,9 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
         return (Iterator) super.properties(propertyKeys);
     }
 
-    public static <V> VertexProperty<V> addTo(final Vertex vertex, final DetachedVertexProperty<V> detachedVertexProperty) {
+    /*public static <V> VertexProperty<V> addTo(final Vertex vertex, final DetachedVertexProperty<V> detachedVertexProperty) {
         final VertexProperty<V> vertexProperty = vertex.property(VertexProperty.Cardinality.single, detachedVertexProperty.key(), detachedVertexProperty.value()); // TODO: this isn't right, is it? (need to remove views from Spark/Giraph)
         detachedVertexProperty.properties().forEachRemaining(property -> vertexProperty.property(property.key(), property.value()));
         return vertexProperty;
-    }
+    }*/
 }

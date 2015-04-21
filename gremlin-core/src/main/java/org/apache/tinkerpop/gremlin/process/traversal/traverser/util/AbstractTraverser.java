@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceElement;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
@@ -108,13 +109,11 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
     }
 
     @Override
-    public Admin<T> attach(final Vertex hostVertex) {
-        if (this.t instanceof ReferenceElement)
-            this.t = (T) ((ReferenceElement) this.t).attach(hostVertex);
-        else if (this.t instanceof ReferenceProperty)
-            this.t = (T) ((ReferenceProperty) this.t).attach(hostVertex);
+    public T attach(final Vertex hostVertex, final Method method) {
+        if(this.t instanceof Attachable && !(((Attachable) this.t).getBase() instanceof Path))
+            this.t = (T) method.apply((Attachable)this.t,hostVertex);
         // you do not want to attach a path because it will reference graph objects not at the current vertex
-        return this;
+        return this.t;
     }
 
     @Override
@@ -130,6 +129,11 @@ public abstract class AbstractTraverser<T> implements Traverser<T>, Traverser.Ad
 
     @Override
     public T get() {
+        return this.t;
+    }
+
+    @Override
+    public T getBase() {
         return this.t;
     }
 

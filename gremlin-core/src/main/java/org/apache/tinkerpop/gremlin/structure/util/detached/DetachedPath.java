@@ -35,7 +35,7 @@ public class DetachedPath extends MutablePath implements Attachable<Path> {
 
     }
 
-    public Path get() {
+    public Path getBase() {
         return this;
     }
 

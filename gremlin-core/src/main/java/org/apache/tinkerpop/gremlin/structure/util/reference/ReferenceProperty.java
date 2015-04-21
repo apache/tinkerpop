@@ -45,7 +45,7 @@ public class ReferenceProperty<V> implements Attachable<Property>, Serializable,
 
     }
 
-    public Property get() {
+    public Property getBase() {
         return this;
     }
 

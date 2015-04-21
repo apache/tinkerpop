@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -72,7 +73,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
         final Edge e = g.E(convertToEdgeId("josh", "created", "lop")).next();
         final Property toDetach = e.properties("weight").next();
         final DetachedProperty detachedProperty = DetachedFactory.detach(toDetach);
-        final Property attached = detachedProperty.attach(graph);
+        final Property attached = detachedProperty.attach(graph, Attachable.Method.GET);
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedProperty);
@@ -84,7 +85,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
         final Edge e = g.E(convertToEdgeId("josh", "created", "lop")).next();
         final Property toDetach = e.property("weight");
         final DetachedProperty detachedProperty = DetachedFactory.detach(toDetach);
-        final Property attached = detachedProperty.attach(e.outVertex());
+        final Property attached = detachedProperty.attach(e.outVertex(), Attachable.Method.GET);
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedProperty);

@@ -247,7 +247,7 @@ public final class StarGraph implements Graph {
             super(id, label);
         }
 
-        public Vertex get() {
+        public Vertex getBase() {
             return this;
         }
 
@@ -262,6 +262,14 @@ public final class StarGraph implements Graph {
         public void dropEdges() {
             this.outEdges.clear();
             this.inEdges.clear();
+        }
+
+        public void dropVertexProperties(final String... keys) {
+            if (null != keys) {  // TODO: this is bad
+                for (final String key : keys) {
+                    this.vertexProperties.remove(key);
+                }
+            }
         }
 
         @Override

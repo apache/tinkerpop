@@ -43,7 +43,7 @@ public interface Attachable<T> {
         GET {
             @Override
             public Object apply(final Attachable attachable, final Object hostVertexOrGraph) {
-                final Object base = attachable.get();
+                final Object base = attachable.getBase();
                 if (base instanceof Vertex) {
                     final Optional<Vertex> optional = hostVertexOrGraph instanceof Graph ?
                             Method.getVertex(attachable, (Graph) hostVertexOrGraph) :
@@ -73,7 +73,7 @@ public interface Attachable<T> {
         CREATE {
             @Override
             public Object apply(final Attachable attachable, final Object hostVertexOrGraph) {
-                final Object base = attachable.get();
+                final Object base = attachable.getBase();
                 if (base instanceof Vertex) {
                     return hostVertexOrGraph instanceof Graph ?
                             Method.createVertex(attachable, (Graph) hostVertexOrGraph) :
@@ -99,21 +99,21 @@ public interface Attachable<T> {
         ///////////////////
 
         public static Optional<Vertex> getVertex(final Attachable<Vertex> attachableVertex, final Graph hostGraph) {
-            final Iterator<Vertex> vertexIterator = hostGraph.vertices(attachableVertex.get().id());
+            final Iterator<Vertex> vertexIterator = hostGraph.vertices(attachableVertex.getBase().id());
             return vertexIterator.hasNext() ? Optional.of(vertexIterator.next()) : Optional.empty();
         }
 
         public static Optional<Vertex> getVertex(final Attachable<Vertex> attachableVertex, final Vertex hostVertex) {
-            return ElementHelper.areEqual(attachableVertex.get(), hostVertex) ? Optional.of(hostVertex) : Optional.empty();
+            return ElementHelper.areEqual(attachableVertex.getBase(), hostVertex) ? Optional.of(hostVertex) : Optional.empty();
         }
 
         public static Optional<Edge> getEdge(final Attachable<Edge> attachableEdge, final Graph hostGraph) {
-            final Iterator<Edge> edgeIterator = hostGraph.edges(attachableEdge.get().id());
+            final Iterator<Edge> edgeIterator = hostGraph.edges(attachableEdge.getBase().id());
             return edgeIterator.hasNext() ? Optional.of(edgeIterator.next()) : Optional.empty();
         }
 
         public static Optional<Edge> getEdge(final Attachable<Edge> attachableEdge, final Vertex hostVertex) {
-            final Object baseId = attachableEdge.get().id();
+            final Object baseId = attachableEdge.getBase().id();
             final Iterator<Edge> edgeIterator = hostVertex.edges(Direction.OUT);
             while (edgeIterator.hasNext()) {
                 final Edge edge = edgeIterator.next();
@@ -124,7 +124,7 @@ public interface Attachable<T> {
         }
 
         public static Optional<VertexProperty> getVertexProperty(final Attachable<VertexProperty> attachableVertexProperty, final Graph hostGraph) {
-            final VertexProperty baseVertexProperty = attachableVertexProperty.get();
+            final VertexProperty baseVertexProperty = attachableVertexProperty.getBase();
             final Iterator<Vertex> vertexIterator = hostGraph.vertices(baseVertexProperty.element().id());
             if (vertexIterator.hasNext()) {
                 final Iterator<VertexProperty<Object>> vertexPropertyIterator = vertexIterator.next().properties(baseVertexProperty.key());
@@ -138,7 +138,7 @@ public interface Attachable<T> {
         }
 
         public static Optional<VertexProperty> getVertexProperty(final Attachable<VertexProperty> attachableVertexProperty, final Vertex hostVertex) {
-            final VertexProperty baseVertexProperty = attachableVertexProperty.get();
+            final VertexProperty baseVertexProperty = attachableVertexProperty.getBase();
             final Iterator<VertexProperty<Object>> vertexPropertyIterator = hostVertex.properties(baseVertexProperty.key());
             while (vertexPropertyIterator.hasNext()) {
                 final VertexProperty vertexProperty = vertexPropertyIterator.next();
@@ -149,8 +149,8 @@ public interface Attachable<T> {
         }
 
         public static Optional<Property> getProperty(final Attachable<Property> attachableProperty, final Graph hostGraph) {
-            final Property baseProperty = attachableProperty.get();
-            final Element propertyElement = attachableProperty.get().element();
+            final Property baseProperty = attachableProperty.getBase();
+            final Element propertyElement = attachableProperty.getBase().element();
             if (propertyElement instanceof Edge) {
                 final Iterator<Edge> edgeIterator = hostGraph.edges(propertyElement.id());
                 if (edgeIterator.hasNext()) {
@@ -179,8 +179,8 @@ public interface Attachable<T> {
         }
 
         public static Optional<Property> getProperty(final Attachable<Property> attachableProperty, final Vertex hostVertex) {
-            final Property baseProperty = attachableProperty.get();
-            final Element propertyElement = attachableProperty.get().element();
+            final Property baseProperty = attachableProperty.getBase();
+            final Element propertyElement = attachableProperty.getBase().element();
             if (propertyElement instanceof Edge) {
                 final Iterator<Edge> edgeIterator = hostVertex.edges(Direction.OUT);
                 if (edgeIterator.hasNext()) {
@@ -208,7 +208,7 @@ public interface Attachable<T> {
         /////
 
         public static Vertex createVertex(final Attachable<Vertex> attachableVertex, final Graph hostGraph) {
-            final Vertex baseVertex = attachableVertex.get();
+            final Vertex baseVertex = attachableVertex.getBase();
             final List<Object> keyValues = new ArrayList<>();
             keyValues.add(org.apache.tinkerpop.gremlin.process.traversal.T.id);
             keyValues.add(baseVertex.id());
@@ -227,7 +227,7 @@ public interface Attachable<T> {
         }
 
         public static Edge createEdge(final Attachable<Edge> attachableEdge, final Graph hostGraph) {
-            final Edge baseEdge = attachableEdge.get();
+            final Edge baseEdge = attachableEdge.getBase();
             Iterator<Vertex> vertices = hostGraph.vertices(baseEdge.outVertex().id());
             final Vertex outV = vertices.hasNext() ? vertices.next() : hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.id, baseEdge.outVertex().id());
             vertices = hostGraph.vertices(baseEdge.inVertex().id());
@@ -250,7 +250,7 @@ public interface Attachable<T> {
         }
 
         public static VertexProperty createVertexProperty(final Attachable<VertexProperty> attachableVertexProperty, final Graph hostGraph) {
-            final VertexProperty<Object> baseVertexProperty = attachableVertexProperty.get();
+            final VertexProperty<Object> baseVertexProperty = attachableVertexProperty.getBase();
             final Iterator<Vertex> vertexIterator = hostGraph.vertices(baseVertexProperty.element().id());
             if (vertexIterator.hasNext()) {
                 final VertexProperty vertexProperty = vertexIterator.next().property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertexProperty.id());
@@ -261,7 +261,7 @@ public interface Attachable<T> {
         }
 
         public static VertexProperty createVertexProperty(final Attachable<VertexProperty> attachableVertexProperty, final Vertex hostVertex) {
-            final VertexProperty<Object> baseVertexProperty = attachableVertexProperty.get();
+            final VertexProperty<Object> baseVertexProperty = attachableVertexProperty.getBase();
             final VertexProperty vertexProperty = hostVertex.property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertexProperty.id());
             baseVertexProperty.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
             return vertexProperty;
@@ -278,7 +278,7 @@ public interface Attachable<T> {
 
     }
 
-    public T get();
+    public T getBase();
 
     public T attach(final Vertex hostVertex, final Method method) throws IllegalStateException;
 

@@ -41,6 +41,8 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
@@ -83,10 +85,12 @@ public final class SparkExecutor {
                     workerVertexProgram.workerIterationStart(memory); // start the worker
                     return () -> IteratorUtils.map(partitionIterator, vertexViewIncoming -> {
                         final Vertex vertex = vertexViewIncoming._2()._1().get(); // get the vertex from the vertex writable
+                        // drop any compute properties that are in memory
+                        ((StarGraph.StarVertex)vertex).dropVertexProperties(elementComputeKeysArray);
                         final boolean hasViewAndMessages = vertexViewIncoming._2()._2().isPresent(); // if this is the first iteration, then there are no views or messages
                         final List<DetachedVertexProperty<Object>> previousView = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getView() : Collections.emptyList();
                         final List<M> incomingMessages = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getIncomingMessages() : Collections.emptyList();
-                        previousView.forEach(property -> DetachedVertexProperty.addTo(vertex, property));  // attach the view to the vertex
+                        previousView.forEach(property -> property.attach(vertex, Attachable.Method.CREATE));  // attach the view to the vertex
                         ///
                         messenger.setVertexAndIncomingMessages(vertex, incomingMessages); // set the messenger with the incoming messages
                         workerVertexProgram.execute(ComputerGraph.of(vertex, elementComputeKeys), messenger, memory); // execute the vertex program on this vertex for this iteration
@@ -137,18 +141,20 @@ public final class SparkExecutor {
     // MAP REDUCE //
     ////////////////
 
-    public static <M> JavaPairRDD<Object, VertexWritable> prepareGraphRDDForMapReduce(final JavaPairRDD<Object, VertexWritable> graphRDD, final JavaPairRDD<Object, ViewIncomingPayload<M>> viewIncomingRDD) {
+    public static <M> JavaPairRDD<Object, VertexWritable> prepareGraphRDDForMapReduce(final JavaPairRDD<Object, VertexWritable> graphRDD, final JavaPairRDD<Object, ViewIncomingPayload<M>> viewIncomingRDD, final String[] elementComputeKeys) {
         return (null == viewIncomingRDD) ?
                 graphRDD.mapValues(vertexWritable -> {
                     ((StarGraph.StarVertex)vertexWritable.get()).dropEdges();
+                    ((StarGraph.StarVertex)vertexWritable.get()).dropVertexProperties(elementComputeKeys);
                     return vertexWritable;
                 }) :
                 graphRDD.leftOuterJoin(viewIncomingRDD)
                         .mapValues(tuple -> {
                             final Vertex vertex = tuple._1().get();
                             ((StarGraph.StarVertex)vertex).dropEdges();
+                            ((StarGraph.StarVertex)vertex).dropVertexProperties(elementComputeKeys);
                             final List<DetachedVertexProperty<Object>> view = tuple._2().isPresent() ? tuple._2().get().getView() : Collections.emptyList();
-                            view.forEach(property -> DetachedVertexProperty.addTo(vertex, property));
+                            view.forEach(property -> property.attach(vertex, Attachable.Method.CREATE));
                             return tuple._1();
                         });
     }

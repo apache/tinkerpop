@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
@@ -136,7 +137,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     public void shouldAttachToGraph() {
         final Vertex toDetach = g.V(convertToVertexId("josh")).next();
         final DetachedVertex detachedVertex = DetachedFactory.detach(toDetach, true);
-        final Vertex attached = detachedVertex.attach(graph);
+        final Vertex attached = detachedVertex.attach(graph, Attachable.Method.GET);
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedVertex);
@@ -147,7 +148,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     public void shouldAttachToVertex() {
         final Vertex toDetach = g.V(convertToVertexId("josh")).next();
         final DetachedVertex detachedVertex = DetachedFactory.detach(toDetach, true);
-        final Vertex attached = detachedVertex.attach(toDetach);
+        final Vertex attached = detachedVertex.attach(toDetach, Attachable.Method.GET);
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedVertex);

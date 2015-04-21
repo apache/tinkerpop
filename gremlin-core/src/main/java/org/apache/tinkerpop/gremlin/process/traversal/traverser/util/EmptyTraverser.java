@@ -86,8 +86,8 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public Admin<T> attach(final Vertex hostVertex) {
-        return this;
+    public T attach(final Vertex hostVertex, final Method method) {
+        return null;
     }
 
     @Override
@@ -97,6 +97,11 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
 
     @Override
     public T get() {
+        return null;
+    }
+
+    @Override
+    public T getBase() {
         return null;
     }
 

@@ -53,7 +53,7 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         this.element = DetachedFactory.detach(element, false);
     }
 
-    public Property get() {
+    public Property getBase() {
         return this;
     }
 

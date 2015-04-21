@@ -145,7 +145,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
      * The methods in System.Traverser are useful to underlying Step and Traversal implementations.
      * They should not be accessed by the user during lambda-based manipulations.
      */
-    public interface Admin<T> extends Traverser<T>, Attachable<Admin<T>> {
+    public interface Admin<T> extends Traverser<T>, Attachable<T> {
 
         public static final String HALT = "halt";
 
@@ -250,7 +250,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * @return The inflated traverser
          */
         @Override
-        public Admin<T> attach(final Vertex hostVertex);
+        public T attach(final Vertex hostVertex, final Method method);
 
         /**
          * Traversers can not attach to graphs and thus, an {@link UnsupportedOperationException} is thrown.
@@ -260,7 +260,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * @throws UnsupportedOperationException is always thrown as it makes no sense to attach a traverser to a graph
          */
         @Override
-        public default Admin<T> attach(final Graph graph) throws UnsupportedOperationException {
+        public default T attach(final Graph graph, final Method method) throws UnsupportedOperationException {
             throw new UnsupportedOperationException("A traverser can only exist at the vertices of the graph, not the graph itself");
         }
 
