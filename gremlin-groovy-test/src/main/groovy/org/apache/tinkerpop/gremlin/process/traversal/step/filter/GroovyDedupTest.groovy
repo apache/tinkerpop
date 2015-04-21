@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 import org.apache.tinkerpop.gremlin.process.*
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Scope
-import org.apache.tinkerpop.gremlin.process.traversal.T
+import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex

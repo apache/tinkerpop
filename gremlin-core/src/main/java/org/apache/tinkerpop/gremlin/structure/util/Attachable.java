@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
@@ -39,21 +40,21 @@ import java.util.function.BiFunction;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Attachable<T> {
+public interface Attachable<V> {
 
     /**
      * Get the raw object trying to be attached.
      *
      * @return the raw object to attach
      */
-    public T get();
+    public V get();
 
-    public default T attach(final Vertex hostVertex, final Method method) throws IllegalStateException {
-        return (T) method.apply(this, hostVertex);
+    public default V attach(final Vertex hostVertex, final Method method) throws IllegalStateException {
+        return (V) method.apply(this, hostVertex);
     }
 
-    public default T attach(final Graph hostGraph, final Method method) throws IllegalStateException {
-        return (T) method.apply(this, hostGraph);
+    public default V attach(final Graph hostGraph, final Method method) throws IllegalStateException {
+        return (V) method.apply(this, hostGraph);
     }
 
     public enum Method implements BiFunction<Attachable, Object, Object> {
@@ -277,12 +278,12 @@ public interface Attachable<T> {
         public static Vertex createVertex(final Attachable<Vertex> attachableVertex, final Graph hostGraph) {
             final Vertex baseVertex = attachableVertex.get();
             final Vertex vertex = hostGraph.features().vertex().supportsUserSuppliedIds() ?
-                    hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertex.id(), org.apache.tinkerpop.gremlin.process.traversal.T.label, baseVertex.label()) :
-                    hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.label, baseVertex.label());
+                    hostGraph.addVertex(T.id, baseVertex.id(), T.label, baseVertex.label()) :
+                    hostGraph.addVertex(T.label, baseVertex.label());
             final boolean supportsUserSuppliedIds = hostGraph.features().vertex().properties().supportsUserSuppliedIds();
             baseVertex.properties().forEachRemaining(vp -> {
                 final VertexProperty vertexProperty = supportsUserSuppliedIds ?
-                        vertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, vp.id()) :
+                        vertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value(), T.id, vp.id()) :
                         vertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value());
                 vp.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
             });
@@ -297,9 +298,9 @@ public interface Attachable<T> {
             final boolean supportsUserSuppliedIds = hostGraph.features().vertex().supportsUserSuppliedIds();
             final Edge baseEdge = attachableEdge.get();
             Iterator<Vertex> vertices = hostGraph.vertices(baseEdge.outVertex().id());
-            final Vertex outV = vertices.hasNext() ? vertices.next() : supportsUserSuppliedIds ? hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.id, baseEdge.outVertex().id()) : hostGraph.addVertex();
+            final Vertex outV = vertices.hasNext() ? vertices.next() : supportsUserSuppliedIds ? hostGraph.addVertex(T.id, baseEdge.outVertex().id()) : hostGraph.addVertex();
             vertices = hostGraph.vertices(baseEdge.inVertex().id());
-            final Vertex inV = vertices.hasNext() ? vertices.next() : supportsUserSuppliedIds ? hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.id, baseEdge.inVertex().id()) : hostGraph.addVertex();
+            final Vertex inV = vertices.hasNext() ? vertices.next() : supportsUserSuppliedIds ? hostGraph.addVertex(T.id, baseEdge.inVertex().id()) : hostGraph.addVertex();
             if (ElementHelper.areEqual(outV, inV)) {
                 final Iterator<Edge> itty = outV.edges(Direction.OUT, baseEdge.label());
                 while (itty.hasNext()) {
@@ -308,7 +309,7 @@ public interface Attachable<T> {
                         return e;
                 }
             }
-            final Edge e = hostGraph.features().edge().supportsUserSuppliedIds() ? outV.addEdge(baseEdge.label(), inV, org.apache.tinkerpop.gremlin.process.traversal.T.id, baseEdge.id()) : outV.addEdge(baseEdge.label(), inV);
+            final Edge e = hostGraph.features().edge().supportsUserSuppliedIds() ? outV.addEdge(baseEdge.label(), inV, T.id, baseEdge.id()) : outV.addEdge(baseEdge.label(), inV);
             baseEdge.properties().forEachRemaining(p -> e.property(p.key(), p.value()));
             return e;
         }
@@ -322,7 +323,7 @@ public interface Attachable<T> {
             final Iterator<Vertex> vertexIterator = hostGraph.vertices(baseVertexProperty.element().id());
             if (vertexIterator.hasNext()) {
                 final VertexProperty vertexProperty = hostGraph.features().vertex().properties().supportsUserSuppliedIds() ?
-                        vertexIterator.next().property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertexProperty.id()) :
+                        vertexIterator.next().property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), T.id, baseVertexProperty.id()) :
                         vertexIterator.next().property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value());
                 baseVertexProperty.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
                 return vertexProperty;
@@ -333,7 +334,7 @@ public interface Attachable<T> {
         public static VertexProperty createVertexProperty(final Attachable<VertexProperty> attachableVertexProperty, final Vertex hostVertex) {
             final VertexProperty<Object> baseVertexProperty = attachableVertexProperty.get();
             final VertexProperty vertexProperty = hostVertex.graph().features().vertex().properties().supportsUserSuppliedIds() ?
-                    hostVertex.property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertexProperty.id()) :
+                    hostVertex.property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), T.id, baseVertexProperty.id()) :
                     hostVertex.property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value());
             baseVertexProperty.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
             return vertexProperty;

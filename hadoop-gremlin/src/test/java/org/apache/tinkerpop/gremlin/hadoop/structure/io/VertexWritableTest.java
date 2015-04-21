@@ -22,7 +22,7 @@
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
-import org.apache.tinkerpop.gremlin.process.traversal.T;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
