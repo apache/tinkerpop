@@ -36,9 +36,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -67,15 +64,21 @@ public final class StarGraph implements Graph {
     private final Map<Object, Map<String, Object>> edgeProperties = new HashMap<>();
     private final Map<Object, Map<String, Object>> metaProperties = new HashMap<>();
 
+    private StarGraph() {
+    }
+
     public StarVertex getStarVertex() {
         return this.starVertex;
     }
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
-        return null == this.starVertex ?
-                this.starVertex = new StarVertex(ElementHelper.getIdValue(keyValues).get(), ElementHelper.getLabelValue(keyValues).get()) :
-                new StarAdjacentVertex(ElementHelper.getIdValue(keyValues).get());
+        if (null == this.starVertex) {
+            this.starVertex = new StarVertex(ElementHelper.getIdValue(keyValues).get(), ElementHelper.getLabelValue(keyValues).get());
+            ElementHelper.attachProperties(this.starVertex, VertexProperty.Cardinality.list, keyValues); // TODO: is this smart? I say no... cause vertex property ids are not preserved.
+            return this.starVertex;
+        } else
+            return new StarAdjacentVertex(ElementHelper.getIdValue(keyValues).get());
     }
 
     @Override
@@ -165,28 +168,23 @@ public final class StarGraph implements Graph {
 
     public static StarGraph of(final Vertex vertex) {
         final StarGraph starGraph = new StarGraph();
-        StarGraph.addTo(starGraph, DetachedFactory.detach(vertex, true));
-        vertex.edges(Direction.BOTH).forEachRemaining(edge -> StarGraph.addTo(starGraph, DetachedFactory.detach(edge, true)));
-        return starGraph;
-    }
-
-    public static Vertex addTo(final StarGraph graph, final DetachedVertex detachedVertex) {
-        if (null != graph.starVertex)
-            return null;
-        graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
-        detachedVertex.properties().forEachRemaining(detachedVertexProperty -> {
-            final VertexProperty<?> starVertexProperty = graph.starVertex.property(VertexProperty.Cardinality.list, detachedVertexProperty.key(), detachedVertexProperty.value(), T.id, detachedVertexProperty.id());
-            detachedVertexProperty.properties().forEachRemaining(detachedVertexPropertyProperty -> starVertexProperty.property(detachedVertexPropertyProperty.key(), detachedVertexPropertyProperty.value()));
+        final StarVertex starVertex = (StarVertex) starGraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
+        vertex.properties().forEachRemaining(vp -> {
+            final VertexProperty<?> starVertexProperty = starVertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value(), T.id, vp.id());
+            vp.properties().forEachRemaining(p -> starVertexProperty.property(p.key(), p.value()));
         });
-        return graph.starVertex;
-    }
+        vertex.edges(Direction.IN).forEachRemaining(edge -> {
+            final Edge starEdge = starVertex.addInEdge(edge.label(), starGraph.addVertex(T.id, edge.outVertex().id()), T.id, edge.id());
+            edge.properties().forEachRemaining(p -> starEdge.property(p.key(), p.value()));
+        });
 
-    public static Edge addTo(final StarGraph graph, final DetachedEdge edge) {
-        final Edge starEdge = !graph.starVertex.id().equals(edge.inVertex().id()) ?
-                graph.starVertex.addOutEdge(edge.label(), edge.inVertex(), T.id, edge.id()) :
-                graph.starVertex.addInEdge(edge.label(), edge.outVertex(), T.id, edge.id());
-        edge.properties().forEachRemaining(property -> starEdge.property(property.key(), property.value()));
-        return starEdge;
+        vertex.edges(Direction.OUT).forEachRemaining(edge -> {
+            if (!ElementHelper.areEqual(starVertex, edge.inVertex())) { // only do a self loop once
+                final Edge starEdge = starVertex.addOutEdge(edge.label(), starGraph.addVertex(T.id, edge.inVertex().id()), T.id, edge.id());
+                edge.properties().forEachRemaining(p -> starEdge.property(p.key(), p.value()));
+            }
+        });
+        return starGraph;
     }
 
     protected Long generateId() {
@@ -406,7 +404,7 @@ public final class StarGraph implements Graph {
 
         @Override
         public Vertex element() {
-            return starVertex;
+            return StarGraph.this.starVertex;
         }
 
         @Override

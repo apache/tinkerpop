@@ -26,19 +26,26 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
 /**
  * An interface that provides methods for detached properties and elements to be re-attached to the {@link Graph}.
+ * There are two general ways in which they can be attached: {@link Method#GET} or {@link Method#CREATE}.
+ * A {@link Method#GET} will find the property/element at the host location and return it.
+ * A {@link Method#CREATE} will create the property/element at the host location and return it.
  *
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Attachable<T> {
 
+    /**
+     * Get the raw object trying to be attached.
+     *
+     * @return the raw object to attach
+     */
     public T get();
 
     public default T attach(final Vertex hostVertex, final Method method) throws IllegalStateException {
@@ -269,14 +276,9 @@ public interface Attachable<T> {
 
         public static Vertex createVertex(final Attachable<Vertex> attachableVertex, final Graph hostGraph) {
             final Vertex baseVertex = attachableVertex.get();
-            final List<Object> keyValues = new ArrayList<>();
-            keyValues.add(org.apache.tinkerpop.gremlin.process.traversal.T.id);
-            keyValues.add(baseVertex.id());
-            keyValues.add(org.apache.tinkerpop.gremlin.process.traversal.T.label);
-            keyValues.add(baseVertex.label());
-            final Vertex vertex = hostGraph.addVertex(keyValues.toArray());
+            final Vertex vertex = hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertex.id(), org.apache.tinkerpop.gremlin.process.traversal.T.label, baseVertex.label());
             baseVertex.properties().forEachRemaining(vp -> {
-                final VertexProperty vertexProperty = vertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value());
+                final VertexProperty vertexProperty = vertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, vp.id());
                 vp.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
             });
             return vertex;

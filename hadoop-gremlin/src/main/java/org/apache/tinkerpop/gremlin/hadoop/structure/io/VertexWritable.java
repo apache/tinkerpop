@@ -20,10 +20,11 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -66,8 +67,8 @@ public final class VertexWritable implements Writable, Serializable {
                     final ByteArrayInputStream inputStream = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
                     final StarGraph starGraph = StarGraph.open();
                     return gryoReader.readVertex(inputStream, Direction.BOTH,
-                            detachedVertex -> StarGraph.addTo(starGraph, detachedVertex),
-                            detachedEdge -> StarGraph.addTo(starGraph, detachedEdge));
+                            detachedVertex -> detachedVertex.attach(starGraph, Attachable.Method.CREATE),
+                            detachedEdge -> detachedEdge.attach(starGraph, Attachable.Method.CREATE));
                 } catch (final IOException e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }
