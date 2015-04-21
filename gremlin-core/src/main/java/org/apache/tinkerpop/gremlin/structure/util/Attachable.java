@@ -276,9 +276,14 @@ public interface Attachable<T> {
 
         public static Vertex createVertex(final Attachable<Vertex> attachableVertex, final Graph hostGraph) {
             final Vertex baseVertex = attachableVertex.get();
-            final Vertex vertex = hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertex.id(), org.apache.tinkerpop.gremlin.process.traversal.T.label, baseVertex.label());
+            final Vertex vertex = hostGraph.features().vertex().supportsUserSuppliedIds() ?
+                    hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertex.id(), org.apache.tinkerpop.gremlin.process.traversal.T.label, baseVertex.label()) :
+                    hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.label, baseVertex.label());
+            final boolean supportsUserSuppliedIds = hostGraph.features().vertex().properties().supportsUserSuppliedIds();
             baseVertex.properties().forEachRemaining(vp -> {
-                final VertexProperty vertexProperty = vertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, vp.id());
+                final VertexProperty vertexProperty = supportsUserSuppliedIds ?
+                        vertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, vp.id()) :
+                        vertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value());
                 vp.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
             });
             return vertex;
@@ -289,11 +294,12 @@ public interface Attachable<T> {
         }
 
         public static Edge createEdge(final Attachable<Edge> attachableEdge, final Graph hostGraph) {
+            final boolean supportsUserSuppliedIds = hostGraph.features().vertex().supportsUserSuppliedIds();
             final Edge baseEdge = attachableEdge.get();
             Iterator<Vertex> vertices = hostGraph.vertices(baseEdge.outVertex().id());
-            final Vertex outV = vertices.hasNext() ? vertices.next() : hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.id, baseEdge.outVertex().id());
+            final Vertex outV = vertices.hasNext() ? vertices.next() : supportsUserSuppliedIds ? hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.id, baseEdge.outVertex().id()) : hostGraph.addVertex();
             vertices = hostGraph.vertices(baseEdge.inVertex().id());
-            final Vertex inV = vertices.hasNext() ? vertices.next() : hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.id, baseEdge.inVertex().id());
+            final Vertex inV = vertices.hasNext() ? vertices.next() : supportsUserSuppliedIds ? hostGraph.addVertex(org.apache.tinkerpop.gremlin.process.traversal.T.id, baseEdge.inVertex().id()) : hostGraph.addVertex();
             if (ElementHelper.areEqual(outV, inV)) {
                 final Iterator<Edge> itty = outV.edges(Direction.OUT, baseEdge.label());
                 while (itty.hasNext()) {
@@ -302,7 +308,7 @@ public interface Attachable<T> {
                         return e;
                 }
             }
-            final Edge e = outV.addEdge(baseEdge.label(), inV, org.apache.tinkerpop.gremlin.process.traversal.T.id, baseEdge.id());
+            final Edge e = hostGraph.features().edge().supportsUserSuppliedIds() ? outV.addEdge(baseEdge.label(), inV, org.apache.tinkerpop.gremlin.process.traversal.T.id, baseEdge.id()) : outV.addEdge(baseEdge.label(), inV);
             baseEdge.properties().forEachRemaining(p -> e.property(p.key(), p.value()));
             return e;
         }
@@ -315,29 +321,69 @@ public interface Attachable<T> {
             final VertexProperty<Object> baseVertexProperty = attachableVertexProperty.get();
             final Iterator<Vertex> vertexIterator = hostGraph.vertices(baseVertexProperty.element().id());
             if (vertexIterator.hasNext()) {
-                final VertexProperty vertexProperty = vertexIterator.next().property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertexProperty.id());
+                final VertexProperty vertexProperty = hostGraph.features().vertex().properties().supportsUserSuppliedIds() ?
+                        vertexIterator.next().property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertexProperty.id()) :
+                        vertexIterator.next().property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value());
                 baseVertexProperty.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
                 return vertexProperty;
             }
-            throw new IllegalStateException("Could not find vertex to add the vertex property to");
+            throw new IllegalStateException("Could not find vertex to create the attachable vertex property on");
         }
 
         public static VertexProperty createVertexProperty(final Attachable<VertexProperty> attachableVertexProperty, final Vertex hostVertex) {
             final VertexProperty<Object> baseVertexProperty = attachableVertexProperty.get();
-            final VertexProperty vertexProperty = hostVertex.property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertexProperty.id());
+            final VertexProperty vertexProperty = hostVertex.graph().features().vertex().properties().supportsUserSuppliedIds() ?
+                    hostVertex.property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), org.apache.tinkerpop.gremlin.process.traversal.T.id, baseVertexProperty.id()) :
+                    hostVertex.property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value());
             baseVertexProperty.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
             return vertexProperty;
         }
 
         public static Property createProperty(final Attachable<Property> attachableProperty, final Graph hostGraph) {
-            return null;   // TODO: :)
-
+            final Property baseProperty = attachableProperty.get();
+            final Element baseElement = baseProperty.element();
+            if (baseElement instanceof Vertex) {
+                return Method.createVertexProperty((Attachable) attachableProperty, hostGraph);
+            } else if (baseElement instanceof Edge) {
+                final Iterator<Edge> edgeIterator = hostGraph.edges(baseElement.id());
+                if (edgeIterator.hasNext())
+                    return edgeIterator.next().property(baseProperty.key(), baseProperty.value());
+                throw new IllegalStateException("Could not find edge to create the attachable property on");
+            } else { // vertex property
+                final Iterator<Vertex> vertexIterator = hostGraph.vertices(((VertexProperty) baseElement).element().id());
+                if (vertexIterator.hasNext()) {
+                    final Vertex vertex = vertexIterator.next();
+                    final Iterator<VertexProperty<Object>> vertexPropertyIterator = vertex.properties(((VertexProperty) baseElement).key());
+                    while (vertexPropertyIterator.hasNext()) {
+                        final VertexProperty<Object> vp = vertexPropertyIterator.next();
+                        if (ElementHelper.areEqual(vp, baseElement))
+                            return vp.property(baseProperty.key(), baseProperty.value());
+                    }
+                }
+                throw new IllegalStateException("Could not find vertex property to create the attachable property on");
+            }
         }
 
         public static Property createProperty(final Attachable<Property> attachableProperty, final Vertex hostVertex) {
-            return null; // TODO: :)
+            final Property baseProperty = attachableProperty.get();
+            final Element baseElement = baseProperty.element();
+            if (baseElement instanceof Vertex) {
+                return Method.createVertexProperty((Attachable) attachableProperty, hostVertex);
+            } else if (baseElement instanceof Edge) {
+                final Iterator<Edge> edgeIterator = hostVertex.edges(Direction.OUT);
+                if (edgeIterator.hasNext())
+                    return edgeIterator.next().property(baseProperty.key(), baseProperty.value());
+                throw new IllegalStateException("Could not find edge to create the property on");
+            } else { // vertex property
+                final Iterator<VertexProperty<Object>> vertexPropertyIterator = hostVertex.properties(((VertexProperty) baseElement).key());
+                while (vertexPropertyIterator.hasNext()) {
+                    final VertexProperty<Object> vp = vertexPropertyIterator.next();
+                    if (ElementHelper.areEqual(vp, baseElement))
+                        return vp.property(baseProperty.key(), baseProperty.value());
+                }
+                throw new IllegalStateException("Could not find vertex property to create the attachable property on");
+            }
         }
-
     }
 
     public static class Exceptions {

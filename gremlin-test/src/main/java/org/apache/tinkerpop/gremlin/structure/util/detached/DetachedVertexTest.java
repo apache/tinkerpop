@@ -31,11 +31,13 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -284,5 +286,21 @@ public class DetachedVertexTest extends AbstractGremlinTest {
         final DetachedVertex dv = DetachedFactory.detach(g.V(convertToVertexId("marko")).next(), true);
         assertEquals("marko", dv.property("name").value());
         assertEquals(29, dv.property("age").value());
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldCreateVertex() {
+        final DetachedVertex detachedVertex = new DetachedVertex(23, "dog", Collections.emptyMap());
+        detachedVertex.attach(graph, Attachable.Method.CREATE);
+        assertEquals(7, IteratorUtils.count(graph.vertices()));
+        final AtomicInteger dogTimes = new AtomicInteger(0);
+        graph.vertices().forEachRemaining(vertex -> {
+            if (vertex.label().equals("dog")) {
+                dogTimes.incrementAndGet();
+            }
+        });
+        assertEquals(1, dogTimes.get());
     }
 }
