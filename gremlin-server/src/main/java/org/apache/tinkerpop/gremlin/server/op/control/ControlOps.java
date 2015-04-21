@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.op.control;
 
+import io.netty.channel.ChannelHandlerContext;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -41,8 +42,9 @@ class ControlOps {
     private static final Logger logger = LoggerFactory.getLogger(ControlOps.class);
 
     public static void versionOp(final Context context) {
+        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
-        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).result(Gremlin.version()));
+        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).result(Gremlin.version()), ctx.voidPromise());
     }
 
     /**
@@ -58,6 +60,7 @@ class ControlOps {
      * List the dependencies, imports, or variables in the {@code ScriptEngine}.
      */
     public static void showOp(final Context context) {
+        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final String infoType = msg.<String>optionalArgs(Tokens.ARGS_INFO_TYPE).get();
         final GremlinExecutor executor = context.getGremlinExecutor();
@@ -75,7 +78,7 @@ class ControlOps {
         }
 
         try {
-            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).result(infoToShow).create());
+            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).result(infoToShow).create(), ctx.voidPromise());
         } catch (Exception ex) {
             logger.warn("The result [{}] in the request {} could not be serialized and returned.",
                     infoToShow, context.getRequestMessage(), ex);
@@ -86,15 +89,17 @@ class ControlOps {
      * Resets the {@code ScriptEngine} thus forcing a reload of scripts and classes.
      */
     public static void resetOp(final Context context) {
+        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         context.getGremlinExecutor().getScriptEngines().reset();
-        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).create());
+        context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).create(), ctx.voidPromise());
     }
 
     /**
      * Pull in maven based dependencies and load Gremlin plugins.
      */
     public static void useOp(final Context context) {
+        final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final List<Map<String, String>> usings = (List<Map<String, String>>) msg.getArgs().get(Tokens.ARGS_COORDINATES);
         usings.forEach(c -> {
@@ -110,7 +115,7 @@ class ControlOps {
                 put("version", version);
             }};
 
-            context.getChannelHandlerContext().write(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).result(coords).create());
+            context.getChannelHandlerContext().writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS).result(coords).create(), ctx.voidPromise());
         });
     }
 }
