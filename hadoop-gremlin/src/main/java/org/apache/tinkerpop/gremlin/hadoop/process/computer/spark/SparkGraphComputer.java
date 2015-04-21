@@ -213,7 +213,6 @@ public final class SparkGraphComputer implements GraphComputer {
                         // process the map reducers //
                         //////////////////////////////
                         if (!this.mapReducers.isEmpty()) {
-                            // drop all edges and messages in the graphRDD as they are no longer needed for the map reduce jobs
                             final String[] elementComputeKeys = this.vertexProgram == null ? new String[0] : this.vertexProgram.getElementComputeKeys().toArray(new String[this.vertexProgram.getElementComputeKeys().size()]);
                             final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = SparkExecutor.prepareGraphRDDForMapReduce(graphRDD, viewIncomingRDD, elementComputeKeys).setName("mapReduceGraphRDD").cache();
                             for (final MapReduce mapReduce : this.mapReducers) {

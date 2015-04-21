@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -62,7 +61,7 @@ public final class StarGraph implements Graph, Serializable {
     private StarVertex starVertex = null;
     private Long nextId = 0l;
 
-    private final Map<Object, Map<String, Object>> edgeProperties = new HashMap<>();
+    private final Map<Object, Map<String, Object>> edgeProperties = new HashMap<>();  // TODO: null these until required? (space savings)
     private final Map<Object, Map<String, Object>> metaProperties = new HashMap<>();
 
     private StarGraph() {
@@ -236,11 +235,11 @@ public final class StarGraph implements Graph, Serializable {
     //// STAR VERTEX ////
     /////////////////////
 
-    public final class StarVertex extends StarElement implements Vertex, Attachable<Vertex> {
+    public final class StarVertex extends StarElement implements Vertex {
 
-        private Map<String, List<Edge>> outEdges = new HashMap<>();
-        private Map<String, List<Edge>> inEdges = new HashMap<>();
-        private Map<String, List<VertexProperty>> vertexProperties = new HashMap<>();
+        private final Map<String, List<Edge>> outEdges = new HashMap<>();
+        private final Map<String, List<Edge>> inEdges = new HashMap<>();
+        private final Map<String, List<VertexProperty>> vertexProperties = new HashMap<>();
 
         public StarVertex(final Object id, final String label) {
             super(id, label);
@@ -250,24 +249,14 @@ public final class StarGraph implements Graph, Serializable {
             return this;
         }
 
-        public Vertex attach(final Vertex hostVertex, final Method method) {
-            return (Vertex) method.apply(this, hostVertex);
-        }
-
-        public Vertex attach(final Graph hostGraph, final Method method) {
-            return (Vertex) method.apply(this, hostGraph);
-        }
-
         public void dropEdges() {
             this.outEdges.clear();
             this.inEdges.clear();
         }
 
-        public void dropVertexProperties(final String... keys) {
-            if (null != keys) {  // TODO: this is bad
-                for (final String key : keys) {
-                    this.vertexProperties.remove(key);
-                }
+        public void dropVertexProperties(final String... propertyKeys) {
+            for (final String key : propertyKeys) {
+                this.vertexProperties.remove(key);
             }
         }
 
