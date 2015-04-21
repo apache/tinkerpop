@@ -22,10 +22,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -111,16 +109,18 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     }
 
     @Override
-    public VertexProperty<V> attach(final Vertex hostVertex) {
-        final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.<V>properties(this.label), vp -> ElementHelper.areEqual(this, vp));
+    public VertexProperty<V> attach(final Vertex hostVertex, final Method method) {
+        return (VertexProperty<V>) method.apply(this, hostVertex);
+        /*final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.<V>properties(this.label), vp -> ElementHelper.areEqual(this, vp));
         if (!vertexPropertyIterator.hasNext())
             throw Attachable.Exceptions.canNotAttachVertexPropertyToHostVertex((Attachable) this, hostVertex);
-        return vertexPropertyIterator.next();
+        return vertexPropertyIterator.next(); */
     }
 
     @Override
-    public VertexProperty<V> attach(final Graph hostGraph) {
-        return this.attach(this.vertex.attach(hostGraph));
+    public VertexProperty<V> attach(final Graph hostGraph, final Method method) {
+        return (VertexProperty<V>) method.apply(this, hostGraph);
+        //return this.attach(this.vertex.attach(hostGraph));
     }
 
     @Override

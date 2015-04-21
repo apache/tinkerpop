@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
@@ -236,7 +237,7 @@ public final class StarGraph implements Graph {
     //// STAR VERTEX ////
     /////////////////////
 
-    public final class StarVertex extends StarElement implements Vertex {
+    public final class StarVertex extends StarElement implements Vertex, Attachable<Vertex> {
 
         private Map<String, List<Edge>> outEdges = new HashMap<>();
         private Map<String, List<Edge>> inEdges = new HashMap<>();
@@ -244,6 +245,18 @@ public final class StarGraph implements Graph {
 
         public StarVertex(final Object id, final String label) {
             super(id, label);
+        }
+
+        public Vertex get() {
+            return this;
+        }
+
+        public Vertex attach(final Vertex hostVertex, final Method method) {
+            return (Vertex) method.apply(this, hostVertex);
+        }
+
+        public Vertex attach(final Graph hostGraph, final Method method) {
+            return (Vertex) method.apply(this, hostGraph);
         }
 
         public void dropEdges() {

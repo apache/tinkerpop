@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -126,23 +125,16 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     }
 
     @Override
-    public Vertex attach(final Vertex hostVertex) {
-        if (hostVertex.equals(this))
-            return hostVertex;
-        else
-            throw Attachable.Exceptions.canNotAttachVertexToHostVertex(this, hostVertex);
+    public Vertex attach(final Vertex hostVertex, final Method method) {
+        return (Vertex) method.apply(this, hostVertex);
     }
 
     @Override
-    public Vertex attach(final Graph hostGraph) {
-        final Iterator<Vertex> iterator = hostGraph.vertices(this.id);
-        if(iterator.hasNext())
-            return iterator.next();
-        else
-            throw Attachable.Exceptions.canNotAttachVertexToHostGraph(this, hostGraph);
+    public Vertex attach(final Graph hostGraph, final Method method) {
+        return (Vertex) method.apply(this, hostGraph);
     }
 
-    public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
+    /*public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
         final Vertex vertex = graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
         if (null != detachedVertex.properties) {
             detachedVertex.properties.values().forEach(list -> {
@@ -164,7 +156,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
             });
         }
         return vertex;
-    }
+    } */
 
     @Override
     public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
@@ -178,7 +170,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction, final String... labels) {
-      return Collections.emptyIterator();
+        return Collections.emptyIterator();
     }
 
     @Override

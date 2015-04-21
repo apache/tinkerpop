@@ -27,9 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -48,20 +46,22 @@ public class ReferenceVertex extends ReferenceElement<Vertex> implements Vertex 
     }
 
     @Override
-    public Vertex attach(final Vertex hostVertex) {
-        if (ElementHelper.areEqual(this,hostVertex))
+    public Vertex attach(final Vertex hostVertex, final Method method) {
+        return (Vertex) method.apply(this, hostVertex);
+        /*if (ElementHelper.areEqual(this,hostVertex))
             return hostVertex;
         else
-            throw Attachable.Exceptions.canNotAttachVertexToHostVertex(this, hostVertex);
+            throw Attachable.Exceptions.canNotAttachVertexToHostVertex(this, hostVertex);  */
     }
 
     @Override
-    public Vertex attach(final Graph hostGraph) {
-        final Iterator<Vertex> iterator = hostGraph.vertices(this.id);
+    public Vertex attach(final Graph hostGraph, final Method method) {
+        return (Vertex) method.apply(this, hostGraph);
+        /*final Iterator<Vertex> iterator = hostGraph.vertices(this.id);
         if (iterator.hasNext())
             return iterator.next();
         else
-            throw Attachable.Exceptions.canNotAttachVertexToHostGraph(this, hostGraph);
+            throw Attachable.Exceptions.canNotAttachVertexToHostGraph(this, hostGraph);   */
     }
 
     @Override

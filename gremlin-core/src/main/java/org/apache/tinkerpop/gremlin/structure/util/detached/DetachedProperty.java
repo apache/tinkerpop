@@ -53,6 +53,10 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         this.element = DetachedFactory.detach(element, false);
     }
 
+    public Property get() {
+        return this;
+    }
+
     @Override
     public boolean isPresent() {
         return true;
@@ -95,22 +99,24 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     }
 
     @Override
-    public Property<V> attach(final Vertex hostVertex) {
-        final Element element = (Element) this.element.attach(hostVertex);
+    public Property<V> attach(final Vertex hostVertex, final Method method) {
+        return (Property<V>) method.apply(this, hostVertex);
+        /*final Element element = (Element) this.element.attach(hostVertex);
         final Property<V> property = element.property(this.key);
         if (property.isPresent() && property.value().equals(this.value))
             return property;
         else
-            throw Attachable.Exceptions.canNotAttachPropertyToHostVertex(this, hostVertex);
+            throw Attachable.Exceptions.canNotAttachPropertyToHostVertex(this, hostVertex);*/
     }
 
     @Override
-    public Property<V> attach(final Graph hostGraph) {
-        final Element hostElement = (Element) this.element.attach(hostGraph);
+    public Property<V> attach(final Graph hostGraph, final Method method) {
+        return (Property<V>) method.apply(this, method);
+        /*final Element hostElement = (Element) this.element.attach(hostGraph);
         final Property<V> property = hostElement.property(this.key);
         if (property.isPresent() && property.value().equals(this.value))
             return property;
         else
-            throw Attachable.Exceptions.canNotAttachPropertyToHostGraph(this, hostGraph);
+            throw Attachable.Exceptions.canNotAttachPropertyToHostGraph(this, hostGraph); */
     }
 }

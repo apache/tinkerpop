@@ -96,4 +96,8 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
                 Collections.emptyIterator() :
                 (Iterator) this.properties.entrySet().stream().filter(entry -> ElementHelper.keyExists(entry.getKey(), propertyKeys)).flatMap(entry -> entry.getValue().stream()).iterator();
     }
+
+    public E get() {
+        return (E) this;
+    }
 }
