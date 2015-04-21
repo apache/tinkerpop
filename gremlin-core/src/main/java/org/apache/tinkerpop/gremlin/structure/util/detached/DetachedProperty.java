@@ -32,7 +32,7 @@ import java.io.Serializable;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class DetachedProperty<V> implements Property, Serializable, Attachable<Property> {
+public class DetachedProperty<V> implements Property<V>, Serializable, Attachable<Property<V>> {
 
     private String key;
     private V value;
@@ -51,6 +51,10 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
         this.key = key;
         this.value = value;
         this.element = DetachedFactory.detach(element, false);
+    }
+
+    public Property<V> get() {
+        return this;
     }
 
     @Override
@@ -92,25 +96,5 @@ public class DetachedProperty<V> implements Property, Serializable, Attachable<P
     @Override
     public int hashCode() {
         return ElementHelper.hashCode(this);
-    }
-
-    @Override
-    public Property<V> attach(final Vertex hostVertex) {
-        final Element element = (Element) this.element.attach(hostVertex);
-        final Property<V> property = element.property(this.key);
-        if (property.isPresent() && property.value().equals(this.value))
-            return property;
-        else
-            throw Attachable.Exceptions.canNotAttachPropertyToHostVertex(this, hostVertex);
-    }
-
-    @Override
-    public Property<V> attach(final Graph hostGraph) {
-        final Element hostElement = (Element) this.element.attach(hostGraph);
-        final Property<V> property = hostElement.property(this.key);
-        if (property.isPresent() && property.value().equals(this.value))
-            return property;
-        else
-            throw Attachable.Exceptions.canNotAttachPropertyToHostGraph(this, hostGraph);
     }
 }

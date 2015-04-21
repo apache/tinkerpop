@@ -62,12 +62,12 @@ public class B_O_PA_S_SE_SL_Traverser<T> extends AbstractPathTraverser<T> {
     }
 
     @Override
-    public Traverser.Admin<T> attach(final Vertex vertex) {
-        super.attach(vertex);
+    public T attach(final Vertex vertex, final Method method) {
+        super.attach(vertex, method);
         final Path newSparsePath = getOrCreateFromCache(this.sideEffects);
         this.path.forEach((object, labels) -> newSparsePath.extend(object, labels.toArray(new String[labels.size()])));
         this.path = newSparsePath;
-        return this;
+        return this.t;
     }
 
     //////////////////////

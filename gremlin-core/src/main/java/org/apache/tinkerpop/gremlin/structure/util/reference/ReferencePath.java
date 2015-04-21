@@ -38,6 +38,10 @@ public class ReferencePath extends MutablePath implements Attachable<Path> {
 
     }
 
+    public Path get() {
+        return this;
+    }
+
     protected ReferencePath(final Path path) {
         path.forEach((object, labels) -> {
             if (object instanceof ReferenceElement || object instanceof ReferenceProperty || object instanceof ReferencePath) {
@@ -60,16 +64,16 @@ public class ReferencePath extends MutablePath implements Attachable<Path> {
     }
 
     @Override
-    public Path attach(final Graph hostGraph) {
+    public Path attach(final Graph hostGraph, final Method method) {
         final Path path = MutablePath.make();  // TODO: Use ImmutablePath?
-        this.forEach((object, labels) -> path.extend(object instanceof Attachable ? ((Attachable) object).attach(hostGraph) : object, labels.toArray(new String[labels.size()])));
+        this.forEach((object, labels) -> path.extend(object instanceof Attachable ? ((Attachable) object).attach(hostGraph, method) : object, labels.toArray(new String[labels.size()])));
         return path;
     }
 
     @Override
-    public Path attach(final Vertex hostVertex) {
+    public Path attach(final Vertex hostVertex, final Method method) {
         final Path path = MutablePath.make();  // TODO: Use ImmutablePath?
-        this.forEach((object, labels) -> path.extend(object instanceof Attachable ? ((Attachable) object).attach(hostVertex) : object, labels.toArray(new String[labels.size()])));
+        this.forEach((object, labels) -> path.extend(object instanceof Attachable ? ((Attachable) object).attach(hostVertex, method) : object, labels.toArray(new String[labels.size()])));
         return path;
     }
 }

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -125,7 +126,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     public void shouldAttachToGraph() {
         final Edge toDetach = g.E(convertToEdgeId("josh", "created", "lop")).next();
         final DetachedEdge detachedEdge = DetachedFactory.detach(toDetach, true);
-        final Edge attached = detachedEdge.attach(graph);
+        final Edge attached = detachedEdge.attach(graph, Attachable.Method.GET);
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedEdge);
@@ -137,7 +138,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         final Edge toDetach = g.E(convertToEdgeId("josh", "created", "lop")).next();
         final Vertex outV = toDetach.vertices(Direction.OUT).next();
         final DetachedEdge detachedEdge = DetachedFactory.detach(toDetach, true);
-        final Edge attached = detachedEdge.attach(outV);
+        final Edge attached = detachedEdge.attach(outV, Attachable.Method.GET);
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedEdge);

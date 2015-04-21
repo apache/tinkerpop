@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.detached;
 
-import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -26,7 +25,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -126,47 +124,6 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
     }
 
     @Override
-    public Vertex attach(final Vertex hostVertex) {
-        if (hostVertex.equals(this))
-            return hostVertex;
-        else
-            throw Attachable.Exceptions.canNotAttachVertexToHostVertex(this, hostVertex);
-    }
-
-    @Override
-    public Vertex attach(final Graph hostGraph) {
-        final Iterator<Vertex> iterator = hostGraph.vertices(this.id);
-        if(iterator.hasNext())
-            return iterator.next();
-        else
-            throw Attachable.Exceptions.canNotAttachVertexToHostGraph(this, hostGraph);
-    }
-
-    public static Vertex addTo(final Graph graph, final DetachedVertex detachedVertex) {
-        final Vertex vertex = graph.addVertex(T.id, detachedVertex.id(), T.label, detachedVertex.label());
-        if (null != detachedVertex.properties) {
-            detachedVertex.properties.values().forEach(list -> {
-                list.forEach(dVertexProperty -> {
-                    final DetachedVertexProperty<?> detachedVertexProperty = (DetachedVertexProperty) dVertexProperty;
-                    if (null != detachedVertexProperty.properties) {
-                        final List<Object> metaProperties = new ArrayList<>();
-                        detachedVertexProperty.properties().forEachRemaining(detachedMetaProperty -> {
-                            metaProperties.add(detachedMetaProperty.key());
-                            metaProperties.add(detachedMetaProperty.value());
-                        });
-                        metaProperties.add(T.id);
-                        metaProperties.add(detachedVertexProperty.id());
-                        vertex.property(VertexProperty.Cardinality.list, detachedVertexProperty.key(), detachedVertexProperty.value(), metaProperties.toArray());
-                    } else {
-                        vertex.property(VertexProperty.Cardinality.list, detachedVertexProperty.key(), detachedVertexProperty.value(), T.id, detachedVertexProperty.id());
-                    }
-                });
-            });
-        }
-        return vertex;
-    }
-
-    @Override
     public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
         return (Iterator) super.properties(propertyKeys);
     }
@@ -178,7 +135,7 @@ public class DetachedVertex extends DetachedElement<Vertex> implements Vertex {
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction, final String... labels) {
-      return Collections.emptyIterator();
+        return Collections.emptyIterator();
     }
 
     @Override

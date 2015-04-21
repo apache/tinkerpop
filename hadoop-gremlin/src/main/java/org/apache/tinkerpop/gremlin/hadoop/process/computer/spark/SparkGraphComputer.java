@@ -67,7 +67,7 @@ public final class SparkGraphComputer implements GraphComputer {
     protected final HadoopGraph hadoopGraph;
     private boolean executed = false;
     private final Set<MapReduce> mapReducers = new HashSet<>();
-    private VertexProgram vertexProgram;
+    private VertexProgram<Object> vertexProgram;
 
     private Optional<ResultGraph> resultGraph = Optional.empty();
     private Optional<Persist> persist = Optional.empty();
@@ -213,8 +213,8 @@ public final class SparkGraphComputer implements GraphComputer {
                         // process the map reducers //
                         //////////////////////////////
                         if (!this.mapReducers.isEmpty()) {
-                            // drop all edges and messages in the graphRDD as they are no longer needed for the map reduce jobs
-                            final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = SparkExecutor.prepareGraphRDDForMapReduce(graphRDD, viewIncomingRDD).setName("mapReduceGraphRDD").cache();
+                            final String[] elementComputeKeys = this.vertexProgram == null ? new String[0] : this.vertexProgram.getElementComputeKeys().toArray(new String[this.vertexProgram.getElementComputeKeys().size()]);
+                            final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = SparkExecutor.prepareGraphRDDForMapReduce(graphRDD, viewIncomingRDD, elementComputeKeys).setName("mapReduceGraphRDD").cache();
                             for (final MapReduce mapReduce : this.mapReducers) {
                                 // execute the map reduce job
                                 final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);

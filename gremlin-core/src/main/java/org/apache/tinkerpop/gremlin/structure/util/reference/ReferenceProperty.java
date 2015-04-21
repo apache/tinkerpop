@@ -35,7 +35,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferenceProperty<V> implements Attachable<Property>, Serializable, Property<V> {
+public class ReferenceProperty<V> implements Attachable<Property<V>>, Serializable, Property<V> {
 
     private ReferenceElement<?> element;
     private String key;
@@ -45,28 +45,14 @@ public class ReferenceProperty<V> implements Attachable<Property>, Serializable,
 
     }
 
+    public Property<V> get() {
+        return this;
+    }
+
     public ReferenceProperty(final Property<V> property) {
         this.element = ReferenceFactory.detach(property.element());
         this.key = property.key();
         this.value = property.value();
-    }
-
-    @Override
-    public Property<V> attach(final Vertex hostVertex) throws IllegalStateException {
-        final Property<V> property = this.element.attach(hostVertex).property(this.key);
-        if (property.isPresent() && property.value().equals(this.value))
-            return property;
-        else
-            throw Attachable.Exceptions.canNotAttachPropertyToHostVertex(this, hostVertex);
-    }
-
-    @Override
-    public Property<V> attach(final Graph hostGraph) throws IllegalStateException {
-        final Property<V> property = this.element.attach(hostGraph).property(this.key);
-        if (property.isPresent() && property.value().equals(this.value))
-            return property;
-        else
-            throw Attachable.Exceptions.canNotAttachPropertyToHostGraph(this, hostGraph);
     }
 
     @Override

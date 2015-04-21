@@ -22,10 +22,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,7 +34,7 @@ import java.util.Map;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> implements VertexProperty<V> {
+public class DetachedVertexProperty<V> extends DetachedElement<VertexProperty<V>> implements VertexProperty<V> {
 
     protected V value;
     protected transient DetachedVertex vertex;
@@ -111,26 +109,7 @@ public class DetachedVertexProperty<V> extends DetachedElement<Property<V>> impl
     }
 
     @Override
-    public VertexProperty<V> attach(final Vertex hostVertex) {
-        final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.<V>properties(this.label), vp -> ElementHelper.areEqual(this, vp));
-        if (!vertexPropertyIterator.hasNext())
-            throw Attachable.Exceptions.canNotAttachVertexPropertyToHostVertex((Attachable) this, hostVertex);
-        return vertexPropertyIterator.next();
-    }
-
-    @Override
-    public VertexProperty<V> attach(final Graph hostGraph) {
-        return this.attach(this.vertex.attach(hostGraph));
-    }
-
-    @Override
     public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
         return (Iterator) super.properties(propertyKeys);
-    }
-
-    public static <V> VertexProperty<V> addTo(final Vertex vertex, final DetachedVertexProperty<V> detachedVertexProperty) {
-        final VertexProperty<V> vertexProperty = vertex.property(VertexProperty.Cardinality.single, detachedVertexProperty.key(), detachedVertexProperty.value()); // TODO: this isn't right, is it? (need to remove views from Spark/Giraph)
-        detachedVertexProperty.properties().forEachRemaining(property -> vertexProperty.property(property.key(), property.value()));
-        return vertexProperty;
     }
 }

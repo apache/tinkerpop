@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
@@ -126,8 +127,8 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldAttachToGraph() {
         final Vertex v = graph.addVertex();
         final VertexProperty toDetach = v.property(VertexProperty.Cardinality.single, "test", "this");
-        final DetachedVertexProperty detached = DetachedFactory.detach(toDetach, true);
-        final VertexProperty attached = detached.attach(graph);
+        final DetachedVertexProperty<?> detached = DetachedFactory.detach(toDetach, true);
+        final VertexProperty attached = detached.attach(graph, Attachable.Method.GET);
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedVertexProperty);
@@ -138,8 +139,8 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
     public void shouldAttachToVertex() {
         final Vertex v = graph.addVertex();
         final VertexProperty toDetach = v.property(VertexProperty.Cardinality.single, "test", "this");
-        final DetachedVertexProperty detached = DetachedFactory.detach(toDetach, true);
-        final VertexProperty attached = detached.attach(v);
+        final DetachedVertexProperty<?> detached = DetachedFactory.detach(toDetach, true);
+        final VertexProperty attached = detached.attach(v, Attachable.Method.GET);
 
         assertEquals(toDetach, attached);
         assertEquals(toDetach.getClass(), attached.getClass());

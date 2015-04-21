@@ -24,11 +24,8 @@ package org.apache.tinkerpop.gremlin.structure.util.reference;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -44,22 +41,6 @@ public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
 
     public ReferenceEdge(final Edge edge) {
         super(edge);
-    }
-
-    @Override
-    public Edge attach(final Vertex hostVertex) {
-        final Iterator<Edge> edges = IteratorUtils.filter(hostVertex.edges(Direction.OUT), edge -> edge.id().equals(this.id));
-        if (!edges.hasNext())
-            throw Attachable.Exceptions.canNotAttachEdgeToHostVertex(this, hostVertex);
-        return edges.next();
-    }
-
-    @Override
-    public Edge attach(final Graph hostGraph) {
-        final Iterator<Edge> edges = hostGraph.edges(this.id);
-        if (!edges.hasNext())
-            throw Attachable.Exceptions.canNotAttachEdgeToHostGraph(this, hostGraph);
-        return edges.next();
     }
 
     @Override

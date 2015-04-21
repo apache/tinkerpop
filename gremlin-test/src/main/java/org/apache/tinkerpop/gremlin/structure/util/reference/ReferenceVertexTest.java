@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
@@ -102,7 +103,7 @@ public class ReferenceVertexTest extends AbstractGremlinTest {
     public void shouldAttachToGraph() {
         final Vertex v = g.V(convertToVertexId("josh")).next();
         final ReferenceVertex referenceVertex = ReferenceFactory.detach(v);
-        final Vertex attachedV = referenceVertex.attach(graph);
+        final Vertex attachedV = referenceVertex.attach(graph, Attachable.Method.GET);
 
         assertEquals(v, attachedV);
         assertFalse(attachedV instanceof ReferenceVertex);
@@ -113,7 +114,7 @@ public class ReferenceVertexTest extends AbstractGremlinTest {
     public void shouldAttachToVertex() {
         final Vertex v = g.V(convertToVertexId("josh")).next();
         final ReferenceVertex referenceVertex = ReferenceFactory.detach(v);
-        final Vertex attachedV = referenceVertex.attach(v);
+        final Vertex attachedV = referenceVertex.attach(v, Attachable.Method.GET);
 
         assertEquals(v, attachedV);
         assertFalse(attachedV instanceof ReferenceVertex);

@@ -25,6 +25,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `VertexWritable` serializes and deserializes the `StarGraph` object -- no more intermediate `DetachedXXX` objects.
+* Moved `T` tokens to the `structure/` package as its more general than `process/`.
+* `Attachable.attach()` now takes a `Method` to determine whether to attach via `GET`, `CREATE`, or `GET_OR_CREATE`.
 * Decreased size of Gremlin Server `RequestMessage` and `ResponseMessage` serialization payloads and reduced object creation.
 * `Graph.empty()` no longer required with the introduction of `ShellGraph` which is a placeholder for a graph class and computer.
 * `VertexProperty.Cardinality` default is now vendor chosen. If the vendor has not preference, they should use `Cardinality.single`.

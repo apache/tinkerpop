@@ -71,4 +71,8 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
     public boolean equals(final Object other) {
         return ElementHelper.areEqual(this, other);
     }
+
+    public E get() {
+        return (E) this;
+    }
 }

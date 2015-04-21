@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 
@@ -50,7 +51,7 @@ public final class TraverserExecutor {
         messenger.receiveMessages().forEachRemaining(traverserSet -> {
             traverserSet.forEach(traverser -> {
                 traverser.setSideEffects(traversalSideEffects);
-                traverser.attach(vertex);
+                traverser.attach(vertex, Attachable.Method.GET);
                 aliveTraversers.add((Traverser.Admin) traverser);
             });
         });

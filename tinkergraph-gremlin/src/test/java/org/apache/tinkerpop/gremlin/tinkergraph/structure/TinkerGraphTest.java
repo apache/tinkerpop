@@ -21,11 +21,9 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.algorithm.generator.DistributionGenerator;
 import org.apache.tinkerpop.gremlin.algorithm.generator.PowerLawDistribution;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
-import org.apache.tinkerpop.gremlin.process.traversal.T;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -34,12 +32,12 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Operator;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -140,17 +138,6 @@ public class TinkerGraphTest {
                 System.out.print("   " + (System.currentTimeMillis() - t));
             }
         });
-    }
-
-    @Test
-    @Ignore
-    public void testPlay3() throws Exception {
-        TinkerGraph tg = TinkerFactory.createModern();
-        StarGraph sg = StarGraph.open();
-        tg.vertices().forEachRemaining(v -> StarGraph.addTo(sg, DetachedFactory.detach(v,true)));
-        tg.vertices(1).next().edges(Direction.BOTH).forEachRemaining(e -> StarGraph.addTo(sg, DetachedFactory.detach(e, true)));
-        sg.vertices().forEachRemaining(System.out::println);
-        sg.edges().forEachRemaining(System.out::println);
     }
 
     @Test

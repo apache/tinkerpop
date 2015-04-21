@@ -26,8 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -36,47 +35,36 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty> implements VertexProperty<V> {
+public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty<V>> implements VertexProperty<V> {
 
     private ReferenceVertex vertex;
+    private String key;
+    private V value;
 
     private ReferenceVertexProperty() {
 
     }
 
-    public ReferenceVertexProperty(final VertexProperty vertexProperty) {
+    public ReferenceVertexProperty(final VertexProperty<V> vertexProperty) {
         super(vertexProperty);
         this.vertex = ReferenceFactory.detach(vertexProperty.element());
-    }
-
-    @Override
-    public VertexProperty<V> attach(final Vertex hostVertex) {
-        if (!hostVertex.equals(this.vertex))
-            throw Attachable.Exceptions.canNotAttachVertexPropertyToHostVertex(this, hostVertex);
-        final Iterator<VertexProperty<V>> vertexPropertyIterator = IteratorUtils.filter(hostVertex.<V>properties(), vp -> vp.id().equals(this.id));
-        if (!vertexPropertyIterator.hasNext())
-            throw Attachable.Exceptions.canNotAttachVertexPropertyToHostVertex(this, hostVertex);
-        return vertexPropertyIterator.next();
-    }
-
-    @Override
-    public VertexProperty<V> attach(final Graph hostGraph) {
-        return this.attach(this.vertex.attach(hostGraph));
+        this.key = vertexProperty.key();
+        this.value = vertexProperty.value();
     }
 
     @Override
     public String toString() {
-        return "vp[" + this.id + "]";
+        return StringFactory.propertyString(this);
     }
 
     @Override
     public String key() {
-        return EMPTY_STRING;
+        return this.key;
     }
 
     @Override
     public V value() throws NoSuchElementException {
-        return null;
+        return this.value;
     }
 
     @Override
