@@ -72,7 +72,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
     public void shouldAttachToGraph() {
         final Edge e = g.E(convertToEdgeId("josh", "created", "lop")).next();
         final Property toDetach = e.properties("weight").next();
-        final DetachedProperty detachedProperty = DetachedFactory.detach(toDetach);
+        final DetachedProperty<?> detachedProperty = DetachedFactory.detach(toDetach);
         final Property attached = detachedProperty.attach(graph, Attachable.Method.GET);
 
         assertEquals(toDetach, attached);
@@ -84,7 +84,7 @@ public class DetachedPropertyTest extends AbstractGremlinTest {
     public void shouldAttachToVertex() {
         final Edge e = g.E(convertToEdgeId("josh", "created", "lop")).next();
         final Property toDetach = e.property("weight");
-        final DetachedProperty detachedProperty = DetachedFactory.detach(toDetach);
+        final DetachedProperty<?> detachedProperty = DetachedFactory.detach(toDetach);
         final Property attached = detachedProperty.attach(e.outVertex(), Attachable.Method.GET);
 
         assertEquals(toDetach, attached);

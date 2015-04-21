@@ -101,11 +101,6 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public T getBase() {
-        return null;
-    }
-
-    @Override
     public <S> S sack() {
         return null;
     }

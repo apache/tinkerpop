@@ -147,14 +147,11 @@ public abstract class AbstractPathTraverser<T> implements Traverser<T>, Traverse
     }
 
     @Override
-    public T attach(final Vertex vertex, final Method method) {
-        if (this.t instanceof Attachable && !(((Attachable) this.t).getBase() instanceof Path))
-            this.t = ((Attachable<T>) this.t).attach(vertex, method);
+    public T attach(final Vertex hostVertex, final Method method) {
+        // you do not want to attach a path because it will reference graph objects not at the current vertex
+        if (this.t instanceof Attachable && !(((Attachable) this.t).get() instanceof Path))
+            this.t = ((Attachable<T>) this.t).attach(hostVertex, method);
         return this.t;
-    }
-
-    public T getBase() {
-        return this.get();
     }
 
     /////////////////

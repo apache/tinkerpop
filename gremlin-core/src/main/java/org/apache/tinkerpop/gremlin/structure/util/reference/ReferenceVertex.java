@@ -46,25 +46,6 @@ public class ReferenceVertex extends ReferenceElement<Vertex> implements Vertex 
     }
 
     @Override
-    public Vertex attach(final Vertex hostVertex, final Method method) {
-        return (Vertex) method.apply(this, hostVertex);
-        /*if (ElementHelper.areEqual(this,hostVertex))
-            return hostVertex;
-        else
-            throw Attachable.Exceptions.canNotAttachVertexToHostVertex(this, hostVertex);  */
-    }
-
-    @Override
-    public Vertex attach(final Graph hostGraph, final Method method) {
-        return (Vertex) method.apply(this, hostGraph);
-        /*final Iterator<Vertex> iterator = hostGraph.vertices(this.id);
-        if (iterator.hasNext())
-            return iterator.next();
-        else
-            throw Attachable.Exceptions.canNotAttachVertexToHostGraph(this, hostGraph);   */
-    }
-
-    @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         throw Vertex.Exceptions.edgeAdditionsNotSupported();
     }

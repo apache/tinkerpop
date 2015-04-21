@@ -72,7 +72,7 @@ public abstract class ReferenceElement<E extends Element> implements Element, Se
         return ElementHelper.areEqual(this, other);
     }
 
-    public E getBase() {
+    public E get() {
         return (E) this;
     }
 }

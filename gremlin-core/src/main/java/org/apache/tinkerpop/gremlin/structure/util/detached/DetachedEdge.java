@@ -85,48 +85,10 @@ public class DetachedEdge extends DetachedElement<Edge> implements Edge {
         }
     }
 
-
     @Override
     public String toString() {
         return StringFactory.edgeString(this);
     }
-
-    @Override
-    public Edge attach(final Vertex hostVertex, final Method method) {
-        return (Edge) method.apply(this, hostVertex);
-        /*final Iterator<Edge> edges = IteratorUtils.filter(hostVertex.edges(Direction.OUT, this.label), edge -> edge.equals(this));
-        if (!edges.hasNext())
-            throw Attachable.Exceptions.canNotAttachEdgeToHostVertex(this, hostVertex);
-        return edges.next();*/
-    }
-
-    @Override
-    public Edge attach(final Graph hostGraph, final Method method) {
-        return (Edge) method.apply(this, hostGraph);
-        /*final Iterator<Edge> edges = hostGraph.edges(this.id);
-        if (!edges.hasNext())
-            throw Attachable.Exceptions.canNotAttachEdgeToHostGraph(this, hostGraph);
-        return edges.next();*/
-    }
-
-    /*public static Edge addTo(final Graph graph, final DetachedEdge detachedEdge) {
-        Iterator<Vertex> vertices = graph.vertices(detachedEdge.outVertex.id());
-        final Vertex outV = vertices.hasNext() ? vertices.next() : graph.addVertex(T.id, detachedEdge.outVertex.id());
-        vertices = graph.vertices(detachedEdge.inVertex.id());
-        final Vertex inV = vertices.hasNext() ? vertices.next() : graph.addVertex(T.id, detachedEdge.inVertex.id());
-        if (ElementHelper.areEqual(outV, inV)) {
-            final Iterator<Edge> itty = outV.edges(Direction.OUT, detachedEdge.label());
-            while (itty.hasNext()) {
-                final Edge e = itty.next();
-                if (ElementHelper.areEqual(detachedEdge, e))
-                    return e;
-            }
-        }
-        final Edge e = outV.addEdge(detachedEdge.label(), inV, T.id, detachedEdge.id());
-        if (null != detachedEdge.properties)
-            detachedEdge.properties.entrySet().forEach(kv -> kv.getValue().forEach(p -> e.<Object>property(kv.getKey(), p.value())));
-        return e;
-    }*/
 
     @Override
     public Vertex inVertex() {

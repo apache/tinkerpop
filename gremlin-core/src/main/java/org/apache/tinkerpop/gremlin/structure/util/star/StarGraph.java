@@ -247,7 +247,7 @@ public final class StarGraph implements Graph {
             super(id, label);
         }
 
-        public Vertex getBase() {
+        public Vertex get() {
             return this;
         }
 
