@@ -94,21 +94,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     @Override
     public String serializeResponseAsString(final ResponseMessage responseMessage) throws SerializationException {
         try {
-            final Map<String, Object> result = new HashMap<>();
-            result.put(SerTokens.TOKEN_DATA, responseMessage.getResult().getData());
-            result.put(SerTokens.TOKEN_META, responseMessage.getResult().getMeta());
-
-            final Map<String, Object> status = new HashMap<>();
-            status.put(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
-            status.put(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().getValue());
-            status.put(SerTokens.TOKEN_ATTRIBUTES, responseMessage.getStatus().getAttributes());
-
-            final Map<String, Object> message = new HashMap<>();
-            message.put(SerTokens.TOKEN_STATUS, status);
-            message.put(SerTokens.TOKEN_RESULT, result);
-            message.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
-
-            return mapper.writeValueAsString(message);
+            return mapper.writeValueAsString(createResponseMessageMap(responseMessage));
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);

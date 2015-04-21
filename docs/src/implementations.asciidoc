@@ -689,6 +689,122 @@ MapReduceGraphComputer
 
 *COMING SOON*
 
+Input/Output Formats
+~~~~~~~~~~~~~~~~~~~~
+
+image:adjacency-list.png[width=300,float=right] Hadoop-Gremlin provides various I/O formats -- i.e. Hadoop `InputFormat` and `OutputFormat`. All of the formats make use of an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list] representation of the graph where each "row" represents a single vertex, its properties, and its incoming and outgoing edges.
+
+{empty} +
+
+GraphSON I/O Format
+^^^^^^^^^^^^^^^^^^^
+
+* **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat`
+* **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat`
+
+<<graphson-reader-writer,GraphSON>> is a JSON based graph format. GraphSON is a space-expensive graph format in that it is a text-based markup language. However, it is convenient for many developers to work with as its structure is simple (easy to create and parse).
+
+The data below represents an adjacency list representation of the classic TinkerGraph toy graph in GraphSON format.
+
+[source,json]
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","properties":{"name":[{"id":0,"label":"name","value":"marko","properties":{}}],"age":[{"id":1,"label":"age","value":29,"properties":{}}]}}
+{"inE":[{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"vertex","type":"vertex","properties":{"name":[{"id":2,"label":"name","value":"vadas","properties":{}}],"age":[{"id":3,"label":"age","value":27,"properties":{}}]}}
+{"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","properties":{"name":[{"id":4,"label":"name","value":"lop","properties":{}}],"lang":[{"id":5,"label":"lang","value":"java","properties":{}}]}}
+{"inE":[{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}}],"id":4,"label":"vertex","type":"vertex","properties":{"name":[{"id":6,"label":"name","value":"josh","properties":{}}],"age":[{"id":7,"label":"age","value":32,"properties":{}}]}}
+{"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","properties":{"name":[{"id":8,"label":"name","value":"ripple","properties":{}}],"lang":[{"id":9,"label":"lang","value":"java","properties":{}}]}}
+{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","properties":{"name":[{"id":10,"label":"name","value":"peter","properties":{}}],"age":[{"id":11,"label":"age","value":35,"properties":{}}]}}
+
+Gryo I/O Format
+^^^^^^^^^^^^^^^
+
+* **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat`
+* **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat`
+
+<<gryo-reader-writer,Gryo>> is a binary graph format that leverages link:https://github.com/EsotericSoftware/kryo[Kryo] to make a compact, binary representation of a vertex. It is recommended that users leverage Gryo given its space/time savings over text-based representations.
+
+NOTE: The `GryoInputFormat` is splittable.
+
+Script I/O Format
+^^^^^^^^^^^^^^^^^
+
+* **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptInputFormat`
+* **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptOutputFormat`
+
+`ScriptInputFormat` and `ScriptOutputFormat` take an arbitrary script and use that script to either read or write `Vertex` objects, respectively. This can be considered the most general `InputFormat`/`OutputFormat` possible in that Hadoop-Gremlin uses the user provided script for all reading/writing.
+
+ScriptInputFormat
++++++++++++++++++
+
+The data below represents an adjacency list representation of the classic TinkerGraph toy graph. First line reads, "vertex `1`, labeled `person` having 2 property values (`marko` and `29`) has 3 outgoing edges; the first edge is labeled `knows`, connects the current vertex `1` with vertex `2` and has a property value `0.4`, and so on."
+
+[source]
+1:person:marko:29 knows:2:0.5,knows:4:1.0,created:3:0.4
+2:person:vadas:27
+3:project:lop:java
+4:person:josh:32 created:3:0.4,created:5:1.0
+5:project:ripple:java
+6:person:peter:35 created:3:0.2
+
+There is no corresponding `InputFormat` that can parse this particular file (or some adjacency list variant of it). As such, `ScriptInputFormat` can be used. With `ScriptInputFormat` a script is stored in HDFS and leveraged by each mapper in the Hadoop job. The script must have the following method defined:
+
+[source,groovy]
+def parse(String line, ScriptElementFactory factory) { ... }
+
+`ScriptElementFactory` provides the following 4 methods:
+
+[source,java]
+Vertex vertex(Object id); // get or create the vertex with the given id
+Vertex vertex(Object id, String label); // get or create the vertex with the given id and label
+Edge edge(Vertex out, Vertex in); // create an edge between the two given vertices
+Edge edge(Vertex out, Vertex in, String label); // create an edge between the two given vertices using the given label
+
+An appropriate `parse()` for the above adjacency list file is:
+
+[source,groovy]
+def parse(line, factory) {
+    def parts = line.split(/ /)
+    def (id, label, name, x) = parts[0].split(/:/).toList()
+    def v1 = factory.vertex(id, label)
+    if (name != null) v1.property('name', name) // first value is always the name
+    if (x != null) {
+        // second value depends on the vertex label; it's either
+        // the age of a person or the language of a project
+        if (label.equals('project')) v1.property('lang', x)
+        else v1.property('age', Integer.valueOf(x))
+    }
+    if (parts.length == 2) {
+        parts[1].split(/,/).grep { !it.isEmpty() }.each {
+            def (eLabel, refId, weight) = it.split(/:/).toList()
+            def v2 = factory.vertex(refId)
+            def edge = factory.edge(v1, v2, eLabel)
+            edge.property('weight', Double.valueOf(weight))
+        }
+    }
+    return v1
+}
+
+The resultant `Vertex` denotes whether the line parsed yielded a valid Vertex. As such, if the line is not valid (e.g. a comment line, a skip line, etc.), then simply return `null`.
+
+ScriptOutputFormat Support
+++++++++++++++++++++++++++
+
+The principle above can also be used to convert a vertex to an arbitrary `String` representation that is ultimately streamed back to a file in HDFS. This is the role of `ScriptOutputFormat`. `ScriptOutputFormat` requires that the provided script maintains a method with the following signature:
+
+[source,groovy]
+def stringify(Vertex vertex) { ... }
+
+An appropriate `stringify()` to produce output in the same format that was shown in the `ScriptInputFormat` sample is:
+
+[source,groovy]
+def stringify(vertex) {
+    def v = vertex.values('name', 'age', 'lang').inject(vertex.id(), vertex.label()).join(':')
+    def outE = vertex.outE().map {
+        def e = it.get()
+        e.values('weight').inject(e.label(), e.inV().next().id()).join(':')
+    }.join(',')
+    return [v, outE].join('\t')
+}
+
 Interacting with HDFS
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -705,7 +821,6 @@ gremlin> hdfs.ls()
 ==>rw-r--r-- marko supergroup 1439 tinkerpop-modern-vertices.kryo
 gremlin> hdfs.ls('output')
 ==>rwxr-xr-x marko supergroup 0 (D) a
-==>rwxr-xr-x marko supergroup 0 (D) ~g
 gremlin> hdfs.ls('output/a')
 ==>rw-r--r-- marko supergroup 0 _SUCCESS
 ==>rwxr-xr-x marko supergroup 0 (D) _logs

@@ -94,7 +94,6 @@ limitations under the License.
     <properties>
         <groovy.version>2.4.1</groovy.version>
         <junit.version>4.11</junit.version>
-        <kuali.s3.wagon.version>1.1.20</kuali.s3.wagon.version>
         <!-- Directory containing the file ${log4j.properties} defined
              above.  Maven interpolates ${project.basedir} in the
              context of child modules, so path this relative to one of
@@ -114,15 +113,6 @@ limitations under the License.
     </properties>
     <build>
         <directory>${basedir}/target</directory>
-
-        <!-- Used to upload docs to S3 -->
-        <extensions>
-            <extension>
-                <groupId>org.kuali.maven.wagons</groupId>
-                <artifactId>maven-s3-wagon</artifactId>
-                <version>${kuali.s3.wagon.version}</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -233,8 +223,8 @@ limitations under the License.
                     <excludes>
                         <exclude>.repository/**</exclude>
                         <exclude>docs/static/**</exclude>
-                        <exclude>docs/stylesheets/**</exclude>
                         <exclude>**/target/**</exclude>
+                        <exclude>data/*.txt</exclude>
                         <exclude>**/*.kryo</exclude>
                         <exclude>**/*.iml</exclude>
                         <exclude>**/*.json</exclude>
@@ -390,11 +380,6 @@ limitations under the License.
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${javadoc-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>wagon-maven-plugin</artifactId>
-                    <version>1.0-beta-5</version>
                 </plugin>
             </plugins>
         </pluginManagement>

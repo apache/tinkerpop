@@ -22,6 +22,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
+import org.apache.tinkerpop.gremlin.algorithm.generator.DistributionGenerator;
+import org.apache.tinkerpop.gremlin.algorithm.generator.PowerLawDistribution;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -51,6 +53,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.assertEquals;
@@ -618,6 +621,22 @@ public class TinkerGraphTest {
             assertEquals(0.5f, t);
             return true;
         }, 0.5).has("oid", "1").count().next());
+    }
+
+    @Test
+    public void shouldWriteSampleForGremlinServer() throws IOException {
+        final Graph g = TinkerGraph.open();
+        IntStream.range(0, 10000).forEach(i -> g.addVertex("oid", i));
+        DistributionGenerator.build(g)
+                .label("knows")
+                .seedGenerator(() -> 987654321l)
+                .outDistribution(new PowerLawDistribution(2.1))
+                .inDistribution(new PowerLawDistribution(2.1))
+                .expectedNumEdges(100000).create().generate();
+
+        final OutputStream os = new FileOutputStream(tempPath + "sample.kryo");
+        GryoWriter.build().create().writeGraph(os, g);
+        os.close();
     }
 
     /**
