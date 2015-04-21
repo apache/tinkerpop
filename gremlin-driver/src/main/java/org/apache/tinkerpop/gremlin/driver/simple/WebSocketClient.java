@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver.simple;
 
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.ChannelOption;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketGremlinRequestEncoder;
@@ -66,6 +68,7 @@ public class WebSocketClient implements SimpleClient {
         final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("ws-client-%d").build();
         group = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), threadFactory);
         final Bootstrap b = new Bootstrap().group(group);
+        b.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
         final String protocol = uri.getScheme();
         if (!"ws".equals(protocol))

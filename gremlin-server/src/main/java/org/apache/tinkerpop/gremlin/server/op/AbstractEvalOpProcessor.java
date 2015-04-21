@@ -197,29 +197,47 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
+        boolean warnOnce = false;
 
         // timer for the total serialization time
         final StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
         // the batch size can be overridden by the request
-        final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE).orElse(settings.resultIterationBatchSize);
+        final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE)
+                .orElse(settings.resultIterationBatchSize);
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
         while (itty.hasNext()) {
-            aggregate.add(itty.next());
+            // have to check the aggregate size because it is possible that the channel is not writeable (below)
+            // so iterating next() if the message is not written and flushed would bump the aggregate size beyond
+            // the expected resultIterationBatchSize.  Total serialization time for the response remains in
+            // effect so if the client is "slow" it may simply timeout.
+            if (aggregate.size() < resultIterationBatchSize) aggregate.add(itty.next());
 
-            // send back a page of results if batch size is met or if it's the end of the results being
-            // iterated
-            if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
-                ctx.writeAndFlush(ResponseMessage.build(msg)
-                        .code(ResponseStatusCode.SUCCESS)
-                        .result(aggregate).create(), ctx.voidPromise());
-                aggregate = new ArrayList<>(resultIterationBatchSize);
+            // send back a page of results if batch size is met or if it's the end of the results being iterated.
+            // also check writeability of the channel to prevent OOME for slow clients.
+            if (ctx.channel().isWritable()) {
+                if  (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
+                    ctx.writeAndFlush(ResponseMessage.build(msg)
+                            .code(ResponseStatusCode.SUCCESS)
+                            .result(aggregate).create(), ctx.voidPromise());
+
+                    aggregate = new ArrayList<>(resultIterationBatchSize);
+                }
+            } else {
+                // don't keep triggering this warning over and over again for the same request
+                if (!warnOnce) {
+                    logger.warn("Pausing response writing as writeBufferHighWaterMark exceeded on {} - writing will continue once client has caught up", msg);
+                    warnOnce = true;
+                }
             }
 
             stopWatch.split();
-            if (stopWatch.getSplitTime() > settings.serializedResponseTimeout)
-                throw new TimeoutException("Serialization of the entire response exceeded the serializeResponseTimeout setting");
+            if (stopWatch.getSplitTime() > settings.serializedResponseTimeout) {
+                final String timeoutMsg = String.format("Serialization of the entire response exceeded the serializeResponseTimeout setting %s",
+                        warnOnce ? "[Gremlin Server paused writes to client as messages were not being consumed quickly enough]" : "");
+                throw new TimeoutException(timeoutMsg.trim());
+            }
 
             stopWatch.unsplit();
         }

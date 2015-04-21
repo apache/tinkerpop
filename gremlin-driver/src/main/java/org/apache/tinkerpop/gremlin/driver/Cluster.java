@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.ChannelOption;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.EventLoopGroup;
@@ -378,7 +380,9 @@ public class Cluster {
         }
 
         Bootstrap createBootstrap() {
-            return new Bootstrap().group(group);
+            final Bootstrap b = new Bootstrap().group(group);
+            b.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+            return b;
         }
 
         void shutdown() {

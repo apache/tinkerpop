@@ -18,6 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.spi.LoggingEvent;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
@@ -33,12 +37,16 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.nio.channels.ClosedChannelException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -60,6 +68,22 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Rule
     public TestName name = new TestName();
 
+    private RecordingAppender recordingAppender = null;
+
+    @Before
+    public void setupForEachTest() {
+        recordingAppender = new RecordingAppender();
+        recordingAppender.setLayout(new PatternLayout("%-5p - %m%n"));
+        final Logger rootLogger = Logger.getRootLogger();
+        rootLogger.addAppender(recordingAppender);
+    }
+
+    @After
+    public void teardownForEachTest() {
+        final Logger rootLogger = Logger.getRootLogger();
+        rootLogger.removeAppender(recordingAppender);
+    }
+
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */
@@ -67,6 +91,15 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public Settings overrideSettings(final Settings settings) {
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
+            case "shouldRespectHighWaterMarkSettingAndFailWithTimeout":
+                settings.writeBufferHighWaterMark = 64;
+                settings.writeBufferLowWaterMark = 32;
+                settings.serializedResponseTimeout = 20;
+                break;
+            case "shouldRespectHighWaterMarkSettingAndSucceed":
+                settings.writeBufferHighWaterMark = 64;
+                settings.writeBufferLowWaterMark = 32;
+                break;
             case "shouldReceiveFailureTimeOutOnScriptEval":
                 settings.scriptEvaluationTimeout = 200;
                 break;
@@ -93,6 +126,44 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldRespectHighWaterMarkSettingAndSucceed() throws Exception {
+        // the highwatermark should get exceeded on the server and thus pause the writes, but have no problem catching
+        // itself up
+        try (SimpleClient client = new WebSocketClient()) {
+            final int resultCountToGenerate = 1000;
+            final int batchSize = 2;
+            final String fatty = IntStream.range(0, 150).mapToObj(String::valueOf).collect(Collectors.joining());
+            final String fattyX = "['" + fatty + "'] * " + resultCountToGenerate;
+
+            // don't allow the thread to proceed until all results are accounted for (add one to the expected
+            // count since there will be a terminating message to account for
+            final CountDownLatch latch = new CountDownLatch((resultCountToGenerate / batchSize) + 1);
+            final AtomicBoolean expected = new AtomicBoolean(false);
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_BATCH_SIZE, batchSize)
+                    .addArg(Tokens.ARGS_GREMLIN, fattyX).create();
+            client.submit(request, r -> {
+                try {
+                    if (r.getResult().getData() != null) {
+                        final List<Object> list = ((List<Object>) r.getResult().getData());
+                        final Object aFattyResult = list.get(0);
+                        expected.set(aFattyResult.equals(fatty));
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                } finally {
+                    latch.countDown();
+                }
+            });
+
+            assertTrue(latch.await(30000, TimeUnit.MILLISECONDS));
+            assertEquals(0, latch.getCount());
+            assertTrue(expected.get());
+            assertTrue(recordingAppender.getMessages().stream().anyMatch(m -> m.contains("Pausing response writing as writeBufferHighWaterMark exceeded on")));
+        }
     }
 
     @Test
@@ -427,6 +498,29 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should not have an exception here");
         } finally {
             cluster.close();
+        }
+    }
+
+    public static class RecordingAppender extends AppenderSkeleton {
+        private List<String> messages = new ArrayList<>();
+
+        private RecordingAppender() {
+            super();
+        }
+
+        protected void append(LoggingEvent event) {
+            messages.add(layout.format(event));
+        }
+
+        public void close() {
+        }
+
+        public boolean requiresLayout() {
+            return true;
+        }
+
+        public List<String> getMessages() {
+            return messages;
         }
     }
 }
