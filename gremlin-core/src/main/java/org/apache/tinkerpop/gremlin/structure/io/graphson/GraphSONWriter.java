@@ -99,7 +99,7 @@ public class GraphSONWriter implements GraphWriter {
         return new Builder();
     }
 
-    public static class Builder {
+    public static class Builder implements WriterBuilder<GraphSONWriter> {
 
         private GraphSONMapper mapper = GraphSONMapper.build().create();
 

@@ -374,7 +374,7 @@ public class GraphMLWriter implements GraphWriter {
         return new Builder();
     }
 
-    public static final class Builder {
+    public static final class Builder implements WriterBuilder<GraphMLWriter> {
         private boolean normalize = false;
         private Map<String, String> vertexKeyTypes = null;
         private Map<String, String> edgeKeyTypes = null;

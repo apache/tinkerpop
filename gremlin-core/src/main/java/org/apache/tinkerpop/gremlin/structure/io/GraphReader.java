@@ -96,4 +96,14 @@ public interface GraphReader {
      */
     public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException;
 
+    /**
+     * Largely a marker interface for builder classes that construct a {@link GraphReader}.
+     */
+    public interface ReaderBuilder<T extends GraphReader> {
+        /**
+         * Creates the {@link GraphReader} implementation given options provided to the {@link ReaderBuilder}
+         * implementation.
+         */
+        T create();
+    }
 }

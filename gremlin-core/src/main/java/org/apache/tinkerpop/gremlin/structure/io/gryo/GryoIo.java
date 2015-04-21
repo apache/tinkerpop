@@ -1,0 +1,100 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.tinkerpop.gremlin.structure.io.gryo;
+
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.Io;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+/**
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+public class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, GryoMapper.Builder> {
+
+    private final IoRegistry registry;
+    private final Graph graph;
+
+    public GryoIo(final IoRegistry registry, final Graph graph) {
+        this.registry = registry;
+        this.graph = graph;
+    }
+
+    @Override
+    public GryoReader.Builder reader() {
+        return GryoReader.build().mapper(mapper().create());
+    }
+
+    @Override
+    public GryoWriter.Builder writer() {
+        return GryoWriter.build().mapper(mapper().create());
+    }
+
+    @Override
+    public GryoMapper.Builder mapper() {
+        return GryoMapper.build().addRegistry(this.registry);
+    }
+
+    @Override
+    public void write(final String file) throws IOException {
+        try (final OutputStream out = new FileOutputStream(file)) {
+            writer().create().writeGraph(out, graph);
+        }
+    }
+
+    @Override
+    public void read(final String file) throws IOException {
+        try (final InputStream in = new FileInputStream(file)) {
+            reader().create().readGraph(in, graph);
+        }
+    }
+
+    public static Io.Builder<GryoIo> build() {
+        return new Builder();
+    }
+
+    public static class Builder implements Io.Builder<GryoIo> {
+
+        private IoRegistry registry = null;
+        private Graph graph;
+
+        @Override
+        public Io.Builder<GryoIo> registry(final IoRegistry registry) {
+            this.registry = registry;
+            return this;
+        }
+
+        @Override
+        public Io.Builder<GryoIo> graph(final Graph g) {
+            this.graph = g;
+            return this;
+        }
+
+        @Override
+        public GryoIo create() {
+            if (null == graph) throw new IllegalArgumentException("The graph argument was not specified");
+            return new GryoIo(registry, graph);
+        }
+    }
+}

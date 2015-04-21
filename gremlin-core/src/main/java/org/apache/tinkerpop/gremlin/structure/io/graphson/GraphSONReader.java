@@ -210,7 +210,7 @@ public class GraphSONReader implements GraphReader {
         return new Builder();
     }
 
-    public static class Builder {
+    public static class Builder implements ReaderBuilder<GraphSONReader> {
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
         private String vertexIdKey = T.id.getAccessor();
         private String edgeIdKey = T.id.getAccessor();

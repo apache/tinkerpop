@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -123,7 +124,7 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         if (!workingDirectory.exists()) workingDirectory.mkdirs();
         final GraphReader reader = GryoReader.build()
                 .workingDirectory(workingDirectory.getAbsolutePath())
-                .mapper(g.io().gryoMapper().create())
+                .mapper(g.io(GryoIo.build()).mapper().create())
                 .create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {
             reader.readGraph(stream, g);

@@ -251,7 +251,7 @@ public class GraphMLReader implements GraphReader {
     /**
      * Allows configuration and construction of the GraphMLReader instance.
      */
-    public static final class Builder {
+    public static final class Builder implements ReaderBuilder<GraphMLReader> {
         private String vertexIdKey = T.id.getAccessor();
         private String edgeIdKey = T.id.getAccessor();
         private String edgeLabelKey = GraphMLTokens.LABEL_E;
