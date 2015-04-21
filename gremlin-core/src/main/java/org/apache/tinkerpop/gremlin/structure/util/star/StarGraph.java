@@ -58,11 +58,11 @@ public final class StarGraph implements Graph, Serializable {
         STAR_GRAPH_CONFIGURATION.setProperty(Graph.GRAPH, StarGraph.class.getCanonicalName());
     }
 
-    private StarVertex starVertex = null;
     private Long nextId = 0l;
 
-    private final Map<Object, Map<String, Object>> edgeProperties = new HashMap<>();  // TODO: null these until required? (space savings)
-    private final Map<Object, Map<String, Object>> metaProperties = new HashMap<>();
+    private StarVertex starVertex = null;
+    private Map<Object, Map<String, Object>> edgeProperties = null;
+    private Map<Object, Map<String, Object>> metaProperties = null;
 
     private StarGraph() {
     }
@@ -124,8 +124,8 @@ public final class StarGraph implements Graph, Serializable {
         return null == this.starVertex ?
                 Collections.emptyIterator() :
                 Stream.concat(
-                        this.starVertex.inEdges.values().stream(),
-                        this.starVertex.outEdges.values().stream())
+                        null == this.starVertex.inEdges ? Stream.empty() : this.starVertex.inEdges.values().stream(),
+                        null == this.starVertex.outEdges ? Stream.empty() : this.starVertex.outEdges.values().stream())
                         .flatMap(List::stream)
                         .filter(edge -> {
                             // todo: kinda fishy - need to better nail down how stuff should work here - none of these feel consistent right now.
@@ -237,9 +237,9 @@ public final class StarGraph implements Graph, Serializable {
 
     public final class StarVertex extends StarElement implements Vertex {
 
-        private final Map<String, List<Edge>> outEdges = new HashMap<>();
-        private final Map<String, List<Edge>> inEdges = new HashMap<>();
-        private final Map<String, List<VertexProperty>> vertexProperties = new HashMap<>();
+        private Map<String, List<Edge>> outEdges = null;
+        private Map<String, List<Edge>> inEdges = null;
+        private Map<String, List<VertexProperty>> vertexProperties = null;
 
         public StarVertex(final Object id, final String label) {
             super(id, label);
@@ -250,13 +250,15 @@ public final class StarGraph implements Graph, Serializable {
         }
 
         public void dropEdges() {
-            this.outEdges.clear();
-            this.inEdges.clear();
+            if (null != this.outEdges) this.outEdges.clear();
+            if (null != this.inEdges) this.inEdges.clear();
         }
 
         public void dropVertexProperties(final String... propertyKeys) {
-            for (final String key : propertyKeys) {
-                this.vertexProperties.remove(key);
+            if (null != this.vertexProperties) {
+                for (final String key : propertyKeys) {
+                    this.vertexProperties.remove(key);
+                }
             }
         }
 
@@ -271,6 +273,8 @@ public final class StarGraph implements Graph, Serializable {
         }
 
         protected Edge addOutEdge(final String label, final Vertex inVertex, final Object... keyValues) {
+            if (null == this.outEdges)
+                this.outEdges = new HashMap<>();
             List<Edge> outE = this.outEdges.get(label);
             if (null == outE) {
                 outE = new ArrayList<>();
@@ -283,6 +287,8 @@ public final class StarGraph implements Graph, Serializable {
         }
 
         protected Edge addInEdge(final String label, final Vertex outVertex, final Object... keyValues) {
+            if (null == this.inEdges)
+                this.inEdges = new HashMap<>();
             List<Edge> inE = this.inEdges.get(label);
             if (null == inE) {
                 inE = new ArrayList<>();
@@ -296,6 +302,8 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, V value, final Object... keyValues) {
+            if (null == this.vertexProperties)
+                this.vertexProperties = new HashMap<>();
             final List<VertexProperty> list = cardinality.equals(VertexProperty.Cardinality.single) ? new ArrayList<>(1) : this.vertexProperties.getOrDefault(key, new ArrayList<>());
             final VertexProperty<V> vertexProperty = new StarVertexProperty<>(ElementHelper.getIdValue(keyValues).orElse(generateId()), key, value);
             ElementHelper.attachProperties(vertexProperty, keyValues);
@@ -307,7 +315,7 @@ public final class StarGraph implements Graph, Serializable {
         @Override
         public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
             if (direction.equals(Direction.OUT)) {
-                return edgeLabels.length == 0 ?
+                return null == this.outEdges ? Collections.emptyIterator() : edgeLabels.length == 0 ?
                         IteratorUtils.flatMap(this.outEdges.values().iterator(), List::iterator) :
                         this.outEdges.entrySet().stream()
                                 .filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels))
@@ -315,7 +323,7 @@ public final class StarGraph implements Graph, Serializable {
                                 .flatMap(List::stream)
                                 .iterator();
             } else if (direction.equals(Direction.IN)) {
-                return edgeLabels.length == 0 ?
+                return null == this.inEdges ? Collections.emptyIterator() : edgeLabels.length == 0 ?
                         IteratorUtils.flatMap(this.inEdges.values().iterator(), List::iterator) :
                         this.inEdges.entrySet().stream()
                                 .filter(entry -> ElementHelper.keyExists(entry.getKey(), edgeLabels))
@@ -348,7 +356,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-            if (this.vertexProperties.isEmpty())
+            if (null == this.vertexProperties || this.vertexProperties.isEmpty())
                 return Collections.emptyIterator();
             else if (propertyKeys.length == 0)
                 return (Iterator) this.vertexProperties.entrySet().stream()
@@ -399,12 +407,13 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public void remove() {
-            StarGraph.this.starVertex.vertexProperties.get(this.label).remove(this);
+            if (null != StarGraph.this.starVertex.vertexProperties)
+                StarGraph.this.starVertex.vertexProperties.get(this.label).remove(this);
         }
 
         @Override
         public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
-            final Map<String, Object> properties = metaProperties.get(this.id);
+            final Map<String, Object> properties = null == metaProperties ? null : metaProperties.get(this.id);
             if (null == properties || properties.isEmpty())
                 return Collections.emptyIterator();
             else if (propertyKeys.length == 0)
@@ -426,6 +435,8 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public <U> Property<U> property(final String key, final U value) {
+            if (null == metaProperties)
+                metaProperties = new HashMap<>();
             Map<String, Object> properties = metaProperties.get(this.id);
             if (null == properties) {
                 properties = new HashMap<>();
@@ -537,6 +548,8 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public <V> Property<V> property(final String key, final V value) {
+            if (null == edgeProperties)
+                edgeProperties = new HashMap<>();
             Map<String, Object> properties = edgeProperties.get(this.id);
             if (null == properties) {
                 properties = new HashMap<>();
@@ -548,7 +561,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-            Map<String, Object> properties = edgeProperties.get(this.id);
+            Map<String, Object> properties = null == edgeProperties ? null : edgeProperties.get(this.id);
             if (null == properties || properties.isEmpty())
                 return Collections.emptyIterator();
             else if (propertyKeys.length == 0)
