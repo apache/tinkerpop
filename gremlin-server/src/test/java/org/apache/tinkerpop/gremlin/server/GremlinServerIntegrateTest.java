@@ -91,11 +91,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public Settings overrideSettings(final Settings settings) {
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
-            case "shouldRespectHighWaterMarkSettingAndFailWithTimeout":
-                settings.writeBufferHighWaterMark = 64;
-                settings.writeBufferLowWaterMark = 32;
-                settings.serializedResponseTimeout = 20;
-                break;
             case "shouldRespectHighWaterMarkSettingAndSucceed":
                 settings.writeBufferHighWaterMark = 64;
                 settings.writeBufferLowWaterMark = 32;
