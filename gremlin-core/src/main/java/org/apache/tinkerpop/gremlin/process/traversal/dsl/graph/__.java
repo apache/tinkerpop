@@ -192,6 +192,14 @@ public class __ {
         return __.<A>start().select(stepLabels);
     }
 
+    public static <A, E2> GraphTraversal<A, List<E2>> selectList(final String stepLabel) {
+        return __.<A>start().selectList(stepLabel);
+    }
+
+    public static <A, E2> GraphTraversal<A, Map<String, List<E2>>> selectList(final String... stepLabels) {
+        return __.<A>start().selectList(stepLabels);
+    }
+
     public static <A> GraphTraversal<A, A> unfold() {
         return __.<A>start().unfold();
     }
