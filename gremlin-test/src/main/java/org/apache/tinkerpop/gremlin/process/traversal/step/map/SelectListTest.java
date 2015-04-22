@@ -114,7 +114,7 @@ public abstract class SelectListTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    // @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_asXaX_outXknowsX_asXbX_selectList_byXnameX() {
         final Traversal<Vertex, Map<String, List<String>>> traversal = get_g_VX1X_asXaX_outXknowsX_asXbX_selectList_byXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -299,6 +299,7 @@ public abstract class SelectListTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_asXaX_out_asXaX_out_asXaX_selectListXaX() {
         final Traversal<Vertex, List<Vertex>> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectListXaX();
         printTraversalForm(traversal);
@@ -317,6 +318,7 @@ public abstract class SelectListTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_asXaX_out_asXaX_out_asXaX_selectListXaX_byXnameX() {
         final Traversal<Vertex, List<String>> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectListXaX_byXnameX();
         printTraversalForm(traversal);
@@ -353,6 +355,7 @@ public abstract class SelectListTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX4X_out_asXhereX_hasXlang_javaX_selectListXhereX() {
         final Traversal<Vertex, List<Vertex>> traversal = get_g_VX4X_out_asXhereX_hasXlang_javaX_selectListXhereX(convertToVertexId("josh"));
         printTraversalForm(traversal);
