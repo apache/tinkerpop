@@ -59,7 +59,6 @@ public final class StarGraph implements Graph, Serializable {
     }
 
     protected Long nextId = 0l;
-
     protected StarVertex starVertex = null;
     protected Map<Object, Map<String, Object>> edgeProperties = null;
     protected Map<Object, Map<String, Object>> metaProperties = null;

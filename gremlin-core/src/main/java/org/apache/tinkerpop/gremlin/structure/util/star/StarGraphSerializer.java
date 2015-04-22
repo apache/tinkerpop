@@ -50,8 +50,8 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
         kryo.writeObject(output, starGraph.nextId);
         kryo.writeObjectOrNull(output, starGraph.edgeProperties, HashMap.class);
         kryo.writeObjectOrNull(output, starGraph.metaProperties, HashMap.class);
-        kryo.writeClassAndObject(output, starGraph.starVertex.id());
-        kryo.writeObject(output, starGraph.starVertex.label());
+        kryo.writeClassAndObject(output, starGraph.starVertex.id);
+        kryo.writeObject(output, starGraph.starVertex.label);
         writeEdges(kryo, output, starGraph.starVertex.inEdges, Direction.IN);
         writeEdges(kryo, output, starGraph.starVertex.outEdges, Direction.OUT);
         kryo.writeObject(output, null != starGraph.starVertex.vertexProperties);
@@ -74,9 +74,7 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
         starGraph.nextId = kryo.readObject(input, Long.class);
         starGraph.edgeProperties = kryo.readObjectOrNull(input, HashMap.class);
         starGraph.metaProperties = kryo.readObjectOrNull(input, HashMap.class);
-        final Object starVertexId = kryo.readClassAndObject(input);
-        final String starVertexLabel = kryo.readObject(input, String.class);
-        starGraph.addVertex(T.id, starVertexId, T.label, starVertexLabel);
+        starGraph.addVertex(T.id, kryo.readClassAndObject(input), T.label, kryo.readObject(input, String.class));
         readEdges(kryo, input, starGraph, Direction.IN);
         readEdges(kryo, input, starGraph, Direction.OUT);
         if (kryo.readObject(input, Boolean.class)) {
