@@ -177,54 +177,52 @@ public class TinkerGraphTest {
     }
 
     @Test
-    @Ignore
-    public void testPlay5() throws Exception {
-        Graph graph = TinkerGraph.open();
+    public void shouldHaveSizeOfStarGraphLessThanDetached() throws Exception {
+        final Graph graph = TinkerGraph.open();
         final Random random = new Random();
         final Vertex vertex = graph.addVertex("person");
-        System.out.println(randomString(4));
         for(int i=0;i<100000;i++) {
             vertex.addEdge("knows",graph.addVertex("person"),"since",random.nextLong(),"created","blah");
         }
+
         StarGraph starGraph = StarGraph.of(vertex);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         GryoWriter.build().create().writeObject(outputStream, starGraph);
         outputStream.flush();
-        System.out.println("Size of star graph (1): " + outputStream.size());
+        final int starGraph1 = outputStream.size();
+        System.out.println("Size of star graph (1): " + starGraph1);
         ///
         starGraph = GryoReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()));
         outputStream = new ByteArrayOutputStream();
         GryoWriter.build().create().writeObject(outputStream, starGraph);
         outputStream.flush();
-        System.out.println("Size of star graph (2): " + outputStream.size());
+        final int starGraph2 = outputStream.size();
+        System.out.println("Size of star graph (2): " + starGraph2);
+
+        assertEquals(starGraph1, starGraph2);
+
         //
         starGraph = GryoReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()));
         outputStream = new ByteArrayOutputStream();
         GryoWriter.build().create().writeObject(outputStream, starGraph);
         outputStream.flush();
-        System.out.println("Size of star graph (3): " + outputStream.size());
+        final int starGraph3 = outputStream.size();
+        System.out.println("Size of star graph (3): " + starGraph3);
 
-       //starGraph.getStarVertex().edges(Direction.OUT).forEachRemaining(System.out::println);
+        assertEquals(starGraph1, starGraph3);
+        assertEquals(starGraph2, starGraph3);
+
+        //starGraph.getStarVertex().edges(Direction.OUT).forEachRemaining(System.out::println);
 
         /////////
 
         outputStream = new ByteArrayOutputStream();
         GryoWriter.build().create().writeVertex(outputStream, vertex, Direction.BOTH);
         outputStream.flush();
-        System.out.println("Size of detached vertex (1): " + outputStream.size());
+        final int detached = outputStream.size();
+        System.out.println("Size of detached vertex (1): " + detached);
 
-
-
-    }
-
-    private String randomString(final int length) {
-        Random random = new Random();
-        String randomString = new String();
-        for(int i =0;i<length;i++) {
-            final String temp =  String.valueOf((char) random.nextInt());
-            randomString = randomString + (temp.equals("~") ? "a" : temp);
-        }
-        return randomString;
+        assertTrue(starGraph1 < detached);
     }
 
     @Test
