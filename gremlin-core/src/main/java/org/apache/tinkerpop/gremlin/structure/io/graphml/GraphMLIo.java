@@ -54,14 +54,14 @@ public class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.Builde
     }
 
     @Override
-    public void write(final String file) throws IOException {
+    public void writeGraph(final String file) throws IOException {
         try (final OutputStream out = new FileOutputStream(file)) {
             writer().create().writeGraph(out, graph);
         }
     }
 
     @Override
-    public void read(final String file) throws IOException {
+    public void readGraph(final String file) throws IOException {
         try (final InputStream in = new FileInputStream(file)) {
             reader().create().readGraph(in, graph);
         }

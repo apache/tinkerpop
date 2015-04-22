@@ -176,11 +176,11 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteClassicToGraphMLToFileWithHelpers() throws Exception {
         final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".xml");
         try {
-            graph.io(graphml).write(f.getAbsolutePath());
+            graph.io(graphml).writeGraph(f.getAbsolutePath());
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CLASSIC);
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            g1.io(graphml).read(f.getAbsolutePath());
+            g1.io(graphml).readGraph(f.getAbsolutePath());
 
             assertClassicGraph(graph, false, true);
 
@@ -430,11 +430,11 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteModernToGryoToFileWithHelpers() throws Exception {
         final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".kryo");
         try {
-            graph.io(gryo).write(f.getAbsolutePath());
+            graph.io(gryo).writeGraph(f.getAbsolutePath());
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            g1.io(gryo).read(f.getAbsolutePath());
+            g1.io(gryo).readGraph(f.getAbsolutePath());
 
             // by making this lossy for float it will assert floats for doubles
             assertModernGraph(g1, true, false);
@@ -559,12 +559,12 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteModernToGraphSONWithHelpers() throws Exception {
         final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".json");
         try {
-            graph.io(graphson).write(f.getAbsolutePath());
+            graph.io(graphson).writeGraph(f.getAbsolutePath());
 
             final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
             graphProvider.clear(configuration);
             final Graph g1 = graphProvider.openTestGraph(configuration);
-            g1.io(graphson).read(f.getAbsolutePath());
+            g1.io(graphson).readGraph(f.getAbsolutePath());
 
             assertModernGraph(g1, true, false);
 

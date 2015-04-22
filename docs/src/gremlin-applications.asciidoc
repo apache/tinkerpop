@@ -688,28 +688,28 @@ Plugins provide a way to expand the features of Gremlin Console and Gremlin Serv
 include::{basedir}/gremlin-groovy/src/main/java/org/apache/tinkerpop/gremlin/groovy/plugin/GremlinPlugin.java[]
 ----
 
-The most simple plugin and the one most commonly implemented will likely be one that just provides a list of classes to import to the Gremlin Console.  This type of plugin is the easiest way for implementers of the TinkerPop Structure and Process APIs to make their implementations available to users.  The Neo4j implementation currently maintained by TinkerPop has just such a plugin:
+The most simple plugin and the one most commonly implemented will likely be one that just provides a list of classes to import to the Gremlin Console.  This type of plugin is the easiest way for implementers of the TinkerPop Structure and Process APIs to make their implementations available to users.  The TinkerGraph implementation has just such a plugin:
 
 [source,java]
 ----
-include::{basedir}/neo4j-gremlin/src/main/java/org/apache/tinkerpop/gremlin/neo4j/groovy/plugin/Neo4jGremlinPlugin.java[]
+include::{basedir}/tinkergraph-gremlin/src/main/java/org/apache/tinkerpop/gremlin/tinkergraph/groovy/plugin/TinkerGraphGremlinPlugin.java[]
 ----
 
-Note that the plugin provides a unique name for the plugin which follows a namespaced pattern as _namespace_._plugin-name_ (e.g. "tinkerpop.hadoop" - "tinkerpop" is the reserved namespace for TinkerPop maintained plugins). To make Neo4j classes available to the Console, the `PluginAcceptor` is given a `Set` of imports to provide to the plugin host.  The `PluginAcceptor` essentially behaves as an abstraction to the "host" that is handling the `GremlinPlugin`.  `GremlinPlugin` implementations maybe hosted by the Console as well as the `ScriptEngine` in Gremlin Server.  Obviously, registering new commands and other operations that are specific to the Groovy Shell don't make sense there.  Write the code for the plugin defensively by checking the `GremlinPlugin.env` key in the `PluginAcceptor.environment()` to understand which environment the plugin is being used in.
+Note that the plugin provides a unique name for the plugin which follows a namespaced pattern as _namespace_._plugin-name_ (e.g. "tinkerpop.hadoop" - "tinkerpop" is the reserved namespace for TinkerPop maintained plugins). To make TinkerGraph classes available to the Console, the `PluginAcceptor` is given a `Set` of imports to provide to the plugin host.  The `PluginAcceptor` essentially behaves as an abstraction to the "host" that is handling the `GremlinPlugin`.  `GremlinPlugin` implementations maybe hosted by the Console as well as the `ScriptEngine` in Gremlin Server.  Obviously, registering new commands and other operations that are specific to the Groovy Shell don't make sense there.  Write the code for the plugin defensively by checking the `GremlinPlugin.env` key in the `PluginAcceptor.environment()` to understand which environment the plugin is being used in.
 
-There is one other step to follow to ensure that the `GremlinPlugin` is visible to its hosts.  `GremlinPlugin` implementations are loaded via link:http://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader] and therefore need a resource file added to the jar file where the plugin exists.  Add a file called `org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin` to `META-INF.services`.  In the case of the Neo4j plugin above, that file will have this line in it:
+There is one other step to follow to ensure that the `GremlinPlugin` is visible to its hosts.  `GremlinPlugin` implementations are loaded via link:http://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader] and therefore need a resource file added to the jar file where the plugin exists.  Add a file called `org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin` to `META-INF.services`.  In the case of the TinkerGraph plugin above, that file will have this line in it:
 
 [source,java]
 ----
-include::{basedir}/neo4j-gremlin/src/main/resources/META-INF/services/org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin[]
+include::{basedir}/tinkergraph-gremlin/src/main/resources/META-INF/services/org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin[]
 ----
 
 Once the plugin is packaged, there are two ways to test it out:
 
 . Copy the jar and its dependencies to the Gremlin Console path and start it.
-. Start Gremlin Console and try the `:install` command.  For the case of the Neo4j plugin, it would look like this: `:install org.apache.tinkerpop neo4j-gremlin x.y.z`.
+. Start Gremlin Console and try the `:install` command: `:install com.company my-plugin x.y.z`.
 
-In either case, once one of these two approaches is taken, the jars and their dependencies are available to the Console.  The next step is to "activate" the plugin by doing `:plugin use neo4j`, where "neo4j" refers to the name of the plugin to activate.
+In either case, once one of these two approaches is taken, the jars and their dependencies are available to the Console.  The next step is to "activate" the plugin by doing `:plugin use my-plugin`, where "my-plugin" refers to the name of the plugin to activate.
 
 NOTE: When `:install` is used logging dependencies related to link:http://www.slf4j.org/[SLF4J] are filtered out so as not to introduce multiple logger bindings (which generates warning messages to the logs).
 

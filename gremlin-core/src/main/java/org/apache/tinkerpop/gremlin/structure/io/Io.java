@@ -61,13 +61,13 @@ public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.W
      * Write a {@link Graph} to file using the default configuration of the {@link #writer()} and its supplied
      * {@link #mapper()}.
      */
-    public void write(final String file) throws IOException;
+    public void writeGraph(final String file) throws IOException;
 
     /**
      * Read a {@link Graph} from file using the default configuration of the {@link #reader()} and its supplied
      * {@link #mapper()}.
      */
-    public void read(final String file) throws IOException;
+    public void readGraph(final String file) throws IOException;
 
     /**
      * Helps to construct an {@link Io} implementation and should be implemented by every such implementation as

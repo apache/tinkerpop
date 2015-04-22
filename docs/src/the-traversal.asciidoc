@@ -679,7 +679,7 @@ MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPAR
 
 [gremlin-groovy]
 ----
-graph.io().readGraphML('data/grateful-dead.xml')
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal(standard())
 g.V().match('a',
         __.as('a').has('name', 'Garcia'),

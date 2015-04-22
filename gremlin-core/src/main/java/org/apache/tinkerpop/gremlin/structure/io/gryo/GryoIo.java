@@ -57,14 +57,14 @@ public class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, GryoMa
     }
 
     @Override
-    public void write(final String file) throws IOException {
+    public void writeGraph(final String file) throws IOException {
         try (final OutputStream out = new FileOutputStream(file)) {
             writer().create().writeGraph(out, graph);
         }
     }
 
     @Override
-    public void read(final String file) throws IOException {
+    public void readGraph(final String file) throws IOException {
         try (final InputStream in = new FileInputStream(file)) {
             reader().create().readGraph(in, graph);
         }
