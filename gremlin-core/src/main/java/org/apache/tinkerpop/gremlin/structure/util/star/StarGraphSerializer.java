@@ -70,7 +70,7 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
 
     @Override
     public StarGraph read(final Kryo kryo, final Input input, final Class<StarGraph> aClass) {
-        StarGraph starGraph = StarGraph.open();
+        final StarGraph starGraph = StarGraph.open();
         starGraph.nextId = kryo.readObject(input, Long.class);
         starGraph.edgeProperties = kryo.readObjectOrNull(input, HashMap.class);
         starGraph.metaProperties = kryo.readObjectOrNull(input, HashMap.class);

@@ -71,7 +71,7 @@ public class StarGraphTest extends AbstractGremlinTest {
     public void shouldSerializeCorrectlyUsingGryo() {
         g.V().forEachRemaining(vertex -> {
             StarGraph starGraph = StarGraph.of(vertex);
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             GryoWriter.build().create().writeObject(outputStream, starGraph);
             starGraph = GryoReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()));
             validateVertex(vertex, starGraph.getStarVertex());
