@@ -47,6 +47,7 @@ import org.apache.tinkerpop.gremlin.structure.Operator;
 import org.apache.tinkerpop.gremlin.structure.Order;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
@@ -82,6 +83,9 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GraphFactory.class.getPackage().getName() + DOT_STAR);
         imports.add(BatchGraph.class.getPackage().getName() + DOT_STAR);
         imports.add(DetachedElement.class.getPackage().getName() + DOT_STAR);
+        staticImports.add(T.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(VertexProperty.Cardinality.class.getCanonicalName() + DOT_STAR);
 
         // graph process
         imports.add(Traversal.class.getPackage().getName() + DOT_STAR);
@@ -94,7 +98,11 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         staticImports.add(__.class.getCanonicalName() + DOT_STAR);
         staticImports.add(TraversalOptionParent.Pick.class.getCanonicalName() + DOT_STAR);
         staticImports.add(GraphTraversalSource.class.getCanonicalName() + DOT_STAR);
-
+        staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Contains.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Order.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Operator.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(Scope.class.getCanonicalName() + DOT_STAR);
 
         // utils
         imports.add(Gremlin.class.getPackage().getName() + DOT_STAR);
@@ -102,12 +110,14 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(FunctionUtils.class.getPackage().getName() + DOT_STAR);
         imports.add(GFunction.class.getPackage().getName() + DOT_STAR);
         imports.add(TraversalMetrics.class.getPackage().getName() + DOT_STAR);
+        staticImports.add(TimeUtil.class.getCanonicalName() + DOT_STAR);
 
         // IO packages
         imports.add(GraphReader.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphMLReader.class.getPackage().getName() + DOT_STAR);
         imports.add(GraphSONReader.class.getPackage().getName() + DOT_STAR);
         imports.add(GryoReader.class.getPackage().getName() + DOT_STAR);
+        staticImports.add(IoCore.class.getCanonicalName() + DOT_STAR);
 
         // algorithms
         imports.add(PeerPressureVertexProgram.class.getPackage().getName() + DOT_STAR);
@@ -120,16 +130,6 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
 
         // external
         imports.add(Configuration.class.getPackage().getName() + DOT_STAR);
-
-        staticImports.add(T.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(Direction.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(Contains.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(Order.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(Operator.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(Scope.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(TimeUtil.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(VertexProperty.Cardinality.class.getCanonicalName() + DOT_STAR);
     }
 
     @Override

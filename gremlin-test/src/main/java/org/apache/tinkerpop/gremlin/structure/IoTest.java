@@ -90,6 +90,9 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatu
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
+import static org.apache.tinkerpop.gremlin.structure.io.IoCore.graphml;
+import static org.apache.tinkerpop.gremlin.structure.io.IoCore.graphson;
+import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
@@ -122,9 +125,9 @@ public class IoTest extends AbstractGremlinTest {
 
     @Before
     public void setupBeforeEachTest() {
-        graphml = GraphMLIo.build();
-        graphson = GraphSONIo.build();
-        gryo = GryoIo.build();
+        graphml = graphml();
+        graphson = graphson();
+        gryo = gryo();
     }
 
     @Test
