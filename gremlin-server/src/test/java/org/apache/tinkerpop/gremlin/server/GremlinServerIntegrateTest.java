@@ -18,10 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.spi.LoggingEvent;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
@@ -37,6 +34,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
+import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,7 +42,6 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.nio.channels.ClosedChannelException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,12 +65,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Rule
     public TestName name = new TestName();
 
-    private RecordingAppender recordingAppender = null;
+    private Log4jRecordingAppender recordingAppender = null;
 
     @Before
     public void setupForEachTest() {
-        recordingAppender = new RecordingAppender();
-        recordingAppender.setLayout(new PatternLayout("%-5p - %m%n"));
+        recordingAppender = new Log4jRecordingAppender();
         final Logger rootLogger = Logger.getRootLogger();
         rootLogger.addAppender(recordingAppender);
     }
@@ -493,29 +489,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should not have an exception here");
         } finally {
             cluster.close();
-        }
-    }
-
-    public static class RecordingAppender extends AppenderSkeleton {
-        private List<String> messages = new ArrayList<>();
-
-        private RecordingAppender() {
-            super();
-        }
-
-        protected void append(LoggingEvent event) {
-            messages.add(layout.format(event));
-        }
-
-        public void close() {
-        }
-
-        public boolean requiresLayout() {
-            return true;
-        }
-
-        public List<String> getMessages() {
-            return messages;
         }
     }
 }
