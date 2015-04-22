@@ -91,12 +91,12 @@ public class GraphMLWriter implements GraphWriter {
     }
 
     @Override
-    public void writeVertices(final OutputStream outputStream, Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
+    public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 
     @Override
-    public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
+    public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
         throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
     }
 

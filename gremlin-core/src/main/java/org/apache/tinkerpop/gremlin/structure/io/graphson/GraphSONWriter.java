@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -27,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 
 import java.io.*;
+import java.util.Iterator;
 
 /**
  * A @{link GraphWriter} that writes a graph and its elements to a JSON-based representation. This implementation
@@ -66,11 +66,11 @@ public class GraphSONWriter implements GraphWriter {
     }
 
     @Override
-    public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
+    public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            while (traversal.hasNext()) {
-                writeVertex(baos, traversal.next(), direction);
+            while (vertexIterator.hasNext()) {
+                writeVertex(baos, vertexIterator.next(), direction);
                 writer.write(new String(baos.toByteArray()));
                 writer.newLine();
                 baos.reset();
@@ -81,11 +81,11 @@ public class GraphSONWriter implements GraphWriter {
     }
 
     @Override
-    public void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
+    public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            while (traversal.hasNext()) {
-                writeVertex(baos, traversal.next());
+            while (vertexIterator.hasNext()) {
+                writeVertex(baos, vertexIterator.next());
                 writer.write(new String(baos.toByteArray()));
                 writer.newLine();
                 baos.reset();

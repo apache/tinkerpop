@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Iterator;
 
 /**
  * Functions for writing a graph and its elements to a different format.
@@ -61,12 +62,12 @@ public interface GraphWriter {
      * defined by the requested direction.
      *
      * @param outputStream The stream to write to.
-     * @param traversal    A traversal that returns a list of vertices.
+     * @param vertexIterator    A traversal that returns a list of vertices.
      * @param direction    If direction is null then no edges are written.
      */
-    public default void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal, final Direction direction) throws IOException {
-        while (traversal.hasNext()) {
-            writeVertex(outputStream, traversal.next(), direction);
+    public default void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
+        while (vertexIterator.hasNext()) {
+            writeVertex(outputStream, vertexIterator.next(), direction);
         }
     }
 
@@ -74,11 +75,11 @@ public interface GraphWriter {
      * Write a vertex to a stream without writing its edges.
      *
      * @param outputStream The stream to write to.
-     * @param traversal    A traversal that returns a list of vertices.
+     * @param vertexIterator    A traversal that returns a list of vertices.
      */
-    public default void writeVertices(final OutputStream outputStream, final Traversal<?, Vertex> traversal) throws IOException {
-        while (traversal.hasNext()) {
-            writeVertex(outputStream, traversal.next());
+    public default void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
+        while (vertexIterator.hasNext()) {
+            writeVertex(outputStream, vertexIterator.next());
         }
     }
 
