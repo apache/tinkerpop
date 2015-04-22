@@ -82,14 +82,14 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
                     .statusMessage(errorMessage)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
-                ctx.write(serializer.serializeResponseAsBinary(error, ctx.alloc()), ctx.voidPromise());
+                byteBuf.writeBytes(serializer.serializeResponseAsBinary(error, ctx.alloc()));
                 final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                ctx.writeAndFlush(serializer.serializeResponseAsBinary(terminator, ctx.alloc()), ctx.voidPromise());
+                byteBuf.writeBytes(serializer.serializeResponseAsBinary(terminator, ctx.alloc()));
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                ctx.write(textSerializer.serializeResponseAsString(error), ctx.voidPromise());
+                byteBuf.writeBytes(textSerializer.serializeResponseAsString(error).getBytes(UTF8));
                 final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                ctx.writeAndFlush(textSerializer.serializeResponseAsString(terminator), ctx.voidPromise());
+                byteBuf.writeBytes(textSerializer.serializeResponseAsString(terminator).getBytes(UTF8));
             }
         }
     }

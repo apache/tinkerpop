@@ -68,7 +68,7 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
             // Ops may choose to throw OpProcessorException or write the error ResponseMessage down the line
             // themselves
             logger.warn(ope.getMessage(), ope);
-            ctx.writeAndFlush(ope.getResponseMessage(), ctx.voidPromise());
+            ctx.writeAndFlush(ope.getResponseMessage());
         } finally {
             ReferenceCountUtil.release(objects);
         }

@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
@@ -157,7 +158,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
             try {
                 handleIterator(context, itty);
-            } catch (TimeoutException te) {
+            } catch (Exception te) {
                 throw new RuntimeException(te);
             }
         }, executor);
@@ -193,7 +194,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
      * @param itty The result to iterator
      * @throws TimeoutException if the time taken to serialize the entire result set exceeds the allowable time.
      */
-    protected void handleIterator(final Context context, final Iterator itty) throws TimeoutException {
+    protected void handleIterator(final Context context, final Iterator itty) throws TimeoutException, InterruptedException {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
@@ -208,6 +209,8 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                 .orElse(settings.resultIterationBatchSize);
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
         while (itty.hasNext()) {
+            if (Thread.interrupted()) throw new InterruptedException();
+
             // have to check the aggregate size because it is possible that the channel is not writeable (below)
             // so iterating next() if the message is not written and flushed would bump the aggregate size beyond
             // the expected resultIterationBatchSize.  Total serialization time for the response remains in
@@ -220,7 +223,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                 if  (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
                     ctx.writeAndFlush(ResponseMessage.build(msg)
                             .code(ResponseStatusCode.SUCCESS)
-                            .result(aggregate).create(), ctx.voidPromise());
+                            .result(aggregate).create());
 
                     aggregate = new ArrayList<>(resultIterationBatchSize);
                 }
@@ -230,6 +233,10 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                     logger.warn("Pausing response writing as writeBufferHighWaterMark exceeded on {} - writing will continue once client has caught up", msg);
                     warnOnce = true;
                 }
+
+                // since the client is lagging we can hold here for a period of time for the client to catch up.
+                // this isn't blocking the IO thread - just a worker.
+                TimeUnit.MILLISECONDS.sleep(10);
             }
 
             stopWatch.split();

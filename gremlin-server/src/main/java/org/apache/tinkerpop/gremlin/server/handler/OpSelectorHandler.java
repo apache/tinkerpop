@@ -86,7 +86,7 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
         } catch (OpProcessorException ope) {
             errorMeter.mark();
             logger.warn(ope.getMessage(), ope);
-            ctx.writeAndFlush(ope.getResponseMessage(), ctx.voidPromise());
+            ctx.writeAndFlush(ope.getResponseMessage());
         }
     }
 }
