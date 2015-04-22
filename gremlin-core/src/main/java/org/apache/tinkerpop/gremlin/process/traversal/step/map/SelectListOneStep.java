@@ -23,13 +23,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,37 +37,27 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, EngineDependent {
+public final class SelectListOneStep<S, E> extends MapStep<S, List<E>> implements TraversalParent {
+
+    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
+            TraverserRequirement.PATH,
+            TraverserRequirement.PATH_ACCESS,
+            TraverserRequirement.OBJECT
+    );
 
     private final String selectLabel;
     private Traversal.Admin<Object, Object> selectTraversal = new IdentityTraversal<>();
     private boolean requiresPaths = false;
 
-    public SelectOneStep(final Traversal.Admin traversal, final String selectLabel) {
+    public SelectListOneStep(final Traversal.Admin traversal, final String selectLabel) {
         super(traversal);
         this.selectLabel = selectLabel;
     }
 
     @Override
-    protected E map(final Traverser.Admin<S> traverser) {
+    protected List<E> map(final Traverser.Admin<S> traverser) {
         final S start = traverser.get();
-        if (start instanceof Map && ((Map) start).containsKey(this.selectLabel))
-            return (E) TraversalUtil.apply(((Map) start).get(this.selectLabel), this.selectTraversal);
-        else
-            return (E) TraversalUtil.apply(traverser.path().<Object>getLast(this.selectLabel), this.selectTraversal);
-    }
-
-    @Override
-    public void onEngine(final TraversalEngine traversalEngine) {
-        this.requiresPaths = traversalEngine.isComputer() ?
-                TraversalHelper.getLabelsUpTo(this, this.traversal.asAdmin()).stream().filter(this.selectLabel::equals).findAny().isPresent() :
-                TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream()
-                        .filter(step -> step instanceof CollectingBarrierStep)
-                        .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal.asAdmin()).stream().filter(this.selectLabel::equals).findAny().isPresent()
-                                || (step.getLabel().isPresent() && this.selectLabel.equals(step.getLabel().get()))) // TODO: get rid of this (there is a test case to check it)
-                        .findAny().isPresent() ||
-                        TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream().
-                                filter(step -> step instanceof TraversalParent).findAny().isPresent();
+        return (List<E>) TraversalUtil.applyEach(traverser.path().getList(this.selectLabel), this.selectTraversal);
     }
 
     @Override
@@ -76,8 +66,8 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    public SelectOneStep<S, E> clone() {
-        final SelectOneStep<S, E> clone = (SelectOneStep<S, E>) super.clone();
+    public SelectListOneStep<S, E> clone() {
+        final SelectListOneStep<S, E> clone = (SelectListOneStep<S, E>) super.clone();
         clone.selectTraversal = this.selectTraversal.clone();
         return clone;
     }
@@ -94,10 +84,6 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.PATH_ACCESS);
-        if (this.requiresPaths) requirements.add(TraverserRequirement.PATH);
-        return requirements;
+        return REQUIREMENTS;
     }
 }
-
-
