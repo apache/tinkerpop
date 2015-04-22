@@ -37,6 +37,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -53,10 +54,14 @@ import static org.junit.Assert.assertTrue;
  */
 public class StarGraphTest extends AbstractGremlinTest {
 
-    private static Pair<StarGraph, Integer> serializeDeserialize(final StarGraph starGraph) {
+    private static Pair<StarGraph, Integer> serializeDeserialize(final StarGraph starGraph)  {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         GryoWriter.build().create().writeObject(outputStream, starGraph);
-        return Pair.with(GryoReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray())), outputStream.size());
+        try {
+            return Pair.with(GryoReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()), StarGraph.class), outputStream.size());
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
     }
 
     @Test
@@ -93,7 +98,7 @@ public class StarGraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
     public void shouldHaveSizeOfStarGraphLessThanDetached() throws Exception {
-        final Random random = new Random();
+        final Random random = new Random(95746498l);
         final Vertex vertex = graph.addVertex("person");
         for (int i = 0; i < 100; i++) { // vertex properties and meta properties
             vertex.property(VertexProperty.Cardinality.list, UUID.randomUUID().toString(), random.nextDouble(),

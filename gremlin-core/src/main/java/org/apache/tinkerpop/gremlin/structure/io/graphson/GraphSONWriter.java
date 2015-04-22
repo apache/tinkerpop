@@ -95,6 +95,11 @@ public class GraphSONWriter implements GraphWriter {
         writer.flush();
     }
 
+    @Override
+    public void writeObject(final OutputStream outputStream, final Object object) throws IOException {
+        this.mapper.writeValue(outputStream, object);
+    }
+
     public static Builder build() {
         return new Builder();
     }

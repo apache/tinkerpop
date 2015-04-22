@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphml;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -77,27 +77,32 @@ public class GraphMLWriter implements GraphWriter {
 
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, Direction direction) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+        throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+        throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+        throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+        throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+        throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
+    }
+
+    @Override
+    public void writeObject(final OutputStream outputStream, final Object object) throws IOException {
+        throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     /**

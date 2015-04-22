@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -75,23 +76,28 @@ public class GraphMLReader implements GraphReader {
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
                                          final Function<DetachedVertex, Vertex> vertexMaker,
                                          final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
     public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
     public Vertex readVertex(final InputStream inputStream, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
     public Vertex readVertex(final InputStream inputStream, final Direction direction, final Function<DetachedVertex, Vertex> vertexMaker,
                              final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
-        throw new UnsupportedOperationException("GraphML does not allow for a partial structure");
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
+    }
+
+    @Override
+    public <C> C readObject(InputStream inputStream, Class<? extends C> clazz) throws IOException {
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override

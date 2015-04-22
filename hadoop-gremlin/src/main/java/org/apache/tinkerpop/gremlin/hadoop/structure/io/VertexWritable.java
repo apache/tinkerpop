@@ -63,7 +63,7 @@ public final class VertexWritable implements Writable, Serializable {
             this.vertex = HadoopPools.GRYO_POOL.doWithReader(gryoReader -> {
                 try {
                     final ByteArrayInputStream inputStream = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
-                    return ((StarGraph) gryoReader.readObject(inputStream)).getStarVertex(); // read the star graph
+                    return gryoReader.readObject(inputStream, StarGraph.class).getStarVertex(); // read the star graph
                 } catch (final IOException e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }

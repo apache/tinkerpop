@@ -27,6 +27,7 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 
 * `VertexWritable` serializes and deserializes the `StarGraph` object -- no more intermediate `DetachedXXX` objects.
 * Gremlin Server better supports the settings for the high and low watermark that will slow writes to clients that are lagging.
+* Added `GraphReader.readObject()` and `GraphWriter.writeObject` abstractions for those implementations that can support them.
 * Altered `GraphWriter.writeVertices()` method to take an `Iterator` of vertices rather than a `Traversal`.
 * Moved `T` tokens to the `structure/` package as its more general than `process/`.
 * `Attachable.attach()` now takes a `Method` to determine whether to attach via `GET`, `CREATE`, or `GET_OR_CREATE`.

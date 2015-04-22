@@ -197,6 +197,11 @@ public class GryoReader implements GraphReader {
         }
     }
 
+    @Override
+    public <C> C readObject(final InputStream inputStream, final Class<? extends C> clazz) throws IOException{
+        return clazz.cast(this.kryo.readClassAndObject(new Input(inputStream)));
+    }
+
     private static void createVertexProperty(final Graph graphToWriteTo, final Vertex v, final VertexProperty<Object> p) {
         final List<Object> propertyArgs = new ArrayList<>();
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
@@ -282,6 +287,7 @@ public class GryoReader implements GraphReader {
         input.readBytes(13);
     }
 
+
     /**
      * Reads through the all the edges for a vertex and writes the edges to a temp file which will be read later.
      */
@@ -300,7 +306,6 @@ public class GryoReader implements GraphReader {
         kryo.writeClassAndObject(output, EdgeTerminator.INSTANCE);
         kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
     }
-
 
     /**
      * Read the edges from the temp file and load them to the graph.
@@ -336,10 +341,6 @@ public class GryoReader implements GraphReader {
             tempFile.delete();
         } catch (Exception ignored) {
         }
-    }
-
-    public <T> T readObject(final InputStream inputStream) {
-        return (T) this.kryo.readClassAndObject(new Input(inputStream));
     }
 
     public static Builder build() {

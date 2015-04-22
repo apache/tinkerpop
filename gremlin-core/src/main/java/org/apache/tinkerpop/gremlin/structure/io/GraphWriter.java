@@ -76,7 +76,7 @@ public interface GraphWriter {
      * Write a vertex to a stream without writing its edges.
      *
      * @param outputStream The stream to write to.
-     * @param vertexIterator    A traversal that returns a list of vertices.
+     * @param vertexIterator    A iterator that returns a list of vertices.
      */
     public default void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
         while (vertexIterator.hasNext()) {
@@ -88,6 +88,14 @@ public interface GraphWriter {
      * Write an edge to a stream.
      */
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException;
+
+    /**
+     * Writes an arbitrary object to the stream.
+     *
+     * @param outputStream The stream to write to
+     * @param object The object to write which will use the standard serializer set
+     */
+    public void writeObject(final OutputStream outputStream, final Object object) throws IOException;
 
     /**
      * Largely a marker interface for builder classes that construct a {@link GraphWriter}.

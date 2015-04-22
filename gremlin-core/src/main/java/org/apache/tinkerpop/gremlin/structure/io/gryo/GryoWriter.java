@@ -94,6 +94,13 @@ public class GryoWriter implements GraphWriter {
         output.flush();
     }
 
+    @Override
+    public void writeObject(final OutputStream outputStream, final Object object) {
+        final Output output = new Output(outputStream);
+        this.kryo.writeClassAndObject(output, object);
+        output.flush();
+    }
+
     void writeHeader(final Output output) throws IOException {
         output.writeBytes(GryoMapper.HEADER);
     }
@@ -141,12 +148,6 @@ public class GryoWriter implements GraphWriter {
 
         if (hasEdges)
             kryo.writeClassAndObject(output, EdgeTerminator.INSTANCE);
-    }
-
-    public void writeObject(final OutputStream outputStream, final Object object) {
-        final Output output = new Output(outputStream);
-        this.kryo.writeClassAndObject(output, object);
-        output.flush();
     }
 
     public static Builder build() {

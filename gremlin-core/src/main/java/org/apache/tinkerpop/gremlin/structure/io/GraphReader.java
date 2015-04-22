@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.function.Function;
 
@@ -71,7 +72,7 @@ public interface GraphReader {
 
     /**
      * Reads a set of vertices from an {@link InputStream} which were written by
-     * {@link GraphWriter#writeVertices(java.io.OutputStream, org.apache.tinkerpop.gremlin.process.traversal.Traversal)}.  This method
+     * {@link GraphWriter#writeVertices(OutputStream, Iterator)}.  This method
      * will read vertex properties as well as edges given the direction supplied as an argument.
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
@@ -95,6 +96,13 @@ public interface GraphReader {
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
     public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException;
+
+    /**
+     * Reads an arbitrary object using the standard serializers.
+     *
+     * @param inputStream  a stream containing an object.
+     */
+    public <C> C readObject(final InputStream inputStream, final Class<? extends C> clazz) throws IOException;
 
     /**
      * Largely a marker interface for builder classes that construct a {@link GraphReader}.

@@ -69,6 +69,16 @@ public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.W
      */
     public void readGraph(final String file) throws IOException;
 
+    public static class Exceptions {
+        public static UnsupportedOperationException readerFormatIsForFullGraphSerializationOnly(final Class<? extends GraphReader> clazz) {
+            return new UnsupportedOperationException(String.format("%s only reads an entire Graph", clazz));
+        }
+
+        public static UnsupportedOperationException writerFormatIsForFullGraphSerializationOnly(final Class<? extends GraphWriter> clazz) {
+            return new UnsupportedOperationException(String.format("%s only writes an entire Graph", clazz));
+        }
+    }
+
     /**
      * Helps to construct an {@link Io} implementation and should be implemented by every such implementation as
      * that class will be passed to {@link Graph#io(Builder)} by the user.

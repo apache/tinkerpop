@@ -29,6 +29,11 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -64,7 +69,7 @@ public class SerializationTest {
             gryoWriter.writeObject(outputStream, v);
 
             final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            final Vertex detached = gryoReader.readObject(inputStream);
+            final Vertex detached = gryoReader.readObject(inputStream, DetachedVertex.class);
             assertNotNull(detached);
             assertEquals(v.label(), detached.label());
             assertEquals(v.id(), detached.id());
@@ -84,7 +89,7 @@ public class SerializationTest {
             gryoWriter.writeObject(outputStream, e);
 
             final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            final Edge detached = gryoReader.readObject(inputStream);
+            final Edge detached = gryoReader.readObject(inputStream, DetachedEdge.class);
             assertNotNull(detached);
             assertEquals(e.label(), detached.label());
             assertEquals(e.id(), detached.id());
@@ -103,7 +108,7 @@ public class SerializationTest {
             gryoWriter.writeObject(outputStream, property);
 
             final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            final Property detached = gryoReader.readObject(inputStream);
+            final Property detached = gryoReader.readObject(inputStream, DetachedProperty.class);
             assertNotNull(detached);
             assertEquals(property.key(), detached.key());
             assertEquals(property.value(), detached.value());
@@ -121,7 +126,7 @@ public class SerializationTest {
             gryoWriter.writeObject(outputStream, vertexProperty);
 
             final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            final VertexProperty detached = gryoReader.readObject(inputStream);
+            final VertexProperty detached = gryoReader.readObject(inputStream, DetachedVertexProperty.class);
             assertNotNull(detached);
             assertEquals(vertexProperty.label(), detached.label());
             assertEquals(vertexProperty.id(), detached.id());
@@ -140,7 +145,7 @@ public class SerializationTest {
             gryoWriter.writeObject(outputStream, vertexProperty);
 
             final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            final VertexProperty<?> detached = gryoReader.readObject(inputStream);
+            final VertexProperty<?> detached = gryoReader.readObject(inputStream, DetachedVertexProperty.class);
 
             assertNotNull(detached);
             assertEquals(vertexProperty.label(), detached.label());
@@ -165,7 +170,7 @@ public class SerializationTest {
             gryoWriter.writeObject(outputStream, p);
 
             final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            final Path detached = gryoReader.readObject(inputStream);
+            final Path detached = gryoReader.readObject(inputStream, DetachedPath.class);
             assertNotNull(detached);
             assertEquals(p.labels().size(), detached.labels().size());
             assertEquals(p.labels().get(0).size(), detached.labels().get(0).size());
@@ -210,7 +215,7 @@ public class SerializationTest {
             gryoWriter.writeObject(outputStream, before);
 
             final ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-            final TraversalMetrics after = gryoReader.readObject(inputStream);
+            final TraversalMetrics after = gryoReader.readObject(inputStream, TraversalMetrics.class);
             assertNotNull(after);
             assertEquals(before.getMetrics().size(), after.getMetrics().size());
             assertEquals(before.getDuration(TimeUnit.MILLISECONDS), after.getDuration(TimeUnit.MILLISECONDS));

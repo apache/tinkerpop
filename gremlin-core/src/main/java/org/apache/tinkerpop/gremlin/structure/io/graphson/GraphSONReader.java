@@ -170,6 +170,11 @@ public class GraphSONReader implements GraphReader {
         return v;
     }
 
+    @Override
+    public <C> C readObject(final InputStream inputStream, final Class<? extends C> clazz) throws IOException {
+        return mapper.readValue(inputStream, clazz);
+    }
+
     private static void createVertexProperty(final Graph graphToWriteTo, final Vertex v, final VertexProperty<Object> p) {
         final List<Object> propertyArgs = new ArrayList<>();
         if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
