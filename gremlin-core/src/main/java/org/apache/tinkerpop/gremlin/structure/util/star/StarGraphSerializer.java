@@ -78,14 +78,14 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
         readEdges(kryo, input, starGraph, Direction.IN);
         readEdges(kryo, input, starGraph, Direction.OUT);
         if (kryo.readObject(input, Boolean.class)) {
-            final int labelSize = kryo.readObject(input, Integer.class);
-            for (int i = 0; i < labelSize; i++) {
-                final String key = kryo.readObject(input, String.class);
-                final int vertexPropertySize = kryo.readObject(input, Integer.class);
-                for (int j = 0; j < vertexPropertySize; j++) {
+            final int numberOfUniqueKeys = kryo.readObject(input, Integer.class);
+            for (int i = 0; i < numberOfUniqueKeys; i++) {
+                final String vertexPropertyKey = kryo.readObject(input, String.class);
+                final int numberOfVertexPropertiesWithKey = kryo.readObject(input, Integer.class);
+                for (int j = 0; j < numberOfVertexPropertiesWithKey; j++) {
                     final Object id = kryo.readClassAndObject(input);
                     final Object value = kryo.readClassAndObject(input);
-                    starGraph.starVertex.property(VertexProperty.Cardinality.list, key, value, T.id, id);
+                    starGraph.starVertex.property(VertexProperty.Cardinality.list, vertexPropertyKey, value, T.id, id);
                 }
             }
         }
@@ -110,19 +110,18 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
     }
 
     private static void readEdges(final Kryo kryo, final Input input, final StarGraph starGraph, final Direction direction) {
-        final boolean hasEdges = kryo.readObject(input, Boolean.class);
-        if (hasEdges) {
-            final int labelSize = kryo.readObject(input, Integer.class);
-            for (int i = 0; i < labelSize; i++) {
-                final String label = kryo.readObject(input, String.class);
-                final int edgeSize = kryo.readObject(input, Integer.class);
-                for (int j = 0; j < edgeSize; j++) {
+        if (kryo.readObject(input, Boolean.class)) {
+            final int numberOfUniqueLabels = kryo.readObject(input, Integer.class);
+            for (int i = 0; i < numberOfUniqueLabels; i++) {
+                final String edgeLabel = kryo.readObject(input, String.class);
+                final int numberOfEdgesWithLabel = kryo.readObject(input, Integer.class);
+                for (int j = 0; j < numberOfEdgesWithLabel; j++) {
                     final Object edgeId = kryo.readClassAndObject(input);
-                    final Object otherVertexId = kryo.readClassAndObject(input);
+                    final Object adjacentVertexId = kryo.readClassAndObject(input);
                     if (direction.equals(Direction.OUT))
-                        starGraph.starVertex.addOutEdge(label, starGraph.addVertex(T.id, otherVertexId), T.id, edgeId);
+                        starGraph.starVertex.addOutEdge(edgeLabel, starGraph.addVertex(T.id, adjacentVertexId), T.id, edgeId);
                     else
-                        starGraph.starVertex.addInEdge(label, starGraph.addVertex(T.id, otherVertexId), T.id, edgeId);
+                        starGraph.starVertex.addInEdge(edgeLabel, starGraph.addVertex(T.id, adjacentVertexId), T.id, edgeId);
                 }
             }
         }
