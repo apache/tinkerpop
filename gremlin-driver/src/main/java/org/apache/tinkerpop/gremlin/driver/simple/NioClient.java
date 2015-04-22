@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver.simple;
 
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.ChannelOption;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
@@ -60,6 +62,7 @@ public class NioClient implements SimpleClient {
         final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("nio-client-%d").build();
         group = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(), threadFactory);
         final Bootstrap b = new Bootstrap().group(group);
+        b.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
         try {
             final MessageSerializer serializer = new GryoMessageSerializerV1d0();

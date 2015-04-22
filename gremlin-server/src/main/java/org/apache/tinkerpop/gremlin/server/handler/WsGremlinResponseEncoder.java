@@ -102,14 +102,14 @@ public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMe
                     .statusMessage(errorMessage)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
-                ctx.write(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(error, ctx.alloc())), ctx.voidPromise());
+                objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(error, ctx.alloc())));
                 final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                ctx.writeAndFlush(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(terminator, ctx.alloc())), ctx.voidPromise());
+                objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(terminator, ctx.alloc())));
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                ctx.write(new TextWebSocketFrame(textSerializer.serializeResponseAsString(error)), ctx.voidPromise());
+                objects.add(new TextWebSocketFrame(textSerializer.serializeResponseAsString(error)));
                 final ResponseMessage terminator = ResponseMessage.build(o.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                ctx.writeAndFlush(new TextWebSocketFrame(textSerializer.serializeResponseAsString(terminator)), ctx.voidPromise());
+                objects.add(new TextWebSocketFrame(textSerializer.serializeResponseAsString(terminator)));
             }
         }
     }

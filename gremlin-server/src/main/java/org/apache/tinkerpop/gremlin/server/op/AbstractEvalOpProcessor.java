@@ -146,7 +146,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         evalFuture.handle((v, t) -> timerContext.stop());
         evalFuture.exceptionally(se -> {
             logger.warn(String.format("Exception processing a script on request [%s].", msg), se);
-            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(se.getMessage()).create(), ctx.voidPromise());
+            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(se.getMessage()).create());
             return null;
         });
 
@@ -172,12 +172,12 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                 if (ExceptionUtils.getRootCause(ex).getClass().equals(TimeoutException.class)) {
                     final String errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, ex.getCause().getMessage());
                     logger.warn(errorMessage);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create(), ctx.voidPromise());
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
                 }
             } else {
                 // since this is not an error we need to terminate.  termination for errors is handled in the
                 // ResponseEncoder
-                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS_TERMINATOR).create(), ctx.voidPromise());
+                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS_TERMINATOR).create());
             }
             return null;
         }, executor);
