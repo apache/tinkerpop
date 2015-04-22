@@ -58,11 +58,11 @@ public final class StarGraph implements Graph, Serializable {
         STAR_GRAPH_CONFIGURATION.setProperty(Graph.GRAPH, StarGraph.class.getCanonicalName());
     }
 
-    private Long nextId = 0l;
+    protected Long nextId = 0l;
 
-    private StarVertex starVertex = null;
-    private Map<Object, Map<String, Object>> edgeProperties = null;
-    private Map<Object, Map<String, Object>> metaProperties = null;
+    protected StarVertex starVertex = null;
+    protected Map<Object, Map<String, Object>> edgeProperties = null;
+    protected Map<Object, Map<String, Object>> metaProperties = null;
 
     private StarGraph() {
     }
@@ -237,9 +237,9 @@ public final class StarGraph implements Graph, Serializable {
 
     public final class StarVertex extends StarElement implements Vertex {
 
-        private Map<String, List<Edge>> outEdges = null;
-        private Map<String, List<Edge>> inEdges = null;
-        private Map<String, List<VertexProperty>> vertexProperties = null;
+        protected Map<String, List<Edge>> outEdges = null;
+        protected Map<String, List<Edge>> inEdges = null;
+        protected Map<String, List<VertexProperty>> vertexProperties = null;
 
         public StarVertex(final Object id, final String label) {
             super(id, label);

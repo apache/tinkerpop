@@ -38,10 +38,13 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,6 +52,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -170,6 +174,57 @@ public class TinkerGraphTest {
                 System.out.print("   " + (System.currentTimeMillis() - t));
             }
         });
+    }
+
+    @Test
+    @Ignore
+    public void testPlay5() throws Exception {
+        Graph graph = TinkerGraph.open();
+        final Random random = new Random();
+        final Vertex vertex = graph.addVertex("person");
+        System.out.println(randomString(4));
+        for(int i=0;i<100000;i++) {
+            vertex.addEdge("knows",graph.addVertex("person"),"since",random.nextLong(),"created","blah");
+        }
+        StarGraph starGraph = StarGraph.of(vertex);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        GryoWriter.build().create().writeObject(outputStream, starGraph);
+        outputStream.flush();
+        System.out.println("Size of star graph (1): " + outputStream.size());
+        ///
+        starGraph = GryoReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()));
+        outputStream = new ByteArrayOutputStream();
+        GryoWriter.build().create().writeObject(outputStream, starGraph);
+        outputStream.flush();
+        System.out.println("Size of star graph (2): " + outputStream.size());
+        //
+        starGraph = GryoReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()));
+        outputStream = new ByteArrayOutputStream();
+        GryoWriter.build().create().writeObject(outputStream, starGraph);
+        outputStream.flush();
+        System.out.println("Size of star graph (3): " + outputStream.size());
+
+       //starGraph.getStarVertex().edges(Direction.OUT).forEachRemaining(System.out::println);
+
+        /////////
+
+        outputStream = new ByteArrayOutputStream();
+        GryoWriter.build().create().writeVertex(outputStream, vertex, Direction.BOTH);
+        outputStream.flush();
+        System.out.println("Size of detached vertex (1): " + outputStream.size());
+
+
+
+    }
+
+    private String randomString(final int length) {
+        Random random = new Random();
+        String randomString = new String();
+        for(int i =0;i<length;i++) {
+            final String temp =  String.valueOf((char) random.nextInt());
+            randomString = randomString + (temp.equals("~") ? "a" : temp);
+        }
+        return randomString;
     }
 
     @Test
