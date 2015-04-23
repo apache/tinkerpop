@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Host;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -57,11 +58,11 @@ public interface Attachable<V> {
         return (V) method.apply(this, hostGraph);
     }
 
-    public enum Method implements BiFunction<Attachable, Object, Object> {
+    public enum Method implements BiFunction<Attachable, Host, Object> {
 
         GET {
             @Override
-            public Object apply(final Attachable attachable, final Object hostVertexOrGraph) {
+            public Object apply(final Attachable attachable, final Host hostVertexOrGraph) {
                 final Object base = attachable.get();
                 if (base instanceof Vertex) {
                     final Optional<Vertex> optional = hostVertexOrGraph instanceof Graph ?
@@ -98,7 +99,7 @@ public interface Attachable<V> {
 
         CREATE {
             @Override
-            public Object apply(final Attachable attachable, final Object hostVertexOrGraph) {
+            public Object apply(final Attachable attachable, final Host hostVertexOrGraph) {
                 final Object base = attachable.get();
                 if (base instanceof Vertex) {
                     return hostVertexOrGraph instanceof Graph ?
@@ -123,7 +124,7 @@ public interface Attachable<V> {
 
         GET_OR_CREATE {
             @Override
-            public Object apply(final Attachable attachable, final Object hostVertexOrGraph) {
+            public Object apply(final Attachable attachable, final Host hostVertexOrGraph) {
                 final Object base = attachable.get();
                 if (base instanceof Vertex) {
                     return (hostVertexOrGraph instanceof Graph ?

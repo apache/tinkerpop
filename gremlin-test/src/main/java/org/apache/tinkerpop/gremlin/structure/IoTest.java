@@ -618,7 +618,8 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean called = new AtomicBoolean(false);
             final GryoReader reader = graph.io(gryo).reader().workingDirectory(tempPath).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, detachedEdge -> {
+                reader.readEdge(bais, graph, (edge, host) -> {
+                    final Edge detachedEdge = (Edge) edge;
                     assertEquals(e.id(), detachedEdge.id());
                     assertEquals(v1.id(), detachedEdge.outVertex().id());
                     assertEquals(v2.id(), detachedEdge.inVertex().id());
@@ -654,7 +655,8 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean called = new AtomicBoolean(false);
             final GryoReader reader = graph.io(gryo).reader().workingDirectory(tempPath).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, detachedEdge -> {
+                reader.readEdge(bais, graph, (edge, host) -> {
+                    final Edge detachedEdge = (Edge) edge;
                     assertEquals(e.id(), detachedEdge.id());
                     assertEquals(v1.id(), detachedEdge.outVertex().id());
                     assertEquals(v2.id(), detachedEdge.inVertex().id());
@@ -688,7 +690,8 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean called = new AtomicBoolean(false);
             final GryoReader reader = graph.io(gryo).reader().workingDirectory(tempPath).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, detachedEdge -> {
+                reader.readEdge(bais, graph, (edge, host) -> {
+                    final Edge detachedEdge = (Edge) edge;
                     assertEquals(e.id(), detachedEdge.id());
                     assertEquals(v1.id(), detachedEdge.outVertex().id());
                     assertEquals(v2.id(), detachedEdge.inVertex().id());
@@ -722,7 +725,8 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean called = new AtomicBoolean(false);
             final GryoReader reader = graph.io(gryo).reader().workingDirectory(tempPath).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, detachedEdge -> {
+                reader.readEdge(bais, graph, (edge, host) -> {
+                    final Edge detachedEdge = (Edge) edge;
                     assertEquals(e.id(), detachedEdge.id());
                     assertEquals(v1.id(), detachedEdge.outVertex().id());
                     assertEquals(v2.id(), detachedEdge.inVertex().id());
@@ -757,7 +761,8 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = graph.io(graphson).reader().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, detachedEdge -> {
+                reader.readEdge(bais, graph, (edge, host) -> {
+                    final Edge detachedEdge = (Edge) edge;
                     assertEquals(e.id(), graph.edges(detachedEdge.id().toString()).next().id());
                     assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
                     assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
@@ -792,7 +797,8 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = graph.io(graphson).reader().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, detachedEdge -> {
+                reader.readEdge(bais, graph, (edge, host) -> {
+                    final Edge detachedEdge = (Edge) edge;
                     assertEquals(e.id(), graph.edges(detachedEdge.id().toString()).next().id());
                     assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
                     assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
@@ -826,7 +832,8 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = graph.io(graphson).reader().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, detachedEdge -> {
+                reader.readEdge(bais, graph, (edge, host) -> {
+                    final Edge detachedEdge = (Edge) edge;
                     assertEquals(e.id(), graph.edges(detachedEdge.id().toString()).next().id());
                     assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
                     assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
@@ -862,7 +869,8 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = graph.io(graphson).reader().mapper(graph.io(graphson).mapper().embedTypes(true).create()).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, detachedEdge -> {
+                reader.readEdge(bais, graph, (edge, host) -> {
+                    final Edge detachedEdge = (Edge) edge;
                     assertEquals(e.id(), detachedEdge.id());
                     assertEquals(v1.id(), detachedEdge.outVertex().id());
                     assertEquals(v2.id(), detachedEdge.inVertex().id());
@@ -898,7 +906,8 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean called = new AtomicBoolean(false);
             final GraphSONReader reader = graph.io(graphson).reader().mapper(graph.io(graphson).mapper().embedTypes(true).create()).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, detachedEdge -> {
+                reader.readEdge(bais, graph, (edge, host) -> {
+                    final Edge detachedEdge = (Edge) edge;
                     // a quick reminder here that the purpose of these id assertions is to ensure that those with
                     // complex ids that are not simply toString'd (i.e. are complex objects in JSON as well)
                     // properly respond to filtering in Graph.edges/vertices
@@ -938,7 +947,8 @@ public class IoTest extends AbstractGremlinTest {
             final AtomicBoolean called = new AtomicBoolean(false);
             final GryoReader reader = graph.io(gryo).reader().workingDirectory(tempPath).create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, detachedEdge -> {
+                reader.readEdge(bais, graph, (edge, host) -> {
+                    final Edge detachedEdge = (Edge) edge;
                     assertEquals(e.id(), detachedEdge.id());
                     assertEquals(v1.id(), detachedEdge.outVertex().id());
                     assertEquals(v2.id(), detachedEdge.inVertex().id());

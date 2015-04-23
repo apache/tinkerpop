@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Pieter Martin
  */
-public interface Graph extends AutoCloseable {
+public interface Graph extends AutoCloseable, Host {
 
     public static final String GRAPH = "gremlin.graph";
 

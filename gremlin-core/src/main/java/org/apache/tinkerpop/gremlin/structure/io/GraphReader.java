@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.structure.io;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Host;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -91,11 +94,13 @@ public interface GraphReader {
      * Reads a single edge from an {@link InputStream}.
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
-     * @param edgeMaker   a function that creates an edge from the stream where the first argument is the edge
+     * @param host        the object to be passed to the {@code reattach} function when coordinating the re-attachment
+     *                    of the {@link Edge}.
+     * @param reattach    a function that creates an edge from the stream where the first argument is the edge
      *                    identifier, the second argument is the out vertex id, the third is the in vertex id,
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
-    public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException;
+    public Edge readEdge(final InputStream inputStream, final Host host, final BiFunction<Attachable<Edge>, Host, Edge> reattach) throws IOException;
 
     /**
      * Reads an arbitrary object using the standard serializers.

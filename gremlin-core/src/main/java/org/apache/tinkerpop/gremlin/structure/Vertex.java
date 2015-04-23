@@ -33,7 +33,7 @@ import java.util.Iterator;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Vertex extends Element {
+public interface Vertex extends Element, Host {
 
     /**
      * The default label to use for a vertex.

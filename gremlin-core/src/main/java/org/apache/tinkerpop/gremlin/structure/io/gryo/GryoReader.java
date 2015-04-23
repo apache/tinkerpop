@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.structure.Host;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -44,6 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -103,11 +106,11 @@ public class GryoReader implements GraphReader {
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final Host host, final BiFunction<Attachable<Edge>, Host, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
         readHeader(input);
-        final Object o = kryo.readClassAndObject(input);
-        return edgeMaker.apply((DetachedEdge) o);
+        final Attachable<Edge> attachable = (Attachable<Edge>) kryo.readClassAndObject(input);
+        return edgeMaker.apply(attachable, host);
     }
 
     @Override
