@@ -36,13 +36,31 @@ import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class StarGraphSerializer extends Serializer<StarGraph> {
 
-    private static StarGraphSerializer INSTANCE = new StarGraphSerializer();
+    private static final Map<Direction,StarGraphSerializer> CACHE = new HashMap<>();
 
-    private StarGraphSerializer() {
+    private final Direction edgeDirectionToSerialize;
 
+    static {
+        CACHE.put(Direction.BOTH, new StarGraphSerializer(Direction.BOTH));
+        CACHE.put(Direction.IN, new StarGraphSerializer(Direction.IN));
+        CACHE.put(Direction.OUT, new StarGraphSerializer(Direction.OUT));
+        CACHE.put(null, new StarGraphSerializer(null));
+    }
+
+    private StarGraphSerializer(final Direction edgeDirectionToSerialize) {
+        this.edgeDirectionToSerialize = edgeDirectionToSerialize;
+    }
+
+    /**
+     * Gets a serializer from the cache.  Use {@code null} for the direction when requiring a serializer that
+     * doesn't serialize the edges of a vertex.
+     */
+    public static StarGraphSerializer with(final Direction direction) {
+        return CACHE.get(direction);
     }
 
     @Override
@@ -92,11 +110,13 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
         return starGraph;
     }
 
-    //////
-
-    private static void writeEdges(final Kryo kryo, final Output output, final Map<String, List<Edge>> starEdges, final Direction direction) {
-        kryo.writeObject(output, null != starEdges);
-        if (null != starEdges) {
+    private void writeEdges(final Kryo kryo, final Output output, final Map<String, List<Edge>> starEdges, final Direction direction) {
+        // only write edges if there are some AND if the user requested them to be serialized AND if they match
+        // the direction being serialized by the format
+        final boolean writeEdges = null != starEdges && edgeDirectionToSerialize != null
+                && (edgeDirectionToSerialize == direction || edgeDirectionToSerialize == Direction.BOTH);
+        kryo.writeObject(output, writeEdges);
+        if (writeEdges) {
             kryo.writeObject(output, starEdges.size());
             for (final Map.Entry<String, List<Edge>> edges : starEdges.entrySet()) {
                 kryo.writeObject(output, edges.getKey());
@@ -125,9 +145,5 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
                 }
             }
         }
-    }
-
-    public static StarGraphSerializer instance() {
-        return INSTANCE;
     }
 }
