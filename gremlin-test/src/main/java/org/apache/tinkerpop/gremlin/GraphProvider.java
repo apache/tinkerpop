@@ -27,8 +27,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_PA_S_SE_SL_Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_P_PA_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_P_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -37,7 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 
 import java.util.Collections;
@@ -71,8 +70,8 @@ public interface GraphProvider {
         add(__.class);
         add(DefaultGraphTraversal.class);
         add(GraphTraversalSource.class);
-        add(B_O_PA_S_SE_SL_Traverser.class);
-        add(B_O_P_PA_S_SE_SL_Traverser.class);
+        add(B_O_S_SE_SL_Traverser.class);
+        add(B_O_P_S_SE_SL_Traverser.class);
         add(B_O_Traverser.class);
         add(O_Traverser.class);
     }};
@@ -230,9 +229,9 @@ public interface GraphProvider {
      * <li>{@link Graph}</li>
      * <li>{@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}</li>
      * <li>{@link GraphTraversal}</li>
-     * <li>{@link B_O_P_PA_S_SE_SL_Traverser}</li>
+     * <li>{@link B_O_P_S_SE_SL_Traverser}</li>
      * <li>{@link Property}</li>
-     * <li>{@link B_O_PA_S_SE_SL_Traverser}</li>
+     * <li>{@link B_O_S_SE_SL_Traverser}</li>
      * <li>{@link Traversal}</li>
      * <li>{@link Traverser}</li>
      * <li>{@link Vertex}</li>

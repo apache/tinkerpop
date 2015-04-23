@@ -45,9 +45,5 @@ public abstract class MapStep<S, E> extends AbstractStep<S, E> {
 
     protected abstract E map(final Traverser.Admin<S> traverser);
 
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.PATH_ACCESS); // TODO: this is bad -- just a hack right now.
-    }
 }
 

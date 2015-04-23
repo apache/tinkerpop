@@ -47,11 +47,6 @@ public final class EmptyGraphTraversal<S, E> extends EmptyTraversal<S, E> implem
     }
 
     @Override
-    public GraphTraversal<S, E> withPath() {
-        return instance();
-    }
-
-    @Override
     public GraphTraversal<S, E> iterate() {
         return this;
     }

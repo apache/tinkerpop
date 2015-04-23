@@ -569,30 +569,6 @@ public class __ {
         return __.<A>start().profile();
     }
 
-    public static <A> GraphTraversal<A, A> withSideEffect(final String key, final Supplier supplier) {
-        return __.<A>start().withSideEffect(key, supplier);
-    }
-
-    public static <A, B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue, final UnaryOperator<B> splitOperator) {
-        return __.<A>start().withSack(initialValue, splitOperator);
-    }
-
-    public static <A, B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue) {
-        return __.<A>start().withSack(initialValue);
-    }
-
-    public static <A, B> GraphTraversal<A, A> withSack(final B initialValue, final UnaryOperator<B> splitOperator) {
-        return __.<A>start().withSack(initialValue, splitOperator);
-    }
-
-    public static <A, B> GraphTraversal<A, A> withSack(B initialValue) {
-        return __.<A>start().withSack(initialValue);
-    }
-
-    public static <A> GraphTraversal<A, A> withPath() {
-        return __.<A>start().withPath();
-    }
-
     public static <A> GraphTraversal<A, A> barrier() {
         return __.<A>start().barrier();
     }

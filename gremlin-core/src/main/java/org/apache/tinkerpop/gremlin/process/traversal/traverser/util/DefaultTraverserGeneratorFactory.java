@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.traverser.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_PA_S_SE_SL_TraverserGenerator;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_P_PA_S_SE_SL_TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_TraverserGenerator;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_P_S_SE_SL_TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
@@ -53,11 +53,11 @@ public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFacto
         if (B_O_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
             return B_O_TraverserGenerator.instance();
 
-        if (B_O_PA_S_SE_SL_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
-            return B_O_PA_S_SE_SL_TraverserGenerator.instance();
+        if (B_O_S_SE_SL_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
+            return B_O_S_SE_SL_TraverserGenerator.instance();
 
-        if (B_O_P_PA_S_SE_SL_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
-            return B_O_P_PA_S_SE_SL_TraverserGenerator.instance();
+        if (B_O_P_S_SE_SL_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
+            return B_O_P_S_SE_SL_TraverserGenerator.instance();
 
         throw new IllegalStateException("The provided traverser generator factory does not support the requirements of the traversal: " + this.getClass().getCanonicalName() + requirements);
     }

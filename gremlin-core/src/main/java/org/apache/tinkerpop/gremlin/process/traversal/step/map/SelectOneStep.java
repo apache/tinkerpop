@@ -19,15 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +34,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, EngineDependent {
+public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent {
 
     private final String selectLabel;
     private Traversal.Admin<Object, Object> selectTraversal = new IdentityTraversal<>();
@@ -55,19 +52,6 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
             return (E) TraversalUtil.apply(((Map) start).get(this.selectLabel), this.selectTraversal);
         else
             return (E) TraversalUtil.apply(traverser.path().<Object>get(this.selectLabel), this.selectTraversal);
-    }
-
-    @Override
-    public void onEngine(final TraversalEngine traversalEngine) {
-        this.requiresPaths = traversalEngine.isComputer() ?
-                TraversalHelper.getLabelsUpTo(this, this.traversal.asAdmin()).stream().filter(this.selectLabel::equals).findAny().isPresent() :
-                TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream()
-                        .filter(step -> step instanceof CollectingBarrierStep)
-                        .filter(step -> TraversalHelper.getLabelsUpTo(step, this.traversal.asAdmin()).stream().filter(this.selectLabel::equals).findAny().isPresent()
-                                || (step.getLabel().isPresent() && this.selectLabel.equals(step.getLabel().get()))) // TODO: get rid of this (there is a test case to check it)
-                        .findAny().isPresent() ||
-                        TraversalHelper.getStepsUpTo(this, this.traversal.asAdmin()).stream().
-                                filter(step -> step instanceof TraversalParent).findAny().isPresent();
     }
 
     @Override
@@ -94,9 +78,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        final Set<TraverserRequirement> requirements = this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.PATH_ACCESS);
-        if (this.requiresPaths) requirements.add(TraverserRequirement.PATH);
-        return requirements;
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.PATH);
     }
 }
 
