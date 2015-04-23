@@ -711,35 +711,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// UTILITY STEPS /////////////////////
 
-    public default GraphTraversal<S, E> withSideEffect(final String key, final Supplier supplier) {
-        this.asAdmin().getSideEffects().registerSupplier(key, supplier);
-        return this;
-    }
-
-    public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-        this.asAdmin().getSideEffects().setSack(initialValue, Optional.of(splitOperator));
-        return this;
-    }
-
-    public default <A> GraphTraversal<S, E> withSack(final Supplier<A> initialValue) {
-        this.asAdmin().getSideEffects().setSack(initialValue, Optional.empty());
-        return this;
-    }
-
-    public default <A> GraphTraversal<S, E> withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
-        this.asAdmin().getSideEffects().setSack(new ConstantSupplier<>(initialValue), Optional.of(splitOperator));
-        return this;
-    }
-
-    public default <A> GraphTraversal<S, E> withSack(A initialValue) {
-        this.asAdmin().getSideEffects().setSack(new ConstantSupplier<>(initialValue), Optional.empty());
-        return this;
-    }
-
-    public default GraphTraversal<S, E> withPath() {
-        return this.asAdmin().addStep(new PathIdentityStep<>(this.asAdmin()));
-    }
-
     public default GraphTraversal<S, E> as(final String stepLabel) {
         if (this.asAdmin().getSteps().size() == 0) this.asAdmin().addStep(new StartStep<>(this.asAdmin()));
         this.asAdmin().getEndStep().setLabel(stepLabel);

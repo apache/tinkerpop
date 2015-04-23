@@ -105,12 +105,12 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Graph> get_g_V_withSideEffectXsgX_outEXknowsX_subgraphXsgX_name_capXsgX(final Object v1Id, final Graph subgraph) {
-            return g.V(v1Id).withSideEffect("sg", () -> subgraph).outE("knows").subgraph("sg").values("name").cap("sg");
+            return g.withSideEffect("sg", () -> subgraph).V(v1Id).outE("knows").subgraph("sg").values("name").cap("sg");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_withSideEffectXsgX_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup(final Graph subgraph) {
-            return g.V().withSideEffect("sg", () -> subgraph).repeat(bothE("created").subgraph("sg").outV()).times(5).<String>values("name").dedup();
+            return g.withSideEffect("sg", () -> subgraph).V().repeat(bothE("created").subgraph("sg").outV()).times(5).<String>values("name").dedup();
         }
     }
 }

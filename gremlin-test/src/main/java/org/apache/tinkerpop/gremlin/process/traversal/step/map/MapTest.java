@@ -42,9 +42,9 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Integer> get_g_VX1X_out_mapXnameX_mapXlengthX(final Object v1Id);
 
-    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX();
+    public abstract Traversal<Vertex, String> get_g_withPath_V_asXaX_out_mapXa_nameX();
 
-    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX();
+    public abstract Traversal<Vertex, String> get_g_withPath_V_asXaX_out_out_mapXa_name_it_nameX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -91,7 +91,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         int josh = 0;
         int other = 0;
 
-        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_mapXa_nameX();
+        final Traversal<Vertex, String> traversal = get_g_withPath_V_asXaX_out_mapXa_nameX();
         printTraversalForm(traversal);
         while (traversal.hasNext()) {
             final String name = traversal.next();
@@ -110,7 +110,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_asXaX_out_out_mapXa_name_it_nameX() {
-        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_out_mapXa_name_it_nameX();
+        final Traversal<Vertex, String> traversal = get_g_withPath_V_asXaX_out_out_mapXa_name_it_nameX();
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
@@ -140,13 +140,13 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
-            return g.V().withPath().as("a").out().<String>map(v -> v.<Vertex>path("a").value("name"));
+        public Traversal<Vertex, String> get_g_withPath_V_asXaX_out_mapXa_nameX() {
+            return g.withPath().V().as("a").out().<String>map(v -> v.<Vertex>path("a").value("name"));
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
-            return g.V().withPath().as("a").out().out().map(v -> v.<Vertex>path("a").<String>value("name") + v.get().<String>value("name"));
+        public Traversal<Vertex, String> get_g_withPath_V_asXaX_out_out_mapXa_name_it_nameX() {
+            return g.withPath().V().as("a").out().out().map(v -> v.<Vertex>path("a").<String>value("name") + v.get().<String>value("name"));
         }
     }
 }
