@@ -1285,8 +1285,6 @@ public class IoTest extends AbstractGremlinTest {
 
             final AtomicInteger called = new AtomicInteger(0);
             final GryoReader reader = graph.io(gryo).reader().workingDirectory(tempPath).create();
-
-            final byte[] x = os.toByteArray();
             try (final VertexByteArrayInputStream vbais = new VertexByteArrayInputStream(new ByteArrayInputStream(os.toByteArray()))) {
                 final byte[] y = vbais.readVertexBytes().toByteArray();
                 reader.readVertex(new ByteArrayInputStream(y),
@@ -1388,7 +1386,7 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, attachable -> {
                             final Vertex detachedVertex = attachable.get();
-                            TestHelper.validateVertex(v1, detachedVertex);
+                            TestHelper.validateVertexEquality(v1, detachedVertex);
                             calledVertex.set(true);
                             return detachedVertex;
                         },
@@ -1483,7 +1481,7 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, attachable -> {
                     final Vertex detachedVertex = attachable.get();
-                    TestHelper.validateVertex(v1, detachedVertex);
+                    TestHelper.validateVertexEquality(v1, detachedVertex);
                     calledVertex.set(true);
                     return detachedVertex;
                 }, attachable -> {
@@ -1580,7 +1578,7 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, attachable -> {
                             final Vertex detachedVertex = attachable.get();
-                            TestHelper.validateVertex(v1, detachedVertex);
+                            TestHelper.validateVertexEquality(v1, detachedVertex);
                             calledVertex.set(true);
                             return detachedVertex;
                         },attachable -> {

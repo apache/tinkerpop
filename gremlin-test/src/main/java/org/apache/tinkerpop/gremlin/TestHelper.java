@@ -20,8 +20,9 @@ package org.apache.tinkerpop.gremlin;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
@@ -29,11 +30,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -101,100 +102,88 @@ public final class TestHelper {
         return cleaned;
     }
 
-    public static void validateVertex(final Vertex originalVertex, final Vertex starVertex) {
-        ////////////////  VALIDATE PROPERTIES
-        final AtomicInteger originalPropertyCounter = new AtomicInteger(0);
-        final AtomicInteger originalMetaPropertyCounter = new AtomicInteger(0);
-        final AtomicInteger starPropertyCounter = new AtomicInteger(0);
-        final AtomicInteger starMetaPropertyCounter = new AtomicInteger(0);
 
-        originalVertex.properties().forEachRemaining(vertexProperty -> {
-            originalPropertyCounter.incrementAndGet();
-            starVertex.properties(vertexProperty.label()).forEachRemaining(starVertexProperty -> {
-                if (starVertexProperty.equals(vertexProperty)) {
-                    starPropertyCounter.incrementAndGet();
-                    assertEquals(starVertexProperty.id(), vertexProperty.id());
-                    assertEquals(starVertexProperty.label(), vertexProperty.label());
-                    assertEquals(starVertexProperty.value(), vertexProperty.value());
-                    assertEquals(starVertexProperty.key(), vertexProperty.key());
-                    assertEquals(starVertexProperty.element(), vertexProperty.element());
-                    //
-                    vertexProperty.properties().forEachRemaining(p -> {
-                        originalMetaPropertyCounter.incrementAndGet();
-                        assertEquals(p.value(), starVertexProperty.property(p.key()).value());
-                        assertEquals(p.key(), starVertexProperty.property(p.key()).key());
-                        assertEquals(p.element(), starVertexProperty.property(p.key()).element());
-                    });
-                    starVertexProperty.properties().forEachRemaining(p -> starMetaPropertyCounter.incrementAndGet());
-                }
-            });
-        });
+    ///////////////
 
-        assertEquals(originalPropertyCounter.get(), starPropertyCounter.get());
-        assertEquals(originalMetaPropertyCounter.get(), starMetaPropertyCounter.get());
-
-        originalPropertyCounter.set(0);
-        starPropertyCounter.set(0);
-        originalMetaPropertyCounter.set(0);
-        starMetaPropertyCounter.set(0);
-        //
-        starVertex.properties().forEachRemaining(starVertexProperty -> {
-            starPropertyCounter.incrementAndGet();
-            originalVertex.properties(starVertexProperty.label()).forEachRemaining(vertexProperty -> {
-                if (starVertexProperty.equals(vertexProperty)) {
-                    originalPropertyCounter.incrementAndGet();
-                    assertEquals(vertexProperty.id(), starVertexProperty.id());
-                    assertEquals(vertexProperty.label(), starVertexProperty.label());
-                    assertEquals(vertexProperty.value(), starVertexProperty.value());
-                    assertEquals(vertexProperty.key(), starVertexProperty.key());
-                    assertEquals(vertexProperty.element(), starVertexProperty.element());
-                    starVertexProperty.properties().forEachRemaining(p -> {
-                        starMetaPropertyCounter.incrementAndGet();
-                        assertEquals(p.value(), vertexProperty.property(p.key()).value());
-                        assertEquals(p.key(), vertexProperty.property(p.key()).key());
-                        assertEquals(p.element(), vertexProperty.property(p.key()).element());
-                    });
-                    vertexProperty.properties().forEachRemaining(p -> originalMetaPropertyCounter.incrementAndGet());
-                }
-            });
-        });
-        assertEquals(originalPropertyCounter.get(), starPropertyCounter.get());
-        assertEquals(originalMetaPropertyCounter.get(), starMetaPropertyCounter.get());
-
-        ////////////////  VALIDATE EDGES
-        assertEquals(originalVertex, starVertex);
-        assertEquals(starVertex, originalVertex);
-        assertEquals(starVertex.id(), originalVertex.id());
-        assertEquals(starVertex.label(), originalVertex.label());
-        ///
-        List<Edge> originalEdges = new ArrayList<>(IteratorUtils.set(originalVertex.edges(Direction.OUT)));
-        List<Edge> starEdges = new ArrayList<>(IteratorUtils.set(starVertex.edges(Direction.OUT)));
-        assertEquals(originalEdges.size(), starEdges.size());
-        for (int i = 0; i < starEdges.size(); i++) {
-            final Edge starEdge = starEdges.get(i);
-            final Edge originalEdge = originalEdges.get(i);
-            assertEquals(starEdge, originalEdge);
-            assertEquals(starEdge.id(), originalEdge.id());
-            assertEquals(starEdge.label(), originalEdge.label());
-            assertEquals(starEdge.inVertex(), originalEdge.inVertex());
-            assertEquals(starEdge.outVertex(), originalEdge.outVertex());
-            originalEdge.properties().forEachRemaining(p -> assertEquals(p, starEdge.property(p.key())));
-            starEdge.properties().forEachRemaining(p -> assertEquals(p, originalEdge.property(p.key())));
+    public static void validateVertexEquality(final Vertex originalVertex, final Vertex otherVertex) {
+        assertEquals(originalVertex, otherVertex);
+        assertEquals(otherVertex, originalVertex);
+        assertEquals(originalVertex.id(), otherVertex.id());
+        assertEquals(originalVertex.label(), otherVertex.label());
+        assertEquals(originalVertex.keys().size(), otherVertex.keys().size());
+        for (final String key : originalVertex.keys()) {
+            final List<VertexProperty<Object>> originalVertexProperties = IteratorUtils.list(originalVertex.properties(key));
+            final List<VertexProperty<Object>> otherVertexProperties = IteratorUtils.list(otherVertex.properties(key));
+            assertEquals(originalVertexProperties.size(), otherVertexProperties.size());
+            for (VertexProperty<Object> originalVertexProperty : originalVertexProperties) {
+                final VertexProperty<Object> otherVertexProperty = otherVertexProperties.parallelStream().filter(vp -> vp.equals(originalVertexProperty)).findAny().get();
+                validateVertexPropertyEquality(originalVertexProperty, otherVertexProperty);
+            }
         }
 
-        originalEdges = new ArrayList<>(IteratorUtils.set(originalVertex.edges(Direction.IN)));
-        starEdges = new ArrayList<>(IteratorUtils.set(starVertex.edges(Direction.IN)));
-        assertEquals(originalEdges.size(), starEdges.size());
-        for (int i = 0; i < starEdges.size(); i++) {
-            final Edge starEdge = starEdges.get(i);
-            final Edge originalEdge = originalEdges.get(i);
-            assertEquals(starEdge, originalEdge);
-            assertEquals(starEdge.id(), originalEdge.id());
-            assertEquals(starEdge.label(), originalEdge.label());
-            assertEquals(starEdge.inVertex(), originalEdge.inVertex());
-            assertEquals(starEdge.outVertex(), originalEdge.outVertex());
-            originalEdge.properties().forEachRemaining(p -> assertEquals(p, starEdge.property(p.key())));
-            starEdge.properties().forEachRemaining(p -> assertEquals(p, originalEdge.property(p.key())));
+        Iterator<Edge> originalEdges = IteratorUtils.set(originalVertex.edges(Direction.OUT)).iterator();
+        Iterator<Edge> otherEdges = IteratorUtils.set(otherVertex.edges(Direction.OUT)).iterator();
+        while (originalEdges.hasNext()) {
+            validateEdgeEquality(originalEdges.next(), otherEdges.next());
         }
+        assertFalse(otherEdges.hasNext());
+
+        originalEdges = IteratorUtils.set(originalVertex.edges(Direction.IN)).iterator();
+        otherEdges = IteratorUtils.set(otherVertex.edges(Direction.IN)).iterator();
+        while (originalEdges.hasNext()) {
+            validateEdgeEquality(originalEdges.next(), otherEdges.next());
+        }
+        assertFalse(otherEdges.hasNext());
+
+    }
+
+    public static void validateVertexPropertyEquality(final VertexProperty originalVertexProperty, final VertexProperty otherVertexProperty) {
+        assertEquals(originalVertexProperty, otherVertexProperty);
+        assertEquals(otherVertexProperty, originalVertexProperty);
+        if (originalVertexProperty.isPresent()) {
+            assertEquals(originalVertexProperty.key(), otherVertexProperty.key());
+            assertEquals(originalVertexProperty.value(), otherVertexProperty.value());
+            assertEquals(originalVertexProperty.element(), otherVertexProperty.element());
+            assertEquals(originalVertexProperty.keys().size(), otherVertexProperty.keys().size());
+            for (final String key : originalVertexProperty.keys()) {
+                validatePropertyEquality(originalVertexProperty.property(key), otherVertexProperty.property(key));
+            }
+        }
+    }
+
+    public static void validatePropertyEquality(final Property originalProperty, final Property otherProperty) {
+        assertEquals(originalProperty, otherProperty);
+        assertEquals(otherProperty, originalProperty);
+        if (originalProperty.isPresent()) {
+            assertEquals(originalProperty.key(), otherProperty.key());
+            assertEquals(originalProperty.value(), otherProperty.value());
+            assertEquals(originalProperty.element(), otherProperty.element());
+        }
+    }
+
+    public static void validateEdgeEquality(final Edge originalEdge, final Edge otherEdge) {
+        assertEquals(originalEdge, otherEdge);
+        assertEquals(otherEdge, originalEdge);
+        assertEquals(originalEdge.id(), otherEdge.id());
+        assertEquals(originalEdge.label(), otherEdge.label());
+        assertEquals(originalEdge.inVertex(), otherEdge.inVertex());
+        assertEquals(originalEdge.outVertex(), otherEdge.outVertex());
+        assertEquals(originalEdge.keys().size(), otherEdge.keys().size());
+        for (final String key : originalEdge.keys()) {
+            validatePropertyEquality(originalEdge.property(key), otherEdge.property(key));
+        }
+    }
+
+    public static void validateEquality(final Object original, final Object other) {
+        if (original instanceof Vertex)
+            validateVertexEquality((Vertex) original, (Vertex) other);
+        else if (original instanceof VertexProperty)
+            validateVertexPropertyEquality((VertexProperty) original, (VertexProperty) other);
+        else if (original instanceof Edge)
+            validateEdgeEquality((Edge) original, (Edge) other);
+        else if (original instanceof Property)
+            validatePropertyEquality((Property) original, (Property) other);
+        else
+            throw new IllegalArgumentException("The provided object must be a graph object: " + original.getClass().getCanonicalName());
     }
 }
