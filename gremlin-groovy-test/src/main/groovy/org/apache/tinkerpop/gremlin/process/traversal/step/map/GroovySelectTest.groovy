@@ -95,6 +95,16 @@ public abstract class GroovySelectTest {
             return g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount()).as('relations').select().by('name').by()
         }
 
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX() {
+            return g.V().as("a").out().as("a").out().as("a").select("a");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXnameX() {
+            return g.V().as("a").out().as("a").out().as("a").<String>select("a").by("name");
+        }
+
         //
 
         @Override
@@ -256,6 +266,16 @@ public abstract class GroovySelectTest {
         Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
             // override with nothing until the test itself is supported
             return null
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX() {
+            ComputerTestHelper.compute("g.V().as('a').out().as('a').out().as('a').select('a')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXnameX() {
+            ComputerTestHelper.compute("g.V().as('a').out().as('a').out().as('a').select('a').by('name')", g);
         }
 
         //

@@ -70,12 +70,23 @@ public class SparsePath implements Path, Serializable {
         return Collections.unmodifiableList(labels);
     }
 
-
+    @Override
     public <A> A get(final String label) throws IllegalArgumentException {
         final Object object = this.map.get(label);
         if (null == object)
             throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
         return (A) object;
+    }
+
+    @Override
+    public <A> A getLast(final String label) throws IllegalArgumentException {
+        // SparsePath is only capable of returning the last value at a step.
+        return get(label);
+    }
+
+    @Override
+    public <A> List<A> getList(final String label) throws IllegalArgumentException {
+        throw new IllegalArgumentException("SparsePath.getList is nonsensical");
     }
 
     @Override

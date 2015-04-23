@@ -20,27 +20,33 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.junit.Assert.*;
 
 /**
+ * SparsePath implements Path, but with different semantics, so PathTest does not apply.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @UseEngine(TraversalEngine.Type.STANDARD)
-public class PathTest extends AbstractGremlinProcessTest {
+public class SparsePathTest extends AbstractGremlinProcessTest {
 
     @Test
     public void shouldHaveStandardSemanticsImplementedCorrectly() {
-        Arrays.asList(MutablePath.make(), ImmutablePath.make()).forEach(path -> {
+        Arrays.<Path>asList(SparsePath.make()).forEach(path -> {
             assertTrue(path.isSimple());
             assertEquals(0, path.size());
             path = path.extend(1, "a");
@@ -53,11 +59,16 @@ public class PathTest extends AbstractGremlinProcessTest {
             assertEquals(Integer.valueOf(1), path.getLast("a"));
             assertEquals(Integer.valueOf(2), path.getLast("b"));
             assertEquals(Integer.valueOf(3), path.getLast("c"));
-            assertEquals(Arrays.asList(Integer.valueOf(1)), path.getList("a"));
-            assertEquals(Arrays.asList(Integer.valueOf(2)), path.getList("b"));
-            assertEquals(Arrays.asList(Integer.valueOf(3)), path.getList("c"));
+            // In other paths, getList should work, but SparsePath.getList throws.
+            try {
+                assertEquals(Arrays.asList(Integer.valueOf(1)), path.getList("a"));
+                fail("SparsePath.getList should throw");
+            }
+            catch (IllegalArgumentException exc) {
+                // OK
+            }
             path.addLabel("d");
-            assertEquals(3, path.size());
+            assertEquals(4, path.size());  // 3 in other Paths
             assertEquals(Integer.valueOf(1), path.get("a"));
             assertEquals(Integer.valueOf(2), path.get("b"));
             assertEquals(Integer.valueOf(3), path.get("c"));
@@ -66,20 +77,16 @@ public class PathTest extends AbstractGremlinProcessTest {
             assertEquals(Integer.valueOf(2), path.getLast("b"));
             assertEquals(Integer.valueOf(3), path.getLast("c"));
             assertEquals(Integer.valueOf(3), path.getLast("d"));
-            assertEquals(Arrays.asList(Integer.valueOf(1)), path.getList("a"));
-            assertEquals(Arrays.asList(Integer.valueOf(2)), path.getList("b"));
-            assertEquals(Arrays.asList(Integer.valueOf(3)), path.getList("c"));
-            assertEquals(Arrays.asList(Integer.valueOf(3)), path.getList("d"));
             assertTrue(path.hasLabel("a"));
             assertTrue(path.hasLabel("b"));
             assertTrue(path.hasLabel("c"));
             assertTrue(path.hasLabel("d"));
             assertFalse(path.hasLabel("e"));
-            assertTrue(path.isSimple());
+            assertFalse(path.isSimple());  // true in other Paths
             path = path.extend(3, "e");
             assertFalse(path.isSimple());
             assertTrue(path.hasLabel("e"));
-            assertEquals(4, path.size());
+            assertEquals(5, path.size());  // 4 in other Paths
             assertEquals(Integer.valueOf(1), path.get(0));
             assertEquals(Integer.valueOf(2), path.get(1));
             assertEquals(Integer.valueOf(3), path.get(2));
@@ -89,61 +96,56 @@ public class PathTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldHandleMultiLabelPaths() {
-        Arrays.asList(MutablePath.make(), ImmutablePath.make()).forEach(path -> {
+        Arrays.<Path>asList(SparsePath.make()).forEach(path -> {
             path = path.extend("marko", "a");
             path = path.extend("stephen", "b");
             path = path.extend("matthias", "a");
-            assertEquals(3, path.size());
-            assertEquals(3, path.objects().size());
-            assertEquals(3, path.labels().size());
+            assertEquals(2, path.size());  // 3 in other Paths
+            assertEquals(2, path.objects().size());  // 3 in other Paths
+            assertEquals(2, path.labels().size());  // 3 in other Paths
             assertEquals(2, new HashSet<>(path.labels()).size());
-            assertTrue(path.get("a") instanceof List);
+            assertTrue(path.get("a") instanceof String);  // List in other Paths
             assertTrue(path.get("b") instanceof String);
-            assertEquals(2, path.<List<String>>get("a").size());
-            assertTrue(path.<List<String>>get("a").contains("marko"));
-            assertTrue(path.<List<String>>get("a").contains("matthias"));
+            assertEquals("matthias", path.get("a"));  // List containing "marko" and "matthias" in other Paths
             // getLast should return the most recent value.
             assertEquals("matthias", path.getLast("a"));
-            // getList should return a list of values in path order.
-            assertEquals(Arrays.asList("marko", "matthias"), path.getList("a"));
         });
 
-        final Path path = g.V().as("x").repeat(out().as("y")).times(2).path().by("name").next();
-        assertEquals(3, path.size());
-        assertEquals(3, path.labels().size());
-        assertEquals(2, new HashSet<>(path.labels()).size());
-        assertTrue(path.get("x") instanceof String);
-        assertTrue(path.get("y") instanceof List);
-        assertEquals(2, path.<List<String>>get("y").size());
+        // As long as we avoid a PATH requirement, we will get a SparsePath.  This should use SparsePath in
+        // TinkerGraph, but may not always do so due to implementation variations.
+        final Traversal<Vertex, Map<String, String>> t =
+            g.V().as("x").out().out().as("y").<String>select().by("name");
+
+        assertTrue(t.hasNext());
+        final Map<String, String> map = t.next();
+        assertEquals(2, map.size());
+        assertTrue(map.get("x") instanceof String);
+        assertTrue(map.get("y") instanceof String);
+        // Both of the paths start with marko
+        assertEquals("marko", map.get("x"));
         // get should return the list of both values, which, because of nondeterminism in the order in which paths are
         // traversed, will be one of two possible values.
-        assertTrue(path.<List<String>>get("y").contains("josh"));
-        assertTrue(path.<List<String>>get("y").contains("ripple") ||
-                   path.<List<String>>get("y").contains("lop"));
-        // getLast should return the most recent value (with the same nondeterminism caveat)
-        assertTrue(path.getLast("y").equals("ripple") ||
-                   path.getLast("y").equals("lop"));
-        // getList should return both values (with the same nondeterminism caveat)
-        assertTrue(path.getList("y").equals(Arrays.asList("josh", "ripple")) ||
-                   path.getList("y").equals(Arrays.asList("josh", "lop")));
+        assertTrue(map.get("y").equals("ripple") ||
+                   map.get("y").equals("lop"));
     }
 
     @Test
     public void shouldExcludeUnlabeledLabelsFromPath() {
-        Arrays.asList(MutablePath.make(), ImmutablePath.make()).forEach(path -> {
+        Arrays.<Path>asList(SparsePath.make()).forEach(path -> {
             path = path.extend("marko", "a");
             path = path.extend("stephen", "b");
             path = path.extend("matthias", "c", "d");
-            assertEquals(3, path.size());
-            assertEquals(3, path.objects().size());
-            assertEquals(3, path.labels().size());
+            assertEquals(4, path.size());  // 3 in other Paths
+            assertEquals(4, path.objects().size());  // 3 in other Paths
+            assertEquals(4, path.labels().size());  // 3 in other Paths
             assertEquals(1, path.labels().get(0).size());
             assertEquals(1, path.labels().get(1).size());
             assertEquals("b", path.labels().get(1).iterator().next());
-            assertEquals(2, path.labels().get(2).size());
+            assertEquals(1, path.labels().get(2).size());  // 2 in other Paths
             assertTrue(path.labels().get(2).contains("c"));
-            assertTrue(path.labels().get(2).contains("d"));
+            assertTrue(path.labels().get(3).contains("d"));  // get(2) in other Paths
         });
     }
 }
