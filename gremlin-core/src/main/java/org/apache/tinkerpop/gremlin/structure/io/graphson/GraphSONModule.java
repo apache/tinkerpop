@@ -81,6 +81,7 @@ public class GraphSONModule extends SimpleModule {
         }
 
         private static void ser(final VertexProperty property, final JsonGenerator jsonGenerator) throws IOException {
+            // creation of the map enables all the fields to be properly written with their type if required
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, property.id());
             m.put(GraphSONTokens.VALUE, property.value());
@@ -123,6 +124,7 @@ public class GraphSONModule extends SimpleModule {
         }
 
         private static void ser(final Property property, final JsonGenerator jsonGenerator) throws IOException {
+            // creation of the map enables all the fields to be properly written with their type if required
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.VALUE, property.value());
             jsonGenerator.writeObject(m);
@@ -148,6 +150,7 @@ public class GraphSONModule extends SimpleModule {
         }
 
         private static void ser(final Edge edge, final JsonGenerator jsonGenerator) throws IOException {
+            // creation of the map enables all the fields to be properly written with their type if required
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, edge.id());
             m.put(GraphSONTokens.LABEL, edge.label());
@@ -189,6 +192,7 @@ public class GraphSONModule extends SimpleModule {
 
         private static void ser(final Vertex vertex, final JsonGenerator jsonGenerator)
                 throws IOException {
+            // creation of the map enables all the fields to be properly written with their type if required
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.ID, vertex.id());
             m.put(GraphSONTokens.LABEL, vertex.label());
@@ -224,6 +228,7 @@ public class GraphSONModule extends SimpleModule {
 
         private static void ser(final Path path, final JsonGenerator jsonGenerator)
                 throws IOException {
+            // creation of the map enables all the fields to be properly written with their type if required
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.LABELS, path.labels());
             m.put(GraphSONTokens.OBJECTS, path.objects());
@@ -250,8 +255,8 @@ public class GraphSONModule extends SimpleModule {
         }
 
         private static void serializeInternal(final TraversalMetrics traversalMetrics, final JsonGenerator jsonGenerator) throws IOException {
+            // creation of the map enables all the fields to be properly written with their type if required
             final Map<String, Object> m = new HashMap<>();
-
             m.put(GraphSONTokens.DURATION, traversalMetrics.getDuration(TimeUnit.NANOSECONDS) / 1000000d);
             List<Map<String, Object>> metrics = new ArrayList<>();
             traversalMetrics.getMetrics().forEach(it -> metrics.add(metricsToMap(it)));
