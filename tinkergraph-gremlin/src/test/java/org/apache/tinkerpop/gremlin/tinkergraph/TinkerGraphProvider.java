@@ -120,11 +120,9 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
                 add("shouldReadWriteDetachedVertexNoEdgesToGraphSON");
                 add("shouldReadWriteDetachedVertexAsReferenceNoEdgesToGraphSON");
                 add("shouldReadWriteVertexMultiPropsNoEdgesToGraphSON");
-                add("shouldReadWriteVertexWithOUTOUTEdgesToGraphSON");
-                add("shouldReadWriteVertexWithININEdgesToGraphSON");
-                add("shouldReadWriteVertexWithBOTHBOTHEdgesToGraphSON");
-                add("shouldReadWriteVertexWithBOTHINEdgesToGraphSON");
-                add("shouldReadWriteVertexWithBOTHOUTEdgesToGraphSON");
+                add("shouldReadWriteVertexWithOUTEdgesToGraphSON");
+                add("shouldReadWriteVertexWithINEdgesToGraphSON");
+                add("shouldReadWriteVertexWithBOTHEdgesToGraphSON");
             }};
 
             if (testsThatNeedLongIdManager.contains(testMethodName))

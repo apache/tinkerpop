@@ -121,7 +121,7 @@ public class LegacyGraphSONReader implements GraphReader {
     }
 
     @Override
-    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
+    public Iterator<Vertex> readVertices(final InputStream inputStream,
                                          final Function<Attachable<Vertex>, Vertex> vertexMaker,
                                          final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
@@ -138,7 +138,7 @@ public class LegacyGraphSONReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction, final Function<Attachable<Vertex>, Vertex> vertexMaker, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 

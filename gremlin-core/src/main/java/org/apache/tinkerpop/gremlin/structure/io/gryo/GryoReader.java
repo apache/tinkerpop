@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import org.apache.tinkerpop.gremlin.structure.Host;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -46,7 +46,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -79,7 +78,7 @@ public class GryoReader implements GraphReader {
     }
 
     @Override
-    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
+    public Iterator<Vertex> readVertices(final InputStream inputStream,
                                          final Function<Attachable<Vertex>, Vertex> vertexMaker,
                                          final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
@@ -92,12 +91,7 @@ public class GryoReader implements GraphReader {
             @Override
             public Vertex next() {
                 try {
-                    final Vertex v = readVertex(direction, vertexMaker, edgeMaker, input);
-
-                    // read the vertex terminator
-                    kryo.readClassAndObject(input);
-
-                    return v;
+                    return readVertexInternal(vertexMaker, input);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -109,19 +103,31 @@ public class GryoReader implements GraphReader {
     public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
         readHeader(input);
-        final Attachable<Edge> attachable = (Attachable<Edge>) kryo.readClassAndObject(input);
+        final Attachable<Edge> attachable = kryo.readObject(input, DetachedEdge.class);
         return edgeMaker.apply(attachable);
     }
 
     @Override
     public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException {
-        return readVertex(inputStream, null, vertexMaker, null);
+        return readVertex(inputStream, vertexMaker, null);
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction, Function<Attachable<Vertex>, Vertex> vertexMaker, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream,
+                             final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                             final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
-        return readVertex(direction, vertexMaker, edgeMaker, input);
+        return readVertexInternal(vertexMaker, input);
+    }
+
+    private Vertex readVertexInternal(final Function<Attachable<Vertex>, Vertex> vertexMaker, final Input input) throws IOException {
+        readHeader(input);
+        final StarGraph starGraph = kryo.readObject(input, StarGraph.class);
+
+        // read the terminator
+        kryo.readClassAndObject(input);
+
+        return vertexMaker.apply(starGraph.getStarVertex());
     }
 
     @Override

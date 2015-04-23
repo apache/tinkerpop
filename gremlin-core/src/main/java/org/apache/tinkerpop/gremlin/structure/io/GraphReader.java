@@ -62,14 +62,13 @@ public interface GraphReader {
      * given the direction supplied as an argument.
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
-     * @param direction   the direction of edges to read.
      * @param vertexMaker a function to create a vertex where the first argument is the vertex identifier, the
      *                    second argument is vertex label and the last is the list of properties for it
      * @param edgeMaker   a function that creates an edge from the stream where the first argument is the edge
      *                    identifier, the second argument is the out vertex id, the third is the in vertex id,
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
-    public Vertex readVertex(final InputStream inputStream, final Direction direction,
+    public Vertex readVertex(final InputStream inputStream,
                              final Function<Attachable<Vertex>, Vertex> vertexMaker,
                              final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException;
 
@@ -79,14 +78,13 @@ public interface GraphReader {
      * will read vertex properties as well as edges given the direction supplied as an argument.
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
-     * @param direction   the direction of edges to read.
      * @param vertexMaker a function to create a vertex where the first argument is the vertex identifier, the
      *                    second argument is vertex label and the last is the list of properties for it
      * @param edgeMaker   a function that creates an edge from the stream where the first argument is the edge
      *                    identifier, the second argument is the out vertex id, the third is the in vertex id,
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
-    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
+    public Iterator<Vertex> readVertices(final InputStream inputStream,
                                          final Function<Attachable<Vertex>, Vertex> vertexMaker,
                                          final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException;
 

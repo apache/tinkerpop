@@ -140,11 +140,11 @@ public class GraphSONReader implements GraphReader {
     }
 
     @Override
-    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
+    public Iterator<Vertex> readVertices(final InputStream inputStream,
                                          final Function<Attachable<Vertex>, Vertex> vertexMaker,
                                          final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        return br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), direction, vertexMaker, edgeMaker))).iterator();
+        return br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), vertexMaker, edgeMaker))).iterator();
     }
 
     @Override
@@ -167,16 +167,16 @@ public class GraphSONReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction,
+    public Vertex readVertex(final InputStream inputStream,
                              final Function<Attachable<Vertex>, Vertex> vertexMaker,
                              final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
         final Vertex v = readVertexData(vertexData, vertexMaker);
 
-        if (vertexData.containsKey(GraphSONTokens.OUT_E) && (direction == Direction.BOTH || direction == Direction.OUT))
+        if (vertexData.containsKey(GraphSONTokens.OUT_E))
             readVertexEdges(edgeMaker, vertexData, GraphSONTokens.OUT_E);
 
-        if (vertexData.containsKey(GraphSONTokens.IN_E) && (direction == Direction.BOTH || direction == Direction.IN))
+        if (vertexData.containsKey(GraphSONTokens.IN_E))
             readVertexEdges(edgeMaker, vertexData, GraphSONTokens.IN_E);
 
         return v;

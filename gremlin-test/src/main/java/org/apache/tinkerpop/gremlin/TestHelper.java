@@ -18,11 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -88,5 +99,102 @@ public final class TestHelper {
         if (cleaned.length() == 0)
             throw new IllegalStateException("Path segment " + toClean + " has not valid characters and is thus empty");
         return cleaned;
+    }
+
+    public static void validateVertex(final Vertex originalVertex, final Vertex starVertex) {
+        ////////////////  VALIDATE PROPERTIES
+        final AtomicInteger originalPropertyCounter = new AtomicInteger(0);
+        final AtomicInteger originalMetaPropertyCounter = new AtomicInteger(0);
+        final AtomicInteger starPropertyCounter = new AtomicInteger(0);
+        final AtomicInteger starMetaPropertyCounter = new AtomicInteger(0);
+
+        originalVertex.properties().forEachRemaining(vertexProperty -> {
+            originalPropertyCounter.incrementAndGet();
+            starVertex.properties(vertexProperty.label()).forEachRemaining(starVertexProperty -> {
+                if (starVertexProperty.equals(vertexProperty)) {
+                    starPropertyCounter.incrementAndGet();
+                    assertEquals(starVertexProperty.id(), vertexProperty.id());
+                    assertEquals(starVertexProperty.label(), vertexProperty.label());
+                    assertEquals(starVertexProperty.value(), vertexProperty.value());
+                    assertEquals(starVertexProperty.key(), vertexProperty.key());
+                    assertEquals(starVertexProperty.element(), vertexProperty.element());
+                    //
+                    vertexProperty.properties().forEachRemaining(p -> {
+                        originalMetaPropertyCounter.incrementAndGet();
+                        assertEquals(p.value(), starVertexProperty.property(p.key()).value());
+                        assertEquals(p.key(), starVertexProperty.property(p.key()).key());
+                        assertEquals(p.element(), starVertexProperty.property(p.key()).element());
+                    });
+                    starVertexProperty.properties().forEachRemaining(p -> starMetaPropertyCounter.incrementAndGet());
+                }
+            });
+        });
+
+        assertEquals(originalPropertyCounter.get(), starPropertyCounter.get());
+        assertEquals(originalMetaPropertyCounter.get(), starMetaPropertyCounter.get());
+
+        originalPropertyCounter.set(0);
+        starPropertyCounter.set(0);
+        originalMetaPropertyCounter.set(0);
+        starMetaPropertyCounter.set(0);
+        //
+        starVertex.properties().forEachRemaining(starVertexProperty -> {
+            starPropertyCounter.incrementAndGet();
+            originalVertex.properties(starVertexProperty.label()).forEachRemaining(vertexProperty -> {
+                if (starVertexProperty.equals(vertexProperty)) {
+                    originalPropertyCounter.incrementAndGet();
+                    assertEquals(vertexProperty.id(), starVertexProperty.id());
+                    assertEquals(vertexProperty.label(), starVertexProperty.label());
+                    assertEquals(vertexProperty.value(), starVertexProperty.value());
+                    assertEquals(vertexProperty.key(), starVertexProperty.key());
+                    assertEquals(vertexProperty.element(), starVertexProperty.element());
+                    starVertexProperty.properties().forEachRemaining(p -> {
+                        starMetaPropertyCounter.incrementAndGet();
+                        assertEquals(p.value(), vertexProperty.property(p.key()).value());
+                        assertEquals(p.key(), vertexProperty.property(p.key()).key());
+                        assertEquals(p.element(), vertexProperty.property(p.key()).element());
+                    });
+                    vertexProperty.properties().forEachRemaining(p -> originalMetaPropertyCounter.incrementAndGet());
+                }
+            });
+        });
+        assertEquals(originalPropertyCounter.get(), starPropertyCounter.get());
+        assertEquals(originalMetaPropertyCounter.get(), starMetaPropertyCounter.get());
+
+        ////////////////  VALIDATE EDGES
+        assertEquals(originalVertex, starVertex);
+        assertEquals(starVertex, originalVertex);
+        assertEquals(starVertex.id(), originalVertex.id());
+        assertEquals(starVertex.label(), originalVertex.label());
+        ///
+        List<Edge> originalEdges = new ArrayList<>(IteratorUtils.set(originalVertex.edges(Direction.OUT)));
+        List<Edge> starEdges = new ArrayList<>(IteratorUtils.set(starVertex.edges(Direction.OUT)));
+        assertEquals(originalEdges.size(), starEdges.size());
+        for (int i = 0; i < starEdges.size(); i++) {
+            final Edge starEdge = starEdges.get(i);
+            final Edge originalEdge = originalEdges.get(i);
+            assertEquals(starEdge, originalEdge);
+            assertEquals(starEdge.id(), originalEdge.id());
+            assertEquals(starEdge.label(), originalEdge.label());
+            assertEquals(starEdge.inVertex(), originalEdge.inVertex());
+            assertEquals(starEdge.outVertex(), originalEdge.outVertex());
+            originalEdge.properties().forEachRemaining(p -> assertEquals(p, starEdge.property(p.key())));
+            starEdge.properties().forEachRemaining(p -> assertEquals(p, originalEdge.property(p.key())));
+        }
+
+        originalEdges = new ArrayList<>(IteratorUtils.set(originalVertex.edges(Direction.IN)));
+        starEdges = new ArrayList<>(IteratorUtils.set(starVertex.edges(Direction.IN)));
+        assertEquals(originalEdges.size(), starEdges.size());
+        for (int i = 0; i < starEdges.size(); i++) {
+            final Edge starEdge = starEdges.get(i);
+            final Edge originalEdge = originalEdges.get(i);
+            assertEquals(starEdge, originalEdge);
+            assertEquals(starEdge.id(), originalEdge.id());
+            assertEquals(starEdge.label(), originalEdge.label());
+            assertEquals(starEdge.inVertex(), originalEdge.inVertex());
+            assertEquals(starEdge.outVertex(), originalEdge.outVertex());
+            originalEdge.properties().forEachRemaining(p -> assertEquals(p, starEdge.property(p.key())));
+            starEdge.properties().forEachRemaining(p -> assertEquals(p, originalEdge.property(p.key())));
+        }
     }
 }

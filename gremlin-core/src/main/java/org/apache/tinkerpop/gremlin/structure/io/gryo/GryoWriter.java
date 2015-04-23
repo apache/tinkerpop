@@ -25,7 +25,10 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphSerializer;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.Registration;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 import java.io.IOException;
@@ -70,27 +73,45 @@ public class GryoWriter implements GraphWriter {
         output.flush();
     }
 
+    public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
+        // todo: can we wrap this up in a function somehow - withRegistration(r, stream... -> ....)
+        final Registration oldRegistration = kryo.getRegistration(StarGraph.class);
+        kryo.register(StarGraph.class, StarGraphSerializer.with(direction), oldRegistration.getId());
+        final Output output = new Output(outputStream);
+        while (vertexIterator.hasNext()) {
+            writeVertexInternal(output, vertexIterator.next());
+        }
+        output.flush();
+        kryo.register(oldRegistration);
+    }
+
+    public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
+        writeVertices(outputStream, vertexIterator, null);
+    }
+
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
+        // todo: figure out how to not keep creating Registration objects?
+        final Registration oldRegistration = kryo.getRegistration(StarGraph.class);
+        kryo.register(StarGraph.class, StarGraphSerializer.with(direction), oldRegistration.getId());
+
         final Output output = new Output(outputStream);
-        writeHeader(output);
-        writeVertexToOutput(output, v, direction);
+        writeVertexInternal(output, v);
         output.flush();
+
+        kryo.register(oldRegistration);
     }
 
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
-        final Output output = new Output(outputStream);
-        writeHeader(output);
-        writeVertexWithNoEdgesToOutput(output, v);
-        output.flush();
+        writeVertex(outputStream, v, null);
     }
 
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
         writeHeader(output);
-        kryo.writeClassAndObject(output, DetachedFactory.detach(e, true));
+        kryo.writeObject(output, DetachedFactory.detach(e, true));
         output.flush();
     }
 
@@ -99,6 +120,12 @@ public class GryoWriter implements GraphWriter {
         final Output output = new Output(outputStream);
         this.kryo.writeClassAndObject(output, object);
         output.flush();
+    }
+
+    public void writeVertexInternal(final Output output, final Vertex v) throws IOException {
+        writeHeader(output);
+        kryo.writeObject(output, StarGraph.of(v));
+        kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
     }
 
     void writeHeader(final Output output) throws IOException {

@@ -22,13 +22,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * An {@link InputStream} implementation that can independently process a Gryo file written with
- * {@link GryoWriter#writeVertices(java.io.OutputStream, org.apache.tinkerpop.gremlin.process.traversal.Traversal)}.
+ * {@link GryoWriter#writeVertices(OutputStream, Iterator)}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -60,6 +62,7 @@ public class VertexByteArrayInputStream extends FilterInputStream {
             buffer.addLast((byte) current);
         }
 
+        stream.write(current);
         return stream;
     }
 

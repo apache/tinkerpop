@@ -69,7 +69,7 @@ public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWrita
         final Function<Attachable<Edge>, Edge> edgeMaker = detachedEdge -> detachedEdge.attach(starGraph, Attachable.Method.CREATE);
         try (InputStream in = new ByteArrayInputStream(this.lineRecordReader.getCurrentValue().getBytes())) {
             this.vertexWritable.set(this.hasEdges ?
-                    this.graphsonReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker) :
+                    this.graphsonReader.readVertex(in, vertexMaker, edgeMaker) :
                     this.graphsonReader.readVertex(in, vertexMaker));
             return true;
         }
