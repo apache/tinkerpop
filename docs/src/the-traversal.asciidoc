@@ -71,14 +71,12 @@ The `Traverser<S>` object provides access to:
 image:map-lambda.png[width=150,float=right]
 [gremlin-groovy,modern]
 ----
-g.V(1).as('a').out() <1>
-g.V(1).as('a').out().map {it.path('a')} <2>
-g.V(1).as('a').out().select('a') <3>
+g.V(1).out().values('name') <1>
+g.V(1).out().map {it.get().value('name')} <2>
 ----
 
-<1> A standard outgoing traversal from vertex 1.
-<2> For each vertex outgoing adjacent to vertex 1, get the vertex at `a` (which is vertex 1).
-<3> The <<select-step,`select()`>>-step is implemented as a `map()`-step that accesses data in the historic path.
+<1> An outgoing traversal from vertex 1 to the name values of the adjacent vertices.
+<2> The same operation, but using a lambda to access the name property values.
 
 image:filter-lambda.png[width=160,float=right]
 [gremlin-groovy,modern]
@@ -1068,18 +1066,18 @@ Two trivial examples are presented below to demonstrate the *initial value suppl
 
 [gremlin-groovy,modern]
 ----
-g.V().withSack(1.0f).sack()
+g.withSack(1.0f).V().sack()
 rand = new Random()
-g.V().withSack {rand.nextFloat()}.sack()
+g.withSack {rand.nextFloat()}.V().sack()
 ----
 
 A more complicated initial value supplier example is presented below where the sack values are used in a running computation and then emitted at the end of the traversal. When an edge is traversed, the edge weight is multiplied by the sack value (`sack(mult,'weight')`).
 
 [gremlin-groovy,modern]
 ----
-g.V().withSack(1.0f).repeat(outE().sack(mult,'weight').inV()).times(2)
-g.V().withSack(1.0f).repeat(outE().sack(mult,'weight').inV()).times(2).sack()
-g.V().withSack(1.0f).repeat(outE().sack(mult,'weight').inV()).times(2).path().
+g.withSack(1.0f).V().repeat(outE().sack(mult,'weight').inV()).times(2)
+g.withSack(1.0f).V().repeat(outE().sack(mult,'weight').inV()).times(2).sack()
+g.withSack(1.0f).V().repeat(outE().sack(mult,'weight').inV()).times(2).path().
       by().by('weight')
 ----
 
@@ -1087,9 +1085,9 @@ image:gremlin-sacks-standing.png[width=100,float=left] When complex objects are 
 
 [gremlin-groovy,modern]
 ----
-g.V().withSack {[:]}.out().out().
+g.withSack {[:]}.V().out().out().
       sack {m,v -> m[v.value('name')] = v.value('lang'); m}.sack() // BAD: single map
-g.V().withSack {[:]} {m -> m.clone()}.out().out().
+g.withSack {[:]}{it.clone()}.V().out().out().
       sack {m,v -> m[v.value('name')] = v.value('lang'); m}.sack() // GOOD: cloned map
 ----
 

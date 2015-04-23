@@ -47,7 +47,7 @@ public abstract class GroovySackTest {
 
         @Override
         public Traversal<Vertex, Map> get_g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack() {
-            g.withSack([:]) { m -> m.clone() }.V.out().out().sack { m, v -> m['a'] = v.name; m }.sack()
+            g.withSack { [:] } { it.clone() }.V.out().out().sack { m, v -> m['a'] = v.name; m }.sack()
         }
     }
 
@@ -66,7 +66,7 @@ public abstract class GroovySackTest {
 
         @Override
         public Traversal<Vertex, Map> get_g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack() {
-            ComputerTestHelper.compute("g.withSack ([:]) { m -> m.clone() }.V.out().out().sack { m, v -> m['a'] = v.name; m }.sack()", g);
+            ComputerTestHelper.compute("g.withSack{[:]}{ it.clone() }.V.out().out().sack { m, v -> m['a'] = v.name; m }.sack()", g);
         }
     }
 }
