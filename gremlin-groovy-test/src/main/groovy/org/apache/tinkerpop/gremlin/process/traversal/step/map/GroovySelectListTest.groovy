@@ -95,8 +95,6 @@ public abstract class GroovySelectListTest {
             return g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount()).as('relations').selectList().by('name').by()
         }
 
-        // WIP
-
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_asXaX_out_asXaX_out_asXaX_selectListXaX() {
             return g.V().as("a").out().as("a").out().as("a").selectList("a");
@@ -269,8 +267,6 @@ public abstract class GroovySelectListTest {
             // override with nothing until the test itself is supported
             return null
         }
-
-        // WIP
 
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_asXaX_out_asXaX_out_asXaX_selectListXaX() {
