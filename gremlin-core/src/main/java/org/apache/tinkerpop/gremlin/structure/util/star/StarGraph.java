@@ -33,9 +33,11 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.util.tools.BiMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -62,6 +64,8 @@ public final class StarGraph implements Graph, Serializable {
     protected StarVertex starVertex = null;
     protected Map<Object, Map<String, Object>> edgeProperties = null;
     protected Map<Object, Map<String, Object>> metaProperties = null;
+    protected BiMap<Short, String> labelsAndKeys = new BiMap<>();
+    protected short nextLabelsAndKeysId = Short.MIN_VALUE;  // 64k unique labels allowed
 
     private StarGraph() {
     }
@@ -186,22 +190,22 @@ public final class StarGraph implements Graph, Serializable {
         return starGraph;
     }
 
-    protected Long generateId() {
-        return this.nextId++;
-    }
-
     ///////////////////////
     //// STAR ELEMENT ////
     //////////////////////
 
-    public abstract class StarElement implements Element {
+    public abstract class StarElement<E extends Element> implements Element, Attachable<E> {
 
         protected final Object id;
-        protected final String label;
+        protected final short labelId;
 
         protected StarElement(final Object id, final String label) {
             this.id = id;
-            this.label = label.intern();
+            if (!labelsAndKeys.containsValue(label.intern())) {
+                this.labelId = nextLabelsAndKeysId++;
+                labelsAndKeys.put(this.labelId, label.intern());
+            } else
+                this.labelId = labelsAndKeys.getKey(label.intern());
         }
 
         @Override
@@ -211,7 +215,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public String label() {
-            return this.label;
+            return labelsAndKeys.getValue(this.labelId);
         }
 
         @Override
@@ -228,13 +232,18 @@ public final class StarGraph implements Graph, Serializable {
         public int hashCode() {
             return ElementHelper.hashCode(this);
         }
+
+        @Override
+        public E get() {
+            return (E) this;
+        }
     }
 
     //////////////////////
     //// STAR VERTEX ////
     /////////////////////
 
-    public final class StarVertex extends StarElement implements Vertex {
+    public final class StarVertex extends StarElement<Vertex> implements Vertex {
 
         protected Map<String, List<Edge>> outEdges = null;
         protected Map<String, List<Edge>> inEdges = null;
@@ -242,10 +251,6 @@ public final class StarGraph implements Graph, Serializable {
 
         public StarVertex(final Object id, final String label) {
             super(id, label);
-        }
-
-        public Vertex get() {
-            return this;
         }
 
         public void dropEdges() {
@@ -279,7 +284,7 @@ public final class StarGraph implements Graph, Serializable {
                 outE = new ArrayList<>();
                 this.outEdges.put(label, outE);
             }
-            final StarEdge outEdge = new StarOutEdge(ElementHelper.getIdValue(keyValues).orElse(generateId()), label, inVertex.id());
+            final StarEdge outEdge = new StarOutEdge(ElementHelper.getIdValue(keyValues).orElse(nextId++), label, inVertex.id());
             ElementHelper.attachProperties(outEdge, keyValues);
             outE.add(outEdge);
             return outEdge;
@@ -293,7 +298,7 @@ public final class StarGraph implements Graph, Serializable {
                 inE = new ArrayList<>();
                 this.inEdges.put(label, inE);
             }
-            final StarEdge inEdge = new StarInEdge(ElementHelper.getIdValue(keyValues).orElse(generateId()), label, outVertex.id());
+            final StarEdge inEdge = new StarInEdge(ElementHelper.getIdValue(keyValues).orElse(nextId++), label, outVertex.id());
             ElementHelper.attachProperties(inEdge, keyValues);
             inE.add(inEdge);
             return inEdge;
@@ -304,7 +309,7 @@ public final class StarGraph implements Graph, Serializable {
             if (null == this.vertexProperties)
                 this.vertexProperties = new HashMap<>();
             final List<VertexProperty> list = cardinality.equals(VertexProperty.Cardinality.single) ? new ArrayList<>(1) : this.vertexProperties.getOrDefault(key, new ArrayList<>());
-            final VertexProperty<V> vertexProperty = new StarVertexProperty<>(ElementHelper.getIdValue(keyValues).orElse(generateId()), key, value);
+            final VertexProperty<V> vertexProperty = new StarVertexProperty<>(ElementHelper.getIdValue(keyValues).orElse(nextId++), key, value);
             ElementHelper.attachProperties(vertexProperty, keyValues);
             list.add(vertexProperty);
             this.vertexProperties.put(key, list);
@@ -375,7 +380,7 @@ public final class StarGraph implements Graph, Serializable {
     //// STAR VERTEX PROPERTY ////
     //////////////////////////////
 
-    public final class StarVertexProperty<V> extends StarElement implements VertexProperty<V> {
+    public final class StarVertexProperty<V> extends StarElement<VertexProperty<V>> implements VertexProperty<V> {
 
         private final V value;
 
@@ -386,7 +391,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public String key() {
-            return this.label;
+            return this.label();
         }
 
         @Override
@@ -407,7 +412,7 @@ public final class StarGraph implements Graph, Serializable {
         @Override
         public void remove() {
             if (null != StarGraph.this.starVertex.vertexProperties)
-                StarGraph.this.starVertex.vertexProperties.get(this.label).remove(this);
+                StarGraph.this.starVertex.vertexProperties.get(this.label()).remove(this);
         }
 
         @Override
@@ -536,7 +541,7 @@ public final class StarGraph implements Graph, Serializable {
     //// STAR EDGE ////
     ///////////////////
 
-    public abstract class StarEdge extends StarElement implements Edge {
+    public abstract class StarEdge extends StarElement<Edge> implements Edge {
 
         protected final Object otherId;
 
@@ -639,21 +644,25 @@ public final class StarGraph implements Graph, Serializable {
     //// STAR PROPERTY ////
     ///////////////////////
 
-    public final class StarProperty<V> implements Property<V> {
+    public final class StarProperty<V> implements Property<V>, Attachable<Property<V>> {
 
-        private final String key;
+        private final short keyId;
         private final V value;
         private final Element element;
 
         public StarProperty(final String key, final V value, final Element element) {
-            this.key = key.intern();
+            if (!labelsAndKeys.containsValue(key.intern())) {
+                this.keyId = nextLabelsAndKeysId++;
+                labelsAndKeys.put(this.keyId, key.intern());
+            } else
+                this.keyId = labelsAndKeys.getKey(key.intern());
             this.value = value;
             this.element = element;
         }
 
         @Override
         public String key() {
-            return this.key;
+            return labelsAndKeys.getValue(this.keyId);
         }
 
         @Override
@@ -673,7 +682,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public void remove() {
-            throw Exceptions.propertyRemovalNotSupported();
+            throw Property.Exceptions.propertyRemovalNotSupported();
         }
 
         @Override
@@ -689,6 +698,11 @@ public final class StarGraph implements Graph, Serializable {
         @Override
         public int hashCode() {
             return ElementHelper.hashCode(this);
+        }
+
+        @Override
+        public Property<V> get() {
+            return this;
         }
     }
 }
