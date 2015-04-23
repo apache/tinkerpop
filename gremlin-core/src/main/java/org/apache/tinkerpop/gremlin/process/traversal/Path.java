@@ -99,10 +99,9 @@ public interface Path extends Cloneable {
     public default <A> A getLast(final String label) throws IllegalArgumentException {
         final List<Object> objects = this.objects();
         final List<Set<String>> labels = this.labels();
-        for (int i = 0; i < labels.size(); i++) {
-            int index = labels.size() - i - 1;
-            if (labels.get(index).contains(label))
-                return (A) objects.get(index);
+        for (int i = labels.size() - 1; i >= 0; i--) {
+            if (labels.get(i).contains(label))
+                return (A) objects.get(i);
         }
         throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
     }
