@@ -51,12 +51,12 @@ public abstract class GroovyMapTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_mapXa_nameX() {
-            g.V.as('a').out.map { v -> v.path('a').name };
+            g.V.withPath.as('a').out.map { v -> v.path('a').name };
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_out_mapXa_name_it_nameX() {
-            g.V().as('a').out.out().map { v -> v.path('a').name + v.name };
+            g.V().withPath().as('a').out.out().map { v -> v.path('a').name + v.name };
         }
     }
 

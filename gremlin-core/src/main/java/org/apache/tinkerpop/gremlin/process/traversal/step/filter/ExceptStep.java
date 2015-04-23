@@ -92,6 +92,6 @@ public final class ExceptStep<S> extends FilterStep<S> {
                 Collections.singleton(TraverserRequirement.OBJECT) :
                 Stream.of(TraverserRequirement.OBJECT,
                         TraverserRequirement.SIDE_EFFECTS,
-                        TraverserRequirement.PATH_ACCESS).collect(Collectors.toSet());
+                        TraverserRequirement.PATH).collect(Collectors.toSet());
     }
 }

@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_PA_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -74,7 +74,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
         super(traversal);
         this.startLabel = startLabel;
         this.traversalsByStartAs = new HashMap<>();
-        this.currentStart = new B_O_PA_S_SE_SL_Traverser<>(null, this);
+        this.currentStart = new B_O_S_SE_SL_Traverser<>(null, this, 1l);    // TODO: bad? P?
         for (final Traversal tl : traversals) {
             addTraversalPrivate(tl);
             this.integrateChild(tl.asAdmin());
