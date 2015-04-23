@@ -94,13 +94,11 @@ public interface GraphReader {
      * Reads a single edge from an {@link InputStream}.
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
-     * @param host        the object to be passed to the {@code reattach} function when coordinating the re-attachment
-     *                    of the {@link Edge}.
      * @param reattach    a function that creates an edge from the stream where the first argument is the edge
      *                    identifier, the second argument is the out vertex id, the third is the in vertex id,
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
-    public Edge readEdge(final InputStream inputStream, final Host host, final BiFunction<Attachable<Edge>, Host, Edge> reattach) throws IOException;
+    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> reattach) throws IOException;
 
     /**
      * Reads an arbitrary object using the standard serializers.

@@ -146,7 +146,7 @@ public class GraphSONReader implements GraphReader {
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final Host host, final BiFunction<Attachable<Edge>, Host, Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
 
         final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
@@ -155,7 +155,7 @@ public class GraphSONReader implements GraphReader {
                 Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
                 Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
 
-        return (Edge) edgeMaker.apply(edge, host);
+        return edgeMaker.apply(edge);
     }
 
     @Override

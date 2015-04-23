@@ -83,7 +83,7 @@ public class GraphMLReader implements GraphReader {
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final Host host, final BiFunction<Attachable<Edge>, Host, Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 

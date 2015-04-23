@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * An interface that provides methods for detached properties and elements to be re-attached to the {@link Graph}.
@@ -51,111 +52,116 @@ public interface Attachable<V> {
     public V get();
 
     public default V attach(final Vertex hostVertex, final Method method) throws IllegalStateException {
-        return (V) method.apply(this, hostVertex);
+        return (V) method.apply(hostVertex).apply(this);
     }
 
     public default V attach(final Graph hostGraph, final Method method) throws IllegalStateException {
-        return (V) method.apply(this, hostGraph);
+        return (V) method.apply(hostGraph).apply(this);
     }
 
-    public enum Method implements BiFunction<Attachable, Host, Object> {
-
+    public enum Method implements Function<Host, Function<Attachable, Object>> {
         GET {
             @Override
-            public Object apply(final Attachable attachable, final Host hostVertexOrGraph) {
-                final Object base = attachable.get();
-                if (base instanceof Vertex) {
-                    final Optional<Vertex> optional = hostVertexOrGraph instanceof Graph ?
-                            Method.getVertex(attachable, (Graph) hostVertexOrGraph) :
-                            Method.getVertex(attachable, (Vertex) hostVertexOrGraph);
-                    return optional.orElseThrow(() -> hostVertexOrGraph instanceof Graph ?
-                            Attachable.Exceptions.canNotGetAttachableFromHostGraph(attachable, (Graph) hostVertexOrGraph) :
-                            Attachable.Exceptions.canNotGetAttachableFromHostVertex(attachable, (Vertex) hostVertexOrGraph));
-                } else if (base instanceof Edge) {
-                    final Optional<Edge> optional = hostVertexOrGraph instanceof Graph ?
-                            Method.getEdge(attachable, (Graph) hostVertexOrGraph) :
-                            Method.getEdge(attachable, (Vertex) hostVertexOrGraph);
-                    return optional.orElseThrow(() -> hostVertexOrGraph instanceof Graph ?
-                            Attachable.Exceptions.canNotGetAttachableFromHostGraph(attachable, (Graph) hostVertexOrGraph) :
-                            Attachable.Exceptions.canNotGetAttachableFromHostVertex(attachable, (Vertex) hostVertexOrGraph));
-                } else if (base instanceof VertexProperty) {
-                    final Optional<VertexProperty> optional = hostVertexOrGraph instanceof Graph ?
-                            Method.getVertexProperty(attachable, (Graph) hostVertexOrGraph) :
-                            Method.getVertexProperty(attachable, (Vertex) hostVertexOrGraph);
-                    return optional.orElseThrow(() -> hostVertexOrGraph instanceof Graph ?
-                            Attachable.Exceptions.canNotGetAttachableFromHostGraph(attachable, (Graph) hostVertexOrGraph) :
-                            Attachable.Exceptions.canNotGetAttachableFromHostVertex(attachable, (Vertex) hostVertexOrGraph));
-                } else if (base instanceof Property) {
-                    final Optional<Property> optional = hostVertexOrGraph instanceof Graph ?
-                            Method.getProperty(attachable, (Graph) hostVertexOrGraph) :
-                            Method.getProperty(attachable, (Vertex) hostVertexOrGraph);
-                    return optional.orElseThrow(() -> hostVertexOrGraph instanceof Graph ?
-                            Attachable.Exceptions.canNotGetAttachableFromHostGraph(attachable, (Graph) hostVertexOrGraph) :
-                            Attachable.Exceptions.canNotGetAttachableFromHostVertex(attachable, (Vertex) hostVertexOrGraph));
-                } else
-                    throw Attachable.Exceptions.providedAttachableMustContainAGraphObject(attachable);
+            public Function<Attachable, Object> apply(final Host hostVertexOrGraph) {
+                return (Attachable attachable) -> {
+                    final Object base = attachable.get();
+                    if (base instanceof Vertex) {
+                        final Optional<Vertex> optional = hostVertexOrGraph instanceof Graph ?
+                                Method.getVertex(attachable, (Graph) hostVertexOrGraph) :
+                                Method.getVertex(attachable, (Vertex) hostVertexOrGraph);
+                        return optional.orElseThrow(() -> hostVertexOrGraph instanceof Graph ?
+                                Attachable.Exceptions.canNotGetAttachableFromHostGraph(attachable, (Graph) hostVertexOrGraph) :
+                                Attachable.Exceptions.canNotGetAttachableFromHostVertex(attachable, (Vertex) hostVertexOrGraph));
+                    } else if (base instanceof Edge) {
+                        final Optional<Edge> optional = hostVertexOrGraph instanceof Graph ?
+                                Method.getEdge(attachable, (Graph) hostVertexOrGraph) :
+                                Method.getEdge(attachable, (Vertex) hostVertexOrGraph);
+                        return optional.orElseThrow(() -> hostVertexOrGraph instanceof Graph ?
+                                Attachable.Exceptions.canNotGetAttachableFromHostGraph(attachable, (Graph) hostVertexOrGraph) :
+                                Attachable.Exceptions.canNotGetAttachableFromHostVertex(attachable, (Vertex) hostVertexOrGraph));
+                    } else if (base instanceof VertexProperty) {
+                        final Optional<VertexProperty> optional = hostVertexOrGraph instanceof Graph ?
+                                Method.getVertexProperty(attachable, (Graph) hostVertexOrGraph) :
+                                Method.getVertexProperty(attachable, (Vertex) hostVertexOrGraph);
+                        return optional.orElseThrow(() -> hostVertexOrGraph instanceof Graph ?
+                                Attachable.Exceptions.canNotGetAttachableFromHostGraph(attachable, (Graph) hostVertexOrGraph) :
+                                Attachable.Exceptions.canNotGetAttachableFromHostVertex(attachable, (Vertex) hostVertexOrGraph));
+                    } else if (base instanceof Property) {
+                        final Optional<Property> optional = hostVertexOrGraph instanceof Graph ?
+                                Method.getProperty(attachable, (Graph) hostVertexOrGraph) :
+                                Method.getProperty(attachable, (Vertex) hostVertexOrGraph);
+                        return optional.orElseThrow(() -> hostVertexOrGraph instanceof Graph ?
+                                Attachable.Exceptions.canNotGetAttachableFromHostGraph(attachable, (Graph) hostVertexOrGraph) :
+                                Attachable.Exceptions.canNotGetAttachableFromHostVertex(attachable, (Vertex) hostVertexOrGraph));
+                    } else
+                        throw Attachable.Exceptions.providedAttachableMustContainAGraphObject(attachable);
+                };
             }
         },
 
         CREATE {
             @Override
-            public Object apply(final Attachable attachable, final Host hostVertexOrGraph) {
-                final Object base = attachable.get();
-                if (base instanceof Vertex) {
-                    return hostVertexOrGraph instanceof Graph ?
-                            Method.createVertex(attachable, (Graph) hostVertexOrGraph) :
-                            Method.createVertex(attachable, (Vertex) hostVertexOrGraph);
-                } else if (base instanceof Edge) {
-                    return hostVertexOrGraph instanceof Graph ?
-                            Method.createEdge(attachable, (Graph) hostVertexOrGraph) :
-                            Method.createEdge(attachable, (Vertex) hostVertexOrGraph);
-                } else if (base instanceof VertexProperty) {
-                    return hostVertexOrGraph instanceof Graph ?
-                            Method.createVertexProperty(attachable, (Graph) hostVertexOrGraph) :
-                            Method.createVertexProperty(attachable, (Vertex) hostVertexOrGraph);
-                } else if (base instanceof Property) {
-                    return hostVertexOrGraph instanceof Graph ?
-                            Method.createProperty(attachable, (Graph) hostVertexOrGraph) :
-                            Method.createProperty(attachable, (Vertex) hostVertexOrGraph);
-                } else
-                    throw Attachable.Exceptions.providedAttachableMustContainAGraphObject(attachable);
+            public Function<Attachable, Object> apply(final Host hostVertexOrGraph) {
+                return (Attachable attachable) -> {
+                    final Object base = attachable.get();
+                    if (base instanceof Vertex) {
+                        return hostVertexOrGraph instanceof Graph ?
+                                Method.createVertex(attachable, (Graph) hostVertexOrGraph) :
+                                Method.createVertex(attachable, (Vertex) hostVertexOrGraph);
+                    } else if (base instanceof Edge) {
+                        return hostVertexOrGraph instanceof Graph ?
+                                Method.createEdge(attachable, (Graph) hostVertexOrGraph) :
+                                Method.createEdge(attachable, (Vertex) hostVertexOrGraph);
+                    } else if (base instanceof VertexProperty) {
+                        return hostVertexOrGraph instanceof Graph ?
+                                Method.createVertexProperty(attachable, (Graph) hostVertexOrGraph) :
+                                Method.createVertexProperty(attachable, (Vertex) hostVertexOrGraph);
+                    } else if (base instanceof Property) {
+                        return hostVertexOrGraph instanceof Graph ?
+                                Method.createProperty(attachable, (Graph) hostVertexOrGraph) :
+                                Method.createProperty(attachable, (Vertex) hostVertexOrGraph);
+                    } else
+                        throw Attachable.Exceptions.providedAttachableMustContainAGraphObject(attachable);
+                };
             }
         },
 
         GET_OR_CREATE {
             @Override
-            public Object apply(final Attachable attachable, final Host hostVertexOrGraph) {
-                final Object base = attachable.get();
-                if (base instanceof Vertex) {
-                    return (hostVertexOrGraph instanceof Graph ?
-                            Method.getVertex(attachable, (Graph) hostVertexOrGraph) :
-                            Method.getVertex(attachable, (Vertex) hostVertexOrGraph))
-                            .orElse(hostVertexOrGraph instanceof Graph ?
-                                    Method.createVertex(attachable, (Graph) hostVertexOrGraph) :
-                                    Method.createVertex(attachable, (Vertex) hostVertexOrGraph));
-                } else if (base instanceof Edge) {
-                    return (hostVertexOrGraph instanceof Graph ?
-                            Method.getEdge(attachable, (Graph) hostVertexOrGraph) :
-                            Method.getEdge(attachable, (Vertex) hostVertexOrGraph))
-                            .orElse(hostVertexOrGraph instanceof Graph ?
-                                    Method.createEdge(attachable, (Graph) hostVertexOrGraph) :
-                                    Method.createEdge(attachable, (Vertex) hostVertexOrGraph));
-                } else if (base instanceof VertexProperty) {
-                    return (hostVertexOrGraph instanceof Graph ?
-                            Method.getVertexProperty(attachable, (Graph) hostVertexOrGraph) :
-                            Method.getVertexProperty(attachable, (Vertex) hostVertexOrGraph))
-                            .orElse(hostVertexOrGraph instanceof Graph ?
-                                    Method.createVertexProperty(attachable, (Graph) hostVertexOrGraph) :
-                                    Method.createVertexProperty(attachable, (Vertex) hostVertexOrGraph));
-                } else if (base instanceof Property) {
-                    return (hostVertexOrGraph instanceof Graph ?
-                            Method.getProperty(attachable, (Graph) hostVertexOrGraph) :
-                            Method.getProperty(attachable, (Vertex) hostVertexOrGraph))
-                            .orElse(hostVertexOrGraph instanceof Graph ?
-                                    Method.createProperty(attachable, (Graph) hostVertexOrGraph) :
-                                    Method.createProperty(attachable, (Vertex) hostVertexOrGraph));
-                } else
-                    throw Attachable.Exceptions.providedAttachableMustContainAGraphObject(attachable);
+            public Function<Attachable, Object> apply(final Host hostVertexOrGraph) {
+                return (Attachable attachable) -> {
+                    final Object base = attachable.get();
+                    if (base instanceof Vertex) {
+                        return (hostVertexOrGraph instanceof Graph ?
+                                Method.getVertex(attachable, (Graph) hostVertexOrGraph) :
+                                Method.getVertex(attachable, (Vertex) hostVertexOrGraph))
+                                .orElse(hostVertexOrGraph instanceof Graph ?
+                                        Method.createVertex(attachable, (Graph) hostVertexOrGraph) :
+                                        Method.createVertex(attachable, (Vertex) hostVertexOrGraph));
+                    } else if (base instanceof Edge) {
+                        return (hostVertexOrGraph instanceof Graph ?
+                                Method.getEdge(attachable, (Graph) hostVertexOrGraph) :
+                                Method.getEdge(attachable, (Vertex) hostVertexOrGraph))
+                                .orElse(hostVertexOrGraph instanceof Graph ?
+                                        Method.createEdge(attachable, (Graph) hostVertexOrGraph) :
+                                        Method.createEdge(attachable, (Vertex) hostVertexOrGraph));
+                    } else if (base instanceof VertexProperty) {
+                        return (hostVertexOrGraph instanceof Graph ?
+                                Method.getVertexProperty(attachable, (Graph) hostVertexOrGraph) :
+                                Method.getVertexProperty(attachable, (Vertex) hostVertexOrGraph))
+                                .orElse(hostVertexOrGraph instanceof Graph ?
+                                        Method.createVertexProperty(attachable, (Graph) hostVertexOrGraph) :
+                                        Method.createVertexProperty(attachable, (Vertex) hostVertexOrGraph));
+                    } else if (base instanceof Property) {
+                        return (hostVertexOrGraph instanceof Graph ?
+                                Method.getProperty(attachable, (Graph) hostVertexOrGraph) :
+                                Method.getProperty(attachable, (Vertex) hostVertexOrGraph))
+                                .orElse(hostVertexOrGraph instanceof Graph ?
+                                        Method.createProperty(attachable, (Graph) hostVertexOrGraph) :
+                                        Method.createProperty(attachable, (Vertex) hostVertexOrGraph));
+                    } else
+                        throw Attachable.Exceptions.providedAttachableMustContainAGraphObject(attachable);
+                };
             }
         };
 
