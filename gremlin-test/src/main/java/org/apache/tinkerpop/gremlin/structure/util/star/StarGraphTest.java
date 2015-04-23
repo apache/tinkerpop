@@ -91,18 +91,18 @@ public class StarGraphTest extends AbstractGremlinTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void testAttachableGetMethod() {
         // vertex host
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().properties().forEachRemaining(vertexProperty -> validateVertexProperty(vertexProperty, ((Attachable<VertexProperty>) vertexProperty).attach(vertex, Attachable.Method.GET))));
-        g.V().forEachRemaining(vertex -> vertex.properties().forEachRemaining(vertexProperty -> vertexProperty.properties().forEachRemaining(property -> ((Attachable<Property>) property).attach(vertex, Attachable.Method.GET))));
+        g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().properties().forEachRemaining(vertexProperty -> vertexProperty.properties().forEachRemaining(property -> validateProperty(property, ((Attachable<Property>) property).attach(vertex, Attachable.Method.GET)))));
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().edges(Direction.OUT).forEachRemaining(edge -> validateEdge(edge, ((Attachable<Edge>) edge).attach(vertex, Attachable.Method.GET))));
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().edges(Direction.OUT).forEachRemaining(edge -> edge.properties().forEachRemaining(property -> validateProperty(property, ((Attachable<Property>) property).attach(vertex, Attachable.Method.GET)))));
 
         // graph host
         g.V().forEachRemaining(vertex -> validateVertex(vertex, StarGraph.of(vertex).getStarVertex().attach(graph, Attachable.Method.GET)));
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().properties().forEachRemaining(vertexProperty -> validateVertexProperty(vertexProperty, ((Attachable<VertexProperty>) vertexProperty).attach(graph, Attachable.Method.GET))));
-        g.V().forEachRemaining(vertex -> vertex.properties().forEachRemaining(vertexProperty -> vertexProperty.properties().forEachRemaining(property -> ((Attachable<Property>) property).attach(graph, Attachable.Method.GET))));
+        g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().properties().forEachRemaining(vertexProperty -> vertexProperty.properties().forEachRemaining(property -> validateProperty(property, ((Attachable<Property>) property).attach(graph, Attachable.Method.GET)))));
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().edges(Direction.OUT).forEachRemaining(edge -> validateEdge(edge, ((Attachable<Edge>) edge).attach(graph, Attachable.Method.GET))));
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().edges(Direction.OUT).forEachRemaining(edge -> edge.properties().forEachRemaining(property -> validateProperty(property, ((Attachable<Property>) property).attach(graph, Attachable.Method.GET)))));
     }

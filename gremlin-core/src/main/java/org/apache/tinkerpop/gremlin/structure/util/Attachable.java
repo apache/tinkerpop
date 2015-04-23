@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -184,11 +183,11 @@ public interface Attachable<V> {
         }
 
         public static Optional<Edge> getEdge(final Attachable<Edge> attachableEdge, final Vertex hostVertex) {
-            final Object baseId = attachableEdge.get().id();
+            final Edge baseEdge = attachableEdge.get();
             final Iterator<Edge> edgeIterator = hostVertex.edges(Direction.OUT);
             while (edgeIterator.hasNext()) {
                 final Edge edge = edgeIterator.next();
-                if (edge.id().equals(baseId))
+                if (ElementHelper.areEqual(edge, baseEdge))
                     return Optional.of(edge);
             }
             return Optional.empty();
@@ -259,9 +258,12 @@ public interface Attachable<V> {
             } else if (propertyElement instanceof Edge) {
                 final Iterator<Edge> edgeIterator = hostVertex.edges(Direction.OUT);
                 while (edgeIterator.hasNext()) {
-                    final Property property = edgeIterator.next().property(baseProperty.key());
-                    if (property.isPresent() && property.value().equals(baseProperty.value()))
-                        return Optional.of(property);
+                    final Edge edge = edgeIterator.next();
+                    if (ElementHelper.areEqual(edge, propertyElement)) {
+                        final Property property = edge.property(baseProperty.key());
+                        if (ElementHelper.areEqual(baseProperty, property))
+                            return Optional.of(property);
+                    }
                 }
                 return Optional.empty();
             } else { // vertex property
