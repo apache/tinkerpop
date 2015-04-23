@@ -77,8 +77,8 @@ public class GraphMLReader implements GraphReader {
 
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final Function<DetachedVertex, Vertex> vertexMaker,
-                                         final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+                                         final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                                         final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
@@ -88,18 +88,18 @@ public class GraphMLReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction, final Function<DetachedVertex, Vertex> vertexMaker,
-                             final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Direction direction, final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                             final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
-    public <C> C readObject(InputStream inputStream, Class<? extends C> clazz) throws IOException {
+    public <C> C readObject(final InputStream inputStream, final Class<? extends C> clazz) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 

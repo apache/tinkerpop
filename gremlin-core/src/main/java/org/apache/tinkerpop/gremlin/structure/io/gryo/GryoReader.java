@@ -80,8 +80,8 @@ public class GryoReader implements GraphReader {
 
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final Function<DetachedVertex, Vertex> vertexMaker,
-                                         final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+                                         final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                                         final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
         return new Iterator<Vertex>() {
             @Override
@@ -114,12 +114,12 @@ public class GryoReader implements GraphReader {
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException {
         return readVertex(inputStream, null, vertexMaker, null);
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction, Function<DetachedVertex, Vertex> vertexMaker, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Direction direction, Function<Attachable<Vertex>, Vertex> vertexMaker, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
         return readVertex(direction, vertexMaker, edgeMaker, input);
     }
@@ -218,8 +218,8 @@ public class GryoReader implements GraphReader {
         propertyArgs.add(val);
     }
 
-    private Vertex readVertex(final Direction directionRequested, final Function<DetachedVertex, Vertex> vertexMaker,
-                              final Function<DetachedEdge, Edge> edgeMaker, final Input input) throws IOException {
+    private Vertex readVertex(final Direction directionRequested, final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                              final Function<Attachable<Edge>, Edge> edgeMaker, final Input input) throws IOException {
         if (null != directionRequested && null == edgeMaker)
             throw new IllegalArgumentException("If a directionRequested is specified then an edgeAdder function should also be specified");
 
@@ -262,7 +262,7 @@ public class GryoReader implements GraphReader {
         return vertex;
     }
 
-    private void readEdges(final Input input, final Function<DetachedEdge, Edge> edgeMaker) {
+    private void readEdges(final Input input, final Function<Attachable<Edge>, Edge> edgeMaker) {
         if (input.readBoolean()) {
             Object next = kryo.readClassAndObject(input);
             while (!next.equals(EdgeTerminator.INSTANCE)) {

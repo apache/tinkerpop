@@ -55,7 +55,7 @@ public interface GraphReader {
      * @param vertexMaker a function to create a vertex where the first argument is the vertex identifier, the
      *                    second argument is vertex label and the last is the list of properties for it
      */
-    public Vertex readVertex(final InputStream inputStream, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException;
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException;
 
     /**
      * Reads a single vertex from an {@link InputStream}.  This method will read vertex properties as well as edges
@@ -70,8 +70,8 @@ public interface GraphReader {
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
     public Vertex readVertex(final InputStream inputStream, final Direction direction,
-                             final Function<DetachedVertex, Vertex> vertexMaker,
-                             final Function<DetachedEdge, Edge> edgeMaker) throws IOException;
+                             final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                             final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException;
 
     /**
      * Reads a set of vertices from an {@link InputStream} which were written by
@@ -87,8 +87,8 @@ public interface GraphReader {
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
     public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final Function<DetachedVertex, Vertex> vertexMaker,
-                                         final Function<DetachedEdge, Edge> edgeMaker) throws IOException;
+                                         final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                                         final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException;
 
     /**
      * Reads a single edge from an {@link InputStream}.
