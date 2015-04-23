@@ -98,7 +98,7 @@ public class StarGraphTest extends AbstractGremlinTest {
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().edges(Direction.OUT).forEachRemaining(edge -> edge.properties().forEachRemaining(property -> TestHelper.validateEquality(property, ((Attachable<Property>) property).attach(vertex, Attachable.Method.GET)))));
 
         // graph host
-        g.V().forEachRemaining(vertex -> TestHelper.validateVertexEquality(vertex, StarGraph.of(vertex).getStarVertex().attach(graph, Attachable.Method.GET)));
+        g.V().forEachRemaining(vertex -> TestHelper.validateEquality(vertex, StarGraph.of(vertex).getStarVertex().attach(graph, Attachable.Method.GET)));
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().properties().forEachRemaining(vertexProperty -> TestHelper.validateEquality(vertexProperty, ((Attachable<VertexProperty>) vertexProperty).attach(graph, Attachable.Method.GET))));
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().properties().forEachRemaining(vertexProperty -> vertexProperty.properties().forEachRemaining(property -> TestHelper.validateEquality(property, ((Attachable<Property>) property).attach(graph, Attachable.Method.GET)))));
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().edges(Direction.OUT).forEachRemaining(edge -> TestHelper.validateEquality(edge, ((Attachable<Edge>) edge).attach(graph, Attachable.Method.GET))));
