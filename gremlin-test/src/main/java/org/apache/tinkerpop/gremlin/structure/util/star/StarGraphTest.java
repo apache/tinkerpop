@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.javatuples.Pair;
 import org.junit.Test;
 
@@ -51,16 +52,6 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class StarGraphTest extends AbstractGremlinTest {
-
-    private static Pair<StarGraph, Integer> serializeDeserialize(final StarGraph starGraph) {
-        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        GryoWriter.build().create().writeObject(outputStream, starGraph);
-        try {
-            return Pair.with(GryoReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()), StarGraph.class), outputStream.size());
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
-    }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
@@ -141,14 +132,29 @@ public class StarGraphTest extends AbstractGremlinTest {
         starGraphSize = pair.getValue1();
         TestHelper.validateEquality(vertex, pair.getValue0().getStarVertex());
         ///
+        // this is a rough approximation of "detached" serialization of all vertices and edges.
+        // now that writeVertex in gryo writes StarGraph that approach can't be used anymore to test
+        // serialization size of detached.
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        GryoWriter.build().create().writeVertex(outputStream, vertex, Direction.BOTH);
+        final GryoWriter writer = GryoWriter.build().create();
+        writer.writeObject(outputStream, DetachedFactory.detach(vertex, true));
+        vertex.edges(Direction.BOTH).forEachRemaining(e -> writer.writeObject(outputStream, DetachedFactory.detach(e, true)));
         final int detachedVertexSize = outputStream.size();
         assertTrue(starGraphSize < detachedVertexSize);
 
         System.out.println("Size of star graph:        " + starGraphSize);
         System.out.println("Size of detached vertex:   " + detachedVertexSize);
         System.out.println("Size reduction:            " + (float) detachedVertexSize / (float) starGraphSize);
+    }
+
+    private static Pair<StarGraph, Integer> serializeDeserialize(final StarGraph starGraph) {
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        GryoWriter.build().create().writeObject(outputStream, starGraph);
+        try {
+            return Pair.with(GryoReader.build().create().readObject(new ByteArrayInputStream(outputStream.toByteArray()), StarGraph.class), outputStream.size());
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
     }
 
 
