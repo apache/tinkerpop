@@ -37,7 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.gremlin.util.tools.BiMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -64,8 +63,6 @@ public final class StarGraph implements Graph, Serializable {
     protected StarVertex starVertex = null;
     protected Map<Object, Map<String, Object>> edgeProperties = null;
     protected Map<Object, Map<String, Object>> metaProperties = null;
-    protected BiMap<Short, String> labelsAndKeys = new BiMap<>();
-    protected short nextLabelsAndKeysId = Short.MIN_VALUE;  // 64k unique labels allowed
 
     private StarGraph() {
     }
@@ -202,15 +199,11 @@ public final class StarGraph implements Graph, Serializable {
     public abstract class StarElement<E extends Element> implements Element, Attachable<E> {
 
         protected final Object id;
-        protected final short labelId;
+        protected final String label;
 
         protected StarElement(final Object id, final String label) {
             this.id = id;
-            if (!labelsAndKeys.containsValue(label.intern())) {
-                this.labelId = nextLabelsAndKeysId++;
-                labelsAndKeys.put(this.labelId, label.intern());
-            } else
-                this.labelId = labelsAndKeys.getKey(label.intern());
+            this.label = label.intern();
         }
 
         @Override
@@ -220,7 +213,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public String label() {
-            return labelsAndKeys.getValue(this.labelId);
+            return this.label;
         }
 
         @Override
@@ -659,23 +652,19 @@ public final class StarGraph implements Graph, Serializable {
 
     public final class StarProperty<V> implements Property<V>, Attachable<Property<V>> {
 
-        private final short keyId;
+        private final String key;
         private final V value;
         private final Element element;
 
         private StarProperty(final String key, final V value, final Element element) {
-            if (!labelsAndKeys.containsValue(key.intern())) {
-                this.keyId = nextLabelsAndKeysId++;
-                labelsAndKeys.put(this.keyId, key.intern());
-            } else
-                this.keyId = labelsAndKeys.getKey(key.intern());
+            this.key = key.intern();
             this.value = value;
             this.element = element;
         }
 
         @Override
         public String key() {
-            return labelsAndKeys.getValue(this.keyId);
+            return this.key();
         }
 
         @Override
