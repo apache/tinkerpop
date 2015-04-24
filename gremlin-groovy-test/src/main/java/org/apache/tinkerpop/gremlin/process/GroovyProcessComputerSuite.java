@@ -29,7 +29,19 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyChooseTe
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyLocalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyRepeatTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.GroovyUnionTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.*;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyAndTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyCoinTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyCyclicPathTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyDedupTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyFilterTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyHasNotTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyHasTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyIsTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyOrTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyRangeTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovySampleTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovySimplePathTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyWhereTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCoalesceTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyFoldTest;
@@ -95,7 +107,6 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyHasNotTest.ComputerTraversals.class,
             GroovyHasTest.ComputerTraversals.class,
             GroovyIsTest.ComputerTraversals.class,
-            GroovyBetweenTest.ComputerTraversals.class,
             GroovyOrTest.ComputerTraversals.class,
             GroovyRangeTest.ComputerTraversals.class,
             // TODO: GroovyRetainTest.ComputerTest.class,

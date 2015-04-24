@@ -527,14 +527,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new IsStep(this.asAdmin(), predicate, value));
     }
 
-    public default GraphTraversal<S, E> between(final String key, final Object lower, final Object upper) {
-        return this.has(key, Compare.inside, Arrays.asList(lower, upper));
-    }
-
-    public default GraphTraversal<S, E> between(final T accessor, final Object lower, final Object upper) {
-        return this.has(accessor.getAccessor(), Compare.inside, Arrays.asList(lower, upper));
-    }
-
     public default GraphTraversal<S, E> coin(final double probability) {
         return this.asAdmin().addStep(new CoinStep<>(this.asAdmin(), probability));
     }
