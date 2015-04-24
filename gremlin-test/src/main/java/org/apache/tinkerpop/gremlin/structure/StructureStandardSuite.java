@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPropertyTest
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexPropertyTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexTest;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceEdgeTest;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceGraphTest;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexPropertyTest;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexTest;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphTest;
@@ -91,6 +92,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             VertexPropertyTest.class,
             VariablesTest.class,
             PropertyTest.class,
+            ReferenceGraphTest.class,
             ReferenceEdgeTest.class,
             ReferenceVertexPropertyTest.class,
             ReferenceVertexTest.class,
