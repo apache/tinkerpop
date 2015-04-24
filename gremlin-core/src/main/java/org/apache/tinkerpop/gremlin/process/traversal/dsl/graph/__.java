@@ -318,24 +318,20 @@ public class __ {
         return __.<A>start().hasNot(hasNotNextTraversal);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String key) {
-        return __.<A>start().has(key);
+    public static <A> GraphTraversal<A, A> has(final String key, final P<?> predicate) {
+        return __.<A>start().has(key, predicate);
     }
 
     public static <A> GraphTraversal<A, A> has(final String key, final Object value) {
         return __.<A>start().has(key, value);
     }
 
-    public static <A> GraphTraversal<A, A> has(final T accessor, final Object value) {
-        return __.<A>start().has(accessor, value);
-    }
-
-    public static <A> GraphTraversal<A, A> has(final String key, final P<?> predicate) {
-        return __.<A>start().has(key, predicate);
-    }
-
     public static <A> GraphTraversal<A, A> has(final T accessor, final P<?> predicate) {
         return __.<A>start().has(accessor, predicate);
+    }
+
+    public static <A> GraphTraversal<A, A> has(final T accessor, final Object value) {
+        return __.<A>start().has(accessor, value);
     }
 
     public static <A> GraphTraversal<A, A> has(final String label, final String key, final Object value) {
@@ -344,6 +340,10 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> has(final String label, final String key, final P<?> predicate) {
         return __.<A>start().has(label, key, predicate);
+    }
+
+    public static <A> GraphTraversal<A, A> has(final String key) {
+        return __.<A>start().has(key);
     }
 
     public static <A> GraphTraversal<A, A> hasNot(final String key) {
