@@ -118,25 +118,25 @@ public class LegacyGraphSONReader implements GraphReader {
 
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream,
-                                         final Function<Attachable<Vertex>, Vertex> vertexMaker,
-                                         final Function<Attachable<Edge>, Edge> edgeMaker,
+                                         final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
+                                         final Function<Attachable<Edge>, Edge> edgeAttachMethod,
                                          final Direction attachEdgesOfThisDirection) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker,
-                             final Function<Attachable<Edge>, Edge> edgeMaker,
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
+                             final Function<Attachable<Edge>, Edge> edgeAttachMethod,
                              final Direction attachEdgesOfThisDirection) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }

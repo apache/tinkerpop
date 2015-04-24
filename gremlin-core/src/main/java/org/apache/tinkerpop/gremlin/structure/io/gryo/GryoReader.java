@@ -63,32 +63,32 @@ public class GryoReader implements GraphReader {
 
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream,
-                                         final Function<Attachable<Vertex>, Vertex> vertexMaker,
-                                         final Function<Attachable<Edge>, Edge> edgeMaker,
+                                         final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
+                                         final Function<Attachable<Edge>, Edge> edgeAttachMethod,
                                          final Direction attachEdgesOfThisDirection) throws IOException {
-        return new VertexInputIterator(new Input(inputStream), vertexMaker, attachEdgesOfThisDirection, edgeMaker);
+        return new VertexInputIterator(new Input(inputStream), vertexAttachMethod, attachEdgesOfThisDirection, edgeAttachMethod);
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
         final Input input = new Input(inputStream);
         readHeader(input);
         final Attachable<Edge> attachable = kryo.readObject(input, DetachedEdge.class);
-        return edgeMaker.apply(attachable);
+        return edgeAttachMethod.apply(attachable);
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException {
-        return readVertex(inputStream, vertexMaker, null, null);
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod) throws IOException {
+        return readVertex(inputStream, vertexAttachMethod, null, null);
     }
 
     @Override
     public Vertex readVertex(final InputStream inputStream,
-                             final Function<Attachable<Vertex>, Vertex> vertexMaker,
-                             final Function<Attachable<Edge>, Edge> edgeMaker,
+                             final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
+                             final Function<Attachable<Edge>, Edge> edgeAttachMethod,
                              final Direction attachEdgesOfThisDirection) throws IOException {
         final Input input = new Input(inputStream);
-        return readVertexInternal(vertexMaker, edgeMaker, attachEdgesOfThisDirection, input);
+        return readVertexInternal(vertexAttachMethod, edgeAttachMethod, attachEdgesOfThisDirection, input);
     }
 
     @Override
