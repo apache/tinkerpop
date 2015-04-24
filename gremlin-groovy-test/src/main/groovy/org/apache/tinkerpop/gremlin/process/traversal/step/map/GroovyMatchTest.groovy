@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.structure.Compare
+import static org.apache.tinkerpop.gremlin.structure.P.*;
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 /**
@@ -164,7 +164,7 @@ public abstract class GroovyMatchTest {
             g.V().match('a',
                     __.as('a').out('created').as('b'),
                     __.as('b').in('created').as('c'))
-                    .where('a', Compare.neq, 'c')
+                    .where('a', neq('c'))
                     .select('a', 'c').by('name')
         }
 

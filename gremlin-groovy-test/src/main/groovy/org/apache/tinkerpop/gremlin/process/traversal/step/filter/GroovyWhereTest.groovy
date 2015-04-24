@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.structure.Compare
+import static org.apache.tinkerpop.gremlin.structure.P.*;
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
@@ -37,12 +37,12 @@ public abstract class GroovyWhereTest {
     public static class StandardTraversals extends WhereTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
-            g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.eq, 'b');
+            g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', eq('b'));
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX() {
-            g.V.has('age').as('a').out.in.has('age').as('b').select().where('a',Compare.neq, 'b');
+            g.V.has('age').as('a').out.in.has('age').as('b').select().where('a',neq('b'));
         }
 
         @Override
@@ -60,12 +60,12 @@ public abstract class GroovyWhereTest {
     public static class ComputerTraversals extends WhereTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
-            ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.eq, 'b')", g);
+            ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', eq('b'))", g);
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX() {
-            ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', Compare.neq, 'b')", g);
+            ComputerTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', neq('b'))", g);
         }
 
         @Override

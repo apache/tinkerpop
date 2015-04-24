@@ -145,7 +145,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX() {
-            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", eq("b"));
+            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", neq("b"));
         }
 
         @Override
