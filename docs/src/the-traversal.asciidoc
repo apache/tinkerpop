@@ -536,10 +536,12 @@ g.V().hasLabel('person').out().has('name',within,['vadas','josh']).
       outE().hasLabel('created')
 g.V().has('age',inside,[20,30]).values('age') <1>
 g.V().has('age',outside,[20,30]).values('age') <2>
+g.V().between('age',20,30).values('age') <3>
 ----
 
 <1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
 <2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
+<3> Same as 1.
 
 It is also possible to filter any arbitrary object based on a anonymous traversal yielding at least one result.
 
