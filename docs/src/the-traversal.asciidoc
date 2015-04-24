@@ -222,7 +222,7 @@ The `and()`-step ensures that all provided traversals yield a result (*filter*).
 ----
 g.V().and(
    outE('knows'),
-   values('age').is(lt,30)).
+   values('age').is(lt(30))).
      values('name')
 ----
 
@@ -532,7 +532,7 @@ It is possible to filter vertices, edges, and vertex properties based on their p
 ----
 g.V().hasLabel('person')
 g.V().hasLabel('person').out().has('name',within('vadas','josh'))
-g.V().hasLabel('person').out().has('name',within,['vadas','josh']).
+g.V().hasLabel('person').out().has('name',within('vadas','josh')).
       outE().hasLabel('created')
 g.V().has('age',inside(20,30)).values('age') <1>
 g.V().has('age',outside(20,30)).values('age') <2>
@@ -994,8 +994,6 @@ g.V().until(has('name','ripple')).
 <2> while-do semantics stating to break if the traverser is at a vertex named "ripple".
 
 IMPORTANT: There are two modulators for `repeat()`: `until()` and `emit()`. If `until()` comes after `repeat()` it is do/while looping. If `until()` comes before `repeat()` it is while/do looping. If `emit()` is placed after `repeat()`, it is evaluated on the traversers leaving the repeat-traversal. If `emit()` is placed before `repeat()`, it is evaluated on the traversers prior to entering the repeat-traversal.
-
-NOTE: The `times(x)` step modulator is an alias for `until{it.loops() >= x}`.
 
 The `repeat()`-step also supports an "emit predicate", where the predicate for an empty argument `emit()` is true (i.e. `emit() == emit{true}`). With `emit()`, the traverser is split in two -- the traverser exits the code block as well as continues back within the code block (assuming `until()` holds true).
 
