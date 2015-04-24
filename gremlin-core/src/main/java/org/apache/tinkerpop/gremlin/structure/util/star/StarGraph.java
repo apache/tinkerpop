@@ -664,7 +664,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public String key() {
-            return this.key();
+            return this.key;
         }
 
         @Override
