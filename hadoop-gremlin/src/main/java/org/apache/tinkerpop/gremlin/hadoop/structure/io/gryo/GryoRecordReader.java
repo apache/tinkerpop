@@ -135,7 +135,7 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
                 final Function<Attachable<Edge>, Edge> edgeMaker = detachedEdge -> detachedEdge.attach(Attachable.Method.create(starGraph));
                 try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
                     this.vertexWritable.set(this.hasEdges ?
-                            this.gryoReader.readVertex(in, vertexMaker, edgeMaker) :
+                            this.gryoReader.readVertex(in, vertexMaker, edgeMaker, Direction.BOTH) :
                             this.gryoReader.readVertex(in, vertexMaker));
                     return true;
                 }

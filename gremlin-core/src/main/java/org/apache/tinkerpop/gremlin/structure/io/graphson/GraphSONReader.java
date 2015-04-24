@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -138,14 +139,15 @@ public class GraphSONReader implements GraphReader {
 
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream,
-                                         final Function<Attachable<Vertex>, Vertex> vertexMaker,
-                                         final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
+                                         final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
+                                         final Function<Attachable<Edge>, Edge> edgeAttachMethod,
+                                         final Direction attachEdgesOfThisDirection) throws IOException {
         final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        return br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), vertexMaker, edgeMaker))).iterator();
+        return br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), vertexAttachMethod, edgeAttachMethod, attachEdgesOfThisDirection))).iterator();
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
         final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
 
         final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
@@ -154,27 +156,28 @@ public class GraphSONReader implements GraphReader {
                 Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
                 Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
 
-        return edgeMaker.apply(edge);
+        return edgeAttachMethod.apply(edge);
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod) throws IOException {
         final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
-        return readVertexData(vertexData, vertexMaker);
+        return readVertexData(vertexData, vertexAttachMethod);
     }
 
     @Override
     public Vertex readVertex(final InputStream inputStream,
-                             final Function<Attachable<Vertex>, Vertex> vertexMaker,
-                             final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
+                             final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
+                             final Function<Attachable<Edge>, Edge> edgeAttachMethod,
+                             final Direction attachEdgesOfThisDirection) throws IOException {
         final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
-        final Vertex v = readVertexData(vertexData, vertexMaker);
+        final Vertex v = readVertexData(vertexData, vertexAttachMethod);
 
-        if (vertexData.containsKey(GraphSONTokens.OUT_E))
-            readVertexEdges(edgeMaker, vertexData, GraphSONTokens.OUT_E);
+        if (edgeAttachMethod != null && vertexData.containsKey(GraphSONTokens.OUT_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.OUT))
+            readVertexEdges(edgeAttachMethod, vertexData, GraphSONTokens.OUT_E);
 
-        if (vertexData.containsKey(GraphSONTokens.IN_E))
-            readVertexEdges(edgeMaker, vertexData, GraphSONTokens.IN_E);
+        if (edgeAttachMethod != null && vertexData.containsKey(GraphSONTokens.IN_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.IN))
+            readVertexEdges(edgeAttachMethod, vertexData, GraphSONTokens.IN_E);
 
         return v;
     }
