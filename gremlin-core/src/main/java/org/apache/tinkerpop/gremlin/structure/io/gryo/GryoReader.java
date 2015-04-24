@@ -74,30 +74,6 @@ public class GryoReader implements GraphReader {
         return new VertexInputIterator(new Input(inputStream), vertexMaker);
     }
 
-    private class VertexInputIterator implements Iterator<Vertex> {
-        private final Input input;
-        private final Function<Attachable<Vertex>, Vertex> vertexMaker;
-
-        public VertexInputIterator(final Input input, final Function<Attachable<Vertex>, Vertex> vertexMaker) {
-            this.input = input;
-            this.vertexMaker = vertexMaker;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return !input.eof();
-        }
-
-        @Override
-        public Vertex next() {
-            try {
-                return readVertexInternal(vertexMaker, input);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-    }
-
     @Override
     public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final Input input = new Input(inputStream);
@@ -158,10 +134,10 @@ public class GryoReader implements GraphReader {
     }
 
     public static class Builder implements ReaderBuilder<GryoReader> {
+
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
         private String vertexIdKey = T.id.getAccessor();
         private String edgeIdKey = T.id.getAccessor();
-
         /**
          * Always use the most recent gryo version by default
          */
@@ -209,6 +185,31 @@ public class GryoReader implements GraphReader {
 
         public GryoReader create() {
             return new GryoReader(batchSize, this.vertexIdKey, this.edgeIdKey, this.gryoMapper);
+        }
+
+    }
+
+    private class VertexInputIterator implements Iterator<Vertex> {
+        private final Input input;
+        private final Function<Attachable<Vertex>, Vertex> vertexMaker;
+
+        public VertexInputIterator(final Input input, final Function<Attachable<Vertex>, Vertex> vertexMaker) {
+            this.input = input;
+            this.vertexMaker = vertexMaker;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return !input.eof();
+        }
+
+        @Override
+        public Vertex next() {
+            try {
+                return readVertexInternal(vertexMaker, input);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 }
