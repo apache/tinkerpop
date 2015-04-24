@@ -16,9 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure;
-
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+package org.apache.tinkerpop.gremlin.structure.util;
 
 /**
  * A marker interface that identifies an object as something that an {@link Attachable} can connect to.

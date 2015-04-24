@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
+import org.apache.tinkerpop.gremlin.structure.util.Host;
+
 import java.util.Iterator;
 
 /**
