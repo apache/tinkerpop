@@ -33,7 +33,6 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Iterator;
 
 /**
@@ -106,7 +105,7 @@ public class GryoWriter implements GraphWriter {
         output.flush();
     }
 
-    public void writeVertexInternal(final Output output, final Vertex v) throws IOException {
+    void writeVertexInternal(final Output output, final Vertex v) throws IOException {
         writeHeader(output);
         kryo.writeObject(output, StarGraph.of(v));
         kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
@@ -114,51 +113,6 @@ public class GryoWriter implements GraphWriter {
 
     void writeHeader(final Output output) throws IOException {
         output.writeBytes(GryoMapper.HEADER);
-    }
-
-    private void writeEdgeToOutput(final Output output, final Edge e) {
-        this.writeElement(output, e, null);
-    }
-
-    private void writeVertexWithNoEdgesToOutput(final Output output, final Vertex v) {
-        writeElement(output, v, null);
-    }
-
-    private void writeVertexToOutput(final Output output, final Vertex v, final Direction direction) {
-        this.writeElement(output, v, direction);
-    }
-
-    private void writeElement(final Output output, final Element e, final Direction direction) {
-        kryo.writeClassAndObject(output, e);
-
-        if (e instanceof Vertex) {
-            output.writeBoolean(direction != null);
-            if (direction != null) {
-                final Vertex v = (Vertex) e;
-                kryo.writeObject(output, direction);
-                if (direction == Direction.BOTH || direction == Direction.OUT)
-                    writeDirectionalEdges(output, Direction.OUT, v.edges(Direction.OUT));
-
-                if (direction == Direction.BOTH || direction == Direction.IN)
-                    writeDirectionalEdges(output, Direction.IN, v.edges(Direction.IN));
-            }
-
-            kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
-        }
-    }
-
-    private void writeDirectionalEdges(final Output output, final Direction d, final Iterator<Edge> vertexEdges) {
-        final boolean hasEdges = vertexEdges.hasNext();
-        kryo.writeObject(output, d);
-        output.writeBoolean(hasEdges);
-
-        while (vertexEdges.hasNext()) {
-            final Edge edgeToWrite = vertexEdges.next();
-            writeEdgeToOutput(output, edgeToWrite);
-        }
-
-        if (hasEdges)
-            kryo.writeClassAndObject(output, EdgeTerminator.INSTANCE);
     }
 
     public static Builder build() {

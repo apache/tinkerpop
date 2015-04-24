@@ -126,7 +126,8 @@ public class GryoReader implements GraphReader {
         final Map<Vertex,Vertex> cache = new HashMap<>();
         IteratorUtils.iterate(new VertexInputIterator(new Input(inputStream), attachable ->
                 cache.put(attachable.get(), attachable.attach(graphToWriteTo, Attachable.Method.CREATE))));
-        cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.OUT).forEachRemaining(e -> ((Attachable) e).attach(kv.getValue(), Attachable.Method.CREATE)));
+        cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.OUT)
+                .forEachRemaining(e -> ((Attachable) e).attach(kv.getValue(), Attachable.Method.CREATE)));
     }
 
     @Override
