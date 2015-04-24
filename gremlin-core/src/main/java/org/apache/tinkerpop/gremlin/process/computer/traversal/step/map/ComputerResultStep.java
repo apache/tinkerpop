@@ -85,7 +85,7 @@ public final class ComputerResultStep<S> extends AbstractStep<S, S> {
 
         final Traverser.Admin<S> traverser = this.traversers.next();
         if (this.attachElements && (traverser.get() instanceof Attachable))
-            traverser.set((S) ((Attachable<Element>) traverser.get()).attach(this.graph, Attachable.Method::get));
+            traverser.set((S) ((Attachable<Element>) traverser.get()).attach(Attachable.Method.get(graph)));
         return traverser;
     }
 

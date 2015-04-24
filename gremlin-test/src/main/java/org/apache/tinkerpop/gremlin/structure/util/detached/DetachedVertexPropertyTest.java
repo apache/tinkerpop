@@ -128,7 +128,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final VertexProperty toDetach = v.property(VertexProperty.Cardinality.single, "test", "this");
         final DetachedVertexProperty<?> detached = DetachedFactory.detach(toDetach, true);
-        final VertexProperty attached = detached.attach(graph, Attachable.Method::get);
+        final VertexProperty attached = detached.attach(Attachable.Method.get(graph));
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedVertexProperty);
@@ -140,7 +140,7 @@ public class DetachedVertexPropertyTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final VertexProperty toDetach = v.property(VertexProperty.Cardinality.single, "test", "this");
         final DetachedVertexProperty<?> detached = DetachedFactory.detach(toDetach, true);
-        final VertexProperty attached = detached.attach(v, Attachable.Method::get);
+        final VertexProperty attached = detached.attach(Attachable.Method.get(v));
 
         assertEquals(toDetach, attached);
         assertEquals(toDetach.getClass(), attached.getClass());

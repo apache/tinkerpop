@@ -50,12 +50,8 @@ public interface Attachable<V> {
      */
     public V get();
 
-    public default V attach(final Vertex hostVertex, final Function<Host, Function<Attachable<V>, V>> method) throws IllegalStateException {
-        return method.apply(hostVertex).apply(this);
-    }
-
-    public default V attach(final Graph hostGraph, final Function<Host, Function<Attachable<V>, V>> method) throws IllegalStateException {
-        return method.apply(hostGraph).apply(this);
+    public default V attach(final Function<Attachable<V>, V> method) throws IllegalStateException {
+        return method.apply(this);
     }
 
     public static class Method {

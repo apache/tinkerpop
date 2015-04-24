@@ -67,16 +67,9 @@ public class ReferencePath extends MutablePath implements Attachable<Path> {
     }
 
     @Override
-    public Path attach(final Graph hostGraph, final Function<Host, Function<Attachable<Path>, Path>> method) {
+    public Path attach(final Function<Attachable<Path>, Path> method) {
         final Path path = MutablePath.make();  // TODO: Use ImmutablePath?
-        this.forEach((object, labels) -> path.extend(object instanceof Attachable ? ((Attachable) object).attach(hostGraph, method) : object, labels.toArray(new String[labels.size()])));
-        return path;
-    }
-
-    @Override
-    public Path attach(final Vertex hostVertex, final Function<Host, Function<Attachable<Path>, Path>> method) {
-        final Path path = MutablePath.make();  // TODO: Use ImmutablePath?
-        this.forEach((object, labels) -> path.extend(object instanceof Attachable ? ((Attachable) object).attach(hostVertex, method) : object, labels.toArray(new String[labels.size()])));
+        this.forEach((object, labels) -> path.extend(object instanceof Attachable ? ((Attachable) object).attach(method) : object, labels.toArray(new String[labels.size()])));
         return path;
     }
 }

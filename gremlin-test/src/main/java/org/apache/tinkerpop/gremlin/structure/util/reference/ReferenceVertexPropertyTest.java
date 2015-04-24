@@ -81,7 +81,7 @@ public class ReferenceVertexPropertyTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final VertexProperty toReference = v.property(VertexProperty.Cardinality.single, "test", "this");
         final ReferenceVertexProperty<?> rvp = ReferenceFactory.detach(toReference);
-        final VertexProperty referenced = rvp.attach(graph, Attachable.Method::get);
+        final VertexProperty referenced = rvp.attach(Attachable.Method.get(graph));
 
         assertEquals(toReference, referenced);
         assertFalse(referenced instanceof ReferenceVertexProperty);
@@ -93,7 +93,7 @@ public class ReferenceVertexPropertyTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex();
         final VertexProperty toReference = v.property(VertexProperty.Cardinality.single, "test", "this");
         final ReferenceVertexProperty<?> rvp = ReferenceFactory.detach(toReference);
-        final VertexProperty referenced = rvp.attach(v, Attachable.Method::get);
+        final VertexProperty referenced = rvp.attach(Attachable.Method.get(v));
 
         assertEquals(toReference, referenced);
         assertEquals(toReference.getClass(), referenced.getClass());

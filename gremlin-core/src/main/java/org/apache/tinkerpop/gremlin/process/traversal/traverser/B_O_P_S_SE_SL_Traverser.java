@@ -66,10 +66,10 @@ public class B_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     }
 
     @Override
-    public T attach(final Vertex hostVertex, final Function<Host, Function<Attachable<T>, T>> method) {
+    public T attach(final Function<Attachable<T>, T> method) {
         // you do not want to attach a path because it will reference graph objects not at the current vertex
         if (this.t instanceof Attachable && !(((Attachable) this.t).get() instanceof Path))
-            this.t = ((Attachable<T>) this.t).attach(hostVertex, method);
+            this.t = ((Attachable<T>) this.t).attach(method);
         return this.t;
     }
 
