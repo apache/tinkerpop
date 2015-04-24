@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.structure.Compare
+import static org.apache.tinkerpop.gremlin.structure.P.*;
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
@@ -72,7 +72,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id) {
-            g.V(v1Id).has('age', Compare.gt, 30)
+            g.V(v1Id).has('age', gt(30))
         }
 
         @Override
@@ -82,7 +82,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X() {
-            g.V.has('age', Compare.gt, 30)
+            g.V.has('age', gt(30))
         }
 
         @Override
@@ -112,7 +112,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id) {
-            g.V(v1Id).outE.has('weight', Compare.inside, [0.0d, 0.6d]).inV
+            g.V(v1Id).outE.has('weight',inside(0.0d, 0.6d)).inV
         }
     }
 
@@ -155,7 +155,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).has('age', Compare.gt, 30)", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).has('age', gt(30))", g);
         }
 
         @Override
@@ -165,7 +165,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X() {
-            ComputerTestHelper.compute("g.V.has('age', Compare.gt, 30)", g);
+            ComputerTestHelper.compute("g.V.has('age', gt(30))", g);
         }
 
         @Override
@@ -195,7 +195,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).outE.has('weight', Compare.inside, [0.0d, 0.6d]).inV", g);
+            ComputerTestHelper.compute("g.V(${v1Id}).outE.has('weight', inside(0.0d, 0.6d)).inV", g);
         }
     }
 }

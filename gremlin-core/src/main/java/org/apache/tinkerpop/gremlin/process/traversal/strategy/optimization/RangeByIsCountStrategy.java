@@ -61,8 +61,8 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy impl
                 final Step next = traversal.getSteps().get(i + 1);
                 if (next instanceof IsStep && !(prev instanceof RangeGlobalStep)) { // if a RangeStep was provided, assume that the user knows what he's doing
                     final IsStep isStep = (IsStep) next;
-                    final Object value = isStep.getValue();
-                    final BiPredicate predicate = isStep.getPredicate();
+                    final Object value = isStep.getPredicate().getValue();
+                    final BiPredicate predicate = isStep.getPredicate().getBiPredicate();
                     if (value instanceof Number) {
                         final long highRangeOffset = INCREASED_OFFSET_SCALAR_PREDICATES.contains(predicate) ? 1L : 0L;
                         final long highRange = ((Number) value).longValue() + highRangeOffset;

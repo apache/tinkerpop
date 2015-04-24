@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrat
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Contains;
+import org.apache.tinkerpop.gremlin.structure.P;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -154,7 +155,7 @@ public class RangeByIsCountStrategyTest {
 
         public void doTest(final BiPredicate predicate, final Object value, final long expectedHighRange) {
             final AtomicInteger counter = new AtomicInteger(0);
-            final Traversal traversal = __.out().count().is(predicate, value);
+            final Traversal traversal = __.out().count().is(P.test(predicate,value));
             applyRangeByIsCountStrategy(traversal);
 
             final List<RangeGlobalStep> steps = TraversalHelper.getStepsOfClass(RangeGlobalStep.class, traversal.asAdmin());

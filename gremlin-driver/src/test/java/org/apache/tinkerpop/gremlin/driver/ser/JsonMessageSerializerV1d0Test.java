@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -264,7 +263,7 @@ public class JsonMessageSerializerV1d0Test {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
-        map.put(g.V().has("name", Compare.eq, "marko").next(), 1000);
+        map.put(g.V().has("name", "marko").next(), 1000);
 
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(map).create());
         final JSONObject json = new JSONObject(results);

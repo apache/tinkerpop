@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.structure.Compare
+import static org.apache.tinkerpop.gremlin.structure.P.*;
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 /**
@@ -40,12 +40,12 @@ public abstract class GroovyIsTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXlte_30X() {
-            return g.V().values('age').is(Compare.lte, 30);
+            return g.V().values('age').is(lte(30));
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXgte_29X_isXlt_34X() {
-            return g.V().values('age').is(Compare.gte, 29).is(Compare.lt, 34);
+            return g.V().values('age').is(gte(29)).is(lt(34));
         }
 
         @Override
@@ -55,7 +55,7 @@ public abstract class GroovyIsTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
-            return g.V().has(__.in('created').count().is(Compare.gte, 2l)).values('name');
+            return g.V().has(__.in('created').count().is(gte(2l))).values('name');
         }
     }
 
@@ -69,12 +69,12 @@ public abstract class GroovyIsTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXlte_30X() {
-            ComputerTestHelper.compute("g.V().values('age').is(Compare.lte, 30)", g)
+            ComputerTestHelper.compute("g.V().values('age').is(lte(30))", g)
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXgte_29X_isXlt_34X() {
-            ComputerTestHelper.compute("g.V().values('age').is(Compare.gte, 29).is(Compare.lt, 34)", g)
+            ComputerTestHelper.compute("g.V().values('age').is(gte(29)).is(lt(34))", g)
         }
 
         @Override
@@ -84,7 +84,7 @@ public abstract class GroovyIsTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
-            ComputerTestHelper.compute("g.V().has(__.in('created').count().is(Compare.gte, 2l)).values('name')", g)
+            ComputerTestHelper.compute("g.V().has(__.in('created').count().is(gte(2l))).values('name')", g)
         }
     }
 }

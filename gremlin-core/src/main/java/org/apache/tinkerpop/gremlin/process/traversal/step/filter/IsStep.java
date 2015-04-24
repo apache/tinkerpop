@@ -20,35 +20,33 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.P;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.function.BiPredicate;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public final class IsStep<S> extends FilterStep<S> {
 
-    private final Object value;
-    private final BiPredicate<S, Object> biPredicate;
+    private final P<S> predicate;
 
-    public IsStep(final Traversal.Admin traversal, final BiPredicate<S, Object> biPredicate, final Object value) {
+    public IsStep(final Traversal.Admin traversal, final P<S> predicate) {
         super(traversal);
-        this.value = value;
-        this.biPredicate = biPredicate;
+        this.predicate = predicate;
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        return this.biPredicate.test(traverser.get(), this.value);
+        return this.predicate.test(traverser.get());
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.biPredicate, this.value);
+        return TraversalHelper.makeStepString(this, this.predicate);
     }
 
     @Override
@@ -56,11 +54,7 @@ public final class IsStep<S> extends FilterStep<S> {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
-    public Object getValue() {
-        return value;
-    }
-
-    public BiPredicate<S, Object> getPredicate() {
-        return biPredicate;
+    public P<S> getPredicate() {
+        return this.predicate;
     }
 }

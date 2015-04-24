@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Compare;
+import org.apache.tinkerpop.gremlin.structure.P;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -104,12 +105,12 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXlte_30X() {
-            return g.V().<Integer>values("age").is(Compare.lte, 30);
+            return g.V().<Integer>values("age").is(P.lte(30));
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXgte_29X_isXlt_34X() {
-            return g.V().<Integer>values("age").is(Compare.gte, 29).is(Compare.lt, 34);
+            return g.V().<Integer>values("age").is(P.gte(29)).is(P.lt(34));
         }
 
         @Override
@@ -119,7 +120,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
-            return g.V().has(in("created").count().is(Compare.gte, 2l)).values("name");
+            return g.V().has(in("created").count().is(P.gte(2l))).values("name");
         }
     }
 }

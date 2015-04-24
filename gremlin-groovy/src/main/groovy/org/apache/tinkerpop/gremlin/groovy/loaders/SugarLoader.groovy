@@ -51,8 +51,6 @@ class SugarLoader {
         GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
             if (name.toLowerCase().equals(FROM))
                 return ((GraphTraversal.Admin) args[0]).addStep(((GraphTraversal.Admin) delegate).getSteps()[0]);
-            else if (Compare.hasCompare(name))
-                return ((GraphTraversal) delegate).is(Compare.valueOf(name), *args);
             else
                 return ((GraphTraversal) delegate).values(name);
         }

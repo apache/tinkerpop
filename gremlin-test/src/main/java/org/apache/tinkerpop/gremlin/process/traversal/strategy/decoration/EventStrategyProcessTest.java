@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
-import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -60,7 +59,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource gts = create(eventStrategy);
         gts.V().addV("any", "thing").next();
 
-        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", Compare.eq, "thing"))));
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing"))));
         assertEquals(1, listener1.addVertexEventRecorded());
         assertEquals(1, listener2.addVertexEventRecorded());
     }
@@ -78,7 +77,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource gts = create(eventStrategy);
         gts.addV("any", "thing").next();
 
-        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", Compare.eq, "thing"))));
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing"))));
         assertEquals(1, listener1.addVertexEventRecorded());
         assertEquals(1, listener2.addVertexEventRecorded());
     }
@@ -145,7 +144,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource gts = create(eventStrategy);
         gts.V().addV("any", "thing").property(VertexProperty.Cardinality.single, "this", "thing").next();
 
-        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("this", Compare.eq, "thing"))));
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("this", "thing"))));
 
         assertEquals(1, listener1.addVertexEventRecorded());
         assertEquals(1, listener2.addVertexEventRecorded());
@@ -168,7 +167,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final Vertex vAny = gts.V().addV("any", "thing").next();
         gts.V(vAny).property(VertexProperty.Cardinality.single, "any", "thing else").next();
 
-        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", Compare.eq, "thing else"))));
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing else"))));
 
         assertEquals(1, listener1.addVertexEventRecorded());
         assertEquals(1, listener2.addVertexEventRecorded());
@@ -192,7 +191,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final Vertex vAny = gts.V().addV("any", "thing").next();
         gts.V(vAny).properties("any").property("is", "bad").next();
 
-        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", Compare.eq, "thing"))));
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing"))));
 
         assertEquals(1, listener1.addVertexEventRecorded());
         assertEquals(1, listener2.addVertexEventRecorded());
@@ -351,7 +350,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         gts.V(vAny).properties("any").property("is", "bad").next();
         gts.V(vAny).properties("any").properties("is").drop().iterate();
 
-        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", Compare.eq, "thing"))));
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing"))));
 
         assertEquals(1, listener1.addVertexEventRecorded());
         assertEquals(1, listener2.addVertexEventRecorded());

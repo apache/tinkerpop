@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.structure.Compare
+import static org.apache.tinkerpop.gremlin.structure.P.*;
 import org.apache.tinkerpop.gremlin.structure.Direction
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -158,7 +158,7 @@ public abstract class GroovyVertexTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX4X_bothE_hasXweight_lt_1X_otherV(final Object v4Id) {
-            g.V(v4Id).bothE.has('weight', Compare.lt, 1.0d).otherV
+            g.V(v4Id).bothE.has('weight', lt(1.0d)).otherV
         }
 
         @Override
@@ -292,7 +292,7 @@ public abstract class GroovyVertexTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX4X_bothE_hasXweight_lt_1X_otherV(final Object v4Id) {
-            ComputerTestHelper.compute("g.V(${v4Id}).bothE.has('weight', Compare.lt, 1.0d).otherV", g);
+            ComputerTestHelper.compute("g.V(${v4Id}).bothE.has('weight', lt(1.0d)).otherV", g);
         }
 
         @Override

@@ -18,17 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
+import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE
-import static org.apache.tinkerpop.gremlin.structure.Compare.gt
-import static org.apache.tinkerpop.gremlin.structure.Compare.gte
+import static org.apache.tinkerpop.gremlin.structure.P.gt
+import static org.apache.tinkerpop.gremlin.structure.P.gte;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,12 +40,12 @@ public abstract class GroovyOrTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
-            g.V.or(has('age', gt, 27), outE().count.gte(2l)).name
+            g.V.or(has('age', gt(27)), outE().count.is(gte(2l))).name
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name() {
-            g.V.or(outE('knows'), has(T.label, 'software') | has('age', gte, 35)).name
+            g.V.or(outE('knows'), has(T.label, 'software') | has('age', gte(35))).name
         }
     }
 
@@ -54,12 +54,12 @@ public abstract class GroovyOrTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
-            ComputerTestHelper.compute("g.V.or(has('age', gt, 27), outE().count.gte(2l)).name", g)
+            ComputerTestHelper.compute("g.V.or(has('age', gt(27)), outE().count.is(gte(2l))).name", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name() {
-            ComputerTestHelper.compute("g.V.or(outE('knows'), has(T.label, 'software') | has('age', gte, 35)).name", g)
+            ComputerTestHelper.compute("g.V.or(outE('knows'), has(T.label, 'software') | has('age', gte(35))).name", g)
         }
     }
 }

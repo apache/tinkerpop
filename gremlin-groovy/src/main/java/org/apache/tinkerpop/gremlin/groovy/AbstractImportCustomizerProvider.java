@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.Pee
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.structure.P;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -98,11 +99,13 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         staticImports.add(__.class.getCanonicalName() + DOT_STAR);
         staticImports.add(TraversalOptionParent.Pick.class.getCanonicalName() + DOT_STAR);
         staticImports.add(GraphTraversalSource.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(Contains.class.getCanonicalName() + DOT_STAR);
+        //staticImports.add(Compare.class.getCanonicalName() + DOT_STAR);
+        //staticImports.add(Contains.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(P.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Order.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Operator.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Scope.class.getCanonicalName() + DOT_STAR);
+
 
         // utils
         imports.add(Gremlin.class.getPackage().getName() + DOT_STAR);

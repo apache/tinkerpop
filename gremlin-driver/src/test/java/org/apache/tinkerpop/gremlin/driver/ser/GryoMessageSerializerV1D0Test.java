@@ -229,7 +229,7 @@ public class GryoMessageSerializerV1D0Test {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
-        map.put(g.V().has("name", Compare.eq, "marko").next(), 1000);
+        map.put(g.V().has("name", "marko").next(), 1000);
 
         final ResponseMessage response = convertBinary(map);
         assertCommon(response);

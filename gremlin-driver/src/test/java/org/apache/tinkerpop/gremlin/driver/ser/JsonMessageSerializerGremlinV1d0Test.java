@@ -206,7 +206,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
-        map.put(g.V().has("name", Compare.eq, "marko").next(), 1000);
+        map.put(g.V().has("name", "marko").next(), 1000);
 
         final ResponseMessage response = convert(map);
         assertCommon(response);

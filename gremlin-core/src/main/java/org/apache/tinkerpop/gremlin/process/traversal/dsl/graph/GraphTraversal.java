@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
@@ -117,36 +116,33 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementFunctionC
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementValueComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.NoOpBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.PathIdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
-import org.apache.tinkerpop.gremlin.structure.Compare;
-import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Order;
+import org.apache.tinkerpop.gremlin.structure.P;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -471,60 +467,60 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new HasTraversalStep<>(this.asAdmin(), (Traversal.Admin<E, ?>) hasNotNextTraversal, true));
     }
 
+    public default GraphTraversal<S, E> has(final String key, final P<?> predicate) {
+        return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(key, predicate.getBiPredicate(), predicate.getValue())));
+    }
+
     public default GraphTraversal<S, E> has(final String key) {
-        return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(key, Contains.within)));
+        return this.has(key, P.within());
     }
 
     public default GraphTraversal<S, E> has(final String key, final Object value) {
-        return this.has(key, Compare.eq, value);
+        return this.has(key, P.eq(value));
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
         return this.has(accessor.getAccessor(), value);
     }
 
-    public default GraphTraversal<S, E> has(final String key, final BiPredicate predicate, final Object value) {
-        return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(key, predicate, value)));
-    }
-
-    public default GraphTraversal<S, E> has(final T accessor, final BiPredicate predicate, final Object value) {
-        return this.has(accessor.getAccessor(), predicate, value);
+    public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {
+        return this.has(accessor.getAccessor(), predicate);
     }
 
     public default GraphTraversal<S, E> has(final String label, final String key, final Object value) {
-        return this.has(label, key, Compare.eq, value);
+        return this.has(label, key, P.eq(value));
     }
 
-    public default GraphTraversal<S, E> has(final String label, final String key, final BiPredicate predicate, final Object value) {
-        return this.has(T.label, label).has(key, predicate, value);
+    public default GraphTraversal<S, E> has(final String label, final String key, final P<?> predicate) {
+        return this.has(T.label, label).has(key, predicate);
     }
 
     public default GraphTraversal<S, E> hasNot(final String key) {
-        return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(key, Contains.without)));
+        return this.has(key, P.without());
     }
 
     public default GraphTraversal<S, E> hasLabel(final String... labels) {
-        return labels.length == 1 ? this.has(T.label, labels[0]) : this.has(T.label, Contains.within, Arrays.asList(labels));
+        return labels.length == 1 ? this.has(T.label, labels[0]) : this.has(T.label.getAccessor(), P.within(labels));
     }
 
     public default GraphTraversal<S, E> hasId(final Object... ids) {
-        return ids.length == 1 ? this.has(T.id, ids[0]) : this.has(T.id, Contains.within, Arrays.asList(ids));
+        return ids.length == 1 ? this.has(T.id, ids[0]) : this.has(T.id.getAccessor(), P.within(ids));
     }
 
     public default GraphTraversal<S, E> hasKey(final String... keys) {
-        return keys.length == 1 ? this.has(T.key, keys[0]) : this.has(T.key, Contains.within, Arrays.asList(keys));
+        return keys.length == 1 ? this.has(T.key, keys[0]) : this.has(T.key.getAccessor(), P.within(keys));
     }
 
     public default GraphTraversal<S, E> hasValue(final Object... values) {
-        return values.length == 1 ? this.has(T.value, values[0]) : this.has(T.value, Contains.within, Arrays.asList(values));
+        return values.length == 1 ? this.has(T.value, values[0]) : this.has(T.value.getAccessor(), P.within(values));
+    }
+
+    public default GraphTraversal<S, E> is(final P<E> predicate) {
+        return this.asAdmin().addStep(new IsStep<>(this.asAdmin(), predicate));
     }
 
     public default GraphTraversal<S, E> is(final Object value) {
-        return this.is(Compare.eq, value);
-    }
-
-    public default GraphTraversal<S, E> is(final BiPredicate predicate, final Object value) {
-        return this.asAdmin().addStep(new IsStep(this.asAdmin(), predicate, value));
+        return this.is((P<E>)P.eq(value));
     }
 
     public default GraphTraversal<S, E> coin(final double probability) {

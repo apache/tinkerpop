@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.structure.Compare;
+import org.apache.tinkerpop.gremlin.structure.P;
 import org.junit.Test;
 
 import java.util.Iterator;
@@ -36,7 +36,7 @@ public class ConjunctionStepTest {
 
     @Test
     public void shouldGetHasContainers() {
-        final GraphTraversal.Admin<?, ?> traversal = and(has("name"), has("age", Compare.gt, 30).or(has("lang", "java"))).asAdmin();
+        final GraphTraversal.Admin<?, ?> traversal = and(has("name"), has("age", P.gt(30)).or(has("lang", "java"))).asAdmin();
         assertTrue(((ConjunctionStep) traversal.getStartStep()).isConjunctionHasTree());
         final ConjunctionStep.ConjunctionTree conjunctionTree = (((ConjunctionStep<?>) traversal.getStartStep()).getConjunctionHasTree());
         final Iterator<ConjunctionStep.ConjunctionTree.Entry> iterator = conjunctionTree.iterator();
@@ -63,7 +63,7 @@ public class ConjunctionStepTest {
 
     @Test
     public void shouldNotGetHasContainers() {
-        final GraphTraversal.Admin<?, ?> traversal = and(has("name"), has("age", Compare.gt, 30).or(has("lang", "java"), out().has("name","josh"))).asAdmin();
+        final GraphTraversal.Admin<?, ?> traversal = and(has("name"), has("age", P.gt(30)).or(has("lang", "java"), out().has("name", "josh"))).asAdmin();
         assertFalse(((ConjunctionStep) traversal.getStartStep()).isConjunctionHasTree());
     }
 }

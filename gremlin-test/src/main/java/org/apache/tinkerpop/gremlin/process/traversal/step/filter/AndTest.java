@@ -20,20 +20,19 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
-import org.apache.tinkerpop.gremlin.structure.Compare;
+import org.apache.tinkerpop.gremlin.structure.P;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.util.Arrays;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.apache.tinkerpop.gremlin.structure.Compare.gt;
-import static org.apache.tinkerpop.gremlin.structure.Compare.gte;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 
 
 /**
@@ -68,12 +67,12 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name() {
-            return g.V().and(has("age", gt, 27), outE().count().is(gte, 2l)).values("name");
+            return g.V().and(has("age", P.gt(27)), outE().count().is(P.gte(2l))).values("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name() {
-            return g.V().and(outE(), has(T.label, "person").and().has("age", Compare.gte, 32)).values("name");
+            return g.V().and(outE(), has(T.label, "person").and().has("age", P.gte(32))).values("name");
         }
     }
 }

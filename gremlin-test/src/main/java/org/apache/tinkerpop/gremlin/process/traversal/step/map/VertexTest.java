@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.P;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -620,7 +621,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX4X_bothE_hasXweight_lt_1X_otherV(Object v4Id) {
-            return g.V(v4Id).bothE().has("weight", Compare.lt, 1d).otherV();
+            return g.V(v4Id).bothE().has("weight", P.lt(1d)).otherV();
         }
 
         @Override

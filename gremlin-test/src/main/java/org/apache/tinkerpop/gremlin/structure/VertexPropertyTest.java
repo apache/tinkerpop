@@ -454,7 +454,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(0, IteratorUtils.count(marko.properties("blah")));
             });
 
-            g.V().properties("name").has(T.value, (a, b) -> ((Class) b).isAssignableFrom(a.getClass()), Integer.class).forEachRemaining(Property::remove);
+            g.V().properties("name").has(T.value, P.test((a, b) -> ((Class) b).isAssignableFrom(a.getClass()), Integer.class)).forEachRemaining(Property::remove);
             tryCommit(graph, graph -> {
                 assertVertexEdgeCounts(1, 0);
                 assertEquals(2, IteratorUtils.count(marko.properties("name")));

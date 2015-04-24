@@ -1266,7 +1266,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteVerticesNoEdgesToGryoManual() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeVertices(os, g.V().has("age", Compare.gt, 30));
+            writer.writeVertices(os, g.V().has("age", P.gt(30)));
 
             final AtomicInteger called = new AtomicInteger(0);
             final GryoReader reader = graph.io(gryo).reader().create();
@@ -1297,7 +1297,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteVerticesNoEdgesToGryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeVertices(os, g.V().has("age", Compare.gt, 30));
+            writer.writeVertices(os, g.V().has("age", P.gt(30)));
 
             final AtomicInteger called = new AtomicInteger(0);
             final GryoReader reader = graph.io(gryo).reader().create();
@@ -1324,7 +1324,7 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteVerticesNoEdgesToGraphSONManual() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeVertices(os, g.V().has("age", Compare.gt, 30));
+            writer.writeVertices(os, g.V().has("age", P.gt(30)));
 
             final AtomicInteger called = new AtomicInteger(0);
             final GraphSONReader reader = graph.io(graphson).reader().create();
