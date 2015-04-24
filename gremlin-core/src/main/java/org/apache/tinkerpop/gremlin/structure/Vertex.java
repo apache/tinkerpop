@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
+import org.apache.tinkerpop.gremlin.structure.util.Host;
+
 import java.util.Iterator;
 
 /**
@@ -33,7 +35,7 @@ import java.util.Iterator;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface Vertex extends Element {
+public interface Vertex extends Element, Host {
 
     /**
      * The default label to use for a vertex.

@@ -18,11 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.io.Serializable;
+import java.util.function.Function;
 
 /**
  * A {@code Traverser} represents the current state of an object flowing through a {@link Traversal}.
@@ -246,23 +245,11 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
         /**
          * Regenerate the detached traverser given its location at a particular vertex.
          *
-         * @param hostVertex The vertex that is hosting the traverser
+         * @param method The method by which to attach a {@code Traverser} to an vertex.
          * @return The inflated traverser
          */
         @Override
-        public T attach(final Vertex hostVertex, final Method method);
-
-        /**
-         * Traversers can not attach to graphs and thus, an {@link UnsupportedOperationException} is thrown.
-         *
-         * @param graph the graph to attach the traverser to, which it can't.
-         * @return nothing as an exception is thrown
-         * @throws UnsupportedOperationException is always thrown as it makes no sense to attach a traverser to a graph
-         */
-        @Override
-        public default T attach(final Graph graph, final Method method) throws UnsupportedOperationException {
-            throw new UnsupportedOperationException("A traverser can only exist at the vertices of the graph, not the graph itself");
-        }
+        public T attach(final Function<Attachable<T>, T> method);
 
         /**
          * Set the sideEffects of the {@link Traversal}. Given that traversers can move between machines,

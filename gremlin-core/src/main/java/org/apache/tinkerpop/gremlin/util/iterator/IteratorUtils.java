@@ -61,6 +61,12 @@ public final class IteratorUtils {
         return collection;
     }
 
+    public static void iterate(final Iterator iterator) {
+        while(iterator.hasNext()) {
+            iterator.next();
+        }
+    }
+
     public static final long count(final Iterator iterator) {
         long ix = 0;
         for (; iterator.hasNext(); ++ix) iterator.next();

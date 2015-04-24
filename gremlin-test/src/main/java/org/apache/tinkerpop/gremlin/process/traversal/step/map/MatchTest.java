@@ -295,7 +295,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(GRATEFUL)
     public void g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX() throws Exception {
-        Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX();
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX();
         printTraversalForm(traversal);
         assertResults(vertexToStr, traversal,
                 new Bindings<Vertex>().put("a", convertToVertex(graph, "Garcia")).put("b", convertToVertex(graph, "CREAM PUFF WAR")),
@@ -305,7 +305,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(GRATEFUL)
     public void g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX() throws Exception {
-        Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX();
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX();
         printTraversalForm(traversal);
         assertResults(vertexToStr, traversal,
                 new Bindings<Vertex>()
@@ -319,7 +319,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_c_nameX() throws Exception {
-        Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_c_nameX();
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_c_nameX();
         assertResults(Function.identity(), traversal,
                 new Bindings<String>().put("a", "marko").put("c", "josh"),
                 new Bindings<String>().put("a", "marko").put("c", "peter"),

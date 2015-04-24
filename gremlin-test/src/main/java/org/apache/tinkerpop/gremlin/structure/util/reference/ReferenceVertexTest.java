@@ -103,7 +103,7 @@ public class ReferenceVertexTest extends AbstractGremlinTest {
     public void shouldAttachToGraph() {
         final Vertex v = g.V(convertToVertexId("josh")).next();
         final ReferenceVertex referenceVertex = ReferenceFactory.detach(v);
-        final Vertex attachedV = referenceVertex.attach(graph, Attachable.Method.GET);
+        final Vertex attachedV = referenceVertex.attach(Attachable.Method.get(graph));
 
         assertEquals(v, attachedV);
         assertFalse(attachedV instanceof ReferenceVertex);
@@ -114,7 +114,7 @@ public class ReferenceVertexTest extends AbstractGremlinTest {
     public void shouldAttachToVertex() {
         final Vertex v = g.V(convertToVertexId("josh")).next();
         final ReferenceVertex referenceVertex = ReferenceFactory.detach(v);
-        final Vertex attachedV = referenceVertex.attach(v, Attachable.Method.GET);
+        final Vertex attachedV = referenceVertex.attach(Attachable.Method.get(v));
 
         assertEquals(v, attachedV);
         assertFalse(attachedV instanceof ReferenceVertex);

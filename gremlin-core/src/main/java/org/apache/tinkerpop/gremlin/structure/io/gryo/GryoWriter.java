@@ -25,12 +25,14 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphSerializer;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.Registration;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Iterator;
 
 /**
@@ -51,46 +53,48 @@ public class GryoWriter implements GraphWriter {
 
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
+        writeVertices(outputStream, g.vertices(), Direction.BOTH);
+    }
+
+    public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
+        // todo: can we wrap this up in a function somehow - withRegistration(r, stream... -> ....)
+        final Registration oldRegistration = kryo.getRegistration(StarGraph.class);
+        kryo.register(StarGraph.class, StarGraphSerializer.with(direction), oldRegistration.getId());
         final Output output = new Output(outputStream);
-        writeHeader(output);
-
-        final boolean supportsGraphVariables = g.features().graph().variables().supportsVariables();
-        output.writeBoolean(supportsGraphVariables);
-        if (supportsGraphVariables)
-            kryo.writeObject(output, new HashMap<>(g.variables().asMap()));
-
-        final Iterator<Vertex> vertices = g.vertices();
-        final boolean hasSomeVertices = vertices.hasNext();
-        output.writeBoolean(hasSomeVertices);
-        while (vertices.hasNext()) {
-            final Vertex v = vertices.next();
-            writeVertexToOutput(output, v, Direction.OUT);
+        while (vertexIterator.hasNext()) {
+            writeVertexInternal(output, vertexIterator.next());
         }
-
         output.flush();
+        kryo.register(oldRegistration);
+    }
+
+    public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
+        writeVertices(outputStream, vertexIterator, null);
     }
 
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
+        // todo: figure out how to not keep creating Registration objects?
+        final Registration oldRegistration = kryo.getRegistration(StarGraph.class);
+        kryo.register(StarGraph.class, StarGraphSerializer.with(direction), oldRegistration.getId());
+
         final Output output = new Output(outputStream);
-        writeHeader(output);
-        writeVertexToOutput(output, v, direction);
+        writeVertexInternal(output, v);
         output.flush();
+
+        kryo.register(oldRegistration);
     }
 
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
-        final Output output = new Output(outputStream);
-        writeHeader(output);
-        writeVertexWithNoEdgesToOutput(output, v);
-        output.flush();
+        writeVertex(outputStream, v, null);
     }
 
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
         writeHeader(output);
-        kryo.writeClassAndObject(output, DetachedFactory.detach(e, true));
+        kryo.writeObject(output, DetachedFactory.detach(e, true));
         output.flush();
     }
 
@@ -101,53 +105,14 @@ public class GryoWriter implements GraphWriter {
         output.flush();
     }
 
+    void writeVertexInternal(final Output output, final Vertex v) throws IOException {
+        writeHeader(output);
+        kryo.writeObject(output, StarGraph.of(v));
+        kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
+    }
+
     void writeHeader(final Output output) throws IOException {
         output.writeBytes(GryoMapper.HEADER);
-    }
-
-    private void writeEdgeToOutput(final Output output, final Edge e) {
-        this.writeElement(output, e, null);
-    }
-
-    private void writeVertexWithNoEdgesToOutput(final Output output, final Vertex v) {
-        writeElement(output, v, null);
-    }
-
-    private void writeVertexToOutput(final Output output, final Vertex v, final Direction direction) {
-        this.writeElement(output, v, direction);
-    }
-
-    private void writeElement(final Output output, final Element e, final Direction direction) {
-        kryo.writeClassAndObject(output, e);
-
-        if (e instanceof Vertex) {
-            output.writeBoolean(direction != null);
-            if (direction != null) {
-                final Vertex v = (Vertex) e;
-                kryo.writeObject(output, direction);
-                if (direction == Direction.BOTH || direction == Direction.OUT)
-                    writeDirectionalEdges(output, Direction.OUT, v.edges(Direction.OUT));
-
-                if (direction == Direction.BOTH || direction == Direction.IN)
-                    writeDirectionalEdges(output, Direction.IN, v.edges(Direction.IN));
-            }
-
-            kryo.writeClassAndObject(output, VertexTerminator.INSTANCE);
-        }
-    }
-
-    private void writeDirectionalEdges(final Output output, final Direction d, final Iterator<Edge> vertexEdges) {
-        final boolean hasEdges = vertexEdges.hasNext();
-        kryo.writeObject(output, d);
-        output.writeBoolean(hasEdges);
-
-        while (vertexEdges.hasNext()) {
-            final Edge edgeToWrite = vertexEdges.next();
-            writeEdgeToOutput(output, edgeToWrite);
-        }
-
-        if (hasEdges)
-            kryo.writeClassAndObject(output, EdgeTerminator.INSTANCE);
     }
 
     public static Builder build() {

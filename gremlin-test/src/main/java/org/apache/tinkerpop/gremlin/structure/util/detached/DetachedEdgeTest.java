@@ -126,7 +126,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
     public void shouldAttachToGraph() {
         final Edge toDetach = g.E(convertToEdgeId("josh", "created", "lop")).next();
         final DetachedEdge detachedEdge = DetachedFactory.detach(toDetach, true);
-        final Edge attached = detachedEdge.attach(graph, Attachable.Method.GET);
+        final Edge attached = detachedEdge.attach(Attachable.Method.get(graph));
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedEdge);
@@ -138,7 +138,7 @@ public class DetachedEdgeTest extends AbstractGremlinTest {
         final Edge toDetach = g.E(convertToEdgeId("josh", "created", "lop")).next();
         final Vertex outV = toDetach.vertices(Direction.OUT).next();
         final DetachedEdge detachedEdge = DetachedFactory.detach(toDetach, true);
-        final Edge attached = detachedEdge.attach(outV, Attachable.Method.GET);
+        final Edge attached = detachedEdge.attach(Attachable.Method.get(outV));
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedEdge);

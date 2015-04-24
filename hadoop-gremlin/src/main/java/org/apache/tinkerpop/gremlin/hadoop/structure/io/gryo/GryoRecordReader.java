@@ -131,11 +131,11 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
 
             if (terminatorLocation >= TERMINATOR.length) {
                 final StarGraph starGraph = StarGraph.open();
-                final Function<DetachedVertex, Vertex> vertexMaker = detachedVertex -> detachedVertex.attach(starGraph, Attachable.Method.CREATE);
-                final Function<DetachedEdge, Edge> edgeMaker = detachedEdge -> detachedEdge.attach(starGraph, Attachable.Method.CREATE);
+                final Function<Attachable<Vertex>, Vertex> vertexMaker = detachedVertex -> detachedVertex.attach(Attachable.Method.create(starGraph));
+                final Function<Attachable<Edge>, Edge> edgeMaker = detachedEdge -> detachedEdge.attach(Attachable.Method.create(starGraph));
                 try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
                     this.vertexWritable.set(this.hasEdges ?
-                            this.gryoReader.readVertex(in, Direction.BOTH, vertexMaker, edgeMaker) :
+                            this.gryoReader.readVertex(in, vertexMaker, edgeMaker) :
                             this.gryoReader.readVertex(in, vertexMaker));
                     return true;
                 }

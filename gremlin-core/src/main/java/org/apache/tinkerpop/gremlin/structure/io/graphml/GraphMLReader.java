@@ -19,15 +19,13 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphml;
 
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -73,30 +71,30 @@ public class GraphMLReader implements GraphReader {
     }
 
     @Override
-    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final Function<DetachedVertex, Vertex> vertexMaker,
-                                         final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Iterator<Vertex> readVertices(final InputStream inputStream,
+                                         final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                                         final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction, final Function<DetachedVertex, Vertex> vertexMaker,
-                             final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                             final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
-    public <C> C readObject(InputStream inputStream, Class<? extends C> clazz) throws IOException {
+    public <C> C readObject(final InputStream inputStream, final Class<? extends C> clazz) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 

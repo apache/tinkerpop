@@ -52,6 +52,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphSerializer;
+import org.apache.tinkerpop.gremlin.util.tools.BiMap;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
@@ -173,7 +174,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedProperty.class, null, 18));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedVertex.class, null, 19));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DetachedPath.class, null, 60));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(EdgeTerminator.class, null, 14));
+            // skip 14
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(EnumSet.class, null, 46));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashMap.class, null, 11));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashMap.Entry.class, null, 16));
@@ -198,15 +199,15 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferenceVertex.class, null, 84));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferencePath.class, null, 85));
 
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StarGraph.class, kryo -> StarGraphSerializer.instance(), 86)); // ***LAST ID**
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StarGraph.class, kryo -> StarGraphSerializer.with(Direction.BOTH), 86));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(BiMap.class, null, 87));// ***LAST ID**
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Edge.class, kryo -> new GraphSerializer.EdgeSerializer(), 65));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Vertex.class, kryo -> new GraphSerializer.VertexSerializer(), 66));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Property.class, kryo -> new GraphSerializer.PropertySerializer(), 67));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexProperty.class, kryo -> new GraphSerializer.VertexPropertySerializer(), 68));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Path.class, kryo -> new GraphSerializer.PathSerializer(), 59));
-            // HACK!
-            //add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Traverser.Admin.class, gryo -> new GraphSerializer.TraverserSerializer(), 55));
+            // skip 55
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_Traverser.class, null, 75));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(O_Traverser.class, null, 76));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_P_S_SE_SL_Traverser.class, null, 77));

@@ -139,7 +139,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     public void shouldAttachToGraph() {
         final Vertex toDetach = g.V(convertToVertexId("josh")).next();
         final DetachedVertex detachedVertex = DetachedFactory.detach(toDetach, true);
-        final Vertex attached = detachedVertex.attach(graph, Attachable.Method.GET);
+        final Vertex attached = detachedVertex.attach(Attachable.Method.get(graph));
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedVertex);
@@ -150,7 +150,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     public void shouldAttachToVertex() {
         final Vertex toDetach = g.V(convertToVertexId("josh")).next();
         final DetachedVertex detachedVertex = DetachedFactory.detach(toDetach, true);
-        final Vertex attached = detachedVertex.attach(toDetach, Attachable.Method.GET);
+        final Vertex attached = detachedVertex.attach(Attachable.Method.get(toDetach));
 
         assertEquals(toDetach, attached);
         assertFalse(attached instanceof DetachedVertex);
@@ -293,7 +293,7 @@ public class DetachedVertexTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldCreateVertex() {
         final DetachedVertex detachedVertex = new DetachedVertex(23, "dog", Collections.emptyMap());
-        detachedVertex.attach(graph, Attachable.Method.CREATE);
+        detachedVertex.attach(Attachable.Method.create(graph));
         assertEquals(7, IteratorUtils.count(graph.vertices()));
         final AtomicInteger dogTimes = new AtomicInteger(0);
         graph.vertices().forEachRemaining(vertex -> {

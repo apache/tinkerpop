@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.junit.Test;
 
@@ -56,7 +57,7 @@ public class GryoReaderWriterTest {
             try {
                 latch.await();
                 final GryoReader reader = builder.create();
-                final Vertex v = reader.readVertex(new ByteArrayInputStream(bytes), dv -> dv);
+                final Vertex v = reader.readVertex(new ByteArrayInputStream(bytes), Attachable::get);
                 assertProcess1.set(v.id().equals(1));
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -67,7 +68,7 @@ public class GryoReaderWriterTest {
             try {
                 latch.await();
                 final GryoReader reader = builder.create();
-                final Vertex v = reader.readVertex(new ByteArrayInputStream(bytes), dv -> dv);
+                final Vertex v = reader.readVertex(new ByteArrayInputStream(bytes), Attachable::get);
                 assertProcess2.set(v.id().equals(1));
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -78,7 +79,7 @@ public class GryoReaderWriterTest {
             try {
                 latch.await();
                 final GryoReader reader = builder.create();
-                final Vertex v = reader.readVertex(new ByteArrayInputStream(bytes), dv -> dv);
+                final Vertex v = reader.readVertex(new ByteArrayInputStream(bytes), Attachable::get);
                 assertProcess3.set(v.id().equals(1));
             } catch (Exception ex) {
                 throw new RuntimeException(ex);

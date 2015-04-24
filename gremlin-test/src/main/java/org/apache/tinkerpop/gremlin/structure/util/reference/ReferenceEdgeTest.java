@@ -103,7 +103,7 @@ public class ReferenceEdgeTest extends AbstractGremlinTest {
     public void shouldAttachToGraph() {
         final Edge toReference = g.E(convertToEdgeId("josh", "created", "lop")).next();
         final ReferenceEdge referenceEdge = ReferenceFactory.detach(toReference);
-        final Edge referenced = referenceEdge.attach(graph, Attachable.Method.GET);
+        final Edge referenced = referenceEdge.attach(Attachable.Method.get(graph));
 
         assertEquals(toReference, referenced);
         assertFalse(referenced instanceof ReferenceEdge);
@@ -115,7 +115,7 @@ public class ReferenceEdgeTest extends AbstractGremlinTest {
         final Edge toReference = g.E(convertToEdgeId("josh", "created", "lop")).next();
         final Vertex outV = toReference.vertices(Direction.OUT).next();
         final ReferenceEdge referenceEdge = ReferenceFactory.detach(toReference);
-        final Edge attached = referenceEdge.attach(outV, Attachable.Method.GET);
+        final Edge attached = referenceEdge.attach(Attachable.Method.get(outV));
 
         assertEquals(toReference, attached);
         assertFalse(attached instanceof ReferenceEdge);

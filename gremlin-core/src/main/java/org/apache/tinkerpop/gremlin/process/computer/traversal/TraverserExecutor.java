@@ -51,7 +51,7 @@ public final class TraverserExecutor {
         messenger.receiveMessages().forEachRemaining(traverserSet -> {
             traverserSet.forEach(traverser -> {
                 traverser.setSideEffects(traversalSideEffects);
-                traverser.attach(vertex, Attachable.Method.GET);
+                traverser.attach(Attachable.Method.get(vertex));
                 aliveTraversers.add((Traverser.Admin) traverser);
             });
         });

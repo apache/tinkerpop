@@ -120,10 +120,7 @@ public abstract class AbstractGraphProvider implements GraphProvider {
     }
 
     protected void readIntoGraph(final Graph g, final String path) throws IOException {
-        final File workingDirectory = TestHelper.makeTestDataPath(this.getClass(), "gryo-working-directory");
-        if (!workingDirectory.exists()) workingDirectory.mkdirs();
         final GraphReader reader = GryoReader.build()
-                .workingDirectory(workingDirectory.getAbsolutePath())
                 .mapper(g.io(GryoIo.build()).mapper().create())
                 .create();
         try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream(path)) {

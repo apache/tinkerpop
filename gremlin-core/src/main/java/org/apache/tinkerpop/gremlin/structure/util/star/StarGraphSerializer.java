@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.tools.BiMap;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
@@ -36,13 +37,31 @@ import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class StarGraphSerializer extends Serializer<StarGraph> {
 
-    private static StarGraphSerializer INSTANCE = new StarGraphSerializer();
+    private static final Map<Direction, StarGraphSerializer> CACHE = new HashMap<>();
 
-    private StarGraphSerializer() {
+    private final Direction edgeDirectionToSerialize;
 
+    static {
+        CACHE.put(Direction.BOTH, new StarGraphSerializer(Direction.BOTH));
+        CACHE.put(Direction.IN, new StarGraphSerializer(Direction.IN));
+        CACHE.put(Direction.OUT, new StarGraphSerializer(Direction.OUT));
+        CACHE.put(null, new StarGraphSerializer(null));
+    }
+
+    private StarGraphSerializer(final Direction edgeDirectionToSerialize) {
+        this.edgeDirectionToSerialize = edgeDirectionToSerialize;
+    }
+
+    /**
+     * Gets a serializer from the cache.  Use {@code null} for the direction when requiring a serializer that
+     * doesn't serialize the edges of a vertex.
+     */
+    public static StarGraphSerializer with(final Direction direction) {
+        return CACHE.get(direction);
     }
 
     @Override
@@ -50,15 +69,17 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
         kryo.writeObject(output, starGraph.nextId);
         kryo.writeObjectOrNull(output, starGraph.edgeProperties, HashMap.class);
         kryo.writeObjectOrNull(output, starGraph.metaProperties, HashMap.class);
+        kryo.writeObject(output, starGraph.labelsAndKeys);
+        kryo.writeObject(output, starGraph.nextLabelsAndKeysId);
         kryo.writeClassAndObject(output, starGraph.starVertex.id);
-        kryo.writeObject(output, starGraph.starVertex.label);
-        writeEdges(kryo, output, starGraph.starVertex.inEdges, Direction.IN);
-        writeEdges(kryo, output, starGraph.starVertex.outEdges, Direction.OUT);
+        kryo.writeObject(output, starGraph.starVertex.labelId);
+        writeEdges(kryo, output, starGraph, Direction.IN);
+        writeEdges(kryo, output, starGraph, Direction.OUT);
         kryo.writeObject(output, null != starGraph.starVertex.vertexProperties);
         if (null != starGraph.starVertex.vertexProperties) {
             kryo.writeObject(output, starGraph.starVertex.vertexProperties.size());
             for (final Map.Entry<String, List<VertexProperty>> vertexProperties : starGraph.starVertex.vertexProperties.entrySet()) {
-                kryo.writeObject(output, vertexProperties.getKey());
+                kryo.writeObject(output, starGraph.labelsAndKeys.getKey(vertexProperties.getKey()));
                 kryo.writeObject(output, vertexProperties.getValue().size());
                 for (final VertexProperty vertexProperty : vertexProperties.getValue()) {
                     kryo.writeClassAndObject(output, vertexProperty.id());
@@ -74,13 +95,15 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
         starGraph.nextId = kryo.readObject(input, Long.class);
         starGraph.edgeProperties = kryo.readObjectOrNull(input, HashMap.class);
         starGraph.metaProperties = kryo.readObjectOrNull(input, HashMap.class);
-        starGraph.addVertex(T.id, kryo.readClassAndObject(input), T.label, kryo.readObject(input, String.class));
+        starGraph.labelsAndKeys = kryo.readObject(input, BiMap.class);
+        starGraph.nextLabelsAndKeysId = kryo.readObject(input, Short.class);
+        starGraph.addVertex(T.id, kryo.readClassAndObject(input), T.label, starGraph.labelsAndKeys.getValue(kryo.readObject(input, Short.class)));
         readEdges(kryo, input, starGraph, Direction.IN);
         readEdges(kryo, input, starGraph, Direction.OUT);
         if (kryo.readObject(input, Boolean.class)) {
             final int numberOfUniqueKeys = kryo.readObject(input, Integer.class);
             for (int i = 0; i < numberOfUniqueKeys; i++) {
-                final String vertexPropertyKey = kryo.readObject(input, String.class);
+                final String vertexPropertyKey = starGraph.labelsAndKeys.getValue(kryo.readObject(input, Short.class));
                 final int numberOfVertexPropertiesWithKey = kryo.readObject(input, Integer.class);
                 for (int j = 0; j < numberOfVertexPropertiesWithKey; j++) {
                     final Object id = kryo.readClassAndObject(input);
@@ -92,14 +115,17 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
         return starGraph;
     }
 
-    //////
-
-    private static void writeEdges(final Kryo kryo, final Output output, final Map<String, List<Edge>> starEdges, final Direction direction) {
-        kryo.writeObject(output, null != starEdges);
-        if (null != starEdges) {
+    private void writeEdges(final Kryo kryo, final Output output, final StarGraph starGraph, final Direction direction) {
+        // only write edges if there are some AND if the user requested them to be serialized AND if they match
+        // the direction being serialized by the format
+        final Map<String, List<Edge>> starEdges = direction.equals(Direction.OUT) ? starGraph.starVertex.outEdges : starGraph.starVertex.inEdges;
+        final boolean writeEdges = null != starEdges && edgeDirectionToSerialize != null
+                && (edgeDirectionToSerialize == direction || edgeDirectionToSerialize == Direction.BOTH);
+        kryo.writeObject(output, writeEdges);
+        if (writeEdges) {
             kryo.writeObject(output, starEdges.size());
             for (final Map.Entry<String, List<Edge>> edges : starEdges.entrySet()) {
-                kryo.writeObject(output, edges.getKey());
+                kryo.writeObject(output, starGraph.labelsAndKeys.getKey(edges.getKey()));
                 kryo.writeObject(output, edges.getValue().size());
                 for (final Edge edge : edges.getValue()) {
                     kryo.writeClassAndObject(output, edge.id());
@@ -113,7 +139,7 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
         if (kryo.readObject(input, Boolean.class)) {
             final int numberOfUniqueLabels = kryo.readObject(input, Integer.class);
             for (int i = 0; i < numberOfUniqueLabels; i++) {
-                final String edgeLabel = kryo.readObject(input, String.class);
+                final String edgeLabel = starGraph.labelsAndKeys.getValue(kryo.readObject(input, Short.class));
                 final int numberOfEdgesWithLabel = kryo.readObject(input, Integer.class);
                 for (int j = 0; j < numberOfEdgesWithLabel; j++) {
                     final Object edgeId = kryo.readClassAndObject(input);
@@ -125,9 +151,5 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
                 }
             }
         }
-    }
-
-    public static StarGraphSerializer instance() {
-        return INSTANCE;
     }
 }

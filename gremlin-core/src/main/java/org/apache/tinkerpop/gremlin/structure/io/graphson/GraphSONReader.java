@@ -24,12 +24,12 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
@@ -105,7 +105,8 @@ public class GraphSONReader implements GraphReader {
                 } else if (fieldName.equals(GraphSONTokens.VERTICES)) {
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
                         final Map<String, Object> vertexData = parser.readValueAs(mapTypeReference);
-                        readVertexData(vertexData, detachedVertex -> {
+                        readVertexData(vertexData, attachable -> {
+                            final Vertex detachedVertex = attachable.get();
                             final Iterator<Vertex> iterator = graph.vertices(detachedVertex.id());
                             final Vertex v = iterator.hasNext() ? iterator.next() : graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id());
                             detachedVertex.properties().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p));
@@ -115,7 +116,8 @@ public class GraphSONReader implements GraphReader {
                 } else if (fieldName.equals(GraphSONTokens.EDGES)) {
                     while (parser.nextToken() != JsonToken.END_ARRAY) {
                         final Map<String, Object> edgeData = parser.readValueAs(mapTypeReference);
-                        readEdgeData(edgeData, detachedEdge -> {
+                        readEdgeData(edgeData, attachable -> {
+                            final Edge detachedEdge = attachable.get();
                             final Vertex vOut = graph.vertices(detachedEdge.outVertex().id()).next();
                             final Vertex vIn = graph.vertices(detachedEdge.inVertex().id()).next();
                             // batchgraph checks for edge id support and uses it if possible.
@@ -135,36 +137,43 @@ public class GraphSONReader implements GraphReader {
     }
 
     @Override
-    public Iterator<Vertex> readVertices(final InputStream inputStream, final Direction direction,
-                                         final Function<DetachedVertex, Vertex> vertexMaker,
-                                         final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Iterator<Vertex> readVertices(final InputStream inputStream,
+                                         final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                                         final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        return br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), direction, vertexMaker, edgeMaker))).iterator();
+        return br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), vertexMaker, edgeMaker))).iterator();
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
-        return readEdgeData(edgeData, edgeMaker);
+
+        final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
+                edgeData.get(GraphSONTokens.LABEL).toString(),
+                (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES),
+                Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
+                Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
+
+        return edgeMaker.apply(edge);
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException {
         final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
         return readVertexData(vertexData, vertexMaker);
     }
 
     @Override
-    public Vertex readVertex(final InputStream inputStream, final Direction direction,
-                             final Function<DetachedVertex, Vertex> vertexMaker,
-                             final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+    public Vertex readVertex(final InputStream inputStream,
+                             final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                             final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
         final Vertex v = readVertexData(vertexData, vertexMaker);
 
-        if (vertexData.containsKey(GraphSONTokens.OUT_E) && (direction == Direction.BOTH || direction == Direction.OUT))
+        if (vertexData.containsKey(GraphSONTokens.OUT_E))
             readVertexEdges(edgeMaker, vertexData, GraphSONTokens.OUT_E);
 
-        if (vertexData.containsKey(GraphSONTokens.IN_E) && (direction == Direction.BOTH || direction == Direction.IN))
+        if (vertexData.containsKey(GraphSONTokens.IN_E))
             readVertexEdges(edgeMaker, vertexData, GraphSONTokens.IN_E);
 
         return v;
@@ -183,14 +192,14 @@ public class GraphSONReader implements GraphReader {
         v.property(VertexProperty.Cardinality.list, p.key(), p.value(), propertyArgs.toArray());
     }
 
-    private static void readVertexEdges(final Function<DetachedEdge, Edge> edgeMaker, final Map<String, Object> vertexData, final String direction) throws IOException {
+    private static void readVertexEdges(final Function<Attachable<Edge>, Edge> edgeMaker, final Map<String, Object> vertexData, final String direction) throws IOException {
         final List<Map<String, Object>> edgeDatas = (List<Map<String, Object>>) vertexData.get(direction);
         for (Map<String, Object> edgeData : edgeDatas) {
             readEdgeData(edgeData, edgeMaker);
         }
     }
 
-    private static Edge readEdgeData(final Map<String, Object> edgeData, final Function<DetachedEdge, Edge> edgeMaker) throws IOException {
+    private static Edge readEdgeData(final Map<String, Object> edgeData, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
         final Map<String, Object> properties = (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES);
 
         final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
@@ -202,7 +211,7 @@ public class GraphSONReader implements GraphReader {
         return edgeMaker.apply(edge);
     }
 
-    private static Vertex readVertexData(final Map<String, Object> vertexData, final Function<DetachedVertex, Vertex> vertexMaker) throws IOException {
+    private static Vertex readVertexData(final Map<String, Object> vertexData, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException {
         final Map<String, Object> vertexProperties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
         final DetachedVertex vertex = new DetachedVertex(vertexData.get(GraphSONTokens.ID),
                 vertexData.get(GraphSONTokens.LABEL).toString(),

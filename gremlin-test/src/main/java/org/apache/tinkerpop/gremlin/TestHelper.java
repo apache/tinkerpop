@@ -18,11 +18,25 @@
  */
 package org.apache.tinkerpop.gremlin;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Iterator;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -88,5 +102,90 @@ public final class TestHelper {
         if (cleaned.length() == 0)
             throw new IllegalStateException("Path segment " + toClean + " has not valid characters and is thus empty");
         return cleaned;
+    }
+
+
+    ///////////////
+
+    public static void validateVertexEquality(final Vertex originalVertex, final Vertex otherVertex) {
+        assertEquals(originalVertex, otherVertex);
+        assertEquals(otherVertex, originalVertex);
+        assertEquals(originalVertex.id(), otherVertex.id());
+        assertEquals(originalVertex.label(), otherVertex.label());
+        assertEquals(originalVertex.keys().size(), otherVertex.keys().size());
+        for (final String key : originalVertex.keys()) {
+            final List<VertexProperty<Object>> originalVertexProperties = IteratorUtils.list(originalVertex.properties(key));
+            final List<VertexProperty<Object>> otherVertexProperties = IteratorUtils.list(otherVertex.properties(key));
+            assertEquals(originalVertexProperties.size(), otherVertexProperties.size());
+            for (VertexProperty<Object> originalVertexProperty : originalVertexProperties) {
+                final VertexProperty<Object> otherVertexProperty = otherVertexProperties.parallelStream().filter(vp -> vp.equals(originalVertexProperty)).findAny().get();
+                validateVertexPropertyEquality(originalVertexProperty, otherVertexProperty);
+            }
+        }
+
+        Iterator<Edge> originalEdges = IteratorUtils.set(originalVertex.edges(Direction.OUT)).iterator();
+        Iterator<Edge> otherEdges = IteratorUtils.set(otherVertex.edges(Direction.OUT)).iterator();
+        while (originalEdges.hasNext()) {
+            validateEdgeEquality(originalEdges.next(), otherEdges.next());
+        }
+        assertFalse(otherEdges.hasNext());
+
+        originalEdges = IteratorUtils.set(originalVertex.edges(Direction.IN)).iterator();
+        otherEdges = IteratorUtils.set(otherVertex.edges(Direction.IN)).iterator();
+        while (originalEdges.hasNext()) {
+            validateEdgeEquality(originalEdges.next(), otherEdges.next());
+        }
+        assertFalse(otherEdges.hasNext());
+
+    }
+
+    public static void validateVertexPropertyEquality(final VertexProperty originalVertexProperty, final VertexProperty otherVertexProperty) {
+        assertEquals(originalVertexProperty, otherVertexProperty);
+        assertEquals(otherVertexProperty, originalVertexProperty);
+        if (originalVertexProperty.isPresent()) {
+            assertEquals(originalVertexProperty.key(), otherVertexProperty.key());
+            assertEquals(originalVertexProperty.value(), otherVertexProperty.value());
+            assertEquals(originalVertexProperty.element(), otherVertexProperty.element());
+            assertEquals(originalVertexProperty.keys().size(), otherVertexProperty.keys().size());
+            for (final String key : originalVertexProperty.keys()) {
+                validatePropertyEquality(originalVertexProperty.property(key), otherVertexProperty.property(key));
+            }
+        }
+    }
+
+    public static void validatePropertyEquality(final Property originalProperty, final Property otherProperty) {
+        assertEquals(originalProperty, otherProperty);
+        assertEquals(otherProperty, originalProperty);
+        if (originalProperty.isPresent()) {
+            assertEquals(originalProperty.key(), otherProperty.key());
+            assertEquals(originalProperty.value(), otherProperty.value());
+            assertEquals(originalProperty.element(), otherProperty.element());
+        }
+    }
+
+    public static void validateEdgeEquality(final Edge originalEdge, final Edge otherEdge) {
+        assertEquals(originalEdge, otherEdge);
+        assertEquals(otherEdge, originalEdge);
+        assertEquals(originalEdge.id(), otherEdge.id());
+        assertEquals(originalEdge.label(), otherEdge.label());
+        assertEquals(originalEdge.inVertex(), otherEdge.inVertex());
+        assertEquals(originalEdge.outVertex(), otherEdge.outVertex());
+        assertEquals(originalEdge.keys().size(), otherEdge.keys().size());
+        for (final String key : originalEdge.keys()) {
+            validatePropertyEquality(originalEdge.property(key), otherEdge.property(key));
+        }
+    }
+
+    public static void validateEquality(final Object original, final Object other) {
+        if (original instanceof Vertex)
+            validateVertexEquality((Vertex) original, (Vertex) other);
+        else if (original instanceof VertexProperty)
+            validateVertexPropertyEquality((VertexProperty) original, (VertexProperty) other);
+        else if (original instanceof Edge)
+            validateEdgeEquality((Edge) original, (Edge) other);
+        else if (original instanceof Property)
+            validatePropertyEquality((Property) original, (Property) other);
+        else
+            throw new IllegalArgumentException("The provided object must be a graph object: " + original.getClass().getCanonicalName());
     }
 }

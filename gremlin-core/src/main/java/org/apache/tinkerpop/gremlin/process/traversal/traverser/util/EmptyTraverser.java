@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -86,7 +88,7 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     @Override
-    public T attach(final Vertex hostVertex, final Method method) {
+    public T attach(final Function<Attachable<T>, T> method) {
         return null;
     }
 
