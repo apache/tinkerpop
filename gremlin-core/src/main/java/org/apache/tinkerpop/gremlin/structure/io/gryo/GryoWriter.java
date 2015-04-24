@@ -54,23 +54,7 @@ public class GryoWriter implements GraphWriter {
 
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
-        final Output output = new Output(outputStream);
-        writeHeader(output);
-
-        final boolean supportsGraphVariables = g.features().graph().variables().supportsVariables();
-        output.writeBoolean(supportsGraphVariables);
-        if (supportsGraphVariables)
-            kryo.writeObject(output, new HashMap<>(g.variables().asMap()));
-
-        final Iterator<Vertex> vertices = g.vertices();
-        final boolean hasSomeVertices = vertices.hasNext();
-        output.writeBoolean(hasSomeVertices);
-        while (vertices.hasNext()) {
-            final Vertex v = vertices.next();
-            writeVertexToOutput(output, v, Direction.OUT);
-        }
-
-        output.flush();
+        writeVertices(outputStream, g.vertices(), Direction.BOTH);
     }
 
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
