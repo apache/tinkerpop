@@ -57,15 +57,13 @@ public class GryoWriter implements GraphWriter {
     }
 
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
-        // todo: can we wrap this up in a function somehow - withRegistration(r, stream... -> ....)
-        final Registration oldRegistration = kryo.getRegistration(StarGraph.class);
-        kryo.register(StarGraph.class, StarGraphSerializer.with(direction), oldRegistration.getId());
+        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphSerializer.with(direction));
         final Output output = new Output(outputStream);
         while (vertexIterator.hasNext()) {
             writeVertexInternal(output, vertexIterator.next());
         }
         output.flush();
-        kryo.register(oldRegistration);
+        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphSerializer.with(Direction.BOTH));
     }
 
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
@@ -74,15 +72,11 @@ public class GryoWriter implements GraphWriter {
 
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
-        // todo: figure out how to not keep creating Registration objects?
-        final Registration oldRegistration = kryo.getRegistration(StarGraph.class);
-        kryo.register(StarGraph.class, StarGraphSerializer.with(direction), oldRegistration.getId());
-
+        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphSerializer.with(direction));
         final Output output = new Output(outputStream);
         writeVertexInternal(output, v);
         output.flush();
-
-        kryo.register(oldRegistration);
+        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphSerializer.with(Direction.BOTH));
     }
 
     @Override
