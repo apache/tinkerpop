@@ -38,7 +38,9 @@ import java.util.function.Function;
 public interface GraphReader {
 
     /**
-     * Reads an entire graph from an {@link InputStream}.
+     * Reads an entire graph from an {@link InputStream}.  This method is mean to load an empty {@link Graph}.
+     * It is up to individual implementations to manage transactions, but it is not required or enforced.  Consult
+     * the documentation of an implementation to understand the approach it takes.
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
      */
@@ -46,6 +48,8 @@ public interface GraphReader {
 
     /**
      * Reads a single vertex from an {@link InputStream}.  This method will read vertex properties but not edges.
+     * It is expected that the user will manager their own transaction context with respect to this method (i.e.
+     * implementations should not commit the transaction for the user).
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
      * @param vertexAttachMethod a function to create a vertex where the first argument is the vertex identifier, the
@@ -55,7 +59,8 @@ public interface GraphReader {
 
     /**
      * Reads a single vertex from an {@link InputStream}.  This method will read vertex properties as well as edges
-     * given the direction supplied as an argument.
+     * given the direction supplied as an argument.  It is expected that the user will manager their own transaction
+     * context with respect to this method (i.e. implementations should not commit the transaction for the user).
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
      * @param vertexAttachMethod a function to create a vertex where the first argument is the vertex identifier, the
@@ -72,8 +77,10 @@ public interface GraphReader {
 
     /**
      * Reads a set of vertices from an {@link InputStream} which were written by
-     * {@link GraphWriter#writeVertices(OutputStream, Iterator)}.  This method
-     * will read vertex properties as well as edges given the direction supplied as an argument.
+     * {@link GraphWriter#writeVertices(OutputStream, Iterator)}.  This method will read vertex properties as well as
+     * edges given the direction supplied as an argument. It is expected that the user will manager their own
+     * transaction context with respect to this method (i.e. implementations should not commit the transaction for
+     * the user).
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
      * @param vertexAttachMethod a function to create a vertex where the first argument is the vertex identifier, the
@@ -89,7 +96,9 @@ public interface GraphReader {
                                          final Direction attachEdgesOfThisDirection) throws IOException;
 
     /**
-     * Reads a single edge from an {@link InputStream}.
+     * Reads a single edge from an {@link InputStream}. It is expected that the user will manager their own
+     * transaction context with respect to this method (i.e. implementations should not commit the transaction for
+     * the user).
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
      * @param edgeAttachMethod    a function that creates an edge from the stream where the first argument is the edge

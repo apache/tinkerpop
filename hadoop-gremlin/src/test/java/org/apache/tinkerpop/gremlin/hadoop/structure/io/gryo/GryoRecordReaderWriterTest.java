@@ -48,7 +48,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class GryoRecordReaderWriterTest {
     @Test
-    @org.junit.Ignore
     public void testAll() throws Exception {
         final Configuration configuration = new Configuration(false);
         configuration.set("fs.file.impl", LocalFileSystem.class.getName());
