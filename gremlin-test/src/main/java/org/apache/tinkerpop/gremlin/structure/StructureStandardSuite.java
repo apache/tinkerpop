@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.algorithm.generator.CommunityGeneratorTest;
 import org.apache.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdgeTest;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedGraphTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPropertyTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexPropertyTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexTest;
@@ -76,6 +77,7 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
     private static final Class<?>[] allTests = new Class<?>[]{
             BatchTest.class,
             CommunityGeneratorTest.class,
+            DetachedGraphTest.class,
             DetachedEdgeTest.class,
             DetachedVertexPropertyTest.class,
             DetachedPropertyTest.class,

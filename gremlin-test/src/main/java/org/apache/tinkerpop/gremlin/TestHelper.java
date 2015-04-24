@@ -20,9 +20,7 @@ package org.apache.tinkerpop.gremlin;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -107,7 +105,7 @@ public final class TestHelper {
 
     ///////////////
 
-    public static void validateVertexEquality(final Vertex originalVertex, final Vertex otherVertex) {
+    public static void validateVertexEquality(final Vertex originalVertex, final Vertex otherVertex, boolean testEdges) {
         assertEquals(originalVertex, otherVertex);
         assertEquals(otherVertex, originalVertex);
         assertEquals(originalVertex.id(), otherVertex.id());
@@ -122,20 +120,21 @@ public final class TestHelper {
                 validateVertexPropertyEquality(originalVertexProperty, otherVertexProperty);
             }
         }
+        if (testEdges) {
+            Iterator<Edge> originalEdges = IteratorUtils.set(originalVertex.edges(Direction.OUT)).iterator();
+            Iterator<Edge> otherEdges = IteratorUtils.set(otherVertex.edges(Direction.OUT)).iterator();
+            while (originalEdges.hasNext()) {
+                validateEdgeEquality(originalEdges.next(), otherEdges.next());
+            }
+            assertFalse(otherEdges.hasNext());
 
-        Iterator<Edge> originalEdges = IteratorUtils.set(originalVertex.edges(Direction.OUT)).iterator();
-        Iterator<Edge> otherEdges = IteratorUtils.set(otherVertex.edges(Direction.OUT)).iterator();
-        while (originalEdges.hasNext()) {
-            validateEdgeEquality(originalEdges.next(), otherEdges.next());
+            originalEdges = IteratorUtils.set(originalVertex.edges(Direction.IN)).iterator();
+            otherEdges = IteratorUtils.set(otherVertex.edges(Direction.IN)).iterator();
+            while (originalEdges.hasNext()) {
+                validateEdgeEquality(originalEdges.next(), otherEdges.next());
+            }
+            assertFalse(otherEdges.hasNext());
         }
-        assertFalse(otherEdges.hasNext());
-
-        originalEdges = IteratorUtils.set(originalVertex.edges(Direction.IN)).iterator();
-        otherEdges = IteratorUtils.set(otherVertex.edges(Direction.IN)).iterator();
-        while (originalEdges.hasNext()) {
-            validateEdgeEquality(originalEdges.next(), otherEdges.next());
-        }
-        assertFalse(otherEdges.hasNext());
 
     }
 
@@ -178,7 +177,7 @@ public final class TestHelper {
 
     public static void validateEquality(final Object original, final Object other) {
         if (original instanceof Vertex)
-            validateVertexEquality((Vertex) original, (Vertex) other);
+            validateVertexEquality((Vertex) original, (Vertex) other, true);
         else if (original instanceof VertexProperty)
             validateVertexPropertyEquality((VertexProperty) original, (VertexProperty) other);
         else if (original instanceof Edge)

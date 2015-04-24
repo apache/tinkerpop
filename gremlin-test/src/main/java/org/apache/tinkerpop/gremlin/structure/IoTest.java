@@ -1371,7 +1371,7 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, attachable -> {
                             final Vertex detachedVertex = attachable.get();
-                            TestHelper.validateVertexEquality(v1, detachedVertex);
+                            TestHelper.validateVertexEquality(v1, detachedVertex,true);
                             calledVertex.set(true);
                             return detachedVertex;
                         },
@@ -1466,7 +1466,7 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, attachable -> {
                     final Vertex detachedVertex = attachable.get();
-                    TestHelper.validateVertexEquality(v1, detachedVertex);
+                    TestHelper.validateVertexEquality(v1, detachedVertex,true);
                     calledVertex.set(true);
                     return detachedVertex;
                 }, attachable -> {
@@ -1563,7 +1563,7 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, attachable -> {
                             final Vertex detachedVertex = attachable.get();
-                            TestHelper.validateVertexEquality(v1, detachedVertex);
+                            TestHelper.validateVertexEquality(v1, detachedVertex,true);
                             calledVertex.set(true);
                             return detachedVertex;
                         },attachable -> {
