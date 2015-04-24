@@ -366,12 +366,8 @@ public class __ {
         return __.<A>start().hasValue(values);
     }
 
-    public static <A, E2> GraphTraversal<A, Map<String, E2>> where(final String firstKey, final String secondKey, final BiPredicate predicate) {
-        return __.<A>start().where(firstKey, secondKey, predicate);
-    }
-
-    public static <A, E2> GraphTraversal<A, Map<String, E2>> where(final String firstKey, final BiPredicate predicate, final String secondKey) {
-        return __.<A>start().where(firstKey, predicate, secondKey);
+    public static <A, E2> GraphTraversal<A, Map<String, E2>> where(final String firstKey, final P<?> secondKeyPredicate) {
+        return __.<A>start().where(firstKey, secondKeyPredicate);
     }
 
     public static <A, E2> GraphTraversal<A, Map<String, E2>> where(final Traversal constraint) {

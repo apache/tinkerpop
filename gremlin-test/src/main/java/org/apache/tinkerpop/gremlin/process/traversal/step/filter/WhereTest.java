@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
-import org.apache.tinkerpop.gremlin.structure.Compare;
+import static org.apache.tinkerpop.gremlin.structure.P.*;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -140,12 +140,12 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
-            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", Compare.eq, "b");
+            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", eq("b"));
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX() {
-            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", Compare.neq, "b");
+            return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", eq("b"));
         }
 
         @Override

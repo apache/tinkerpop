@@ -447,12 +447,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ExceptStep<>(this.asAdmin(), exceptCollection));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final String secondKey, final BiPredicate predicate) {
-        return this.asAdmin().addStep(new WhereStep(this.asAdmin(), firstKey, secondKey, predicate));
-    }
-
-    public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final BiPredicate predicate, final String secondKey) {
-        return this.where(firstKey, secondKey, predicate);
+    public default <E2> GraphTraversal<S, Map<String, E2>> where(final String firstKey, final P<?> predicate) {
+        return this.asAdmin().addStep(new WhereStep<>(this.asAdmin(), firstKey, predicate));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> where(final Traversal constraint) {

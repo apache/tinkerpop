@@ -34,7 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.IteratorEnu
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
-import org.apache.tinkerpop.gremlin.structure.Compare;
+import static org.apache.tinkerpop.gremlin.structure.P.*;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -780,7 +780,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match("a",
                     as("a").out("created").as("b"),
                     as("b").in("created").as("c"))
-                    .where("a", Compare.neq, "c")
+                    .where("a", neq("c"))
                     .<String>select("a", "c").by("name");
         }
 

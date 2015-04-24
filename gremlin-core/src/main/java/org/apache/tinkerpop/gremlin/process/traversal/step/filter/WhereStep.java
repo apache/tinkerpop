@@ -21,10 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.MarkerIdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MarkerIdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.P;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,11 +44,11 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
     private Traversal.Admin constraint;
 
 
-    public WhereStep(final Traversal.Admin traversal, final String firstKey, final String secondKey, final BiPredicate<E, E> biPredicate) {
+    public WhereStep(final Traversal.Admin traversal, final String firstKey, final P<?> secondKeyPredicate) {
         super(traversal);
         this.firstKey = firstKey;
-        this.secondKey = secondKey;
-        this.biPredicate = biPredicate;
+        this.secondKey = (String) secondKeyPredicate.getValue();
+        this.biPredicate = secondKeyPredicate.getBiPredicate();
         this.constraint = null;
     }
 

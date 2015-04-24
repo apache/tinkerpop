@@ -313,7 +313,7 @@ The `choose()`-step (*branch*) routes the current traverser to a particular trav
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person').
-      choose(values('age').is(lte, 30),
+      choose(values('age').is(lte(30)),
         __.in(),
         __.out()).values('name') <1>
 g.V().hasLabel('person').
@@ -519,7 +519,7 @@ image::has-step.png[width=670]
 It is possible to filter vertices, edges, and vertex properties based on their properties using `has()`-step (*filter*). There are numerous variations on `has()` including:
 
   * `has(key,value)`: Remove the traverser if its element does not have the provided key/value property.
-  * `has(key,bi-predicate,object)`: Remove the traverser if its element does not have a key value that satisfies the bi-predicate.
+  * `has(key,predicate)`: Remove the traverser if its element does not have a key value that satisfies the bi-predicate.
   * `hasLabel(labels...)`: Remove the traverser if its element does not have any of the labels.
   * `hasId(ids...)`: Remove the traverser if its element does not have any of the ids.
   * `hasKey(keys...)`: Remove the traverser if its property does not have any of the keys.
@@ -531,11 +531,11 @@ It is possible to filter vertices, edges, and vertex properties based on their p
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('person')
-g.V().hasLabel('person').out().has('name',within,['vadas','josh'])
+g.V().hasLabel('person').out().has('name',within('vadas','josh'))
 g.V().hasLabel('person').out().has('name',within,['vadas','josh']).
       outE().hasLabel('created')
-g.V().has('age',inside,[20,30]).values('age') <1>
-g.V().has('age',outside,[20,30]).values('age') <2>
+g.V().has('age',inside(20,30)).values('age') <1>
+g.V().has('age',outside(20,30)).values('age') <2>
 ----
 
 <1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
@@ -547,7 +547,7 @@ It is also possible to filter any arbitrary object based on a anonymous traversa
 ----
 g.V().has(out('created')).values('name') <1>
 g.V().out('knows').has(out('created')).values('name') <2>
-g.V().has(out('created').count().is(gte, 2L)).values('name') <3>
+g.V().has(out('created').count().is(gte(2L))).values('name') <3>
 g.V().has(out('knows').has(out('created'))).values('name') <4>
 ----
 
@@ -591,12 +591,12 @@ It is possible to filter scalar values using `is()`-step (*filter*).
 [gremlin-groovy,modern]
 ----
 g.V().values('age').is(32)
-g.V().values('age').is(lte, 30)
-g.V().values('age').is(inside, [30, 40])
+g.V().values('age').is(lte(30))
+g.V().values('age').is(inside(30, 40))
 g.V().has(__.in('created').count().is(1l)).values('name') <1>
-g.V().has(__.in('created').count().is(gte, 2l)).values('name') <2>
+g.V().has(__.in('created').count().is(gte(2l))).values('name') <2>
 g.V().has(__.in('created').values('age').
-                           mean().is(inside, [30d, 35d])).values('name') <3>
+                           mean().is(inside(30d, 35d))).values('name') <3>
 ----
 
 <1> Find projects having exactly one contributor.
@@ -741,7 +741,7 @@ Match is typically used in conjunction with both `select()` (demonstrated previo
 g.V().match('a',
         __.as('a').out('created').as('b'),
         __.as('b').in('created').as('c')).
-          where('a', neq, 'c').select('a','c').by('name')
+          where('a', neq('c')).select('a','c').by('name')
 ----
 
 The `where()`-step can take either a `BiPredicate` (first example below) or a `Traversal` (second example below). Using `MatchWhereStrategy`, `where()`-clauses can be automatically folded into `match()` and thus, subject to `match()`-steps budget-match algorithm.
@@ -820,7 +820,7 @@ The `or()`-step ensures that at least one of the provided traversals yield a res
 ----
 g.V().or(
    __.outE('created'),
-   __.inE('created').count().is(gt,1l)).
+   __.inE('created').count().is(gt(1l))).
      values('name')
 ----
 
@@ -1181,10 +1181,10 @@ Finally, like <<match-step,`match()`>>-step, it is possible to use `where()`, as
 ----
 g.V().as('a').out('created').in('created').as('b').select().by('name') <1>
 g.V().as('a').out('created').in('created').as('b').
-      select().by('name').where('a',neq,'b') <2>
+      select().by('name').where('a',neq('b')) <2>
 g.V().as('a').out('created').in('created').as('b').
       select(). <3>
-      where('a',neq,'b').
+      where('a',neq('b')).
       where(__.as('a').out('knows').as('b')).
       select().by('name')
 ----
