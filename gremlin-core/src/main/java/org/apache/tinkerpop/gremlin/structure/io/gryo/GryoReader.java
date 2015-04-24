@@ -99,9 +99,9 @@ public class GryoReader implements GraphReader {
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
         // dual pass - create all vertices and store to cache the ids.  then create edges.  as long as we don't
         // have vertex labels in the output we can't do this single pass
-        final Map<Vertex,Vertex> cache = new HashMap<>();
+        final Map<StarGraph.StarVertex,Vertex> cache = new HashMap<>();
         IteratorUtils.iterate(new VertexInputIterator(new Input(inputStream), attachable ->
-                cache.put(attachable.get(), attachable.attach(Attachable.Method.create(graphToWriteTo)))));
+                cache.put((StarGraph.StarVertex) attachable.get(), attachable.attach(Attachable.Method.create(graphToWriteTo)))));
         cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.OUT)
                 .forEachRemaining(e -> ((StarGraph.StarEdge) e).attach(Attachable.Method.create(kv.getValue()))));
     }
