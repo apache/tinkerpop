@@ -19,10 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Host;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.io.Serializable;
+import java.util.function.Function;
 
 /**
  * A {@code Traverser} represents the current state of an object flowing through a {@link Traversal}.
@@ -250,7 +252,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * @return The inflated traverser
          */
         @Override
-        public T attach(final Vertex hostVertex, final Method method);
+        public T attach(final Vertex hostVertex, final Function<Host, Function<Attachable<T>, T>> method);
 
         /**
          * Traversers can not attach to graphs and thus, an {@link UnsupportedOperationException} is thrown.
@@ -260,7 +262,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * @throws UnsupportedOperationException is always thrown as it makes no sense to attach a traverser to a graph
          */
         @Override
-        public default T attach(final Graph graph, final Method method) throws UnsupportedOperationException {
+        public default T attach(final Graph graph, final Function<Host, Function<Attachable<T>, T>> method) throws UnsupportedOperationException {
             throw new UnsupportedOperationException("A traverser can only exist at the vertices of the graph, not the graph itself");
         }
 

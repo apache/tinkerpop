@@ -125,9 +125,9 @@ public class GryoReader implements GraphReader {
         // have vertex labels in the output we can't do this single pass
         final Map<Vertex,Vertex> cache = new HashMap<>();
         IteratorUtils.iterate(new VertexInputIterator(new Input(inputStream), attachable ->
-                cache.put(attachable.get(), attachable.attach(graphToWriteTo, Attachable.Method.CREATE))));
+                cache.put(attachable.get(), attachable.attach(graphToWriteTo, Attachable.Method::create))));
         cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.OUT)
-                .forEachRemaining(e -> ((Attachable) e).attach(kv.getValue(), Attachable.Method.CREATE)));
+                .forEachRemaining(e -> ((StarGraph.StarEdge) e).attach(kv.getValue(), Attachable.Method::create)));
     }
 
     @Override

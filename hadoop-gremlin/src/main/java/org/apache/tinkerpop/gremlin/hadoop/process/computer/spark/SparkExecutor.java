@@ -91,7 +91,7 @@ public final class SparkExecutor {
                         final boolean hasViewAndMessages = vertexViewIncoming._2()._2().isPresent(); // if this is the first iteration, then there are no views or messages
                         final List<DetachedVertexProperty<Object>> previousView = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getView() : Collections.emptyList();
                         final List<M> incomingMessages = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getIncomingMessages() : Collections.emptyList();
-                        previousView.forEach(property -> property.attach(vertex, Attachable.Method.CREATE));  // attach the view to the vertex
+                        previousView.forEach(property -> property.attach(vertex, Attachable.Method::create));  // attach the view to the vertex
                         ///
                         messenger.setVertexAndIncomingMessages(vertex, incomingMessages); // set the messenger with the incoming messages
                         workerVertexProgram.execute(ComputerGraph.of(vertex, elementComputeKeys), messenger, memory); // execute the vertex program on this vertex for this iteration
@@ -154,7 +154,7 @@ public final class SparkExecutor {
                             ((StarGraph.StarVertex) vertex).dropEdges();
                             ((StarGraph.StarVertex) vertex).dropVertexProperties(elementComputeKeys);
                             final List<DetachedVertexProperty<Object>> view = tuple._2().isPresent() ? tuple._2().get().getView() : Collections.emptyList();
-                            view.forEach(property -> property.attach(vertex, Attachable.Method.CREATE));
+                            view.forEach(property -> property.attach(vertex, Attachable.Method::create));
                             return tuple._1();
                         });
     }

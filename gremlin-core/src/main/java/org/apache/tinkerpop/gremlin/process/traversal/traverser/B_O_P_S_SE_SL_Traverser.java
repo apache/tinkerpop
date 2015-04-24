@@ -22,11 +22,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
+import org.apache.tinkerpop.gremlin.structure.Host;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -64,7 +66,7 @@ public class B_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     }
 
     @Override
-    public T attach(final Vertex hostVertex, final Method method) {
+    public T attach(final Vertex hostVertex, final Function<Host, Function<Attachable<T>, T>> method) {
         // you do not want to attach a path because it will reference graph objects not at the current vertex
         if (this.t instanceof Attachable && !(((Attachable) this.t).get() instanceof Path))
             this.t = ((Attachable<T>) this.t).attach(hostVertex, method);
