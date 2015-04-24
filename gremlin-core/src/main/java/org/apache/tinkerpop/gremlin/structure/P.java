@@ -48,8 +48,26 @@ public class P<V> implements Predicate<V>, Serializable {
         return this.value;
     }
 
+    @Override
     public boolean test(final V testValue) {
         return this.biPredicate.test(testValue, this.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.biPredicate.hashCode() + this.value.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other instanceof P && (
+                (P) other).getBiPredicate().equals(this.biPredicate) &&
+                ((((P) other).getValue() == null && this.getValue() == null) || ((P) other).getValue().equals(this.getValue()));
+    }
+
+    @Override
+    public String toString() {
+        return this.biPredicate.toString() + "(" + this.value + ")";
     }
 
     //////////////// statics
