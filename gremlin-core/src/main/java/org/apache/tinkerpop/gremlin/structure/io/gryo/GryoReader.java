@@ -37,8 +37,9 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 /**
@@ -100,10 +101,19 @@ public class GryoReader implements GraphReader {
         // dual pass - create all vertices and store to cache the ids.  then create edges.  as long as we don't
         // have vertex labels in the output we can't do this single pass
         final Map<StarGraph.StarVertex,Vertex> cache = new HashMap<>();
-        IteratorUtils.iterate(new VertexInputIterator(new Input(inputStream), attachable ->
-                cache.put((StarGraph.StarVertex) attachable.get(), attachable.attach(Attachable.Method.create(graphToWriteTo)))));
-        cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.OUT)
-                .forEachRemaining(e -> ((StarGraph.StarEdge) e).attach(Attachable.Method.create(kv.getValue()))));
+        final AtomicLong counter = new AtomicLong(0);
+        final boolean supportsTx = graphToWriteTo.features().graph().supportsTransactions();
+        IteratorUtils.iterate(new VertexInputIterator(new Input(inputStream), attachable -> {
+            final Vertex v = cache.put((StarGraph.StarVertex) attachable.get(), attachable.attach(Attachable.Method.create(graphToWriteTo)));
+            if (supportsTx && counter.incrementAndGet() % batchSize == 0)
+                graphToWriteTo.tx().commit();
+            return v;
+        }));
+        cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.OUT).forEachRemaining(e -> {
+            ((StarGraph.StarEdge) e).attach(Attachable.Method.create(kv.getValue()));
+            if (supportsTx && counter.incrementAndGet() % batchSize == 0)
+                graphToWriteTo.tx().commit();
+        }));
     }
 
     @Override
