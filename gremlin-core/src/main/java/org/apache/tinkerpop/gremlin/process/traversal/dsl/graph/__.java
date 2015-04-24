@@ -387,6 +387,14 @@ public class __ {
         return __.<A>start().is(predicate, value);
     }
 
+    public static <A> GraphTraversal<A, A> between(final String key, final Object lower, final Object upper) {
+        return __.<A>start().between(key, lower, upper);
+    }
+
+    public static <A> GraphTraversal<A, A> between(final T accessor, final Object lower, final Object upper) {
+        return __.<A>start().between(accessor, lower, upper);
+    }
+
     public static <A> GraphTraversal<A, A> coin(final double probability) {
         return __.<A>start().coin(probability);
     }
