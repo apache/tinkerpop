@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
@@ -56,15 +55,9 @@ public class GryoReader implements GraphReader {
     private final Kryo kryo;
 
     private final long batchSize;
-    private final String vertexIdKey;
-    private final String edgeIdKey;
 
-    private GryoReader(final long batchSize,
-                       final String vertexIdKey, final String edgeIdKey,
-                       final GryoMapper gryoMapper) {
+    private GryoReader(final long batchSize, final GryoMapper gryoMapper) {
         this.kryo = gryoMapper.createMapper();
-        this.vertexIdKey = vertexIdKey;
-        this.edgeIdKey = edgeIdKey;
         this.batchSize = batchSize;
     }
 
@@ -146,8 +139,6 @@ public class GryoReader implements GraphReader {
     public static class Builder implements ReaderBuilder<GryoReader> {
 
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-        private String vertexIdKey = T.id.getAccessor();
-        private String edgeIdKey = T.id.getAccessor();
         /**
          * Always use the most recent gryo version by default
          */
@@ -173,28 +164,8 @@ public class GryoReader implements GraphReader {
             return this;
         }
 
-        /**
-         * The name of the key to supply to
-         * {@link org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#vertexIdKey} when reading data into
-         * the {@link Graph}.
-         */
-        public Builder vertexIdKey(final String vertexIdKey) {
-            this.vertexIdKey = vertexIdKey;
-            return this;
-        }
-
-        /**
-         * The name of the key to supply to
-         * {@link org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#edgeIdKey} when reading data into
-         * the {@link Graph}.
-         */
-        public Builder edgeIdKey(final String edgeIdKey) {
-            this.edgeIdKey = edgeIdKey;
-            return this;
-        }
-
         public GryoReader create() {
-            return new GryoReader(batchSize, this.vertexIdKey, this.edgeIdKey, this.gryoMapper);
+            return new GryoReader(batchSize, this.gryoMapper);
         }
 
     }
