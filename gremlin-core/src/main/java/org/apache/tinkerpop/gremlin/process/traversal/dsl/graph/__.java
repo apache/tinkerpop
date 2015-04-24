@@ -387,6 +387,14 @@ public class __ {
         return __.<A>start().is(predicate, value);
     }
 
+    public static <A> GraphTraversal<A, A> between(final String key, final Object lower, final Object upper) {
+        return __.<A>start().between(key, lower, upper);
+    }
+
+    public static <A> GraphTraversal<A, A> between(final T accessor, final Object lower, final Object upper) {
+        return __.<A>start().between(accessor, lower, upper);
+    }
+
     public static <A> GraphTraversal<A, A> coin(final double probability) {
         return __.<A>start().coin(probability);
     }
@@ -567,30 +575,6 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> profile() {
         return __.<A>start().profile();
-    }
-
-    public static <A> GraphTraversal<A, A> withSideEffect(final String key, final Supplier supplier) {
-        return __.<A>start().withSideEffect(key, supplier);
-    }
-
-    public static <A, B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue, final UnaryOperator<B> splitOperator) {
-        return __.<A>start().withSack(initialValue, splitOperator);
-    }
-
-    public static <A, B> GraphTraversal<A, A> withSack(final Supplier<B> initialValue) {
-        return __.<A>start().withSack(initialValue);
-    }
-
-    public static <A, B> GraphTraversal<A, A> withSack(final B initialValue, final UnaryOperator<B> splitOperator) {
-        return __.<A>start().withSack(initialValue, splitOperator);
-    }
-
-    public static <A, B> GraphTraversal<A, A> withSack(B initialValue) {
-        return __.<A>start().withSack(initialValue);
-    }
-
-    public static <A> GraphTraversal<A, A> withPath() {
-        return __.<A>start().withPath();
     }
 
     public static <A> GraphTraversal<A, A> barrier() {

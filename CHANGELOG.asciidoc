@@ -25,6 +25,10 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `GraphTraversalSource` is now the location for `withXXX()` operations. No longer do they exist at `GraphTraversal`.
+* All `Traverser` objects now extend from `AbstractTraverser` or a child that ultimately extends from `AbstractTraverser`.
+* OLTP `select()` now returns a list for traversals with duplicate labels (as this was a unintended side-effect of `SparsePath`).
+* Removed the `SparsePath` optimization as it led to numerous corner-case inconsistencies.
 * `VertexWritable` serializes and deserializes the `StarGraph` object -- no more intermediate `DetachedXXX` objects.
 * Gremlin Server better supports the settings for the high and low watermark that will slow writes to clients that are lagging.
 * Added `GraphReader.readObject()` and `GraphWriter.writeObject` abstractions for those implementations that can support them.

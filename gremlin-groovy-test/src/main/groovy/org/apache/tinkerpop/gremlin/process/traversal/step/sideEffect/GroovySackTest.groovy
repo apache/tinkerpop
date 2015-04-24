@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -36,18 +36,18 @@ public abstract class GroovySackTest {
     public static class StandardTraversals extends SackTest {
 
         @Override
-        public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
-            g.V().withSack(0.0f).outE.sack(sum, 'weight').inV.sack.sum()
+        public Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum() {
+            g.withSack(0.0f).V().outE.sack(sum, 'weight').inV.sack.sum()
         }
 
         @Override
-        public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            g.V.withSack(0.0f).repeat(__.outE.sack(sum, 'weight').inV).times(2).sack
+        public Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
+            g.withSack(0.0f).V.repeat(__.outE.sack(sum, 'weight').inV).times(2).sack
         }
 
         @Override
-        public Traversal<Vertex, Map> get_g_V_withSackXmap__map_cloneX_out_out_sackXmap_a_nameX_sack() {
-            g.V.withSack { [:] } { m -> m.clone() }.out().out().sack { m, v -> m['a'] = v.name; m }.sack()
+        public Traversal<Vertex, Map> get_g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack() {
+            g.withSack { [:] } { it.clone() }.V.out().out().sack { m, v -> m['a'] = v.name; m }.sack()
         }
     }
 
@@ -55,18 +55,18 @@ public abstract class GroovySackTest {
     public static class ComputerTraversals extends SackTest {
 
         @Override
-        public Traversal<Vertex, Double> get_g_V_withSackX0X_outE_sackXsum_weightX_inV_sack_sum() {
-            ComputerTestHelper.compute("g.V().withSack(0.0f).outE.sack(sum, 'weight').inV.sack.sum()", g);
+        public Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum() {
+            ComputerTestHelper.compute("g.withSack(0.0f).V().outE.sack(sum, 'weight').inV.sack.sum()", g);
         }
 
         @Override
-        public Traversal<Vertex, Float> get_g_V_withSackX0X_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-            ComputerTestHelper.compute("g.V.withSack(0.0f).repeat(__.outE.sack(sum, 'weight').inV).times(2).sack", g)
+        public Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
+            ComputerTestHelper.compute("g.withSack(0.0f).V.repeat(__.outE.sack(sum, 'weight').inV).times(2).sack", g)
         }
 
         @Override
-        public Traversal<Vertex, Map> get_g_V_withSackXmap__map_cloneX_out_out_sackXmap_a_nameX_sack() {
-            ComputerTestHelper.compute("g.V.withSack { [:] } { m -> m.clone() }.out().out().sack { m, v -> m['a'] = v.name; m }.sack()", g);
+        public Traversal<Vertex, Map> get_g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack() {
+            ComputerTestHelper.compute("g.withSack{[:]}{ it.clone() }.V.out().out().sack { m, v -> m['a'] = v.name; m }.sack()", g);
         }
     }
 }

@@ -16,33 +16,34 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
+package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.UseEngine
+import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public abstract class GroovySubgraphTest {
+public abstract class GroovyBetweenTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends SubgraphTest {
+    public static class StandardTraversals extends BetweenTest {
 
         @Override
-        public Traversal<Vertex, Graph> get_g_V_withSideEffectXsgX_outEXknowsX_subgraphXsgX_name_capXsgX(
-                final Object v1Id, final Graph subgraph) {
-            g.withSideEffect('sg') { subgraph }.V(v1Id).outE('knows').subgraph('sg').name.cap('sg')
+        public Traversal<Vertex, Vertex> get_g_VX1X_outE_betweenXweight_0_06X_inV(final Object v1Id) {
+            g.V(v1Id).outE.between('weight', 0.0d, 0.6d).inV
         }
+    }
+
+    @UseEngine(TraversalEngine.Type.COMPUTER)
+    public static class ComputerTraversals extends BetweenTest {
 
         @Override
-        public Traversal<Vertex, String> get_g_V_withSideEffectXsgX_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup(
-                final Graph subgraph) {
-            g.withSideEffect('sg') { subgraph }.V.repeat(__.bothE('created').subgraph('sg').outV).times(5).name.dedup
+        public Traversal<Vertex, Vertex> get_g_VX1X_outE_betweenXweight_0_06X_inV(final Object v1Id) {
+            ComputerTestHelper.compute("g.V(${v1Id}).outE.between('weight', 0.0d, 0.6d).inV", g);
         }
     }
 }

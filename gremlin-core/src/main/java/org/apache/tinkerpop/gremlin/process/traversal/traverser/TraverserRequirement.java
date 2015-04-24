@@ -32,7 +32,6 @@ public enum TraverserRequirement {
     SINGLE_LOOP,
     NESTED_LOOP,
     PATH,
-    PATH_ACCESS,
     SACK,
     SIDE_EFFECTS,
     // NESTED_TRAVERSALS

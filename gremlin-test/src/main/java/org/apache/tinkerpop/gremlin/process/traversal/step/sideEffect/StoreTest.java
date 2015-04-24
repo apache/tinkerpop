@@ -126,7 +126,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
-            return g.V().withSideEffect("a", HashSetSupplier.instance()).both().<String>values("name").store("a").cap("a");
+            return g.withSideEffect("a", HashSetSupplier.instance()).V().both().<String>values("name").store("a").cap("a");
         }
 
         @Override

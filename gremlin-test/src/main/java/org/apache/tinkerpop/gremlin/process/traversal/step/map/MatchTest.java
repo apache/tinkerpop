@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.Enumerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.InnerJoinEnumerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.IteratorEnumerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_PA_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -886,7 +886,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     private void assertBranchFactor(final double branchFactor,
                                     final Traversal t,
                                     final Iterator inputs) {
-        Traverser start = new B_O_PA_S_SE_SL_Traverser(null, null);
+        Traverser start = new B_O_S_SE_SL_Traverser(null, null, 1l);  // TODO bad? P?
         MatchStep.TraversalWrapper w = new MatchStep.TraversalWrapper(t, "a", "b");
         MatchStep.TraversalUpdater updater = new MatchStep.TraversalUpdater<>(w, inputs, start, "x");
         while (updater.hasNext()) {
