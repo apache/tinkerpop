@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -62,10 +63,12 @@ public interface GraphReader {
      * @param edgeMaker   a function that creates an edge from the stream where the first argument is the edge
      *                    identifier, the second argument is the out vertex id, the third is the in vertex id,
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
+     * @param attachEdgesOfThisDirection only edges of this direction are passed to the {@code edgeMaker}.
      */
     public Vertex readVertex(final InputStream inputStream,
                              final Function<Attachable<Vertex>, Vertex> vertexMaker,
-                             final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException;
+                             final Function<Attachable<Edge>, Edge> edgeMaker,
+                             final Direction attachEdgesOfThisDirection) throws IOException;
 
     /**
      * Reads a set of vertices from an {@link InputStream} which were written by
@@ -78,10 +81,12 @@ public interface GraphReader {
      * @param edgeMaker   a function that creates an edge from the stream where the first argument is the edge
      *                    identifier, the second argument is the out vertex id, the third is the in vertex id,
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
+     * @param attachEdgesOfThisDirection only edges of this direction are passed to the {@code edgeMaker}.
      */
     public Iterator<Vertex> readVertices(final InputStream inputStream,
                                          final Function<Attachable<Vertex>, Vertex> vertexMaker,
-                                         final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException;
+                                         final Function<Attachable<Edge>, Edge> edgeMaker,
+                                         final Direction attachEdgesOfThisDirection) throws IOException;
 
     /**
      * Reads a single edge from an {@link InputStream}.

@@ -1308,7 +1308,7 @@ public class IoTest extends AbstractGremlinTest {
                             final Vertex detachedVertex = attachable.get();
                             called.incrementAndGet();
                             return detachedVertex;
-                        }, null);
+                        }, null, null);
 
                 assertNotNull(itty.next());
                 assertNotNull(itty.next());
@@ -1332,7 +1332,6 @@ public class IoTest extends AbstractGremlinTest {
             String line = br.readLine();
             reader.readVertex(new ByteArrayInputStream(line.getBytes()),
                     attachable -> {
-                        final Vertex detachedVertex = attachable.get();
                         called.incrementAndGet();
                         return mock(Vertex.class);
                     });
@@ -1377,22 +1376,15 @@ public class IoTest extends AbstractGremlinTest {
                         },
                         attachable -> {
                             final Edge detachedEdge = attachable.get();
-                            assertEquals(e.id(), detachedEdge.id());
-                            assertEquals(v1.id(), detachedEdge.outVertex().id());
-                            assertEquals(v2.id(), detachedEdge.inVertex().id());
-                            assertEquals(v1.label(), detachedEdge.outVertex().label());
-                            assertEquals(v2.label(), detachedEdge.inVertex().label());
-                            assertEquals(e.label(), detachedEdge.label());
-                            assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-                            assertEquals(0.5d, detachedEdge.value("weight"), 0.00001d);
-
+                            TestHelper.validateEdgeEquality(e, detachedEdge);
                             calledEdge.set(true);
 
                             return detachedEdge;
-                        });
+                        }, Direction.OUT);
             }
 
             assertTrue(calledVertex.get());
+            assertTrue(calledEdge.get());
         }
     }
 
@@ -1436,7 +1428,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             calledEdge.set(true);
                             return null;
-                        });
+                        }, Direction.OUT);
             }
 
             assertTrue(calledVertex.get());
@@ -1471,22 +1463,15 @@ public class IoTest extends AbstractGremlinTest {
                     return detachedVertex;
                 }, attachable -> {
                     final Edge detachedEdge = attachable.get();
-                    assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v2.id(), detachedEdge.outVertex().id());
-                    assertEquals(v1.id(), detachedEdge.inVertex().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(v2.label(), detachedEdge.inVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-                    assertEquals(0.5d, detachedEdge.value("weight"), 0.00001d);
-
+                    TestHelper.validateEdgeEquality(e, detachedEdge);
                     calledEdge.set(true);
 
                     return detachedEdge;
-                });
+                }, Direction.IN);
             }
 
             assertTrue(calledVertex.get());
+            assertTrue(calledEdge.get());
         }
     }
 
@@ -1531,7 +1516,7 @@ public class IoTest extends AbstractGremlinTest {
 
                             calledEdge.set(true);
                             return null;
-                        });
+                        }, Direction.IN);
             }
 
             assertTrue(calledVertex.get());
@@ -1569,32 +1554,22 @@ public class IoTest extends AbstractGremlinTest {
                         },attachable -> {
                             final Edge detachedEdge = attachable.get();
                             if (detachedEdge.id().equals(e1.id())) {
-                                assertEquals(v2.id(), detachedEdge.outVertex().id());
-                                assertEquals(v1.id(), detachedEdge.inVertex().id());
-                                assertEquals(v1.label(), detachedEdge.outVertex().label());
-                                assertEquals(v2.label(), detachedEdge.inVertex().label());
-                                assertEquals(e1.label(), detachedEdge.label());
-                                assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-                                assertEquals(0.5d, detachedEdge.value("weight"), 0.00001d);
+                                TestHelper.validateEdgeEquality(e1, detachedEdge);
                                 calledEdge1.set(true);
                             } else if (detachedEdge.id().equals(e2.id())) {
-                                assertEquals(v1.id(), detachedEdge.outVertex().id());
-                                assertEquals(v2.id(), detachedEdge.inVertex().id());
-                                assertEquals(v1.label(), detachedEdge.outVertex().label());
-                                assertEquals(v2.label(), detachedEdge.inVertex().label());
-                                assertEquals(e1.label(), detachedEdge.label());
-                                assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-                                assertEquals(1.0d, detachedEdge.value("weight"), 0.00001d);
+                                TestHelper.validateEdgeEquality(e2, detachedEdge);
                                 calledEdge2.set(true);
                             } else {
                                 fail("An edge id generated that does not exist");
                             }
 
                             return null;
-                        });
+                        }, Direction.BOTH);
             }
 
             assertTrue(calledVertex.get());
+            assertTrue(calledEdge1.get());
+            assertTrue(calledEdge2.get());
         }
     }
 
@@ -1655,7 +1630,7 @@ public class IoTest extends AbstractGremlinTest {
                             }
 
                             return null;
-                        });
+                        }, Direction.BOTH);
             }
 
             assertTrue(vertexCalled.get());
@@ -1723,7 +1698,7 @@ public class IoTest extends AbstractGremlinTest {
                     }
 
                     return null;
-                });
+                }, Direction.BOTH);
             }
 
             assertTrue(vertexCalled.get());

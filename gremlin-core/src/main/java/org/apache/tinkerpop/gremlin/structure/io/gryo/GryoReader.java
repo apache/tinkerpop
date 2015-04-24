@@ -64,8 +64,9 @@ public class GryoReader implements GraphReader {
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream,
                                          final Function<Attachable<Vertex>, Vertex> vertexMaker,
-                                         final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
-        return new VertexInputIterator(new Input(inputStream), vertexMaker);
+                                         final Function<Attachable<Edge>, Edge> edgeMaker,
+                                         final Direction attachEdgesOfThisDirection) throws IOException {
+        return new VertexInputIterator(new Input(inputStream), vertexMaker, attachEdgesOfThisDirection, edgeMaker);
     }
 
     @Override
@@ -78,15 +79,16 @@ public class GryoReader implements GraphReader {
 
     @Override
     public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException {
-        return readVertex(inputStream, vertexMaker, null);
+        return readVertex(inputStream, vertexMaker, null, null);
     }
 
     @Override
     public Vertex readVertex(final InputStream inputStream,
                              final Function<Attachable<Vertex>, Vertex> vertexMaker,
-                             final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
+                             final Function<Attachable<Edge>, Edge> edgeMaker,
+                             final Direction attachEdgesOfThisDirection) throws IOException {
         final Input input = new Input(inputStream);
-        return readVertexInternal(vertexMaker, input);
+        return readVertexInternal(vertexMaker, edgeMaker, attachEdgesOfThisDirection, input);
     }
 
     @Override
@@ -101,7 +103,7 @@ public class GryoReader implements GraphReader {
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
                 graphToWriteTo.tx().commit();
             return v;
-        }));
+        }, null, null));
         cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.OUT).forEachRemaining(e -> {
             ((StarGraph.StarEdge) e).attach(Attachable.Method.create(kv.getValue()));
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
@@ -114,14 +116,19 @@ public class GryoReader implements GraphReader {
         return clazz.cast(this.kryo.readClassAndObject(new Input(inputStream)));
     }
 
-    private Vertex readVertexInternal(final Function<Attachable<Vertex>, Vertex> vertexMaker, final Input input) throws IOException {
+    private Vertex readVertexInternal(final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                                      final Function<Attachable<Edge>, Edge> edgeMaker,
+                                      final Direction d,
+                                      final Input input) throws IOException {
         readHeader(input);
         final StarGraph starGraph = kryo.readObject(input, StarGraph.class);
 
         // read the terminator
         kryo.readClassAndObject(input);
 
-        return vertexMaker.apply(starGraph.getStarVertex());
+        final Vertex v = vertexMaker.apply(starGraph.getStarVertex());
+        if (edgeMaker != null) starGraph.getStarVertex().edges(d).forEachRemaining(e -> edgeMaker.apply((Attachable<Edge>) e));
+        return v;
     }
 
     private void readHeader(final Input input) throws IOException {
@@ -173,9 +180,16 @@ public class GryoReader implements GraphReader {
     private class VertexInputIterator implements Iterator<Vertex> {
         private final Input input;
         private final Function<Attachable<Vertex>, Vertex> vertexMaker;
+        private final Direction d;
+        private final Function<Attachable<Edge>, Edge> edgeMaker;
 
-        public VertexInputIterator(final Input input, final Function<Attachable<Vertex>, Vertex> vertexMaker) {
+        public VertexInputIterator(final Input input,
+                                   final Function<Attachable<Vertex>, Vertex> vertexMaker,
+                                   final Direction d,
+                                   final Function<Attachable<Edge>, Edge> edgeMaker) {
             this.input = input;
+            this.d = d;
+            this.edgeMaker = edgeMaker;
             this.vertexMaker = vertexMaker;
         }
 
@@ -187,7 +201,7 @@ public class GryoReader implements GraphReader {
         @Override
         public Vertex next() {
             try {
-                return readVertexInternal(vertexMaker, input);
+                return readVertexInternal(vertexMaker, edgeMaker, d, input);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
