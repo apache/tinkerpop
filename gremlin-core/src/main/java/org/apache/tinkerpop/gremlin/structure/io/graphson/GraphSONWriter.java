@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphJacksonSerializer;
 
 import java.io.*;
 import java.util.Iterator;
@@ -47,22 +49,22 @@ public class GraphSONWriter implements GraphWriter {
 
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
-        this.mapper.writeValue(outputStream, new GraphSONGraph(g));
+        writeVertices(outputStream, g.vertices(), Direction.BOTH);
     }
 
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
-        this.mapper.writeValue(outputStream, new GraphSONVertex(v, direction));
+        mapper.writeValue(outputStream, new StarGraphJacksonSerializer.DirectionalStarGraph(StarGraph.of(v), direction));
     }
 
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
-        this.mapper.writeValue(outputStream, v);
+        mapper.writeValue(outputStream, new StarGraphJacksonSerializer.DirectionalStarGraph(StarGraph.of(v), null));
     }
 
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
-        this.mapper.writeValue(outputStream, e);
+        mapper.writeValue(outputStream, e);
     }
 
     @Override

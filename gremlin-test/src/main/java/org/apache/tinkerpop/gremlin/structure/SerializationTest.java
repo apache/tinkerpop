@@ -238,8 +238,8 @@ public class SerializationTest {
             assertEquals(GraphSONTokens.VERTEX, m.get(GraphSONTokens.TYPE));
             assertEquals(v.label(), m.get(GraphSONTokens.LABEL));
             assertNotNull(m.get(GraphSONTokens.ID));
-            assertEquals(v.value("name").toString(), ((Map) ((List) ((Map) m.get(GraphSONTokens.PROPERTIES)).get("name")).get(0)).get(GraphSONTokens.VALUE));
-            assertEquals((Integer) v.value("age"), ((Map) ((List) ((Map) m.get(GraphSONTokens.PROPERTIES)).get("age")).get(0)).get(GraphSONTokens.VALUE));
+            assertEquals(v.value("name").toString(), ((List<Map>) m.get(GraphSONTokens.PROPERTIES)).stream().filter(map -> map.get(GraphSONTokens.LABEL).equals("name")).findFirst().get().get(GraphSONTokens.VALUE).toString());
+            assertEquals((Integer) v.value("age"), ((List<Map>) m.get(GraphSONTokens.PROPERTIES)).stream().filter(map -> map.get(GraphSONTokens.LABEL).equals("age")).findFirst().get().get(GraphSONTokens.VALUE));
         }
 
         @Test
@@ -317,9 +317,9 @@ public class SerializationTest {
 
             final List<Object> objects = (List<Object>) m.get(GraphSONTokens.OBJECTS);
             assertEquals(3, objects.size());
-            assertEquals("marko", ((Map) ((List) ((Map) ((Map) objects.get(0)).get(GraphSONTokens.PROPERTIES)).get("name")).get(0)).get(GraphSONTokens.VALUE));
+            assertEquals("marko", ((List<Map>) ((Map) objects.get(0)).get(GraphSONTokens.PROPERTIES)).stream().filter(map -> map.get(GraphSONTokens.LABEL).equals("name")).findFirst().get().get(GraphSONTokens.VALUE).toString());
             assertEquals("created", ((Map) objects.get(1)).get(GraphSONTokens.LABEL));
-            assertEquals("lop", ((Map) ((List) ((Map) ((Map) objects.get(2)).get(GraphSONTokens.PROPERTIES)).get("name")).get(0)).get(GraphSONTokens.VALUE));
+            assertEquals("lop", ((List<Map>) ((Map) objects.get(2)).get(GraphSONTokens.PROPERTIES)).stream().filter(map -> map.get(GraphSONTokens.LABEL).equals("name")).findFirst().get().get(GraphSONTokens.VALUE).toString());
         }
 
         @Test

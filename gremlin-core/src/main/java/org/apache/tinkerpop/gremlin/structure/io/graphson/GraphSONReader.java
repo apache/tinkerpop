@@ -34,7 +34,10 @@ import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.javatuples.Pair;
 
 import java.io.BufferedReader;
@@ -44,10 +47,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A @{link GraphReader} that constructs a graph from a JSON-based representation of a graph and its elements.
@@ -78,63 +87,23 @@ public class GraphSONReader implements GraphReader {
 
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
-        final BatchGraph<?> graph;
-        try {
-            // will throw an exception if not constructed properly
-            graph = BatchGraph.build(graphToWriteTo)
-                    .vertexIdKey(vertexIdKey)
-                    .edgeIdKey(edgeIdKey)
-                    .bufferSize(batchSize).create();
-        } catch (Exception ex) {
-            throw new IOException("Could not instantiate BatchGraph wrapper", ex);
-        }
-
-        final JsonFactory factory = mapper.getFactory();
-
-        try (JsonParser parser = factory.createParser(inputStream)) {
-            if (parser.nextToken() != JsonToken.START_OBJECT)
-                throw new IOException("Expected data to start with an Object");
-
-            while (parser.nextToken() != JsonToken.END_OBJECT) {
-                final String fieldName = parser.getCurrentName();
-                parser.nextToken();
-
-                if (fieldName.equals(GraphSONTokens.VARIABLES)) {
-                    final Map<String, Object> graphVariables = parser.readValueAs(mapTypeReference);
-                    if (graphToWriteTo.features().graph().variables().supportsVariables())
-                        graphVariables.entrySet().forEach(entry -> graphToWriteTo.variables().set(entry.getKey(), entry.getValue()));
-                } else if (fieldName.equals(GraphSONTokens.VERTICES)) {
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        final Map<String, Object> vertexData = parser.readValueAs(mapTypeReference);
-                        readVertexData(vertexData, attachable -> {
-                            final Vertex detachedVertex = attachable.get();
-                            final Iterator<Vertex> iterator = graph.vertices(detachedVertex.id());
-                            final Vertex v = iterator.hasNext() ? iterator.next() : graph.addVertex(T.label, detachedVertex.label(), T.id, detachedVertex.id());
-                            detachedVertex.properties().forEachRemaining(p -> createVertexProperty(graphToWriteTo, v, p));
-                            return v;
-                        });
-                    }
-                } else if (fieldName.equals(GraphSONTokens.EDGES)) {
-                    while (parser.nextToken() != JsonToken.END_ARRAY) {
-                        final Map<String, Object> edgeData = parser.readValueAs(mapTypeReference);
-                        readEdgeData(edgeData, attachable -> {
-                            final Edge detachedEdge = attachable.get();
-                            final Vertex vOut = graph.vertices(detachedEdge.outVertex().id()).next();
-                            final Vertex vIn = graph.vertices(detachedEdge.inVertex().id()).next();
-                            // batchgraph checks for edge id support and uses it if possible.
-                            final Edge e = vOut.addEdge(edgeData.get(GraphSONTokens.LABEL).toString(), vIn, T.id, detachedEdge.id());
-                            detachedEdge.properties().forEachRemaining(p -> e.<Object>property(p.key(), p.value()));
-                            return e;
-                        });
-                    }
-                } else
-                    throw new IllegalStateException(String.format("Unexpected token in GraphSON - %s", fieldName));
-            }
-
-            graph.tx().commit();
-        } catch (Exception ex) {
-            throw new IOException(ex);
-        }
+        // dual pass - create all vertices and store to cache the ids.  then create edges.  as long as we don't
+        // have vertex labels in the output we can't do this single pass
+        final Map<StarGraph.StarVertex,Vertex> cache = new HashMap<>();
+        final AtomicLong counter = new AtomicLong(0);
+        final boolean supportsTx = graphToWriteTo.features().graph().supportsTransactions();
+        final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), null, null, Direction.OUT))).forEach(vertex -> {
+            final Attachable<Vertex> attachable = (Attachable<Vertex>) vertex;
+            cache.put((StarGraph.StarVertex) attachable.get(), attachable.attach(Attachable.Method.create(graphToWriteTo)));
+            if (supportsTx && counter.incrementAndGet() % batchSize == 0)
+                graphToWriteTo.tx().commit();
+        });
+        cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.OUT).forEachRemaining(e -> {
+            ((StarGraph.StarEdge) e).attach(Attachable.Method.create(kv.getValue()));
+            if (supportsTx && counter.incrementAndGet() % batchSize == 0)
+                graphToWriteTo.tx().commit();
+        }));
     }
 
     @Override
@@ -147,22 +116,8 @@ public class GraphSONReader implements GraphReader {
     }
 
     @Override
-    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
-        final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
-
-        final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
-                edgeData.get(GraphSONTokens.LABEL).toString(),
-                (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES),
-                Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
-                Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
-
-        return edgeAttachMethod.apply(edge);
-    }
-
-    @Override
     public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod) throws IOException {
-        final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
-        return readVertexData(vertexData, vertexAttachMethod);
+        return readVertex(inputStream, vertexAttachMethod, null, null);
     }
 
     @Override
@@ -171,15 +126,31 @@ public class GraphSONReader implements GraphReader {
                              final Function<Attachable<Edge>, Edge> edgeAttachMethod,
                              final Direction attachEdgesOfThisDirection) throws IOException {
         final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
-        final Vertex v = readVertexData(vertexData, vertexAttachMethod);
+        final StarGraph starGraph = readStarGraphData(vertexData);
+        if (vertexAttachMethod != null) vertexAttachMethod.apply(starGraph.getStarVertex());
 
-        if (edgeAttachMethod != null && vertexData.containsKey(GraphSONTokens.OUT_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.OUT))
-            readVertexEdges(edgeAttachMethod, vertexData, GraphSONTokens.OUT_E);
+        if (vertexData.containsKey(GraphSONTokens.OUT_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.OUT))
+            readAdjacentVertexEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.OUT_E);
 
-        if (edgeAttachMethod != null && vertexData.containsKey(GraphSONTokens.IN_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.IN))
-            readVertexEdges(edgeAttachMethod, vertexData, GraphSONTokens.IN_E);
+        if (vertexData.containsKey(GraphSONTokens.IN_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.IN))
+            readAdjacentVertexEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.IN_E);
 
-        return v;
+        return starGraph.getStarVertex();
+    }
+
+    @Override
+    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
+        final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
+
+        final Map<String,Object> edgeProperties = edgeData.containsKey(GraphSONTokens.PROPERTIES) ?
+                (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES) : Collections.EMPTY_MAP;
+        final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
+                edgeData.get(GraphSONTokens.LABEL).toString(),
+                edgeProperties,
+                Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
+                Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
+
+        return edgeAttachMethod.apply(edge);
     }
 
     @Override
@@ -195,10 +166,27 @@ public class GraphSONReader implements GraphReader {
         v.property(VertexProperty.Cardinality.list, p.key(), p.value(), propertyArgs.toArray());
     }
 
-    private static void readVertexEdges(final Function<Attachable<Edge>, Edge> edgeMaker, final Map<String, Object> vertexData, final String direction) throws IOException {
-        final List<Map<String, Object>> edgeDatas = (List<Map<String, Object>>) vertexData.get(direction);
-        for (Map<String, Object> edgeData : edgeDatas) {
-            readEdgeData(edgeData, edgeMaker);
+    private static void readAdjacentVertexEdges(final Function<Attachable<Edge>, Edge> edgeMaker,
+                                        final StarGraph starGraph,
+                                        final Map<String, Object> vertexData, final String direction) throws IOException {
+        final Map<String, List<Map<String,Object>>> edgeDatas = (Map<String, List<Map<String,Object>>>) vertexData.get(direction);
+        for (Map.Entry<String, List<Map<String,Object>>> edgeData : edgeDatas.entrySet()) {
+            for (Map<String,Object> inner : edgeData.getValue()) {
+                final StarGraph.StarEdge starEdge;
+                if (direction.equals(GraphSONTokens.OUT_E))
+                    starEdge = (StarGraph.StarEdge) starGraph.getStarVertex().addOutEdge(edgeData.getKey(), starGraph.addVertex(T.id, inner.get(GraphSONTokens.IN)), T.id, inner.get(GraphSONTokens.ID));
+                else
+                    starEdge = (StarGraph.StarEdge) starGraph.getStarVertex().addInEdge(edgeData.getKey(), starGraph.addVertex(T.id, inner.get(GraphSONTokens.OUT)), T.id, inner.get(GraphSONTokens.ID));
+
+                if (inner.containsKey(GraphSONTokens.PROPERTIES)) {
+                    final Map<String, Object> edgePropertyData = (Map<String, Object>) inner.get(GraphSONTokens.PROPERTIES);
+                    for (Map.Entry<String, Object> epd : edgePropertyData.entrySet()) {
+                        starEdge.property(epd.getKey(), epd.getValue());
+                    }
+                }
+
+                if (edgeMaker != null) edgeMaker.apply(starEdge);
+            }
         }
     }
 
@@ -214,13 +202,26 @@ public class GraphSONReader implements GraphReader {
         return edgeMaker.apply(edge);
     }
 
-    private static Vertex readVertexData(final Map<String, Object> vertexData, final Function<Attachable<Vertex>, Vertex> vertexMaker) throws IOException {
-        final Map<String, Object> vertexProperties = (Map<String, Object>) vertexData.get(GraphSONTokens.PROPERTIES);
-        final DetachedVertex vertex = new DetachedVertex(vertexData.get(GraphSONTokens.ID),
-                vertexData.get(GraphSONTokens.LABEL).toString(),
-                vertexProperties);
+    private static StarGraph readStarGraphData(final Map<String, Object> vertexData) throws IOException {
+        final StarGraph starGraph = StarGraph.open();
+        starGraph.addVertex(T.id, vertexData.get(GraphSONTokens.ID), T.label, vertexData.get(GraphSONTokens.LABEL));
+        if (vertexData.containsKey(GraphSONTokens.PROPERTIES)) {
+            final Map<String, List<Map<String, Object>>> properties = (Map<String, List<Map<String, Object>>>) vertexData.get(GraphSONTokens.PROPERTIES);
+            for (Map.Entry<String, List<Map<String, Object>>> property : properties.entrySet()) {
+                for (Map<String, Object> p : property.getValue()) {
+                    // todo: cardinality - same as gryo right now???
+                    final StarGraph.StarVertexProperty vp = (StarGraph.StarVertexProperty) starGraph.getStarVertex().property(VertexProperty.Cardinality.list, property.getKey(), p.get(GraphSONTokens.VALUE), T.id, p.get(GraphSONTokens.ID));
+                    if (p.containsKey(GraphSONTokens.PROPERTIES)) {
+                        final Map<String, Object> edgePropertyData = (Map<String, Object>) p.get(GraphSONTokens.PROPERTIES);
+                        for (Map.Entry<String, Object> epd : edgePropertyData.entrySet()) {
+                            vp.property(epd.getKey(), epd.getValue());
+                        }
+                    }
+                }
+            }
+        }
 
-        return vertexMaker.apply(vertex);
+        return starGraph;
     }
 
     public static Builder build() {

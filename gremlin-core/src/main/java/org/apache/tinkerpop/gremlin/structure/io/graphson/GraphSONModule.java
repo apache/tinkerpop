@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -29,13 +30,15 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphJacksonSerializer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,14 +59,15 @@ public class GraphSONModule extends SimpleModule {
         addSerializer(Vertex.class, new VertexJacksonSerializer());
         addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(GraphSONGraph.class, new GraphSONGraph.GraphJacksonSerializer(normalize));
-        addSerializer(GraphSONVertexProperty.class, new GraphSONVertexProperty.GraphSONVertexPropertySerializer());
         addSerializer(VertexProperty.class, new VertexPropertyJacksonSerializer());
         addSerializer(Property.class, new PropertyJacksonSerializer());
         addSerializer(TraversalMetrics.class, new TraversalMetricsJacksonSerializer());
         addSerializer(Path.class, new PathJacksonSerializer());
+        addSerializer(StarGraphJacksonSerializer.DirectionalStarGraph.class, new StarGraphJacksonSerializer());
     }
 
     static class VertexPropertyJacksonSerializer extends StdSerializer<VertexProperty> {
+
         public VertexPropertyJacksonSerializer() {
             super(VertexProperty.class);
         }
@@ -71,103 +75,89 @@ public class GraphSONModule extends SimpleModule {
         @Override
         public void serialize(final VertexProperty property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            ser(property, jsonGenerator);
+            serializerVertexProperty(property, jsonGenerator, serializerProvider, null);
         }
 
         @Override
         public void serializeWithType(final VertexProperty property, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
-            ser(property, jsonGenerator);
-        }
-
-        private static void ser(final VertexProperty property, final JsonGenerator jsonGenerator) throws IOException {
-            // creation of the map enables all the fields to be properly written with their type if required
-            final Map<String, Object> m = new HashMap<>();
-            m.put(GraphSONTokens.ID, property.id());
-            m.put(GraphSONTokens.VALUE, property.value());
-            m.put(GraphSONTokens.LABEL, property.label());
-            m.put(GraphSONTokens.PROPERTIES, props(property));
-
-            jsonGenerator.writeObject(m);
-        }
-
-        private static Map<String, Object> props(final VertexProperty<?> property) {
-            if (property instanceof DetachedVertexProperty) {
-                try {
-                    return IteratorUtils.collectMap(property.properties(), Property::key, Property::value);
-                } catch (UnsupportedOperationException uoe) {
-                    return new HashMap<>();
-                }
-            } else {
-                return (property.graph().features().vertex().supportsMetaProperties()) ?
-                        IteratorUtils.collectMap(property.properties(), Property::key, Property::value) :
-                        new HashMap<>();
-            }
+            serializerVertexProperty(property, jsonGenerator, serializerProvider, typeSerializer);
         }
     }
 
     static class PropertyJacksonSerializer extends StdSerializer<Property> {
+
         public PropertyJacksonSerializer() {
             super(Property.class);
         }
-
         @Override
         public void serialize(final Property property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            ser(property, jsonGenerator);
+            ser(property, jsonGenerator, serializerProvider, null);
         }
 
         @Override
         public void serializeWithType(final Property property, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
-            ser(property, jsonGenerator);
+            ser(property, jsonGenerator, serializerProvider, typeSerializer);
         }
 
-        private static void ser(final Property property, final JsonGenerator jsonGenerator) throws IOException {
-            // creation of the map enables all the fields to be properly written with their type if required
-            final Map<String, Object> m = new HashMap<>();
-            m.put(GraphSONTokens.VALUE, property.value());
-            jsonGenerator.writeObject(m);
+        private static void ser(final Property property, final JsonGenerator jsonGenerator,
+                                final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            jsonGenerator.writeStartObject();
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+            serializerProvider.defaultSerializeField(GraphSONTokens.VALUE, property.value(), jsonGenerator);
+            jsonGenerator.writeEndObject();
         }
+
     }
-
-
     static class EdgeJacksonSerializer extends StdSerializer<Edge> {
+
+
         public EdgeJacksonSerializer() {
             super(Edge.class);
         }
-
         @Override
         public void serialize(final Edge edge, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            ser(edge, jsonGenerator);
+            ser(edge, jsonGenerator, serializerProvider, null);
         }
 
         @Override
         public void serializeWithType(final Edge edge, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
-            ser(edge, jsonGenerator);
+            ser(edge, jsonGenerator, serializerProvider, typeSerializer);
         }
 
-        private static void ser(final Edge edge, final JsonGenerator jsonGenerator) throws IOException {
-            // creation of the map enables all the fields to be properly written with their type if required
-            final Map<String, Object> m = new HashMap<>();
-            m.put(GraphSONTokens.ID, edge.id());
-            m.put(GraphSONTokens.LABEL, edge.label());
-            m.put(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
+        private static void ser(final Edge edge, final JsonGenerator jsonGenerator,
+                                final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            jsonGenerator.writeStartObject();
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+            writeWithType(GraphSONTokens.ID,edge.id(), jsonGenerator, serializerProvider, typeSerializer);
 
-            final Map<String, Object> properties = IteratorUtils.collectMap(edge.properties(), Property::key, Property::value);
-            m.put(GraphSONTokens.PROPERTIES, properties);
+            jsonGenerator.writeStringField(GraphSONTokens.LABEL, edge.label());
+            jsonGenerator.writeStringField(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
+            jsonGenerator.writeStringField(GraphSONTokens.IN_LABEL, edge.inVertex().label());
+            jsonGenerator.writeStringField(GraphSONTokens.OUT_LABEL, edge.outVertex().label());
+            writeWithType(GraphSONTokens.IN, edge.inVertex().id(), jsonGenerator, serializerProvider, typeSerializer);
+            writeWithType(GraphSONTokens.OUT, edge.outVertex().id(), jsonGenerator, serializerProvider, typeSerializer);
+            writeProperties(edge, jsonGenerator, serializerProvider, typeSerializer);
+            jsonGenerator.writeEndObject();
+        }
 
-            final Vertex inV = edge.inVertex();
-            m.put(GraphSONTokens.IN, inV.id());
-            m.put(GraphSONTokens.IN_LABEL, inV.label());
-
-            final Vertex outV = edge.outVertex();
-            m.put(GraphSONTokens.OUT, outV.id());
-            m.put(GraphSONTokens.OUT_LABEL, outV.label());
-
-            jsonGenerator.writeObject(m);
+        private static void writeProperties(final Edge edge, final JsonGenerator jsonGenerator,
+                                            final SerializerProvider serializerProvider,
+                                            final TypeSerializer typeSerializer) throws IOException {
+            final Iterator<Property<Object>> elementProperties = edge.properties();
+            if (elementProperties.hasNext()) {
+                jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
+                if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+                while (elementProperties.hasNext()) {
+                    final Property<Object> elementProperty = elementProperties.next();
+                    writeWithType(elementProperty.key(), elementProperty.value(), jsonGenerator, serializerProvider, typeSerializer);
+                }
+                jsonGenerator.writeEndObject();
+            }
         }
     }
 
@@ -180,34 +170,40 @@ public class GraphSONModule extends SimpleModule {
         @Override
         public void serialize(final Vertex vertex, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            ser(vertex, jsonGenerator);
+            ser(vertex, jsonGenerator, serializerProvider, null);
         }
 
         @Override
         public void serializeWithType(final Vertex vertex, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
-            ser(vertex, jsonGenerator);
+            ser(vertex, jsonGenerator, serializerProvider, typeSerializer);
 
         }
 
-        private static void ser(final Vertex vertex, final JsonGenerator jsonGenerator)
+        private static void ser(final Vertex vertex, final JsonGenerator jsonGenerator,
+                                final SerializerProvider serializerProvider, final TypeSerializer typeSerializer)
                 throws IOException {
-            // creation of the map enables all the fields to be properly written with their type if required
-            final Map<String, Object> m = new HashMap<>();
-            m.put(GraphSONTokens.ID, vertex.id());
-            m.put(GraphSONTokens.LABEL, vertex.label());
-            m.put(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
-
-            // convert to GraphSONVertexProperty so that the label does not get serialized in the output - it is
-            // redundant because the key in the map is the same as the label.
-            final Iterator<GraphSONVertexProperty> vertexPropertyList = IteratorUtils.map(vertex.properties(), GraphSONVertexProperty::new);
-            final Object properties = IteratorUtils.groupBy(vertexPropertyList, vp -> vp.getToSerialize().key());
-            m.put(GraphSONTokens.PROPERTIES, properties);
-
-            jsonGenerator.writeObject(m);
+            jsonGenerator.writeStartObject();
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+            serializerProvider.defaultSerializeField(GraphSONTokens.ID, vertex.id(), jsonGenerator);
+            jsonGenerator.writeStringField(GraphSONTokens.LABEL, vertex.label());
+            jsonGenerator.writeStringField(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
+            writeProperties(vertex, jsonGenerator);
+            jsonGenerator.writeEndObject();
         }
-    }
 
+        private static void writeProperties(final Vertex vertex, final JsonGenerator jsonGenerator) throws IOException {
+            final Iterator<VertexProperty<Object>> vertexProperties = vertex.properties();
+            if (vertexProperties.hasNext()) {
+                jsonGenerator.writeArrayFieldStart(GraphSONTokens.PROPERTIES);
+                while (vertexProperties.hasNext()) {
+                    jsonGenerator.writeObject(vertexProperties.next());
+                }
+                jsonGenerator.writeEndArray();
+            }
+        }
+
+    }
     static class PathJacksonSerializer extends StdSerializer<Path> {
         public PathJacksonSerializer() {
             super(Path.class);
@@ -216,28 +212,27 @@ public class GraphSONModule extends SimpleModule {
         @Override
         public void serialize(final Path path, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonGenerationException {
-            ser(path, jsonGenerator);
+            ser(path, jsonGenerator, null);
         }
-
         @Override
         public void serializeWithType(final Path path, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer)
                 throws IOException, JsonProcessingException {
-            ser(path, jsonGenerator);
+            ser(path, jsonGenerator, typeSerializer);
         }
 
-        private static void ser(final Path path, final JsonGenerator jsonGenerator)
+        private static void ser(final Path path, final JsonGenerator jsonGenerator, final TypeSerializer typeSerializer)
                 throws IOException {
-            // creation of the map enables all the fields to be properly written with their type if required
-            final Map<String, Object> m = new HashMap<>();
-            m.put(GraphSONTokens.LABELS, path.labels());
-            m.put(GraphSONTokens.OBJECTS, path.objects());
-            jsonGenerator.writeObject(m);
+            jsonGenerator.writeStartObject();
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+            jsonGenerator.writeObjectField(GraphSONTokens.LABELS, path.labels());
+            jsonGenerator.writeObjectField(GraphSONTokens.OBJECTS, path.objects());
+            jsonGenerator.writeEndObject();
         }
+
     }
 
     static class TraversalMetricsJacksonSerializer extends StdSerializer<TraversalMetrics> {
-
         public TraversalMetricsJacksonSerializer() {
             super(TraversalMetrics.class);
         }
@@ -258,7 +253,7 @@ public class GraphSONModule extends SimpleModule {
             // creation of the map enables all the fields to be properly written with their type if required
             final Map<String, Object> m = new HashMap<>();
             m.put(GraphSONTokens.DURATION, traversalMetrics.getDuration(TimeUnit.NANOSECONDS) / 1000000d);
-            List<Map<String, Object>> metrics = new ArrayList<>();
+            final List<Map<String, Object>> metrics = new ArrayList<>();
             traversalMetrics.getMetrics().forEach(it -> metrics.add(metricsToMap(it)));
             m.put(GraphSONTokens.METRICS, metrics);
 
@@ -277,12 +272,13 @@ public class GraphSONModule extends SimpleModule {
             }
 
             if (!metrics.getNested().isEmpty()) {
-                List<Map<String, Object>> nested = new ArrayList<>();
+                final List<Map<String, Object>> nested = new ArrayList<>();
                 metrics.getNested().forEach(it -> nested.add(metricsToMap(it)));
                 m.put(GraphSONTokens.METRICS, nested);
             }
             return m;
         }
+
     }
 
     /**
@@ -299,13 +295,63 @@ public class GraphSONModule extends SimpleModule {
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             ser(o, jsonGenerator, serializerProvider);
         }
-
         private void ser(final Object o, final JsonGenerator jsonGenerator,
                          final SerializerProvider serializerProvider) throws IOException {
             if (Element.class.isAssignableFrom(o.getClass()))
                 jsonGenerator.writeFieldName((((Element) o).id()).toString());
             else
                 super.serialize(o, jsonGenerator, serializerProvider);
+        }
+
+    }
+
+    private static void serializerVertexProperty(final VertexProperty property, final JsonGenerator jsonGenerator,
+                                                 final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+        jsonGenerator.writeStartObject();
+        if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+        serializerProvider.defaultSerializeField(GraphSONTokens.ID, property.id(), jsonGenerator);
+        serializerProvider.defaultSerializeField(GraphSONTokens.VALUE, property.value(), jsonGenerator);
+        jsonGenerator.writeStringField(GraphSONTokens.LABEL, property.label());
+        tryWriteMetaProperties(property, jsonGenerator);
+        jsonGenerator.writeEndObject();
+    }
+
+    private static void tryWriteMetaProperties(final VertexProperty property, final JsonGenerator jsonGenerator) throws IOException {
+        // when "detached" you can't check features of the graph it detached from so it has to be
+        // treated differently from a regular VertexProperty implementation.
+        if (property instanceof DetachedVertexProperty) {
+            // only write meta properties key if they exist
+            if (property.properties().hasNext()) {
+                writeMetaProperties(property, jsonGenerator);
+            }
+        } else {
+            // still attached - so we can check the features to see if it's worth even trying to write the
+            // meta properties key
+            if (property.graph().features().vertex().supportsMetaProperties() && property.properties().hasNext()) {
+                writeMetaProperties(property, jsonGenerator);
+            }
+        }
+    }
+
+    private static void writeMetaProperties(final VertexProperty property, final JsonGenerator jsonGenerator) throws IOException {
+        jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
+        final Iterator<Property<Object>> metaProperties = property.properties();
+        while (metaProperties.hasNext()) {
+            final Property<Object> metaProperty = metaProperties.next();
+            jsonGenerator.writeObjectField(metaProperty.key(), metaProperty.value());
+        }
+        jsonGenerator.writeEndObject();
+    }
+
+    private static void writeWithType(final String key, final Object object, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider,
+                                      final TypeSerializer typeSerializer) throws IOException {
+        final JsonSerializer<Object> serializer = serializerProvider.findValueSerializer(object.getClass(), null);
+        if (typeSerializer != null) {
+            jsonGenerator.writeFieldName(key);
+            serializer.serializeWithType(object, jsonGenerator, serializerProvider, typeSerializer);
+        } else {
+            jsonGenerator.writeObjectField(key, object);
         }
     }
 }

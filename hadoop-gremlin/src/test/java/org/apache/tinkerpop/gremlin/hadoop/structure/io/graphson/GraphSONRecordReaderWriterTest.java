@@ -103,7 +103,7 @@ public class GraphSONRecordReaderWriterTest {
         String[] lines = new String(bos.toByteArray()).split("\n");
         assertEquals(808, lines.length);
         String line42 = lines[41];
-        assertTrue(line42.contains("outVLabel"));
+        assertTrue(line42.contains("outV"));
         assertTrue(line42.contains("ITS ALL OVER NOW"));
 
     }
