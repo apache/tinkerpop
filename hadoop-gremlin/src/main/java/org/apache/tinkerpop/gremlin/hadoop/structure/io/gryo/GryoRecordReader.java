@@ -125,15 +125,11 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
             currentVertexLength++;
             output.write(currentByte);
 
-            if (((byte) currentByte) == TERMINATOR[terminatorLocation])
-                terminatorLocation++;
-            else
-                terminatorLocation = 0;
-
+            terminatorLocation = ((byte) currentByte) == TERMINATOR[terminatorLocation] ? terminatorLocation + 1 : 0;
             if (terminatorLocation >= TERMINATOR.length) {
                 final StarGraph starGraph = StarGraph.open();
-                final Function<Attachable<Vertex>, Vertex> vertexMaker = detachedVertex -> detachedVertex.attach(Attachable.Method.create(starGraph));
-                final Function<Attachable<Edge>, Edge> edgeMaker = detachedEdge -> detachedEdge.attach(Attachable.Method.create(starGraph));
+                final Function<Attachable<Vertex>, Vertex> vertexMaker = attachableVertex -> attachableVertex.attach(Attachable.Method.create(starGraph));
+                final Function<Attachable<Edge>, Edge> edgeMaker = attachableEdge -> attachableEdge.attach(Attachable.Method.create(starGraph));
                 try (InputStream in = new ByteArrayInputStream(output.toByteArray())) {
                     this.vertexWritable.set(this.hasEdges ?
                             this.gryoReader.readVertex(in, vertexMaker, edgeMaker, Direction.BOTH) :
@@ -156,10 +152,7 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
 
     @Override
     public float getProgress() throws IOException {
-        if (0 == this.currentLength || 0 == this.splitLength)
-            return 0.0f;
-        else
-            return (float) this.currentLength / (float) this.splitLength;
+        return (0 == this.currentLength || 0 == this.splitLength) ? 0.0f : (float) this.currentLength / (float) this.splitLength;
     }
 
     @Override
