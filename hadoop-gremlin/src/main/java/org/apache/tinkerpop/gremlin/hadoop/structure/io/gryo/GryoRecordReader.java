@@ -34,9 +34,8 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.VertexTerminator;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
 import java.io.ByteArrayInputStream;
@@ -53,8 +52,7 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
     private FSDataInputStream inputStream;
 
     private static final byte[] PATTERN = GryoMapper.HEADER;
-    // this is VertexTerminator's long terminal 4185403236219066774L as an array of positive int's
-    private static final int[] TERMINATOR = new int[]{58, 21, 138, 17, 112, 155, 153, 150};
+    private static final byte[] TERMINATOR = VertexTerminator.instance().terminal;
 
     private final GryoReader gryoReader = GryoReader.build().create();
     private final VertexWritable vertexWritable = new VertexWritable();
@@ -77,17 +75,17 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
         }
         // open the file and seek to the start of the split
         this.inputStream = file.getFileSystem(job).open(split.getPath());
-        this.inputStream.seek(start);
         this.splitLength = split.getLength() - (seekToHeader(this.inputStream, start) - start);
         this.hasEdges = context.getConfiguration().getBoolean(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, true);
     }
 
     private static long seekToHeader(final FSDataInputStream inputStream, final long start) throws IOException {
+        inputStream.seek(start);
         long nextStart = start;
-        final byte[] buffer = new byte[GryoMapper.HEADER.length];
+        final byte[] buffer = new byte[PATTERN.length];
         while (true) {
             if ((buffer[0] = PATTERN[0]) == inputStream.readByte()) {
-                inputStream.read(nextStart + 1, buffer, 1, GryoMapper.HEADER.length - 1);
+                inputStream.read(nextStart + 1, buffer, 1, PATTERN.length - 1);
                 if (patternMatch(buffer)) {
                     inputStream.seek(nextStart);
                     return nextStart;
@@ -100,7 +98,7 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
     }
 
     private static boolean patternMatch(final byte[] bytes) {
-        for (int i = 0; i < GryoMapper.HEADER.length - 1; i++) {
+        for (int i = 0; i < PATTERN.length - 1; i++) {
             if (bytes[i] != PATTERN[i])
                 return false;
         }
@@ -109,6 +107,9 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
 
     @Override
     public boolean nextKeyValue() throws IOException {
+        if (this.currentLength >= this.splitLength)
+            return false;
+
         final ByteArrayOutputStream output = new ByteArrayOutputStream();
         long currentVertexLength = 0;
         int terminatorLocation = 0;
@@ -124,7 +125,7 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
             currentVertexLength++;
             output.write(currentByte);
 
-            if (currentByte == TERMINATOR[terminatorLocation])
+            if (((byte) currentByte) == TERMINATOR[terminatorLocation])
                 terminatorLocation++;
             else
                 terminatorLocation = 0;

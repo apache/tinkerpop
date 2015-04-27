@@ -26,7 +26,7 @@ import java.util.Arrays;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class VertexTerminator {
+public class VertexTerminator {
     public static final VertexTerminator INSTANCE = new VertexTerminator();
 
     public final byte[] terminal;
@@ -49,5 +49,9 @@ class VertexTerminator {
     @Override
     public int hashCode() {
         return Arrays.hashCode(terminal);
+    }
+
+    public static VertexTerminator instance() {
+        return INSTANCE;
     }
 }

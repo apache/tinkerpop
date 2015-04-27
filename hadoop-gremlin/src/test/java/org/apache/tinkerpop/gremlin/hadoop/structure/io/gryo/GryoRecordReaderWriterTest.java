@@ -39,6 +39,9 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -54,53 +57,60 @@ public class GryoRecordReaderWriterTest {
         configuration.set("fs.default.name", "file:///");
 
         final File testFile = new File(HadoopGraphProvider.PATHS.get("grateful-dead-vertices.kryo"));
-        final FileSplit split = new FileSplit(
-                new Path(testFile.getAbsoluteFile().toURI().toString()), 0,
-                testFile.length(), null);
-        System.out.println("reading Gryo file " + testFile.getAbsolutePath() + " (" + testFile.length() + " bytes)");
-
-        final GryoInputFormat inputFormat = ReflectionUtils.newInstance(GryoInputFormat.class, configuration);
-        final TaskAttemptContext job = new TaskAttemptContext(configuration, new TaskAttemptID());
-        final RecordReader reader = inputFormat.createRecordReader(split, job);
-
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try (final DataOutputStream dos = new DataOutputStream(bos)) {
-            final GryoOutputFormat outputFormat = new GryoOutputFormat();
-            final RecordWriter writer = outputFormat.getRecordWriter(job, dos);
-
-            float lastProgress = -1f;
-            int count = 0;
-            boolean foundKeyValue = false;
-            while (reader.nextKeyValue()) {
-                //System.out.println("" + reader.getProgress() + "> " + reader.getCurrentKey() + ": " + reader.getCurrentValue());
-                count++;
-                final float progress = reader.getProgress();
-                assertTrue(progress >= lastProgress);
-                assertEquals(NullWritable.class, reader.getCurrentKey().getClass());
-                final VertexWritable v = (VertexWritable) reader.getCurrentValue();
-                writer.write(NullWritable.get(), v);
-
-                final Vertex vertex = v.get();
-                assertEquals(Integer.class, vertex.id().getClass());
-
-                final Object value = vertex.property("name");
-                if (((Property) value).value().equals("SUGAR MAGNOLIA")) {
-                    foundKeyValue = true;
-                    assertEquals(92, IteratorUtils.count(vertex.edges(Direction.OUT)));
-                    assertEquals(77, IteratorUtils.count(vertex.edges(Direction.IN)));
-                }
-
-                lastProgress = progress;
-            }
-            assertEquals(808, count);
-            assertTrue(foundKeyValue);
+        final int numberOfSplits = 4;
+        final long testFileSize = testFile.length();
+        final long splitLength = (long) ((double) testFileSize / (double) numberOfSplits);
+        System.out.println("Test file size: " + testFileSize);
+        System.out.println("Test file split length: " + splitLength);
+        final List<FileSplit> splits = new ArrayList<>();
+        for (int i = 0; i < testFileSize; i = i + (int) splitLength + 1) {
+            splits.add(new FileSplit(new Path(testFile.getAbsoluteFile().toURI().toString()), i, splitLength, null));
         }
 
-        //System.out.println("bos: " + new String(bos.toByteArray()));
-        final String[] lines = new String(bos.toByteArray()).split("\\x3a\\x15.\\x11\\x70...");
-        assertEquals(808, lines.length);
-        final String line42 = lines[41];
-        //System.out.println("line42: " + line42);
+
+        final List<String> writeLines = new ArrayList<>();
+        final GryoInputFormat inputFormat = ReflectionUtils.newInstance(GryoInputFormat.class, configuration);
+        final TaskAttemptContext job = new TaskAttemptContext(configuration, new TaskAttemptID());
+        int count = 0;
+        boolean foundKeyValue = false;
+        for (final FileSplit split : splits) {
+            System.out.println("reading Gryo file " + testFile.getAbsolutePath() + " (" + split.getStart() + "--to-->" + (split.getStart() + split.getLength()) + " bytes)");
+            final RecordReader reader = inputFormat.createRecordReader(split, job);
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            try (final DataOutputStream dos = new DataOutputStream(bos)) {
+                final GryoOutputFormat outputFormat = new GryoOutputFormat();
+                final RecordWriter writer = outputFormat.getRecordWriter(job, dos);
+                float lastProgress = -1f;
+                while (reader.nextKeyValue()) {
+                    //System.out.println("" + reader.getProgress() + "> " + reader.getCurrentKey() + ": " + reader.getCurrentValue());
+                    count++;
+                    final float progress = reader.getProgress();
+                    assertTrue(progress >= lastProgress);
+                    assertEquals(NullWritable.class, reader.getCurrentKey().getClass());
+                    final VertexWritable v = (VertexWritable) reader.getCurrentValue();
+                    writer.write(NullWritable.get(), v);
+
+                    final Vertex vertex = v.get();
+                    assertEquals(Integer.class, vertex.id().getClass());
+
+                    final Object value = vertex.property("name");
+                    if (((Property) value).value().equals("SUGAR MAGNOLIA")) {
+                        foundKeyValue = true;
+                        assertEquals(92, IteratorUtils.count(vertex.edges(Direction.OUT)));
+                        assertEquals(77, IteratorUtils.count(vertex.edges(Direction.IN)));
+                    }
+
+                    lastProgress = progress;
+                }
+                writeLines.addAll(Arrays.asList(new String(bos.toByteArray()).split("\\x3a\\x15.\\x11\\x70...")));
+            }
+        }
+        assertEquals(808, count);
+        assertTrue(foundKeyValue);
+
+
+        assertEquals(808, writeLines.size());
+        final String line42 = writeLines.get(41);
         assertTrue(line42.contains("ITS ALL OVER NO"));
     }
 }
