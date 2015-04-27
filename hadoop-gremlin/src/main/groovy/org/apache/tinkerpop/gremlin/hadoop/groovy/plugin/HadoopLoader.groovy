@@ -101,21 +101,21 @@ class HadoopLoader {
             outA.close();
         }
 
-        FileSystem.metaClass.head = { final String path, final long totalLines ->
+        FileSystem.metaClass.head = { final String path, final int totalLines ->
             return headMaker((FileSystem) delegate, path, totalLines, Text.class);
         }
 
         FileSystem.metaClass.head = { final String path ->
-            return headMaker((FileSystem) delegate, path, Long.MAX_VALUE, Text.class);
+            return headMaker((FileSystem) delegate, path, Integer.MAX_VALUE, Text.class);
         }
 
         FileSystem.metaClass.head = {
             final String path, final Class<org.apache.hadoop.io.Writable> writableClass ->
-                return headMaker((FileSystem) delegate, path, Long.MAX_VALUE, writableClass);
+                return headMaker((FileSystem) delegate, path, Integer.MAX_VALUE, writableClass);
         }
 
         FileSystem.metaClass.head = {
-            final String path, final long totalLines, final Class<org.apache.hadoop.io.Writable> writableClass ->
+            final String path, final int totalLines, final Class<org.apache.hadoop.io.Writable> writableClass ->
                 return headMaker((FileSystem) delegate, path, totalLines, writableClass);
         }
 
@@ -127,12 +127,12 @@ class HadoopLoader {
 
     private static Iterator headMaker(
             final FileSystem fs,
-            final String path, final long totalLines, final Class<org.apache.hadoop.io.Writable> writableClass) {
+            final String path, final int totalLines, final Class<org.apache.hadoop.io.Writable> writableClass) {
         if (writableClass.equals(ObjectWritable.class))
-            return IteratorUtils.limit(new ObjectWritableIterator(fs.getConf(), new Path(path)), totalLines.intValue());
+            return IteratorUtils.limit(new ObjectWritableIterator(fs.getConf(), new Path(path)), totalLines);
         else if (writableClass.equals(VertexWritable.class))
-            return IteratorUtils.limit(new VertexWritableIterator(fs.getConf(), new Path(path)), totalLines.intValue());
+            return IteratorUtils.limit(new VertexWritableIterator(fs.getConf(), new Path(path)), totalLines);
         else
-            return IteratorUtils.limit(new TextIterator(fs.getConf(), new Path(path)), totalLines.intValue());
+            return IteratorUtils.limit(new TextIterator(fs.getConf(), new Path(path)), totalLines);
     }
 }

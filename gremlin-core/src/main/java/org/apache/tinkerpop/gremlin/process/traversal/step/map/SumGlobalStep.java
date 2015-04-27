@@ -127,7 +127,11 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> imp
 
         @Override
         public Number generateFinalResult(final Iterator<KeyValue<NullObject, Number>> keyValues) {
-            return keyValues.hasNext() ? keyValues.next().getValue() : 0.0d;
+            double sum = 0.0d;
+            while (keyValues.hasNext()) {
+                sum = sum + keyValues.next().getValue().doubleValue();
+            }
+            return sum;
         }
 
         public static final SumGlobalMapReduce instance() {

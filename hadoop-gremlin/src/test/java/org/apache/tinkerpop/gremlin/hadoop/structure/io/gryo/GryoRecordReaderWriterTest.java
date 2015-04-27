@@ -60,8 +60,8 @@ public class GryoRecordReaderWriterTest {
         final int numberOfSplits = 4;
         final long testFileSize = testFile.length();
         final long splitLength = (long) ((double) testFileSize / (double) numberOfSplits);
-        System.out.println("Test file size: " + testFileSize);
-        System.out.println("Test file split length: " + splitLength);
+        //System.out.println("Test file size: " + testFileSize);
+        //System.out.println("Test file split length: " + splitLength);
         final List<FileSplit> splits = new ArrayList<>();
         for (int i = 0; i < testFileSize; i = i + (int) splitLength + 1) {
             splits.add(new FileSplit(new Path(testFile.getAbsoluteFile().toURI().toString()), i, splitLength, null));
@@ -71,10 +71,12 @@ public class GryoRecordReaderWriterTest {
         final List<String> writeLines = new ArrayList<>();
         final GryoInputFormat inputFormat = ReflectionUtils.newInstance(GryoInputFormat.class, configuration);
         final TaskAttemptContext job = new TaskAttemptContext(configuration, new TaskAttemptID());
-        int count = 0;
+        int vertexCount = 0;
+        int outEdgeCount = 0;
+        int inEdgeCount = 0;
         boolean foundKeyValue = false;
         for (final FileSplit split : splits) {
-            System.out.println("reading Gryo file " + testFile.getAbsolutePath() + " (" + split.getStart() + "--to-->" + (split.getStart() + split.getLength()) + " bytes)");
+            System.out.println("reading Gryo file split " + testFile.getAbsolutePath() + " (" + split.getStart() + "--to-->" + (split.getStart() + split.getLength()) + " bytes)");
             final RecordReader reader = inputFormat.createRecordReader(split, job);
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             try (final DataOutputStream dos = new DataOutputStream(bos)) {
@@ -83,12 +85,14 @@ public class GryoRecordReaderWriterTest {
                 float lastProgress = -1f;
                 while (reader.nextKeyValue()) {
                     //System.out.println("" + reader.getProgress() + "> " + reader.getCurrentKey() + ": " + reader.getCurrentValue());
-                    count++;
                     final float progress = reader.getProgress();
                     assertTrue(progress >= lastProgress);
                     assertEquals(NullWritable.class, reader.getCurrentKey().getClass());
                     final VertexWritable v = (VertexWritable) reader.getCurrentValue();
                     writer.write(NullWritable.get(), v);
+                    vertexCount++;
+                    outEdgeCount = outEdgeCount + (int) IteratorUtils.count(v.get().edges(Direction.OUT));
+                    inEdgeCount = inEdgeCount + (int) IteratorUtils.count(v.get().edges(Direction.IN));
 
                     final Vertex vertex = v.get();
                     assertEquals(Integer.class, vertex.id().getClass());
@@ -105,10 +109,11 @@ public class GryoRecordReaderWriterTest {
                 writeLines.addAll(Arrays.asList(new String(bos.toByteArray()).split("\\x3a\\x15.\\x11\\x70...")));
             }
         }
-        assertEquals(808, count);
+        assertEquals(8049,outEdgeCount);
+        assertEquals(8049,inEdgeCount);
+        assertEquals(outEdgeCount,inEdgeCount);
+        assertEquals(808, vertexCount);
         assertTrue(foundKeyValue);
-
-
         assertEquals(808, writeLines.size());
         final String line42 = writeLines.get(41);
         assertTrue(line42.contains("ITS ALL OVER NO"));
