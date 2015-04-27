@@ -32,9 +32,11 @@ VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep '<v
 
 rm -rf target
 mkdir -p target/svn
-${SVN_CMD} co https://svn.apache.org/repos/asf/incubator/tinkerpop/site/ target/svn
+${SVN_CMD} co --depth immediates https://svn.apache.org/repos/asf/incubator/tinkerpop/site/ target/svn
 
 pushd target/svn
+${SVN_CMD} update --depth empty "docs/${VERSION}"
+${SVN_CMD} update --depth empty "javadocs/${VERSION}"
 ${SVN_CMD} rm "docs/${VERSION}"
 ${SVN_CMD} rm "javadocs/${VERSION}"
 ${SVN_CMD} commit . -m "Docs for TinkerPop ${VERSION} are being replaced."
