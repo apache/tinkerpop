@@ -156,7 +156,7 @@ public final class ElementHelper {
                 .filter(i -> i % 2 == 0)
                 .filter(i -> !keyToRemove.equals(list.get(i)))
                 .flatMap(i -> IntStream.of(i, i + 1))
-                .mapToObj(list::get)
+                .mapToObj(i -> list.get(i))
                 .collect(Collectors.toList());
         return revised.size() > 0 ? Optional.of(revised.toArray()) : Optional.empty();
     }

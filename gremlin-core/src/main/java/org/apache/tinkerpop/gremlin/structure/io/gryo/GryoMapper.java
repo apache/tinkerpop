@@ -200,11 +200,11 @@ public final class GryoMapper implements Mapper<Kryo> {
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StarGraph.class, kryo -> StarGraphSerializer.with(Direction.BOTH), 86)); // ***LAST ID**
 
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Edge.class, kryo -> new GraphSerializer.EdgeSerializer(), 65));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Vertex.class, kryo -> new GraphSerializer.VertexSerializer(), 66));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Property.class, kryo -> new GraphSerializer.PropertySerializer(), 67));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexProperty.class, kryo -> new GraphSerializer.VertexPropertySerializer(), 68));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Path.class, kryo -> new GraphSerializer.PathSerializer(), 59));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Edge.class, kryo -> new GryoSerializers.EdgeSerializer(), 65));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Vertex.class, kryo -> new GryoSerializers.VertexSerializer(), 66));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Property.class, kryo -> new GryoSerializers.PropertySerializer(), 67));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(VertexProperty.class, kryo -> new GryoSerializers.VertexPropertySerializer(), 68));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Path.class, kryo -> new GryoSerializers.PathSerializer(), 59));
             // skip 55
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_Traverser.class, null, 75));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(O_Traverser.class, null, 76));

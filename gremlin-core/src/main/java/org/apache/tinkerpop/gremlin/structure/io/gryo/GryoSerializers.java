@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -36,12 +35,14 @@ import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 /**
- * Class used to serialize graph-based objects such as vertices, edges, properties, and paths.
+ * Class used to serialize graph-based objects such as vertices, edges, properties, and paths. These objects are
+ * "detached" using {@link DetachedFactory} before serialization. These serialize present a generalized way to
+ * serialize the implementations of core interfaces.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GraphSerializer {
+class GryoSerializers {
     /**
      * Serializes any {@link Edge} implementation encountered to a {@link DetachedEdge}.
      *
@@ -140,25 +141,4 @@ class GraphSerializer {
         }
 
     }
-
-    /**
-     * Serializes any {@link Traverser} implementation encountered via pre-processing with {@link Traverser.Admin#detach()}.
-     *
-     * @author Marko A. Rodriguez (http://markorodriguez.com)
-     */
-    /*static class TraverserSerializer extends Serializer<Traverser.Admin> {
-        public TraverserSerializer() {
-        }
-
-        @Override
-        public void write(final Kryo kryo, final Output output, final Traverser.Admin traverser) {
-            gryo.writeClassAndObject(output, traverser.asAdmin().detach());
-        }
-
-        @Override
-        public Traverser.Admin read(final Kryo kryo, final Input input, final Class<Traverser.Admin> traverser) {
-            return (Traverser.Admin) gryo.readClassAndObject(input);
-        }
-
-    }*/
 }
