@@ -19,14 +19,17 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,24 +37,21 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent {
+public final class SelectListOneStep<S, E> extends MapStep<S, List<E>> implements TraversalParent {
 
     private final String selectLabel;
     private Traversal.Admin<Object, Object> selectTraversal = new IdentityTraversal<>();
     private boolean requiresPaths = false;
 
-    public SelectOneStep(final Traversal.Admin traversal, final String selectLabel) {
+    public SelectListOneStep(final Traversal.Admin traversal, final String selectLabel) {
         super(traversal);
         this.selectLabel = selectLabel;
     }
 
     @Override
-    protected E map(final Traverser.Admin<S> traverser) {
+    protected List<E> map(final Traverser.Admin<S> traverser) {
         final S start = traverser.get();
-        if (start instanceof Map && ((Map) start).containsKey(this.selectLabel))
-            return (E) TraversalUtil.apply(((Map) start).get(this.selectLabel), this.selectTraversal);
-        else
-            return (E) TraversalUtil.apply(traverser.path().<Object>getLast(this.selectLabel), this.selectTraversal);
+        return (List<E>) TraversalUtil.applyEach(traverser.path().getList(this.selectLabel), this.selectTraversal);
     }
 
     @Override
@@ -60,8 +60,8 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    public SelectOneStep<S, E> clone() {
-        final SelectOneStep<S, E> clone = (SelectOneStep<S, E>) super.clone();
+    public SelectListOneStep<S, E> clone() {
+        final SelectListOneStep<S, E> clone = (SelectListOneStep<S, E>) super.clone();
         clone.selectTraversal = this.selectTraversal.clone();
         return clone;
     }
@@ -78,8 +78,8 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.PATH);
+        return this.getSelfAndChildRequirements(
+            TraverserRequirement.PATH,
+            TraverserRequirement.OBJECT);
     }
 }
-
-

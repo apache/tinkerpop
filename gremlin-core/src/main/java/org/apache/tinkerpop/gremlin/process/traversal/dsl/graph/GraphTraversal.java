@@ -89,6 +89,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SampleLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectListOneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectListStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
@@ -291,11 +293,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final String... stepLabels) {
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), stepLabels));
+        return this.asAdmin().addStep(new SelectStep<S, E2>(this.asAdmin(), stepLabels));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String stepLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), stepLabel));
+        return this.asAdmin().addStep(new SelectOneStep<S, E2>(this.asAdmin(), stepLabel));
+    }
+
+    public default <E2> GraphTraversal<S, Map<String, List<E2>>> selectList(final String... stepLabels) {
+        return this.asAdmin().addStep(new SelectListStep<S, E2>(this.asAdmin(), stepLabels));
+    }
+
+    public default <E2> GraphTraversal<S, List<E2>> selectList(final String stepLabel) {
+        return this.asAdmin().addStep(new SelectListOneStep<S, E2>(this.asAdmin(), stepLabel));
     }
 
     public default <E2> GraphTraversal<S, E2> unfold() {
