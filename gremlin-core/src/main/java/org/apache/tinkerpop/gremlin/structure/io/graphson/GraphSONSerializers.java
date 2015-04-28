@@ -298,41 +298,45 @@ class GraphSONSerializers {
                                                  final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
         jsonGenerator.writeStartObject();
         if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
-        serializerProvider.defaultSerializeField(GraphSONTokens.ID, property.id(), jsonGenerator);
-        serializerProvider.defaultSerializeField(GraphSONTokens.VALUE, property.value(), jsonGenerator);
+        writeWithType(GraphSONTokens.ID, property.id(), jsonGenerator, serializerProvider, typeSerializer);
+        writeWithType(GraphSONTokens.VALUE, property.value(), jsonGenerator, serializerProvider, typeSerializer);
         jsonGenerator.writeStringField(GraphSONTokens.LABEL, property.label());
-        tryWriteMetaProperties(property, jsonGenerator);
+        tryWriteMetaProperties(property, jsonGenerator, serializerProvider, typeSerializer);
         jsonGenerator.writeEndObject();
     }
 
-    private static void tryWriteMetaProperties(final VertexProperty property, final JsonGenerator jsonGenerator) throws IOException {
+    private static void tryWriteMetaProperties(final VertexProperty property, final JsonGenerator jsonGenerator,
+                                               final SerializerProvider serializerProvider,
+                                               final TypeSerializer typeSerializer) throws IOException {
         // when "detached" you can't check features of the graph it detached from so it has to be
         // treated differently from a regular VertexProperty implementation.
         if (property instanceof DetachedVertexProperty) {
             // only write meta properties key if they exist
             if (property.properties().hasNext()) {
-                writeMetaProperties(property, jsonGenerator);
+                writeMetaProperties(property, jsonGenerator, serializerProvider, typeSerializer);
             }
         } else {
             // still attached - so we can check the features to see if it's worth even trying to write the
             // meta properties key
             if (property.graph().features().vertex().supportsMetaProperties() && property.properties().hasNext()) {
-                writeMetaProperties(property, jsonGenerator);
+                writeMetaProperties(property, jsonGenerator, serializerProvider, typeSerializer);
             }
         }
     }
 
-    private static void writeMetaProperties(final VertexProperty property, final JsonGenerator jsonGenerator) throws IOException {
+    private static void writeMetaProperties(final VertexProperty property, final JsonGenerator jsonGenerator,
+                                            final SerializerProvider serializerProvider,
+                                            final TypeSerializer typeSerializer) throws IOException {
         jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
         final Iterator<Property<Object>> metaProperties = property.properties();
         while (metaProperties.hasNext()) {
             final Property<Object> metaProperty = metaProperties.next();
-            jsonGenerator.writeObjectField(metaProperty.key(), metaProperty.value());
+            writeWithType(metaProperty.key(), metaProperty.value(), jsonGenerator, serializerProvider, typeSerializer);
         }
         jsonGenerator.writeEndObject();
     }
 
-    private static void writeWithType(final String key, final Object object, final JsonGenerator jsonGenerator,
+    public static void writeWithType(final String key, final Object object, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider,
                                       final TypeSerializer typeSerializer) throws IOException {
         final JsonSerializer<Object> serializer = serializerProvider.findValueSerializer(object.getClass(), null);
