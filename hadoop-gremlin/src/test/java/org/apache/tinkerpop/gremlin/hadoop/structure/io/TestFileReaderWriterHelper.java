@@ -21,6 +21,7 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
+import com.typesafe.config.ConfigException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
@@ -63,7 +64,7 @@ public class TestFileReaderWriterHelper {
         return splits;
     }
 
-    public static void validateFileSplits(final List<FileSplit> fileSplits, final Class<? extends InputFormat> inputFormatClass, final Optional<Class<? extends OutputFormat>> outFormatClass) throws Exception {
+    public static void validateFileSplits(final List<FileSplit> fileSplits, final Class<? extends InputFormat<NullWritable,VertexWritable>> inputFormatClass, final Optional<Class<? extends OutputFormat<NullWritable,VertexWritable>>> outFormatClass) throws Exception {
         File outputDirectory = TestHelper.makeTestDataPath(inputFormatClass, "hadoop-record-reader-writer-test");
         final Configuration configuration = new Configuration(false);
         configuration.set("fs.file.impl", LocalFileSystem.class.getName());
@@ -76,8 +77,8 @@ public class TestFileReaderWriterHelper {
         int outEdgeCount = 0;
         int inEdgeCount = 0;
 
-        final OutputFormat outputFormat = outFormatClass.isPresent() ? ReflectionUtils.newInstance(outFormatClass.get(), configuration) : null;
-        final RecordWriter writer = null == outputFormat ? null : outputFormat.getRecordWriter(job);
+        final OutputFormat<NullWritable,VertexWritable> outputFormat = outFormatClass.isPresent() ? ReflectionUtils.newInstance(outFormatClass.get(), configuration) : null;
+        final RecordWriter<NullWritable,VertexWritable> writer = null == outputFormat ? null : outputFormat.getRecordWriter(job);
 
         boolean foundKeyValue = false;
         for (final FileSplit split : fileSplits) {
@@ -90,16 +91,15 @@ public class TestFileReaderWriterHelper {
                 final float progress = reader.getProgress();
                 assertTrue(progress >= lastProgress);
                 assertEquals(NullWritable.class, reader.getCurrentKey().getClass());
-                final VertexWritable v = (VertexWritable) reader.getCurrentValue();
-                if (null != writer) writer.write(NullWritable.get(), v);
+                final VertexWritable vertexWritable = (VertexWritable) reader.getCurrentValue();
+                if (null != writer) writer.write(NullWritable.get(), vertexWritable);
                 vertexCount++;
-                outEdgeCount = outEdgeCount + (int) IteratorUtils.count(v.get().edges(Direction.OUT));
-                inEdgeCount = inEdgeCount + (int) IteratorUtils.count(v.get().edges(Direction.IN));
-
-                final Vertex vertex = v.get();
+                outEdgeCount = outEdgeCount + (int) IteratorUtils.count(vertexWritable.get().edges(Direction.OUT));
+                inEdgeCount = inEdgeCount + (int) IteratorUtils.count(vertexWritable.get().edges(Direction.IN));
+                //
+                final Vertex vertex = vertexWritable.get();
                 assertEquals(Integer.class, vertex.id().getClass());
-                final Object value = vertex.property("name");
-                if (((Property) value).value().equals("SUGAR MAGNOLIA")) {
+                if (vertex.value("name").equals("SUGAR MAGNOLIA")) {
                     foundKeyValue = true;
                     assertEquals(92, IteratorUtils.count(vertex.edges(Direction.OUT)));
                     assertEquals(77, IteratorUtils.count(vertex.edges(Direction.IN)));

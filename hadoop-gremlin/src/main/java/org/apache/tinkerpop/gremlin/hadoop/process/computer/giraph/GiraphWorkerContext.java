@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramPool;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 
 import java.util.Iterator;
 
