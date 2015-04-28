@@ -470,7 +470,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final String key, final Object value) {
-        return this.has(key,new P<?>[]{value instanceof P ? (P)value : P.eq(value)});
+        return this.has(key, new P<?>[]{value instanceof P ? (P) value : P.eq(value)});
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {
@@ -707,6 +707,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> as(final String stepLabel) {
         if (this.asAdmin().getSteps().size() == 0) this.asAdmin().addStep(new StartStep<>(this.asAdmin()));
+        if (this.asAdmin().getEndStep().getLabel().isPresent())
+            throw new IllegalStateException("The previous step has already been labeled: " + this.asAdmin().getEndStep());
         this.asAdmin().getEndStep().setLabel(stepLabel);
         return this;
     }
