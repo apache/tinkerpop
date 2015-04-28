@@ -27,11 +27,8 @@ public final class GraphSONTokens {
     public static final String TYPE = "type";
     public static final String VALUE = "value";
     public static final String PROPERTIES = "properties";
-    public static final String VARIABLES = "variables";
     public static final String EDGE = "edge";
-    public static final String EDGES = "edges";
     public static final String VERTEX = "vertex";
-    public static final String VERTICES = "vertices";
     public static final String IN = "inV";
     public static final String OUT = "outV";
     public static final String IN_E = "inE";
@@ -45,7 +42,6 @@ public final class GraphSONTokens {
     public static final String METRICS = "metrics";
     public static final String DURATION = "dur";
     public static final String NAME = "name";
-    public static final String PERCENT_DURATION = "percentDur";
     public static final String COUNTS = "counts";
     public static final String ANNOTATIONS = "annotations";
 }
