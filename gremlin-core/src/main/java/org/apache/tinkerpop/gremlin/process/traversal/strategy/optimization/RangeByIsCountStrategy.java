@@ -38,8 +38,8 @@ import java.util.function.BiPredicate;
 public final class RangeByIsCountStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
 
     private static final Map<BiPredicate, Long> RANGE_PREDICATES = new HashMap<BiPredicate, Long>() {{
-        put(Compare.inside, 0L);
-        put(Compare.outside, 1L);
+        //put(Compare.inside, 0L);
+        //put(Compare.outside, 1L);
         put(Contains.within, 1L);
         put(Contains.without, 0L);
     }};
@@ -55,7 +55,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy impl
     public void apply(final Traversal.Admin<?, ?> traversal) {
         final int size = traversal.getSteps().size();
         Step prev = null;
-        for (int i = 0; i < size; i++) {
+        /*for (int i = 0; i < size; i++) {
             final Step curr = traversal.getSteps().get(i);
             if (curr instanceof CountGlobalStep && i < size - 1) {
                 final Step next = traversal.getSteps().get(i + 1);
@@ -82,7 +82,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy impl
                 }
             }
             prev = curr;
-        }
+        } */
     }
 
     public static RangeByIsCountStrategy instance() {

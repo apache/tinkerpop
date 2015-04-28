@@ -22,10 +22,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -35,31 +36,34 @@ import java.util.Set;
  */
 public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder {   // TODO: make final when graph strategies are fixed up
 
-    private final HasContainer hasContainer;
+    private final List<HasContainer> hasContainers;
 
-    public HasStep(final Traversal.Admin traversal, final HasContainer hasContainer) {
+    public HasStep(final Traversal.Admin traversal, final HasContainer... hasContainers) {
         super(traversal);
-        this.hasContainer = hasContainer;
+        this.hasContainers = new ArrayList<>();
+        for (final HasContainer hasContainer : hasContainers) {
+            this.hasContainers.add(hasContainer);
+        }
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        return this.hasContainer.test(traverser.get());
+        return HasContainer.testAll(traverser.get(), this.hasContainers);
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.hasContainer);
+        return TraversalHelper.makeStepString(this, this.hasContainers);
     }
 
     @Override
     public List<HasContainer> getHasContainers() {
-        return Collections.singletonList(this.hasContainer);
+        return this.hasContainers;
     }
 
     @Override
     public void addHasContainer(final HasContainer hasContainer) {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + " does not support adding new HasContainers");
+        this.hasContainers.add(hasContainer);
     }
 
     @Override

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
-import java.util.List;
 import java.util.function.BiPredicate;
 
 /**
@@ -93,26 +92,6 @@ public enum Compare implements BiPredicate<Object, Object> {
         public Compare opposite() {
             return gt;
         }
-    }, inside {
-        @Override
-        public boolean test(final Object first, final Object second) {
-            return !(null == first || second == null) && gt.test(first, ((List) second).get(0)) && lt.test(first, ((List) second).get(1));
-        }
-
-        @Override
-        public Compare opposite() {
-            return outside;
-        }
-    }, outside {
-        @Override
-        public boolean test(final Object first, final Object second) {
-            return !(null == first || second == null) && lt.test(first, ((List) second).get(0)) || gt.test(first, ((List) second).get(1));
-        }
-
-        @Override
-        public Compare opposite() {
-            return inside;
-        }
     };
 
     /**
@@ -125,12 +104,4 @@ public enum Compare implements BiPredicate<Object, Object> {
      * Produce the opposite representation of the current {@code Compare} enum.
      */
     public abstract Compare opposite();
-
-    public static final boolean hasCompare(final String name) {
-        for(final Compare compare : Compare.values()) {
-            if(compare.name().equals(name))
-                return true;
-        }
-        return false;
-    }
 }

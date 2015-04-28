@@ -96,12 +96,16 @@ public class P<V> implements Predicate<V>, Serializable {
         return new P(Compare.gte, value);
     }
 
-    public static <V> P<V> inside(final V first, final V second) {
-        return new P(Compare.inside, Arrays.asList(first, second));
+    public static <V> P<V>[] inside(final V first, final V second) {
+        return new P[]{new P(Compare.gt, first), new P(Compare.lt, second)};
     }
 
-    public static <V> P<V> outside(final V first, final V second) {
-        return new P(Compare.outside, Arrays.asList(first, second));
+    public static <V> P<V>[] outside(final V first, final V second) {
+        return new P[]{new P(Compare.lt, first), new P(Compare.gt, second)};
+    }
+
+    public static <V> P<V>[] between(final V first, final V second) {
+        return new P[]{new P(Compare.gte, first), new P(Compare.lt, second)};
     }
 
     public static <V> P<V> within(final V... values) {

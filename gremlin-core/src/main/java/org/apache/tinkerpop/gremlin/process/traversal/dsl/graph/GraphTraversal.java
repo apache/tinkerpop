@@ -132,13 +132,11 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -463,12 +461,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new HasTraversalStep<>(this.asAdmin(), (Traversal.Admin<E, ?>) hasNotNextTraversal, true));
     }
 
-    public default GraphTraversal<S, E> has(final String key, final P<?> predicate) {
-        return this.asAdmin().addStep(new HasStep(this.asAdmin(), new HasContainer(key, predicate.getBiPredicate(), predicate.getValue())));
+    public default GraphTraversal<S, E> has(final String key, final P<?>... predicates) {
+        final HasContainer[] hasContainers = new HasContainer[predicates.length];
+        for (int i = 0; i < predicates.length; i++) {
+            hasContainers[i] = new HasContainer(key, predicates[i].getBiPredicate(), predicates[i].getValue());
+        }
+        return this.asAdmin().addStep(new HasStep(this.asAdmin(), hasContainers));
     }
 
     public default GraphTraversal<S, E> has(final String key, final Object value) {
-        return this.has(key, P.eq(value));
+        return this.has(key,new P<?>[]{value instanceof P ? (P)value : P.eq(value)});
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {

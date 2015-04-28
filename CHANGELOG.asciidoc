@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed `Compare.inside` and `Compare.outside` as they are not primitive comparators and should be composed from primitives.
 * Introduced `P` (predicate) for cleaner looking `is()`, `has()`, and `where()` calls -- e.g. `has('age',eq(32))`.
 * `GraphTraversalSource` is now the location for `withXXX()` operations. No longer do they exist at `GraphTraversal`.
 * All `Traverser` objects now extend from `AbstractTraverser` or a child that ultimately extends from `AbstractTraverser`.

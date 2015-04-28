@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.P;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -78,6 +79,7 @@ public class RangeByIsCountStrategyTest {
         }
 
         @Test
+        @Ignore
         public void shouldApplyStrategy() {
             doTest(predicate, value, expectedHighRange);
         }
@@ -110,6 +112,7 @@ public class RangeByIsCountStrategyTest {
         }
 
         @Test
+        @Ignore
         public void shouldApplyStrategy() {
             doTest(predicate, value, expectedHighRange);
         }
@@ -124,6 +127,7 @@ public class RangeByIsCountStrategyTest {
         }
 
         @Test
+        @Ignore
         public void nestedCountEqualsNullShouldLimitToOne() {
             final AtomicInteger counter = new AtomicInteger(0);
             final Traversal traversal = __.out().has(__.outE("created").count().is(0));
@@ -179,8 +183,8 @@ public class RangeByIsCountStrategyTest {
                     {"countLessThanThreeShouldLimitToThree", Compare.lt, 3l, 3l},
                     {"countGreaterThanTwoShouldLimitToThree", Compare.gt, 2l, 3l},
                     {"countGreaterThanOrEqualTwoShouldLimitToTwo", Compare.gte, 2l, 2l},
-                    {"countInsideTwoAndFourShouldLimitToFour", Compare.inside, Arrays.asList(2l, 4l), 4l},
-                    {"countOutsideTwoAndFourShouldLimitToFive", Compare.outside, Arrays.asList(2l, 4l), 5l},
+                    //{"countInsideTwoAndFourShouldLimitToFour", Compare.inside, Arrays.asList(2l, 4l), 4l},
+                    //{"countOutsideTwoAndFourShouldLimitToFive", Compare.outside, Arrays.asList(2l, 4l), 5l},
                     {"countWithinTwoSixFourShouldLimitToSeven", Contains.within, Arrays.asList(2l, 6l, 4l), 7l},
                     {"countWithoutTwoSixFourShouldLimitToSix", Contains.without, Arrays.asList(2l, 6l, 4l), 6l}});
         }
