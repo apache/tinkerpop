@@ -1319,6 +1319,33 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldReadWriteVerticesNoEdgesToGraphSON() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = graph.io(graphson).writer().create();
+            writer.writeVertices(os, g.V().has("age", P.gt(30)));
+
+            final AtomicInteger called = new AtomicInteger(0);
+            final GraphSONReader reader = graph.io(graphson).reader().create();
+
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                final Iterator<Vertex> itty = reader.readVertices(bais,
+                        attachable -> {
+                            final Vertex detachedVertex = attachable.get();
+                            called.incrementAndGet();
+                            return detachedVertex;
+                        }, null, null);
+
+                assertNotNull(itty.next());
+                assertNotNull(itty.next());
+                assertFalse(itty.hasNext());
+            }
+
+            assertEquals(2, called.get());
+        }
+    }
+
+    @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
     public void shouldReadWriteVerticesNoEdgesToGraphSONManual() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {

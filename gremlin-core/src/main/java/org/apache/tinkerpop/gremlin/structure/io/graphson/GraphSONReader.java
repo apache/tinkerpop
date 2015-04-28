@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -33,11 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.javatuples.Pair;
 
 import java.io.BufferedReader;
@@ -45,18 +39,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A @{link GraphReader} that constructs a graph from a JSON-based representation of a graph and its elements.
@@ -71,18 +60,13 @@ import java.util.stream.Stream;
 public class GraphSONReader implements GraphReader {
     private final ObjectMapper mapper;
     private final long batchSize;
-    private final String vertexIdKey;
-    private final String edgeIdKey;
 
     final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
     };
 
-    public GraphSONReader(final GraphSONMapper mapper, final long batchSize,
-                          final String vertexIdKey, final String edgeIdKey) {
+    public GraphSONReader(final GraphSONMapper mapper, final long batchSize) {
         this.mapper = mapper.createMapper();
         this.batchSize = batchSize;
-        this.vertexIdKey = vertexIdKey;
-        this.edgeIdKey = edgeIdKey;
     }
 
     @Override
@@ -158,17 +142,10 @@ public class GraphSONReader implements GraphReader {
         return mapper.readValue(inputStream, clazz);
     }
 
-    private static void createVertexProperty(final Graph graphToWriteTo, final Vertex v, final VertexProperty<Object> p) {
-        final List<Object> propertyArgs = new ArrayList<>();
-        if (graphToWriteTo.features().vertex().properties().supportsUserSuppliedIds())
-            propertyArgs.addAll(Arrays.asList(T.id, p.id()));
-        p.properties().forEachRemaining(it -> propertyArgs.addAll(Arrays.asList(it.key(), it.value())));
-        v.property(VertexProperty.Cardinality.list, p.key(), p.value(), propertyArgs.toArray());
-    }
-
     private static void readAdjacentVertexEdges(final Function<Attachable<Edge>, Edge> edgeMaker,
-                                        final StarGraph starGraph,
-                                        final Map<String, Object> vertexData, final String direction) throws IOException {
+                                                final StarGraph starGraph,
+                                                final Map<String, Object> vertexData,
+                                                final String direction) throws IOException {
         final Map<String, List<Map<String,Object>>> edgeDatas = (Map<String, List<Map<String,Object>>>) vertexData.get(direction);
         for (Map.Entry<String, List<Map<String,Object>>> edgeData : edgeDatas.entrySet()) {
             for (Map<String,Object> inner : edgeData.getValue()) {
@@ -188,18 +165,6 @@ public class GraphSONReader implements GraphReader {
                 if (edgeMaker != null) edgeMaker.apply(starEdge);
             }
         }
-    }
-
-    private static Edge readEdgeData(final Map<String, Object> edgeData, final Function<Attachable<Edge>, Edge> edgeMaker) throws IOException {
-        final Map<String, Object> properties = (Map<String, Object>) edgeData.get(GraphSONTokens.PROPERTIES);
-
-        final DetachedEdge edge = new DetachedEdge(edgeData.get(GraphSONTokens.ID),
-                edgeData.get(GraphSONTokens.LABEL).toString(),
-                properties,
-                Pair.with(edgeData.get(GraphSONTokens.OUT), edgeData.get(GraphSONTokens.OUT_LABEL).toString()),
-                Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
-
-        return edgeMaker.apply(edge);
     }
 
     private static StarGraph readStarGraphData(final Map<String, Object> vertexData) throws IOException {
@@ -230,32 +195,10 @@ public class GraphSONReader implements GraphReader {
 
     public static class Builder implements ReaderBuilder<GraphSONReader> {
         private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
-        private String vertexIdKey = T.id.getAccessor();
-        private String edgeIdKey = T.id.getAccessor();
 
         private GraphSONMapper mapper = GraphSONMapper.build().create();
 
         private Builder() {
-        }
-
-        /**
-         * The name of the key to supply to
-         * {@link org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#vertexIdKey} when reading data into
-         * the {@link Graph}.
-         */
-        public Builder vertexIdKey(final String vertexIdKey) {
-            this.vertexIdKey = vertexIdKey;
-            return this;
-        }
-
-        /**
-         * The name of the key to supply to
-         * {@link org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph.Builder#edgeIdKey} when reading data into
-         * the {@link Graph}.
-         */
-        public Builder edgeIdKey(final String edgeIdKey) {
-            this.edgeIdKey = edgeIdKey;
-            return this;
         }
 
         /**
@@ -277,7 +220,7 @@ public class GraphSONReader implements GraphReader {
         }
 
         public GraphSONReader create() {
-            return new GraphSONReader(mapper, batchSize, vertexIdKey, edgeIdKey);
+            return new GraphSONReader(mapper, batchSize);
         }
     }
 }
