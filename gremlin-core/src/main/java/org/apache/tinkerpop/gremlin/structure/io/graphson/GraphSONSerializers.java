@@ -184,13 +184,16 @@ class GraphSONSerializers {
             final Iterator<VertexProperty<Object>> vertexProperties = vertex.properties();
             if (vertexProperties.hasNext()) {
                 jsonGenerator.writeArrayFieldStart(GraphSONTokens.PROPERTIES);
-                if (typeSerializer != null) jsonGenerator.writeString(ArrayList.class.getName());
-                jsonGenerator.writeStartArray();
+                if (typeSerializer != null) {
+                    jsonGenerator.writeString(ArrayList.class.getName());
+                    jsonGenerator.writeStartArray();
+                }
+
                 while (vertexProperties.hasNext()) {
                     jsonGenerator.writeObject(vertexProperties.next());
                 }
                 jsonGenerator.writeEndArray();
-                jsonGenerator.writeEndArray();
+                if (typeSerializer != null) jsonGenerator.writeEndArray();
             }
         }
 
