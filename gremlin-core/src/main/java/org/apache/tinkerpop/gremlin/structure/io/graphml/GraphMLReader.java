@@ -155,6 +155,9 @@ public class GraphMLReader implements GraphReader {
                             edgeOutVertex = findOrCreate(vertexIdOut, graphToWriteTo, supportsVertexIds, cache);
                             edgeInVertex = findOrCreate(vertexIdIn, graphToWriteTo, supportsVertexIds, cache);
 
+                            if (supportsTx && counter.incrementAndGet() % batchSize == 0)
+                                graphToWriteTo.tx().commit();
+
                             isInEdge = true;
                             edgeProps = new HashMap<>();
 
@@ -191,6 +194,9 @@ public class GraphMLReader implements GraphReader {
 
                         findOrCreate(currentVertexId, graphToWriteTo, supportsVertexIds, cache, ElementHelper.upsert(propsAsArray, T.label, currentVertexLabel));
 
+                        if (supportsTx && counter.incrementAndGet() % batchSize == 0)
+                            graphToWriteTo.tx().commit();
+
                         vertexId = null;
                         vertexLabel = null;
                         vertexProps = null;
@@ -199,6 +205,9 @@ public class GraphMLReader implements GraphReader {
                         final Object[] propsAsArray = edgeProps.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
                         final Object[] propsReady = supportsEdgeIds ? ElementHelper.upsert(propsAsArray, T.id, edgeId) : propsAsArray;
                         edgeOutVertex.addEdge(edgeLabel, edgeInVertex, propsReady);
+
+                        if (supportsTx && counter.incrementAndGet() % batchSize == 0)
+                            graphToWriteTo.tx().commit();
 
                         edgeId = null;
                         edgeLabel = null;
@@ -211,8 +220,7 @@ public class GraphMLReader implements GraphReader {
                 }
             }
 
-            if (supportsTx && counter.incrementAndGet() % batchSize == 0)
-                graphToWriteTo.tx().commit();
+            if (supportsTx) graphToWriteTo.tx().commit();
         } catch (XMLStreamException xse) {
             // rollback whatever portion failed
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)

@@ -88,6 +88,8 @@ public class GraphSONReader implements GraphReader {
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
                 graphToWriteTo.tx().commit();
         }));
+
+        if (supportsTx) graphToWriteTo.tx().commit();
     }
 
     @Override
