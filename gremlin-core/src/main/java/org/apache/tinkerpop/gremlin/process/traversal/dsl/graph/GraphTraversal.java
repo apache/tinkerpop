@@ -600,7 +600,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> as(final String stepLabel) {
         if (this.asAdmin().getSteps().size() == 0) this.asAdmin().addStep(new StartStep<>(this.asAdmin()));
-        this.asAdmin().getEndStep().setLabel(stepLabel);
+        final Step<?, E> endStep = this.asAdmin().getEndStep();
+        if (endStep.getLabel().isPresent())
+            throw new IllegalStateException("The previous step has already been labeled: " + endStep);
+        endStep.setLabel(stepLabel);
         return this;
     }
 
