@@ -51,7 +51,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class GryoRecordReaderWriterTest {
     @Test
-    public void testAll() throws Exception {
+    public void shouldSplitFile() throws Exception {
         final Configuration configuration = new Configuration(false);
         configuration.set("fs.file.impl", LocalFileSystem.class.getName());
         configuration.set("fs.default.name", "file:///");
