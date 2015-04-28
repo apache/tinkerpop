@@ -65,7 +65,6 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
 
     @Override
     public void write(final Kryo kryo, final Output output, final StarGraph starGraph) {
-        kryo.writeObject(output, starGraph.nextId);
         kryo.writeObjectOrNull(output, starGraph.edgeProperties, HashMap.class);
         kryo.writeObjectOrNull(output, starGraph.metaProperties, HashMap.class);
         kryo.writeClassAndObject(output, starGraph.starVertex.id);
@@ -89,7 +88,6 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
     @Override
     public StarGraph read(final Kryo kryo, final Input input, final Class<StarGraph> aClass) {
         final StarGraph starGraph = StarGraph.open();
-        starGraph.nextId = kryo.readObject(input, Long.class);
         starGraph.edgeProperties = kryo.readObjectOrNull(input, HashMap.class);
         starGraph.metaProperties = kryo.readObjectOrNull(input, HashMap.class);
         starGraph.addVertex(T.id, kryo.readClassAndObject(input), T.label, kryo.readObject(input, String.class));
