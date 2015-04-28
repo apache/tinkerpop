@@ -165,7 +165,7 @@ public final class ElementHelper {
      * Append a key/value pair to a list of existing key/values. If the key already exists in the keyValues then
      * that value is overwritten with the provided value.
      */
-    public static Object[] upsert(final Object[] keyValues, final String key, final Object val) {
+    public static Object[] upsert(final Object[] keyValues, final Object key, final Object val) {
         if (!getKeys(keyValues).contains(key))
             return Stream.concat(Stream.of(keyValues), Stream.of(key, val)).toArray();
         else {
