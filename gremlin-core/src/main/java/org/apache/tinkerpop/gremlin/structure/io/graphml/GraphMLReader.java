@@ -226,10 +226,10 @@ public class GraphMLReader implements GraphReader {
         if (cache.containsKey(id)) {
             return cache.get(id);
         } else {
-            if (supportsIds)
-                return cache.put(id, graphToWriteTo.addVertex(ElementHelper.upsert(args, T.id, id)));
-            else
-                return cache.put(id, graphToWriteTo.addVertex(args));
+            final Object [] argsReady = supportsIds ? ElementHelper.upsert(args, T.id, id) : args;
+            final Vertex v = graphToWriteTo.addVertex(argsReady);
+            cache.put(id, v);
+            return v;
         }
     }
 
