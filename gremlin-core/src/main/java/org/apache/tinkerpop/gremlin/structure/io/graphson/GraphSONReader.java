@@ -21,16 +21,15 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.javatuples.Pair;
 
@@ -42,7 +41,6 @@ import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -112,14 +110,14 @@ public class GraphSONReader implements GraphReader {
                              final Function<Attachable<Edge>, Edge> edgeAttachMethod,
                              final Direction attachEdgesOfThisDirection) throws IOException {
         final Map<String, Object> vertexData = mapper.readValue(inputStream, mapTypeReference);
-        final StarGraph starGraph = readStarGraphData(vertexData);
+        final StarGraph starGraph = StarGraphGraphSONSerializer.readStarGraphVertex(vertexData);
         if (vertexAttachMethod != null) vertexAttachMethod.apply(starGraph.getStarVertex());
 
         if (vertexData.containsKey(GraphSONTokens.OUT_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.OUT))
-            readAdjacentVertexEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.OUT_E);
+            StarGraphGraphSONSerializer.readStarGraphEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.OUT_E);
 
         if (vertexData.containsKey(GraphSONTokens.IN_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.IN))
-            readAdjacentVertexEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.IN_E);
+            StarGraphGraphSONSerializer.readStarGraphEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.IN_E);
 
         return starGraph.getStarVertex();
     }
@@ -142,53 +140,6 @@ public class GraphSONReader implements GraphReader {
     @Override
     public <C> C readObject(final InputStream inputStream, final Class<? extends C> clazz) throws IOException {
         return mapper.readValue(inputStream, clazz);
-    }
-
-    private static void readAdjacentVertexEdges(final Function<Attachable<Edge>, Edge> edgeMaker,
-                                                final StarGraph starGraph,
-                                                final Map<String, Object> vertexData,
-                                                final String direction) throws IOException {
-        final Map<String, List<Map<String,Object>>> edgeDatas = (Map<String, List<Map<String,Object>>>) vertexData.get(direction);
-        for (Map.Entry<String, List<Map<String,Object>>> edgeData : edgeDatas.entrySet()) {
-            for (Map<String,Object> inner : edgeData.getValue()) {
-                final StarGraph.StarEdge starEdge;
-                if (direction.equals(GraphSONTokens.OUT_E))
-                    starEdge = (StarGraph.StarEdge) starGraph.getStarVertex().addOutEdge(edgeData.getKey(), starGraph.addVertex(T.id, inner.get(GraphSONTokens.IN)), T.id, inner.get(GraphSONTokens.ID));
-                else
-                    starEdge = (StarGraph.StarEdge) starGraph.getStarVertex().addInEdge(edgeData.getKey(), starGraph.addVertex(T.id, inner.get(GraphSONTokens.OUT)), T.id, inner.get(GraphSONTokens.ID));
-
-                if (inner.containsKey(GraphSONTokens.PROPERTIES)) {
-                    final Map<String, Object> edgePropertyData = (Map<String, Object>) inner.get(GraphSONTokens.PROPERTIES);
-                    for (Map.Entry<String, Object> epd : edgePropertyData.entrySet()) {
-                        starEdge.property(epd.getKey(), epd.getValue());
-                    }
-                }
-
-                if (edgeMaker != null) edgeMaker.apply(starEdge);
-            }
-        }
-    }
-
-    private static StarGraph readStarGraphData(final Map<String, Object> vertexData) throws IOException {
-        final StarGraph starGraph = StarGraph.open();
-        starGraph.addVertex(T.id, vertexData.get(GraphSONTokens.ID), T.label, vertexData.get(GraphSONTokens.LABEL));
-        if (vertexData.containsKey(GraphSONTokens.PROPERTIES)) {
-            final Map<String, List<Map<String, Object>>> properties = (Map<String, List<Map<String, Object>>>) vertexData.get(GraphSONTokens.PROPERTIES);
-            for (Map.Entry<String, List<Map<String, Object>>> property : properties.entrySet()) {
-                for (Map<String, Object> p : property.getValue()) {
-                    // todo: cardinality - same as gryo right now???
-                    final StarGraph.StarVertexProperty vp = (StarGraph.StarVertexProperty) starGraph.getStarVertex().property(VertexProperty.Cardinality.list, property.getKey(), p.get(GraphSONTokens.VALUE), T.id, p.get(GraphSONTokens.ID));
-                    if (p.containsKey(GraphSONTokens.PROPERTIES)) {
-                        final Map<String, Object> edgePropertyData = (Map<String, Object>) p.get(GraphSONTokens.PROPERTIES);
-                        for (Map.Entry<String, Object> epd : edgePropertyData.entrySet()) {
-                            vp.property(epd.getKey(), epd.getValue());
-                        }
-                    }
-                }
-            }
-        }
-
-        return starGraph;
     }
 
     public static Builder build() {
