@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializer;
@@ -120,14 +119,14 @@ class GraphSONSerializers {
                                 final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             jsonGenerator.writeStartObject();
             if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
-            writeWithType(GraphSONTokens.ID,edge.id(), jsonGenerator, serializerProvider, typeSerializer);
+            GraphSONUtil.writeWithType(GraphSONTokens.ID, edge.id(), jsonGenerator, serializerProvider, typeSerializer);
 
             jsonGenerator.writeStringField(GraphSONTokens.LABEL, edge.label());
             jsonGenerator.writeStringField(GraphSONTokens.TYPE, GraphSONTokens.EDGE);
             jsonGenerator.writeStringField(GraphSONTokens.IN_LABEL, edge.inVertex().label());
             jsonGenerator.writeStringField(GraphSONTokens.OUT_LABEL, edge.outVertex().label());
-            writeWithType(GraphSONTokens.IN, edge.inVertex().id(), jsonGenerator, serializerProvider, typeSerializer);
-            writeWithType(GraphSONTokens.OUT, edge.outVertex().id(), jsonGenerator, serializerProvider, typeSerializer);
+            GraphSONUtil.writeWithType(GraphSONTokens.IN, edge.inVertex().id(), jsonGenerator, serializerProvider, typeSerializer);
+            GraphSONUtil.writeWithType(GraphSONTokens.OUT, edge.outVertex().id(), jsonGenerator, serializerProvider, typeSerializer);
             writeProperties(edge, jsonGenerator, serializerProvider, typeSerializer);
             jsonGenerator.writeEndObject();
         }
@@ -141,7 +140,7 @@ class GraphSONSerializers {
                 if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
                 while (elementProperties.hasNext()) {
                     final Property<Object> elementProperty = elementProperties.next();
-                    writeWithType(elementProperty.key(), elementProperty.value(), jsonGenerator, serializerProvider, typeSerializer);
+                    GraphSONUtil.writeWithType(elementProperty.key(), elementProperty.value(), jsonGenerator, serializerProvider, typeSerializer);
                 }
                 jsonGenerator.writeEndObject();
             }
@@ -298,8 +297,8 @@ class GraphSONSerializers {
                                                  final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
         jsonGenerator.writeStartObject();
         if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
-        writeWithType(GraphSONTokens.ID, property.id(), jsonGenerator, serializerProvider, typeSerializer);
-        writeWithType(GraphSONTokens.VALUE, property.value(), jsonGenerator, serializerProvider, typeSerializer);
+        GraphSONUtil.writeWithType(GraphSONTokens.ID, property.id(), jsonGenerator, serializerProvider, typeSerializer);
+        GraphSONUtil.writeWithType(GraphSONTokens.VALUE, property.value(), jsonGenerator, serializerProvider, typeSerializer);
         jsonGenerator.writeStringField(GraphSONTokens.LABEL, property.label());
         tryWriteMetaProperties(property, jsonGenerator, serializerProvider, typeSerializer);
         jsonGenerator.writeEndObject();
@@ -331,20 +330,9 @@ class GraphSONSerializers {
         final Iterator<Property<Object>> metaProperties = property.properties();
         while (metaProperties.hasNext()) {
             final Property<Object> metaProperty = metaProperties.next();
-            writeWithType(metaProperty.key(), metaProperty.value(), jsonGenerator, serializerProvider, typeSerializer);
+            GraphSONUtil.writeWithType(metaProperty.key(), metaProperty.value(), jsonGenerator, serializerProvider, typeSerializer);
         }
         jsonGenerator.writeEndObject();
     }
 
-    public static void writeWithType(final String key, final Object object, final JsonGenerator jsonGenerator,
-                                      final SerializerProvider serializerProvider,
-                                      final TypeSerializer typeSerializer) throws IOException {
-        final JsonSerializer<Object> serializer = serializerProvider.findValueSerializer(object.getClass(), null);
-        if (typeSerializer != null) {
-            jsonGenerator.writeFieldName(key);
-            serializer.serializeWithType(object, jsonGenerator, serializerProvider, typeSerializer);
-        } else {
-            jsonGenerator.writeObjectField(key, object);
-        }
-    }
 }
