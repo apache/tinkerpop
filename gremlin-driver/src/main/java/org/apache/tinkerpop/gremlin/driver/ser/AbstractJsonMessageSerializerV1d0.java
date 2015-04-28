@@ -101,6 +101,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
         ByteBuf encodedMessage = null;
         try {
             final byte[] payload = mapper.writeValueAsBytes(createResponseMessageMap(responseMessage));
+            final String x = new String(payload, "UTF-8");
             encodedMessage = allocator.buffer(payload.length);
             encodedMessage.writeBytes(payload);
 

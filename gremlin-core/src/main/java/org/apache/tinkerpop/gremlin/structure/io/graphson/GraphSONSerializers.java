@@ -172,20 +172,24 @@ class GraphSONSerializers {
                 throws IOException {
             jsonGenerator.writeStartObject();
             if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
-            serializerProvider.defaultSerializeField(GraphSONTokens.ID, vertex.id(), jsonGenerator);
+            GraphSONUtil.writeWithType(GraphSONTokens.ID, vertex.id(), jsonGenerator, serializerProvider, typeSerializer);
             jsonGenerator.writeStringField(GraphSONTokens.LABEL, vertex.label());
             jsonGenerator.writeStringField(GraphSONTokens.TYPE, GraphSONTokens.VERTEX);
-            writeProperties(vertex, jsonGenerator);
+            writeProperties(vertex, jsonGenerator, serializerProvider, typeSerializer);
             jsonGenerator.writeEndObject();
         }
 
-        private static void writeProperties(final Vertex vertex, final JsonGenerator jsonGenerator) throws IOException {
+        private static void writeProperties(final Vertex vertex, final JsonGenerator jsonGenerator,
+                                            final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             final Iterator<VertexProperty<Object>> vertexProperties = vertex.properties();
             if (vertexProperties.hasNext()) {
                 jsonGenerator.writeArrayFieldStart(GraphSONTokens.PROPERTIES);
+                if (typeSerializer != null) jsonGenerator.writeString(ArrayList.class.getName());
+                jsonGenerator.writeStartArray();
                 while (vertexProperties.hasNext()) {
                     jsonGenerator.writeObject(vertexProperties.next());
                 }
+                jsonGenerator.writeEndArray();
                 jsonGenerator.writeEndArray();
             }
         }
@@ -327,6 +331,7 @@ class GraphSONSerializers {
                                             final SerializerProvider serializerProvider,
                                             final TypeSerializer typeSerializer) throws IOException {
         jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
+        if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
         final Iterator<Property<Object>> metaProperties = property.properties();
         while (metaProperties.hasNext()) {
             final Property<Object> metaProperty = metaProperties.next();
