@@ -185,7 +185,6 @@ limitations under the License.
                                             <filtering>false</filtering>
                                             <includes>
                                                 <include>**/*.json</include>
-                                                <include>**/*.ldjson</include>
                                             </includes>
                                         </resource>
                                     </resources>

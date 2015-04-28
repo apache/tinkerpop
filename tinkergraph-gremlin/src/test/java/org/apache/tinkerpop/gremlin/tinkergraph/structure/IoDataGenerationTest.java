@@ -97,66 +97,6 @@ public class IoDataGenerationTest {
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
-    public void shouldWriteClassicVerticesAsGryo() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-vertices.kryo");
-        GryoWriter.build().create().writeVertices(os, TinkerFactory.createClassic().traversal().V(), Direction.BOTH);
-        os.close();
-    }
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteClassicVerticesAsGraphSON() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic-vertices.ldjson");
-        GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createClassic().traversal().V(), Direction.BOTH);
-        os.close();
-    }
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteModernVerticesAsGryo() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.kryo");
-        GryoWriter.build().create().writeVertices(os, TinkerFactory.createModern().traversal().V(), Direction.BOTH);
-        os.close();
-    }
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteModernVerticesAsGraphSON() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-modern-vertices.ldjson");
-        GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createModern().traversal().V(), Direction.BOTH);
-        os.close();
-    }
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteCrewVerticesAsGraphSON() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-vertices.ldjson");
-        GraphSONWriter.build().create().writeVertices(os, TinkerFactory.createTheCrew().traversal().V(), Direction.BOTH);
-        os.close();
-    }
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
-    public void shouldWriteCrewVerticesAsGryo() throws IOException {
-        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-crew-vertices.kryo");
-        GryoWriter.build().create().writeVertices(os, TinkerFactory.createTheCrew().traversal().V(), Direction.BOTH);
-        os.close();
-    }
-
-    /**
-     * No assertions.  Just write out the graph for convenience.
-     */
-    @Test
     public void shouldWriteClassicGraphAsGraphML() throws IOException {
         try (final OutputStream os = new FileOutputStream(tempPath + "tinkerpop-classic.xml")) {
             GraphMLWriter.build().create().writeGraph(os, TinkerFactory.createClassic());
@@ -288,7 +228,7 @@ public class IoDataGenerationTest {
         /* keep this hanging around because changes to gryo format will need grateful dead generated from json so you can generate the gio
         final GraphSONMapper mapper = GraphSONMapper.build().embedTypes(true).create();
         final GraphReader reader = org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader.build().mapper(mapper).create();
-        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/graphson/grateful-dead.json")) {
+        try (final InputStream stream = AbstractGremlinTest.class.getResourceAsStream("/org/apache/tinkerpop/gremlin/structure/io/graphson/grateful-dead-typed.json")) {
             reader.readGraph(stream, g);
         }
         */
@@ -325,19 +265,15 @@ public class IoDataGenerationTest {
         os.close();
 
         final OutputStream os2 = new FileOutputStream(tempPath + "grateful-dead.json");
-        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create()).create().writeGraph(os2, g);
+        GraphSONWriter.build().mapper(GraphSONMapper.build().create()).create().writeGraph(os2, g);
         os2.close();
 
         final OutputStream os3 = new FileOutputStream(tempPath + "grateful-dead.xml");
         GraphMLWriter.build().create().writeGraph(os3, g);
         os3.close();
 
-        final OutputStream os4 = new FileOutputStream(tempPath + "grateful-dead-vertices.kryo");
-        GryoWriter.build().create().writeVertices(os4, g.traversal().V(), Direction.BOTH);
-        os.close();
-
-        final OutputStream os5 = new FileOutputStream(tempPath + "grateful-dead-vertices.ldjson");
-        GraphSONWriter.build().create().writeVertices(os5, g.traversal().V(), Direction.BOTH);
-        os.close();
+        final OutputStream os4 = new FileOutputStream(tempPath + "grateful-dead-typed.json");
+        GraphSONWriter.build().mapper(GraphSONMapper.build().embedTypes(true).create()).create().writeGraph(os4, g);
+        os4.close();
     }
 }

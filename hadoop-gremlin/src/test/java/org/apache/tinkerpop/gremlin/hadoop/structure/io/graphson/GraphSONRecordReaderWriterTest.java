@@ -56,7 +56,7 @@ public class GraphSONRecordReaderWriterTest {
         configuration.set("fs.file.impl", LocalFileSystem.class.getName());
         configuration.set("fs.default.name", "file:///");
 
-        final File testFile = new File(HadoopGraphProvider.PATHS.get("grateful-dead-vertices.ldjson"));
+        final File testFile = new File(HadoopGraphProvider.PATHS.get("grateful-dead.json"));
         final FileSplit split = new FileSplit(
                 new Path(testFile.getAbsoluteFile().toURI().toString()), 0,
                 testFile.length(), null);

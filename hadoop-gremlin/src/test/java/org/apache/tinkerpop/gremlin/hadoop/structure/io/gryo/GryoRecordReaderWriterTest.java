@@ -56,7 +56,7 @@ public class GryoRecordReaderWriterTest {
         configuration.set("fs.file.impl", LocalFileSystem.class.getName());
         configuration.set("fs.default.name", "file:///");
 
-        final File testFile = new File(HadoopGraphProvider.PATHS.get("grateful-dead-vertices.kryo"));
+        final File testFile = new File(HadoopGraphProvider.PATHS.get("grateful-dead.kryo"));
         final int numberOfSplits = 4;
         final long testFileSize = testFile.length();
         final long splitLength = (long) ((double) testFileSize / (double) numberOfSplits);
