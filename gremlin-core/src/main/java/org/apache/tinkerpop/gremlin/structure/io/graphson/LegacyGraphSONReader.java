@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 /**
@@ -63,17 +64,14 @@ public class LegacyGraphSONReader implements GraphReader {
 
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
-        final BatchGraph<?> graph;
-        try {
-            // will throw an exception if not constructed properly
-            graph = BatchGraph.build(graphToWriteTo)
-                    .bufferSize(batchSize).create();
-        } catch (Exception ex) {
-            throw new IOException("Could not instantiate BatchGraph wrapper", ex);
-        }
+        final Map<Object,Vertex> cache = new HashMap<>();
+        final AtomicLong counter = new AtomicLong(0);
+        final boolean supportsTx = graphToWriteTo.features().graph().supportsTransactions();
+        final boolean supportsEdgeIds = graphToWriteTo.features().edge().supportsUserSuppliedIds();
+        final boolean supportsVertexIds = graphToWriteTo.features().vertex().supportsUserSuppliedIds();
 
         final JsonFactory factory = mapper.getFactory();
-        final GraphSONUtility graphson = new GraphSONUtility(graph);
+        final GraphSONUtility graphson = new GraphSONUtility(graphToWriteTo, supportsVertexIds, supportsEdgeIds, cache);
 
         try (JsonParser parser = factory.createParser(inputStream)) {
             if (parser.nextToken() != JsonToken.START_OBJECT)
@@ -93,15 +91,21 @@ public class LegacyGraphSONReader implements GraphReader {
                         while (parser.nextToken() != JsonToken.END_ARRAY) {
                             final JsonNode node = parser.readValueAsTree();
                             graphson.vertexFromJson(node);
+
+                            if (supportsTx && counter.incrementAndGet() % batchSize == 0)
+                                graphToWriteTo.tx().commit();
                         }
                         break;
                     case GraphSONTokens.EDGES:
                         parser.nextToken();
                         while (parser.nextToken() != JsonToken.END_ARRAY) {
                             final JsonNode node = parser.readValueAsTree();
-                            final Vertex inV = graph.vertices(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V))).next();
-                            final Vertex outV = graph.vertices(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V))).next();
-                            GraphSONUtility.edgeFromJson(node, outV, inV);
+                            final Vertex inV = cache.get(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V)));
+                            final Vertex outV = cache.get(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V)));
+                            graphson.edgeFromJson(node, outV, inV);
+
+                            if (supportsTx && counter.incrementAndGet() % batchSize == 0)
+                                graphToWriteTo.tx().commit();
                         }
                         break;
                     default:
@@ -109,7 +113,7 @@ public class LegacyGraphSONReader implements GraphReader {
                 }
             }
 
-            graph.tx().commit();
+            if (supportsTx) graphToWriteTo.tx().commit();
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -193,35 +197,44 @@ public class LegacyGraphSONReader implements GraphReader {
         }
     }
 
-    public static class GraphSONUtility {
+    static class GraphSONUtility {
         private static final String EMPTY_STRING = "";
         private final Graph g;
+        private final boolean supportsVertexIds;
+        private final boolean supportsEdgeIds;
+        private final Map<Object,Vertex> cache;
 
-        public GraphSONUtility(final Graph g) {
+        public GraphSONUtility(final Graph g, final boolean supportsVertexIds, final boolean supportsEdgeIds,
+                               final Map<Object,Vertex> cache) {
             this.g = g;
+            this.supportsVertexIds = supportsVertexIds;
+            this.supportsEdgeIds = supportsEdgeIds;
+            this.cache = cache;
         }
 
         public Vertex vertexFromJson(final JsonNode json) throws IOException {
             final Map<String, Object> props = readProperties(json);
 
             final Object vertexId = getTypedValueFromJsonNode(json.get(GraphSONTokens._ID));
-            final Vertex v = g.addVertex(T.id, vertexId);
+            final Vertex v = supportsVertexIds ? g.addVertex(T.id, vertexId) : g.addVertex();
+            cache.put(vertexId, v);
 
             for (Map.Entry<String, Object> entry : props.entrySet()) {
+                // todo: cardinality
                 v.property(VertexProperty.Cardinality.list, entry.getKey(), entry.getValue());
             }
 
             return v;
         }
 
-        public static Edge edgeFromJson(final JsonNode json, final Vertex out, final Vertex in) throws IOException {
+        public Edge edgeFromJson(final JsonNode json, final Vertex out, final Vertex in) throws IOException {
             final Map<String, Object> props = GraphSONUtility.readProperties(json);
 
             final Object edgeId = getTypedValueFromJsonNode(json.get(GraphSONTokens._ID));
             final JsonNode nodeLabel = json.get(GraphSONTokens._LABEL);
             final String label = nodeLabel == null ? EMPTY_STRING : nodeLabel.textValue();
 
-            final Edge e = out.addEdge(label, in, T.id, edgeId);
+            final Edge e = supportsEdgeIds ? out.addEdge(label, in, T.id, edgeId) : out.addEdge(label, in) ;
             for (Map.Entry<String, Object> entry : props.entrySet()) {
                 e.property(entry.getKey(), entry.getValue());
             }
