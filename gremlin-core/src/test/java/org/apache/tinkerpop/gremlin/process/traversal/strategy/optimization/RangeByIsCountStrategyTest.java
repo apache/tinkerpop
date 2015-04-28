@@ -24,14 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Compare;
-import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.P;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -40,10 +36,11 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiPredicate;
 
+import static org.apache.tinkerpop.gremlin.structure.P.*;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -64,12 +61,9 @@ public class RangeByIsCountStrategyTest {
         public String name;
 
         @Parameterized.Parameter(value = 1)
-        public BiPredicate predicate;
+        public Object predicate;
 
         @Parameterized.Parameter(value = 2)
-        public Object value;
-
-        @Parameterized.Parameter(value = 3)
         public long expectedHighRange;
 
         @Before
@@ -79,9 +73,8 @@ public class RangeByIsCountStrategyTest {
         }
 
         @Test
-        @Ignore
         public void shouldApplyStrategy() {
-            doTest(predicate, value, expectedHighRange);
+            doTest(predicate, expectedHighRange);
         }
     }
 
@@ -97,12 +90,9 @@ public class RangeByIsCountStrategyTest {
         public String name;
 
         @Parameterized.Parameter(value = 1)
-        public BiPredicate predicate;
+        public Object predicate;
 
         @Parameterized.Parameter(value = 2)
-        public Object value;
-
-        @Parameterized.Parameter(value = 3)
         public long expectedHighRange;
 
         @Before
@@ -112,9 +102,8 @@ public class RangeByIsCountStrategyTest {
         }
 
         @Test
-        @Ignore
         public void shouldApplyStrategy() {
-            doTest(predicate, value, expectedHighRange);
+            doTest(predicate, expectedHighRange);
         }
     }
 
@@ -127,7 +116,6 @@ public class RangeByIsCountStrategyTest {
         }
 
         @Test
-        @Ignore
         public void nestedCountEqualsNullShouldLimitToOne() {
             final AtomicInteger counter = new AtomicInteger(0);
             final Traversal traversal = __.out().has(__.outE("created").count().is(0));
@@ -157,9 +145,16 @@ public class RangeByIsCountStrategyTest {
             traversal.asAdmin().setEngine(traversalEngine);
         }
 
-        public void doTest(final BiPredicate predicate, final Object value, final long expectedHighRange) {
+        public void doTest(final Object predicate, final long expectedHighRange) {
             final AtomicInteger counter = new AtomicInteger(0);
-            final Traversal traversal = __.out().count().is(P.test(predicate,value));
+            final Traversal traversal;
+            if (predicate instanceof P) {
+                traversal = __.out().count().is(new P[]{(P) predicate});
+            } else if (predicate instanceof P[]) {
+                traversal = __.out().count().is((P[]) predicate);
+            } else {
+                traversal = __.out().count().is(predicate);
+            }
             applyRangeByIsCountStrategy(traversal);
 
             final List<RangeGlobalStep> steps = TraversalHelper.getStepsOfClass(RangeGlobalStep.class, traversal.asAdmin());
@@ -177,16 +172,16 @@ public class RangeByIsCountStrategyTest {
         static Iterable<Object[]> generateTestParameters() {
 
             return Arrays.asList(new Object[][]{
-                    {"countEqualsNullShouldLimitToOne", Compare.eq, 0l, 1l},
-                    {"countNotEqualsFourShouldLimitToFive", Compare.neq, 4l, 5l},
-                    {"countLessThanOrEqualThreeShouldLimitToFour", Compare.lte, 3l, 4l},
-                    {"countLessThanThreeShouldLimitToThree", Compare.lt, 3l, 3l},
-                    {"countGreaterThanTwoShouldLimitToThree", Compare.gt, 2l, 3l},
-                    {"countGreaterThanOrEqualTwoShouldLimitToTwo", Compare.gte, 2l, 2l},
-                    //{"countInsideTwoAndFourShouldLimitToFour", Compare.inside, Arrays.asList(2l, 4l), 4l},
-                    //{"countOutsideTwoAndFourShouldLimitToFive", Compare.outside, Arrays.asList(2l, 4l), 5l},
-                    {"countWithinTwoSixFourShouldLimitToSeven", Contains.within, Arrays.asList(2l, 6l, 4l), 7l},
-                    {"countWithoutTwoSixFourShouldLimitToSix", Contains.without, Arrays.asList(2l, 6l, 4l), 6l}});
+                    {"countEqualsNullShouldLimitToOne", eq(0l), 1l},
+                    {"countNotEqualsFourShouldLimitToFive", neq(4l), 5l},
+                    {"countLessThanOrEqualThreeShouldLimitToFour", lte(3l), 4l},
+                    {"countLessThanThreeShouldLimitToThree", lt(3l), 3l},
+                    {"countGreaterThanTwoShouldLimitToThree", gt(2l), 3l},
+                    {"countGreaterThanOrEqualTwoShouldLimitToTwo", gte(2l), 2l},
+                    {"countInsideTwoAndFourShouldLimitToFour", inside(2l, 4l), 4l},
+                    {"countOutsideTwoAndFourShouldLimitToFive", outside(2l, 4l), 5l},
+                    {"countWithinTwoSixFourShouldLimitToSeven", within(2l, 6l, 4l), 7l},
+                    {"countWithoutTwoSixFourShouldLimitToSix", without(2l, 6l, 4l), 6l}});
         }
     }
 }

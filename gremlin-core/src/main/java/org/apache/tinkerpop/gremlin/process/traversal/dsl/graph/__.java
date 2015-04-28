@@ -374,8 +374,8 @@ public class __ {
         return __.<A>start().where(constraint);
     }
 
-    public static <A> GraphTraversal<A, A> is(final P<A> predicate) {
-        return __.<A>start().is(predicate);
+    public static <A> GraphTraversal<A, A> is(final P<A>... predicates) {
+        return __.<A>start().is(predicates);
     }
 
     public static <A> GraphTraversal<A, A> is(final Object value) {
