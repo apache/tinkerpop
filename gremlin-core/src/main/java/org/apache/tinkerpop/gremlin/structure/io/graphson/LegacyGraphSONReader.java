@@ -71,7 +71,7 @@ public class LegacyGraphSONReader implements GraphReader {
         final boolean supportsVertexIds = graphToWriteTo.features().vertex().supportsUserSuppliedIds();
 
         final JsonFactory factory = mapper.getFactory();
-        final GraphSONUtility graphson = new GraphSONUtility(graphToWriteTo, supportsVertexIds, supportsEdgeIds, cache);
+        final LegacyGraphSONUtility graphson = new LegacyGraphSONUtility(graphToWriteTo, supportsVertexIds, supportsEdgeIds, cache);
 
         try (JsonParser parser = factory.createParser(inputStream)) {
             if (parser.nextToken() != JsonToken.START_OBJECT)
@@ -100,8 +100,8 @@ public class LegacyGraphSONReader implements GraphReader {
                         parser.nextToken();
                         while (parser.nextToken() != JsonToken.END_ARRAY) {
                             final JsonNode node = parser.readValueAsTree();
-                            final Vertex inV = cache.get(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V)));
-                            final Vertex outV = cache.get(GraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V)));
+                            final Vertex inV = cache.get(LegacyGraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V)));
+                            final Vertex outV = cache.get(LegacyGraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V)));
                             graphson.edgeFromJson(node, outV, inV);
 
                             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
@@ -197,15 +197,15 @@ public class LegacyGraphSONReader implements GraphReader {
         }
     }
 
-    static class GraphSONUtility {
+    static class LegacyGraphSONUtility {
         private static final String EMPTY_STRING = "";
         private final Graph g;
         private final boolean supportsVertexIds;
         private final boolean supportsEdgeIds;
         private final Map<Object,Vertex> cache;
 
-        public GraphSONUtility(final Graph g, final boolean supportsVertexIds, final boolean supportsEdgeIds,
-                               final Map<Object,Vertex> cache) {
+        public LegacyGraphSONUtility(final Graph g, final boolean supportsVertexIds, final boolean supportsEdgeIds,
+                                     final Map<Object, Vertex> cache) {
             this.g = g;
             this.supportsVertexIds = supportsVertexIds;
             this.supportsEdgeIds = supportsEdgeIds;
@@ -228,7 +228,7 @@ public class LegacyGraphSONReader implements GraphReader {
         }
 
         public Edge edgeFromJson(final JsonNode json, final Vertex out, final Vertex in) throws IOException {
-            final Map<String, Object> props = GraphSONUtility.readProperties(json);
+            final Map<String, Object> props = LegacyGraphSONUtility.readProperties(json);
 
             final Object edgeId = getTypedValueFromJsonNode(json.get(GraphSONTokens._ID));
             final JsonNode nodeLabel = json.get(GraphSONTokens._LABEL);
