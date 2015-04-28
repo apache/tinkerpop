@@ -20,15 +20,13 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphSerializer;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGryoSerializer;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
-import org.apache.tinkerpop.shaded.kryo.Registration;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 import java.io.IOException;
@@ -57,13 +55,13 @@ public class GryoWriter implements GraphWriter {
     }
 
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
-        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphSerializer.with(direction));
+        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphGryoSerializer.with(direction));
         final Output output = new Output(outputStream);
         while (vertexIterator.hasNext()) {
             writeVertexInternal(output, vertexIterator.next());
         }
         output.flush();
-        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphSerializer.with(Direction.BOTH));
+        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphGryoSerializer.with(Direction.BOTH));
     }
 
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
@@ -72,11 +70,11 @@ public class GryoWriter implements GraphWriter {
 
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
-        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphSerializer.with(direction));
+        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphGryoSerializer.with(direction));
         final Output output = new Output(outputStream);
         writeVertexInternal(output, v);
         output.flush();
-        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphSerializer.with(Direction.BOTH));
+        kryo.getRegistration(StarGraph.class).setSerializer(StarGraphGryoSerializer.with(Direction.BOTH));
     }
 
     @Override

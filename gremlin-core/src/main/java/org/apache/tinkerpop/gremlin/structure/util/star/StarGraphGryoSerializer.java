@@ -38,20 +38,20 @@ import java.util.Map;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class StarGraphSerializer extends Serializer<StarGraph> {
+public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
 
-    private static final Map<Direction, StarGraphSerializer> CACHE = new HashMap<>();
+    private static final Map<Direction, StarGraphGryoSerializer> CACHE = new HashMap<>();
 
     private final Direction edgeDirectionToSerialize;
 
     static {
-        CACHE.put(Direction.BOTH, new StarGraphSerializer(Direction.BOTH));
-        CACHE.put(Direction.IN, new StarGraphSerializer(Direction.IN));
-        CACHE.put(Direction.OUT, new StarGraphSerializer(Direction.OUT));
-        CACHE.put(null, new StarGraphSerializer(null));
+        CACHE.put(Direction.BOTH, new StarGraphGryoSerializer(Direction.BOTH));
+        CACHE.put(Direction.IN, new StarGraphGryoSerializer(Direction.IN));
+        CACHE.put(Direction.OUT, new StarGraphGryoSerializer(Direction.OUT));
+        CACHE.put(null, new StarGraphGryoSerializer(null));
     }
 
-    private StarGraphSerializer(final Direction edgeDirectionToSerialize) {
+    private StarGraphGryoSerializer(final Direction edgeDirectionToSerialize) {
         this.edgeDirectionToSerialize = edgeDirectionToSerialize;
     }
 
@@ -59,7 +59,7 @@ public final class StarGraphSerializer extends Serializer<StarGraph> {
      * Gets a serializer from the cache.  Use {@code null} for the direction when requiring a serializer that
      * doesn't serialize the edges of a vertex.
      */
-    public static StarGraphSerializer with(final Direction direction) {
+    public static StarGraphGryoSerializer with(final Direction direction) {
         return CACHE.get(direction);
     }
 

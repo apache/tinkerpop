@@ -41,8 +41,8 @@ import java.util.Map;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class StarGraphJacksonSerializer extends StdSerializer<StarGraphJacksonSerializer.DirectionalStarGraph> {
-    public StarGraphJacksonSerializer() {
+public class StarGraphGraphSONSerializer extends StdSerializer<StarGraphGraphSONSerializer.DirectionalStarGraph> {
+    public StarGraphGraphSONSerializer() {
         super(DirectionalStarGraph.class);
     }
 

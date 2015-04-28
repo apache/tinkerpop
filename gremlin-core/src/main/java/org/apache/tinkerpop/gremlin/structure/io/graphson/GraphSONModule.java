@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphJacksonSerializer;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
 
 
 /**
@@ -41,6 +41,6 @@ public class GraphSONModule extends SimpleModule {
         addSerializer(Property.class, new GraphSONSerializers.PropertyJacksonSerializer());
         addSerializer(TraversalMetrics.class, new GraphSONSerializers.TraversalMetricsJacksonSerializer());
         addSerializer(Path.class, new GraphSONSerializers.PathJacksonSerializer());
-        addSerializer(StarGraphJacksonSerializer.DirectionalStarGraph.class, new StarGraphJacksonSerializer());
+        addSerializer(StarGraphGraphSONSerializer.DirectionalStarGraph.class, new StarGraphGraphSONSerializer());
     }
 }
