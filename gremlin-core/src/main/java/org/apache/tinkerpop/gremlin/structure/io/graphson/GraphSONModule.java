@@ -57,7 +57,6 @@ public class GraphSONModule extends SimpleModule {
         super("graphson");
         addSerializer(Edge.class, new EdgeJacksonSerializer());
         addSerializer(Vertex.class, new VertexJacksonSerializer());
-        addSerializer(GraphSONVertex.class, new GraphSONVertex.VertexJacksonSerializer());
         addSerializer(VertexProperty.class, new VertexPropertyJacksonSerializer());
         addSerializer(Property.class, new PropertyJacksonSerializer());
         addSerializer(TraversalMetrics.class, new TraversalMetricsJacksonSerializer());
