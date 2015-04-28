@@ -65,7 +65,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
 
         // this provider toStrings all unknown classes and converts keys in Map objects that are Object to String.
         final DefaultSerializerProvider provider = new GraphSONSerializerProvider();
-        provider.setDefaultKeySerializer(new GraphSONModule.GraphSONKeySerializer());
+        provider.setDefaultKeySerializer(new GraphSONSerializers.GraphSONKeySerializer());
         om.setSerializerProvider(provider);
 
         om.registerModule(new GraphSONModule(normalize));
