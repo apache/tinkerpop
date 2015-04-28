@@ -36,7 +36,7 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 
 /**
  * Class used to serialize graph-based objects such as vertices, edges, properties, and paths. These objects are
- * "detached" using {@link DetachedFactory} before serialization. These serialize present a generalized way to
+ * "detached" using {@link DetachedFactory} before serialization. These serializers present a generalized way to
  * serialize the implementations of core interfaces.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
