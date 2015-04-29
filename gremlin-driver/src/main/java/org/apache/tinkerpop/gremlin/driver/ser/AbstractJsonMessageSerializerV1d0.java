@@ -20,9 +20,11 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
@@ -36,6 +38,8 @@ import groovy.json.JsonBuilder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +104,7 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
     public ByteBuf serializeResponseAsBinary(final ResponseMessage responseMessage, final ByteBufAllocator allocator) throws SerializationException {
         ByteBuf encodedMessage = null;
         try {
-            final byte[] payload = mapper.writeValueAsBytes(createResponseMessageMap(responseMessage));
+            final byte[] payload = mapper.writeValueAsBytes(responseMessage);
             encodedMessage = allocator.buffer(payload.length);
             encodedMessage.writeBytes(payload);
 
@@ -166,31 +170,11 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
         }
     }
 
-    /**
-     * Construct a {@link Map} from the {@link ResponseMessage} for serialization purposes.  By doing it this way,
-     * type embedding does not become overly verbose in the core structure of the message.
-     */
-    protected static Map<String, Object> createResponseMessageMap(final ResponseMessage responseMessage) {
-        final Map<String, Object> result = new HashMap<>();
-        result.put(SerTokens.TOKEN_DATA, responseMessage.getResult().getData());
-        result.put(SerTokens.TOKEN_META, responseMessage.getResult().getMeta());
-
-        final Map<String, Object> status = new HashMap<>();
-        status.put(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
-        status.put(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().getValue());
-        status.put(SerTokens.TOKEN_ATTRIBUTES, responseMessage.getStatus().getAttributes());
-
-        final Map<String, Object> message = new HashMap<>();
-        message.put(SerTokens.TOKEN_STATUS, status);
-        message.put(SerTokens.TOKEN_RESULT, result);
-        message.put(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null);
-        return message;
-    }
-
     public static class GremlinServerModule extends SimpleModule {
         public GremlinServerModule() {
             super("graphson-gremlin-server");
             addSerializer(JsonBuilder.class, new JsonBuilderJacksonSerializer());
+            addSerializer(ResponseMessage.class, new ResponseMessageSerializer());
         }
     }
 
@@ -207,6 +191,52 @@ public abstract class AbstractJsonMessageSerializerV1d0 implements MessageSerial
             jsonGenerator.writeRaw(":");
             jsonGenerator.writeRaw(json.toString());
             jsonGenerator.writeRaw(",");
+        }
+    }
+
+    public static class ResponseMessageSerializer extends StdSerializer<ResponseMessage> {
+        public ResponseMessageSerializer() {
+            super(ResponseMessage.class);
+        }
+
+        @Override
+        public void serialize(final ResponseMessage responseMessage, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
+            ser(responseMessage, jsonGenerator, serializerProvider, null);
+        }
+
+        @Override
+        public void serializeWithType(final ResponseMessage responseMessage, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider,
+                                      final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
+            ser(responseMessage, jsonGenerator, serializerProvider, typeSerializer);
+        }
+
+        public void ser(final ResponseMessage responseMessage, final JsonGenerator jsonGenerator,
+                        final SerializerProvider serializerProvider,
+                        final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
+            jsonGenerator.writeStartObject();
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+
+            jsonGenerator.writeStringField(SerTokens.TOKEN_REQUEST, responseMessage.getRequestId() != null ? responseMessage.getRequestId().toString() : null);
+            jsonGenerator.writeObjectFieldStart(SerTokens.TOKEN_STATUS);
+
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+            jsonGenerator.writeStringField(SerTokens.TOKEN_MESSAGE, responseMessage.getStatus().getMessage());
+            jsonGenerator.writeNumberField(SerTokens.TOKEN_CODE, responseMessage.getStatus().getCode().getValue());
+            jsonGenerator.writeObjectField(SerTokens.TOKEN_ATTRIBUTES, responseMessage.getStatus().getAttributes());
+            jsonGenerator.writeEndObject();
+
+            jsonGenerator.writeObjectFieldStart(SerTokens.TOKEN_RESULT);
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+            if (null == responseMessage.getResult().getData())
+                jsonGenerator.writeNullField(SerTokens.TOKEN_DATA);
+            else
+                GraphSONUtil.writeWithType(SerTokens.TOKEN_DATA, responseMessage.getResult().getData(), jsonGenerator, serializerProvider, typeSerializer);
+            jsonGenerator.writeObjectField(SerTokens.TOKEN_META, responseMessage.getResult().getMeta());
+            jsonGenerator.writeEndObject();
+
+            jsonGenerator.writeEndObject();
         }
     }
 }

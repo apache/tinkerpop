@@ -94,7 +94,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
     @Override
     public String serializeResponseAsString(final ResponseMessage responseMessage) throws SerializationException {
         try {
-            return mapper.writeValueAsString(createResponseMessageMap(responseMessage));
+            return mapper.writeValueAsString(responseMessage);
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
             throw new RuntimeException("Error during serialization.", ex);

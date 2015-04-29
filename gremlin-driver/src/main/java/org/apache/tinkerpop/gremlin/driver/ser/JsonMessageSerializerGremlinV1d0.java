@@ -59,7 +59,7 @@ public class JsonMessageSerializerGremlinV1d0 extends AbstractJsonMessageSeriali
     }
 
     @Override
-    GraphSONMapper.Builder configureBuilder(GraphSONMapper.Builder builder) {
+    GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
         return builder.addCustomModule(new JsonMessageSerializerV1d0.GremlinServerModule())
                 .embedTypes(true);
     }
