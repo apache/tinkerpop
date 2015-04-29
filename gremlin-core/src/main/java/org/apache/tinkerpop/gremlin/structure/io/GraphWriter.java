@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,25 +52,25 @@ public interface GraphWriter {
     /**
      * Write the entire graph to a stream.
      *
-     * @param outputStream The stream to write to.
-     * @param g The graph to write to stream.
+     * @param outputStream the stream to write to.
+     * @param g the graph to write to stream.
      */
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException;
 
     /**
      * Write a vertex to a stream with its associated edges.  Only write edges as defined by the requested direction.
      *
-     * @param outputStream The stream to write to.
-     * @param v            The vertex to write.
-     * @param direction    The direction of edges to write or null if no edges are to be written.
+     * @param outputStream the stream to write to.
+     * @param v            the vertex to write.
+     * @param direction    the direction of edges to write or null if no edges are to be written.
      */
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException;
 
     /**
      * Write a vertex to a stream without writing its edges.
      *
-     * @param outputStream The stream to write to.
-     * @param v            The vertex to write.
+     * @param outputStream the stream to write to.
+     * @param v            the vertex to write.
      */
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException;
 
@@ -80,9 +79,9 @@ public interface GraphWriter {
      * Write a list of vertices from a {@link Traversal} to a stream with its associated edges.  Only write edges as
      * defined by the requested direction.
      *
-     * @param outputStream The stream to write to.
+     * @param outputStream the stream to write to.
      * @param vertexIterator    A traversal that returns a list of vertices.
-     * @param direction    The direction of edges to write or null if no edges are to be written.
+     * @param direction    the direction of edges to write or null if no edges are to be written.
      */
     public default void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
         while (vertexIterator.hasNext()) {
@@ -93,7 +92,7 @@ public interface GraphWriter {
     /**
      * Write a vertex to a stream without writing its edges.
      *
-     * @param outputStream The stream to write to.
+     * @param outputStream the stream to write to.
      * @param vertexIterator    A iterator that returns a list of vertices.
      */
     public default void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
@@ -105,32 +104,32 @@ public interface GraphWriter {
     /**
      * Write an edge to a stream.
      *
-     * @param outputStream The stream to write to.
-     * @param e The edge to write.
+     * @param outputStream the stream to write to.
+     * @param e the edge to write.
      */
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException;
 
     /**
      * Write a vertex property to a stream.
      *
-     * @param outputStream The stream to write to.
-     * @param vp The vertex property to write.
+     * @param outputStream the stream to write to.
+     * @param vp the vertex property to write.
      */
     public void writeVertexProperty(final OutputStream outputStream, final VertexProperty vp) throws IOException;
 
     /**
      * Write a property to a stream.
      *
-     * @param outputStream The stream to write to.
-     * @param p The property to write.
+     * @param outputStream the stream to write to.
+     * @param p the property to write.
      */
     public void writeProperty(final OutputStream outputStream, final Property p) throws IOException;
 
     /**
      * Writes an arbitrary object to the stream.
      *
-     * @param outputStream The stream to write to
-     * @param object The object to write which will use the standard serializer set
+     * @param outputStream the stream to write to.
+     * @param object the object to write which will use the standard serializer set.
      */
     public void writeObject(final OutputStream outputStream, final Object object) throws IOException;
 

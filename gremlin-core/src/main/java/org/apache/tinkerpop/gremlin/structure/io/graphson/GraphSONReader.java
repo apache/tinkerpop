@@ -156,6 +156,9 @@ public class GraphSONReader implements GraphReader {
         return edgeAttachMethod.apply(edge);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public VertexProperty readVertexProperty(final InputStream inputStream,
                                              final Function<Attachable<VertexProperty>, VertexProperty> vertexPropertyAttachMethod) throws IOException {
@@ -167,6 +170,9 @@ public class GraphSONReader implements GraphReader {
         return vertexPropertyAttachMethod.apply(vp);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Property readProperty(final InputStream inputStream,
                                  final Function<Attachable<Property>, Property> propertyAttachMethod) throws IOException {
