@@ -29,6 +29,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -116,7 +117,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             assertEquals("application/json", response.getEntity().getContentType().getValue());
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
-            assertEquals("stephen", node.get("result").get("data").get(0).get("properties").get("name").get(0).get("value").asText());
+            assertEquals("stephen", node.get("result").get("data").get(0).get("properties").get(0).get(GraphSONTokens.VALUE).asText());
         }
     }
 
