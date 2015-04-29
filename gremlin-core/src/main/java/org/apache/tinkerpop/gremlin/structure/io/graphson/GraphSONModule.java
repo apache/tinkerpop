@@ -27,20 +27,21 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
 
-
 /**
+ * The set of serializers that handle the core graph interfaces.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONModule extends SimpleModule {
 
     public GraphSONModule(final boolean normalize) {
         super("graphson");
-        addSerializer(Edge.class, new GraphSONSerializers.EdgeJacksonSerializer());
-        addSerializer(Vertex.class, new GraphSONSerializers.VertexJacksonSerializer());
-        addSerializer(VertexProperty.class, new GraphSONSerializers.VertexPropertyJacksonSerializer());
+        addSerializer(Edge.class, new GraphSONSerializers.EdgeJacksonSerializer(normalize));
+        addSerializer(Vertex.class, new GraphSONSerializers.VertexJacksonSerializer(normalize));
+        addSerializer(VertexProperty.class, new GraphSONSerializers.VertexPropertyJacksonSerializer(normalize));
         addSerializer(Property.class, new GraphSONSerializers.PropertyJacksonSerializer());
         addSerializer(TraversalMetrics.class, new GraphSONSerializers.TraversalMetricsJacksonSerializer());
         addSerializer(Path.class, new GraphSONSerializers.PathJacksonSerializer());
-        addSerializer(StarGraphGraphSONSerializer.DirectionalStarGraph.class, new StarGraphGraphSONSerializer());
+        addSerializer(StarGraphGraphSONSerializer.DirectionalStarGraph.class, new StarGraphGraphSONSerializer(normalize));
     }
 }

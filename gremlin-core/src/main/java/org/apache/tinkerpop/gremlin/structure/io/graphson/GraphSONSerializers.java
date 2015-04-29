@@ -33,7 +33,9 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,20 +54,23 @@ import java.util.concurrent.TimeUnit;
 class GraphSONSerializers {
     static class VertexPropertyJacksonSerializer extends StdSerializer<VertexProperty> {
 
-        public VertexPropertyJacksonSerializer() {
+        private final boolean normalize;
+
+        public VertexPropertyJacksonSerializer(final boolean normalize) {
             super(VertexProperty.class);
+            this.normalize = normalize;
         }
 
         @Override
         public void serialize(final VertexProperty property, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException {
-            serializerVertexProperty(property, jsonGenerator, serializerProvider, null);
+            serializerVertexProperty(property, jsonGenerator, serializerProvider, null, normalize);
         }
 
         @Override
         public void serializeWithType(final VertexProperty property, final JsonGenerator jsonGenerator,
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
-            serializerVertexProperty(property, jsonGenerator, serializerProvider, typeSerializer);
+            serializerVertexProperty(property, jsonGenerator, serializerProvider, typeSerializer, normalize);
         }
 
     }
@@ -99,8 +104,11 @@ class GraphSONSerializers {
 
     static class EdgeJacksonSerializer extends StdSerializer<Edge> {
 
-        public EdgeJacksonSerializer() {
+        private final boolean normalize;
+
+        public EdgeJacksonSerializer(final boolean normalize) {
             super(Edge.class);
+            this.normalize = normalize;
         }
 
 
@@ -115,7 +123,7 @@ class GraphSONSerializers {
             ser(edge, jsonGenerator, serializerProvider, typeSerializer);
         }
 
-        private static void ser(final Edge edge, final JsonGenerator jsonGenerator,
+        private void ser(final Edge edge, final JsonGenerator jsonGenerator,
                                 final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             jsonGenerator.writeStartObject();
             if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
@@ -131,10 +139,11 @@ class GraphSONSerializers {
             jsonGenerator.writeEndObject();
         }
 
-        private static void writeProperties(final Edge edge, final JsonGenerator jsonGenerator,
+        private void writeProperties(final Edge edge, final JsonGenerator jsonGenerator,
                                             final SerializerProvider serializerProvider,
                                             final TypeSerializer typeSerializer) throws IOException {
-            final Iterator<Property<Object>> elementProperties = edge.properties();
+            final Iterator<Property<Object>> elementProperties = normalize ?
+                    IteratorUtils.list(edge.properties(), Comparators.PROPERTY_COMPARATOR).iterator() : edge.properties();
             if (elementProperties.hasNext()) {
                 jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
                 if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
@@ -150,8 +159,11 @@ class GraphSONSerializers {
 
     static class VertexJacksonSerializer extends StdSerializer<Vertex> {
 
-        public VertexJacksonSerializer() {
+        private final boolean normalize;
+
+        public VertexJacksonSerializer(final boolean normalize) {
             super(Vertex.class);
+            this.normalize = normalize;
         }
 
         @Override
@@ -167,7 +179,7 @@ class GraphSONSerializers {
 
         }
 
-        private static void ser(final Vertex vertex, final JsonGenerator jsonGenerator,
+        private void ser(final Vertex vertex, final JsonGenerator jsonGenerator,
                                 final SerializerProvider serializerProvider, final TypeSerializer typeSerializer)
                 throws IOException {
             jsonGenerator.writeStartObject();
@@ -179,9 +191,10 @@ class GraphSONSerializers {
             jsonGenerator.writeEndObject();
         }
 
-        private static void writeProperties(final Vertex vertex, final JsonGenerator jsonGenerator,
+        private void writeProperties(final Vertex vertex, final JsonGenerator jsonGenerator,
                                             final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
-            final Iterator<VertexProperty<Object>> vertexProperties = vertex.properties();
+            final Iterator<VertexProperty<Object>> vertexProperties = normalize ?
+                    IteratorUtils.list(vertex.properties(), Comparators.PROPERTY_COMPARATOR).iterator() : vertex.properties();
             if (vertexProperties.hasNext()) {
                 jsonGenerator.writeArrayFieldStart(GraphSONTokens.PROPERTIES);
                 if (typeSerializer != null) {
@@ -301,41 +314,43 @@ class GraphSONSerializers {
     }
 
     private static void serializerVertexProperty(final VertexProperty property, final JsonGenerator jsonGenerator,
-                                                 final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+                                                 final SerializerProvider serializerProvider,
+                                                 final TypeSerializer typeSerializer, final boolean normalize) throws IOException {
         jsonGenerator.writeStartObject();
         if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
         GraphSONUtil.writeWithType(GraphSONTokens.ID, property.id(), jsonGenerator, serializerProvider, typeSerializer);
         GraphSONUtil.writeWithType(GraphSONTokens.VALUE, property.value(), jsonGenerator, serializerProvider, typeSerializer);
         jsonGenerator.writeStringField(GraphSONTokens.LABEL, property.label());
-        tryWriteMetaProperties(property, jsonGenerator, serializerProvider, typeSerializer);
+        tryWriteMetaProperties(property, jsonGenerator, serializerProvider, typeSerializer, normalize);
         jsonGenerator.writeEndObject();
     }
 
     private static void tryWriteMetaProperties(final VertexProperty property, final JsonGenerator jsonGenerator,
                                                final SerializerProvider serializerProvider,
-                                               final TypeSerializer typeSerializer) throws IOException {
+                                               final TypeSerializer typeSerializer, final boolean normalize) throws IOException {
         // when "detached" you can't check features of the graph it detached from so it has to be
         // treated differently from a regular VertexProperty implementation.
         if (property instanceof DetachedVertexProperty) {
             // only write meta properties key if they exist
             if (property.properties().hasNext()) {
-                writeMetaProperties(property, jsonGenerator, serializerProvider, typeSerializer);
+                writeMetaProperties(property, jsonGenerator, serializerProvider, typeSerializer, normalize);
             }
         } else {
             // still attached - so we can check the features to see if it's worth even trying to write the
             // meta properties key
             if (property.graph().features().vertex().supportsMetaProperties() && property.properties().hasNext()) {
-                writeMetaProperties(property, jsonGenerator, serializerProvider, typeSerializer);
+                writeMetaProperties(property, jsonGenerator, serializerProvider, typeSerializer, normalize);
             }
         }
     }
 
     private static void writeMetaProperties(final VertexProperty property, final JsonGenerator jsonGenerator,
                                             final SerializerProvider serializerProvider,
-                                            final TypeSerializer typeSerializer) throws IOException {
+                                            final TypeSerializer typeSerializer, final boolean normalize) throws IOException {
         jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
         if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
-        final Iterator<Property<Object>> metaProperties = property.properties();
+        final Iterator<Property<Object>> metaProperties = normalize ?
+                IteratorUtils.list(( Iterator<Property<Object>>) property.properties(), Comparators.PROPERTY_COMPARATOR).iterator() : property.properties();
         while (metaProperties.hasNext()) {
             final Property<Object> metaProperty = metaProperties.next();
             GraphSONUtil.writeWithType(metaProperty.key(), metaProperty.value(), jsonGenerator, serializerProvider, typeSerializer);

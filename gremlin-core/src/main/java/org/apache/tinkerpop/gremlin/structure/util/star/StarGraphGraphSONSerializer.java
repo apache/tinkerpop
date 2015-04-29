@@ -33,21 +33,29 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONUtil;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.Comparators;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StarGraphGraphSONSerializer extends StdSerializer<StarGraphGraphSONSerializer.DirectionalStarGraph> {
-    public StarGraphGraphSONSerializer() {
+    private final boolean normalize;
+    public StarGraphGraphSONSerializer(final boolean normalize) {
         super(DirectionalStarGraph.class);
+        this.normalize = normalize;
     }
 
     @Override
@@ -76,18 +84,24 @@ public class StarGraphGraphSONSerializer extends StdSerializer<StarGraphGraphSON
         if (starGraph.starVertex.vertexProperties != null && !starGraph.starVertex.vertexProperties.isEmpty()) {
             jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
             if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
-            for (final Map.Entry<String, List<VertexProperty>> vp : starGraph.starVertex.vertexProperties.entrySet()) {
-                jsonGenerator.writeArrayFieldStart(vp.getKey());
+            final Set<String> keys = normalize ? new TreeSet<>(starGraph.starVertex.vertexProperties.keySet()) : starGraph.starVertex.vertexProperties.keySet();
+            for (final String k : keys) {
+                final List<VertexProperty> vp = starGraph.starVertex.vertexProperties.get(k);
+                jsonGenerator.writeArrayFieldStart(k);
                 if (typeSerializer != null) {
                     jsonGenerator.writeString(ArrayList.class.getName());
                     jsonGenerator.writeStartArray();
                 }
-                for (final VertexProperty property : vp.getValue()) {
+
+                final List<VertexProperty> vertexProperties = normalize ?sort(vp, Comparators.PROPERTY_COMPARATOR) : vp;
+                for (final VertexProperty property : vertexProperties) {
                     jsonGenerator.writeStartObject();
                     if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
                     GraphSONUtil.writeWithType(GraphSONTokens.ID, property.id(), jsonGenerator, serializerProvider, typeSerializer);
                     GraphSONUtil.writeWithType(GraphSONTokens.VALUE, property.value(), jsonGenerator, serializerProvider, typeSerializer);
-                    final Iterator<Property<Object>> metaProperties = property.properties();
+
+                    final Iterator<Property> metaProperties = normalize ?
+                            IteratorUtils.list(property.properties(), Comparators.PROPERTY_COMPARATOR).iterator() : property.properties();
                     if (metaProperties.hasNext()) {
                         jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
                         if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
@@ -120,25 +134,31 @@ public class StarGraphGraphSONSerializer extends StdSerializer<StarGraphGraphSON
         if (writeEdges) {
             jsonGenerator.writeObjectFieldStart(direction == Direction.IN ? GraphSONTokens.IN_E : GraphSONTokens.OUT_E);
             if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
-            for (final Map.Entry<String, List<Edge>> edges : starEdges.entrySet()) {
-                jsonGenerator.writeArrayFieldStart(edges.getKey());
+            final Set<String> keys = normalize ? new TreeSet<>(starEdges.keySet()) : starEdges.keySet();
+            for (final String k : keys) {
+                final List<Edge> edges = starEdges.get(k);
+                jsonGenerator.writeArrayFieldStart(k);
                 if (typeSerializer != null) {
                     jsonGenerator.writeString(ArrayList.class.getName());
                     jsonGenerator.writeStartArray();
                 }
-                for (final Edge edge : edges.getValue()) {
+
+                final List<Edge> edgesToWrite = normalize ? sort(edges, Comparators.EDGE_COMPARATOR) : edges;
+                for (final Edge edge : edgesToWrite) {
                     jsonGenerator.writeStartObject();
                     if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
                     GraphSONUtil.writeWithType(GraphSONTokens.ID, edge.id(), jsonGenerator, serializerProvider, typeSerializer);
                     GraphSONUtil.writeWithType(direction.equals(Direction.OUT) ? GraphSONTokens.IN : GraphSONTokens.OUT,
                             direction.equals(Direction.OUT) ? edge.inVertex().id() : edge.outVertex().id(),
                             jsonGenerator, serializerProvider, typeSerializer);
-                    final Iterator<Property<Object>> metaProperties = edge.properties();
-                    if (metaProperties.hasNext()) {
+
+                    final Iterator<Property<Object>> edgeProperties = normalize ?
+                            IteratorUtils.list(edge.properties(), Comparators.PROPERTY_COMPARATOR).iterator() : edge.properties();
+                    if (edgeProperties.hasNext()) {
                         jsonGenerator.writeObjectFieldStart(GraphSONTokens.PROPERTIES);
                         if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
-                        while (metaProperties.hasNext()) {
-                            final Property<Object> meta = metaProperties.next();
+                        while (edgeProperties.hasNext()) {
+                            final Property<Object> meta = edgeProperties.next();
                             GraphSONUtil.writeWithType(meta.key(), meta.value(), jsonGenerator, serializerProvider, typeSerializer);
                         }
                         jsonGenerator.writeEndObject();
@@ -205,6 +225,11 @@ public class StarGraphGraphSONSerializer extends StdSerializer<StarGraphGraphSON
         }
 
         return starGraph;
+    }
+
+    private static <S> List<S> sort(final List<S> listToSort, final Comparator comparator) {
+        Collections.sort(listToSort, comparator);
+        return listToSort;
     }
 
     public static class DirectionalStarGraph {
