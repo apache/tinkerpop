@@ -20,7 +20,7 @@
 // An example of an initialization script that can be configured to run in Gremlin Server.
 // Functions defined here will go into global cache and will not be removed from there
 // unless there is a reset of the ScriptEngine.
-graph.io(GryoIo.build()).read('data/sample.kryo')
+graph.io(GryoIo.build()).readGraph('data/sample.kryo')
 
 // define the default TraversalSource to bind queries to.
 g = graph.traversal()
