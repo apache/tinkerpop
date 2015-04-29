@@ -26,17 +26,33 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
 /**
- * Functions for writing a graph and its elements to a different format.
+ * Functions for writing a graph and its elements to a serialized format. Implementations of this class do not need
+ * to explicitly guarantee that an object written with one method must have its format equivalent to another. In other
+ * words calling {@link #writeVertex(OutputStream, Vertex)}} need not have equivalent output to
+ * {@link #writeObject(OutputStream, Object)}.  Nor does the representation of an {@link Edge} within the output of
+ * {@link #writeVertex(OutputStream, Vertex, Direction)} need to match the representation of that same
+ * {@link Edge} when provided to {@link #writeEdge(OutputStream, Edge)}. In other words, implementations are free
+ * to optimize as is possible for a specific serialization method.
+ * <br/>
+ * That said, it is however important that the complementary "read" operation in {@link GraphReader} be capable of
+ * reading the output of the writer.  In other words, the output of {@link #writeObject(OutputStream, Object)}
+ * should always be readable by {@link GraphReader#readObject(InputStream, Class)} and the output of
+ * {@link #writeGraph(OutputStream, Graph)} should always be readable by
+ * {@link GraphReader#readGraph(InputStream, Graph)}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface GraphWriter {
     /**
      * Write the entire graph to a stream.
+     *
+     * @param outputStream The stream to write to.
+     * @param g The graph to write to stream.
      */
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException;
 
@@ -45,7 +61,7 @@ public interface GraphWriter {
      *
      * @param outputStream The stream to write to.
      * @param v            The vertex to write.
-     * @param direction    If direction is null then no edges are written.
+     * @param direction    The direction of edges to write or null if no edges are to be written.
      */
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException;
 
@@ -64,7 +80,7 @@ public interface GraphWriter {
      *
      * @param outputStream The stream to write to.
      * @param vertexIterator    A traversal that returns a list of vertices.
-     * @param direction    If direction is null then no edges are written.
+     * @param direction    The direction of edges to write or null if no edges are to be written.
      */
     public default void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
         while (vertexIterator.hasNext()) {
@@ -86,6 +102,9 @@ public interface GraphWriter {
 
     /**
      * Write an edge to a stream.
+     *
+     * @param outputStream The stream to write to.
+     * @param e The edge to write.
      */
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException;
 

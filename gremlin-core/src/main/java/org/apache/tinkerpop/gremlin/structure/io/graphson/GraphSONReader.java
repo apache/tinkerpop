@@ -67,6 +67,9 @@ public class GraphSONReader implements GraphReader {
         this.batchSize = batchSize;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
         // dual pass - create all vertices and store to cache the ids.  then create edges.  as long as we don't
@@ -90,6 +93,9 @@ public class GraphSONReader implements GraphReader {
         if (supportsTx) graphToWriteTo.tx().commit();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream,
                                          final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
@@ -99,11 +105,17 @@ public class GraphSONReader implements GraphReader {
         return br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), vertexAttachMethod, edgeAttachMethod, attachEdgesOfThisDirection))).iterator();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod) throws IOException {
         return readVertex(inputStream, vertexAttachMethod, null, null);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Vertex readVertex(final InputStream inputStream,
                              final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
@@ -122,6 +134,9 @@ public class GraphSONReader implements GraphReader {
         return starGraph.getStarVertex();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
         final Map<String, Object> edgeData = mapper.readValue(inputStream, mapTypeReference);
@@ -137,6 +152,9 @@ public class GraphSONReader implements GraphReader {
         return edgeAttachMethod.apply(edge);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <C> C readObject(final InputStream inputStream, final Class<? extends C> clazz) throws IOException {
         return mapper.readValue(inputStream, clazz);

@@ -31,7 +31,17 @@ import java.util.Iterator;
 import java.util.function.Function;
 
 /**
- * Functions for reading a graph and its graph elements from a different format.
+ * Functions for reading a graph and its graph elements from a different serialization format. Implementations of
+ * this class do not need to explicitly guarantee that an object read with one method must have its format
+ * equivalent to another. In other words the input to {@link #readVertex(InputStream, Function)}} need not also
+ * be readable by {@link #readObject(InputStream, Class)}. In other words, implementations are free
+ * to optimize as is possible for a specific serialization method.
+ * <br/>
+ * That said, it is however important that the complementary "write" operation in {@link GraphWriter} be capable of
+ * writing output compatible to its reader.  In other words, the output of
+ * {@link GraphWriter#writeObject(OutputStream, Object)} should always be readable by
+ * {@link #readObject(InputStream, Class)} and the output of {@link GraphWriter#writeGraph(OutputStream, Graph)}
+ * should always be readable by {@link #readGraph(InputStream, Graph)}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -43,6 +53,7 @@ public interface GraphReader {
      * the documentation of an implementation to understand the approach it takes.
      *
      * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
+     * @param graphToWriteTo the graph to write to when reading from the stream.
      */
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException;
 

@@ -47,26 +47,48 @@ public class GraphSONWriter implements GraphWriter {
         this.mapper = mapper.createMapper();
     }
 
+    /**
+     * Writes a {@link Graph} to stream in an adjacency list format where vertices are written with edges from both
+     * directions.  Under this serialization model, edges are grouped by label.
+     *
+     * @param outputStream The stream to write to.
+     * @param g The graph to write to stream.
+     */
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
         writeVertices(outputStream, g.vertices(), Direction.BOTH);
     }
 
+    /**
+     * Writes a single {@link Vertex} to stream where edges only from the specified direction are written.
+     * Under this serialization model, edges are grouped by label.
+     *
+     * @param direction the direction of edges to write or null if no edges are to be written.
+     */
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
         mapper.writeValue(outputStream, new StarGraphGraphSONSerializer.DirectionalStarGraph(StarGraph.of(v), direction));
     }
 
+    /**
+     * Writes a single {@link Vertex} with no edges serialized.
+     *
+     * @param outputStream The stream to write to.
+     * @param v            The vertex to write.
+     */
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
-        mapper.writeValue(outputStream, new StarGraphGraphSONSerializer.DirectionalStarGraph(StarGraph.of(v), null));
+        writeVertex(outputStream, v, null);
     }
 
-    @Override
-    public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
-        mapper.writeValue(outputStream, e);
-    }
-
+    /**
+     * Writes a list of vertices in adjacency list format where vertices are written with edges from both
+     * directions.  Under this serialization model, edges are grouped by label.
+     *
+     * @param outputStream The stream to write to.
+     * @param vertexIterator    A traversal that returns a list of vertices.
+     * @param direction    If direction is null then no edges are written.
+     */
     @Override
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
@@ -82,21 +104,41 @@ public class GraphSONWriter implements GraphWriter {
         writer.flush();
     }
 
+    /**
+     * Writes a list of vertices without edges.
+     *
+     * @param outputStream The stream to write to.
+     * @param vertexIterator    A iterator that returns a list of vertices.
+     */
     @Override
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
-        final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-        try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            while (vertexIterator.hasNext()) {
-                writeVertex(baos, vertexIterator.next());
-                writer.write(new String(baos.toByteArray()));
-                writer.newLine();
-                baos.reset();
-            }
-        }
-
-        writer.flush();
+        writeVertices(outputStream, vertexIterator, null);
     }
 
+    /**
+     * Writes an {@link Edge} object to the stream.  Note that this format is different from the format of an
+     * {@link Edge} when serialized with a {@link Vertex} as done with
+     * {@link #writeVertex(OutputStream, Vertex, Direction)} or
+     * {@link #writeVertices(OutputStream, Iterator, Direction)} in that the edge label is part of the object and
+     * vertex labels are included with their identifiers.
+     *
+     * @param outputStream The stream to write to.
+     * @param e The edge to write.
+     */
+    @Override
+    public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
+        mapper.writeValue(outputStream, e);
+    }
+
+    /**
+     * Writes an arbitrary object to the stream.  Note that Gremlin Server uses this method when serializing output,
+     * thus the format of the GraphSON for a {@link Vertex} will be somewhat different from the format supplied
+     * when using {@link #writeVertex(OutputStream, Vertex, Direction)}. For example, edges will never be included.
+     *
+     * @param outputStream The stream to write to
+     * @param object The object to write which will use the standard serializer set
+     * @throws IOException
+     */
     @Override
     public void writeObject(final OutputStream outputStream, final Object object) throws IOException {
         this.mapper.writeValue(outputStream, object);
