@@ -1447,7 +1447,6 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
                             assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
                             assertEquals(v1.label(), detachedEdge.outVertex().label());
-                            // todo: assertEquals(v2.label(), detachedEdge.inVertex().label());
                             assertEquals(e.label(), detachedEdge.label());
                             assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
                             assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
@@ -1534,7 +1533,6 @@ public class IoTest extends AbstractGremlinTest {
                             assertEquals(e.id(), graph.edges(detachedEdge.id().toString()).next().id());
                             assertEquals(v1.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
                             assertEquals(v2.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
-                            // todo: assertEquals(v1.label(), detachedEdge.outVertex().label());
                             assertEquals(v2.label(), detachedEdge.inVertex().label());
                             assertEquals(e.label(), detachedEdge.label());
                             assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
@@ -1635,7 +1633,6 @@ public class IoTest extends AbstractGremlinTest {
                                 assertEquals(e1.id(), graph.edges(detachedEdge.id().toString()).next().id());
                                 assertEquals(v1.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
                                 assertEquals(v2.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
-                                // todo: assertEquals(v1.label(), detachedEdge.outVertex().label());
                                 assertEquals(v2.label(), detachedEdge.inVertex().label());
                                 assertEquals(e1.label(), detachedEdge.label());
                                 assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
@@ -1646,7 +1643,6 @@ public class IoTest extends AbstractGremlinTest {
                                 assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
                                 assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
                                 assertEquals(v1.label(), detachedEdge.outVertex().label());
-                                // todo: assertEquals(v2.label(), detachedEdge.inVertex().label());
                                 assertEquals(e2.label(), detachedEdge.label());
                                 assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
                                 assertEquals(1.0d, detachedEdge.value("weight"), 0.000001d);                      // lossy
@@ -1704,7 +1700,6 @@ public class IoTest extends AbstractGremlinTest {
                     if (graph.edges(detachedEdge.id()).next().id().equals(e1.id())) {
                         assertEquals(v2.id(), graph.vertices(detachedEdge.outVertex().id()).next().id());
                         assertEquals(v1.id(), graph.vertices(detachedEdge.inVertex().id()).next().id());
-                        // todo: assertEquals(v1.label(), detachedEdge.outVertex().label());
                         assertEquals(v2.label(), detachedEdge.inVertex().label());
                         assertEquals(e1.label(), detachedEdge.label());
                         assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
@@ -1714,7 +1709,6 @@ public class IoTest extends AbstractGremlinTest {
                         assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id()).next().id());
                         assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id()).next().id());
                         assertEquals(v1.label(), detachedEdge.outVertex().label());
-                        // todo: assertEquals(v2.label(), detachedEdge.inVertex().label());
                         assertEquals(e1.label(), detachedEdge.label());
                         assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
                         assertEquals(1.0f, detachedEdge.value("weight"), 0.00001f);
