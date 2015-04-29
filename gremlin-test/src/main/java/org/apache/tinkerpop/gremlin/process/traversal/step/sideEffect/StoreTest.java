@@ -53,7 +53,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
     public void g_V_storeXa_nameX_out_capXaX() {
         final Traversal<Vertex, Collection> traversal = get_g_V_storeXaX_byXnameX_out_capXaX();
         printTraversalForm(traversal);
-        Collection names = traversal.next();
+        final Collection names = traversal.next();
         assertEquals(6, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("josh"));
@@ -69,7 +69,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
     public void g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX() {
         final Traversal<Vertex, Collection> traversal = get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(convertToVertexId("marko"));
         printTraversalForm(traversal);
-        Collection names = traversal.next();
+        final Collection names = traversal.next();
         assertEquals(4, names.size());
         assertTrue(names.contains("marko"));
         assertTrue(names.contains("josh"));

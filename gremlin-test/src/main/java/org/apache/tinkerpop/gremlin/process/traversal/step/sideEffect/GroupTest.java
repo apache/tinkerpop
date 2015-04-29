@@ -94,7 +94,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_timesX2X_capXaX() {
-        List<Traversal<Vertex, Map<String, Long>>> traversals = new ArrayList<>();
+        final List<Traversal<Vertex, Map<String, Long>>> traversals = new ArrayList<>();
         traversals.add(get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);

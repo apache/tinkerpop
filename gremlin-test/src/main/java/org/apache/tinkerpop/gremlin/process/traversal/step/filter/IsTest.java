@@ -52,7 +52,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_valuesXageX_isX32X() {
-        Traversal<Vertex, Integer> traversal = get_g_V_valuesXageX_isX32X();
+        final Traversal<Vertex, Integer> traversal = get_g_V_valuesXageX_isX32X();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals(Integer.valueOf(32), traversal.next());
@@ -62,7 +62,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_valuesXageX_isXlte_30X() {
-        Traversal<Vertex, Integer> traversal = get_g_V_valuesXageX_isXlte_30X();
+        final Traversal<Vertex, Integer> traversal = get_g_V_valuesXageX_isXlte_30X();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(27, 29), traversal);
     }
@@ -70,7 +70,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_valuesXageX_isXgte_29X_isXlt_34X() {
-        Traversal<Vertex, Integer> traversal = get_g_V_valuesXageX_isXgte_29X_isXlt_34X();
+        final Traversal<Vertex, Integer> traversal = get_g_V_valuesXageX_isXgte_29X_isXlt_34X();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(29, 32), traversal);
     }
@@ -78,7 +78,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX() {
-        Traversal<Vertex, String> traversal = get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX();
+        final Traversal<Vertex, String> traversal = get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals("ripple", traversal.next());
@@ -88,7 +88,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
-        Traversal<Vertex, String> traversal = get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX();
+        final Traversal<Vertex, String> traversal = get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals("lop", traversal.next());

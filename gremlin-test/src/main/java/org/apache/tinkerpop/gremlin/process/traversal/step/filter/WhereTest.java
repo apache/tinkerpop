@@ -55,7 +55,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            Map<String, Object> map = traversal.next();
+            final Map<String, Object> map = traversal.next();
             assertEquals(2, map.size());
             assertTrue(map.containsKey("a"));
             assertTrue(map.containsKey("b"));
@@ -73,7 +73,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            Map<String, Object> map = traversal.next();
+            final Map<String, Object> map = traversal.next();
             assertEquals(2, map.size());
             assertTrue(map.containsKey("a"));
             assertTrue(map.containsKey("b"));
@@ -99,7 +99,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         int markoCounter = 0;
         while (traversal.hasNext()) {
             counter++;
-            Map<String, Object> map = traversal.next();
+            final Map<String, Object> map = traversal.next();
             assertEquals(2, map.size());
             assertTrue(map.containsKey("a"));
             assertTrue(map.containsKey("b"));
@@ -123,7 +123,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            Map<String, Object> map = traversal.next();
+            final Map<String, Object> map = traversal.next();
             assertEquals(2, map.size());
             assertTrue(map.containsKey("a"));
             assertTrue(map.containsKey("b"));

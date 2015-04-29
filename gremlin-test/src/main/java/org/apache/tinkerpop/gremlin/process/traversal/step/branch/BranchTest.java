@@ -46,7 +46,7 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-        Traversal<Vertex, Object> traversal = get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX();
+        final Traversal<Vertex, Object> traversal = get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("java", "java", "lop", "ripple", 29, 27, 32, 35), traversal);
     }
@@ -54,7 +54,7 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
-        Traversal<Vertex, Object> traversal = get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX();
+        final Traversal<Vertex, Object> traversal = get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("java", "java", "lop", "ripple", 29, 27, 32, 35), traversal);
     }

@@ -60,7 +60,7 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasNotXprop() {
-        Traversal<Vertex, Vertex> traversal = get_g_V_hasNotXprop("circumference");
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasNotXprop("circumference");
         printTraversalForm(traversal);
         final List<Vertex> list = traversal.toList();
         assertEquals(6, list.size());
@@ -69,7 +69,7 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasNotXoutXcreatedXX() {
-        Traversal<Vertex, String> traversal = get_g_V_hasNotXoutXcreatedXX();
+        final Traversal<Vertex, String> traversal = get_g_V_hasNotXoutXcreatedXX();
         checkResults(Arrays.asList("vadas", "lop", "ripple"), traversal);
     }
 

@@ -95,7 +95,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            Map<String, Vertex> bindings = traversal.next();
+            final Map<String, Vertex> bindings = traversal.next();
             assertEquals(2, bindings.size());
             assertEquals(convertToVertexId("marko"), (bindings.get("a")).id());
             assertTrue((bindings.get("b")).id().equals(convertToVertexId("vadas")) || bindings.get("b").id().equals(convertToVertexId("josh")));
@@ -112,7 +112,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            Map<String, String> bindings = traversal.next();
+            final Map<String, String> bindings = traversal.next();
             assertEquals(2, bindings.size());
             assertEquals("marko", bindings.get("a"));
             assertTrue(bindings.get("b").equals("josh") || bindings.get("b").equals("vadas"));
@@ -128,7 +128,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = traversal.next();
+            final Vertex vertex = traversal.next();
             assertEquals(convertToVertexId("marko"), vertex.id());
         }
         assertEquals(2, counter);
@@ -354,7 +354,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXhereXout_name_selectXhereX() {
-        Traversal<Vertex, Vertex> traversal = get_g_V_asXhereXout_name_selectXhereX();
+        final Traversal<Vertex, Vertex> traversal = get_g_V_asXhereXout_name_selectXhereX();
         printTraversalForm(traversal);
         super.checkResults(new HashMap<Vertex, Long>() {{
             put(convertToVertex(graph, "marko"), 3l);
@@ -367,7 +367,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.STANDARD)  // TODO: dkuppitz this fails on OLTP, but passes on OLAP
     public void g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX() {
-        List<Traversal<Vertex, Map<String, Long>>> traversals = Arrays.asList(get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX());
+        final List<Traversal<Vertex, Map<String, Long>>> traversals = Arrays.asList(get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             assertTrue(traversal.hasNext());

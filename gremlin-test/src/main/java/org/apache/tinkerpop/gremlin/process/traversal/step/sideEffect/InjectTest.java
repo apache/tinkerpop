@@ -51,7 +51,7 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
     public void g_VX1X_out_injectXv2X_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_out_injectXv2X_name(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
-        Map<String, Long> counter = new HashMap<>();
+        final Map<String, Long> counter = new HashMap<>();
         while (traversal.hasNext()) {
             MapHelper.incr(counter, traversal.next(), 1l);
         }

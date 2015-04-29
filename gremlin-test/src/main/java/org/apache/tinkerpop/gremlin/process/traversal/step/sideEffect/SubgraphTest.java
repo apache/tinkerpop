@@ -59,7 +59,7 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
         graphProvider.clear(config);
         Graph subgraph = graphProvider.openTestGraph(config);
         /////
-        Traversal<Vertex, Graph> traversal = get_g_V_withSideEffectXsgX_outEXknowsX_subgraphXsgX_name_capXsgX(convertToVertexId("marko"), subgraph);
+        final Traversal<Vertex, Graph> traversal = get_g_V_withSideEffectXsgX_outEXknowsX_subgraphXsgX_name_capXsgX(convertToVertexId("marko"), subgraph);
         printTraversalForm(traversal);
         subgraph = traversal.next();
         assertVertexEdgeCounts(3, 2).accept(subgraph);
@@ -91,7 +91,7 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
         graphProvider.clear(config);
         final Graph subgraph = graphProvider.openTestGraph(config);
         /////
-        Traversal<Vertex, String> traversal = get_g_V_withSideEffectXsgX_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup(subgraph);
+        final Traversal<Vertex, String> traversal = get_g_V_withSideEffectXsgX_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup(subgraph);
         printTraversalForm(traversal);
         checkResults(Arrays.asList("marko", "josh", "peter"), traversal);
         final Graph subGraph = traversal.asAdmin().getSideEffects().get("sg");

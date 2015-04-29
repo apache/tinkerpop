@@ -99,7 +99,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
-        List<Traversal<Vertex, Map<String, Long>>> traversals = new ArrayList<>();
+        final List<Traversal<Vertex, Map<String, Long>>> traversals = new ArrayList<>();
         traversals.add(get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
@@ -116,7 +116,7 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX() {
-        List<Traversal<Vertex, Map<String, Long>>> traversals = new ArrayList<>();
+        final List<Traversal<Vertex, Map<String, Long>>> traversals = new ArrayList<>();
         traversals.add(get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);

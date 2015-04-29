@@ -128,7 +128,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = traversal.next();
+            final Vertex vertex = traversal.next();
             vertices.add(vertex);
             assertTrue(vertex.value("name").equals("vadas") ||
                     vertex.value("name").equals("josh") ||
@@ -305,7 +305,7 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
         final Map<Object, Integer> counts = new HashMap<>();
         while (traversal.hasNext()) {
             final Object id = traversal.next().id();
-            int previousCount = counts.getOrDefault(id, 0);
+            final int previousCount = counts.getOrDefault(id, 0);
             counts.put(id, previousCount + 1);
             counter++;
         }

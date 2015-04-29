@@ -134,9 +134,9 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         traversals.add(get_g_V_repeatXoutX_timesX2X_emit());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
-            Map<String, Long> map = new HashMap<>();
+            final Map<String, Long> map = new HashMap<>();
             while (traversal.hasNext()) {
-                Vertex vertex = traversal.next();
+                final Vertex vertex = traversal.next();
                 MapHelper.incr(map, vertex.value("name"), 1l);
             }
             assertEquals(4, map.size());
@@ -245,7 +245,7 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_timesX2X_repeatXoutX_name(Object v1Id) {
+        public Traversal<Vertex, String> get_g_VX1X_timesX2X_repeatXoutX_name(final Object v1Id) {
             return g.V(v1Id).times(2).repeat(out()).values("name");
         }
 

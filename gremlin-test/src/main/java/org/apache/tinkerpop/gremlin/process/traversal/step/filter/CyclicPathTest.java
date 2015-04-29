@@ -63,7 +63,7 @@ public abstract class CyclicPathTest extends AbstractGremlinProcessTest {
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            Path path = traversal.next();
+            final Path path = traversal.next();
             assertFalse(path.isSimple());
         }
         assertEquals(1, counter);

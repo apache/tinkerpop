@@ -185,13 +185,13 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) > 0);
 
         // Test the nested global metrics of the repeat step
-        Metrics vertexStepNestedInRepeat = (Metrics) metrics.getNested().toArray()[0];
+        final Metrics vertexStepNestedInRepeat = (Metrics) metrics.getNested().toArray()[0];
         assertEquals(114, vertexStepNestedInRepeat.getCount(TraversalMetrics.ELEMENT_COUNT_ID));
         assertNotEquals(0, vertexStepNestedInRepeat.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
         assertTrue("Count should be greater than traversers.", vertexStepNestedInRepeat.getCount(TraversalMetrics.ELEMENT_COUNT_ID) > vertexStepNestedInRepeat.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
         assertTrue("Times should be positive.", vertexStepNestedInRepeat.getDuration(TimeUnit.MICROSECONDS) > 0);
 
-        Metrics repeatEndStepNestedInRepeat = (Metrics) metrics.getNested().toArray()[1];
+        final Metrics repeatEndStepNestedInRepeat = (Metrics) metrics.getNested().toArray()[1];
         assertEquals(72, repeatEndStepNestedInRepeat.getCount(TraversalMetrics.ELEMENT_COUNT_ID));
         assertNotEquals(0, repeatEndStepNestedInRepeat.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));
         assertTrue("Count should be greater than traversers.", repeatEndStepNestedInRepeat.getCount(TraversalMetrics.ELEMENT_COUNT_ID) > repeatEndStepNestedInRepeat.getCount(TraversalMetrics.TRAVERSER_COUNT_ID));

@@ -54,7 +54,7 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_valueXnameX_aggregateXxX_capXxX() {
-        Traversal<Vertex, List<String>> traversal = get_g_V_name_aggregateXxX_capXxX();
+        final Traversal<Vertex, List<String>> traversal = get_g_V_name_aggregateXxX_capXxX();
         printTraversalForm(traversal);
         final Collection<String> names = traversal.next();
         assertFalse(traversal.hasNext());
@@ -64,7 +64,7 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_aggregateXxX_byXnameX_capXxX() {
-        Traversal<Vertex, List<String>> traversal = get_g_V_aggregateXxX_byXnameX_capXxX();
+        final Traversal<Vertex, List<String>> traversal = get_g_V_aggregateXxX_byXnameX_capXxX();
         printTraversalForm(traversal);
         final Collection<String> names = traversal.next();
         assertFalse(traversal.hasNext());
@@ -91,9 +91,9 @@ public abstract class AggregateTest extends AbstractGremlinProcessTest {
         final Map<String, Long> secondStepCounts = new HashMap<>();
         while (traversal.hasNext()) {
             count++;
-            Path path = traversal.next();
-            String first = path.get(0).toString();
-            String second = path.get(1).toString();
+            final Path path = traversal.next();
+            final String first = path.get(0).toString();
+            final String second = path.get(1).toString();
             assertThat(first, not(second));
             MapHelper.incr(firstStepCounts, first, 1l);
             MapHelper.incr(secondStepCounts, second, 1l);

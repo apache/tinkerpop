@@ -56,7 +56,7 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_coalesceXoutXfooX_outXbarXX() {
-        Traversal<Vertex, Vertex> traversal = get_g_V_coalesceXoutXfooX_outXbarXX();
+        final Traversal<Vertex, Vertex> traversal = get_g_V_coalesceXoutXfooX_outXbarXX();
         printTraversalForm(traversal);
         assertFalse(traversal.hasNext());
     }
@@ -64,7 +64,7 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX() {
-        Traversal<Vertex, String> traversal = get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(convertToVertexId("marko"));
+        final Traversal<Vertex, String> traversal = get_g_VX1X_coalesceXoutXknowsX_outXcreatedXX_valuesXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList("josh", "vadas"), traversal);
     }
@@ -72,7 +72,7 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX() {
-        Traversal<Vertex, String> traversal = get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(convertToVertexId("marko"));
+        final Traversal<Vertex, String> traversal = get_g_VX1X_coalesceXoutXcreatedX_outXknowsXX_valuesXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals("lop", traversal.next());
@@ -82,10 +82,10 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX() {
-        Traversal<Vertex, Map<String, Long>> traversal = get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX();
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_coalesceXoutXlikesX_outXknowsX_inXcreatedXX_groupCount_byXnameX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
-        Map<String, Long> result = traversal.next();
+        final Map<String, Long> result = traversal.next();
         assertEquals(4, result.size());
         assertTrue(result.containsKey("josh") && result.containsKey("lop") && result.containsKey("ripple") && result.containsKey("vadas"));
         assertEquals(1L, (long) result.get("josh"));
@@ -99,14 +99,14 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
-        Traversal<Vertex, Path> traversal = get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX();
+        final Traversal<Vertex, Path> traversal = get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX();
         printTraversalForm(traversal);
-        Map<String, Integer> first = new HashMap<>();
-        Map<String, Integer> last = new HashMap<>();
+        final Map<String, Integer> first = new HashMap<>();
+        final Map<String, Integer> last = new HashMap<>();
         int counter = 0;
         while (traversal.hasNext()) {
             counter++;
-            Path path = traversal.next();
+            final Path path = traversal.next();
             first.compute(path.<String>get(0), (k, v) -> v != null ? v + 1 : 1);
             last.compute(path.<String>get(2), (k, v) -> v != null ? v + 1 : 1);
             assertEquals(3, path.size());

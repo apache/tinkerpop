@@ -62,7 +62,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
     public void g_VX1X_outE_label_mapXlengthX() {
         final Traversal<Vertex, Integer> traversal = get_g_VX1X_outE_label_mapXlengthX(convertToVertexId("marko"));
         printTraversalForm(traversal);
-        List<Integer> lengths = traversal.toList();
+        final List<Integer> lengths = traversal.toList();
         assertTrue(lengths.contains("created".length()));
         assertTrue(lengths.contains("knows".length()));
         assertEquals(lengths.size(), 3);

@@ -53,9 +53,9 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
     public void g_V_fold() {
         final Traversal<Vertex, List<Vertex>> traversal = get_g_V_fold();
         printTraversalForm(traversal);
-        List<Vertex> list = traversal.next();
+        final List<Vertex> list = traversal.next();
         assertFalse(traversal.hasNext());
-        Set<Vertex> vertices = new HashSet<>(list);
+        final Set<Vertex> vertices = new HashSet<>(list);
         assertEquals(6, vertices.size());
     }
 
@@ -66,7 +66,7 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_fold_unfold();
         printTraversalForm(traversal);
         int count = 0;
-        Set<Vertex> vertices = new HashSet<>();
+        final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             vertices.add(traversal.next());
             count++;

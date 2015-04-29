@@ -56,7 +56,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_out_tree_byXnameX() {
-        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(
+        final List<Traversal<Vertex, Tree>> traversals = Arrays.asList(
                 get_g_VX1X_out_out_tree_byXnameX(convertToVertexId("marko")),
                 get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(convertToVertexId("marko")));
         traversals.forEach(traversal -> {
@@ -75,7 +75,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_out_tree_byXidX() {
-        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_tree_byXidX(), get_g_V_out_out_treeXaX_byXidX_capXaX());
+        final List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_tree_byXidX(), get_g_V_out_out_treeXaX_byXidX_capXaX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Tree tree = traversal.next();
@@ -92,7 +92,7 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_out_out_treeXaX_capXaX() {
-        List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_tree(), get_g_V_out_out_treeXaX_capXaX());
+        final List<Traversal<Vertex, Tree>> traversals = Arrays.asList(get_g_V_out_out_tree(), get_g_V_out_out_treeXaX_capXaX());
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             final Tree tree = traversal.next();

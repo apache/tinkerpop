@@ -64,10 +64,10 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_exceptXg_v2X(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<>();
+        final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = traversal.next();
+            final Vertex vertex = traversal.next();
             vertices.add(vertex);
             assertTrue(vertex.value("name").equals("josh") || vertex.value("name").equals("lop"));
         }
@@ -78,7 +78,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_aggregateXxX_out_exceptXxX() {
-        Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_aggregateXxX_out_exceptXxX(convertToVertexId("marko"));
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_aggregateXxX_out_exceptXxX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertEquals("ripple", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
@@ -88,9 +88,9 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_outXcreatedX_inXcreatedX_exceptXg_v1X_name() {
-        Traversal<Vertex, String> traversal = get_g_VX1X_outXcreatedX_inXcreatedX_exceptXg_v1X_name(convertToVertexId("marko"));
+        final Traversal<Vertex, String> traversal = get_g_VX1X_outXcreatedX_inXcreatedX_exceptXg_v1X_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
-        List<String> names = Arrays.asList(traversal.next(), traversal.next());
+        final List<String> names = Arrays.asList(traversal.next(), traversal.next());
         assertFalse(traversal.hasNext());
         assertEquals(2, names.size());
         assertTrue(names.contains("peter"));
@@ -101,7 +101,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_exceptXg_V_toListX() {
-        Traversal<Vertex, Vertex> traversal = get_g_V_exceptXg_V_toListX();
+        final Traversal<Vertex, Vertex> traversal = get_g_V_exceptXg_V_toListX();
         printTraversalForm(traversal);
         final List<Vertex> vertices = traversal.toList();
         assertEquals(0, vertices.size());
@@ -112,7 +112,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_exceptXX() {
-        Traversal<Vertex, Vertex> traversal = get_g_V_exceptXX();
+        final Traversal<Vertex, Vertex> traversal = get_g_V_exceptXX();
         printTraversalForm(traversal);
         final List<Vertex> vertices = traversal.toList();
         assertEquals(6, vertices.size());
@@ -122,7 +122,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path() {
-        Traversal<Vertex, Path> traversal = get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(convertToVertexId("marko"));
+        final Traversal<Vertex, Path> traversal = get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(convertToVertexId("marko"));
         printTraversalForm(traversal);
         final List<Path> paths = traversal.toList();
         assertEquals(4, paths.size());
@@ -136,7 +136,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_repeatXbothEXcreatedX_dedup_otherVX_emit_path() {
-        Traversal<Vertex, Path> traversal = get_g_VX1X_repeatXbothEXcreatedX_dedup_otherVX_emit_path(convertToVertexId("marko"));
+        final Traversal<Vertex, Path> traversal = get_g_VX1X_repeatXbothEXcreatedX_dedup_otherVX_emit_path(convertToVertexId("marko"));
         printTraversalForm(traversal);
         final List<Path> paths = traversal.toList();
         assertEquals(4, paths.size());

@@ -90,10 +90,10 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_filterXlang_eq_javaX();
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<>();
+        final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = traversal.next();
+            final Vertex vertex = traversal.next();
             vertices.add(vertex);
             assertTrue(vertex.value("name").equals("ripple") ||
                     vertex.value("name").equals("lop"));
@@ -132,10 +132,10 @@ public abstract class FilterTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_filterXname_startsWith_m_OR_name_startsWith_pX();
         printTraversalForm(traversal);
         int counter = 0;
-        Set<Vertex> vertices = new HashSet<>();
+        final Set<Vertex> vertices = new HashSet<>();
         while (traversal.hasNext()) {
             counter++;
-            Vertex vertex = traversal.next();
+            final Vertex vertex = traversal.next();
             vertices.add(vertex);
             assertTrue(vertex.value("name").equals("marko") ||
                     vertex.value("name").equals("peter"));
