@@ -47,6 +47,12 @@ public class DetachedProperty<V> implements Property<V>, Serializable, Attachabl
         this.element = DetachedFactory.detach(property.element(), false);
     }
 
+    public DetachedProperty(final String key, final V value) {
+        this.key = key;
+        this.value = value;
+        this.element = null;
+    }
+
     public DetachedProperty(final String key, final V value, final Element element) {
         this.key = key;
         this.value = value;

@@ -19,10 +19,12 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphml;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
@@ -66,36 +68,6 @@ public class GraphMLReader implements GraphReader {
         this.edgeLabelKey = edgeLabelKey;
         this.batchSize = batchSize;
         this.vertexLabelKey = vertexLabelKey;
-    }
-
-    @Override
-    public Iterator<Vertex> readVertices(final InputStream inputStream,
-                                         final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
-                                         final Function<Attachable<Edge>, Edge> edgeAttachMethod,
-                                         final Direction attachEdgesOfThisDirection) throws IOException {
-        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
-    }
-
-    @Override
-    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
-        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
-    }
-
-    @Override
-    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod) throws IOException {
-        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
-    }
-
-    @Override
-    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
-                             final Function<Attachable<Edge>, Edge> edgeAttachMethod,
-                             final Direction attachEdgesOfThisDirection) throws IOException {
-        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
-    }
-
-    @Override
-    public <C> C readObject(final InputStream inputStream, final Class<? extends C> clazz) throws IOException {
-        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     @Override
@@ -227,6 +199,48 @@ public class GraphMLReader implements GraphReader {
                 graphToWriteTo.tx().rollback();
             throw new IOException(xse);
         }
+    }
+
+    @Override
+    public Iterator<Vertex> readVertices(final InputStream inputStream,
+                                         final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
+                                         final Function<Attachable<Edge>, Edge> edgeAttachMethod,
+                                         final Direction attachEdgesOfThisDirection) throws IOException {
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod) throws IOException {
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
+                             final Function<Attachable<Edge>, Edge> edgeAttachMethod,
+                             final Direction attachEdgesOfThisDirection) throws IOException {
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
+    }
+
+    @Override
+    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
+    }
+
+    @Override
+    public VertexProperty readVertexProperty(final InputStream inputStream,
+                                             final Function<Attachable<VertexProperty>, VertexProperty> vertexPropertyAttachMethod) throws IOException {
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
+    }
+
+    @Override
+    public Property readProperty(final InputStream inputStream,
+                                 final Function<Attachable<Property>, Property> propertyAttachMethod) throws IOException {
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
+    }
+
+    @Override
+    public <C> C readObject(final InputStream inputStream, final Class<? extends C> clazz) throws IOException {
+        throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
     private static Vertex findOrCreate(final Object id, final Graph graphToWriteTo, final boolean supportsIds,

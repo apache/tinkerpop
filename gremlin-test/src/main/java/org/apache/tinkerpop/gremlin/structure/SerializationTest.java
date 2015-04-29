@@ -265,6 +265,7 @@ public class SerializationTest {
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 
             assertEquals(p.value(), m.get(GraphSONTokens.VALUE));
+            assertEquals(p.key(), m.get(GraphSONTokens.KEY));
         }
 
         @Test

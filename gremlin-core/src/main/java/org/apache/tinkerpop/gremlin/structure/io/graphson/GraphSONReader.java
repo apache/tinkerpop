@@ -23,11 +23,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
@@ -150,6 +154,25 @@ public class GraphSONReader implements GraphReader {
                 Pair.with(edgeData.get(GraphSONTokens.IN), edgeData.get(GraphSONTokens.IN_LABEL).toString()));
 
         return edgeAttachMethod.apply(edge);
+    }
+
+    @Override
+    public VertexProperty readVertexProperty(final InputStream inputStream,
+                                             final Function<Attachable<VertexProperty>, VertexProperty> vertexPropertyAttachMethod) throws IOException {
+        final Map<String, Object> vpData = mapper.readValue(inputStream, mapTypeReference);
+        final Map<String, Object> metaProperties = (Map<String, Object>) vpData.get(GraphSONTokens.PROPERTIES);
+        final DetachedVertexProperty vp = new DetachedVertexProperty(vpData.get(GraphSONTokens.ID),
+                vpData.get(GraphSONTokens.LABEL).toString(),
+                vpData.get(GraphSONTokens.VALUE), metaProperties);
+        return vertexPropertyAttachMethod.apply(vp);
+    }
+
+    @Override
+    public Property readProperty(final InputStream inputStream,
+                                 final Function<Attachable<Property>, Property> propertyAttachMethod) throws IOException {
+        final Map<String, Object> propertyData = mapper.readValue(inputStream, mapTypeReference);
+        final DetachedProperty p = new DetachedProperty(propertyData.get(GraphSONTokens.KEY).toString(), propertyData.get(GraphSONTokens.VALUE));
+        return propertyAttachMethod.apply(p);
     }
 
     /**

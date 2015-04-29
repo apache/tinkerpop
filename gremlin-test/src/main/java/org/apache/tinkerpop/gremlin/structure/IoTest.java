@@ -80,6 +80,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1396,7 +1397,7 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, attachable -> {
                             final Vertex detachedVertex = attachable.get();
-                            TestHelper.validateVertexEquality(v1, detachedVertex,true);
+                            TestHelper.validateVertexEquality(v1, detachedVertex, true);
                             calledVertex.set(true);
                             return detachedVertex;
                         },
@@ -1434,26 +1435,26 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONReader reader = graph.io(graphson).reader().create();
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, attachable -> {
-                            final Vertex detachedVertex = attachable.get();
-                            assertEquals(v1.id(), graph.vertices(detachedVertex.id().toString()).next().id());
-                            assertEquals(v1.label(), detachedVertex.label());
-                            assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
-                            assertEquals("marko", detachedVertex.value("name"));
-                            calledVertex.set(true);
-                            return null;
-                        },attachable -> {
-                            final Edge detachedEdge = attachable.get();
-                            assertEquals(e.id(), graph.edges(detachedEdge.id().toString()).next().id());
-                            assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
-                            assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
-                            assertEquals(v1.label(), detachedEdge.outVertex().label());
-                            assertEquals(e.label(), detachedEdge.label());
-                            assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-                            assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
+                    final Vertex detachedVertex = attachable.get();
+                    assertEquals(v1.id(), graph.vertices(detachedVertex.id().toString()).next().id());
+                    assertEquals(v1.label(), detachedVertex.label());
+                    assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
+                    assertEquals("marko", detachedVertex.value("name"));
+                    calledVertex.set(true);
+                    return null;
+                }, attachable -> {
+                    final Edge detachedEdge = attachable.get();
+                    assertEquals(e.id(), graph.edges(detachedEdge.id().toString()).next().id());
+                    assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
+                    assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
+                    assertEquals(v1.label(), detachedEdge.outVertex().label());
+                    assertEquals(e.label(), detachedEdge.label());
+                    assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
+                    assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
 
-                            calledEdge.set(true);
-                            return null;
-                        }, Direction.OUT);
+                    calledEdge.set(true);
+                    return null;
+                }, Direction.OUT);
             }
 
             assertTrue(calledVertex.get());
@@ -1483,7 +1484,7 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, attachable -> {
                     final Vertex detachedVertex = attachable.get();
-                    TestHelper.validateVertexEquality(v1, detachedVertex,true);
+                    TestHelper.validateVertexEquality(v1, detachedVertex, true);
                     calledVertex.set(true);
                     return detachedVertex;
                 }, attachable -> {
@@ -1572,7 +1573,7 @@ public class IoTest extends AbstractGremlinTest {
             try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
                 reader.readVertex(bais, attachable -> {
                             final Vertex detachedVertex = attachable.get();
-                            TestHelper.validateVertexEquality(v1, detachedVertex,true);
+                            TestHelper.validateVertexEquality(v1, detachedVertex, true);
                             calledVertex.set(true);
                             return detachedVertex;
                         },attachable -> {
@@ -1741,6 +1742,152 @@ public class IoTest extends AbstractGremlinTest {
 
         // the id is lossy in migration because TP2 treated ID as String
         assertClassicGraph(graph, false, true);
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldReadWritePropertyGraphSON() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = graph.io(graphson).writer().create();
+            final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
+            writer.writeProperty(os, p);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GraphSONReader reader = graph.io(graphson).reader().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readProperty(bais, propertyAttachable -> {
+                    assertEquals(p.value(), propertyAttachable.get().value());
+                    assertEquals(p.key(), propertyAttachable.get().key());
+                    called.set(true);
+                    return propertyAttachable.get();
+                });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldReadWriteVertexPropertyNoMetaPropertiesGraphSON() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = graph.io(graphson).writer().create();
+            final VertexProperty p = g.V(convertToVertexId("marko")).next().property("name");
+            writer.writeVertexProperty(os, p);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GraphSONReader reader = graph.io(graphson).reader().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertexProperty(bais, propertyAttachable -> {
+                    assertEquals(p.value(), propertyAttachable.get().value());
+                    assertEquals(p.key(), propertyAttachable.get().key());
+                    assertEquals(0, IteratorUtils.count(propertyAttachable.get().properties()));
+                    called.set(true);
+                    return propertyAttachable.get();
+                });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+    public void shouldReadWriteVertexPropertyWithMetaPropertiesGraphSON() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GraphSONWriter writer = graph.io(graphson).writer().create();
+            final VertexProperty p = g.V(convertToVertexId("marko")).next().properties("location").next();
+            writer.writeVertexProperty(os, p);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GraphSONReader reader = graph.io(graphson).reader().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertexProperty(bais, propertyAttachable -> {
+                    assertEquals(p.value(), propertyAttachable.get().value());
+                    assertEquals(p.key(), propertyAttachable.get().key());
+                    assertEquals(IteratorUtils.count(p.properties()), IteratorUtils.count(propertyAttachable.get().properties()));
+                    assertEquals(p.property("startTime").value(), ((Property) propertyAttachable.get().properties("startTime").next()).value());
+                    assertEquals(p.property("endTime").value(), ((Property) propertyAttachable.get().properties("endTime").next()).value());
+                    called.set(true);
+                    return propertyAttachable.get();
+                });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldReadWritePropertyGryo() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GryoWriter writer = graph.io(gryo).writer().create();
+            final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
+            writer.writeProperty(os, p);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GryoReader reader = graph.io(gryo).reader().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readProperty(bais, propertyAttachable -> {
+                    assertEquals(p.value(), propertyAttachable.get().value());
+                    assertEquals(p.key(), propertyAttachable.get().key());
+                    called.set(true);
+                    return propertyAttachable.get();
+                });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldReadWriteVertexPropertyNoMetaPropertiesGryo() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GryoWriter writer = graph.io(gryo).writer().create();
+            final VertexProperty p = g.V(convertToVertexId("marko")).next().property("name");
+            writer.writeVertexProperty(os, p);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GryoReader reader = graph.io(gryo).reader().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertexProperty(bais, propertyAttachable -> {
+                    assertEquals(p.value(), propertyAttachable.get().value());
+                    assertEquals(p.key(), propertyAttachable.get().key());
+                    assertEquals(0, IteratorUtils.count(propertyAttachable.get().properties()));
+                    called.set(true);
+                    return propertyAttachable.get();
+                });
+            }
+
+            assertTrue(called.get());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
+    public void shouldReadWriteVertexPropertyWithMetaPropertiesGryo() throws Exception {
+        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+            final GryoWriter writer = graph.io(gryo).writer().create();
+            final VertexProperty p = g.V(convertToVertexId("marko")).next().properties("location").next();
+            writer.writeVertexProperty(os, p);
+
+            final AtomicBoolean called = new AtomicBoolean(false);
+            final GryoReader reader = graph.io(gryo).reader().create();
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                reader.readVertexProperty(bais, propertyAttachable -> {
+                    assertEquals(p.value(), propertyAttachable.get().value());
+                    assertEquals(p.key(), propertyAttachable.get().key());
+                    assertEquals(IteratorUtils.count(p.properties()), IteratorUtils.count(propertyAttachable.get().properties()));
+                    assertEquals(p.property("startTime").value(), ((Property) propertyAttachable.get().properties("startTime").next()).value());
+                    assertEquals(p.property("endTime").value(), ((Property) propertyAttachable.get().properties("endTime").next()).value());
+                    called.set(true);
+                    return propertyAttachable.get();
+                });
+            }
+
+            assertTrue(called.get());
+        }
     }
 
     public static void assertCrewGraph(final Graph g1, final boolean lossyForId) {

@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
@@ -97,6 +99,16 @@ public class GraphMLWriter implements GraphWriter {
 
     @Override
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
+        throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
+    }
+
+    @Override
+    public void writeVertexProperty(final OutputStream outputStream, final VertexProperty vp) throws IOException {
+        throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
+    }
+
+    @Override
+    public void writeProperty(final OutputStream outputStream, final Property p) throws IOException {
         throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 

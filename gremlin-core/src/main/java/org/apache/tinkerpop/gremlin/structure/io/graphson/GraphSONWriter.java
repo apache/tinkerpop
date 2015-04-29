@@ -22,7 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
@@ -128,6 +130,28 @@ public class GraphSONWriter implements GraphWriter {
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         mapper.writeValue(outputStream, e);
+    }
+
+    /**
+     * Write a {@link VertexProperty} object to the stream.
+     *
+     * @param outputStream The stream to write to.
+     * @param vp The vertex property to write.
+     */
+    @Override
+    public void writeVertexProperty(final OutputStream outputStream, final VertexProperty vp) throws IOException {
+        mapper.writeValue(outputStream, vp);
+    }
+
+    /**
+     * Write a {@link Property} object to the stream.
+     *
+     * @param outputStream The stream to write to.
+     * @param p The property to write.
+     */
+    @Override
+    public void writeProperty(final OutputStream outputStream, final Property p) throws IOException {
+        mapper.writeValue(outputStream, p);
     }
 
     /**

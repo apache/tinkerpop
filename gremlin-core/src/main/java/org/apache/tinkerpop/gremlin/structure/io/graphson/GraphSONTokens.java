@@ -27,6 +27,7 @@ public final class GraphSONTokens {
     public static final String TYPE = "type";
     public static final String VALUE = "value";
     public static final String PROPERTIES = "properties";
+    public static final String KEY = "key";
     public static final String EDGE = "edge";
     public static final String VERTEX = "vertex";
     public static final String IN = "inV";

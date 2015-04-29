@@ -18,7 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
@@ -62,36 +66,6 @@ public class GryoReader implements GraphReader {
     }
 
     @Override
-    public Iterator<Vertex> readVertices(final InputStream inputStream,
-                                         final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
-                                         final Function<Attachable<Edge>, Edge> edgeAttachMethod,
-                                         final Direction attachEdgesOfThisDirection) throws IOException {
-        return new VertexInputIterator(new Input(inputStream), vertexAttachMethod, attachEdgesOfThisDirection, edgeAttachMethod);
-    }
-
-    @Override
-    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
-        final Input input = new Input(inputStream);
-        readHeader(input);
-        final Attachable<Edge> attachable = kryo.readObject(input, DetachedEdge.class);
-        return edgeAttachMethod.apply(attachable);
-    }
-
-    @Override
-    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod) throws IOException {
-        return readVertex(inputStream, vertexAttachMethod, null, null);
-    }
-
-    @Override
-    public Vertex readVertex(final InputStream inputStream,
-                             final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
-                             final Function<Attachable<Edge>, Edge> edgeAttachMethod,
-                             final Direction attachEdgesOfThisDirection) throws IOException {
-        final Input input = new Input(inputStream);
-        return readVertexInternal(vertexAttachMethod, edgeAttachMethod, attachEdgesOfThisDirection, input);
-    }
-
-    @Override
     public void readGraph(final InputStream inputStream, final Graph graphToWriteTo) throws IOException {
         // dual pass - create all vertices and store to cache the ids.  then create edges.  as long as we don't
         // have vertex labels in the output we can't do this single pass
@@ -111,6 +85,54 @@ public class GryoReader implements GraphReader {
         }));
 
         if (supportsTx) graphToWriteTo.tx().commit();
+    }
+
+    @Override
+    public Iterator<Vertex> readVertices(final InputStream inputStream,
+                                         final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
+                                         final Function<Attachable<Edge>, Edge> edgeAttachMethod,
+                                         final Direction attachEdgesOfThisDirection) throws IOException {
+        return new VertexInputIterator(new Input(inputStream), vertexAttachMethod, attachEdgesOfThisDirection, edgeAttachMethod);
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod) throws IOException {
+        return readVertex(inputStream, vertexAttachMethod, null, null);
+    }
+
+    @Override
+    public Vertex readVertex(final InputStream inputStream,
+                             final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
+                             final Function<Attachable<Edge>, Edge> edgeAttachMethod,
+                             final Direction attachEdgesOfThisDirection) throws IOException {
+        final Input input = new Input(inputStream);
+        return readVertexInternal(vertexAttachMethod, edgeAttachMethod, attachEdgesOfThisDirection, input);
+    }
+
+    @Override
+    public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
+        final Input input = new Input(inputStream);
+        readHeader(input);
+        final Attachable<Edge> attachable = kryo.readObject(input, DetachedEdge.class);
+        return edgeAttachMethod.apply(attachable);
+    }
+
+    @Override
+    public VertexProperty readVertexProperty (final InputStream inputStream,
+                                              final Function<Attachable<VertexProperty>, VertexProperty> vertexPropertyAttachMethod) throws IOException {
+        final Input input = new Input(inputStream);
+        readHeader(input);
+        final Attachable<VertexProperty> attachable = kryo.readObject(input, DetachedVertexProperty.class);
+        return vertexPropertyAttachMethod.apply(attachable);
+    }
+
+    @Override
+    public Property readProperty(final InputStream inputStream,
+                                 final Function<Attachable<Property>, Property> propertyAttachMethod) throws IOException {
+        final Input input = new Input(inputStream);
+        readHeader(input);
+        final Attachable<Property> attachable = kryo.readObject(input, DetachedProperty.class);
+        return propertyAttachMethod.apply(attachable);
     }
 
     @Override

@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
@@ -87,6 +89,22 @@ public class GryoWriter implements GraphWriter {
         final Output output = new Output(outputStream);
         writeHeader(output);
         kryo.writeObject(output, DetachedFactory.detach(e, true));
+        output.flush();
+    }
+
+    @Override
+    public void writeVertexProperty(final OutputStream outputStream, final VertexProperty vp) throws IOException {
+        final Output output = new Output(outputStream);
+        writeHeader(output);
+        kryo.writeObject(output, DetachedFactory.detach(vp, true));
+        output.flush();
+    }
+
+    @Override
+    public void writeProperty(final OutputStream outputStream, final Property p) throws IOException {
+        final Output output = new Output(outputStream);
+        writeHeader(output);
+        kryo.writeObject(output, DetachedFactory.detach(p, true));
         output.flush();
     }
 

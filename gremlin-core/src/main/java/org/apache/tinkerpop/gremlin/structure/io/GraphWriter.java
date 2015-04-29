@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -107,6 +109,22 @@ public interface GraphWriter {
      * @param e The edge to write.
      */
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException;
+
+    /**
+     * Write a vertex property to a stream.
+     *
+     * @param outputStream The stream to write to.
+     * @param vp The vertex property to write.
+     */
+    public void writeVertexProperty(final OutputStream outputStream, final VertexProperty vp) throws IOException;
+
+    /**
+     * Write a property to a stream.
+     *
+     * @param outputStream The stream to write to.
+     * @param p The property to write.
+     */
+    public void writeProperty(final OutputStream outputStream, final Property p) throws IOException;
 
     /**
      * Writes an arbitrary object to the stream.

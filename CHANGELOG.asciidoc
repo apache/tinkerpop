@@ -37,6 +37,7 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 * Altered `GraphWriter.writeVertices()` method to take an `Iterator` of vertices rather than a `Traversal`.
 * GraphSON format for output from `GraphWriter.writeVertex`, `GraphWriter.writeVertices`, and `GraphWriter.writeGraph` have all changed now that they use `StarGraph` serialization.
 * Gryo format for output from `GraphWriter.writeVertex`, `GraphWriter.writeVertices`, and `GraphWriter.writeGraph` have all changed now that they use `StarGraph` serialization.
+* Added read and write methods to `GraphReader` and `GraphWriter` for `Property` and `VertexProperty`.
 * Reduced object creation in GraphSON during serialization.
 * Moved `T` tokens to the `structure/` package as its more general than `process/`.
 * `Attachable.attach()` now takes a `Method` to determine whether to attach via `GET`, `CREATE`, or `GET_OR_CREATE`.

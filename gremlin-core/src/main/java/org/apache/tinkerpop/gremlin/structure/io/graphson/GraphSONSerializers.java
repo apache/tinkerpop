@@ -72,7 +72,6 @@ class GraphSONSerializers {
                                       final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             serializerVertexProperty(property, jsonGenerator, serializerProvider, typeSerializer, normalize);
         }
-
     }
 
     static class PropertyJacksonSerializer extends StdSerializer<Property> {
@@ -96,10 +95,10 @@ class GraphSONSerializers {
                                 final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             jsonGenerator.writeStartObject();
             if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+            serializerProvider.defaultSerializeField(GraphSONTokens.KEY, property.key(), jsonGenerator);
             serializerProvider.defaultSerializeField(GraphSONTokens.VALUE, property.value(), jsonGenerator);
             jsonGenerator.writeEndObject();
         }
-
     }
 
     static class EdgeJacksonSerializer extends StdSerializer<Edge> {

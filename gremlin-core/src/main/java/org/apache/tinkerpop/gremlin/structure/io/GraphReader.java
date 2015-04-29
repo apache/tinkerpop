@@ -21,8 +21,11 @@ package org.apache.tinkerpop.gremlin.structure.io;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.Host;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,12 +114,38 @@ public interface GraphReader {
      * transaction context with respect to this method (i.e. implementations should not commit the transaction for
      * the user).
      *
-     * @param inputStream a stream containing a single vertex as defined by the accompanying {@link GraphWriter}
+     * @param inputStream a stream containing at least one vertex as defined by the accompanying {@link GraphWriter}
      * @param edgeAttachMethod    a function that creates an edge from the stream where the first argument is the edge
      *                    identifier, the second argument is the out vertex id, the third is the in vertex id,
      *                    the fourth is the label, and the fifth is the list of properties as key/value pairs.
      */
     public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException;
+
+    /**
+     * Reads a single vertex property from an {@link InputStream}.  It is expected that the user will manager their own
+     * transaction context with respect to this method (i.e. implementations should not commit the transaction for
+     * the user).
+     *
+     * @param inputStream a stream containing at least one vertex property as written by the accompanying
+     *                    {@link GraphWriter#writeVertexProperty(OutputStream, VertexProperty)} method
+     * @param vertexPropertyAttachMethod a function that creates re-attaches a vertex property to a {@link Host} object
+     * @return the value returned by the attach method
+     */
+    public VertexProperty readVertexProperty(final InputStream inputStream,
+                                             final Function<Attachable<VertexProperty>, VertexProperty> vertexPropertyAttachMethod) throws IOException;
+
+    /**
+     * Reads a single property from an {@link InputStream}.  It is expected that the user will manager their own
+     * transaction context with respect to this method (i.e. implementations should not commit the transaction for
+     * the user).
+     *
+     * @param inputStream a stream containing at least one property as written by the accompanying
+     *                    {@link GraphWriter#writeProperty(OutputStream, Property)} method
+     * @param propertyAttachMethod a function that creates re-attaches a property to a {@link Host} object
+     * @return the value returned by the attach method
+     */
+    public Property readProperty(final InputStream inputStream,
+                                 final Function<Attachable<Property>, Property> propertyAttachMethod) throws IOException;
 
     /**
      * Reads an arbitrary object using the standard serializers.
