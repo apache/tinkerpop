@@ -82,25 +82,29 @@ public abstract class GroovySelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select() {
-            return g.V.has(values('name').is('marko')).as('a').select
+            g.V.has(values('name').is('marko')).as('a').select
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select() {
-            return g.V().label().groupCount().as('x').select()
+            g.V().label().groupCount().as('x').select()
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
-            return g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount()).as('relations').select().by('name').by()
+            g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount()).as('relations').select().by('name').by()
         }
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_select() {
-            return g.V().choose(__.outE().count().is(0L), __.as('a'), __.as('b')).select();
+            g.V().choose(__.outE().count().is(0L), __.as('a'), __.as('b')).select();
         }
 
-        //
+        @Override
+        Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_asXaX_outXcreatedX_asXaX_select() {
+            g.V.as('a').out('created').as('a').select
+        }
+//
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_selectXhereX(final Object v1Id) {
@@ -266,6 +270,11 @@ public abstract class GroovySelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_select() {
             ComputerTestHelper.compute("g.V.choose(__.outE.count.is(0L), __.as('a'), __.as('b')).select()", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_asXaX_outXcreatedX_asXaX_select() {
+            ComputerTestHelper.compute("g.V.as('a').out('created').as('a').select", g);
         }
 
         //
