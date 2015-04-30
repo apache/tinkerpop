@@ -24,8 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,18 +35,15 @@ import java.util.Set;
  */
 public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
-            TraverserRequirement.SIDE_EFFECTS,
-            TraverserRequirement.OBJECT
-    );
-
     private List<String> sideEffectKeys;
 
     public SideEffectCapStep(final Traversal.Admin traversal, final String sideEffectKey, final String... sideEffectKeys) {
         super(traversal);
         this.sideEffectKeys = new ArrayList<>(1 + sideEffectKeys.length);
         this.sideEffectKeys.add(sideEffectKey);
-        this.sideEffectKeys.addAll(Arrays.asList(sideEffectKeys));
+        for (final String key : sideEffectKeys) {
+            this.sideEffectKeys.add(key);
+        }
     }
 
     @Override
@@ -61,7 +57,7 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return REQUIREMENTS;
+        return Collections.singleton(TraverserRequirement.SIDE_EFFECTS);
     }
 
     @Override
