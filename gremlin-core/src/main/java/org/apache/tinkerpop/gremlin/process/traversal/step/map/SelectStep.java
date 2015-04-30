@@ -64,10 +64,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
             if (this.selectLabels.isEmpty()) {
                 path.labels().stream().flatMap(labels -> labels.stream()).distinct().forEach(label -> bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next())));
             } else {
-                this.selectLabels.forEach(label -> {
-                    if (path.hasLabel(label))
-                        bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next()));
-                });
+                this.selectLabels.forEach(label -> bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next())));
             }
         }
 
