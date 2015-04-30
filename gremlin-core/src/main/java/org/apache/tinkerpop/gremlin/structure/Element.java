@@ -91,7 +91,7 @@ public abstract interface Element {
      * @throws NoSuchElementException if the property does not exist on the {@code Element}.
      */
     public default <V> V value(final String key) throws NoSuchElementException {
-        return this.<V>property(key).orElseThrow(() -> Property.Exceptions.propertyDoesNotExist(key));
+        return this.<V>property(key).orElseThrow(() -> Property.Exceptions.propertyDoesNotExist(this,key));
     }
 
     /**
