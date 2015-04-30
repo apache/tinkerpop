@@ -29,6 +29,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
+ * Constructs Gryo IO implementations given a {@link Graph} and {@link IoRegistry}. Implementers of the {@link Graph}
+ * interfaces should see the {@link GryoMapper} for information on the expectations for the {@link IoRegistry}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, GryoMapper.Builder> {
@@ -41,21 +44,32 @@ public class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, GryoMa
         this.graph = graph;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GryoReader.Builder reader() {
         return GryoReader.build().mapper(mapper().create());
     }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GryoWriter.Builder writer() {
         return GryoWriter.build().mapper(mapper().create());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GryoMapper.Builder mapper() {
         return GryoMapper.build().addRegistry(this.registry);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeGraph(final String file) throws IOException {
         try (final OutputStream out = new FileOutputStream(file)) {
@@ -63,6 +77,9 @@ public class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, GryoMa
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void readGraph(final String file) throws IOException {
         try (final InputStream in = new FileInputStream(file)) {

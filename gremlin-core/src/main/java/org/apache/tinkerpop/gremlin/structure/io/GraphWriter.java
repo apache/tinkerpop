@@ -34,7 +34,7 @@ import java.util.Iterator;
 /**
  * Functions for writing a graph and its elements to a serialized format. Implementations of this class do not need
  * to explicitly guarantee that an object written with one method must have its format equivalent to another. In other
- * words calling {@link #writeVertex(OutputStream, Vertex)}} need not have equivalent output to
+ * words, calling {@link #writeVertex(OutputStream, Vertex)}} need not have equivalent output to
  * {@link #writeObject(OutputStream, Object)}.  Nor does the representation of an {@link Edge} within the output of
  * {@link #writeVertex(OutputStream, Vertex, Direction)} need to match the representation of that same
  * {@link Edge} when provided to {@link #writeEdge(OutputStream, Edge)}. In other words, implementations are free
@@ -80,8 +80,8 @@ public interface GraphWriter {
      * defined by the requested direction.
      *
      * @param outputStream the stream to write to.
-     * @param vertexIterator    A traversal that returns a list of vertices.
-     * @param direction    the direction of edges to write or null if no edges are to be written.
+     * @param vertexIterator a traversal that returns a list of vertices.
+     * @param direction the direction of edges to write or null if no edges are to be written.
      */
     public default void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
         while (vertexIterator.hasNext()) {
@@ -93,7 +93,7 @@ public interface GraphWriter {
      * Write a vertex to a stream without writing its edges.
      *
      * @param outputStream the stream to write to.
-     * @param vertexIterator    A iterator that returns a list of vertices.
+     * @param vertexIterator a iterator that returns a list of vertices.
      */
     public default void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
         while (vertexIterator.hasNext()) {

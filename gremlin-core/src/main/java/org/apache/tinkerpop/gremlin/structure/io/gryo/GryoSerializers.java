@@ -43,10 +43,9 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 class GryoSerializers {
+
     /**
      * Serializes any {@link Edge} implementation encountered to a {@link DetachedEdge}.
-     *
-     * @author Stephen Mallette (http://stephen.genoprime.com)
      */
     static class EdgeSerializer extends Serializer<Edge> {
         @Override
@@ -63,8 +62,6 @@ class GryoSerializers {
 
     /**
      * Serializes any {@link Vertex} implementation encountered to an {@link DetachedVertex}.
-     *
-     * @author Stephen Mallette (http://stephen.genoprime.com)
      */
     static class VertexSerializer extends Serializer<Vertex> {
         public VertexSerializer() {
@@ -83,8 +80,6 @@ class GryoSerializers {
 
     /**
      * Serializes any {@link Property} implementation encountered to an {@link DetachedProperty}.
-     *
-     * @author Stephen Mallette (http://stephen.genoprime.com)
      */
     static class PropertySerializer extends Serializer<Property> {
         public PropertySerializer() {
@@ -103,8 +98,6 @@ class GryoSerializers {
 
     /**
      * Serializes any {@link VertexProperty} implementation encountered to an {@link DetachedVertexProperty}.
-     *
-     * @author Stephen Mallette (http://stephen.genoprime.com)
      */
     static class VertexPropertySerializer extends Serializer<VertexProperty> {
         public VertexPropertySerializer() {
@@ -123,8 +116,6 @@ class GryoSerializers {
 
     /**
      * Serializes any {@link Path} implementation encountered to an {@link DetachedPath}.
-     *
-     * @author Marko A. Rodriguez (http://markorodriguez.com)
      */
     static class PathSerializer extends Serializer<Path> {
         public PathSerializer() {

@@ -48,7 +48,7 @@ import static org.apache.tinkerpop.shaded.kryo.util.Util.getWrapperClass;
 /**
  * This mapper implementation of the {@code ClassResolver} helps ensure that all Vertex and Edge concrete classes
  * get properly serialized and deserialized by stripping them of their concrete class name so that they are treated
- * generically.
+ * generically. See the {@link #getRegistration(Class)} method for the core of this logic.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

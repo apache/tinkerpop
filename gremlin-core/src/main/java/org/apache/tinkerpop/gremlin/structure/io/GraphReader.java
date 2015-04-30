@@ -139,7 +139,7 @@ public interface GraphReader {
      *
      * @param inputStream a stream containing at least one {@link Property} as written by the accompanying
      *                    {@link GraphWriter#writeProperty(OutputStream, Property)} method.
-     * @param propertyAttachMethod a function that creates re-attaches a {@link Property} to a {@link Host} object .
+     * @param propertyAttachMethod a function that creates re-attaches a {@link Property} to a {@link Host} object.
      * @return the value returned by the attach method.
      */
     public Property readProperty(final InputStream inputStream,
