@@ -18,17 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DependantMutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics;
@@ -103,12 +103,12 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
             while (!(t.asAdmin().getParent() instanceof EmptyStep)) {
                 t = t.asAdmin().getParent().asStep().getTraversal();
             }
-            traversalMetrics = t.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
+            traversalMetrics = t.asAdmin().getSideEffects().<StandardTraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
         }
     }
 
     private void createTraversalMetricsSideEffectIfNecessary() {
-        if (this.getTraversal().getSideEffects().exists(TraversalMetrics.METRICS_KEY)) {
+        if (this.getTraversal().getSideEffects().get(TraversalMetrics.METRICS_KEY).isPresent()) {
             // Already initialized
             return;
         }
@@ -194,7 +194,7 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
 
         @Override
         public void map(final Vertex vertex, final MapEmitter<NullObject, StandardTraversalMetrics> emitter) {
-            VertexTraversalSideEffects.of(vertex).<StandardTraversalMetrics>ifPresent(TraversalMetrics.METRICS_KEY, emitter::emit);
+            VertexTraversalSideEffects.of(vertex).<StandardTraversalMetrics>get(TraversalMetrics.METRICS_KEY).ifPresent(emitter::emit);
         }
 
         @Override

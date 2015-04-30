@@ -149,7 +149,7 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
 
         @Override
         public void map(final Vertex vertex, final MapEmitter<Object, Tree> emitter) {
-            VertexTraversalSideEffects.of(vertex).<Tree<?>>ifPresent(this.sideEffectKey, tree -> tree.splitParents().forEach(branches -> emitter.emit(branches.keySet().iterator().next(), branches)));
+            VertexTraversalSideEffects.of(vertex).<Tree<?>>get(this.sideEffectKey).ifPresent(tree -> tree.splitParents().forEach(branches -> emitter.emit(branches.keySet().iterator().next(), branches)));
         }
 
         /*
