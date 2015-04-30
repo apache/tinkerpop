@@ -18,13 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
-import static org.apache.tinkerpop.gremlin.structure.P.*;
-import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.structure.Vertex
+
+import static org.apache.tinkerpop.gremlin.structure.P.*
+
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
@@ -50,7 +52,7 @@ public abstract class GroovyIsTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX() {
-            return g.V().has(__.in('created').count().is(1l)).values('name');
+            return g.V().has(__.in('created').count().is(1)).values('name');
         }
 
         @Override
@@ -79,7 +81,7 @@ public abstract class GroovyIsTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX() {
-            ComputerTestHelper.compute("g.V().has(__.in('created').count().is(1l)).values('name')", g)
+            ComputerTestHelper.compute("g.V().has(__.in('created').count().is(1)).values('name')", g)
         }
 
         @Override

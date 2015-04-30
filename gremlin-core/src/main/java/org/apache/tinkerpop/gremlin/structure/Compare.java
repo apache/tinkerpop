@@ -33,7 +33,9 @@ public enum Compare implements BiPredicate<Object, Object> {
         public boolean test(final Object first, final Object second) {
             if (null == first)
                 return second == null;
-            return first.equals(second);
+            return first instanceof Number && second instanceof Number && !first.getClass().equals(second.getClass())
+                    ? ((Number) first).doubleValue() == ((Number) second).doubleValue()
+                    : first.equals(second);
         }
 
         @Override
@@ -43,9 +45,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     }, neq {
         @Override
         public boolean test(final Object first, final Object second) {
-            if (null == first)
-                return second != null;
-            return !first.equals(second);
+            return !eq.test(first, second);
         }
 
         @Override
