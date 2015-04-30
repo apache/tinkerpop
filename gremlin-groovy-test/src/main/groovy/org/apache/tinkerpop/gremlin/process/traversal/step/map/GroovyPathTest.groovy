@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.UseEngine
+import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
 
@@ -66,7 +66,7 @@ public abstract class GroovyPathTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).identity.name.path", g);
+            ComputerTestHelper.compute("g.V(v1Id).identity.name.path", g, "v1Id", v1Id);
         }
 
         @Override

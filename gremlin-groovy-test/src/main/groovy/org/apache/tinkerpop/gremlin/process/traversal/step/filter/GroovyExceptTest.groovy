@@ -83,17 +83,17 @@ public abstract class GroovyExceptTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_exceptXg_v2X(final Object v1Id, final Object v2Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).out.except(g.V(${v2Id}).next())", g);
+            ComputerTestHelper.compute("g.V(v1Id).out.except(g.V(v2Id).next())", g, "v1Id", v1Id, "v2Id", v2Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_exceptXxX(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).out.aggregate('x').out.except('x')", g);
+            ComputerTestHelper.compute("g.V(v1Id).out.aggregate('x').out.except('x')", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_outXcreatedX_inXcreatedX_exceptXg_v1X_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).out('created').in('created').except(g.V(${v1Id}).next()).values('name')", g);
+            ComputerTestHelper.compute("g.V(v1Id).out('created').in('created').except(g.V(v1Id).next()).values('name')", g, "v1Id", v1Id);
         }
 
         @Override
@@ -109,18 +109,18 @@ public abstract class GroovyExceptTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_exceptXeX_aggregateXeX_otherVX_emit_path(
                 final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).repeat(__.bothE('created').except('e').aggregate('e').otherV).emit.path", g);
+            ComputerTestHelper.compute("g.V(v1Id).repeat(__.bothE('created').except('e').aggregate('e').otherV).emit.path", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_dedup_otherVX_emit_path(
                 final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).repeat(__.bothE('created').dedup.otherV).emit.path", g);
+            ComputerTestHelper.compute("g.V(v1Id).repeat(__.bothE('created').dedup.otherV).emit.path", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_exceptXaX_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).as('a').out('created').in('created').except('a').name", g);
+            ComputerTestHelper.compute("g.V(v1Id).as('a').out('created').in('created').except('a').name", g, "v1Id", v1Id);
         }
     }
 }

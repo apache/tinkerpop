@@ -25,6 +25,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `TraversalScriptSupplier` now takes an `Object` var args for setting `ScriptEngine` bindings if needed.
+* `Compare` is now more lenient on `Number`-types.
 * Removed `Compare.inside` and `Compare.outside` as they are not primitive comparators and should be composed from primitives.
 * Introduced `P` (predicate) for cleaner looking `is()`, `has()`, and `where()` calls -- e.g. `has('age',eq(32))`.
 * `GraphTraversalSource` is now the location for `withXXX()` operations. No longer do they exist at `GraphTraversal`.

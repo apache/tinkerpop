@@ -18,15 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.structure.T
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
-import static org.apache.tinkerpop.gremlin.structure.P.*;
-import org.apache.tinkerpop.gremlin.structure.Edge
-import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.structure.Edge
+import org.apache.tinkerpop.gremlin.structure.T
+import org.apache.tinkerpop.gremlin.structure.Vertex
+
+import static org.apache.tinkerpop.gremlin.structure.P.gt
+import static org.apache.tinkerpop.gremlin.structure.P.inside
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -112,7 +115,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id) {
-            g.V(v1Id).outE.has('weight',inside(0.0d, 0.6d)).inV
+            g.V(v1Id).outE.has('weight', inside(0.0d, 0.6d)).inV
         }
     }
 
@@ -120,7 +123,7 @@ public abstract class GroovyHasTest {
     public static class ComputerTraversals extends HasTest {
         @Override
         public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e8Id) {
-            ComputerTestHelper.compute("g.E($e11Id).outV.outE.has(T.id, $e8Id)", g);
+            ComputerTestHelper.compute("g.E(e11Id).outV.outE.has(T.id, e8Id)", g, "e11Id", e11Id, "e8Id", e8Id);
         }
 
         @Override
@@ -130,12 +133,12 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXkeyX(final Object v1Id, final String key) {
-            ComputerTestHelper.compute("g.V(${v1Id}).has('${key}')", g);
+            ComputerTestHelper.compute("g.V(v1Id).has('${key}')", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXname_markoX(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).has('name', 'marko')", g);
+            ComputerTestHelper.compute("g.V(v1Id).has('name', 'marko')", g, "v1Id", v1Id);
         }
 
         @Override
@@ -155,12 +158,12 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).has('age', gt(30))", g);
+            ComputerTestHelper.compute("g.V(v1Id).has('age', gt(30))", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2X(final Object v1Id, final Object v2Id) {
-            ComputerTestHelper.compute(" g.V(${v1Id}).out.hasId(${v2Id})", g);
+            ComputerTestHelper.compute(" g.V(v1Id).out.hasId(v2Id)", g, "v1Id", v1Id, "v2Id", v2Id);
         }
 
         @Override
@@ -170,7 +173,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id) {
-            ComputerTestHelper.compute(" g.E(${e7Id}).hasLabel('knows')", g);
+            ComputerTestHelper.compute("g.E(e7Id).hasLabel('knows')", g, "e7Id", e7Id);
         }
 
         @Override
@@ -195,7 +198,7 @@ public abstract class GroovyHasTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).outE.has('weight', inside(0.0d, 0.6d)).inV", g);
+            ComputerTestHelper.compute("g.V(v1Id).outE.has('weight', inside(0.0d, 0.6d)).inV", g, "v1Id", v1Id);
         }
     }
 }
