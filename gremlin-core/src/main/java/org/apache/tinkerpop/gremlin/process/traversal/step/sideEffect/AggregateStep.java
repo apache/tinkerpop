@@ -19,21 +19,21 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
-import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
@@ -87,7 +87,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     public void barrierConsumer(final TraverserSet<S> traverserSet) {
         traverserSet.forEach(traverser ->
                 TraversalHelper.addToCollection(
-                        traverser.getSideEffects().get(this.sideEffectKey),
+                        traverser.getSideEffects().<Collection<Object>>get(this.sideEffectKey).get(),
                         TraversalUtil.applyNullable(traverser, this.aggregateTraversal),
                         traverser.bulk()));
     }
@@ -142,7 +142,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
 
         @Override
         public void map(final Vertex vertex, final MapEmitter<NullObject, Object> emitter) {
-            VertexTraversalSideEffects.of(vertex).<Collection<?>>orElse(this.sideEffectKey, Collections.emptyList()).forEach(emitter::emit);
+            VertexTraversalSideEffects.of(vertex).<Collection<?>>get(this.sideEffectKey).ifPresent(list -> list.forEach(emitter::emit));
         }
 
         @Override

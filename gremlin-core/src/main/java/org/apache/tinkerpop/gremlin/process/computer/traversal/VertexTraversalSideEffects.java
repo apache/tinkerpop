@@ -73,22 +73,13 @@ public final class VertexTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public boolean exists(final String key) {
-        return this.objectMap.containsKey(key);
-    }
-
-    @Override
     public void set(final String key, final Object value) {
         throw EXCEPTION;
     }
 
     @Override
-    public <V> V get(final String key) throws IllegalArgumentException {
-        final V value = (V) this.objectMap.get(key);
-        if (null != value)
-            return value;
-        else
-            throw TraversalSideEffects.Exceptions.sideEffectDoesNotExist(key);
+    public <V> Optional<V> get(final String key) throws IllegalArgumentException {
+        return Optional.ofNullable((V) this.objectMap.get(key));
     }
 
     @Override
