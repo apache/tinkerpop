@@ -19,13 +19,14 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map.match;
 
 import org.apache.tinkerpop.gremlin.process.traversal.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -180,10 +181,18 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     }
 
     private void addTraversalPrivate(final Traversal<S, S> traversal) {
+        final Step<S,?> startStep = traversal.asAdmin().getStartStep();
+        if (startStep.getLabels().isEmpty())
+            throw new IllegalArgumentException("Match traversals must have their start step labeled with as(): " + traversal);
+        if (startStep.getLabels().size() > 1)
+            throw new IllegalArgumentException("Match traversals can not have multiple labels on the start step: " + traversal);
+        final String startAs = traversal.asAdmin().getStartStep().getLabels().iterator().next();
+        ///
+        final Step<?,S> endStep = traversal.asAdmin().getEndStep();
+        if(endStep.getLabels().size() > 1)
+            throw new IllegalArgumentException("Match traversals can not have multiple labels on the end step: " + traversal);
 
-        String startAs = traversal.asAdmin().getStartStep().getLabels().iterator().next();
-        //        -> new IllegalArgumentException("All match traversals must have their start step labeled with as()"));
-        String endAs = traversal.asAdmin().getEndStep().getLabels().stream().findFirst().orElse(null);
+        String endAs = endStep.getLabels().isEmpty() ? null : endStep.getLabels().iterator().next();
         checkAs(startAs);
         if (null == endAs) {
             endAs = createAnonymousAs();
