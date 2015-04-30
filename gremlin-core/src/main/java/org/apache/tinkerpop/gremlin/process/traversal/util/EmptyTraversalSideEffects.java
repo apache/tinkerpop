@@ -44,8 +44,8 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <V> V get(final String key) throws IllegalArgumentException {
-        throw TraversalSideEffects.Exceptions.sideEffectDoesNotExist(key);
+    public <V> Optional<V> get(final String key) throws IllegalArgumentException {
+       return Optional.empty();
     }
 
     @Override

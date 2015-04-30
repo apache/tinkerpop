@@ -92,14 +92,6 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      * {@inheritDoc}
      */
     @Override
-    public boolean exists(final String key) {
-        return this.objectMap.containsKey(key) || this.supplierMap.containsKey(key);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void set(final String key, final Object value) {
         SideEffectHelper.validateSideEffect(key, value);
         this.objectMap.put(key, value);
@@ -109,17 +101,17 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      * {@inheritDoc}
      */
     @Override
-    public <V> V get(final String key) throws IllegalArgumentException {
+    public <V> Optional<V> get(final String key) throws IllegalArgumentException {
         final V value = (V) this.objectMap.get(key);
         if (null != value)
-            return value;
+            return Optional.of(value);
         else {
             if (this.supplierMap.containsKey(key)) {
                 final V v = (V) this.supplierMap.get(key).get();
                 this.objectMap.put(key, v);
-                return v;
+                return Optional.of(v);
             } else {
-                throw TraversalSideEffects.Exceptions.sideEffectDoesNotExist(key);
+                return Optional.empty();
             }
         }
     }
@@ -129,13 +121,10 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
      */
     @Override
     public <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
-        if (this.objectMap.containsKey(key))
-            return (V) this.objectMap.get(key);
-        else if (this.supplierMap.containsKey(key)) {
-            final V value = (V) this.supplierMap.get(key).get();
-            this.objectMap.put(key, value);
-            return value;
-        } else {
+        final Optional<V> optional = this.get(key);
+        if (optional.isPresent())
+            return optional.get();
+        else {
             final V value = orCreate.get();
             this.objectMap.put(key, value);
             return value;

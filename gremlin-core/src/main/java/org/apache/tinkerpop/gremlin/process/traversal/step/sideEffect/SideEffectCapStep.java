@@ -20,12 +20,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,18 +35,15 @@ import java.util.Set;
  */
 public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
-    private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
-            TraverserRequirement.SIDE_EFFECTS,
-            TraverserRequirement.OBJECT
-    );
-
     private List<String> sideEffectKeys;
 
     public SideEffectCapStep(final Traversal.Admin traversal, final String sideEffectKey, final String... sideEffectKeys) {
         super(traversal);
-        this.sideEffectKeys = new ArrayList(1 + sideEffectKeys.length);
+        this.sideEffectKeys = new ArrayList<>(1 + sideEffectKeys.length);
         this.sideEffectKeys.add(sideEffectKey);
-        this.sideEffectKeys.addAll(Arrays.asList(sideEffectKeys));
+        for (final String key : sideEffectKeys) {
+            this.sideEffectKeys.add(key);
+        }
     }
 
     @Override
@@ -61,20 +57,20 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return REQUIREMENTS;
+        return Collections.singleton(TraverserRequirement.SIDE_EFFECTS);
     }
 
     @Override
     public E supply() {
         return this.sideEffectKeys.size() == 1 ?
-                this.getTraversal().asAdmin().getSideEffects().get(this.sideEffectKeys.get(0)) :
+                this.getTraversal().asAdmin().getSideEffects().<E>get(this.sideEffectKeys.get(0)).get() :
                 (E) this.getMapOfSideEffects();
     }
 
     public Map<String, Object> getMapOfSideEffects() {
         final Map<String, Object> sideEffects = new HashMap<>();
         for (final String sideEffectKey : this.sideEffectKeys) {
-            sideEffects.put(sideEffectKey, this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey));
+            this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey).ifPresent(value -> sideEffects.put(sideEffectKey, value));
         }
         return sideEffects;
     }

@@ -19,10 +19,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
@@ -153,12 +153,12 @@ public abstract class GroovyFilterTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_filterXage_gt_30X(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).filter { it.age > 30 }", g);
+            ComputerTestHelper.compute("g.V(v1Id).filter { it.age > 30 }", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_filterXage_gt_30X(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).out.filter { it.property('age').orElse(0) > 30 }", g);
+            ComputerTestHelper.compute("g.V(v1Id).out.filter { it.property('age').orElse(0) > 30 }", g, "v1Id", v1Id);
         }
 
         @Override

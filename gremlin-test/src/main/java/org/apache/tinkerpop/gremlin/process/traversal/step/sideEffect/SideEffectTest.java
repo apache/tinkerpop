@@ -52,7 +52,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
         printTraversalForm(traversal);
         assertEquals(traversal.next(), "marko");
         assertFalse(traversal.hasNext());
-        assertEquals(convertToVertexId("marko"), traversal.asAdmin().getSideEffects().<List<Vertex>>get("a").get(0).id());
+        assertEquals(convertToVertexId("marko"), traversal.asAdmin().getSideEffects().<List<Vertex>>get("a").get().get(0).id());
     }
 
     @Test
@@ -61,7 +61,7 @@ public abstract class SideEffectTest extends AbstractGremlinTest {
         final Traversal<Vertex, String> traversal = get_g_VX1X_out_sideEffectXincr_cX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assert_g_v1_out_sideEffectXincr_cX_valueXnameX(traversal);
-        assertEquals(new Integer(3), traversal.asAdmin().getSideEffects().<List<Integer>>get("c").get(0));
+        assertEquals(new Integer(3), traversal.asAdmin().getSideEffects().<List<Integer>>get("c").get().get(0));
     }
 
     private void assert_g_v1_out_sideEffectXincr_cX_valueXnameX(final Iterator<String> traversal) {

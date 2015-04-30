@@ -98,7 +98,7 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
      * @return the object in the sideEffects of the respective key
      */
     public default <A> A sideEffects(final String sideEffectKey) {
-        return this.asAdmin().getSideEffects().get(sideEffectKey);
+        return this.asAdmin().getSideEffects().<A>get(sideEffectKey).get();
     }
 
     /**

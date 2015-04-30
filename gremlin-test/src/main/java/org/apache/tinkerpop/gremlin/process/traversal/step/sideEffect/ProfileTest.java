@@ -59,7 +59,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         traversal.iterate();
 
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);
@@ -95,7 +95,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         printTraversalForm(traversal);
 
         traversal.iterate();
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);
@@ -134,7 +134,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         assertEquals("There should be 6 steps in this traversal (counting injected profile steps).", 6, traversal.asAdmin().getSteps().size());
 
-        TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
+        TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         // Grab the second (sideEffect{sleep}) step and check the times.
@@ -168,7 +168,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         traversal.iterate();
 
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         Metrics metrics = traversalMetrics.getMetrics(0);
@@ -213,7 +213,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         traversal.iterate();
 
-        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().get(TraversalMetrics.METRICS_KEY);
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
         traversalMetrics.toString(); // ensure no exceptions are thrown
 
         assertEquals("There should be 3 top-level metrics.", 3, traversalMetrics.getMetrics().size());

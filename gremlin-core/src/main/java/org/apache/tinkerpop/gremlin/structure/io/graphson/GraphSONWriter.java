@@ -53,8 +53,8 @@ public class GraphSONWriter implements GraphWriter {
      * Writes a {@link Graph} to stream in an adjacency list format where vertices are written with edges from both
      * directions.  Under this serialization model, edges are grouped by label.
      *
-     * @param outputStream The stream to write to.
-     * @param g The graph to write to stream.
+     * @param outputStream the stream to write to.
+     * @param g the graph to write to stream.
      */
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
@@ -75,8 +75,8 @@ public class GraphSONWriter implements GraphWriter {
     /**
      * Writes a single {@link Vertex} with no edges serialized.
      *
-     * @param outputStream The stream to write to.
-     * @param v            The vertex to write.
+     * @param outputStream the stream to write to.
+     * @param v            the vertex to write.
      */
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
@@ -87,9 +87,9 @@ public class GraphSONWriter implements GraphWriter {
      * Writes a list of vertices in adjacency list format where vertices are written with edges from both
      * directions.  Under this serialization model, edges are grouped by label.
      *
-     * @param outputStream The stream to write to.
-     * @param vertexIterator    A traversal that returns a list of vertices.
-     * @param direction    If direction is null then no edges are written.
+     * @param outputStream the stream to write to.
+     * @param vertexIterator    a traversal that returns a list of vertices.
+     * @param direction    if direction is null then no edges are written.
      */
     @Override
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
@@ -109,8 +109,8 @@ public class GraphSONWriter implements GraphWriter {
     /**
      * Writes a list of vertices without edges.
      *
-     * @param outputStream The stream to write to.
-     * @param vertexIterator    A iterator that returns a list of vertices.
+     * @param outputStream the stream to write to.
+     * @param vertexIterator    a iterator that returns a list of vertices.
      */
     @Override
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
@@ -124,8 +124,8 @@ public class GraphSONWriter implements GraphWriter {
      * {@link #writeVertices(OutputStream, Iterator, Direction)} in that the edge label is part of the object and
      * vertex labels are included with their identifiers.
      *
-     * @param outputStream The stream to write to.
-     * @param e The edge to write.
+     * @param outputStream the stream to write to.
+     * @param e the edge to write.
      */
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
@@ -135,8 +135,8 @@ public class GraphSONWriter implements GraphWriter {
     /**
      * Write a {@link VertexProperty} object to the stream.
      *
-     * @param outputStream The stream to write to.
-     * @param vp The vertex property to write.
+     * @param outputStream the stream to write to.
+     * @param vp the vertex property to write.
      */
     @Override
     public void writeVertexProperty(final OutputStream outputStream, final VertexProperty vp) throws IOException {
@@ -146,8 +146,8 @@ public class GraphSONWriter implements GraphWriter {
     /**
      * Write a {@link Property} object to the stream.
      *
-     * @param outputStream The stream to write to.
-     * @param p The property to write.
+     * @param outputStream the stream to write to.
+     * @param p the property to write.
      */
     @Override
     public void writeProperty(final OutputStream outputStream, final Property p) throws IOException {
@@ -159,9 +159,8 @@ public class GraphSONWriter implements GraphWriter {
      * thus the format of the GraphSON for a {@link Vertex} will be somewhat different from the format supplied
      * when using {@link #writeVertex(OutputStream, Vertex, Direction)}. For example, edges will never be included.
      *
-     * @param outputStream The stream to write to
-     * @param object The object to write which will use the standard serializer set
-     * @throws IOException
+     * @param outputStream the stream to write to
+     * @param object the object to write which will use the standard serializer set
      */
     @Override
     public void writeObject(final OutputStream outputStream, final Object object) throws IOException {

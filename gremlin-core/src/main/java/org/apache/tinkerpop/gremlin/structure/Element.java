@@ -122,7 +122,7 @@ public abstract interface Element {
         }
 
         public static IllegalArgumentException providedKeyValuesMustBeAMultipleOfTwo() {
-            return new IllegalArgumentException("The provided key/value array must be a multiple of two");
+            return new IllegalArgumentException("The provided key/value array length must be a multiple of two");
         }
 
         public static IllegalArgumentException providedKeyValuesMustHaveALegalKeyOnEvenIndices() {

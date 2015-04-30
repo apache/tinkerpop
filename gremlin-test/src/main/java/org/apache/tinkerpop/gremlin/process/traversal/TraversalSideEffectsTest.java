@@ -38,11 +38,7 @@ public abstract class TraversalSideEffectsTest extends AbstractGremlinProcessTes
     @LoadGraphWith(MODERN)
     public void g_V_sideEffects() {
         final TraversalSideEffects sideEffects = get_g_V_asAdmin_getSideEffects();
-        try {
-            assertFalse(sideEffects.get("a"));
-        } catch (IllegalArgumentException e) {
-            assertEquals(TraversalSideEffects.Exceptions.sideEffectDoesNotExist("a").getMessage(), e.getMessage());
-        }
+        assertFalse(sideEffects.get("a").isPresent());
         assertEquals(StringFactory.traversalSideEffectsString(sideEffects), sideEffects.toString());
     }
 

@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProper
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -249,8 +248,8 @@ public class GryoReader implements GraphReader {
         }
 
         /**
-         * Set the size between commits when reading into the {@link Graph} instance.  This value defaults to
-         * {@link BatchGraph#DEFAULT_BUFFER_SIZE}.
+         * Number of mutations to perform before a commit is executed when using
+         * {@link GryoReader#readGraph(InputStream, Graph)}.
          */
         public Builder batchSize(final long batchSize) {
             this.batchSize = batchSize;

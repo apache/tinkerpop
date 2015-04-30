@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -34,17 +33,6 @@ import java.util.function.UnaryOperator;
 public interface TraversalSideEffects extends Cloneable, Serializable {
 
     public static final String SIDE_EFFECTS = "gremlin.traversal.sideEffects";
-
-    /**
-     * Determines if the {@link TraversalSideEffects} contains the respective key.
-     * If the key references a stored {@link java.util.function.Supplier}, then it should return true as it will be dynamically created on get().
-     *
-     * @param key the key to check for
-     * @return whether the key exists in the sideEffects
-     */
-    public default boolean exists(final String key) {
-        return this.keys().contains(key);
-    }
 
     /**
      * Set the specified key to the specified value.
@@ -57,7 +45,7 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
 
     /**
      * Get the sideEffect associated with the provided key.
-     * If the sideEffect contains an object for the key, return it.
+     * If the sideEffect contains an object for the key, return it in an {@link Optional}.
      * Else if the sideEffect has a registered {@link java.util.function.Supplier} for that key, generate the object, store the object in the sideEffects, and return it.
      *
      * @param key the key to get the value for
@@ -65,31 +53,7 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
      * @return the value associated with key
      * @throws IllegalArgumentException if the key does not reference an object or a registered supplier.
      */
-    public <V> V get(final String key) throws IllegalArgumentException;
-
-    /**
-     * Return the value associated with the key or return the provided otherValue.
-     * The otherValue will not be stored in the sideEffect.
-     *
-     * @param key        the key to get the value for
-     * @param otherValue if not value is associated with key, return the other value.
-     * @param <V>        the type of the value to get
-     * @return the value associated with the key or the otherValue
-     */
-    public default <V> V orElse(final String key, final V otherValue) {
-        return this.exists(key) ? this.get(key) : otherValue;
-    }
-
-    /**
-     * If a value or registered {@link java.util.function.Supplier} exists for the provided key, consume it with the provided consumer.
-     *
-     * @param key      the key to the value
-     * @param consumer the consumer to process the value
-     * @param <V>      the type of the value to consume
-     */
-    public default <V> void ifPresent(final String key, final Consumer<V> consumer) {
-        if (this.exists(key)) consumer.accept(this.get(key));
-    }
+    public <V> Optional<V> get(final String key) throws IllegalArgumentException;
 
     /**
      * Remove both the value and registered {@link java.util.function.Supplier} associated with provided key.
@@ -156,8 +120,9 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
      * @return the object that is either retrieved, generated, or supplier via orCreate
      */
     public default <V> V getOrCreate(final String key, final Supplier<V> orCreate) {
-        if (this.exists(key))
-            return this.<V>get(key);
+        final Optional<V> optional = this.get(key);
+        if (optional.isPresent())
+            return optional.get();
         final Optional<Supplier<V>> with = this.getRegisteredSupplier(key);
         if (with.isPresent()) {
             final V v = with.get().get();
@@ -173,7 +138,7 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
     ////////////
 
     public default <V> void forEach(final BiConsumer<String, V> biConsumer) {
-        this.keys().forEach(key -> biConsumer.accept(key, this.get(key)));
+        this.keys().forEach(key -> biConsumer.accept(key, this.<V>get(key).get()));
     }
 
     /**
@@ -212,10 +177,6 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
 
         public static IllegalArgumentException sideEffectValueCanNotBeNull() {
             return new IllegalArgumentException("Side effect value can not be null");
-        }
-
-        public static IllegalArgumentException sideEffectDoesNotExist(final String key) {
-            return new IllegalArgumentException("Side effects do not have a value for provided key: " + key);
         }
 
         public static UnsupportedOperationException dataTypeOfSideEffectValueNotSupported(final Object val) {

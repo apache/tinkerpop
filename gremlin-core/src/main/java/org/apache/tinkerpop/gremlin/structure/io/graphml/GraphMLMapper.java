@@ -18,10 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphml;
 
+import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 
 /**
+ * This is an "empty" implementation only present for compatibility with {@link Io}.  GraphML is a "whole graph"
+ * serialization format and does not have the notion of generic serialization functions.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphMLMapper implements Mapper<Object> {

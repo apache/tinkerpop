@@ -29,6 +29,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
+ * Constructs GraphSON IO implementations given a {@link Graph} and {@link IoRegistry}. Implementers of the {@link Graph}
+ * interfaces should see the {@link GraphSONMapper} for information on the expectations for the {@link IoRegistry}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWriter.Builder, GraphSONMapper.Builder> {
@@ -40,21 +43,33 @@ public class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWriter.Bui
         this.graph = graph;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphSONReader.Builder reader() {
         return GraphSONReader.build().mapper(mapper().create());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphSONWriter.Builder writer() {
         return GraphSONWriter.build().mapper(mapper().create());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphSONMapper.Builder mapper() {
         return GraphSONMapper.build().addRegistry(this.registry);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeGraph(final String file) throws IOException {
         try (final OutputStream out = new FileOutputStream(file)) {
@@ -62,6 +77,9 @@ public class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWriter.Bui
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void readGraph(final String file) throws IOException {
         try (final InputStream in = new FileInputStream(file)) {
