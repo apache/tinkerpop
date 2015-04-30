@@ -121,14 +121,14 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
      *
      * @return the optional label of the step
      */
-    public Optional<String> getLabel();
+    public Set<String> getLabels();
 
     /**
      * Set the label of this step.
      *
      * @param label the label for this step
      */
-    public void setLabel(final String label);
+    public void addLabel(final String label);
 
     /**
      * Get the unique id of the step.

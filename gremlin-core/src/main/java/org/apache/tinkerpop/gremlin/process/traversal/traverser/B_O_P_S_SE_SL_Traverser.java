@@ -40,10 +40,8 @@ public class B_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     public B_O_P_S_SE_SL_Traverser(final T t, final Step<T, ?> step, final long initialBulk) {
         super(t, step, initialBulk);
-        final Optional<String> stepLabel = step.getLabel();
-        this.path = stepLabel.isPresent() ?
-                ImmutablePath.make().extend(t, stepLabel.get()) :
-                ImmutablePath.make().extend(t);
+        final String[] stepLabels = step.getLabels().toArray(new String[step.getLabels().size()]);
+        this.path = ImmutablePath.make().extend(t, stepLabels);
     }
 
     /////////////////
@@ -81,8 +79,8 @@ public class B_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
 
             final B_O_P_S_SE_SL_Traverser<R> clone = (B_O_P_S_SE_SL_Traverser<R>) super.split(r,step);
-            final Optional<String> stepLabel = step.getLabel();
-            clone.path = stepLabel.isPresent() ? clone.path.clone().extend(r, stepLabel.get()) : clone.path.clone().extend(r);
+            final String[] stepLabels = step.getLabels().toArray(new String[step.getLabels().size()]);
+            clone.path = clone.path.clone().extend(r, stepLabels);
             //clone.sack = null == clone.sack ? null : clone.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(clone.sack);
             return clone;
 

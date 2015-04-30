@@ -35,7 +35,7 @@ public final class LabeledEndStepStrategy extends AbstractTraversalStrategy {
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getEndStep().getLabel().isPresent())
+        if (!traversal.getEndStep().getLabels().isEmpty())
             traversal.addStep(new MarkerIdentityStep<>(traversal));
     }
 

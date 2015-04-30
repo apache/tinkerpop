@@ -76,14 +76,14 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
                 endStep = endStep.getPreviousStep();
 
             final Map<String, E> map = traverser.get();
-            if (!map.containsKey(startStep.getLabel().get()))
-                throw new IllegalArgumentException("The provided key is not in the current map: " + startStep.getLabel().get());
-            final Object startObject = map.get(startStep.getLabel().get());
+            if (!map.containsKey(startStep.getLabels().iterator().next()))
+                throw new IllegalArgumentException("The provided key is not in the current map: " + startStep.getLabels().iterator().next());
+            final Object startObject = map.get(startStep.getLabels().iterator().next());
             final Object endObject;
-            if (endStep.getLabel().isPresent()) {
-                if (!map.containsKey(endStep.getLabel().get()))
-                    throw new IllegalArgumentException("The provided key is not in the current map: " + endStep.getLabel().get());
-                endObject = map.get(endStep.getLabel().get());
+            if (!endStep.getLabels().isEmpty()) {
+                if (!map.containsKey(endStep.getLabels().iterator().next()))
+                    throw new IllegalArgumentException("The provided key is not in the current map: " + endStep.getLabels().iterator().next());
+                endObject = map.get(endStep.getLabels().iterator().next());
             } else
                 endObject = null;
 

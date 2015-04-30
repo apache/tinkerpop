@@ -23,17 +23,19 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class AbstractStep<S, E> implements Step<S, E> {
 
-    protected String label = null;
+    protected Set<String> labels = new HashSet<>();
     protected String id = Traverser.Admin.HALT;
     protected Traversal.Admin traversal;
     protected ExpandableStepIterator<S> starts;
@@ -60,14 +62,13 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public void setLabel(final String label) {
-        Objects.nonNull(label);
-        this.label = label;
+    public void addLabel(final String label) {
+        this.labels.add(label);
     }
 
     @Override
-    public Optional<String> getLabel() {
-        return Optional.ofNullable(this.label);
+    public Set<String> getLabels() {
+        return Collections.unmodifiableSet(this.labels);
     }
 
     @Override
@@ -176,7 +177,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {
         if (!this.traverserStepIdSetByChild) ((Traverser.Admin<E>) traverser).setStepId(this.nextStep.getId());
-        if (null != this.label) traverser.path().addLabel(this.label);
+        this.labels.forEach(label -> traverser.path().addLabel(label));
         return traverser;
     }
 
