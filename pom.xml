@@ -758,9 +758,7 @@ limitations under the License.
                                         </sourceFileInclude>
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/graphson/*.java
                                         </sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/kryo/*.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/strategy/*.java
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/gryo/*.java
                                         </sourceFileInclude>
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/process/*.java</sourceFileInclude>
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/process/computer/*.java
