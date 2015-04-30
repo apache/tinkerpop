@@ -31,11 +31,10 @@ public enum Compare implements BiPredicate<Object, Object> {
     eq {
         @Override
         public boolean test(final Object first, final Object second) {
-            if (null == first)
-                return second == null;
-            return first instanceof Number && second instanceof Number && !first.getClass().equals(second.getClass())
+            return null == first ? null == second : (first instanceof Number && second instanceof Number
+                    && !first.getClass().equals(second.getClass())
                     ? ((Number) first).doubleValue() == ((Number) second).doubleValue()
-                    : first.equals(second);
+                    : first.equals(second));
         }
 
         @Override
@@ -55,7 +54,10 @@ public enum Compare implements BiPredicate<Object, Object> {
     }, gt {
         @Override
         public boolean test(final Object first, final Object second) {
-            return !(null == first || second == null) && ((Comparable) first).compareTo(second) >= 1;
+            return null != first && null != second && (
+                    first instanceof Number && second instanceof Number && !first.getClass().equals(second.getClass())
+                            ? ((Number) first).doubleValue() > ((Number) second).doubleValue()
+                            : ((Comparable) first).compareTo(second) > 0);
         }
 
         @Override
@@ -65,7 +67,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     }, gte {
         @Override
         public boolean test(final Object first, final Object second) {
-            return !(null == first || second == null) && ((Comparable) first).compareTo(second) >= 0;
+            return null == first ? null == second : (null != second && !lt.test(first, second));
         }
 
         @Override
@@ -75,7 +77,10 @@ public enum Compare implements BiPredicate<Object, Object> {
     }, lt {
         @Override
         public boolean test(final Object first, final Object second) {
-            return !(null == first || second == null) && ((Comparable) first).compareTo(second) <= -1;
+            return null != first && null != second && (
+                    first instanceof Number && second instanceof Number && !first.getClass().equals(second.getClass())
+                            ? ((Number) first).doubleValue() < ((Number) second).doubleValue()
+                            : ((Comparable) first).compareTo(second) < 0);
         }
 
         @Override
@@ -85,7 +90,7 @@ public enum Compare implements BiPredicate<Object, Object> {
     }, lte {
         @Override
         public boolean test(final Object first, final Object second) {
-            return !(null == first || second == null) && ((Comparable) first).compareTo(second) <= 0;
+            return null == first ? null == second : (null != second && !gt.test(first, second));
         }
 
         @Override
@@ -97,8 +102,8 @@ public enum Compare implements BiPredicate<Object, Object> {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public abstract boolean test(final Object first, final Object second);
+    /*@Override
+    public abstract boolean test(final Object first, final Object second);*/
 
     /**
      * Produce the opposite representation of the current {@code Compare} enum.
