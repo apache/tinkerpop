@@ -29,6 +29,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
+ * Constructs Gryo IO implementations given a {@link Graph} and {@link IoRegistry}. Implementers of the {@link Graph}
+ * interfaces should see the {@link GraphSONMapper} for information on the expectations for the {@link IoRegistry}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWriter.Builder, GraphSONMapper.Builder> {
