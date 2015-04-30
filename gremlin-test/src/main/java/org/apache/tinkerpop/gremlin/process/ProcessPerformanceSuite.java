@@ -32,7 +32,7 @@ import org.junit.runners.model.RunnerBuilder;
  * implementation.  This suite contains "long-run" tests that produce reports on the traversal execution
  * performance of a vendor implementation {@link Graph}. Its usage is optional to vendors as the tests are
  * somewhat redundant to those found elsewhere in other required test suites.
- * <br/>
+ * <p/>
  * For more information on the usage of this suite, please see {@link StructureStandardSuite}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

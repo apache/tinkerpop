@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * a {@link Graph} in the sense that a {@link Vertex} was constructed from a {@link Graph} instance and this reference
  * was removed or it can mean that the {@code DetachedVertex} could have been constructed independently of a
  * {@link Graph} instance in the first place.
- * <br/>
+ * <p/>
  * A {@code DetachedVertex} only has reference to the properties that are associated with it at the time of detachment
  * (or construction) and is not traversable or mutable.
  *

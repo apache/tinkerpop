@@ -145,7 +145,7 @@ public interface Graph extends AutoCloseable, Host {
      * vertices.  Note that a vertex identifier does not need to correspond to the actual id used in the graph.  It
      * needs to be a bit more flexible than that in that given the {@link Graph.Features} around id support, multiple
      * arguments might be applicable here.
-     * <br/>
+     * <p/>
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsNumericIds()} then it should support
      * filters as with:
      * <ul>
@@ -156,20 +156,20 @@ public interface Graph extends AutoCloseable, Host {
      *     <li>g.vertices(1.0f)</li>
      *     <li>g.vertices("1")</li>
      * </ul>
-     * <br/>
+     * <p/>
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsCustomIds()} ()} then it should support
      * filters as with:
      * <ul>
      *     <li>g.vertices(v.id())</li>
      *     <li>g.vertices(v.id().toString())</li>
      * </ul>
-     * <br/>
+     * <p/>
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsAnyIds()} ()} then it should support
      * filters as with:
      * <ul>
      *     <li>g.vertices(v.id())</li>
      * </ul>
-     * <br/>
+     * <p/>
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsStringIds()} ()} then it should support
      * filters as with:
      * <ul>
@@ -177,7 +177,7 @@ public interface Graph extends AutoCloseable, Host {
      *     <li>g.vertices(v.id().toString())</li>
      *     <li>g.vertices("id")</li>
      * </ul>
-     * <br/>
+     * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsStringIds()} ()} then it should support
      * filters as with:
      * <ul>
@@ -195,7 +195,7 @@ public interface Graph extends AutoCloseable, Host {
      * Note that an edge identifier does not need to correspond to the actual id used in the graph.  It
      * needs to be a bit more flexible than that in that given the {@link Graph.Features} around id support, multiple
      * arguments might be applicable here.
-     * <br/>
+     * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsNumericIds()} then it should support
      * filters as with:
      * <ul>
@@ -206,20 +206,20 @@ public interface Graph extends AutoCloseable, Host {
      *     <li>g.edges(1.0f)</li>
      *     <li>g.edges("1")</li>
      * </ul>
-     * <br/>
+     * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsCustomIds()} ()} then it should support
      * filters as with:
      * <ul>\
      *     <li>g.edges(e.id())</li>
      *     <li>g.edges(e.id().toString())</li>
      * </ul>
-     * <br/>
+     * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsAnyIds()} ()} then it should support
      * filters as with:
      * <ul>
      *     <li>g.edges(e.id())</li>
      * </ul>
-     * <br/>
+     * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsStringIds()} ()} then it should support
      * filters as with:
      * <ul>

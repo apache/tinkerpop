@@ -27,7 +27,7 @@ import java.util.function.Function;
  * A {@code Traverser} represents the current state of an object flowing through a {@link Traversal}.
  * A traverser maintains a reference to the current object, a traverser-local "sack", a traversal-global sideEffect,
  * a bulk count, and a path history.
- * <br/>
+ * <p/>
  * Different types of traverser can exist depending on the semantics of the traversal and the desire for
  * space/time optimizations of the developer.
  *

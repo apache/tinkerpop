@@ -26,37 +26,33 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
+import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
+
 /**
- * {@link GraphMigrator} takes the data in one graph and pipes it to another graph.  Uses the {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader}
- * and {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter} by default.
+ * {@code GraphMigrator} takes the data in one graph and pipes it to another graph.  Uses the {@link GryoReader}
+ * and {@link GryoWriter} by default.  Note that this utility is meant as a convenience for "small" graph migrations.
  *
  * @author Alex Averbuch (alex.averbuch@gmail.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class GraphMigrator {
-
-    private static final GryoReader DEFAULT_GRYO_READER = GryoReader.build().create();
-    private static final GryoWriter DEFAULT_GRYO_WRITER = GryoWriter.build().create();
-
     /**
-     * Use Gryo to pipe the data from one graph to another graph.  Uses all default settings for reader/writers.
-     * Refer to {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader} and {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter} for those settings.  To use features like incremental
-     * loading, construct the reader/writers manually and utilize
-     * {@link #migrateGraph(org.apache.tinkerpop.gremlin.structure.Graph, org.apache.tinkerpop.gremlin.structure.Graph, GraphReader, GraphWriter)}
+     * Use Gryo to pipe the data from one graph to another graph.  Uses readers and writers generated from each
+     * {@link Graph} via the {@link Graph#io(Io.Builder)} method.
      */
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph) throws IOException {
-        migrateGraph(fromGraph, toGraph, DEFAULT_GRYO_READER, DEFAULT_GRYO_WRITER);
+        migrateGraph(fromGraph, toGraph, fromGraph.io(gryo()).reader().create(), toGraph.io(gryo()).writer().create());
     }
 
     /**
      * Pipe the data from one graph to another graph.  It is important that the reader and writer utilize the
      * same format.
      *
-     * @param fromGraph the graph to take data from
-     * @param toGraph   the graph to take data to
-     * @param reader    reads from the graph written by the writer
-     * @param writer    writes the graph to be read by the reader
-     * @throws java.io.IOException thrown if there is an error in steam between the two graphs
+     * @param fromGraph the graph to take data from.
+     * @param toGraph   the graph to take data to.
+     * @param reader    reads from the graph written by the writer.
+     * @param writer    writes the graph to be read by the reader.
+     * @throws java.io.IOException thrown if there is an error in steam between the two graphs.
      */
     public static void migrateGraph(final Graph fromGraph, final Graph toGraph,
                                     final GraphReader reader, final GraphWriter writer) throws IOException {

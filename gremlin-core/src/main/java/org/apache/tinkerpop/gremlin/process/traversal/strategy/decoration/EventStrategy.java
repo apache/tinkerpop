@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * A strategy that raises events when {@link org.apache.tinkerpop.gremlin.process.traversal.step.Mutating} steps are
  * encountered and successfully executed.
- * <br/>
+ * <p/>
  * Note that this implementation requires a {@link Graph} on the {@link Traversal} instance.  If that is not present
  * an {@link java.lang.IllegalStateException} will be thrown.
  *

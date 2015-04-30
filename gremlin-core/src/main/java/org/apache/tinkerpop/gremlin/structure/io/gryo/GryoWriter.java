@@ -39,7 +39,7 @@ import java.util.Iterator;
  * The {@link GraphWriter} for the Gremlin Structure serialization format based on Kryo.  The format is meant to be
  * non-lossy in terms of Gremlin Structure to Gremlin Structure migrations (assuming both structure implementations
  * support the same graph features).
- * <br/>
+ * <p/>
  * This implementation is not thread-safe.  Have one {@code GraphWriter} instance per thread.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -51,11 +51,18 @@ public class GryoWriter implements GraphWriter {
         this.kryo = gryoMapper.createMapper();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeGraph(final OutputStream outputStream, final Graph g) throws IOException {
         writeVertices(outputStream, g.vertices(), Direction.BOTH);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
         kryo.getRegistration(StarGraph.class).setSerializer(StarGraphGryoSerializer.with(direction));
         final Output output = new Output(outputStream);
@@ -66,10 +73,17 @@ public class GryoWriter implements GraphWriter {
         kryo.getRegistration(StarGraph.class).setSerializer(StarGraphGryoSerializer.with(Direction.BOTH));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
         writeVertices(outputStream, vertexIterator, null);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, final Direction direction) throws IOException {
         kryo.getRegistration(StarGraph.class).setSerializer(StarGraphGryoSerializer.with(direction));
@@ -79,11 +93,17 @@ public class GryoWriter implements GraphWriter {
         kryo.getRegistration(StarGraph.class).setSerializer(StarGraphGryoSerializer.with(Direction.BOTH));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
         writeVertex(outputStream, v, null);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         final Output output = new Output(outputStream);
@@ -92,6 +112,9 @@ public class GryoWriter implements GraphWriter {
         output.flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeVertexProperty(final OutputStream outputStream, final VertexProperty vp) throws IOException {
         final Output output = new Output(outputStream);
@@ -100,6 +123,9 @@ public class GryoWriter implements GraphWriter {
         output.flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeProperty(final OutputStream outputStream, final Property p) throws IOException {
         final Output output = new Output(outputStream);
@@ -108,6 +134,9 @@ public class GryoWriter implements GraphWriter {
         output.flush();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeObject(final OutputStream outputStream, final Object object) {
         final Output output = new Output(outputStream);

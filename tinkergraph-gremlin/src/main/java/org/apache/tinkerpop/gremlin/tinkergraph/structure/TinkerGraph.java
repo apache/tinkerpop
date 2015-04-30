@@ -109,7 +109,7 @@ public class TinkerGraph implements Graph {
 
     /**
      * Open a new {@link TinkerGraph} instance.
-     * <br/>
+     * <p/>
      * <b>Reference Implementation Help:</b> If a {@link Graph} implementation does not require a {@code Configuration}
      * (or perhaps has a default configuration) it can choose to implement a zero argument
      * {@code open()} method. This is an optional constructor method for TinkerGraph. It is not enforced by the Gremlin
@@ -121,7 +121,7 @@ public class TinkerGraph implements Graph {
 
     /**
      * Open a new {@code TinkerGraph} instance.
-     * <br/>
+     * <p/>
      * <b>Reference Implementation Help:</b> This method is the one use by the {@link GraphFactory} to instantiate
      * {@link Graph} instances.  This method must be overridden for the Structure Test Suite to pass. Implementers have
      * latitude in terms of how exceptions are handled within this method.  Such exceptions will be considered
@@ -253,7 +253,7 @@ public class TinkerGraph implements Graph {
 
     /**
      * Return TinkerGraph feature set.
-     * <br/>
+     * <p/>
      * <b>Reference Implementation Help:</b> Implementers only need to implement features for which there are
      * negative or instance configured features.  By default, all
      * {@link org.apache.tinkerpop.gremlin.structure.Graph.Features} return true.

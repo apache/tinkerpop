@@ -39,7 +39,7 @@ import java.util.function.Function;
  * equivalent to another. In other words the input to {@link #readVertex(InputStream, Function)}} need not also
  * be readable by {@link #readObject(InputStream, Class)}. In other words, implementations are free
  * to optimize as is possible for a specific serialization method.
- * <br/>
+ * <p/>
  * That said, it is however important that the complementary "write" operation in {@link GraphWriter} be capable of
  * writing output compatible to its reader.  In other words, the output of
  * {@link GraphWriter#writeObject(OutputStream, Object)} should always be readable by
@@ -139,7 +139,7 @@ public interface GraphReader {
      *
      * @param inputStream a stream containing at least one {@link Property} as written by the accompanying
      *                    {@link GraphWriter#writeProperty(OutputStream, Property)} method.
-     * @param propertyAttachMethod a function that creates re-attaches a {@link Property} to a {@link Host} object .
+     * @param propertyAttachMethod a function that creates re-attaches a {@link Property} to a {@link Host} object.
      * @return the value returned by the attach method.
      */
     public Property readProperty(final InputStream inputStream,

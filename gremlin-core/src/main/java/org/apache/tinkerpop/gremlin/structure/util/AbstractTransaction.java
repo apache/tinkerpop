@@ -32,7 +32,7 @@ import java.util.function.Function;
  * can use this class as a starting point for their own implementations. Implementers should note that this
  * class assumes that threaded transactions are not enabled.  Vendors should explicitly override
  * {@link #create} to implement that functionality if required.
- * <br/>
+ * <p/>
  * Note that transaction listeners are registered in a {@link ThreadLocal} fashion which matches the pattern
  * expected of vendor implementations of a {@link Transaction}.
  *

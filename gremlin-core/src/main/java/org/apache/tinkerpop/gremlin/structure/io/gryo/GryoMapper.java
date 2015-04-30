@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetr
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -88,7 +89,19 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * A {@link Mapper} implementation for Kryo.
+ * A {@link Mapper} implementation for Kryo. This implementation requires that all classes to be serialized by
+ * Kryo are registered to it.
+ * <p/>
+ * {@link Graph} implementations providing an {@link IoRegistry} should register their custom classs and/or
+ * serializers in one of three ways:
+ * <ol>
+ *     <li>Register just the custom class with a {@code null} {@link Serializer} implementation</li>
+ *     <li>Register the custom class with a {@link Serializer} implementation</li>
+ *     <li>
+ *         Register the custom class with a {@code Function<Kryo, Serializer>} for those cases where the
+ *         {@link Serializer} requires the {@link Kryo} instance to get constructed.
+ *     </li>
+ * </ol>
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -233,6 +246,9 @@ public final class GryoMapper implements Mapper<Kryo> {
         private Builder() {
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Builder addRegistry(final IoRegistry registry) {
             this.registry = registry;
@@ -266,7 +282,11 @@ public final class GryoMapper implements Mapper<Kryo> {
             return this;
         }
 
+        /**
+         * Creates a {@code GryoMapper}.
+         */
         public GryoMapper create() {
+            // consult the registry if provided and inject registry entries as custom classes.
             if (registry != null) {
                 final List<Pair<Class, Object>> serializers = registry.find(GryoIo.class);
                 serializers.forEach(p -> {
@@ -277,7 +297,11 @@ public final class GryoMapper implements Mapper<Kryo> {
                     else if (p.getValue1() instanceof Function)
                         addCustom(p.getValue0(), (Function<Kryo, Serializer>) p.getValue1());
                     else
-                        throw new RuntimeException("Invalid serializer"); // todo: cleanup exception handling
+                        throw new IllegalStateException(String.format(
+                                "Unexpected value provided by the %s for %s - expects [null, %s implementation or Function<%s, %s>]",
+                                IoRegistry.class.getSimpleName(), p.getValue0().getClass().getSimpleName(),
+                                Serializer.class.getName(), Kryo.class.getSimpleName(),
+                                Serializer.class.getSimpleName()));
                 });
             }
 
