@@ -18,12 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
-import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*
@@ -78,7 +77,7 @@ public abstract class GroovyUnionTest {
         }
 
         public Traversal<Vertex, String> get_g_VX1X_unionXrepeatXoutX_timesX2X__outX_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).union(repeat(__.out).times(2), __.out).name", g)
+            ComputerTestHelper.compute("g.V(v1Id).union(repeat(__.out).times(2), __.out).name", g, "v1Id", v1Id)
         }
 
         public Traversal<Vertex, String> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX() {
@@ -104,8 +103,7 @@ public abstract class GroovyUnionTest {
         @Override
         public Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(
                 final Object v1Id, final Object v2Id) {
-            g.engine(StandardTraversalEngine.INSTANCE);
-            g.V(v1Id, v2Id).union(outE().count, inE().count, outE().weight.sum);
+            ComputerTestHelper.compute("g.V(v1Id, v2Id).union(outE().count, inE().count, outE().weight.sum)", g, "v1Id", v1Id, "v2Id", v2Id);
         }
     }
 }

@@ -279,8 +279,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             super(TraversalVertexProgram.class);
         }
 
-        public Builder traversal(final Class<? extends Graph> graphClass, final TraversalSource.Builder builder, final String scriptEngine, final String traversalScript) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SERIALIZED_OBJECT, TRAVERSAL_SUPPLIER, new TraversalScriptSupplier<>(graphClass, builder, scriptEngine, traversalScript));
+        public Builder traversal(final Class<? extends Graph> graphClass, final TraversalSource.Builder builder, final String scriptEngine, final String traversalScript, final Object... bindings) {
+            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SERIALIZED_OBJECT, TRAVERSAL_SUPPLIER, new TraversalScriptSupplier<>(graphClass, builder, scriptEngine, traversalScript, bindings));
             return this;
         }
 

@@ -18,17 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.process.*
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
-import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.groupCount
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -59,7 +59,7 @@ public abstract class GroovyRepeatTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_timesX2X_repeatXoutX_name(Object v1Id) {
+        public Traversal<Vertex, String> get_g_VX1X_timesX2X_repeatXoutX_name(final Object v1Id) {
             g.V(v1Id).times(2).repeat(__.out).name
         }
 
@@ -108,7 +108,7 @@ public abstract class GroovyRepeatTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_timesX2X_repeatXoutX_name(Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).times(2).repeat(__.out).name", g)
+            ComputerTestHelper.compute("g.V(v1Id).times(2).repeat(__.out).name", g, "v1Id", v1Id)
         }
 
         @Override
@@ -123,7 +123,7 @@ public abstract class GroovyRepeatTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).emit(has(T.label, 'person')).repeat(__.out).name", g)
+            ComputerTestHelper.compute("g.V(v1Id).emit(has(T.label, 'person')).repeat(__.out).name", g, "v1Id", v1Id)
         }
 
         @Override

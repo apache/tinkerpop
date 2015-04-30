@@ -39,20 +39,27 @@ public final class TraversalScriptSupplier<S, E> implements Supplier<Traversal.A
     private final Class<? extends Graph> graphClass;
     private final String scriptEngineName;
     private final String traversalScript;
+    private final Object[] bindings;
 
-    public TraversalScriptSupplier(final Class<? extends Graph> graphClass, final TraversalSource.Builder traversalContextBuilder, final String scriptEngineName, final String traversalScript) {
+    public TraversalScriptSupplier(final Class<? extends Graph> graphClass, final TraversalSource.Builder traversalContextBuilder, final String scriptEngineName, final String traversalScript, final Object... bindings) {
         this.traversalContextBuilder = traversalContextBuilder;
         this.graphClass = graphClass;
         this.scriptEngineName = scriptEngineName;
         this.traversalScript = traversalScript;
+        this.bindings = bindings;
     }
 
     public Traversal.Admin<S, E> get() {
         try {
             final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngineName);
-            final Bindings bindings = engine.createBindings();
-            bindings.put("g", this.traversalContextBuilder.create(ShellGraph.of(this.graphClass)));
-            return (Traversal.Admin<S, E>) engine.eval(this.traversalScript, bindings);
+            final Bindings engineBindings = engine.createBindings();
+            engineBindings.put("g", this.traversalContextBuilder.create(ShellGraph.of(this.graphClass)));
+            if (this.bindings.length % 2 != 0)
+                throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");
+            for (int i = 0; i < this.bindings.length; i = i + 2) {
+                engineBindings.put((String) this.bindings[i], this.bindings[i + 1]);
+            }
+            return (Traversal.Admin<S, E>) engine.eval(this.traversalScript, engineBindings);
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
