@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Order
@@ -93,6 +93,11 @@ public abstract class GroovySelectTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
             return g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount()).as('relations').select().by('name').by()
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_select() {
+            return g.V().choose(__.outE().count().is(0L), __.as('a'), __.as('b')).select();
         }
 
         //
@@ -256,6 +261,11 @@ public abstract class GroovySelectTest {
         Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
             // override with nothing until the test itself is supported
             return null
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_select() {
+            ComputerTestHelper.compute("g.V.choose(__.outE.count.is(0L), __.as('a'), __.as('b')).select()", g)
         }
 
         //

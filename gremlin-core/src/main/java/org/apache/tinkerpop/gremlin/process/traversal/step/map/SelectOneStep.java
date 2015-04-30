@@ -38,7 +38,6 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     private final String selectLabel;
     private Traversal.Admin<Object, Object> selectTraversal = new IdentityTraversal<>();
-    private boolean requiresPaths = false;
 
     public SelectOneStep(final Traversal.Admin traversal, final String selectLabel) {
         super(traversal);
@@ -48,10 +47,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
         final S start = traverser.get();
-        if (start instanceof Map && ((Map) start).containsKey(this.selectLabel))
-            return (E) TraversalUtil.apply(((Map) start).get(this.selectLabel), this.selectTraversal);
-        else
-            return (E) TraversalUtil.apply(traverser.path().<Object>get(this.selectLabel), this.selectTraversal);
+        return (E) TraversalUtil.apply(start instanceof Map ? ((Map) start).get(this.selectLabel) : traverser.path().<Object>get(this.selectLabel), this.selectTraversal);
     }
 
     @Override
