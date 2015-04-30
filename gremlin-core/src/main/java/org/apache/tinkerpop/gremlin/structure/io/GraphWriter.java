@@ -39,7 +39,7 @@ import java.util.Iterator;
  * {@link #writeVertex(OutputStream, Vertex, Direction)} need to match the representation of that same
  * {@link Edge} when provided to {@link #writeEdge(OutputStream, Edge)}. In other words, implementations are free
  * to optimize as is possible for a specific serialization method.
- * <br/>
+ * <p/>
  * That said, it is however important that the complementary "read" operation in {@link GraphReader} be capable of
  * reading the output of the writer.  In other words, the output of {@link #writeObject(OutputStream, Object)}
  * should always be readable by {@link GraphReader#readObject(InputStream, Class)} and the output of

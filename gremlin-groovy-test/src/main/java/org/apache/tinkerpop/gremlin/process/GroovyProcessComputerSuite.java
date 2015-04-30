@@ -77,7 +77,7 @@ import org.junit.runners.model.RunnerBuilder;
  * be implemented by vendors to validate that their implementations are compliant with the Groovy flavor of the
  * Gremlin language. Implementations that use this test suite should return {@code true} for
  * {@link Graph.Features.GraphFeatures#supportsComputer()}.
- * <br/>
+ * <p/>
  * For more information on the usage of this suite, please see {@link StructureStandardSuite}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

@@ -159,7 +159,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     /**
      * {@inheritDoc}
-     * <br/>
+     * <p/>
      * This method should be called after "expected" imports have been added to the {@code DependencyManager}
      * because adding imports with {@link #addImports(java.util.Set)} will reset the classloader and flush away
      * dependencies.

@@ -38,7 +38,7 @@ public interface DependencyManager {
      * that can support script engine plugins should check if there are any new {@link GremlinPlugin}
      * implementations in the classloader.  The {@link org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine}
      * implementation uses ServiceLoader to figure out if there are such classes to return.
-     * <br/>
+     * <p/>
      * It is up to the caller to execute the
      * {@link GremlinPlugin#pluginTo(org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor)} method.  The reason for
      * this has to do with conflicts that can occur with mapper imports that are added via the

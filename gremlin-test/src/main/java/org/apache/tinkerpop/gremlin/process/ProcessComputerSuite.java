@@ -84,7 +84,7 @@ import java.util.stream.Stream;
  * be implemented by vendors to validate that their implementations are compliant with that Gremlin language.
  * Implementations that use this test suite should return {@code true} for
  * {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures#supportsComputer()}.
- * <br/>
+ * <p/>
  * For more information on the usage of this suite, please see {@link StructureStandardSuite}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

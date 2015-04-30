@@ -91,7 +91,7 @@ import java.util.stream.Collectors;
 /**
  * A {@link Mapper} implementation for Kryo. This implementation requires that all classes to be serialized by
  * Kryo are registered to it.
- * <br/>
+ * <p/>
  * {@link Graph} implementations providing an {@link IoRegistry} should register their custom classs and/or
  * serializers in one of three ways:
  * <ol>

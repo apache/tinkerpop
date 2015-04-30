@@ -40,9 +40,9 @@ import java.util.stream.Stream;
  * {@link Graph} implementation.  This test suite covers ensures that a vendor implementation is compliant with
  * the Groovy "environment" which will typically ensure that the {@link Graph} will work as expected in the Gremlin
  * Console, Gremlin Server, and other Groovy environments.
- * <br/>
+ * <p/>
  * Note that this suite contains "long-run" tests.  At this time, this suite can be considered optional to vendors.
- * <br/>
+ * <p/>
  * For more information on the usage of this suite, please see {@link StructureStandardSuite}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)

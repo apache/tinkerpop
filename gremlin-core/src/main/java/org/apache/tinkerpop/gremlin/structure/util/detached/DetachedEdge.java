@@ -37,7 +37,7 @@ import java.util.Map;
  * a {@link Graph} in the sense that the {@link Edge} was constructed from a {@link Graph} instance and this reference
  * was removed or it can mean that the {@code DetachedEdge} could have been constructed independently of a
  * {@link Graph} instance in the first place.
- * <br/>
+ * <p/>
  * A {@code DetachedEdge} only has reference to the properties and in/out vertices that are associated with it at the
  * time of detachment (or construction) and is not traversable or mutable.  Note that the references to the in/out
  * vertices are {@link DetachedVertex} instances that only have reference to the

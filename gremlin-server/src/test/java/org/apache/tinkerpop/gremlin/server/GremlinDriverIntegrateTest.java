@@ -134,7 +134,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     /**
      * This test arose from this issue: https://github.org/apache/tinkerpop/tinkerpop3/issues/515
-     * <br/>
+     * <p/>
      * ResultSet.all returns a CompleteableFuture that blocks on the worker pool until isExausted returns false.
      * isExausted in turn needs a thread on the worker pool to even return. So its totally possible to consume all
      * threads on the worker pool waiting for .all to finish such that you can't even get one to wait for
