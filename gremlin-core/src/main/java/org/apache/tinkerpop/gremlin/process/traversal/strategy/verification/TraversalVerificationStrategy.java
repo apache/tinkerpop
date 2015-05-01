@@ -62,7 +62,7 @@ public final class TraversalVerificationStrategy extends AbstractTraversalStrate
                     throw new IllegalStateException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get());
             }
             if (step instanceof Mutating)
-                throw new IllegalStateException("Muting steps are currently not supported on GraphComputer traversals");
+                throw new IllegalStateException("Muting steps are currently not supported by GraphComputer traversals");
         }
     }
 
