@@ -18,28 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Order;
-import org.apache.tinkerpop.gremlin.structure.P;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Operator;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -146,9 +141,23 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlayDK() throws Exception {
-        GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        Traversal t = g.V().<Integer>values("age").is(P.gte(29)).is(P.lt(34));
-        t.forEachRemaining(System.out::println);
+        final Graph graph = TinkerFactory.createModern();
+        final GraphTraversalSource g = graph.traversal();
+        final Traversal<Vertex, Map<String, Object>> traversal = g.V().hasLabel("software").as("name").as("language").as("creators").
+                select().by("name").by("lang").by(__.in("created").values("name").fold().order(local));
+        System.out.println(traversal.toString());
+        for (int i = 0; i < 2; i++) {
+            assertTrue(traversal.hasNext());
+            final Map<String, Object> map = traversal.next();
+            assertEquals(3, map.size());
+            final List<String> creators = (List<String>) map.get("creators");
+            final boolean isLop = "lop".equals(map.get("name")) && "java".equals(map.get("language")) &&
+                    creators.size() == 3 && creators.get(0).equals("josh") && creators.get(1).equals("marko") && creators.get(2).equals("peter");
+            final boolean isRipple = "ripple".equals(map.get("name")) && "java".equals(map.get("language")) &&
+                    creators.size() == 1 && creators.get(0).equals("josh");
+            assertTrue(isLop ^ isRipple);
+        }
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -158,7 +167,7 @@ public class TinkerGraphTest {
         //g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").path().forEachRemaining(System.out::println);
         //g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").select().by("skill").by("name").forEachRemaining(System.out::println);
         //g.V().label().groupCount().as("x").select().forEachRemaining(System.out::println);
-        g.V().choose(__.outE().count().is(0L),__.as("x"),__.as("y")).select("x","y").forEachRemaining(System.out::println);
+        g.V().choose(__.outE().count().is(0L), __.as("x"), __.as("y")).select("x", "y").forEachRemaining(System.out::println);
     }
 
     @Test
@@ -253,7 +262,7 @@ public class TinkerGraphTest {
         assertEquals(new Long(1), g.traversal().V().has("age", P.test((t, u) -> {
             assertEquals(35, t);
             return true;
-        },35)).has("name", "stephen").count().next());
+        }, 35)).has("name", "stephen").count().next());
     }
 
     @Ignore
@@ -274,13 +283,13 @@ public class TinkerGraphTest {
         assertEquals(new Long(2), g.traversal().V().has("age", P.test((t, u) -> {
             assertEquals(35, t);
             return true;
-        },35)).has("name", "stephen").count().next());
+        }, 35)).has("name", "stephen").count().next());
 
         v.remove();
         assertEquals(new Long(1), g.traversal().V().has("age", P.test((t, u) -> {
             assertEquals(35, t);
             return true;
-        },35)).has("name", "stephen").count().next());
+        }, 35)).has("name", "stephen").count().next());
     }
 
     @Ignore

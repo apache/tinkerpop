@@ -161,12 +161,12 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX() {
             g.V.as('a').has('name', 'marko').as('b').as('c').select().by().by('name').by('age')
         }
 
         @Override
-        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
             g.V.hasLabel('software').as('name').as('language').as('creators').select().by('name').by('lang').
                     by(__.in('created').values('name').fold().order(local))
         }
@@ -346,16 +346,13 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        @Test
-        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX() {
             ComputerTestHelper.compute("g.V.as('a').has('name', 'marko').as('b').as('c').select().by().by('name').by('age')", g)
         }
 
         @Override
-        @Test
         @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
         }
     }
 }

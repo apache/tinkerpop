@@ -445,20 +445,33 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public void g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX();
         printTraversalForm(traversal);
-        final List<Map<String, Object>> expected = makeMapList(1, "a", g.V(convertToVertexId("marko")).next(), "b", "marko", "c", 29);
-        checkResults(expected, traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Object> map = traversal.next();
+        assertEquals(3, map.size());
+        assertEquals(g.V(convertToVertexId("marko")).next(), map.get("a"));
+        assertEquals("marko", map.get("b"));
+        assertEquals(29, map.get("c"));
+        assertFalse(traversal.hasNext());
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    @Ignore
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX();
         printTraversalForm(traversal);
-        final List<Map<String, Object>> expected = makeMapList(2,
-                "name", "lop", "language", "java", "creators", Arrays.asList("josh", "marko", "peter"),
-                "name", "ripple", "language", "java", "creators", Arrays.asList("josh"));
-        checkResults(expected, traversal);
+        for (int i = 0; i < 2; i++) {
+            assertTrue(traversal.hasNext());
+            final Map<String, Object> map = traversal.next();
+            assertEquals(3, map.size());
+            final List<String> creators = (List<String>) map.get("creators");
+            final boolean isLop = "lop".equals(map.get("name")) && "java".equals(map.get("language")) &&
+                    creators.size() == 3 && creators.get(0).equals("josh") && creators.get(1).equals("marko") && creators.get(2).equals("peter");
+            final boolean isRipple = "ripple".equals(map.get("name")) && "java".equals(map.get("language")) &&
+                    creators.size() == 1 && creators.get(0).equals("josh");
+            assertTrue(isLop ^ isRipple);
+        }
+        assertFalse(traversal.hasNext());
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
