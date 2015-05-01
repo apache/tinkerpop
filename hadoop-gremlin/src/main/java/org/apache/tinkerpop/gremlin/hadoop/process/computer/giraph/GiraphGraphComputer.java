@@ -51,8 +51,6 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.HashSet;
@@ -66,7 +64,6 @@ import java.util.stream.Stream;
  */
 public class GiraphGraphComputer extends AbstractHadoopGraphComputer implements GraphComputer, Tool {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(GiraphGraphComputer.class);
     protected GiraphConfiguration giraphConfiguration = new GiraphConfiguration();
     private MapMemory memory = new MapMemory();
 
@@ -145,7 +142,7 @@ public class GiraphGraphComputer extends AbstractHadoopGraphComputer implements 
                 else
                     FileOutputFormat.setOutputPath(job.getInternalJob(), outputPath);
                 job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
-                LOGGER.info(Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
+                this.logger.info(Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 // execute the job and wait until it completes (if it fails, throw an exception)
                 if (!job.run(true))
                     throw new IllegalStateException("The GiraphGraphComputer job failed -- aborting all subsequent MapReduce jobs");
@@ -185,7 +182,7 @@ public class GiraphGraphComputer extends AbstractHadoopGraphComputer implements 
         if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true)) {
             final String hadoopGremlinLocalLibs = System.getenv(Constants.HADOOP_GREMLIN_LIBS);
             if (null == hadoopGremlinLocalLibs)
-                LOGGER.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
+                this.logger.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
             else {
                 final String[] paths = hadoopGremlinLocalLibs.split(":");
                 for (final String path : paths) {
@@ -205,7 +202,7 @@ public class GiraphGraphComputer extends AbstractHadoopGraphComputer implements 
                             }
                         });
                     } else {
-                        LOGGER.warn(path + " does not reference a valid directory -- proceeding regardless");
+                        this.logger.warn(path + " does not reference a valid directory -- proceeding regardless");
                     }
                 }
             }

@@ -44,7 +44,7 @@ import java.util.Set;
  */
 public abstract class AbstractHadoopGraphComputer implements GraphComputer {
 
-    private final Logger logger;
+    protected final Logger logger;
     protected final HadoopGraph hadoopGraph;
     protected boolean executed = false;
     protected final Set<MapReduce> mapReducers = new HashSet<>();

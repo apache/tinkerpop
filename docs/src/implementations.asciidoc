@@ -733,6 +733,18 @@ image:adjacency-list.png[width=300,float=right] Hadoop-Gremlin provides various 
 
 {empty} +
 
+[[gryo-io-format]]
+Gryo I/O Format
+^^^^^^^^^^^^^^^
+
+* **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat`
+* **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat`
+
+<<gryo-reader-writer,Gryo>> is a binary graph format that leverages link:https://github.com/EsotericSoftware/kryo[Kryo] to make a compact, binary representation of a vertex. It is recommended that users leverage Gryo given its space/time savings over text-based representations.
+
+NOTE: The `GryoInputFormat` is splittable.
+
+[[graphson-io-format]]
 GraphSON I/O Format
 ^^^^^^^^^^^^^^^^^^^
 
@@ -751,16 +763,7 @@ The data below represents an adjacency list representation of the classic Tinker
 {"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","properties":{"name":[{"id":8,"label":"name","value":"ripple","properties":{}}],"lang":[{"id":9,"label":"lang","value":"java","properties":{}}]}}
 {"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","properties":{"name":[{"id":10,"label":"name","value":"peter","properties":{}}],"age":[{"id":11,"label":"age","value":35,"properties":{}}]}}
 
-Gryo I/O Format
-^^^^^^^^^^^^^^^
-
-* **InputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat`
-* **OutputFormat**: `org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat`
-
-<<gryo-reader-writer,Gryo>> is a binary graph format that leverages link:https://github.com/EsotericSoftware/kryo[Kryo] to make a compact, binary representation of a vertex. It is recommended that users leverage Gryo given its space/time savings over text-based representations.
-
-NOTE: The `GryoInputFormat` is splittable.
-
+[[script-io-format]]
 Script I/O Format
 ^^^^^^^^^^^^^^^^^
 
@@ -1075,4 +1078,27 @@ Vertex 4 ("josh") is isolated below:
   }
 }
 ----
+
+Hadoop-Gremlin for Vendors
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Hadoop-Gremlin is centered around `InputFormats` and `OutputFormats`. If a 3rd-party vendor wishes to leverage Hadoop-Gremlin (and its respective `GraphComputer` engines), then they simply need to provide, at minimum, a Hadoop 1.x `InputFormat<NullWritable,VertexWritable>` for their graph system. If the vendor wishes to persist computed results back to their graph system (and not just to HDFS via a `FileOutputFormat`), then a vendor-specific `OutputFormat<NullWritable,VertexWritable>` must be developed as well.
+
+Conceptually, `HadoopGraph` is a wrapper around a `Configuration` object. There is no "data" in the `HadoopGraph` as the `InputFormat` specifies where and how to get the graph data at OLAP (and OLTP) runtime. Thus, `HadoopGraph` is a small object with little overhead. Vendors should realize `HadoopGraph` as the gateway to the OLAP features offered by Hadoop-Gremlin. An example, vendor-specific `Graph.compute(Class<? extends GraphComputer> graphComputerClass)`-method may look as follows:
+
+[source,java]
+public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException {
+  if(SparkGraphComputer.class.isAssignableFrom(graphComputerClass))
+    return new SparkGraphComputer(HadoopGraph.open(this.configuration()));
+  else if(GiraphGraphComputer.class.isAssignableFrom(graphComputerClass))
+    return new GiraphGraphComputer(HadoopGraph.open(this.configuration()));
+  else if(...) // vendor specific graph computer classes
+    // return vendor specific instance
+  else
+    throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+}
+
+Note that the configurations for Hadoop are assumed to be in the `Graph.configuration()` object. If this is not the case, then the `Configuration` provided to `HadoopGraph.open()` should be dynamically created within the `compute()`-method. It is in the provided configuration that `HadoopGraph` gets the various properties which determine how to read and write data to and from Hadoop. For instance, `gremlin.hadoop.graphInputFormat` and `gremlin.hadoop.graphOutputFormat`.
+
+IMPORTANT: A vendor's `OutputFormat` should implement the `PersistResultGraphAware` interface which determines which persistence options are available to the user. For the standard file-based `OutputFormats` provided by Hadoop-Gremlin (e.g. <<gryo-io-format,`GryoOutputFormat`>>, <<graphson-io-format,`GraphSONOutputFormat`>>, and <<script-io-format,`ScriptInputOutputFormat`>>) `ResultGraph.ORIGINAL` is not supported as the original graph data files are not random access and are, in essence, immutable. Thus, these file-based `OutputFormats` only support `ResultGraph.NEW` which creates a copy of the data specified by the `Persist` enum.
 

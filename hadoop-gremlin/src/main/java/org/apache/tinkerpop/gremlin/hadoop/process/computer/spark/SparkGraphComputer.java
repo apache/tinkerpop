@@ -42,8 +42,6 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
 import java.io.File;
@@ -55,9 +53,6 @@ import java.util.stream.Stream;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
-
-    public static final Logger LOGGER = LoggerFactory.getLogger(SparkGraphComputer.class);
-    protected final SparkConf configuration = new SparkConf();
 
     public SparkGraphComputer(final HadoopGraph hadoopGraph) {
         super(hadoopGraph);
@@ -94,7 +89,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
                     try (final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration)) {
                         // add the project jars to the cluster
-                        SparkGraphComputer.loadJars(sparkContext, hadoopConfiguration);
+                        this.loadJars(sparkContext, hadoopConfiguration);
                         // create a message-passing friendly rdd from the hadoop input format
                         final JavaPairRDD<Object, VertexWritable> graphRDD = sparkContext.newAPIHadoopRDD(hadoopConfiguration,
                                 (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
@@ -167,11 +162,11 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     /////////////////
 
-    private static void loadJars(final JavaSparkContext sparkContext, final Configuration hadoopConfiguration) {
+    private void loadJars(final JavaSparkContext sparkContext, final Configuration hadoopConfiguration) {
         if (hadoopConfiguration.getBoolean(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true)) {
             final String hadoopGremlinLocalLibs = System.getenv(Constants.HADOOP_GREMLIN_LIBS);
             if (null == hadoopGremlinLocalLibs)
-                LOGGER.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
+                this.logger.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
             else {
                 final String[] paths = hadoopGremlinLocalLibs.split(":");
                 for (final String path : paths) {
@@ -179,7 +174,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     if (file.exists())
                         Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> sparkContext.addJar(f.getAbsolutePath()));
                     else
-                        LOGGER.warn(path + " does not reference a valid directory -- proceeding regardless");
+                        this.logger.warn(path + " does not reference a valid directory -- proceeding regardless");
                 }
             }
         }
