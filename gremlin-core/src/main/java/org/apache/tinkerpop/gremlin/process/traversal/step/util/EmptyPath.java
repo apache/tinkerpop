@@ -42,7 +42,7 @@ public final class EmptyPath implements Path, Serializable {
     }
 
     @Override
-    public Path extend(final Object object, final String... labels) {
+    public Path extend(final Object object, final Set<String> labels) {
         return this;
     }
 
@@ -82,6 +82,7 @@ public final class EmptyPath implements Path, Serializable {
     }
 
     @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone,CloneDoesntDeclareCloneNotSupportedException")
     public EmptyPath clone() {
         return this;
     }

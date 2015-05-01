@@ -97,12 +97,12 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
     }
 
     @Override
-    public Optional<String> getLabel() {
-        return Optional.empty();
+    public Set<String> getLabels() {
+        return Collections.emptySet();
     }
 
     @Override
-    public void setLabel(final String label) {
+    public void addLabel(final String label) {
 
     }
 

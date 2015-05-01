@@ -18,10 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.P;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
@@ -44,26 +45,14 @@ public final class HasContainer implements Serializable {
         this.predicate = predicate;
         this.value = value;
         if (null == this.value && !(this.predicate instanceof Contains)) {
-            throw new IllegalArgumentException("For determining the existence of a property, use the Contains predicate");
+            throw new IllegalArgumentException("For determining the existence of a property, use the Contains predicate with null-value");
         }
-    }
-
-    public HasContainer(final String key, final Contains contains) {
-        this(key, contains, null);
-    }
-
-    public HasContainer(final T accessor, final BiPredicate predicate, final Object value) {
-        this(accessor.getAccessor(), predicate, value);
-    }
-
-    public HasContainer(final T accessor, final Contains contains) {
-        this(accessor.getAccessor(), contains, null);
     }
 
     public boolean test(final Element element) {
         if (null != this.value) {
             // it is OK to evaluate equality of ids via toString() now given that the toString() the test suite
-            // enforces the value of id.()toString() to be a first class representation of the identifier
+            // enforces the value of id().toString() to be a first class representation of the identifier
             if (this.key.equals(T.id.getAccessor()))
                 return this.predicate.test(element.id().toString(), this.value.toString());
             else if (this.key.equals(T.label.getAccessor()))
@@ -92,6 +81,17 @@ public final class HasContainer implements Serializable {
         }
     }
 
+    // note that if the user is looking for a label property key (e.g.), then it will look the same as looking for the label of the element.
+    public String toString() {
+        return this.value == null ?
+                (this.predicate == Contains.within ?
+                        '[' + this.key + ']' :
+                        "[!" + this.key + ']') :
+                '[' + this.key + ',' + this.predicate + ',' + this.value + ']';
+    }
+
+    ////////////
+
     public static boolean testAll(final Element element, final List<HasContainer> hasContainers) {
         if (hasContainers.size() == 0)
             return true;
@@ -104,12 +104,11 @@ public final class HasContainer implements Serializable {
         }
     }
 
-    // note that if the user is looking for a label property key (e.g.), then it will look the same as looking for the label of the element.
-    public String toString() {
-        return this.value == null ?
-                (this.predicate == Contains.within ?
-                        '[' + this.key + ']' :
-                        "[!" + this.key + ']') :
-                '[' + this.key + ',' + this.predicate + ',' + this.value + ']';
+    public static HasContainer[] makeHasContainers(final String key, final P<?>... predicates) {
+        final HasContainer[] hasContainers = new HasContainer[predicates.length];
+        for (int i = 0; i < predicates.length; i++) {
+            hasContainers[i] = new HasContainer(key, predicates[i].getBiPredicate(), predicates[i].getValue());
+        }
+        return hasContainers;
     }
 }

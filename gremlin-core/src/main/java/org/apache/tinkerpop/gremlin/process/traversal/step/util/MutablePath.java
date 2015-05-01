@@ -23,21 +23,20 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class MutablePath implements Path, Serializable {
 
-    final protected List<Object> objects;
-    final protected List<Set<String>> labels;
+    protected final List<Object> objects;
+    protected final List<Set<String>> labels;
 
     protected MutablePath() {
-        this(0);
+        this(10);
     }
 
     private MutablePath(final int capacity) {
@@ -69,9 +68,9 @@ public class MutablePath implements Path, Serializable {
     }
 
     @Override
-    public Path extend(final Object object, final String... labels) {
+    public Path extend(final Object object, final Set<String> labels) {
         this.objects.add(object);
-        this.labels.add(Stream.of(labels).collect(Collectors.toSet()));
+        this.labels.add(new HashSet<>(labels));
         return this;
     }
 
