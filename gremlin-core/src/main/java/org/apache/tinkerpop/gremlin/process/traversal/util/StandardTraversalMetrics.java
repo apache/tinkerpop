@@ -47,9 +47,6 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
 
     public void start(final String metricsId) {
         dirty = true;
-        if (allMetrics.get(metricsId) == null) {
-            System.out.println();
-        }
         allMetrics.get(metricsId).start();
     }
 
@@ -116,21 +113,41 @@ public final class StandardTraversalMetrics implements TraversalMetrics, Seriali
         // Append each StepMetric's row. indexToLabelMap values are ordered by index.
         for (Metrics m : metrics) {
             String rowName = m.getName();
+
+            // Handle indentation
             for (int ii = 0; ii < indent; ii++) {
                 rowName = "  " + rowName;
             }
+            // Abbreviate if necessary
             rowName = StringUtils.abbreviate(rowName, 50);
-            final long itemCount = m.getCount(ELEMENT_COUNT_ID);
-            final long traverserCount = m.getCount(TRAVERSER_COUNT_ID);
 
+            // Grab the values
+            final Long itemCount = m.getCount(ELEMENT_COUNT_ID);
+            final Long traverserCount = m.getCount(TRAVERSER_COUNT_ID);
             Double percentDur = (Double) m.getAnnotation(PERCENT_DURATION_KEY);
-            if (percentDur != null) {
-                sb.append(String.format("%n%-50s %21d %11d %15.3f %8.2f",
-                        rowName, itemCount, traverserCount, m.getDuration(TimeUnit.MICROSECONDS) / 1000.0, percentDur));
+
+            // Build the row string
+
+            sb.append(String.format("%n%-50s", rowName));
+
+            if (itemCount != null) {
+                sb.append(String.format(" %21d", itemCount));
             } else {
-                sb.append(String.format("%n%-50s %21d %11d %15.3f",
-                        rowName, itemCount, traverserCount, m.getDuration(TimeUnit.MICROSECONDS) / 1000.0));
+                sb.append(String.format(" %21s", ""));
             }
+
+            if (traverserCount != null) {
+                sb.append(String.format(" %11d", traverserCount));
+            } else {
+                sb.append(String.format(" %11s", ""));
+            }
+
+            sb.append(String.format(" %15.3f", m.getDuration(TimeUnit.MICROSECONDS) / 1000.0));
+
+            if (percentDur!=null){
+                sb.append(String.format(" %8.2f", percentDur ));
+            }
+
             appendMetrics(m.getNested(), sb, indent + 1);
         }
     }

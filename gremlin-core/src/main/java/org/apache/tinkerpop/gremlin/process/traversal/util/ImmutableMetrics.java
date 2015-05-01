@@ -49,7 +49,10 @@ public class ImmutableMetrics implements Metrics, Serializable {
     }
 
     @Override
-    public long getCount(String key) {
+    public Long getCount(String key) {
+        if (!counts.containsKey(key)) {
+            return null;
+        }
         return counts.get(key).get();
     }
 

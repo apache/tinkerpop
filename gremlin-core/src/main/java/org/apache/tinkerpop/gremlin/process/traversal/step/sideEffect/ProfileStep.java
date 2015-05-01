@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Profileable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
@@ -143,6 +144,10 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
             } else {
                 metrics = new DependantMutableMetrics(step.getId(), step.toString(), prevMetrics);
                 prevMetrics = (DependantMutableMetrics) metrics;
+            }
+
+            if (step instanceof Profileable) {
+                ((Profileable)step).setMetrics(metrics);
             }
 
             // Initialize counters (necessary because some steps might end up being 0)
