@@ -248,8 +248,13 @@ image:gremlin-io.png[width=250,float=right] The task of getting data in and out 
 * Reading and writing a `Traversal<Vertex>` as adjacency list format
 * Reading and writing a single `Vertex` (with and without associated `Edge` objects)
 * Reading and writing a single `Edge`
+* Reading and writing a single `VertexProperty`
+* Reading and writing a single `Property`
+* Reading and writing an arbitrary `Object`
 
-In all cases, these methods operate in the currency of `InputStream` and `OutputStream` objects, allowing graphs and their related elements to be written to and read from files, byte arrays, etc.  The `Graph` interface offers the `io` method, which provides access to helper methods for the various I/O capabilities.  This method also potentially provides vendor specific implementations of some of these methods, which may be important for serialization of vendor graphs.  Unless there are very advanced requirements for the serialization process, it is always best to utilize the methods on the `Io` interface to construct `GraphReader` and `GraphWriter` instances, as the implementation may provide some custom settings that would otherwise have to be configured manually by the user to do the serialization.
+In all cases, these methods operate in the currency of `InputStream` and `OutputStream` objects, allowing graphs and their related elements to be written to and read from files, byte arrays, etc.  The `Graph` interface offers the `io` method, which provides access to "reader/writer builder" objects that are pre-configured with serializers provided by the `Graph`, as well as helper methods for the various I/O capabilities. Unless there are very advanced requirements for the serialization process, it is always best to utilize the methods on the `Io` interface to construct `GraphReader` and `GraphWriter` instances, as the implementation may provide some custom settings that would otherwise have to be configured manually by the user to do the serialization.
+
+It is up to the implementations of the `GraphReader` and `GraphWriter` interfaces to choose the methods they implement and the manner in which they work together.  The only semantics enforced and expected is that the write methods should produce output that is compatible with the corresponding read method (e.g. the output of `writeVertices` should be readable as input to `readVertices` and the output of `writeProperty` should be readable as input to `readProperty`).
 
 GraphML Reader/Writer
 ~~~~~~~~~~~~~~~~~~~~~
@@ -260,7 +265,7 @@ image:gremlin-graphml.png[width=350,float=left] The link:http://graphml.graphdra
 * Produce a subgraph and export it to GraphML to be consumed by and visualized in link:https://gephi.org/[Gephi].
 * Migrate the data of an entire graph to a different graph database not supported by TinkerPop.
 
-As GraphML is a specification for the serialization of an entire graph and not the individual elements of a graph, methods that support input and output of single vertices and edges are not supported.
+As GraphML is a specification for the serialization of an entire graph and not the individual elements of a graph, methods that support input and output of single vertices, edges, etc. are not supported.
 
 CAUTION: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
 
@@ -298,7 +303,7 @@ image:gremlin-graphson.png[width=350,float=left] GraphSON is a link:http://json.
 * A text format of the graph or its elements is desired (e.g. debugging, usage in source control, etc.)
 * The graph or its elements need to be consumed by code that is not JVM-based (e.g. JavaScript, Python, .NET, etc.)
 
-GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.json` and then how to read that file back into a different instance:
+GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, vertices, arbitrary objects, etc.  The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.json` and then how to read that file back into a different instance:
 
 [source,java]
 ----
@@ -341,70 +346,49 @@ The following GraphSON example shows the output of `GraphSonWriter.writeVertex()
 [source,json]
 ----
 {
-  "inE": [],
-  "outE": [
-    {
-      "inV": 3,
-      "inVLabel": "software",
-      "outVLabel": "person",
-      "id": 9,
-      "label": "created",
-      "type": "edge",
-      "outV": 1,
-      "properties": {
-        "weight": 0.4
-      }
+    "id": 1,
+    "label": "person",
+    "outE": {
+        "created": [
+            {
+                "id": 9,
+                "inV": 3,
+                "properties": {
+                    "weight": 0.4
+                }
+            }
+        ],
+        "knows": [
+            {
+                "id": 7,
+                "inV": 2,
+                "properties": {
+                    "weight": 0.5
+                }
+            },
+            {
+                "id": 8,
+                "inV": 4,
+                "properties": {
+                    "weight": 1
+                }
+            }
+        ]
     },
-    {
-      "inV": 2,
-      "inVLabel": "person",
-      "outVLabel": "person",
-      "id": 7,
-      "label": "knows",
-      "type": "edge",
-      "outV": 1,
-      "properties": {
-        "weight": 0.5
-      }
-    },
-    {
-      "inV": 4,
-      "inVLabel": "person",
-      "outVLabel": "person",
-      "id": 8,
-      "label": "knows",
-      "type": "edge",
-      "outV": 1,
-      "properties": {
-        "weight": 1
-      }
+    "properties": {
+        "name": [
+            {
+                "id": 0,
+                "value": "marko"
+            }
+        ],
+        "age": [
+            {
+                "id": 1,
+                "value": 29
+            }
+        ]
     }
-  ],
-  "id": 1,
-  "label": "person",
-  "type": "vertex",
-  "properties": {
-    "name": [
-      {
-        "id": 0,
-        "label": "name",
-        "value": "marko",
-        "properties": {
-
-        }
-      }
-    ],
-    "age": [
-      {
-        "id": 1,
-        "label": "age",
-        "value": 29,
-        "properties": {
-
-        }
-      }
-    ]
-  }
 }
 ----
 
@@ -427,100 +411,78 @@ In the above code, the `embedTypes` option is set to `true` and the output below
 [source,json]
 ----
 {
-  "@class": "java.util.HashMap",
-  "inE": [
-    "java.util.ArrayList",
-    [
-
-    ]
-  ],
-  "outE": [
-    "java.util.ArrayList",
-    [
-      {
-        "@class": "java.util.HashMap",
-        "inV": 3,
-        "inVLabel": "software",
-        "outVLabel": "person",
-        "id": 9,
-        "label": "created",
-        "type": "edge",
-        "outV": 1,
-        "properties": {
-          "@class": "java.util.HashMap",
-          "weight": 0.4
-        }
-      },
-      {
-        "@class": "java.util.HashMap",
-        "inV": 2,
-        "inVLabel": "person",
-        "outVLabel": "person",
-        "id": 7,
-        "label": "knows",
-        "type": "edge",
-        "outV": 1,
-        "properties": {
-          "@class": "java.util.HashMap",
-          "weight": 0.5
-        }
-      },
-      {
-        "@class": "java.util.HashMap",
-        "inV": 4,
-        "inVLabel": "person",
-        "outVLabel": "person",
-        "id": 8,
-        "label": "knows",
-        "type": "edge",
-        "outV": 1,
-        "properties": {
-          "@class": "java.util.HashMap",
-          "weight": 1
-        }
-      }
-    ]
-  ],
-  "id": 1,
-  "label": "person",
-  "type": "vertex",
-  "properties": {
     "@class": "java.util.HashMap",
-    "name": [
-      "java.util.ArrayList",
-      [
-        {
-          "@class": "java.util.HashMap",
-          "id": [
-            "java.lang.Long",
-            0
-          ],
-          "label": "name",
-          "value": "marko",
-          "properties": {
-            "@class": "java.util.HashMap"
-          }
-        }
-      ]
-    ],
-    "age": [
-      "java.util.ArrayList",
-      [
-        {
-          "@class": "java.util.HashMap",
-          "id": [
-            "java.lang.Long",
-            1
-          ],
-          "label": "age",
-          "value": 29,
-          "properties": {
-            "@class": "java.util.HashMap"
-          }
-        }
-      ]
-    ]
-  }
+    "id": 1,
+    "label": "person",
+    "outE": {
+        "@class": "java.util.HashMap",
+        "created": [
+            "java.util.ArrayList",
+            [
+                {
+                    "@class": "java.util.HashMap",
+                    "id": 9,
+                    "inV": 3,
+                    "properties": {
+                        "@class": "java.util.HashMap",
+                        "weight": 0.4
+                    }
+                }
+            ]
+        ],
+        "knows": [
+            "java.util.ArrayList",
+            [
+                {
+                    "@class": "java.util.HashMap",
+                    "id": 7,
+                    "inV": 2,
+                    "properties": {
+                        "@class": "java.util.HashMap",
+                        "weight": 0.5
+                    }
+                },
+                {
+                    "@class": "java.util.HashMap",
+                    "id": 8,
+                    "inV": 4,
+                    "properties": {
+                        "@class": "java.util.HashMap",
+                        "weight": 1
+                    }
+                }
+            ]
+        ]
+    },
+    "properties": {
+        "@class": "java.util.HashMap",
+        "name": [
+            "java.util.ArrayList",
+            [
+                {
+                    "@class": "java.util.HashMap",
+                    "id": [
+                        "java.lang.Long",
+                        0
+                    ],
+                    "value": "marko"
+                }
+            ]
+        ],
+        "age": [
+            "java.util.ArrayList",
+            [
+                {
+                    "@class": "java.util.HashMap",
+                    "id": [
+                        "java.lang.Long",
+                        1
+                    ],
+                    "value": 29
+                }
+            ]
+        ]
+    }
 }
 ----
 
@@ -530,7 +492,7 @@ The ambiguity of components of the GraphSON is now removed by the `@class` prope
 Gryo Reader/Writer
 ~~~~~~~~~~~~~~~~~~
 
-image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSoftware/kryo[Kryo] is a popular serialization package for the JVM. Gremlin-Kryo is a binary Graph serialization format for use on the JVM by JVM languages. It is designed to be space efficient, non-lossy and is promoted as the standard format to use when working with graph data inside of the TinkerPop stack. A list of common use cases is presented below:
+image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSoftware/kryo[Kryo] is a popular serialization package for the JVM. Gremlin-Kryo is a binary `Graph` serialization format for use on the JVM by JVM languages. It is designed to be space efficient, non-lossy and is promoted as the standard format to use when working with graph data inside of the TinkerPop stack. A list of common use cases is presented below:
 
 * Migration from one Gremlin Structure implementation to another (e.g. `TinkerGraph` to `Neo4jGraph`)
 * Serialization of individual graph elements to be sent over the network to another JVM.
@@ -538,8 +500,7 @@ image:gremlin-kryo.png[width=400,float=left] link:https://github.com/EsotericSof
 
 CAUTION: When migrating between Gremlin Structure implementations, Kryo may not lose data, but it is important to consider the features of each `Graph` and whether or not the data types supported in one will be supported in the other.  Failure to do so, may result in errors.
 
-Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, a single `Vertex` or a single `Edge`.  The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.kryo` and then how to read that file back into a different instance:
-
+Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and can therefore read or write an entire `Graph`, vertices, edges, etc.  The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.kryo` and then how to read that file back into a different instance:
 
 [source,java]
 ----
