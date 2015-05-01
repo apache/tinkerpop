@@ -256,7 +256,16 @@ public class MyGraphIoRegistry extends AbstractIoRegistry {
 }
 ----
 
-In the `Graph.io` method, provide the `IoRegistry` object to the supplied `Builder` and call the `create` method to return that `Io` instance.   In this way, `Graph` implementations can pre-configure custom serializers for IO interactions and users will not need to know about those details. Following this pattern will ensure proper execution of the test suite as well as simplified usage for end-users.
+In the `Graph.io` method, provide the `IoRegistry` object to the supplied `Builder` and call the `create` method to return that `Io` instance as follows:
+
+[source,java]
+----
+public <I extends Io> I io(final Io.Builder<I> builder) {
+    return (I) builder.graph(this).registry(myGraphIoRegistry).create();
+}}
+----
+
+In this way, `Graph` implementations can pre-configure custom serializers for IO interactions and users will not need to know about those details. Following this pattern will ensure proper execution of the test suite as well as simplified usage for end-users.
 
 [[validating-with-gremlin-test]]
 Validating with Gremlin-Test
