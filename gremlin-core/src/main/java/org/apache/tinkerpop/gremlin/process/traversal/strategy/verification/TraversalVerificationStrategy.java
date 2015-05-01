@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
-import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
@@ -47,11 +46,9 @@ public final class TraversalVerificationStrategy extends AbstractTraversalStrate
         if (traversal.getEngine().isStandard())
             return;
 
-        Step<?, ?> endStep = traversal.getEndStep() instanceof ComputerAwareStep.EndStep ?
+        final Step<?, ?> endStep = traversal.getEndStep() instanceof ComputerAwareStep.EndStep ?
                 ((ComputerAwareStep.EndStep) traversal.getEndStep()).getPreviousStep() :
                 traversal.getEndStep();
-        if (endStep instanceof ComputerResultStep)        // TODO: this is not needed anymore (delete when you prove it)
-            endStep = endStep.getPreviousStep();
 
         for (final Step<?, ?> step : traversal.getSteps()) {
             if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
