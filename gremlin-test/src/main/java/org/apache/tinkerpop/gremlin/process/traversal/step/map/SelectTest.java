@@ -31,15 +31,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
 import static org.junit.Assert.*;
@@ -47,6 +43,7 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public abstract class SelectTest extends AbstractGremlinProcessTest {
 
@@ -95,6 +92,10 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_asXhereXout_name_selectXhereX();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -439,6 +440,27 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX();
+        printTraversalForm(traversal);
+        final List<Map<String, Object>> expected = makeMapList(1, "a", g.V(convertToVertexId("marko")).next(), "b", "marko", "c", 29);
+        checkResults(expected, traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @Ignore
+    public void g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX();
+        printTraversalForm(traversal);
+        final List<Map<String, Object>> expected = makeMapList(2,
+                "name", "lop", "language", "java", "creators", Arrays.asList("josh", "marko", "peter"),
+                "name", "ripple", "language", "java", "creators", Arrays.asList("josh"));
+        checkResults(expected, traversal);
+    }
+
     @UseEngine(TraversalEngine.Type.STANDARD)
     @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class Traversals extends SelectTest {
@@ -554,6 +576,17 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
             return (Traversal) g.V().out("created")
                     .union(as("project").in("created").has("name", "marko").select("project"),
                             as("project").in("created").in("knows").has("name", "marko").select("project")).groupCount().by("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX() {
+            return g.V().as("a").has("name", "marko").as("b").as("c").select().by().by("name").by("age");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
+            return g.V().hasLabel("software").as("name").as("language").as("creators").select().by("name").by("lang").
+                    by(__.in("created").values("name").fold().order(local));
         }
     }
 }

@@ -29,9 +29,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
 
 import static __.values
+import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public abstract class GroovySelectTest {
 
@@ -156,6 +158,17 @@ public abstract class GroovySelectTest {
             g.V.out('created')
                     .union(__.as('project').in('created').has('name', 'marko').select('project'),
                     __.as('project').in('created').in('knows').has('name', 'marko').select('project')).groupCount().by('name');
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX() {
+            g.V.as('a').has('name', 'marko').as('b').as('c').select().by().by('name').by('age')
+        }
+
+        @Override
+        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
+            g.V.hasLabel('software').as('name').as('language').as('creators').select().by('name').by('lang').
+                    by(__.in('created').values('name').fold().order(local))
         }
     }
 
@@ -330,6 +343,19 @@ public abstract class GroovySelectTest {
                     .union(__.as('project').in('created').has('name', 'marko').select('project'),
                     __.as('project').in('created').in('knows').has('name', 'marko').select('project')).groupCount().by('name');
             """, g)
+        }
+
+        @Override
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX() {
+            ComputerTestHelper.compute("g.V.as('a').has('name', 'marko').as('b').as('c').select().by().by('name').by('age')", g)
+        }
+
+        @Override
+        @Test
+        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
         }
     }
 }
