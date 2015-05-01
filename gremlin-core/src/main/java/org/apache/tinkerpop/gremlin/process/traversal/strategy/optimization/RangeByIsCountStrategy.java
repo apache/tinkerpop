@@ -30,7 +30,12 @@ import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.P;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiPredicate;
 
 /**

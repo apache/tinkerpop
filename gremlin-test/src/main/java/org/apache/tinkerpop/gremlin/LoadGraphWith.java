@@ -37,12 +37,12 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatur
 /**
  * Annotations to define a graph example to load from test resources prior to test execution.  This annotation is
  * for use only with test that extend from {@link AbstractGremlinTest}.
- * <br/>
+ * <p/>
  * Note that the annotation assumes that the @{link GraphData} referenced by the annotation can be made available
  * to the graph in the test.  In other words, even a graph that has "read-only" features, should have some method of
  * getting the data available to it.  That said, graphs must minimally support the data types that the sample
  * data contains for the test to be executed.
- * <br/>
+ * <p/>
  * If a graph implementation is "read-only", it can override the
  * {@link GraphProvider#loadGraphData(org.apache.tinkerpop.gremlin.structure.Graph, LoadGraphWith, Class, String)} method
  * to provide some other mechanism for making that data available to the graph in time for the test.  See the

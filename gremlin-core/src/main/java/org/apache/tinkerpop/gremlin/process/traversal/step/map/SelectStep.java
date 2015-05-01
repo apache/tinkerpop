@@ -40,11 +40,10 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     protected TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
     private final List<String> selectLabels;
-    private boolean requiresPaths = false;
 
     public SelectStep(final Traversal.Admin traversal, final String... selectLabels) {
         super(traversal);
-        this.selectLabels = selectLabels.length == 0 ? TraversalHelper.getLabelsUpTo(this, this.traversal) : Arrays.asList(selectLabels);
+        this.selectLabels = Arrays.asList(selectLabels);
     }
 
     @Override
@@ -52,22 +51,17 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         final S start = traverser.get();
         final Map<String, E> bindings = new LinkedHashMap<>();
 
-        ////// PROCESS STEP BINDINGS
-        final Path path = traverser.path();
-        this.selectLabels.forEach(label -> {
-            if (path.hasLabel(label))
-                bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next()));
-        });
-
-        ////// PROCESS MAP BINDINGS
         if (start instanceof Map) {
             if (this.selectLabels.isEmpty())
-                ((Map<String, Object>) start).forEach((k, v) -> bindings.put(k, (E) TraversalUtil.apply(v, this.traversalRing.next())));
+                ((Map<String, Object>) start).forEach((key, value) -> bindings.put(key, (E) TraversalUtil.apply(value, this.traversalRing.next())));
             else
-                this.selectLabels.forEach(label -> {
-                    if (((Map) start).containsKey(label))
-                        bindings.put(label, (E) TraversalUtil.apply(((Map) start).get(label), this.traversalRing.next()));
-                });
+                this.selectLabels.forEach(label -> bindings.put(label, (E) TraversalUtil.apply(((Map) start).get(label), this.traversalRing.next())));
+        } else {
+            final Path path = traverser.path();
+            if (this.selectLabels.isEmpty())
+                path.labels().stream().flatMap(Set::stream).distinct().forEach(label -> bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next())));
+            else
+                this.selectLabels.forEach(label -> bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next())));
         }
 
         this.traversalRing.reset();

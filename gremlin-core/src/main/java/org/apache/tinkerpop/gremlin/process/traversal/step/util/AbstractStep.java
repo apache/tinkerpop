@@ -23,17 +23,19 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class AbstractStep<S, E> implements Step<S, E> {
 
-    protected String label = null;
+    protected Set<String> labels = new LinkedHashSet<>();
     protected String id = Traverser.Admin.HALT;
     protected Traversal.Admin traversal;
     protected ExpandableStepIterator<S> starts;
@@ -45,7 +47,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     public AbstractStep(final Traversal.Admin traversal) {
         this.traversal = traversal;
-        this.starts = new ExpandableStepIterator<S>((Step) this);
+        this.starts = new ExpandableStepIterator<>(this);
     }
 
     @Override
@@ -60,14 +62,13 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     @Override
-    public void setLabel(final String label) {
-        Objects.nonNull(label);
-        this.label = label;
+    public void addLabel(final String label) {
+        this.labels.add(label);
     }
 
     @Override
-    public Optional<String> getLabel() {
-        return Optional.ofNullable(this.label);
+    public Set<String> getLabels() {
+        return Collections.unmodifiableSet(this.labels);
     }
 
     @Override
@@ -163,8 +164,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public AbstractStep<S, E> clone() {
         try {
-            final AbstractStep clone = (AbstractStep) super.clone();
-            clone.starts = new ExpandableStepIterator<S>(clone);
+            final AbstractStep<S, E> clone = (AbstractStep<S, E>) super.clone();
+            clone.starts = new ExpandableStepIterator<>(clone);
             clone.previousStep = EmptyStep.instance();
             clone.nextStep = EmptyStep.instance();
             clone.nextEnd = null;
@@ -176,7 +177,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {
         if (!this.traverserStepIdSetByChild) ((Traverser.Admin<E>) traverser).setStepId(this.nextStep.getId());
-        if (null != this.label) traverser.path().addLabel(this.label);
+        if (!this.labels.isEmpty()) this.labels.forEach(label -> traverser.path().addLabel(label));
         return traverser;
     }
 

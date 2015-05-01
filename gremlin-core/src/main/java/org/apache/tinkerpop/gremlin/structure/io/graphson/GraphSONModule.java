@@ -28,12 +28,20 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
 
 /**
- * The set of serializers that handle the core graph interfaces.
+ * The set of serializers that handle the core graph interfaces.  These serializers support normalization which
+ * ensures that generated GraphSON will be compatible with line-based versioning tools. This setting comes with
+ * some overhead, with respect to key sorting and other in-memory operations.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphSONModule extends SimpleModule {
 
+    /**
+     * Constructs a new object.
+     *
+     * @param normalize when set to true, keys and objects are ordered to ensure that they are the occur in
+     *                  the same order
+     */
     public GraphSONModule(final boolean normalize) {
         super("graphson");
         addSerializer(Edge.class, new GraphSONSerializers.EdgeJacksonSerializer(normalize));

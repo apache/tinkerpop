@@ -102,7 +102,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         checkResults(list, traversal);
     }
 
-    private <A, B> boolean checkMap(final Map<A, B> expectedMap, final Map<A, B> actualMap) {
+    public static <A, B> boolean checkMap(final Map<A, B> expectedMap, final Map<A, B> actualMap) {
         final List<Map.Entry<A, B>> actualList = actualMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
         final List<Map.Entry<A, B>> expectedList = expectedMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
 

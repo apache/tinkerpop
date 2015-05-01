@@ -37,7 +37,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -219,7 +218,6 @@ public class __ {
         return __.<A>start().sum(scope);
     }
 
-
     public static <A, E2 extends Number> GraphTraversal<A, E2> min() {
         return __.<A>start().min();
     }
@@ -318,16 +316,16 @@ public class __ {
         return __.<A>start().hasNot(hasNotNextTraversal);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String key, final P<?> predicate) {
-        return __.<A>start().has(key, predicate);
+    public static <A> GraphTraversal<A, A> has(final String key, final P<?>... predicates) {
+        return __.<A>start().has(key, predicates);
+    }
+
+    public static <A> GraphTraversal<A, A> has(final T accessor, final P<?>... predicates) {
+        return __.<A>start().has(accessor, predicates);
     }
 
     public static <A> GraphTraversal<A, A> has(final String key, final Object value) {
         return __.<A>start().has(key, value);
-    }
-
-    public static <A> GraphTraversal<A, A> has(final T accessor, final P<?> predicate) {
-        return __.<A>start().has(accessor, predicate);
     }
 
     public static <A> GraphTraversal<A, A> has(final T accessor, final Object value) {
@@ -338,8 +336,8 @@ public class __ {
         return __.<A>start().has(label, key, value);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String label, final String key, final P<?> predicate) {
-        return __.<A>start().has(label, key, predicate);
+    public static <A> GraphTraversal<A, A> has(final String label, final String key, final P<?>... predicates) {
+        return __.<A>start().has(label, key, predicates);
     }
 
     public static <A> GraphTraversal<A, A> has(final String key) {
@@ -556,8 +554,8 @@ public class __ {
 
     ///////////////////// UTILITY STEPS /////////////////////
 
-    public static <A> GraphTraversal<A, A> as(final String label) {
-        return __.<A>start().as(label);
+    public static <A> GraphTraversal<A, A> as(final String label, final String... labels) {
+        return __.<A>start().as(label, labels);
     }
 
     public static <A> GraphTraversal<A, A> profile() {

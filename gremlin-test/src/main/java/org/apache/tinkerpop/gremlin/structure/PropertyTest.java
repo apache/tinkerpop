@@ -194,7 +194,7 @@ public class PropertyTest {
                 v.value("does-not-exist");
                 fail("Call to Element.value() with a key that is not present should throw an exception");
             } catch (Exception ex) {
-                validateException(Property.Exceptions.propertyDoesNotExist("does-not-exist"), ex);
+                validateException(Property.Exceptions.propertyDoesNotExist(v, "does-not-exist"), ex);
             }
 
         }
@@ -210,7 +210,7 @@ public class PropertyTest {
                 e.value("does-not-exist");
                 fail("Call to Element.value() with a key that is not present should throw an exception");
             } catch (Exception ex) {
-                validateException(Property.Exceptions.propertyDoesNotExist("does-not-exist"), ex);
+                validateException(Property.Exceptions.propertyDoesNotExist(e, "does-not-exist"), ex);
             }
 
         }

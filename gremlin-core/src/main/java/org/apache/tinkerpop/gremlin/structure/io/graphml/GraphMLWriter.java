@@ -77,41 +77,81 @@ public class GraphMLWriter implements GraphWriter {
         this.vertexLabelKey = vertexLabelKey;
     }
 
+    /**
+     * This method is not supported for this writer.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v, Direction direction) throws IOException {
         throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this writer.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public void writeVertex(final OutputStream outputStream, final Vertex v) throws IOException {
         throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this writer.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public void writeEdge(final OutputStream outputStream, final Edge e) throws IOException {
         throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this writer.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
         throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this writer.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator) throws IOException {
         throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this writer.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public void writeVertexProperty(final OutputStream outputStream, final VertexProperty vp) throws IOException {
         throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this writer.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public void writeProperty(final OutputStream outputStream, final Property p) throws IOException {
         throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this writer.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public void writeObject(final OutputStream outputStream, final Object object) throws IOException {
         throw Io.Exceptions.writerFormatIsForFullGraphSerializationOnly(this.getClass());

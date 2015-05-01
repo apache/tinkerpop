@@ -20,12 +20,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
@@ -48,8 +48,7 @@ public final class TraversalHelper {
 
     public static <S, E> Step<S, E> getStepByLabel(final String label, final Traversal.Admin<?, ?> traversal) {
         return traversal.getSteps().stream()
-                .filter(step -> step.getLabel().isPresent())
-                .filter(step -> label.equals(step.getLabel().get()))
+                .filter(step -> step.getLabels().contains(label))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("The provided step label does not exist: " + label));
     }
@@ -63,8 +62,7 @@ public final class TraversalHelper {
 
     public static boolean hasLabel(final String label, final Traversal.Admin<?, ?> traversal) {
         return traversal.getSteps().stream()
-                .filter(step -> step.getLabel().isPresent())
-                .filter(step -> label.equals(step.getLabel().get()))
+                .filter(step -> step.getLabels().contains(label))
                 .findAny().isPresent();
     }
 
@@ -72,7 +70,7 @@ public final class TraversalHelper {
         final List<String> labels = new ArrayList<>();
         for (final Step<?, ?> temp : traversal.getSteps()) {
             if (temp == step) break;
-            temp.getLabel().ifPresent(labels::add);
+            temp.getLabels().forEach(labels::add);
         }
         return labels;
     }
@@ -164,7 +162,7 @@ public final class TraversalHelper {
             builder.append(String.join(",", strings));
             builder.append(')');
         }
-        step.getLabel().ifPresent(label -> builder.append('@').append(label));
+        if (!step.getLabels().isEmpty()) builder.append('@').append(step.getLabels());
         //builder.append("^").append(step.getId());
         return builder.toString();
     }

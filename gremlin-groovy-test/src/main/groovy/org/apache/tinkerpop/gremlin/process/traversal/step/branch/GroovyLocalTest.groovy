@@ -18,16 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.structure.T
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.process.UseEngine
+import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Order
+import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
-
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -108,7 +107,7 @@ public abstract class GroovyLocalTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_localXoutEXknowsX_limitX1XX_inV_name(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).local(__.outE('knows').limit(1)).inV.name", g);
+            ComputerTestHelper.compute("g.V(v1Id).local(__.outE('knows').limit(1)).inV.name", g, "v1Id", v1Id);
         }
 
         @Override
@@ -118,22 +117,22 @@ public abstract class GroovyLocalTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX4X_localXbothEX1_createdX_limitX1XX(final Object v4Id) {
-            ComputerTestHelper.compute("g.V(${v4Id}).local(__.bothE('created').limit(1))", g);
+            ComputerTestHelper.compute("g.V(v4Id).local(__.bothE('created').limit(1))", g, "v4Id", v4Id);
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX4X_localXbothEXknows_createdX_limitX1XX(final Object v4Id) {
-            ComputerTestHelper.compute("g.V(${v4Id}).local(__.bothE('knows', 'created').limit(1))", g);
+            ComputerTestHelper.compute("g.V(v4Id).local(__.bothE('knows', 'created').limit(1))", g, "v4Id", v4Id);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX1XX_otherV_name(final Object v4Id) {
-            ComputerTestHelper.compute("g.V(${v4Id}).local(__.bothE.limit(1)).otherV.name", g);
+            ComputerTestHelper.compute("g.V(v4Id).local(__.bothE.limit(1)).otherV.name", g, "v4Id", v4Id);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX2XX_otherV_name(final Object v4Id) {
-            ComputerTestHelper.compute("g.V(${v4Id}).local(__.bothE.limit(2)).otherV.name", g);
+            ComputerTestHelper.compute("g.V(v4Id).local(__.bothE.limit(2)).otherV.name", g, "v4Id", v4Id);
         }
 
         @Override

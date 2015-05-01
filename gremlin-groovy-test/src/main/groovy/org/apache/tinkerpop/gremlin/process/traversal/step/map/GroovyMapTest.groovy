@@ -19,10 +19,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Test
 
@@ -87,17 +87,17 @@ public abstract class GroovyMapTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).map { v -> v.name }", g);
+            ComputerTestHelper.compute("g.V(v1Id).map { v -> v.name }", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_VX1X_outE_label_mapXlengthX(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).outE.label.map { l -> l.length() }", g);
+            ComputerTestHelper.compute("g.V(v1Id).outE.label.map { l -> l.length() }", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_VX1X_out_mapXnameX_mapXlengthX(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).out.map { v -> v.name }.map { n -> n.length() }", g);
+            ComputerTestHelper.compute("g.V(v1Id).out.map { v -> v.name }.map { n -> n.length() }", g, "v1Id", v1Id);
         }
 
         @Override

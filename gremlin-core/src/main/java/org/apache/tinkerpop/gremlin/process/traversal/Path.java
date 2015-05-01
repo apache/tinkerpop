@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -54,7 +55,15 @@ public interface Path extends Cloneable {
      * @param labels the labels at the head of the path
      * @return the extended path
      */
-    public Path extend(final Object object, final String... labels);
+    public Path extend(final Object object, final Set<String> labels);
+
+    public default Path extend(final Object object, final String... labels) {
+        final Path path = this.extend(object, Collections.emptySet());
+        for (final String label : labels) {
+            path.addLabel(label);
+        }
+        return path;
+    }
 
     /**
      * Get the object associated with the particular label of the path.
@@ -125,6 +134,7 @@ public interface Path extends Cloneable {
 
     /**
      * An ordered list of the labels associated with the path
+     * The set of labels for a particular step are ordered by the order in which {@link Path#addLabel} was called.
      *
      * @return the labels of the path
      */

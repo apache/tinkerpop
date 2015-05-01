@@ -35,6 +35,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Kryo serializer for {@link StarGraph}.  Implements an internal versioning capability for backward compatibility.
+ * The single byte at the front of the serialization stream denotes the version.  That version can be used to choose
+ * the correct deserialization mechanism.  The limitation is that this versioning won't help with backward
+ * compatibility for custom serializers from vendors.  Vendors should be encouraged to write their serializers
+ * with backward compatibility in mind.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -43,6 +49,8 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
     private static final Map<Direction, StarGraphGryoSerializer> CACHE = new HashMap<>();
 
     private final Direction edgeDirectionToSerialize;
+
+    private final static byte VERSION_1 = Byte.MIN_VALUE;
 
     static {
         CACHE.put(Direction.BOTH, new StarGraphGryoSerializer(Direction.BOTH));
@@ -65,6 +73,7 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
 
     @Override
     public void write(final Kryo kryo, final Output output, final StarGraph starGraph) {
+        output.writeByte(VERSION_1);
         kryo.writeObjectOrNull(output, starGraph.edgeProperties, HashMap.class);
         kryo.writeObjectOrNull(output, starGraph.metaProperties, HashMap.class);
         kryo.writeClassAndObject(output, starGraph.starVertex.id);
@@ -88,6 +97,7 @@ public final class StarGraphGryoSerializer extends Serializer<StarGraph> {
     @Override
     public StarGraph read(final Kryo kryo, final Input input, final Class<StarGraph> aClass) {
         final StarGraph starGraph = StarGraph.open();
+        input.readByte();  // version field ignored for now - for future use with backward compatibility
         starGraph.edgeProperties = kryo.readObjectOrNull(input, HashMap.class);
         starGraph.metaProperties = kryo.readObjectOrNull(input, HashMap.class);
         starGraph.addVertex(T.id, kryo.readClassAndObject(input), T.label, kryo.readObject(input, String.class));

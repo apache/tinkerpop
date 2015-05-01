@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IoCore {
+public final class IoCore {
     public static Io.Builder<GraphMLIo> graphml() {
         return GraphMLIo.build();
     }

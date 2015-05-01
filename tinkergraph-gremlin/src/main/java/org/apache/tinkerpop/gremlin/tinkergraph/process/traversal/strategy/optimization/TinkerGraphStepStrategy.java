@@ -52,11 +52,7 @@ public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
             while (true) {
                 if (currentStep instanceof HasContainerHolder) {
                     tinkerGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
-                    if (currentStep.getLabel().isPresent()) {
-                        final IdentityStep identityStep = new IdentityStep<>(traversal);
-                        identityStep.setLabel(currentStep.getLabel().get());
-                        TraversalHelper.insertAfterStep(identityStep, currentStep, traversal);
-                    }
+                    currentStep.getLabels().forEach(tinkerGraphStep::addLabel);
                     traversal.removeStep(currentStep);
                 } else if (currentStep instanceof IdentityStep) {
                     // do nothing

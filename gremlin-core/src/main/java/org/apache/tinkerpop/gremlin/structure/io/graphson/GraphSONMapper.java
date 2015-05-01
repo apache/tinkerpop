@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.javatuples.Pair;
@@ -32,8 +33,20 @@ import java.util.List;
 
 /**
  * An extension to the standard Jackson {@code ObjectMapper} which automatically registers the standard
- * {@link GraphSONModule} for serializing {@link org.apache.tinkerpop.gremlin.structure.Graph} elements.  This class
+ * {@link GraphSONModule} for serializing {@link Graph} elements.  This class
  * can be used for generalized JSON serialization tasks that require meeting GraphSON standards.
+ * <p/>
+ * {@link Graph} implementations providing an {@link IoRegistry} should register their {@code SimpleModule}
+ * implementations to it as follows:
+ * <pre>
+ * {@code
+ * public class MyGraphIoRegistry extends AbstractIoRegistry {
+ *   public MyGraphIoRegistry() {
+ *     register(GraphSONIo.class, null, new MyGraphSimpleModule());
+ *   }
+ * }
+ * }
+ * </pre>
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

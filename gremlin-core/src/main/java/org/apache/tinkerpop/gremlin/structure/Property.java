@@ -151,8 +151,8 @@ public interface Property<V> {
             return new IllegalStateException("The property does not exist as it has no key, value, or associated element");
         }
 
-        public static IllegalStateException propertyDoesNotExist(final String key) {
-            return new IllegalStateException("The property does not exist as the key has no associated value: " + key);
+        public static IllegalStateException propertyDoesNotExist(final Element element, final String key) {
+            return new IllegalStateException("The property does not exist as the key has no associated value for the provided element: " + element + ":" + key);
         }
 
         public static IllegalArgumentException dataTypeOfPropertyValueNotSupported(final Object val) {

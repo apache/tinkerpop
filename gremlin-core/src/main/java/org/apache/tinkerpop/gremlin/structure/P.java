@@ -60,8 +60,8 @@ public class P<V> implements Predicate<V>, Serializable {
 
     @Override
     public boolean equals(final Object other) {
-        return other instanceof P && (
-                (P) other).getBiPredicate().equals(this.biPredicate) &&
+        return other instanceof P &&
+                ((P) other).getBiPredicate().equals(this.biPredicate) &&
                 ((((P) other).getValue() == null && this.getValue() == null) || ((P) other).getValue().equals(this.getValue()));
     }
 

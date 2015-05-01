@@ -63,7 +63,7 @@ import java.util.stream.Collectors;
  * {@code ScriptEngine} and assumes such engines are designed to be thread-safe in the evaluation.  Script evaluation
  * functions return a {@link CompletableFuture} where scripts may timeout if their evaluation
  * takes too long.  The default timeout is 8000ms.
- * <br/>
+ * <p/>
  * By default, the {@code GremlinExecutor} initializes itself to use a shared thread pool initialized with four
  * threads. This default thread pool is shared for both the task of executing script evaluations and for scheduling
  * timeouts. It is worth noting that a timeout simply triggers the returned {@link CompletableFuture} to abort, but

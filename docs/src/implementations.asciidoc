@@ -38,7 +38,7 @@ The classes that a vendor should focus on implemented are itemized below. Please
  .. Everything required of OTLP is required of OLAP (but not vice versa).
  .. GraphComputer API: `GraphComputer`, `Messenger`, `Memory`.
 
-A collection of implementation notes:
+Please consider the following implementation notes:
 
 * Be sure your `Graph` implementation is named as `XXXGraph` (e.g. TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
 * Use `StringHelper` to ensuring that the `toString()` representation of classes are consistent with other implementations.
@@ -46,7 +46,6 @@ A collection of implementation notes:
 * Use the numerous static method helper classes such as `ElementHelper`, `GraphComputerHelper`, `VertexProgramHelper`, etc.
 * There are a number of default methods on the provided interfaces that are semantically correct. However, if they are not efficient for the implementation, override them.
 * Implement the `structure/` package interfaces first and then, if desired, interfaces in the `process/` package interfaces.
-* Implement the `Graph.Io` interface if there are custom classes used in the implementation that will need to be serialized.  In this way, `Graph` implementations can pre-configure custom serializers for IO interactions and users will not need to know about those details.  For example, if the identifier system for the `Graph` uses a non-primitive, such as OrientDB's `Rid` class, register the methods for serialization of that class in the various `GraphReader` and `GraphWriter` builders returned from the `Io` interface.  Following this pattern will ensure proper execution for the test suite as well as simplified usage for end-users.
 
 [[oltp-implementations]]
 OLTP Implementations
@@ -229,6 +228,35 @@ for (final MapReduce mapReduce : this.mapReduces) {
 
 <1> Note that the final results of the reducer are provided to the Memory as specified by the application developer's `MapReduce.addSideEffectToMemory()` implementation.
 <2> If there is no reduce stage, the the map-stage results are inserted into Memory as specified by the application developer's `MapReduce.addSideEffectToMemory()` implementation.
+
+[[io-implementations]]
+IO Implementations
+^^^^^^^^^^^^^^^^^^
+
+If a `Graph` requires custom serializers for IO to work properly, implement the `Graph.io` method.  A typical example of where a `Graph` would require such a custom serializers is if their identifier system uses non-primitive values, such as OrientDB's `Rid` class.  From basic serialization of a single `Vertex` all the way up the stack to Gremlin Server, the need to know how to handle these complex identifiers is an important requirement.
+
+The first step to implementing custom serializers is to first implement the `IoRegistry` interface and register the custom classes and serializers to it. Each `Io` implementation has different requirements for what it expects from the `IoRegistry`:
+
+* *GraphML* - No custom serializers expected/allowed.
+* *GraphSON* - Register a Jackson `SimpleModule`.  The `SimpleModule` encapsulates specific classes to be serialized, so it does not need to be registered to a specific class in the `IoRegistry` (use `null`).
+* *Gryo* - Expects registration of one of three objects:
+** Register just the custom class with a `null` Kryo `Serializer` implementation - this class will use default "field-level" Kryo serialization.
+** Register the custom class with a specific Kryo `Serializer' implementation.
+** Register the custom class with a `Function<Kryo, Serializer>` for those cases where the Kryo `Serializer` requires the `Kryo` instance to get constructed.
+
+This implementation should provide a zero-arg constructor as the stack may require instantiation via reflection. Consider extending `AbstractIoRegistry` for convenience as follows:
+
+[source,java]
+----
+public class MyGraphIoRegistry extends AbstractIoRegistry {
+    public MyGraphIoRegistry() {
+        register(GraphSONIo.class, null, new MyGraphSimpleModule());
+        register(GryoIo.class, MyGraphIdClass.class, new MyGraphIdSerializer());
+    }
+}
+----
+
+In the `Graph.io` method, provide the `IoRegistry` object to the supplied `Builder` and call the `create` method to return that `Io` instance.   In this way, `Graph` implementations can pre-configure custom serializers for IO interactions and users will not need to know about those details. Following this pattern will ensure proper execution of the test suite as well as simplified usage for end-users.
 
 [[validating-with-gremlin-test]]
 Validating with Gremlin-Test

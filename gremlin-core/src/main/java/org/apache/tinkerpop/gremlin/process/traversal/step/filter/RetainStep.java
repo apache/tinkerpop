@@ -67,7 +67,7 @@ public final class RetainStep<S> extends FilterStep<S> {
     protected boolean filter(final Traverser.Admin<S> traverser) {
         switch (this.choice) {
             case 0: {
-                final Object retain = traverser.asAdmin().getSideEffects().exists(this.sideEffectKeyOrPathLabel) ?
+                final Object retain = traverser.asAdmin().getSideEffects().get(this.sideEffectKeyOrPathLabel).isPresent() ?
                         traverser.sideEffects(this.sideEffectKeyOrPathLabel) :
                         traverser.path(this.sideEffectKeyOrPathLabel);
                 return retain instanceof Collection ?

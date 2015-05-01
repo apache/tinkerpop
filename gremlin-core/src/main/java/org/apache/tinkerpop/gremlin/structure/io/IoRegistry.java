@@ -32,50 +32,29 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * A generalized custom serializer registry for vendors implementing a {@link Graph}.  Vendors should register
- * custom serializers to this registry via the {@link #register(Class, Class, Object)} method.  The serializers
- * registered depend on the {@link Io} implementations that are expected to be supported.  There are currently
- * just two core implementations in {@link GryoIo} and {@link GraphSONIo}.  Both of these should be supported
- * for full compliance with the test suite.  There is no need to use this class if the {@link Graph} does not
- * have custom classes that require serialization.
+ * A generalized custom serializer registry for vendors implementing a {@link Graph}.  Vendors should provide an
+ * implementation of this interface if their implementation requires custom serialization of identifiers or other
+ * such content housed in their graph.  Consider extending from {@link AbstractIoRegistry} and ensure that the
+ * implementation has a zero-arg constructor, as implementations may need to be constructed from reflection
+ * given different parts of the TinkerPop stack.
+ * <p/>
+ * The serializers to register depend on the {@link Io} implementations that are expected to be supported.  There
+ * are currently two core implementations in {@link GryoIo} and {@link GraphSONIo}.  Both of these should be supported
+ * for full compliance with the test suite.
+ * <p/>
+ * There is no need to use this class if the {@link Graph} does not have custom classes that require serialization.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class IoRegistry {
-    private final Map<Class<? extends Io>, List<Pair<Class, Object>>> registeredSerializers = new HashMap<>();
-
-    /**
-     * Add a "serializer" for the {@code Mapper}.  Note that what is accepted as a "serializer" is implementation
-     * specific.  An {@link Io} implementation will consult this registry for "serializer" classes
-     * it expects so refer to the {@link Io} implementation to understand what is expected for these values.
-     *
-     * @param clazz usually this is the class that is to be serialized - may be {@code null}
-     * @param serializer a serializer implementation
-     */
-    public void register(final Class<? extends Io> ioClass, final Class clazz, final Object serializer) {
-        if (!registeredSerializers.containsKey(ioClass))
-            registeredSerializers.put(ioClass, new ArrayList<>());
-        registeredSerializers.get(ioClass).add(Pair.with(clazz, serializer));
-    }
-
+public interface IoRegistry {
     /**
      * Find a list of all the serializers registered to an {@link Io} class by the {@link Graph}.
      */
-    public List<Pair<Class,Object>> find(final Class<? extends Io> builderClass) {
-        if (!registeredSerializers.containsKey(builderClass)) return Collections.emptyList();
-        return Collections.unmodifiableList(registeredSerializers.get(builderClass).stream()
-                .collect(Collectors.toList()));
-    }
+    public List<Pair<Class,Object>> find(final Class<? extends Io> builderClass);
 
     /**
      * Find a list of all the serializers, of a particular type, registered to an {@link Io} class by the
      * {@link Graph}.
      */
-    public <S> List<Pair<Class,S>> find(final Class<? extends Io> builderClass, final Class<S> serializerType) {
-        if (!registeredSerializers.containsKey(builderClass)) return Collections.emptyList();
-        return Collections.unmodifiableList(registeredSerializers.get(builderClass).stream()
-                .filter(p -> serializerType.isAssignableFrom(p.getValue1().getClass()))
-                .map(p -> Pair.with(p.getValue0(), (S) p.getValue1()))
-                .collect(Collectors.toList()));
-    }
+    public <S> List<Pair<Class,S>> find(final Class<? extends Io> builderClass, final Class<S> serializerType);
 }

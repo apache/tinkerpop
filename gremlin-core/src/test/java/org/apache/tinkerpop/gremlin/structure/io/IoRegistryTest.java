@@ -36,7 +36,7 @@ public class IoRegistryTest {
     public void shouldFindRegisteredClassesByIoImplementation() {
         // note that this is a non-standard usage of IoRegistry strictly for testing purposes - refer to javadocs
         // for proper usage
-        final IoRegistry registry = new IoRegistry();
+        final FakeIoRegistry registry = new FakeIoRegistry();
         registry.register(GryoIo.class, Long.class, "test");
         registry.register(GryoIo.class, Integer.class, 1);
         registry.register(GryoIo.class, String.class, 1L);
@@ -61,7 +61,7 @@ public class IoRegistryTest {
     public void shouldFindRegisteredClassesByIoImplementationAndSerializer() {
         // note that this is a non-standard usage of IoRegistry strictly for testing purposes - refer to javadocs
         // for proper usage
-        final IoRegistry registry = new IoRegistry();
+        final FakeIoRegistry registry = new FakeIoRegistry();
         registry.register(GryoIo.class, Long.class, "test");
         registry.register(GryoIo.class, Integer.class, 1);
         registry.register(GryoIo.class, String.class, 1L);
@@ -80,20 +80,27 @@ public class IoRegistryTest {
 
     @Test
     public void shouldReturnEmptyListIfIoKeyNotPresentOnFindByImplementation() {
-        final IoRegistry registry = new IoRegistry();
+        final FakeIoRegistry registry = new FakeIoRegistry();
         assertEquals(0, registry.find(GryoIo.class).size());
     }
 
     @Test
     public void shouldReturnEmptyListIfIoKeyNotPresentOnFindByImplementationAndSerializer() {
-        final IoRegistry registry = new IoRegistry();
+        final FakeIoRegistry registry = new FakeIoRegistry();
         assertEquals(0, registry.find(GryoIo.class, String.class).size());
     }
 
     @Test
     public void shouldReturnEmptyListIfIoKeyPresentButNoSerializer() {
-        final IoRegistry registry = new IoRegistry();
+        final FakeIoRegistry registry = new FakeIoRegistry();
         registry.register(GryoIo.class, Long.class, String.class);
         assertEquals(0, registry.find(GryoIo.class, Number.class).size());
+    }
+
+    /**
+     * This class is just for simplicity of testing.  This is not a proper implementation of this class.
+     * Proper implementations should call {@link #register(Class, Class, Object)} within a zero-arg constructor.
+     */
+    public static class FakeIoRegistry extends AbstractIoRegistry {
     }
 }

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphml;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -29,6 +30,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
+ * Constructs GraphML IO implementations given a {@link Graph} and {@link IoRegistry}. Implementers of the {@link Graph}
+ * interfaces do not have to register any special serializers to the {@link IoRegistry} as GraphML does not support
+ * such things.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.Builder, GraphMLMapper.Builder> {
@@ -38,21 +43,33 @@ public class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.Builde
         this.graph = graph;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphMLReader.Builder reader() {
         return GraphMLReader.build();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphMLWriter.Builder writer() {
         return GraphMLWriter.build();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public GraphMLMapper.Builder mapper() {
         return GraphMLMapper.build();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void writeGraph(final String file) throws IOException {
         try (final OutputStream out = new FileOutputStream(file)) {
@@ -60,6 +77,9 @@ public class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.Builde
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void readGraph(final String file) throws IOException {
         try (final InputStream in = new FileInputStream(file)) {

@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
-import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -201,6 +200,11 @@ public class GraphMLReader implements GraphReader {
         }
     }
 
+    /**
+     * This method is not supported for this reader.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public Iterator<Vertex> readVertices(final InputStream inputStream,
                                          final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
@@ -209,11 +213,21 @@ public class GraphMLReader implements GraphReader {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this reader.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this reader.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public Vertex readVertex(final InputStream inputStream, final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
                              final Function<Attachable<Edge>, Edge> edgeAttachMethod,
@@ -221,23 +235,43 @@ public class GraphMLReader implements GraphReader {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this reader.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public Edge readEdge(final InputStream inputStream, final Function<Attachable<Edge>, Edge> edgeAttachMethod) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this reader.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public VertexProperty readVertexProperty(final InputStream inputStream,
                                              final Function<Attachable<VertexProperty>, VertexProperty> vertexPropertyAttachMethod) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this reader.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public Property readProperty(final InputStream inputStream,
                                  final Function<Attachable<Property>, Property> propertyAttachMethod) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
+    /**
+     * This method is not supported for this reader.
+     *
+     * @throws UnsupportedOperationException when called.
+     */
     @Override
     public <C> C readObject(final InputStream inputStream, final Class<? extends C> clazz) throws IOException {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
@@ -283,7 +317,7 @@ public class GraphMLReader implements GraphReader {
     public static final class Builder implements ReaderBuilder<GraphMLReader> {
         private String edgeLabelKey = GraphMLTokens.LABEL_E;
         private String vertexLabelKey = GraphMLTokens.LABEL_V;
-        private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
+        private long batchSize = 10000;
 
         private Builder() {
         }

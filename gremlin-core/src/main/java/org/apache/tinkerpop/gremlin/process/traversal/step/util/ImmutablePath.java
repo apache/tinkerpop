@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -35,7 +36,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
 
     private Path previousPath = HeadPath.instance();
     private Object currentObject;
-    private Set<String> currentLabels = new HashSet<>();
+    private Set<String> currentLabels = new LinkedHashSet<>();
 
     protected ImmutablePath() {
 
@@ -51,15 +52,14 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         return this;
     }
 
-    private ImmutablePath(final Object currentObject, final String... currentLabels) {
+    private ImmutablePath(final Object currentObject, final Set<String> currentLabels) {
         this(HeadPath.instance(), currentObject, currentLabels);
     }
 
-    private ImmutablePath(final Path previousPath, final Object currentObject, final String... currentLabels) {
+    private ImmutablePath(final Path previousPath, final Object currentObject, final Set<String> currentLabels) {
         this.previousPath = previousPath;
         this.currentObject = currentObject;
-        if (currentLabels.length > 0)
-            Stream.of(currentLabels).forEach(this.currentLabels::add);
+        this.currentLabels.addAll(currentLabels);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     }
 
     @Override
-    public Path extend(final Object object, final String... labels) {
+    public Path extend(final Object object, final Set<String> labels) {
         return new ImmutablePath(this, object, labels);
     }
 
@@ -121,7 +121,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         }
 
         @Override
-        public Path extend(final Object object, final String... labels) {
+        public Path extend(final Object object, final Set<String> labels) {
             return new ImmutablePath(object, labels);
         }
 
