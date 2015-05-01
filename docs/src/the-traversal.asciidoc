@@ -1262,8 +1262,8 @@ There can be multiple `subgraph()` calls within the same traversal. Each operati
 ----
 t = g.V().outE('knows').subgraph('knowsG').inV().outE('created').subgraph('createdG').
           inV().inE('created').subgraph('createdG').iterate()
-t.sideEffects.get('knowsG').traversal(standard()).E()
-t.sideEffects.get('createdG').traversal(standard()).E()
+t.sideEffects.get('knowsG').get().traversal(standard()).E()
+t.sideEffects.get('createdG').get().traversal(standard()).E()
 ----
 
 IMPORTANT: The `subgraph()`-step only writes to graphs that support user supplied ids for its elements. Moreover, if no graph is specified via `withSideEffect()`, then <<tinkergraph-gremlin,TinkerGraph>> is assumed.
