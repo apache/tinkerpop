@@ -107,8 +107,11 @@ import java.util.stream.Collectors;
  * For example:
  * <pre>
  * {@code
- * IoRegistry registry = new IoRegistry();
- * registry.register(GryoIo.class, MyCustomClass.class, new MyCustomClassSerializer());
+ * public class MyGraphIoRegistry extends AbstractIoRegistry {
+ *   public MyGraphIoRegistry() {
+ *     register(GryoIo.class, MyGraphIdClass.class, new MyGraphIdSerializer());
+ *   }
+ * }
  * }
  * </pre>
  *
