@@ -29,13 +29,13 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ExpandableStepIterator<E> implements Iterator<Traverser.Admin<E>>, Serializable {
+public final class ExpandableStepIterator<S> implements Iterator<Traverser.Admin<S>>, Serializable {
 
-    private final TraverserSet<E> traverserSet = new TraverserSet<>();
-    private final MultiIterator<Traverser.Admin<E>> traverserIterators = new MultiIterator<>();
-    private final Step<?, E> hostStep;
+    private final TraverserSet<S> traverserSet = new TraverserSet<>();
+    private final MultiIterator<Traverser.Admin<S>> traverserIterators = new MultiIterator<>();
+    private final Step<S,?> hostStep;
 
-    public ExpandableStepIterator(final Step<?, E> hostStep) {
+    public ExpandableStepIterator(final Step<S,?> hostStep) {
         this.hostStep = hostStep;
     }
 
@@ -45,23 +45,23 @@ public final class ExpandableStepIterator<E> implements Iterator<Traverser.Admin
     }
 
     @Override
-    public Traverser.Admin<E> next() {
+    public Traverser.Admin<S> next() {
         if (!this.traverserSet.isEmpty())
             return this.traverserSet.remove();
         if (this.traverserIterators.hasNext())
             return this.traverserIterators.next();
         /////////////
         if (this.hostStep.getPreviousStep().hasNext())
-            return (Traverser.Admin<E>) this.hostStep.getPreviousStep().next();
+            return (Traverser.Admin<S>) this.hostStep.getPreviousStep().next();
         /////////////
         return this.traverserSet.remove();
     }
 
-    public void add(final Iterator<Traverser.Admin<E>> iterator) {
+    public void add(final Iterator<Traverser.Admin<S>> iterator) {
         this.traverserIterators.addIterator(iterator);
     }
 
-    public void add(final Traverser.Admin<E> traverser) {
+    public void add(final Traverser.Admin<S> traverser) {
         this.traverserSet.add(traverser);
     }
 

@@ -20,12 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -43,9 +44,9 @@ public class PathTest extends AbstractGremlinProcessTest {
         Arrays.asList(MutablePath.make(), ImmutablePath.make()).forEach(path -> {
             assertTrue(path.isSimple());
             assertEquals(0, path.size());
-            path = path.extend(1, "a");
-            path = path.extend(2, "b");
-            path = path.extend(3, "c");
+            path = path.extend(1, Collections.singleton("a"));
+            path = path.extend(2, Collections.singleton("b"));
+            path = path.extend(3, Collections.singleton("c"));
             assertEquals(3, path.size());
             assertEquals(Integer.valueOf(1), path.get("a"));
             assertEquals(Integer.valueOf(2), path.get("b"));
@@ -62,7 +63,7 @@ public class PathTest extends AbstractGremlinProcessTest {
             assertTrue(path.hasLabel("d"));
             assertFalse(path.hasLabel("e"));
             assertTrue(path.isSimple());
-            path = path.extend(3, "e");
+            path = path.extend(3, Collections.singleton("e"));
             assertFalse(path.isSimple());
             assertTrue(path.hasLabel("e"));
             assertEquals(4, path.size());
@@ -77,9 +78,9 @@ public class PathTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldHandleMultiLabelPaths() {
         Arrays.asList(MutablePath.make(), ImmutablePath.make()).forEach(path -> {
-            path = path.extend("marko", "a");
-            path = path.extend("stephen", "b");
-            path = path.extend("matthias", "a");
+            path = path.extend("marko", Collections.singleton("a"));
+            path = path.extend("stephen", Collections.singleton("b"));
+            path = path.extend("matthias", Collections.singleton("a"));
             assertEquals(3, path.size());
             assertEquals(3, path.objects().size());
             assertEquals(3, path.labels().size());
@@ -105,9 +106,9 @@ public class PathTest extends AbstractGremlinProcessTest {
     @Test
     public void shouldExcludeUnlabeledLabelsFromPath() {
         Arrays.asList(MutablePath.make(), ImmutablePath.make()).forEach(path -> {
-            path = path.extend("marko", "a");
-            path = path.extend("stephen", "b");
-            path = path.extend("matthias", "c", "d");
+            path = path.extend("marko", Collections.singleton("a"));
+            path = path.extend("stephen", Collections.singleton("b"));
+            path = path.extend("matthias", new HashSet<>(Arrays.asList("c", "d")));
             assertEquals(3, path.size());
             assertEquals(3, path.objects().size());
             assertEquals(3, path.labels().size());

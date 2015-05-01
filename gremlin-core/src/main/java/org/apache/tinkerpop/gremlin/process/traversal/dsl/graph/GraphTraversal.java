@@ -462,31 +462,27 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final String key, final P<?>... predicates) {
-        final HasContainer[] hasContainers = new HasContainer[predicates.length];
-        for (int i = 0; i < predicates.length; i++) {
-            hasContainers[i] = new HasContainer(key, predicates[i].getBiPredicate(), predicates[i].getValue());
-        }
-        return this.asAdmin().addStep(new HasStep(this.asAdmin(), hasContainers));
+        return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(key, predicates)));
+    }
+
+    public default GraphTraversal<S, E> has(final T accessor, final P<?>... predicates) {
+        return this.has(accessor.getAccessor(), predicates);
     }
 
     public default GraphTraversal<S, E> has(final String key, final Object value) {
         return this.has(key, new P<?>[]{value instanceof P ? (P) value : P.eq(value)});
     }
 
-    public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {
-        return this.has(accessor.getAccessor(), predicate);
-    }
-
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
         return this.has(accessor.getAccessor(), value);
     }
 
-    public default GraphTraversal<S, E> has(final String label, final String key, final Object value) {
-        return this.has(label, key, P.eq(value));
+    public default GraphTraversal<S, E> has(final String label, final String key, final P<?>... predicates) {
+        return this.has(T.label, label).has(key, predicates);
     }
 
-    public default GraphTraversal<S, E> has(final String label, final String key, final P<?> predicate) {
-        return this.has(T.label, label).has(key, predicate);
+    public default GraphTraversal<S, E> has(final String label, final String key, final Object value) {
+        return this.has(label, key, new P<?>[]{value instanceof P ? (P) value : P.eq(value)});
     }
 
     public default GraphTraversal<S, E> has(final String key) {
@@ -705,9 +701,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// UTILITY STEPS /////////////////////
 
-    public default GraphTraversal<S, E> as(final String stepLabel) {
+    public default GraphTraversal<S, E> as(final String stepLabel, final String... stepLabels) {
         if (this.asAdmin().getSteps().size() == 0) this.asAdmin().addStep(new StartStep<>(this.asAdmin()));
-        this.asAdmin().getEndStep().addLabel(stepLabel);
+        final Step<?, E> endStep = this.asAdmin().getEndStep();
+        endStep.addLabel(stepLabel);
+        for (final String label : stepLabels) {
+            endStep.addLabel(label);
+        }
         return this;
     }
 

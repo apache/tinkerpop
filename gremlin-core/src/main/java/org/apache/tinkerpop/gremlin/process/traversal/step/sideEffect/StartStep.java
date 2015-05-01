@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Iterator;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -47,10 +46,7 @@ public class StartStep<S> extends AbstractStep<S, S> {
         return (T) this.start;
     }
 
-    public boolean startAssignableTo(final Class... assignableClasses) {
-        return Stream.of(assignableClasses).filter(check -> check.isAssignableFrom(this.start.getClass())).findAny().isPresent();
-    }
-
+    @Override
     public String toString() {
         return TraversalHelper.makeStepString(this, this.start);
     }

@@ -41,7 +41,7 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
     private final String firstKey;
     private final String secondKey;
     private final BiPredicate biPredicate;
-    private Traversal.Admin constraint;
+    private Traversal.Admin traversalConstraint;
 
 
     public WhereStep(final Traversal.Admin traversal, final String firstKey, final P<?> secondKeyPredicate) {
@@ -49,39 +49,42 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         this.firstKey = firstKey;
         this.secondKey = (String) secondKeyPredicate.getValue();
         this.biPredicate = secondKeyPredicate.getBiPredicate();
-        this.constraint = null;
+        this.traversalConstraint = null;
     }
 
-    public WhereStep(final Traversal.Admin traversal, final Traversal.Admin constraint) {
+    public WhereStep(final Traversal.Admin traversal, final Traversal.Admin traversalConstraint) {
         super(traversal);
         this.biPredicate = null;
-        this.constraint = this.integrateChild(constraint);
+        this.traversalConstraint = this.integrateChild(traversalConstraint);
         // TODO: do we need to compile the traversal first (probably)
-        ///
-        final Step<?, ?> startStep = this.constraint.getStartStep();
+        ///  get the start-step as()
+        final Step<?, ?> startStep = this.traversalConstraint.getStartStep();
         if (startStep.getLabels().isEmpty())
-            throw new IllegalArgumentException("Where traversal must have their start step labeled with as(): " + this.constraint);
+            throw new IllegalArgumentException("Where traversal must have their start step labeled with as(): " + this.traversalConstraint);
         if (startStep.getLabels().size() > 1)
-            throw new IllegalArgumentException("Where traversal can not have multiple labels on the start step: " + this.constraint);
+            throw new IllegalArgumentException("Where traversal can not have multiple labels on the start step: " + this.traversalConstraint);
         this.firstKey = startStep.getLabels().iterator().next();
-        ///
-        Step<?, ?> endStep = this.constraint.getEndStep();
+        /// get the end-step as()
+        Step<?, ?> endStep = this.traversalConstraint.getEndStep();
         if (endStep instanceof MarkerIdentityStep) endStep = endStep.getPreviousStep();  // DAH
         if (endStep.getLabels().size() > 1)
-            throw new IllegalArgumentException("Where traversal can not have multiple labels on the end step: " + this.constraint);
+            throw new IllegalArgumentException("Where traversal can not have multiple labels on the end step: " + this.traversalConstraint);
         this.secondKey = endStep.getLabels().isEmpty() ? null : endStep.getLabels().iterator().next();
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<Map<String, E>> traverser) {
         final Map<String, E> map = traverser.get();
-        if (null == this.constraint) {
+        // bi-predicate predicate
+        if (null == this.traversalConstraint) {
             if (!map.containsKey(this.firstKey))
                 throw new IllegalArgumentException("The provided key is not in the current map: " + this.firstKey);
             if (!map.containsKey(this.secondKey))
                 throw new IllegalArgumentException("The provided key is not in the current map: " + this.secondKey);
             return this.biPredicate.test(map.get(this.firstKey), map.get(this.secondKey));
-        } else {
+        }
+        // traversal predicate
+        else {
             final Object startObject = map.get(this.firstKey);
             if (null == startObject)
                 throw new IllegalArgumentException("The provided key is not in the current map: " + this.firstKey);
@@ -89,40 +92,39 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
                 throw new IllegalArgumentException("The provided key is not in the current map: " + this.secondKey);
             final Object endObject = null == this.secondKey ? null : map.get(this.secondKey);
             //
-            this.constraint.addStart(this.getTraversal().asAdmin().getTraverserGenerator().generate(startObject, this.constraint.getStartStep(), traverser.bulk()));
+            this.traversalConstraint.addStart(this.getTraversal().asAdmin().getTraverserGenerator().generate(startObject, this.traversalConstraint.getStartStep(), traverser.bulk()));
             if (null == endObject) {
-                if (this.constraint.hasNext()) {
-                    this.constraint.reset();
+                if (this.traversalConstraint.hasNext()) {
+                    this.traversalConstraint.reset();
                     return true;
-                } else {
-                    return false;
                 }
             } else {
-                while (this.constraint.hasNext()) {
-                    if (this.constraint.next().equals(endObject)) {
-                        this.constraint.reset();
+                while (this.traversalConstraint.hasNext()) {
+                    if (this.traversalConstraint.next().equals(endObject)) {
+                        this.traversalConstraint.reset();
                         return true;
                     }
                 }
-                return false;
             }
+            return false;
         }
     }
 
     @Override
     public List<Traversal.Admin> getLocalChildren() {
-        return null == this.constraint ? Collections.emptyList() : Collections.singletonList(this.constraint);
+        return null == this.traversalConstraint ? Collections.emptyList() : Collections.singletonList(this.traversalConstraint);
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.firstKey, this.biPredicate, this.secondKey, this.constraint);
+        return TraversalHelper.makeStepString(this, this.firstKey, this.biPredicate, this.secondKey, this.traversalConstraint);
     }
 
     @Override
     public WhereStep<E> clone() {
         final WhereStep<E> clone = (WhereStep<E>) super.clone();
-        if (null != this.constraint) clone.constraint = clone.integrateChild(this.constraint.clone());
+        if (null != this.traversalConstraint)
+            clone.traversalConstraint = clone.integrateChild(this.traversalConstraint.clone());
         return clone;
     }
 

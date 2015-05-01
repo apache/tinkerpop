@@ -51,15 +51,14 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         return this;
     }
 
-    private ImmutablePath(final Object currentObject, final String... currentLabels) {
+    private ImmutablePath(final Object currentObject, final Set<String> currentLabels) {
         this(HeadPath.instance(), currentObject, currentLabels);
     }
 
-    private ImmutablePath(final Path previousPath, final Object currentObject, final String... currentLabels) {
+    private ImmutablePath(final Path previousPath, final Object currentObject, final Set<String> currentLabels) {
         this.previousPath = previousPath;
         this.currentObject = currentObject;
-        if (currentLabels.length > 0)
-            Stream.of(currentLabels).forEach(this.currentLabels::add);
+        this.currentLabels.addAll(currentLabels);
     }
 
     @Override
@@ -68,7 +67,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     }
 
     @Override
-    public Path extend(final Object object, final String... labels) {
+    public Path extend(final Object object, final Set<String> labels) {
         return new ImmutablePath(this, object, labels);
     }
 
@@ -121,7 +120,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         }
 
         @Override
-        public Path extend(final Object object, final String... labels) {
+        public Path extend(final Object object, final Set<String> labels) {
             return new ImmutablePath(object, labels);
         }
 

@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -40,8 +39,7 @@ public class B_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     public B_O_P_S_SE_SL_Traverser(final T t, final Step<T, ?> step, final long initialBulk) {
         super(t, step, initialBulk);
-        final String[] stepLabels = step.getLabels().toArray(new String[step.getLabels().size()]);
-        this.path = ImmutablePath.make().extend(t, stepLabels);
+        this.path = ImmutablePath.make().extend(t, step.getLabels());
     }
 
     /////////////////
@@ -77,12 +75,9 @@ public class B_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     @Override
     public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
-
-            final B_O_P_S_SE_SL_Traverser<R> clone = (B_O_P_S_SE_SL_Traverser<R>) super.split(r,step);
-            final String[] stepLabels = step.getLabels().toArray(new String[step.getLabels().size()]);
-            clone.path = clone.path.clone().extend(r, stepLabels);
-            //clone.sack = null == clone.sack ? null : clone.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(clone.sack);
-            return clone;
+        final B_O_P_S_SE_SL_Traverser<R> clone = (B_O_P_S_SE_SL_Traverser<R>) super.split(r, step);
+        clone.path = clone.path.clone().extend(r, step.getLabels());
+        return clone;
 
     }
 

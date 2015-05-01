@@ -54,7 +54,7 @@ public interface Path extends Cloneable {
      * @param labels the labels at the head of the path
      * @return the extended path
      */
-    public Path extend(final Object object, final String... labels);
+    public Path extend(final Object object, final Set<String> labels);
 
     /**
      * Get the object associated with the particular label of the path.

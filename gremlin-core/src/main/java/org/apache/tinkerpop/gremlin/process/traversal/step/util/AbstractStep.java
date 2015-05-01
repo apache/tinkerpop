@@ -47,7 +47,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     public AbstractStep(final Traversal.Admin traversal) {
         this.traversal = traversal;
-        this.starts = new ExpandableStepIterator<S>((Step) this);
+        this.starts = new ExpandableStepIterator<>(this);
     }
 
     @Override
@@ -164,8 +164,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public AbstractStep<S, E> clone() {
         try {
-            final AbstractStep clone = (AbstractStep) super.clone();
-            clone.starts = new ExpandableStepIterator<S>(clone);
+            final AbstractStep<S,E> clone = (AbstractStep<S,E>) super.clone();
+            clone.starts = new ExpandableStepIterator<>(clone);
             clone.previousStep = EmptyStep.instance();
             clone.nextStep = EmptyStep.instance();
             clone.nextEnd = null;
@@ -177,7 +177,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {
         if (!this.traverserStepIdSetByChild) ((Traverser.Admin<E>) traverser).setStepId(this.nextStep.getId());
-        this.labels.forEach(label -> traverser.path().addLabel(label));
+        if (!this.labels.isEmpty()) this.labels.forEach(label -> traverser.path().addLabel(label));
         return traverser;
     }
 

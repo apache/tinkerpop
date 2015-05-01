@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -116,17 +115,16 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
     public Step<S, E> clone();
 
     /**
-     * Get the label of this step.
-     * If the step is  not labeled, then an {@link Optional#empty} is returned.
+     * Get the labels of this step.
      *
-     * @return the optional label of the step
+     * @return the set of labels for this step
      */
     public Set<String> getLabels();
 
     /**
-     * Set the label of this step.
+     * Add a label to this step.
      *
-     * @param label the label for this step
+     * @param label the label to add to this step
      */
     public void addLabel(final String label);
 
