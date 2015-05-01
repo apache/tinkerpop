@@ -54,6 +54,7 @@ cp -R target/site/apidocs/core/. "target/svn/javadocs/${VERSION}/core"
 cp -R target/site/apidocs/full/. "target/svn/javadocs/${VERSION}/full"
 
 pushd target/svn
+rm "docs/${VERSION}/images/tinkerpop3.graffle"
 ${SVN_CMD} add * --force
 ${SVN_CMD} commit -m "Deploy docs for TinkerPop ${VERSION}"
 popd
