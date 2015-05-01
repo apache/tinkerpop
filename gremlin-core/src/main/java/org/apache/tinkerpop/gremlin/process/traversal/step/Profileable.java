@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 
 /**
@@ -27,6 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
  *
  * @author Bob Briody (http://bobbriody.com)
  */
-public interface Profileable extends Step {
+public interface Profileable {
     void setMetrics(MutableMetrics metrics);
 }
