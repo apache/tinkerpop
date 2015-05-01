@@ -40,8 +40,11 @@ import java.util.List;
  * implementations to it as follows:
  * <pre>
  * {@code
- * IoRegistry registry = new IoRegistry();
- * registry.register(GraphSONIo.class, null, new MySimpleModule());
+ * public class MyGraphIoRegistry extends AbstractIoRegistry {
+ *   public MyGraphIoRegistry() {
+ *     register(GraphSONIo.class, null, new MyGraphSimpleModule());
+ *   }
+ * }
  * }
  * </pre>
  *

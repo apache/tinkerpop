@@ -235,7 +235,7 @@ IO Implementations
 
 If a `Graph` requires custom serializers for IO to work properly, implement the `Graph.io` method.  A typical example of where a `Graph` would require such a custom serializers is if their identifier system uses non-primitive values, such as OrientDB's `Rid` class.  From basic serialization of a single `Vertex` all the way up the stack to Gremlin Server, the need to know how to handle these complex identifiers is an important requirement.
 
-The first step to implementing custom serializers is to first create an `IoRegistry` object and register the custom classes and serializers to it. Each `Io` implementation has different requirements for what it expects from the `IoRegistry`:
+The first step to implementing custom serializers is to first implement the `IoRegistry` interface and register the custom classes and serializers to it. Each `Io` implementation has different requirements for what it expects from the `IoRegistry`:
 
 * *GraphML* - No custom serializers expected/allowed.
 * *GraphSON* - Register a Jackson `SimpleModule`.  The `SimpleModule` encapsulates specific classes to be serialized, so it does not need to be registered to a specific class in the `IoRegistry` (use `null`).
@@ -244,12 +244,17 @@ The first step to implementing custom serializers is to first create an `IoRegis
 ** Register the custom class with a specific Kryo `Serializer' implementation.
 ** Register the custom class with a `Function<Kryo, Serializer>` for those cases where the Kryo `Serializer` requires the `Kryo` instance to get constructed.
 
-The following code provides a simple example for registering classes as described above:
+This implementation should provide a zero-arg constructor as the stack may require instantiation via reflection. Consider extending `AbstractIoRegistry` for convenience as follows:
 
 [source,java]
-IoRegistry registry = new IoRegistry();
-registry.register(GraphSONIo.class, null, new MySimpleModule());
-registry.register(GryoIo.class, MySimpleClass.class, new MySimpleClassSerializer());
+----
+public class MyGraphIoRegistry extends AbstractIoRegistry {
+    public MyGraphIoRegistry() {
+        register(GraphSONIo.class, null, new MyGraphSimpleModule());
+        register(GryoIo.class, MyGraphIdClass.class, new MyGraphIdSerializer());
+    }
+}
+----
 
 In the `Graph.io` method, provide the `IoRegistry` object to the supplied `Builder` and call the `create` method to return that `Io` instance.   In this way, `Graph` implementations can pre-configure custom serializers for IO interactions and users will not need to know about those details. Following this pattern will ensure proper execution of the test suite as well as simplified usage for end-users.
 
