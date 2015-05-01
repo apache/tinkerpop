@@ -24,7 +24,6 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
@@ -35,10 +34,6 @@ public class GraphSONOutputFormat extends CommonFileOutputFormat {
     @Override
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
         return new GraphSONRecordWriter(getDataOuputStream(job), job.getConfiguration());
-    }
-
-    public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job, final DataOutputStream outputStream) throws IOException, InterruptedException {
-        return new GraphSONRecordWriter(outputStream, job.getConfiguration());
     }
 
 }

@@ -29,6 +29,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload.ViewIncomingPayload;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -36,22 +37,16 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.HadoopHelper;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
-import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Tuple2;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
@@ -59,89 +54,23 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SparkGraphComputer implements GraphComputer {
+public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(SparkGraphComputer.class);
-
     protected final SparkConf configuration = new SparkConf();
-    protected final HadoopGraph hadoopGraph;
-    private boolean executed = false;
-    private final Set<MapReduce> mapReducers = new HashSet<>();
-    private VertexProgram<Object> vertexProgram;
-
-    private Optional<ResultGraph> resultGraph = Optional.empty();
-    private Optional<Persist> persist = Optional.empty();
 
     public SparkGraphComputer(final HadoopGraph hadoopGraph) {
-        this.hadoopGraph = hadoopGraph;
-    }
-
-    @Override
-    public GraphComputer isolation(final Isolation isolation) {
-        if (!isolation.equals(Isolation.BSP))
-            throw GraphComputer.Exceptions.isolationNotSupported(isolation);  // todo: dirty_bsp is when there is no doNothing() call at the end of the round?
-        return this;
-    }
-
-    @Override
-    public GraphComputer result(final ResultGraph resultGraph) {
-        this.resultGraph = Optional.of(resultGraph);
-        return this;
-    }
-
-    @Override
-    public GraphComputer persist(final Persist persist) {
-        this.persist = Optional.of(persist);
-        return this;
-    }
-
-    @Override
-    public GraphComputer program(final VertexProgram vertexProgram) {
-        this.vertexProgram = vertexProgram;
-        return this;
-    }
-
-    @Override
-    public GraphComputer mapReduce(final MapReduce mapReduce) {
-        this.mapReducers.add(mapReduce);
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.graphComputerString(this);
+        super(hadoopGraph);
     }
 
     @Override
     public Future<ComputerResult> submit() {
-        if (this.executed)
-            throw Exceptions.computerHasAlreadyBeenSubmittedAVertexProgram();
-        else
-            this.executed = true;
-
-        // it is not possible execute a computer if it has no vertex program nor mapreducers
-        if (null == this.vertexProgram && this.mapReducers.isEmpty())
-            throw GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers();
-        // it is possible to run mapreducers without a vertex program
-        if (null != this.vertexProgram) {
-            GraphComputerHelper.validateProgramOnComputer(this, vertexProgram);
-            this.mapReducers.addAll(this.vertexProgram.getMapReducers());
-        }
-
-        // determine persistence and result graph options
-        if (!this.persist.isPresent())
-            this.persist = Optional.of(null == this.vertexProgram ? Persist.NOTHING : this.vertexProgram.getPreferredPersist());
-        if (!this.resultGraph.isPresent())
-            this.resultGraph = Optional.of(null == this.vertexProgram ? ResultGraph.ORIGINAL : this.vertexProgram.getPreferredResultGraph());
-        if (this.resultGraph.get().equals(ResultGraph.ORIGINAL))
-            if (!this.persist.get().equals(Persist.NOTHING))
-                throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph.get(), this.persist.get());
-
+        super.validateStatePriorToExecution();
         // apache and hadoop configurations that are used throughout
         final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.hadoopGraph.configuration());
         apacheConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.get().equals(Persist.EDGES));
         final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(apacheConfiguration);
-
+        // create the completable future
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
                     final long startTime = System.currentTimeMillis();
                     SparkMemory memory = null;
@@ -259,51 +188,5 @@ public final class SparkGraphComputer implements GraphComputer {
     public static void main(final String[] args) throws Exception {
         final FileConfiguration configuration = new PropertiesConfiguration(args[0]);
         new SparkGraphComputer(HadoopGraph.open(configuration)).program(VertexProgram.createVertexProgram(configuration)).submit().get();
-    }
-
-    @Override
-    public Features features() {
-        return new Features() {
-
-            public boolean supportsVertexAddition() {
-                return false;
-            }
-
-            public boolean supportsVertexRemoval() {
-                return false;
-            }
-
-            public boolean supportsVertexPropertyRemoval() {
-                return false;
-            }
-
-            public boolean supportsEdgeAddition() {
-                return false;
-            }
-
-            public boolean supportsEdgeRemoval() {
-                return false;
-            }
-
-            public boolean supportsEdgePropertyAddition() {
-                return false;
-            }
-
-            public boolean supportsEdgePropertyRemoval() {
-                return false;
-            }
-
-            public boolean supportsIsolation(final Isolation isolation) {
-                return isolation.equals(Isolation.BSP);
-            }
-
-            public boolean supportsResultGraphPersistCombination(final ResultGraph resultGraph, final Persist persist) {
-                return persist.equals(Persist.NOTHING) || resultGraph.equals(ResultGraph.NEW);
-            }
-
-            public boolean supportsDirectObjects() {
-                return false;
-            }
-        };
     }
 }

@@ -24,7 +24,6 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
@@ -36,4 +35,5 @@ public class GryoOutputFormat extends CommonFileOutputFormat {
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
         return new GryoRecordWriter(getDataOuputStream(job), job.getConfiguration());
     }
+
 }

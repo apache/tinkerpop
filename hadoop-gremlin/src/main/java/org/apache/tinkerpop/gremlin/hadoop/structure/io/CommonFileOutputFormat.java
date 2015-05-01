@@ -27,6 +27,8 @@ import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.PersistResultGraphAware;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -34,7 +36,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class CommonFileOutputFormat extends FileOutputFormat<NullWritable, VertexWritable> {
+public abstract class CommonFileOutputFormat extends FileOutputFormat<NullWritable, VertexWritable> implements PersistResultGraphAware {
 
     protected DataOutputStream getDataOuputStream(final TaskAttemptContext job) throws IOException, InterruptedException {
         final Configuration conf = job.getConfiguration();
@@ -53,5 +55,10 @@ public abstract class CommonFileOutputFormat extends FileOutputFormat<NullWritab
         } else {
             return new DataOutputStream(codec.createOutputStream(fs.create(file, false)));
         }
+    }
+
+    @Override
+    public boolean supportsResultGraphPersistCombination(final GraphComputer.ResultGraph resultGraph, final GraphComputer.Persist persist) {
+        return persist.equals(GraphComputer.Persist.NOTHING) || resultGraph.equals(GraphComputer.ResultGraph.NEW);
     }
 }
