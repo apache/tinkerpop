@@ -96,29 +96,38 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy {
         TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal).stream().forEach(s -> {
             if (ElementHelper.getIdValue(s.getKeyValues()).isPresent())
                 TraversalHelper.replaceStep(s, new AddVertexStep(traversal, ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
-            else
-                TraversalHelper.replaceStep(s, new AddVertexStep(traversal, ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get())), traversal);
+            else {
+                final Object[] kvs = ElementHelper.getKeys(s.getKeyValues()).contains(idPropertyKey) ? s.getKeyValues() : ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get());
+                TraversalHelper.replaceStep(s, new AddVertexStep(traversal, kvs), traversal);
+            }
         });
 
         TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal).stream().forEach(s -> {
             if (ElementHelper.getIdValue(s.getKeyValues()).isPresent())
                 TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
-            else
-                TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get())), traversal);
+            else {
+                final Object[] kvs = ElementHelper.getKeys(s.getKeyValues()).contains(idPropertyKey) ? s.getKeyValues() : ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get());
+                TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, kvs), traversal);
+            }
+
         });
 
         TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal).stream().forEach(s -> {
             if (ElementHelper.getIdValue(s.getKeyValues()).isPresent())
                 TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getVertices().iterator(), ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
-            else
-                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getVertices().iterator(), ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get())), traversal);
+            else {
+                final Object[] kvs = ElementHelper.getKeys(s.getKeyValues()).contains(idPropertyKey) ? s.getKeyValues() : ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get());
+                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getVertices().iterator(), kvs), traversal);
+            }
         });
 
         TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal).stream().forEach(s -> {
             if (ElementHelper.getIdValue(s.getKeyValues()).isPresent())
                 TraversalHelper.replaceStep(s, new AddEdgeByPathStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getStepLabel(), ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
-            else
-                TraversalHelper.replaceStep(s, new AddEdgeByPathStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getStepLabel(), ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get())), traversal);
+            else {
+                final Object[] kvs = ElementHelper.getKeys(s.getKeyValues()).contains(idPropertyKey) ? s.getKeyValues() : ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get());
+                TraversalHelper.replaceStep(s, new AddEdgeByPathStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getStepLabel(), kvs), traversal);
+            }
         });
     }
 

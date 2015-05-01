@@ -76,6 +76,28 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldSetIdOnAddVWithIdPropertyKeySpecifiedAndNameSuppliedAsProperty() throws Exception {
+        final ElementIdStrategy strategy = ElementIdStrategy.build().idPropertyKey("name").create();
+        final GraphTraversalSource sg = create(strategy);
+        final Vertex v = sg.addV("name", "stephen").next();
+        assertEquals("stephen", v.value("name"));
+        assertEquals("stephen", sg.V(v).id().next());
+        assertEquals("stephen", sg.V("stephen").id().next());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldSetIdOnAddVWithIdPropertyKeySpecifiedAndIdSuppliedAsProperty() throws Exception {
+        final ElementIdStrategy strategy = ElementIdStrategy.build().idPropertyKey("name").create();
+        final GraphTraversalSource sg = create(strategy);
+        final Vertex v = sg.addV(T.id, "stephen").next();
+        assertEquals("stephen", v.value("name"));
+        assertEquals("stephen", sg.V(v).id().next());
+        assertEquals("stephen", sg.V("stephen").id().next());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldGenerateDefaultIdOnGraphAddVWithSpecifiedId() throws Exception {
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
         final GraphTraversalSource sg = create(strategy);
@@ -153,6 +175,32 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final Edge e = sg.V(v).addE(Direction.OUT, "self", v, "test", "value").next();
         assertEquals("value", e.value("test"));
         assertNotNull(UUID.fromString(sg.E(e).id().next().toString()));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldSetIdOnAddEWithIdPropertyKeySpecifiedAndNameSuppliedAsProperty() throws Exception {
+        final ElementIdStrategy strategy = ElementIdStrategy.build().idPropertyKey("name").create();
+        final GraphTraversalSource sg = create(strategy);
+        final Vertex v = sg.addV().next();
+        final Edge e = sg.V(v).addE(Direction.OUT, "self", v, "test", "value", T.id, "some-id").next();
+        assertEquals("value", e.value("test"));
+        assertEquals("some-id", e.value("name"));
+        assertEquals("some-id", sg.E(e).id().next());
+        assertEquals("some-id", sg.E("some-id").id().next());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
+    public void shouldSetIdOnAddEWithNamePropertyKeySpecifiedAndNameSuppliedAsProperty() throws Exception {
+        final ElementIdStrategy strategy = ElementIdStrategy.build().idPropertyKey("name").create();
+        final GraphTraversalSource sg = create(strategy);
+        final Vertex v = sg.addV().next();
+        final Edge e = sg.V(v).addE(Direction.OUT, "self", v, "test", "value", "name", "some-id").next();
+        assertEquals("value", e.value("test"));
+        assertEquals("some-id", e.value("name"));
+        assertEquals("some-id", sg.E(e).id().next());
+        assertEquals("some-id", sg.E("some-id").id().next());
     }
 
     private GraphTraversalSource create(final ElementIdStrategy strategy) {
