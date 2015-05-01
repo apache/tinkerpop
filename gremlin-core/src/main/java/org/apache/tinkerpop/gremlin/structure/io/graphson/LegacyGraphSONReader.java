@@ -34,7 +34,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
-import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -205,7 +204,7 @@ public class LegacyGraphSONReader implements GraphReader {
     public static class Builder {
         private boolean loadCustomModules = false;
         private List<SimpleModule> customModules = new ArrayList<>();
-        private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
+        private long batchSize = 10000;
         private boolean embedTypes = false;
 
         private Builder() {

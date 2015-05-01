@@ -36,11 +36,6 @@ import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphTest;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 /**
  * The {@code StructureStandardSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
  * {@link Graph} implementation.  This specialized test suite and runner is for use by
@@ -76,7 +71,6 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] allTests = new Class<?>[]{
-            BatchTest.class,
             CommunityGeneratorTest.class,
             DetachedGraphTest.class,
             DetachedEdgeTest.class,
