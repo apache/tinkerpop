@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Dropped `BatchGraph` from the code base - it will be replaced by bulk loader functionality over OLAP.
 * `TraversalSideEffects` now implements `Optional` semantics. Less code as Java8 provides the helper methods.
 * `TraversalScriptSupplier` now takes an `Object` var args for setting `ScriptEngine` bindings if needed.
 * `Compare` is now more lenient on `Number`-types.

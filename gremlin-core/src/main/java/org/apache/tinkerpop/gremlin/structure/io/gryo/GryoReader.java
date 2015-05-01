@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
-import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 
@@ -238,7 +237,7 @@ public class GryoReader implements GraphReader {
 
     public static class Builder implements ReaderBuilder<GryoReader> {
 
-        private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
+        private long batchSize = 10000;
         /**
          * Always use the most recent gryo version by default
          */

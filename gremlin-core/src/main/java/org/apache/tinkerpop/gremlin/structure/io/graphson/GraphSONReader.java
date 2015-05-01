@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
-import org.apache.tinkerpop.gremlin.structure.util.batch.BatchGraph;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
@@ -240,7 +239,7 @@ public class GraphSONReader implements GraphReader {
     }
 
     public static class Builder implements ReaderBuilder<GraphSONReader> {
-        private long batchSize = BatchGraph.DEFAULT_BUFFER_SIZE;
+        private long batchSize = 10000;
 
         private GraphSONMapper mapper = GraphSONMapper.build().create();
 
