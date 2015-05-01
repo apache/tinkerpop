@@ -24,8 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
@@ -35,7 +35,7 @@ import java.util.Set;
  */
 public abstract class AbstractStep<S, E> implements Step<S, E> {
 
-    protected Set<String> labels = new HashSet<>();
+    protected Set<String> labels = new LinkedHashSet<>();
     protected String id = Traverser.Admin.HALT;
     protected Traversal.Admin traversal;
     protected ExpandableStepIterator<S> starts;
@@ -164,7 +164,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     @SuppressWarnings("CloneDoesntDeclareCloneNotSupportedException")
     public AbstractStep<S, E> clone() {
         try {
-            final AbstractStep<S,E> clone = (AbstractStep<S,E>) super.clone();
+            final AbstractStep<S, E> clone = (AbstractStep<S, E>) super.clone();
             clone.starts = new ExpandableStepIterator<>(clone);
             clone.previousStep = EmptyStep.instance();
             clone.nextStep = EmptyStep.instance();

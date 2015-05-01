@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -70,7 +71,7 @@ public class MutablePath implements Path, Serializable {
     @Override
     public Path extend(final Object object, final Set<String> labels) {
         this.objects.add(object);
-        this.labels.add(new HashSet<>(labels));
+        this.labels.add(new LinkedHashSet<>(labels));
         return this;
     }
 

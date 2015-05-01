@@ -116,6 +116,7 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
 
     /**
      * Get the labels of this step.
+     * The labels are ordered by the order of the calls to {@link Step#addLabel}.
      *
      * @return the set of labels for this step
      */

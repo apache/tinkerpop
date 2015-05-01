@@ -23,12 +23,16 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.junit.Assert.*;
@@ -39,9 +43,13 @@ import static org.junit.Assert.*;
 @UseEngine(TraversalEngine.Type.STANDARD)
 public class PathTest extends AbstractGremlinProcessTest {
 
+    private final static List<Supplier<Path>> PATH_SUPPLIERS =
+            Arrays.asList(MutablePath::make, ImmutablePath::make, DetachedPath::make, ReferencePath::make);
+
     @Test
     public void shouldHaveStandardSemanticsImplementedCorrectly() {
-        Arrays.asList(MutablePath.make(), ImmutablePath.make()).forEach(path -> {
+        PATH_SUPPLIERS.forEach(supplier -> {
+            Path path = supplier.get();
             assertTrue(path.isSimple());
             assertEquals(0, path.size());
             path = path.extend(1, Collections.singleton("a"));
@@ -77,7 +85,8 @@ public class PathTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldHandleMultiLabelPaths() {
-        Arrays.asList(MutablePath.make(), ImmutablePath.make()).forEach(path -> {
+        PATH_SUPPLIERS.forEach(supplier -> {
+            Path path = supplier.get();
             path = path.extend("marko", Collections.singleton("a"));
             path = path.extend("stephen", Collections.singleton("b"));
             path = path.extend("matthias", Collections.singleton("a"));
@@ -105,10 +114,11 @@ public class PathTest extends AbstractGremlinProcessTest {
 
     @Test
     public void shouldExcludeUnlabeledLabelsFromPath() {
-        Arrays.asList(MutablePath.make(), ImmutablePath.make()).forEach(path -> {
-            path = path.extend("marko", Collections.singleton("a"));
-            path = path.extend("stephen", Collections.singleton("b"));
-            path = path.extend("matthias", new HashSet<>(Arrays.asList("c", "d")));
+        PATH_SUPPLIERS.forEach(supplier -> {
+            Path path = supplier.get();
+            path = path.extend("marko", "a");
+            path = path.extend("stephen", "b");
+            path = path.extend("matthias", "c", "d");
             assertEquals(3, path.size());
             assertEquals(3, path.objects().size());
             assertEquals(3, path.labels().size());
@@ -118,6 +128,44 @@ public class PathTest extends AbstractGremlinProcessTest {
             assertEquals(2, path.labels().get(2).size());
             assertTrue(path.labels().get(2).contains("c"));
             assertTrue(path.labels().get(2).contains("d"));
+        });
+    }
+
+    @Test
+    public void shouldHaveOrderedPathLabels() {
+        PATH_SUPPLIERS.forEach(supplier -> {
+            Path path = supplier.get();
+            path = path.extend("marko", "a", "b");
+            path = path.extend("stephen", "c", "a");
+            path = path.extend("matthias", "a", "b");
+            assertEquals(3, path.size());
+            assertEquals(3, path.objects().size());
+            assertEquals(3, path.labels().size());
+            assertEquals(2, path.labels().get(0).size());
+            assertEquals(2, path.labels().get(1).size());
+            assertEquals(2, path.labels().get(2).size());
+            ///
+            Iterator<String> labels = path.labels().get(0).iterator();
+            assertEquals("a", labels.next());
+            assertEquals("b", labels.next());
+            assertFalse(labels.hasNext());
+            labels = path.labels().get(1).iterator();
+            assertEquals("c", labels.next());
+            assertEquals("a", labels.next());
+            assertFalse(labels.hasNext());
+            labels = path.labels().get(2).iterator();
+            assertEquals("a", labels.next());
+            assertEquals("b", labels.next());
+            assertFalse(labels.hasNext());
+            ///
+            List<String> names = path.get("a");
+            assertEquals("marko", names.get(0));
+            assertEquals("stephen", names.get(1));
+            assertEquals("matthias", names.get(2));
+            names = path.get("b");
+            assertEquals("marko", names.get(0));
+            assertEquals("matthias", names.get(1));
+            assertEquals("stephen", path.get("c"));
         });
     }
 }
