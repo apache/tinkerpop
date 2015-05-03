@@ -33,14 +33,20 @@ import java.util.stream.Stream;
  */
 public enum ResponseStatusCode {
     /**
-     * The server successfully processed a request.
+     * The server successfully processed a request to completion - there are no messages remaining in this stream.
      */
     SUCCESS(200),
 
     /**
-     * The server is terminating a result set successfully.
+     * The server processed the request but there is no result to return (e.g. an {@link Iterator} with no elements).
      */
-    SUCCESS_TERMINATOR(299),
+    NO_CONTENT(204),
+
+    /**
+     * The server successfully returned some content, but there is more in the stream to arrive - wait for a
+     * {@link #SUCCESS} to signify the end of the stream.
+     */
+    PARTIAL_CONTENT(206),
 
     /**
      * The request message was not properly formatted which means it could not be parsed at all or the "op" code was

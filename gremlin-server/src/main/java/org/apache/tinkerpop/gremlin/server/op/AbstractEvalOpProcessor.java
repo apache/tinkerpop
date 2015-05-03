@@ -23,6 +23,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatus;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -175,11 +176,16 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                     logger.warn(errorMessage);
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
                 }
-            } else {
+            }
+
+            // todo: no need to terminate anymore - handled by error code
+            /*
+            else {
                 // since this is not an error we need to terminate.  termination for errors is handled in the
                 // ResponseEncoder
-                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SUCCESS_TERMINATOR).create());
+                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.PARTIAL_CONTENT).create());
             }
+            */
             return null;
         }, executor);
     }
@@ -199,6 +205,11 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
         boolean warnOnce = false;
+
+        if (!itty.hasNext())
+            ctx.writeAndFlush(ResponseMessage.build(msg)
+                    .code(ResponseStatusCode.NO_CONTENT)
+                    .create());
 
         // timer for the total serialization time
         final StopWatch stopWatch = new StopWatch();
@@ -221,8 +232,9 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             // also check writeability of the channel to prevent OOME for slow clients.
             if (ctx.channel().isWritable()) {
                 if  (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
+                    final ResponseStatusCode code = itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
                     ctx.writeAndFlush(ResponseMessage.build(msg)
-                            .code(ResponseStatusCode.SUCCESS)
+                            .code(code)
                             .result(aggregate).create());
 
                     aggregate = new ArrayList<>(resultIterationBatchSize);
