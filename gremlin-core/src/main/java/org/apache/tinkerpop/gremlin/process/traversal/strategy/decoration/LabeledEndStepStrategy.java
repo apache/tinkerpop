@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LabeledEndStepStrategy extends AbstractTraversalStrategy implements TraversalStrategy.DecorationStrategy {
+public final class LabeledEndStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
     private static final LabeledEndStepStrategy INSTANCE = new LabeledEndStepStrategy();
 

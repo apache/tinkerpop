@@ -31,7 +31,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface TraversalStrategy extends Serializable {
+public interface TraversalStrategy<S extends TraversalStrategy> extends Serializable {
 
     // A TraversalStrategy should not have a public constructor
     // Make use of a singleton instance() object to reduce object creation on the JVM
@@ -39,56 +39,28 @@ public interface TraversalStrategy extends Serializable {
 
     public void apply(final Traversal.Admin<?, ?> traversal);
 
-    public default Set applyPrior() {
+    public default Set<Class<? extends S>> applyPrior() {
         return Collections.emptySet();
     }
 
-    public default Set applyPost() {
+    public default Set<Class<? extends S>> applyPost() {
         return Collections.emptySet();
     }
 
-    public interface DecorationStrategy extends TraversalStrategy {
+    public interface DecorationStrategy extends TraversalStrategy<DecorationStrategy> {
 
-        public default Set<Class<? extends DecorationStrategy>> applyPrior() {
-            return Collections.emptySet();
-        }
-
-        public default Set<Class<? extends DecorationStrategy>> applyPost() {
-            return Collections.emptySet();
-        }
     }
 
-    public interface OptimizationStrategy extends TraversalStrategy {
+    public interface OptimizationStrategy extends TraversalStrategy<OptimizationStrategy> {
 
-        public default Set<Class<? extends OptimizationStrategy>> applyPrior() {
-            return Collections.emptySet();
-        }
-
-        public default Set<Class<? extends OptimizationStrategy>> applyPost() {
-            return Collections.emptySet();
-        }
     }
 
-    public interface VerificationStrategy extends TraversalStrategy {
+    public interface VerificationStrategy extends TraversalStrategy<VerificationStrategy> {
 
-        public default Set<Class<? extends VerificationStrategy>> applyPrior() {
-            return Collections.emptySet();
-        }
-
-        public default Set<Class<? extends VerificationStrategy>> applyPost() {
-            return Collections.emptySet();
-        }
     }
 
-    public interface FinalizationStrategy extends TraversalStrategy {
+    public interface FinalizationStrategy extends TraversalStrategy<FinalizationStrategy> {
 
-        public default Set<Class<? extends FinalizationStrategy>> applyPrior() {
-            return Collections.emptySet();
-        }
-
-        public default Set<Class<? extends FinalizationStrategy>> applyPost() {
-            return Collections.emptySet();
-        }
     }
 
 }

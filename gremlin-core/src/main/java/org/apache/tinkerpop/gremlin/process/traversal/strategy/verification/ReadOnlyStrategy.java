@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ReadOnlyStrategy extends AbstractTraversalStrategy implements TraversalStrategy.VerificationStrategy {
+public final class ReadOnlyStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
 
     private static final ReadOnlyStrategy INSTANCE = new ReadOnlyStrategy();
 

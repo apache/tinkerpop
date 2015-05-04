@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy implements TraversalStrategy.VerificationStrategy {
+public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
 
     private static final LambdaRestrictionStrategy INSTANCE = new LambdaRestrictionStrategy();
 

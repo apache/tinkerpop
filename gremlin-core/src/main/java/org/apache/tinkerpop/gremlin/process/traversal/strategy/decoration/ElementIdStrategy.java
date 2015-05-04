@@ -57,7 +57,7 @@ import java.util.function.Supplier;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class ElementIdStrategy extends AbstractTraversalStrategy implements TraversalStrategy.DecorationStrategy {
+public final class ElementIdStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
     private final String idPropertyKey;
 

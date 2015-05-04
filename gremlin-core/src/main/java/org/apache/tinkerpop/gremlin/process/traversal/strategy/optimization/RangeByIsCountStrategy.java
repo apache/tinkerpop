@@ -41,7 +41,7 @@ import java.util.function.BiPredicate;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class RangeByIsCountStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final Map<BiPredicate, Long> RANGE_PREDICATES = new HashMap<BiPredicate, Long>() {{
         put(Contains.within, 1L);

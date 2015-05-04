@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileStrategy extends AbstractTraversalStrategy implements TraversalStrategy.FinalizationStrategy {
+public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy> implements TraversalStrategy.FinalizationStrategy {
 
     private static final ProfileStrategy INSTANCE = new ProfileStrategy();
 

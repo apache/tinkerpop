@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -52,27 +53,24 @@ public class TraversalStrategiesTest {
                 e = new StrategyE(),
                 k = new StrategyK();
 
-        List<TraversalStrategy> s;
+        List<TraversalStrategy<?>> s;
 
         //Dependency well defined
-        s = Stream.of(b, a)
-                .collect(Collectors.toList());
+        s = Arrays.asList(b, a);
         TraversalStrategies.sortStrategies(s);
         assertEquals(2, s.size());
         assertEquals(a, s.get(0));
         assertEquals(b, s.get(1));
 
         //No dependency
-        s = Stream.of(c, a)
-                .collect(Collectors.toList());
+        s = Arrays.asList(c, a);
         TraversalStrategies.sortStrategies(s);
         assertEquals(2, s.size());
         assertEquals(c, s.get(0));
         assertEquals(a, s.get(1));
 
         //Dependency well defined
-        s = Stream.of(c, a, b)
-                .collect(Collectors.toList());
+        s =  Arrays.asList(c, a, b);
         TraversalStrategies.sortStrategies(s);
         assertEquals(3, s.size());
         assertEquals(a, s.get(0));
@@ -80,8 +78,7 @@ public class TraversalStrategiesTest {
         assertEquals(c, s.get(2));
 
         //Circular dependency => throws exception
-        s = Stream.of(c, k, a, b)
-                .collect(Collectors.toList());
+        s = Arrays.asList(c, k, a, b);
         try {
             TraversalStrategies.sortStrategies(s);
             fail();
@@ -90,8 +87,7 @@ public class TraversalStrategiesTest {
         }
 
         //Dependency well defined
-        s = Stream.of(d, c, a, e, b)
-                .collect(Collectors.toList());
+        s = Arrays.asList(d, c, a, e, b);
         TraversalStrategies.sortStrategies(s);
         assertEquals(5, s.size());
         assertEquals(a, s.get(0));
@@ -101,8 +97,7 @@ public class TraversalStrategiesTest {
         assertEquals(e, s.get(4));
 
         //Circular dependency => throws exception
-        s = Stream.of(d, c, k, a, e, b)
-                .collect(Collectors.toList());
+        s = Arrays.asList(d, c, k, a, e, b);
         try {
             TraversalStrategies.sortStrategies(s);
             fail();
@@ -181,7 +176,7 @@ public class TraversalStrategiesTest {
 
     }
 
-    private static class DummyStrategy extends AbstractTraversalStrategy {
+    private static class DummyStrategy extends AbstractTraversalStrategy<TraversalStrategy> {
 
         @Override
         public void apply(Traversal.Admin<?, ?> traversal) {

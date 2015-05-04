@@ -34,11 +34,11 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupOptimizerStrategy extends AbstractTraversalStrategy implements TraversalStrategy.OptimizationStrategy {
+public final class DedupBijectionStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
-    private static final DedupOptimizerStrategy INSTANCE = new DedupOptimizerStrategy();
+    private static final DedupBijectionStrategy INSTANCE = new DedupBijectionStrategy();
 
-    private DedupOptimizerStrategy() {
+    private DedupBijectionStrategy() {
     }
 
     private static final List<Class<? extends Step>> BIJECTIVE_PIPES = Arrays.asList(IdentityStep.class, OrderGlobalStep.class);
@@ -70,7 +70,7 @@ public final class DedupOptimizerStrategy extends AbstractTraversalStrategy impl
         }
     }
 
-    public static DedupOptimizerStrategy instance() {
+    public static DedupBijectionStrategy instance() {
         return INSTANCE;
     }
 }

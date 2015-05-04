@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class IdentityRemovalStrategy extends AbstractTraversalStrategy implements TraversalStrategy.OptimizationStrategy {
+public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final IdentityRemovalStrategy INSTANCE = new IdentityRemovalStrategy();
 

@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubgraphStrategy extends AbstractTraversalStrategy implements TraversalStrategy.DecorationStrategy {
+public class SubgraphStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
     private final Predicate<Traverser<Vertex>> vertexPredicate;
     private final Predicate<Traverser<Edge>> edgePredicate;

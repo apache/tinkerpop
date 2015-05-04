@@ -35,11 +35,11 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalVerificationStrategy extends AbstractTraversalStrategy implements TraversalStrategy.VerificationStrategy {
+public final class ComputerVerificationStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
 
-    private static final TraversalVerificationStrategy INSTANCE = new TraversalVerificationStrategy();
+    private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
 
-    private TraversalVerificationStrategy() {
+    private ComputerVerificationStrategy() {
     }
 
     @Override
@@ -67,7 +67,7 @@ public final class TraversalVerificationStrategy extends AbstractTraversalStrate
         }
     }
 
-    public static TraversalVerificationStrategy instance() {
+    public static ComputerVerificationStrategy instance() {
         return INSTANCE;
     }
 }
