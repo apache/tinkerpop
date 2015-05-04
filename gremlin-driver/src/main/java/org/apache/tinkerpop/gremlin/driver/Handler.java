@@ -46,7 +46,8 @@ class Handler {
         @Override
         protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
             try {
-                if (response.getStatus().getCode() == ResponseStatusCode.SUCCESS) {
+                if (response.getStatus().getCode() == ResponseStatusCode.SUCCESS ||
+                        response.getStatus().getCode() == ResponseStatusCode.PARTIAL_CONTENT) {
                     final Object data = response.getResult().getData();
                     if (data instanceof List) {
                         // unrolls the collection into individual response messages to be handled by the queue
@@ -59,10 +60,13 @@ class Handler {
                         // since this is not a list it can just be added to the queue
                         pending.get(response.getRequestId()).add(response);
                     }
-                } else if (response.getStatus().getCode() == ResponseStatusCode.SUCCESS_TERMINATOR)
-                    pending.remove(response.getRequestId()).markComplete();
-                else
+                } else
                     pending.get(response.getRequestId()).markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage()));
+
+                // todo: should this go in finally? where is the catch?
+                // as this is a non-PARTIAL_CONTENT code - the stream is done
+                if (response.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT)
+                    pending.remove(response.getRequestId()).markComplete();
             } finally {
                 ReferenceCountUtil.release(response);
             }

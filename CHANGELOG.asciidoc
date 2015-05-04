@@ -27,7 +27,9 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 
 * Added `PersistResultGraphAware` interface which is used by `OutputFormats` to specify persistence possibilities for a Hadoop `GraphComputer`.
 * `ElementIdStrategy` now allows the identifier property to be set directly (and not only by specifying `T.id`).
-* Added sample configuration files for registring a `TraversalStrategy` in Gremlin Server.
+* Added sample configuration files for registering a `TraversalStrategy` in Gremlin Server.
+* Added response status code for `NO_CONTENT` to represent output for a successful script execution without a result (e.g. an empty `Iterator`).
+* Removed the notion of a "terminator" message from the Gremlin Server protocol - new response status code for `PARTIAL_CONTENT`.
 * `Path` and `Step` labels are ordered by the order in which the respective `addLabel()` calls were made.
 * A `Step` now has a `Set<String>` of labels. Updated `as()` to take a var args of labels.
 * Dropped `BatchGraph` from the code base - it will be replaced by bulk loader functionality over OLAP.
