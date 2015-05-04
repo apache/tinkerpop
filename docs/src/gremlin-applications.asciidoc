@@ -591,21 +591,29 @@ In this case the `ResponseMessage` returned to the client would look something l
 
 [source,js]
 ----
-{"result":{"data":[{"id":2,"label":"vertex","type":"vertex","properties":{"name":"vadas","age":27}}],
-           "meta":{}},
+{"result":{"data":[{"id": 2,"label": "person","type": "vertex","properties": [
+  {"id": 2, "value": "vadas", "label": "name"},
+  {"id": 3, "value": 27, "label": "age"}]},
+  ], "meta":{}},
  "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
- "status":{"code":200,"attributes":{},"message":""}}
+ "status":{"code":206,"attributes":{},"message":""}}
 ----
 
-Gremlin Server is capable of streaming results such that additional responses will arrive over the WebSocket until the iteration of the result on the server is complete.  Each successful incremental message will have a `ResultCode` of 200. The response stream is always marked as "complete" by a terminating message.  The "terminator" will look like this:
+Gremlin Server is capable of streaming results such that additional responses will arrive over the websocket until the iteration of the result on the server is complete.  Each successful incremental message will have a `ResultCode` of `206`. Termination of the stream will be marked by a final `200` status code.  Note that all messages without a `206` represent terminating conditions for a request.  The following table details the various status codes that Gremlin Server will send:
 
-[source,js]
-{"result":{"data":null,
-           "meta":{}},
- "requestId":"1d6d02bd-8e56-421d-9438-3bd6d0079ff1",
- "status":{"code":299,"attributes":{},"message":""}}
-
-The `299` code signifies stream termination which means that all processing for the request `1d6d02bd-8e56-421d-9438-3bd6d0079ff1` is complete.  Please see the link:http://www.tinkerpop.com/javadocs/current/org/apache/tinkerpop/gremlin/driver/message/ResultCode.html[javadoc] for more information on the various `code` values that are available.
+[width="100%",cols="2,2,9",options="header"]
+|=========================================================
+|Code |Name |Description
+|200 |SUCCESS | The server successfully processed a request to completion - there are no messages remaining in this stream.
+|204 |NO CONTENT | The server processed the request but there is no result to return (e.g. an {@link Iterator} with no elements).
+|206 |PARTIAL CONTENT | The server successfully returned some content, but there is more in the stream to arrive - wait for a `SUCCESS` to signify the end of the stream.
+|498 |MALFORMED REQUEST | The request message was not properly formatted which means it could not be parsed at all or the "op" code was not recognized such that Gremlin Server could properly route it for processing.  Check the message format and retry the request.
+|499 |INVALID REQUEST ARGUMENTS |The request message was parseable, but the arguments supplied in the message were in conflict or incomplete. Check the message format and retry the request.
+|500 |SERVER ERROR |A general server error occurred that prevented the request from being processed.
+|597 |SCRIPT EVALUATION ERROR |The script submitted for processing evaluated in the `ScriptEngine` with errors and could not be processed.  Check the script submitted for syntax errors or other problems and then resubmit.
+|598 |SERVER TIMEOUT |The server exceeded one of the timeout settings for the request and could therefore only partially responded or did not respond at all.
+|599 |SERVER SERIALIZATION ERROR |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
+|=========================================================
 
 OpProcessors Arguments
 ^^^^^^^^^^^^^^^^^^^^^^

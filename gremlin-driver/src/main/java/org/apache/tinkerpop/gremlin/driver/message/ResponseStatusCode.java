@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver.message;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -67,20 +68,14 @@ public enum ResponseStatusCode {
     SERVER_ERROR(500),
 
     /**
-     * The remote {@link Traversal} submitted for processing evaluated in on the server with errors and could not be
-     * processed.
-     */
-    SERVER_ERROR_TRAVERSAL_EVALUATION(596),
-
-    /**
      * The script submitted for processing evaluated in the {@code ScriptEngine} with errors and could not be
      * processed.  Check the script submitted for syntax errors or other problems and then resubmit.
      */
     SERVER_ERROR_SCRIPT_EVALUATION(597),
 
     /**
-     * The server exceeded one of the timeout settings for the request and could therefore only partially respond
-     * or not respond at all.
+     * The server exceeded one of the timeout settings for the request and could therefore only partially responded
+     * or did not respond at all.
      */
     SERVER_ERROR_TIMEOUT(598),
 
