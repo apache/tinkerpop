@@ -159,6 +159,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             try {
                 handleIterator(context, itty);
             } catch (Exception te) {
+                // todo: throwing here dumps to handeAsync below but no message is returned to the client!!
                 throw new RuntimeException(te);
             }
         }, executor);
