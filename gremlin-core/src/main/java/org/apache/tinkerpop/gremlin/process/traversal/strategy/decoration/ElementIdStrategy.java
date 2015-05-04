@@ -43,7 +43,18 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
+ * Provides a degree of control over element identifier assignment as some graphs don't provide that feature. This
+ * strategy provides for identifier assignment by enabling users to utilize vertex and edge indices under the hood,
+ * thus simulating that capability.
+ * <p/>
+ * By default, when an identifier is not supplied by the user, newly generated identifiers are {@link UUID} objects.
+ * This behavior can be overriden by setting the {@link Builder#idMaker(Supplier)}.
+ * <p/>
+ * Unless otherwise specified the identifier is stored in the {@code __id} property.  This can be changed by setting
+ * the {@link Builder#idPropertyKey(String}
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class ElementIdStrategy extends AbstractTraversalStrategy {
 
@@ -147,11 +158,18 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy {
 
         private Builder() {}
 
+        /**
+         * Creates a new unique identifier for the next created {@link Element}.
+         */
         public Builder idMaker(final Supplier<Object> idMaker) {
             this.idMaker = idMaker;
             return this;
         }
 
+        /**
+         * This key within which to hold the user-specified identifier.  This field should be indexed by the
+         * underlying graph.
+         */
         public Builder idPropertyKey(final String idPropertyKey) {
             this.idPropertyKey = idPropertyKey;
             return this;
