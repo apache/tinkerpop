@@ -25,8 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -56,8 +54,7 @@ public class HalfStepTraversalStrategy extends AbstractTraversalStrategy impleme
                     stepToReplace = (VertexStep) curr;
                 }
             } else if (prev instanceof VertexStep && Vertex.class.equals(((VertexStep) prev).getReturnClass())) {
-                if (curr instanceof CountGlobalStep ||
-                        ((curr instanceof SelectStep || curr instanceof SelectOneStep) && prev.getLabels().isEmpty())) {
+                if (curr instanceof CountGlobalStep) {
                     stepToReplace = (VertexStep) prev;
                 }
             }
