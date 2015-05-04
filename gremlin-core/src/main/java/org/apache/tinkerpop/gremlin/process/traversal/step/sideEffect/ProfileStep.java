@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Profileable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
@@ -34,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.List;
@@ -145,6 +147,10 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
                 prevMetrics = (DependantMutableMetrics) metrics;
             }
 
+            if (step instanceof Profileable) {
+                ((Profileable) step).setMetrics(metrics);
+            }
+
             // Initialize counters (necessary because some steps might end up being 0)
             metrics.incrementCount(TraversalMetrics.ELEMENT_COUNT_ID, 0);
             metrics.incrementCount(TraversalMetrics.TRAVERSER_COUNT_ID, 0);
@@ -209,7 +215,7 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
 
         @Override
         public StandardTraversalMetrics generateFinalResult(final Iterator<KeyValue<NullObject, StandardTraversalMetrics>> keyValues) {
-            return keyValues.next().getValue();
+            return StandardTraversalMetrics.merge(IteratorUtils.map(keyValues, KeyValue::getValue));
         }
 
         public static ProfileMapReduce instance() {

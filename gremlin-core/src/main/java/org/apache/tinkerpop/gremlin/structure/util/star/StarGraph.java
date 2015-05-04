@@ -172,6 +172,8 @@ public final class StarGraph implements Graph, Serializable {
     }
 
     public static StarGraph of(final Vertex vertex) {
+        if (vertex instanceof StarVertex) return (StarGraph) vertex.graph();
+        // else convert to a star graph
         final StarGraph starGraph = new StarGraph();
         final StarVertex starVertex = (StarVertex) starGraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
         vertex.properties().forEachRemaining(vp -> {

@@ -38,21 +38,23 @@ import java.io.Serializable;
  */
 public final class VertexWritable implements Writable, Serializable {
 
-    private Vertex vertex;
+    private StarGraph.StarVertex vertex;
 
     public VertexWritable() {
 
     }
 
     public VertexWritable(final Vertex vertex) {
-        this.vertex = vertex;
+        this.set(vertex);
     }
 
     public void set(final Vertex vertex) {
-        this.vertex = vertex;
+        this.vertex = vertex instanceof StarGraph.StarVertex ?
+                (StarGraph.StarVertex) vertex :
+                StarGraph.of(vertex).getStarVertex();
     }
 
-    public Vertex get() {
+    public StarGraph.StarVertex get() {
         return this.vertex;
     }
 

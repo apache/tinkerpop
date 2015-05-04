@@ -27,6 +27,7 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 
 * Added `PersistResultGraphAware` interface which is used by `OutputFormats` to specify persistence possibilities for a Hadoop `GraphComputer`.
 * `ElementIdStrategy` now allows the identifier property to be set directly (and not only by specifying `T.id`).
+* Added sample configuration files for registring a `TraversalStrategy` in Gremlin Server.
 * `Path` and `Step` labels are ordered by the order in which the respective `addLabel()` calls were made.
 * A `Step` now has a `Set<String>` of labels. Updated `as()` to take a var args of labels.
 * Dropped `BatchGraph` from the code base - it will be replaced by bulk loader functionality over OLAP.
@@ -69,6 +70,7 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 * `Attachable` now has a set of static exception messages in an `Exceptions` inner class.
 * Added `StarGraph` which is a heap efficient representation of a vertex and its incident edges (useful for `GraphComputer` implementations).
 * `TraverserSet` uses a `FastNoSuchElementException` on `remove()` for increased performance.
+* Add `Profileable` interface to enable vendors to receive a `Step's MutableMetrics`.
 
 TinkerPop 3.0.0.M8 (Release Date: April 6, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
