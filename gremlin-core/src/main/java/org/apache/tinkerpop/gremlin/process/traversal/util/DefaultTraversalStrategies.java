@@ -73,7 +73,10 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
 
     @Override
     public void applyStrategies(final Traversal.Admin<?, ?> traversal) {
-        this.traversalStrategies.forEach(traversalStrategy -> traversalStrategy.apply(traversal));
+        this.traversalStrategies.stream().filter(traversalStrategy -> traversalStrategy instanceof TraversalStrategy.DecorationStrategy).forEach(traversalStrategy -> traversalStrategy.apply(traversal));
+        this.traversalStrategies.stream().filter(traversalStrategy -> traversalStrategy instanceof TraversalStrategy.OptimizationStrategy).forEach(traversalStrategy -> traversalStrategy.apply(traversal));
+        this.traversalStrategies.stream().filter(traversalStrategy -> traversalStrategy instanceof TraversalStrategy.FinalizationStrategy).forEach(traversalStrategy -> traversalStrategy.apply(traversal));
+        this.traversalStrategies.stream().filter(traversalStrategy -> traversalStrategy instanceof TraversalStrategy.VerificationStrategy).forEach(traversalStrategy -> traversalStrategy.apply(traversal));
     }
 
     @Override

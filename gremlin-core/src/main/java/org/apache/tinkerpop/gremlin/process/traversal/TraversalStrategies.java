@@ -19,15 +19,15 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.util.ShellGraph;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ConjunctionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.DedupOptimizerStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchWhereStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ProfileStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComparatorHolderRemovalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EngineDependentStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LabeledEndStepStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ComparatorHolderRemovalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.EngineDependentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.LabeledEndStepStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.TraversalVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
@@ -106,7 +106,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      *
      * @param strategies the traversal strategies to sort
      */
-    public static void sortStrategies(final List<? extends TraversalStrategy> strategies) {
+    public static void sortStrategies(final List<TraversalStrategy> strategies) {
         final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap = new HashMap<>();
         final Set<Class<? extends TraversalStrategy>> strategyClass = new HashSet<>(strategies.size());
         //Initialize data structure
@@ -115,10 +115,10 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         //Initialize all the dependencies
         strategies.forEach(strategy -> {
             strategy.applyPrior().forEach(s -> {
-                if (strategyClass.contains(s)) MultiMap.put(dependencyMap, s, strategy.getClass());
+                if (strategyClass.contains(s)) MultiMap.put((Map)dependencyMap, s, strategy.getClass());
             });
             strategy.applyPost().forEach(s -> {
-                if (strategyClass.contains(s)) MultiMap.put(dependencyMap, strategy.getClass(), s);
+                if (strategyClass.contains(s)) MultiMap.put((Map)dependencyMap, strategy.getClass(), s);
             });
         });
         //Now, compute transitive closure until convergence

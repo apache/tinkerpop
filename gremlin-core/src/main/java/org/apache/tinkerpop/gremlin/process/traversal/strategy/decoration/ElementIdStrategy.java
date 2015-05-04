@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
@@ -29,12 +29,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -51,12 +52,12 @@ import java.util.function.Supplier;
  * This behavior can be overriden by setting the {@link Builder#idMaker(Supplier)}.
  * <p/>
  * Unless otherwise specified the identifier is stored in the {@code __id} property.  This can be changed by setting
- * the {@link Builder#idPropertyKey(String}
+ * the {@link Builder#idPropertyKey(String)}
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class ElementIdStrategy extends AbstractTraversalStrategy {
+public final class ElementIdStrategy extends AbstractTraversalStrategy implements TraversalStrategy.DecorationStrategy {
 
     private final String idPropertyKey;
 
@@ -156,7 +157,8 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy {
 
         private Supplier<Object> idMaker = () -> UUID.randomUUID().toString();
 
-        private Builder() {}
+        private Builder() {
+        }
 
         /**
          * Creates a new unique identifier for the next created {@link Element}.

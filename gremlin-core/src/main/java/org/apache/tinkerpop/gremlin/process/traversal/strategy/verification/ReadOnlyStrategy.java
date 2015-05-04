@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -28,7 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ReadOnlyStrategy extends AbstractTraversalStrategy {
+public final class ReadOnlyStrategy extends AbstractTraversalStrategy implements TraversalStrategy.VerificationStrategy {
 
     private static final ReadOnlyStrategy INSTANCE = new ReadOnlyStrategy();
 

@@ -39,12 +39,56 @@ public interface TraversalStrategy extends Serializable {
 
     public void apply(final Traversal.Admin<?, ?> traversal);
 
-    public default Set<Class<? extends TraversalStrategy>> applyPrior() {
+    public default Set applyPrior() {
         return Collections.emptySet();
     }
 
-    public default Set<Class<? extends TraversalStrategy>> applyPost() {
+    public default Set applyPost() {
         return Collections.emptySet();
+    }
+
+    public interface DecorationStrategy extends TraversalStrategy {
+
+        public default Set<Class<? extends DecorationStrategy>> applyPrior() {
+            return Collections.emptySet();
+        }
+
+        public default Set<Class<? extends DecorationStrategy>> applyPost() {
+            return Collections.emptySet();
+        }
+    }
+
+    public interface OptimizationStrategy extends TraversalStrategy {
+
+        public default Set<Class<? extends OptimizationStrategy>> applyPrior() {
+            return Collections.emptySet();
+        }
+
+        public default Set<Class<? extends OptimizationStrategy>> applyPost() {
+            return Collections.emptySet();
+        }
+    }
+
+    public interface VerificationStrategy extends TraversalStrategy {
+
+        public default Set<Class<? extends VerificationStrategy>> applyPrior() {
+            return Collections.emptySet();
+        }
+
+        public default Set<Class<? extends VerificationStrategy>> applyPost() {
+            return Collections.emptySet();
+        }
+    }
+
+    public interface FinalizationStrategy extends TraversalStrategy {
+
+        public default Set<Class<? extends FinalizationStrategy>> applyPrior() {
+            return Collections.emptySet();
+        }
+
+        public default Set<Class<? extends FinalizationStrategy>> applyPost() {
+            return Collections.emptySet();
+        }
     }
 
 }

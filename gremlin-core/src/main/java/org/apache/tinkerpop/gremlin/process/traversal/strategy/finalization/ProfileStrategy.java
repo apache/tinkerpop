@@ -16,44 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
+package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComparatorHolderRemovalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EngineDependentStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LabeledEndStepStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author Bob Briody (http://bobbriody.com)
  */
-public final class ProfileStrategy extends AbstractTraversalStrategy {
-
+public final class ProfileStrategy extends AbstractTraversalStrategy implements TraversalStrategy.FinalizationStrategy {
 
     private static final ProfileStrategy INSTANCE = new ProfileStrategy();
-    private static final Set<Class<? extends TraversalStrategy>> PRIORS = new HashSet<>();
-
-    static {
-        // Ensure that this strategy is applied last.
-        PRIORS.add(ComparatorHolderRemovalStrategy.class);
-        PRIORS.add(ConjunctionStrategy.class);
-        PRIORS.add(DedupOptimizerStrategy.class);
-        PRIORS.add(EngineDependentStrategy.class);
-        PRIORS.add(IdentityRemovalStrategy.class);
-        PRIORS.add(LabeledEndStepStrategy.class);
-        PRIORS.add(MatchWhereStrategy.class);
-        PRIORS.add(RangeByIsCountStrategy.class);
-    }
 
     private ProfileStrategy() {
     }
@@ -102,11 +83,6 @@ public final class ProfileStrategy extends AbstractTraversalStrategy {
                 }
             }
         }
-    }
-
-    @Override
-    public Set<Class<? extends TraversalStrategy>> applyPrior() {
-        return PRIORS;
     }
 
     public static ProfileStrategy instance() {

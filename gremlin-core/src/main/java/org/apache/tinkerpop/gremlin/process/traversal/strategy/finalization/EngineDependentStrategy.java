@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
+package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EngineDependentStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public final class EngineDependentStrategy extends AbstractTraversalStrategy implements TraversalStrategy.FinalizationStrategy {
 
     private static final EngineDependentStrategy INSTANCE = new EngineDependentStrategy();
 

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
@@ -44,7 +45,7 @@ import java.util.List;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class EventStrategy extends AbstractTraversalStrategy {
+public class EventStrategy extends AbstractTraversalStrategy implements TraversalStrategy.DecorationStrategy {
     private final List<MutationListener> listeners = new ArrayList<>();
 
     private EventStrategy(final MutationListener... listeners) {
