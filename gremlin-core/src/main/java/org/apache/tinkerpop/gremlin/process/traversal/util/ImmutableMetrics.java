@@ -44,12 +44,15 @@ public class ImmutableMetrics implements Metrics, Serializable {
     }
 
     @Override
-    public long getDuration(TimeUnit unit) {
+    public long getDuration(final TimeUnit unit) {
         return unit.convert(this.durationNs, SOURCE_UNIT);
     }
 
     @Override
-    public long getCount(String key) {
+    public Long getCount(final String key) {
+        if (!counts.containsKey(key)) {
+            return null;
+        }
         return counts.get(key).get();
     }
 
@@ -77,7 +80,7 @@ public class ImmutableMetrics implements Metrics, Serializable {
     }
 
     @Override
-    public ImmutableMetrics getNested(String metricsId) {
+    public ImmutableMetrics getNested(final String metricsId) {
         return nested.get(metricsId);
     }
 

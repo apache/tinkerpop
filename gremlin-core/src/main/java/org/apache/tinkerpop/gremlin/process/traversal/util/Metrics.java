@@ -37,11 +37,11 @@ public interface Metrics {
     public long getDuration(TimeUnit units);
 
     /**
-     * Get the count for the corresponding countKey.
+     * Get the count for the corresponding countKey. Returns null if countKey does not exist.
      *
      * @param countKey key for counter to get.
      */
-    public long getCount(String countKey);
+    public Long getCount(String countKey);
 
     /**
      * Get the map of all counters. This method copies the internal map.

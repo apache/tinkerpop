@@ -70,6 +70,7 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 * `Attachable` now has a set of static exception messages in an `Exceptions` inner class.
 * Added `StarGraph` which is a heap efficient representation of a vertex and its incident edges (useful for `GraphComputer` implementations).
 * `TraverserSet` uses a `FastNoSuchElementException` on `remove()` for increased performance.
+* Add `Profileable` interface to enable vendors to receive a `Step's MutableMetrics`.
 
 TinkerPop 3.0.0.M8 (Release Date: April 6, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
