@@ -25,10 +25,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
@@ -47,20 +49,30 @@ public class HalfStepTraversalStrategy extends AbstractTraversalStrategy impleme
         Step prev = null;
         for (int i = 0; i <= size; i++) {
             final Step curr = traversal.getSteps().get(i);
-            VertexStep stepToReplace = null;
-            if (i == size && curr instanceof VertexStep && Vertex.class.equals(((VertexStep) curr).getReturnClass())) {
+            Step stepToReplace = null;
+            if (i == size && ((curr instanceof VertexStep && Vertex.class.equals(((VertexStep) curr).getReturnClass())) ||
+                    (curr instanceof PropertiesStep && PropertyType.VALUE.equals(((PropertiesStep) curr).getReturnType())))) {
                 final TraversalParent parent = curr.getTraversal().getParent();
                 if (parent instanceof HasTraversalStep) {
-                    stepToReplace = (VertexStep) curr;
+                    stepToReplace = curr;
                 }
             } else if (prev instanceof VertexStep && Vertex.class.equals(((VertexStep) prev).getReturnClass())) {
                 if (curr instanceof CountGlobalStep) {
-                    stepToReplace = (VertexStep) prev;
+                    stepToReplace = prev;
+                }
+            } else if (curr instanceof CountGlobalStep) {
+                if (prev instanceof VertexStep && Vertex.class.equals(((VertexStep) prev).getReturnClass()) ||
+                        prev instanceof PropertiesStep && PropertyType.VALUE.equals(((PropertiesStep) prev).getReturnType())) {
+                    stepToReplace = prev;
                 }
             }
-            if (stepToReplace != null) {
-                TraversalHelper.replaceStep(stepToReplace, new VertexStep(traversal, Edge.class, stepToReplace.getDirection(),
-                        stepToReplace.getEdgeLabels()), traversal);
+            if (stepToReplace instanceof VertexStep) {
+                final VertexStep vs = (VertexStep) stepToReplace;
+                TraversalHelper.replaceStep(stepToReplace, new VertexStep(traversal, Edge.class, vs.getDirection(),
+                        vs.getEdgeLabels()), traversal);
+            } else if (stepToReplace instanceof PropertiesStep) {
+                final PropertiesStep ps = (PropertiesStep) stepToReplace;
+                TraversalHelper.replaceStep(stepToReplace, new PropertiesStep(traversal, PropertyType.PROPERTY, ps.getPropertyKeys()), traversal);
             }
             if (!(curr instanceof RangeGlobalStep)) {
                 prev = curr;
