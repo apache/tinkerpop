@@ -18,14 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.engine;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -37,12 +41,6 @@ public final class ComputerTraversalEngine implements TraversalEngine {
 
     private ComputerTraversalEngine(final GraphComputer graphComputer) {
         this.graphComputer = graphComputer;
-    }
-
-    @Override
-    public void processTraversal(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getParent() instanceof EmptyStep)
-            traversal.addStep(new ComputerResultStep<>(traversal, this.graphComputer, true));
     }
 
     @Override
@@ -68,6 +66,12 @@ public final class ComputerTraversalEngine implements TraversalEngine {
 
         private Class<? extends GraphComputer> graphComputerClass;
         private GraphComputer.Isolation isolation = GraphComputer.Isolation.BSP;
+        private static final List<TraversalStrategy> WITH_STRATEGIES = Collections.singletonList(ComputerResultStrategy.instance());
+
+        @Override
+        public List<TraversalStrategy> getWithStrategies() {
+            return WITH_STRATEGIES;
+        }
 
         public Builder computer(final Class<? extends GraphComputer> graphComputerClass) {
             this.graphComputerClass = graphComputerClass;
@@ -83,6 +87,30 @@ public final class ComputerTraversalEngine implements TraversalEngine {
             return null == this.graphComputerClass ?
                     new ComputerTraversalEngine(graph.compute().isolation(this.isolation)) :
                     new ComputerTraversalEngine(graph.compute(this.graphComputerClass).isolation(this.isolation));
+        }
+    }
+
+    ////
+
+    public static class ComputerResultStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy> implements TraversalStrategy.FinalizationStrategy {
+
+        private static final ComputerResultStrategy INSTANCE = new ComputerResultStrategy();
+
+        private ComputerResultStrategy() {
+
+        }
+
+        @Override
+        public void apply(final Traversal.Admin<?, ?> traversal) {
+            if (traversal.getParent() instanceof EmptyStep) {
+                final TraversalEngine engine = traversal.getEngine();
+                if (engine.isComputer())
+                    traversal.addStep(new ComputerResultStep<>(traversal, engine.getGraphComputer().get(), true));
+            }
+        }
+
+        public static ComputerResultStrategy instance() {
+            return INSTANCE;
         }
     }
 }

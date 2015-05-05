@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class AbstractTraversalStrategy implements TraversalStrategy {
+public abstract class AbstractTraversalStrategy<S extends TraversalStrategy> implements TraversalStrategy<S> {
 
     @Override
     public String toString() {

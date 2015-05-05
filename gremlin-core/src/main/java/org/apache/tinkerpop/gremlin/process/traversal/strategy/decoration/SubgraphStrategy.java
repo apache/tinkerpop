@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
@@ -44,7 +45,7 @@ import java.util.stream.Collectors;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubgraphStrategy extends AbstractTraversalStrategy {
+public class SubgraphStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
     private final Predicate<Traverser<Vertex>> vertexPredicate;
     private final Predicate<Traverser<Edge>> edgePredicate;
