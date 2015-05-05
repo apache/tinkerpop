@@ -23,11 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Conjun
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.LabeledEndStepStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.EngineDependentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.ComparatorHolderRemovalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.DedupBijectionStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchWhereStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.*;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
@@ -36,13 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.tools.MultiMap;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -162,6 +152,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     LabeledEndStepStrategy.instance(),
                     EngineDependentStrategy.instance(),
                     ProfileStrategy.instance(),
+                    AdjacentToIncidentStrategy.instance(),
                     ComparatorHolderRemovalStrategy.instance(),
                     DedupBijectionStrategy.instance(),
                     IdentityRemovalStrategy.instance(),

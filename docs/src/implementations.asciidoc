@@ -756,12 +756,12 @@ GraphSON I/O Format
 The data below represents an adjacency list representation of the classic TinkerGraph toy graph in GraphSON format.
 
 [source,json]
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"id":1,"label":"vertex","type":"vertex","properties":{"name":[{"id":0,"label":"name","value":"marko","properties":{}}],"age":[{"id":1,"label":"age","value":29,"properties":{}}]}}
-{"inE":[{"inV":2,"inVLabel":"vertex","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"vertex","type":"vertex","properties":{"name":[{"id":2,"label":"name","value":"vadas","properties":{}}],"age":[{"id":3,"label":"age","value":27,"properties":{}}]}}
-{"inE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"vertex","type":"vertex","properties":{"name":[{"id":4,"label":"name","value":"lop","properties":{}}],"lang":[{"id":5,"label":"lang","value":"java","properties":{}}]}}
-{"inE":[{"inV":4,"inVLabel":"vertex","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}}],"id":4,"label":"vertex","type":"vertex","properties":{"name":[{"id":6,"label":"name","value":"josh","properties":{}}],"age":[{"id":7,"label":"age","value":32,"properties":{}}]}}
-{"inE":[{"inV":5,"inVLabel":"vertex","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"vertex","type":"vertex","properties":{"name":[{"id":8,"label":"name","value":"ripple","properties":{}}],"lang":[{"id":9,"label":"lang","value":"java","properties":{}}]}}
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"id":6,"label":"vertex","type":"vertex","properties":{"name":[{"id":10,"label":"name","value":"peter","properties":{}}],"age":[{"id":11,"label":"age","value":35,"properties":{}}]}}
+{"id":1,"label":"person","outE":{"created":[{"id":9,"inV":3,"properties":{"weight":0.4}}],"knows":[{"id":7,"inV":2,"properties":{"weight":0.5}},{"id":8,"inV":4,"properties":{"weight":1.0}}]},"properties":{"name":[{"id":0,"value":"marko"}],"age":[{"id":1,"value":29}]}}
+{"id":2,"label":"person","inE":{"knows":[{"id":7,"outV":1,"properties":{"weight":0.5}}]},"properties":{"name":[{"id":2,"value":"vadas"}],"age":[{"id":3,"value":27}]}}
+{"id":3,"label":"software","inE":{"created":[{"id":9,"outV":1,"properties":{"weight":0.4}},{"id":11,"outV":4,"properties":{"weight":0.4}},{"id":12,"outV":6,"properties":{"weight":0.2}}]},"properties":{"name":[{"id":4,"value":"lop"}],"lang":[{"id":5,"value":"java"}]}}
+{"id":4,"label":"person","inE":{"knows":[{"id":8,"outV":1,"properties":{"weight":1.0}}]},"outE":{"created":[{"id":10,"inV":5,"properties":{"weight":1.0}},{"id":11,"inV":3,"properties":{"weight":0.4}}]},"properties":{"name":[{"id":6,"value":"josh"}],"age":[{"id":7,"value":32}]}}
+{"id":5,"label":"software","inE":{"created":[{"id":10,"outV":4,"properties":{"weight":1.0}}]},"properties":{"name":[{"id":8,"value":"ripple"}],"lang":[{"id":9,"value":"java"}]}}
+{"id":6,"label":"person","outE":{"created":[{"id":12,"inV":3,"properties":{"weight":0.2}}]},"properties":{"name":[{"id":10,"value":"peter"}],"age":[{"id":11,"value":35}]}}
 
 [[script-io-format]]
 Script I/O Format
@@ -888,8 +888,8 @@ A list of the HDFS methods available are itemized below. Note that these methods
 |hdfs.copyFromLocal(String from, String to)| Copy the specified local path to the specified HDFS path.
 |hdfs.mergeToLocal(String from, String to)| Merge the files in path to the specified local path.
 |hdfs.head(String path)| Display the data in the path as text.
-|hdfs.head(String path, long lineCount)| Text display only the first `lineCount`-number of lines in the path.
-|hdfs.head(String path, long totalKeyValues, Class<Writable> writableClass)| Display the path interpreting the key values as respective writable.
+|hdfs.head(String path, int lineCount)| Text display only the first `lineCount`-number of lines in the path.
+|hdfs.head(String path, int totalKeyValues, Class<Writable> writableClass)| Display the path interpreting the key values as respective writable.
 |=========================================================
 
 A Command Line Example
@@ -899,13 +899,11 @@ image::pagerank-logo.png[width=300]
 
 The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algorithm can be executed over the TinkerPop graph from the command line using `GiraphGraphComputer`.
 
-NOTE: The extension `ldjson` in `hadoop-graphson.properties` refers to link:http://en.wikipedia.org/wiki/Line_Delimited_JSON[line-delimitated JSON] which is the file format used by `GraphSONWriter` when writing an link:http://en.wikipedia.org/wiki/Adjacency_list[adjacency list] representation of a graph.
-
 [source,text]
-$ hadoop fs -copyFromLocal data/tinkerpop-modern-vertices.ldjson tinkerpop-modern-vertices.ldjson
+$ hadoop fs -copyFromLocal data/tinkerpop-modern.json tinkerpop-modern.json
 $ hadoop fs -ls
 Found 2 items
--rw-r--r--   1 marko supergroup       2356 2014-07-28 13:00 /user/marko/tinkerpop-modern-vertices.ldjson
+-rw-r--r--   1 marko supergroup       2356 2014-07-28 13:00 /user/marko/tinkerpop-modern.json
 $ hadoop jar target/hadoop-gremlin-x.y.z-job.jar org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer conf/hadoop-graphson.properties
 14/07/29 12:08:27 INFO giraph.GiraphGraphComputer: HadoopGremlin(Giraph): PageRankVertexProgram[alpha=0.85,iterations=30]
 14/07/29 12:08:28 INFO mapred.JobClient: Running job: job_201407281259_0041
@@ -979,102 +977,25 @@ $ hadoop jar target/hadoop-gremlin-x.y.z-job.jar org.apache.tinkerpop.gremlin.ha
 14/07/29 12:08:54 INFO mapred.JobClient:   File Output Format Counters
 14/07/29 12:08:54 INFO mapred.JobClient:     Bytes Written=0
 $ hadoop fs -cat output/~g/*
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"person","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":2,"inVLabel":"vertex","outVLabel":"person","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}},{"inV":4,"inVLabel":"vertex","outVLabel":"person","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"id":1,"label":"person","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.15000000000000002,"properties":{}}],"name":[{"id":0,"label":"name","value":"marko","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":3.0,"properties":{}}],"age":[{"id":1,"label":"age","value":29,"properties":{}}]}}
-{"inE":[{"inV":5,"inVLabel":"software","outVLabel":"vertex","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}}],"outE":[],"id":5,"label":"software","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.23181250000000003,"properties":{}}],"name":[{"id":8,"label":"name","value":"ripple","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"lang":[{"id":9,"label":"lang","value":"java","properties":{}}]}}
-{"inE":[{"inV":3,"inVLabel":"software","outVLabel":"vertex","id":9,"label":"created","type":"edge","outV":1,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"software","outVLabel":"vertex","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}},{"inV":3,"inVLabel":"software","outVLabel":"vertex","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"outE":[],"id":3,"label":"software","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.4018125,"properties":{}}],"name":[{"id":4,"label":"name","value":"lop","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"lang":[{"id":5,"label":"lang","value":"java","properties":{}}]}}
-{"inE":[{"inV":4,"inVLabel":"person","outVLabel":"vertex","id":8,"label":"knows","type":"edge","outV":1,"properties":{"weight":1.0}}],"outE":[{"inV":5,"inVLabel":"vertex","outVLabel":"person","id":10,"label":"created","type":"edge","outV":4,"properties":{"weight":1.0}},{"inV":3,"inVLabel":"vertex","outVLabel":"person","id":11,"label":"created","type":"edge","outV":4,"properties":{"weight":0.4}}],"id":4,"label":"person","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],"name":[{"id":6,"label":"name","value":"josh","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":2.0,"properties":{}}],"age":[{"id":7,"label":"age","value":32,"properties":{}}]}}
-{"inE":[{"inV":2,"inVLabel":"person","outVLabel":"vertex","id":7,"label":"knows","type":"edge","outV":1,"properties":{"weight":0.5}}],"outE":[],"id":2,"label":"person","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.19250000000000003,"properties":{}}],"name":[{"id":2,"label":"name","value":"vadas","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":0.0,"properties":{}}],"age":[{"id":3,"label":"age","value":27,"properties":{}}]}}
-{"inE":[],"outE":[{"inV":3,"inVLabel":"vertex","outVLabel":"person","id":12,"label":"created","type":"edge","outV":6,"properties":{"weight":0.2}}],"id":6,"label":"person","type":"vertex","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":30,"label":"gremlin.pageRankVertexProgram.pageRank","value":0.15000000000000002,"properties":{}}],"name":[{"id":10,"label":"name","value":"peter","properties":{}}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":1,"label":"gremlin.pageRankVertexProgram.edgeCount","value":1.0,"properties":{}}],"age":[{"id":11,"label":"age","value":35,"properties":{}}]}}
+{"id":1,"label":"person","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":39,"value":0.15000000000000002}],"name":[{"id":0,"value":"marko"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":10,"value":3.0}],"age":[{"id":1,"value":29}]}}
+{"id":5,"label":"software","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":35,"value":0.23181250000000003}],"name":[{"id":8,"value":"ripple"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":6,"value":0.0}],"lang":[{"id":9,"value":"java"}]}}
+{"id":3,"label":"software","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":39,"value":0.4018125}],"name":[{"id":4,"value":"lop"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":10,"value":0.0}],"lang":[{"id":5,"value":"java"}]}}
+{"id":4,"label":"person","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":39,"value":0.19250000000000003}],"name":[{"id":6,"value":"josh"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":10,"value":2.0}],"age":[{"id":7,"value":32}]}}
+{"id":2,"label":"person","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":35,"value":0.19250000000000003}],"name":[{"id":2,"value":"vadas"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":6,"value":0.0}],"age":[{"id":3,"value":27}]}}
+{"id":6,"label":"person","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":35,"value":0.15000000000000002}],"name":[{"id":10,"value":"peter"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":6,"value":1.0}],"age":[{"id":11,"value":35}]}}
 
 Vertex 4 ("josh") is isolated below:
 
 [source,js]
 ----
 {
-  "inE": [
-    {
-      "inV": 4,
-      "inVLabel": "person",
-      "outVLabel": "vertex",
-      "id": 8,
-      "label": "knows",
-      "type": "edge",
-      "outV": 1,
-      "properties": {
-        "weight": 1
-      }
-    }
-  ],
-  "outE": [
-    {
-      "inV": 5,
-      "inVLabel": "vertex",
-      "outVLabel": "person",
-      "id": 10,
-      "label": "created",
-      "type": "edge",
-      "outV": 4,
-      "properties": {
-        "weight": 1
-      }
-    },
-    {
-      "inV": 3,
-      "inVLabel": "vertex",
-      "outVLabel": "person",
-      "id": 11,
-      "label": "created",
-      "type": "edge",
-      "outV": 4,
-      "properties": {
-        "weight": 0.4
-      }
-    }
-  ],
-  "id": 4,
-  "label": "person",
-  "type": "vertex",
+  "id":4,
+  "label":"person",
   "properties": {
-    "gremlin.pageRankVertexProgram.pageRank": [
-      {
-        "id": 30,
-        "label": "gremlin.pageRankVertexProgram.pageRank",
-        "value": 0.1925,
-        "properties": {
-
-        }
-      }
-    ],
-    "name": [
-      {
-        "id": 6,
-        "label": "name",
-        "value": "josh",
-        "properties": {
-
-        }
-      }
-    ],
-    "gremlin.pageRankVertexProgram.edgeCount": [
-      {
-        "id": 1,
-        "label": "gremlin.pageRankVertexProgram.edgeCount",
-        "value": 2,
-        "properties": {
-
-        }
-      }
-    ],
-    "age": [
-      {
-        "id": 7,
-        "label": "age",
-        "value": 32,
-        "properties": {
-
-        }
-      }
-    ]
+    "gremlin.pageRankVertexProgram.pageRank":[{"id":39,"value":0.19250000000000003}],
+    "name":[{"id":6,"value":"josh"}],
+    "gremlin.pageRankVertexProgram.edgeCount":[{"id":10,"value":2.0}],
+    "age":[{"id":7,"value":32}]}
   }
 }
 ----
@@ -1088,10 +1009,8 @@ Conceptually, `HadoopGraph` is a wrapper around a `Configuration` object. There 
 
 [source,java]
 public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException {
-  if(SparkGraphComputer.class.isAssignableFrom(graphComputerClass))
-    return new SparkGraphComputer(HadoopGraph.open(this.configuration()));
-  else if(GiraphGraphComputer.class.isAssignableFrom(graphComputerClass))
-    return new GiraphGraphComputer(HadoopGraph.open(this.configuration()));
+  if(AbstractHadoopGraphComputer.class.isAssignableFrom(graphComputerClass))
+    return HadoopGraph.open(this.configuration()).compute(graphComputerClass);
   else if(...) // vendor specific graph computer classes
     // return vendor specific instance
   else

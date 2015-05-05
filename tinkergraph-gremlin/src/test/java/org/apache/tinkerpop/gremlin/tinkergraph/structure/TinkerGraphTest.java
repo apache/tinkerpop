@@ -28,13 +28,12 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -143,21 +142,9 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        final Traversal<Vertex, Map<String, Object>> traversal = g.V().hasLabel("software").as("name").as("language").as("creators").
-                select().by("name").by("lang").by(__.in("created").values("name").fold().order(local));
+        final Traversal traversal = g.V().hasNot(out());
+        traversal.iterate();
         System.out.println(traversal.toString());
-        for (int i = 0; i < 2; i++) {
-            assertTrue(traversal.hasNext());
-            final Map<String, Object> map = traversal.next();
-            assertEquals(3, map.size());
-            final List<String> creators = (List<String>) map.get("creators");
-            final boolean isLop = "lop".equals(map.get("name")) && "java".equals(map.get("language")) &&
-                    creators.size() == 3 && creators.get(0).equals("josh") && creators.get(1).equals("marko") && creators.get(2).equals("peter");
-            final boolean isRipple = "ripple".equals(map.get("name")) && "java".equals(map.get("language")) &&
-                    creators.size() == 1 && creators.get(0).equals("josh");
-            assertTrue(isLop ^ isRipple);
-        }
-        assertFalse(traversal.hasNext());
     }
 
     @Test
