@@ -45,6 +45,11 @@ public class GryoPool {
     private Queue<GryoWriter> gryoWriters;
     private final GryoMapper mapper;
 
+    /**
+     * Create a pool of readers and writers from a {@code Configuration} object.  There are two configuration keys
+     * expected: "gremlin.io.registry" which defines a fully qualified class name of an {@link IoRegistry}
+     * implementation and the "gremlin.io.gryo.poolSize" which defines the initial size of the {@code GryoPool}.
+     */
     public GryoPool(final Configuration conf) {
         this(conf.getInt(CONFIG_IO_GRYO_POOL_SIZE, 256), Type.READER_WRITER, tryCreateIoRegistry(conf.getString(CONFIG_IO_REGISTRY, "")));
     }
@@ -53,7 +58,7 @@ public class GryoPool {
      * Create a pool of readers and writers of specified size and use the default {@link GryoMapper} (which means
      * that custom serializers from vendors will not be applied.
      *
-     * @param poolSize size of the pool.
+     * @param poolSize initial size of the pool.
      */
     public GryoPool(final int poolSize) {
         this(poolSize, Type.READER_WRITER, Optional.empty());
@@ -63,7 +68,7 @@ public class GryoPool {
      * Create a pool of a readers, writers or both of the specified size with an optional {@link IoRegistry} object
      * which would allow custom serializers to be registered to the pool.
      *
-     * @param poolSize size of the pool.
+     * @param poolSize initial size of the pool.
      * @param type the type of pool.
      * @param ioRegistry the registry to assign to each {@link GryoReader} and {@link GryoWriter} instances.
      */
