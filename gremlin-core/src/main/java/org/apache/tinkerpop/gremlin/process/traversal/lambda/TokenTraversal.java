@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TokenTraversal<S extends Element, E> extends AbstractLambdaTraversal<S, E> {
+public final class TokenTraversal<S extends Element, E> extends AbstractLambdaTraversal<S, E> {
 
     private E e;
     private final T t;
