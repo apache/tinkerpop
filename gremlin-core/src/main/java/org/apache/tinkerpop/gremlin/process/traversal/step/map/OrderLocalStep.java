@@ -77,6 +77,8 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Compara
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
+    // TODO: needs TraversalParent
+
     /////////////
 
     private static final <A> List<A> sortCollection(final Collection<A> collection, final Comparator<?> comparator) {
