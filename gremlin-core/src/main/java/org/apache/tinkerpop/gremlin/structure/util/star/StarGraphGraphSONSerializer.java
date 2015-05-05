@@ -212,7 +212,6 @@ public class StarGraphGraphSONSerializer extends StdSerializer<StarGraphGraphSON
             final Map<String, List<Map<String, Object>>> properties = (Map<String, List<Map<String, Object>>>) vertexData.get(GraphSONTokens.PROPERTIES);
             for (Map.Entry<String, List<Map<String, Object>>> property : properties.entrySet()) {
                 for (Map<String, Object> p : property.getValue()) {
-                    // todo: cardinality - same as gryo right now???
                     final StarGraph.StarVertexProperty vp = (StarGraph.StarVertexProperty) starGraph.getStarVertex().property(VertexProperty.Cardinality.list, property.getKey(), p.get(GraphSONTokens.VALUE), T.id, p.get(GraphSONTokens.ID));
                     if (p.containsKey(GraphSONTokens.PROPERTIES)) {
                         final Map<String, Object> edgePropertyData = (Map<String, Object>) p.get(GraphSONTokens.PROPERTIES);

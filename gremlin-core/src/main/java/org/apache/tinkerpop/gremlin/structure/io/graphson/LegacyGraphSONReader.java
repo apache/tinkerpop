@@ -267,8 +267,7 @@ public class LegacyGraphSONReader implements GraphReader {
             cache.put(vertexId, v);
 
             for (Map.Entry<String, Object> entry : props.entrySet()) {
-                // todo: cardinality
-                v.property(VertexProperty.Cardinality.list, entry.getKey(), entry.getValue());
+                v.property(g.features().vertex().getCardinality(entry.getKey()), entry.getKey(), entry.getValue());
             }
 
             return v;

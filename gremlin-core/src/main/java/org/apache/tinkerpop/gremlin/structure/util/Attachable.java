@@ -278,8 +278,8 @@ public interface Attachable<V> {
             final boolean supportsUserSuppliedIds = hostGraph.features().vertex().properties().supportsUserSuppliedIds();
             baseVertex.properties().forEachRemaining(vp -> {
                 final VertexProperty vertexProperty = supportsUserSuppliedIds ?
-                        vertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value(), T.id, vp.id()) :
-                        vertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value());
+                        vertex.property(hostGraph.features().vertex().getCardinality(vp.key()), vp.key(), vp.value(), T.id, vp.id()) :
+                        vertex.property(hostGraph.features().vertex().getCardinality(vp.key()), vp.key(), vp.value());
                 vp.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
             });
             return vertex;
@@ -318,8 +318,8 @@ public interface Attachable<V> {
             final Iterator<Vertex> vertexIterator = hostGraph.vertices(baseVertexProperty.element().id());
             if (vertexIterator.hasNext()) {
                 final VertexProperty vertexProperty = hostGraph.features().vertex().properties().supportsUserSuppliedIds() ?
-                        vertexIterator.next().property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), T.id, baseVertexProperty.id()) :
-                        vertexIterator.next().property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value());
+                        vertexIterator.next().property(hostGraph.features().vertex().getCardinality(baseVertexProperty.key()), baseVertexProperty.key(), baseVertexProperty.value(), T.id, baseVertexProperty.id()) :
+                        vertexIterator.next().property(hostGraph.features().vertex().getCardinality(baseVertexProperty.key()), baseVertexProperty.key(), baseVertexProperty.value());
                 baseVertexProperty.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
                 return vertexProperty;
             }
@@ -329,8 +329,8 @@ public interface Attachable<V> {
         public static VertexProperty createVertexProperty(final Attachable<VertexProperty> attachableVertexProperty, final Vertex hostVertex) {
             final VertexProperty<Object> baseVertexProperty = attachableVertexProperty.get();
             final VertexProperty vertexProperty = hostVertex.graph().features().vertex().properties().supportsUserSuppliedIds() ?
-                    hostVertex.property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value(), T.id, baseVertexProperty.id()) :
-                    hostVertex.property(VertexProperty.Cardinality.list, baseVertexProperty.key(), baseVertexProperty.value());
+                    hostVertex.property(hostVertex.graph().features().vertex().getCardinality(baseVertexProperty.key()), baseVertexProperty.key(), baseVertexProperty.value(), T.id, baseVertexProperty.id()) :
+                    hostVertex.property(hostVertex.graph().features().vertex().getCardinality(baseVertexProperty.key()), baseVertexProperty.key(), baseVertexProperty.value());
             baseVertexProperty.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
             return vertexProperty;
         }

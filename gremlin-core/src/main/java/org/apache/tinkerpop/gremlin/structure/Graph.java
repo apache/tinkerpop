@@ -439,6 +439,14 @@ public interface Graph extends AutoCloseable, Host {
             public static final String FEATURE_REMOVE_VERTICES = "RemoveVertices";
 
             /**
+             * Gets the {@link VertexProperty.Cardinality} for a key.  By default, this method will return
+             * {@link VertexProperty.Cardinality#list}.
+             */
+            public default VertexProperty.Cardinality getCardinality(final String key) {
+                return VertexProperty.Cardinality.list;
+            }
+
+            /**
              * Determines if a {@link Vertex} can be added to the {@code Graph}.
              */
             @FeatureDescriptor(name = FEATURE_ADD_VERTICES)
