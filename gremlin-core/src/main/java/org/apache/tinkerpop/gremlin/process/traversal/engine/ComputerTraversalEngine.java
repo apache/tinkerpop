@@ -44,7 +44,7 @@ public final class ComputerTraversalEngine implements TraversalEngine {
     }
 
     @Override
-    public Type getType() {    // TODO: gut this
+    public Type getType() {
         return Type.COMPUTER;
     }
 
@@ -58,11 +58,6 @@ public final class ComputerTraversalEngine implements TraversalEngine {
         return Optional.ofNullable(this.graphComputer);
     }
 
-    @Override
-    public List<TraversalStrategy> getWithStrategies() {
-        return Collections.singletonList(ComputerResultStrategy.instance());
-    }
-
     public static Builder build() {
         return new Builder();
     }
@@ -71,6 +66,12 @@ public final class ComputerTraversalEngine implements TraversalEngine {
 
         private Class<? extends GraphComputer> graphComputerClass;
         private GraphComputer.Isolation isolation = GraphComputer.Isolation.BSP;
+        private static final List<TraversalStrategy> WITH_STRATEGIES = Collections.singletonList(ComputerResultStrategy.instance());
+
+        @Override
+        public List<TraversalStrategy> getWithStrategies() {
+            return WITH_STRATEGIES;
+        }
 
         public Builder computer(final Class<? extends GraphComputer> graphComputerClass) {
             this.graphComputerClass = graphComputerClass;

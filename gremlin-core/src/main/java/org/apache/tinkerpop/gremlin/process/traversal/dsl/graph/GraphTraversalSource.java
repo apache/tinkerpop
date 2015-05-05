@@ -61,19 +61,18 @@ public class GraphTraversalSource implements TraversalSource {
     ////
 
     private final transient Graph graph;
-    private final TraversalEngine.Builder engine;
+    private final TraversalEngine.Builder engineBuilder;
     private final TraversalStrategies strategies;
     private final List<TraversalStrategy> withStrategies;
     private final List<Class<? extends TraversalStrategy>> withoutStrategies;
 
-    private GraphTraversalSource(final Graph graph, final TraversalEngine.Builder engine, final List<TraversalStrategy> withStrategies, final List<Class<? extends TraversalStrategy>> withoutStrategies) {
+    private GraphTraversalSource(final Graph graph, final TraversalEngine.Builder engineBuilder, final List<TraversalStrategy> withStrategies, final List<Class<? extends TraversalStrategy>> withoutStrategies) {
         this.graph = graph;
-        this.engine = engine;
+        this.engineBuilder = engineBuilder;
         this.withStrategies = withStrategies;
         this.withoutStrategies = withoutStrategies;
-        final TraversalEngine tempEngine = this.engine.create(this.graph);
-        this.withStrategies.addAll(tempEngine.getWithStrategies());
-        this.withoutStrategies.addAll(tempEngine.getWithoutStrategies());
+        this.withStrategies.addAll(engineBuilder.getWithStrategies());
+        this.withoutStrategies.addAll(engineBuilder.getWithoutStrategies());
         final TraversalStrategies tempStrategies = TraversalStrategies.GlobalCache.getStrategies(TraversalStrategies.GlobalCache.getGraphClass(this.graph));
         this.strategies = withStrategies.isEmpty() && withoutStrategies.isEmpty() ?
                 tempStrategies :
@@ -84,7 +83,7 @@ public class GraphTraversalSource implements TraversalSource {
 
     private <S> GraphTraversal.Admin<S, S> generateTraversal() {
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(this.graph);
-        final TraversalEngine engine = this.engine.create(this.graph);
+        final TraversalEngine engine = this.engineBuilder.create(this.graph);
         traversal.setEngine(engine);
         traversal.setStrategies(this.strategies);
         return traversal;
@@ -152,7 +151,7 @@ public class GraphTraversalSource implements TraversalSource {
 
     @Override
     public Optional<GraphComputer> getGraphComputer() {
-        return this.engine.create(this.graph).getGraphComputer();
+        return this.engineBuilder.create(this.graph).getGraphComputer();
     }
 
     @Override
@@ -162,7 +161,7 @@ public class GraphTraversalSource implements TraversalSource {
 
     @Override
     public GraphTraversalSource.Builder asBuilder() {
-        final GraphTraversalSource.Builder builder = GraphTraversalSource.build().engine(this.engine);
+        final GraphTraversalSource.Builder builder = GraphTraversalSource.build().engine(this.engineBuilder);
         this.withStrategies.forEach(builder::with);
         this.withoutStrategies.forEach(builder::without);
         return builder;
