@@ -41,10 +41,10 @@ public class ProfilingApplication {
     private final Cluster cluster;
     private final int requests;
     private final int clients;
-    private final int execution;
+    private final String executionName;
 
-    public ProfilingApplication(final int execution, final Cluster cluster, final int clients, final int requests) {
-        this.execution = execution;
+    public ProfilingApplication(final String executionName, final Cluster cluster, final int clients, final int requests) {
+        this.executionName = executionName;
         this.cluster = cluster;
         this.clients = clients;
         this.requests = requests;
@@ -59,7 +59,7 @@ public class ProfilingApplication {
 
         final List<Thread> threads = IntStream.range(0, clients).mapToObj(t -> new Thread(() -> {
             final Client client = cluster.connect();
-            final String executionId = "[" + execution + "-"  + t + "]";
+            final String executionId = "[" + executionName + "-" + (t + 1) + "]";
             try {
                 final CountDownLatch latch = new CountDownLatch(requests);
                 client.init();
@@ -81,6 +81,7 @@ public class ProfilingApplication {
                     });
                 });
 
+                // finish once all requests are accounted for
                 latch.await();
 
                 final long end = System.nanoTime();
@@ -89,6 +90,7 @@ public class ProfilingApplication {
                 final long requestCount = requests;
                 final long reqSec = Math.round(requestCount / totalSeconds);
                 rps.put(Thread.currentThread(), reqSec);
+
                 System.out.println(String.format(executionId + " clients: %s | requests: %s | time(s): %s | req/sec: %s | too slow: %s", clients, requestCount, totalSeconds, reqSec, tooSlow.get()));
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -96,7 +98,7 @@ public class ProfilingApplication {
             } finally {
                 if (client != null) client.close();
             }
-        }, "benchmark-client-" + execution + "-"  + t)).collect(Collectors.toList());
+        }, "benchmark-client-" + executionName + "-" + (t + 1))).collect(Collectors.toList());
 
         threads.forEach(t -> {
             try {
@@ -126,7 +128,7 @@ public class ProfilingApplication {
             final int warmups = 3;
             final int executions = 10;
             final int clients = 1;
-            final int requests = 10000;
+            final int requests = 100000;
             final Cluster cluster = Cluster.build(host)
                     .minConnectionPoolSize(256)
                     .maxConnectionPoolSize(256)
@@ -134,12 +136,12 @@ public class ProfilingApplication {
                     .workerPoolSize(clients * 2).create();
 
             for (int ix = 0; ix < warmups; ix ++) {
-                new ProfilingApplication(ix + 1, cluster, clients, requests).execute();
+                new ProfilingApplication("warmup-" + (ix + 1), cluster, clients, requests).execute();
             }
 
             long totalRequestsPerSecond = 0;
             for (int ix = 0; ix < executions; ix ++) {
-                totalRequestsPerSecond += new ProfilingApplication(ix + 1, cluster, clients, requests).execute();
+                totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests).execute();
             }
 
             System.out.println(String.format("avg req/sec: %s", totalRequestsPerSecond / executions));
