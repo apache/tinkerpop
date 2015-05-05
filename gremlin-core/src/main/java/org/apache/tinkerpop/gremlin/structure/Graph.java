@@ -440,7 +440,9 @@ public interface Graph extends AutoCloseable, Host {
 
             /**
              * Gets the {@link VertexProperty.Cardinality} for a key.  By default, this method will return
-             * {@link VertexProperty.Cardinality#list}.
+             * {@link VertexProperty.Cardinality#list}.  Implementations that employ a schema can consult it to
+             * determine the {@link VertexProperty.Cardinality}.  Those that do no have a schema can return their
+             * default {@link VertexProperty.Cardinality} for every key.
              */
             public default VertexProperty.Cardinality getCardinality(final String key) {
                 return VertexProperty.Cardinality.list;
