@@ -38,7 +38,7 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public List<TraversalStrategy> toList() {
+    public List<TraversalStrategy<?>> toList() {
         return Collections.emptyList();
     }
 
@@ -48,7 +48,7 @@ public final class EmptyTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public TraversalStrategies addStrategies(final TraversalStrategy... strategies) {
+    public TraversalStrategies addStrategies(final TraversalStrategy<?>... strategies) {
         return this;
     }
 

@@ -70,7 +70,7 @@ public class TraversalStrategiesTest {
         assertEquals(a, s.get(1));
 
         //Dependency well defined
-        s =  Arrays.asList(c, a, b);
+        s = Arrays.asList(c, a, b);
         TraversalStrategies.sortStrategies(s);
         assertEquals(3, s.size());
         assertEquals(a, s.get(0));
@@ -108,11 +108,6 @@ public class TraversalStrategiesTest {
 
 
     public static class StrategyA extends DummyStrategy {
-
-        @Override
-        public Set<Class<? extends TraversalStrategy>> applyPrior() {
-            return Collections.EMPTY_SET;
-        }
 
         @Override
         public Set<Class<? extends TraversalStrategy>> applyPost() {
@@ -176,12 +171,95 @@ public class TraversalStrategiesTest {
 
     }
 
-    private static class DummyStrategy extends AbstractTraversalStrategy<TraversalStrategy> {
+    private static class DummyStrategy<S extends TraversalStrategy> extends AbstractTraversalStrategy<S> {
 
         @Override
         public void apply(Traversal.Admin<?, ?> traversal) {
             //Do nothing
         }
+    }
+
+    ////////////////////////////////////////////
+    ////////////////////////////////////////////
+    ////////////////////////////////////////////
+
+    @Test
+    public void testTraversalStrategySortingWithCategories() {
+        TraversalStrategy
+                a = new StrategyADecoration(),
+                b = new StrategyBDecoration(),
+                c = new StrategyCOptimization(),
+                d = new StrategyDOptimization(),
+                e = new StrategyEFinalization(),
+                k = new StrategyKVerification();
+
+        List<TraversalStrategy<?>> s;
+
+        //in category sorting
+        s = Arrays.asList(b, a);
+        TraversalStrategies.sortStrategies(s);
+        assertEquals(2, s.size());
+        assertEquals(a, s.get(0));
+        assertEquals(b, s.get(1));
+
+        //mixed category sorting
+        s = Arrays.asList(a, e, b, d);
+        TraversalStrategies.sortStrategies(s);
+        assertEquals(4, s.size());
+        assertEquals(a, s.get(0));
+        assertEquals(b, s.get(1));
+        assertEquals(d, s.get(2));
+        assertEquals(e, s.get(3));
+
+        //full reverse sorting
+        s = Arrays.asList(k,e,d,c,b,a);
+        TraversalStrategies.sortStrategies(s);
+        assertEquals(6, s.size());
+        assertEquals(a, s.get(0));
+        assertEquals(b, s.get(1));
+        assertEquals(c, s.get(2));
+        assertEquals(d, s.get(3));
+        assertEquals(e, s.get(4));
+        assertEquals(k, s.get(5));
+    }
+
+    public static class StrategyADecoration extends DummyStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
+
+        @Override
+        public Set<Class<? extends DecorationStrategy>> applyPost() {
+            return Stream.of(StrategyBDecoration.class).collect(Collectors.toSet());
+        }
+
+    }
+
+    public static class StrategyBDecoration extends DummyStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
+
+    }
+
+    public static class StrategyCOptimization extends DummyStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+
+        @Override
+        public Set<Class<? extends OptimizationStrategy>> applyPost() {
+            return Stream.of(StrategyDOptimization.class).collect(Collectors.toSet());
+        }
+    }
+
+    public static class StrategyDOptimization extends DummyStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+
+        @Override
+        public Set<Class<? extends OptimizationStrategy>> applyPrior() {
+            return Stream.of(StrategyCOptimization.class).collect(Collectors.toSet());
+        }
+
+    }
+
+    public static class StrategyEFinalization extends DummyStrategy<TraversalStrategy.FinalizationStrategy> implements TraversalStrategy.FinalizationStrategy {
+
+    }
+
+    public static class StrategyKVerification extends DummyStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
+
+
     }
 
 }

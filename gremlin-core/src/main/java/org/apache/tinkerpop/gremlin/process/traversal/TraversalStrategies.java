@@ -38,7 +38,6 @@ import org.apache.tinkerpop.gremlin.util.tools.MultiMap;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +53,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
     /**
      * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.
      */
-    public List<TraversalStrategy> toList();
+    public List<TraversalStrategy<?>> toList();
 
     /**
      * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal} for the stated {@link TraversalEngine}.
@@ -71,7 +70,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      * @param strategies the traversal strategies to add
      * @return the newly updated/sorted traversal strategies collection
      */
-    public TraversalStrategies addStrategies(final TraversalStrategy... strategies);
+    public TraversalStrategies addStrategies(final TraversalStrategy<?>... strategies);
 
     /**
      * Remove all the provided {@link TraversalStrategy} classes from the current collection.
@@ -137,18 +136,18 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                 if (toAdd != null && MultiMap.putAll(dependencyMap, sc, toAdd)) updated = true;
             }
         } while (updated);
-        Collections.sort(strategies, new Comparator<TraversalStrategy>() {
-            @Override
-            public int compare(final TraversalStrategy s1, final TraversalStrategy s2) {
-                boolean s1Before = MultiMap.containsEntry(dependencyMap, s1.getClass(), s2.getClass());
-                boolean s2Before = MultiMap.containsEntry(dependencyMap, s2.getClass(), s1.getClass());
-                if (s1Before && s2Before)
-                    throw new IllegalStateException("Cyclic dependency between traversal strategies: ["
-                            + s1.getClass().getName() + ", " + s2.getClass().getName() + ']');
-                if (s1Before) return -1;
-                else if (s2Before) return 1;
-                else return 0;
-            }
+        Collections.sort(strategies, (strategy1, strategy2) -> {
+            int categoryComparison = strategy1.compareTo(strategy2.getTraversalCategory());
+            if (categoryComparison != 0) return categoryComparison;
+
+            boolean s1Before = MultiMap.containsEntry(dependencyMap, strategy1.getClass(), strategy2.getClass());
+            boolean s2Before = MultiMap.containsEntry(dependencyMap, strategy2.getClass(), strategy1.getClass());
+            if (s1Before && s2Before)
+                throw new IllegalStateException("Cyclic dependency between traversal strategies: ["
+                        + strategy1.getClass().getName() + ", " + strategy2.getClass().getName() + ']');
+            if (s1Before) return -1;
+            else if (s2Before) return 1;
+            else return 0;
         });
     }
 

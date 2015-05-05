@@ -25,17 +25,12 @@ import java.util.Set;
 /**
  * A {@link TraversalStrategy} defines a particular atomic operation for mutating a {@link Traversal} prior to its evaluation.
  * Traversal strategies are typically used for optimizing a traversal for the particular underlying graph engine.
- * A TraversalStrategy should not have a public constructor as they should not maintain state between applications.
- * Make use of a singleton instance() object to reduce object creation on the JVM.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public interface TraversalStrategy<S extends TraversalStrategy> extends Serializable {
+public interface TraversalStrategy<S extends TraversalStrategy> extends Serializable, Comparable<Class<? extends TraversalStrategy>> {
 
-    // A TraversalStrategy should not have a public constructor
-    // Make use of a singleton instance() object to reduce object creation on the JVM
-    // Moreover they are stateless objects.
 
     public void apply(final Traversal.Admin<?, ?> traversal);
 
@@ -47,20 +42,98 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
         return Collections.emptySet();
     }
 
+    public default Class<S> getTraversalCategory() {
+        return (Class) TraversalStrategy.class;
+    }
+
+    @Override
+    public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
+        return 0;
+    }
+
     public interface DecorationStrategy extends TraversalStrategy<DecorationStrategy> {
 
+        @Override
+        public default Class<DecorationStrategy> getTraversalCategory() {
+            return DecorationStrategy.class;
+        }
+
+        @Override
+        public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
+            if (otherTraversalCategory.equals(DecorationStrategy.class))
+                return 0;
+            else if (otherTraversalCategory.equals(OptimizationStrategy.class))
+                return -1;
+            else if (otherTraversalCategory.equals(FinalizationStrategy.class))
+                return -1;
+            else if (otherTraversalCategory.equals(VerificationStrategy.class))
+                return -1;
+            else
+                return 0;
+        }
     }
 
     public interface OptimizationStrategy extends TraversalStrategy<OptimizationStrategy> {
 
-    }
+        @Override
+        public default Class<OptimizationStrategy> getTraversalCategory() {
+            return OptimizationStrategy.class;
+        }
 
-    public interface VerificationStrategy extends TraversalStrategy<VerificationStrategy> {
-
+        @Override
+        public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
+            if (otherTraversalCategory.equals(DecorationStrategy.class))
+                return 1;
+            else if (otherTraversalCategory.equals(OptimizationStrategy.class))
+                return 0;
+            else if (otherTraversalCategory.equals(FinalizationStrategy.class))
+                return -1;
+            else if (otherTraversalCategory.equals(VerificationStrategy.class))
+                return -1;
+            else
+                return 0;
+        }
     }
 
     public interface FinalizationStrategy extends TraversalStrategy<FinalizationStrategy> {
 
+        @Override
+        public default Class<FinalizationStrategy> getTraversalCategory() {
+            return FinalizationStrategy.class;
+        }
+
+        @Override
+        public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
+            if (otherTraversalCategory.equals(DecorationStrategy.class))
+                return 1;
+            else if (otherTraversalCategory.equals(OptimizationStrategy.class))
+                return 1;
+            else if (otherTraversalCategory.equals(FinalizationStrategy.class))
+                return 0;
+            else if (otherTraversalCategory.equals(VerificationStrategy.class))
+                return -1;
+            else
+                return 0;
+        }
     }
 
+    public interface VerificationStrategy extends TraversalStrategy<VerificationStrategy> {
+
+        @Override
+        public default Class<VerificationStrategy> getTraversalCategory() {
+            return VerificationStrategy.class;
+        }
+
+        @Override
+        public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
+            if (otherTraversalCategory.equals(DecorationStrategy.class))
+                return 1;
+            else if (otherTraversalCategory.equals(OptimizationStrategy.class))
+                return 1;
+            else if (otherTraversalCategory.equals(FinalizationStrategy.class))
+                return 1;
+            else
+                return 0;
+        }
+    }
 }
