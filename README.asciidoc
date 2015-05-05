@@ -91,7 +91,7 @@ Release Process
 . Submit for `[VOTE]` at `general@incubator.apache.org`
 . `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
 . Review and close the staging repository
-. Upload artifacts to `https://dist.apache.org/repos/dist/release/incubator/tinkerpop`
+. Upload artifacts to `https://dist.apache.org/repos/dist/release/incubator/tinkerpop` (rename to `-bin` and `-src`)
 . Update homepage with references to latest distribution.
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`.
 

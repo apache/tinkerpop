@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
@@ -33,11 +34,11 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupOptimizerStrategy extends AbstractTraversalStrategy {
+public final class DedupBijectionStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
-    private static final DedupOptimizerStrategy INSTANCE = new DedupOptimizerStrategy();
+    private static final DedupBijectionStrategy INSTANCE = new DedupBijectionStrategy();
 
-    private DedupOptimizerStrategy() {
+    private DedupBijectionStrategy() {
     }
 
     private static final List<Class<? extends Step>> BIJECTIVE_PIPES = Arrays.asList(IdentityStep.class, OrderGlobalStep.class);
@@ -69,7 +70,7 @@ public final class DedupOptimizerStrategy extends AbstractTraversalStrategy {
         }
     }
 
-    public static DedupOptimizerStrategy instance() {
+    public static DedupBijectionStrategy instance() {
         return INSTANCE;
     }
 }

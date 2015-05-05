@@ -35,11 +35,11 @@ import java.util.Optional;
  */
 public class DefaultTraversalStrategies implements TraversalStrategies {
 
-    protected List<TraversalStrategy> traversalStrategies = new ArrayList<>();
+    protected List<TraversalStrategy<?>> traversalStrategies = new ArrayList<>();
     protected TraverserGeneratorFactory traverserGeneratorFactory = DefaultTraverserGeneratorFactory.instance();
 
     @Override
-    public TraversalStrategies addStrategies(final TraversalStrategy... strategies) {
+    public TraversalStrategies addStrategies(final TraversalStrategy<?>... strategies) {
         boolean added = false;
         for (final TraversalStrategy strategy : strategies) {
             if (!this.traversalStrategies.contains(strategy)) {
@@ -56,7 +56,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     public TraversalStrategies removeStrategies(final Class<? extends TraversalStrategy>... strategyClasses) {
         boolean removed = false;
         for (final Class<? extends TraversalStrategy> strategyClass : strategyClasses) {
-            final Optional<TraversalStrategy> strategy = this.traversalStrategies.stream().filter(s -> s.getClass().equals(strategyClass)).findAny();
+            final Optional<TraversalStrategy<?>> strategy = this.traversalStrategies.stream().filter(s -> s.getClass().equals(strategyClass)).findAny();
             if (strategy.isPresent()) {
                 this.traversalStrategies.remove(strategy.get());
                 removed = true;
@@ -67,13 +67,15 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
     }
 
     @Override
-    public List<TraversalStrategy> toList() {
+    public List<TraversalStrategy<?>> toList() {
         return Collections.unmodifiableList(this.traversalStrategies);
     }
 
     @Override
     public void applyStrategies(final Traversal.Admin<?, ?> traversal) {
-        this.traversalStrategies.forEach(traversalStrategy -> traversalStrategy.apply(traversal));
+        for (final TraversalStrategy<?> traversalStrategy : this.traversalStrategies) {
+            traversalStrategy.apply(traversal);
+        }
     }
 
     @Override

@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.List;
@@ -60,7 +61,7 @@ public final class HasNextTraversal<S> implements Traversal.Admin<S, Boolean> {
 
     @Override
     public String toString() {
-        return "(hasNext)";
+        return TraversalHelper.makeTraversalString(this);
     }
 
     @Override
@@ -70,7 +71,7 @@ public final class HasNextTraversal<S> implements Traversal.Admin<S, Boolean> {
 
     @Override
     public TraversalStrategies getStrategies() {
-        return null;
+        return this.hasNextTraversal.getStrategies();
     }
 
     @Override
@@ -110,7 +111,7 @@ public final class HasNextTraversal<S> implements Traversal.Admin<S, Boolean> {
 
     @Override
     public <S2, E2> Traversal.Admin<S2, E2> removeStep(int index) throws IllegalStateException {
-        return null;
+        return this.hasNextTraversal.removeStep(index);
     }
 
     @Override
@@ -141,7 +142,7 @@ public final class HasNextTraversal<S> implements Traversal.Admin<S, Boolean> {
 
     @Override
     public void setEngine(final TraversalEngine engine) {
-
+        this.hasNextTraversal.setEngine(engine);
     }
 
     @Override

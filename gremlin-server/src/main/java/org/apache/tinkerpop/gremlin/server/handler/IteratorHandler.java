@@ -85,8 +85,9 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                         // send back a page of results if batch size is met or if it's the end of the results being
                         // iterated
                         if (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
+                            final ResponseStatusCode code = itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
                             ctx.writeAndFlush(ResponseMessage.build(requestMessage)
-                                    .code(ResponseStatusCode.SUCCESS)
+                                    .code(code)
                                     .result(aggregate).create());
                             aggregate = new ArrayList<>(resultIterationBatchSize);
                         }
@@ -110,7 +111,8 @@ public class IteratorHandler extends ChannelOutboundHandlerAdapter {
                         ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
                     }
 
-                    ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResponseStatusCode.SUCCESS_TERMINATOR).create());
+                    // todo: no need to write terminator anymore
+                    // ctx.writeAndFlush(ResponseMessage.build(requestMessage).code(ResponseStatusCode.PARTIAL_CONTENT).create());
                 });
             } finally {
                 ReferenceCountUtil.release(msg);

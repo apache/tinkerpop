@@ -16,31 +16,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
+package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MarkerIdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class EngineDependentStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public final class LabeledEndStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
-    private static final EngineDependentStrategy INSTANCE = new EngineDependentStrategy();
+    private static final LabeledEndStepStrategy INSTANCE = new LabeledEndStepStrategy();
 
-    private EngineDependentStrategy() {
+    private LabeledEndStepStrategy() {
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        traversal.getSteps().stream()
-                .filter(step -> step instanceof EngineDependent)
-                .forEach(step -> ((EngineDependent) step).onEngine(traversal.getEngine()));
+        if (!traversal.getEndStep().getLabels().isEmpty())
+            traversal.addStep(new MarkerIdentityStep<>(traversal));
     }
 
-    public static EngineDependentStrategy instance() {
+    public static LabeledEndStepStrategy instance() {
         return INSTANCE;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.traversalStrategyString(this);
     }
 }

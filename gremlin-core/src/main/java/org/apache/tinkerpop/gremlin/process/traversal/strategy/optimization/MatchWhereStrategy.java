@@ -36,10 +36,10 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MatchWhereStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public final class MatchWhereStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final MatchWhereStrategy INSTANCE = new MatchWhereStrategy();
-    private static final Set<Class<? extends TraversalStrategy>> PRIORS = new HashSet<>();
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>();
 
     static {
         PRIORS.add(IdentityRemovalStrategy.class);
@@ -83,7 +83,7 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy implemen
     }
 
     @Override
-    public Set<Class<? extends TraversalStrategy>> applyPrior() {
+    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
         return PRIORS;
     }
 

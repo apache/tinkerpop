@@ -129,9 +129,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final String fatty = IntStream.range(0, 150).mapToObj(String::valueOf).collect(Collectors.joining());
             final String fattyX = "['" + fatty + "'] * " + resultCountToGenerate;
 
-            // don't allow the thread to proceed until all results are accounted for (add one to the expected
-            // count since there will be a terminating message to account for
-            final CountDownLatch latch = new CountDownLatch((resultCountToGenerate / batchSize) + 1);
+            // don't allow the thread to proceed until all results are accounted for
+            final CountDownLatch latch = new CountDownLatch(resultCountToGenerate / batchSize);
             final AtomicBoolean expected = new AtomicBoolean(false);
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_BATCH_SIZE, batchSize)
@@ -164,7 +163,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
-                if (result.getStatus().getCode() != ResponseStatusCode.SUCCESS_TERMINATOR) {
+                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
                     pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
                     latch.countDown();
                 }
@@ -187,7 +186,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final CountDownLatch latch = new CountDownLatch(1);
             final AtomicBoolean pass = new AtomicBoolean(false);
             client.submit(request, result -> {
-                if (result.getStatus().getCode() != ResponseStatusCode.SUCCESS_TERMINATOR) {
+                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
                     pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
                     latch.countDown();
                 }
@@ -206,7 +205,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").create();
 
             // set the latch to six as there should be six responses when you include the terminator
-            final CountDownLatch latch = new CountDownLatch(6);
+            final CountDownLatch latch = new CountDownLatch(5);
             client.submit(request, r -> latch.countDown());
 
             assertTrue(latch.await(1500, TimeUnit.MILLISECONDS));
@@ -221,7 +220,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                     .addArg(Tokens.ARGS_BATCH_SIZE, 1).create();
 
             // should be 11 responses when you include the terminator
-            final CountDownLatch latch = new CountDownLatch(11);
+            final CountDownLatch latch = new CountDownLatch(10);
             client.submit(request, r -> latch.countDown());
 
             assertTrue(latch.await(1500, TimeUnit.MILLISECONDS));
@@ -235,7 +234,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]").create();
 
             // should be 2 responses when you include the terminator
-            final CountDownLatch latch = new CountDownLatch(2);
+            final CountDownLatch latch = new CountDownLatch(1);
             client.submit(request, r -> latch.countDown());
 
             assertTrue(latch.await(30000, TimeUnit.MILLISECONDS));
@@ -250,6 +249,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try {
             // this should return "nothing" - there should be no exception
             assertNull(client.submit("g.V().has('name','kadfjaldjfla')").one());
+        } catch (Exception ex) {
+            ex.printStackTrace();
         } finally {
             cluster.close();
         }
@@ -405,22 +406,18 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldEvalAndOnlyReturnTwoMessages() throws Exception {
+    public void shouldEvalAndReturnSuccessOnlyNoPartialContent() throws Exception {
         try (SimpleClient client = new WebSocketClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "10").create();
 
             // set the latch to two as there should be two responses when you include the terminator -
             // the error and the terminator
-            final CountDownLatch latch = new CountDownLatch(2);
+            final CountDownLatch latch = new CountDownLatch(1);
             final AtomicInteger messages = new AtomicInteger(0);
             final AtomicBoolean errorReceived = new AtomicBoolean(false);
-            final AtomicBoolean terminatorReceived = new AtomicBoolean(false);
             client.submit(request, r -> {
-                if (latch.getCount() == 2)
-                    errorReceived.set(r.getStatus().equals(ResponseStatusCode.SUCCESS));
-                else if (latch.getCount() == 1)
-                    terminatorReceived.set(r.getStatus().equals(ResponseStatusCode.SUCCESS_TERMINATOR));
+                errorReceived.set(r.getStatus().equals(ResponseStatusCode.SUCCESS));
                 latch.countDown();
                 messages.incrementAndGet();
             });
@@ -430,7 +427,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             // make sure no extra message sneak in
             Thread.sleep(1000);
 
-            assertEquals(2, messages.get());
+            assertEquals(1, messages.get());
         }
     }
 
@@ -440,19 +437,12 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "new String().doNothingAtAllBecauseThis is a syntax error").create();
 
-            // set the latch to two as there should be two responses when you include the terminator -
-            // the error and the terminator
-            final CountDownLatch latch = new CountDownLatch(2);
+            final CountDownLatch latch = new CountDownLatch(1);
             final AtomicInteger messages = new AtomicInteger(0);
             final AtomicBoolean errorReceived = new AtomicBoolean(false);
-            final AtomicBoolean terminatorReceived = new AtomicBoolean(false);
             client.submit(request, r -> {
-                if (latch.getCount() == 2)
-                    errorReceived.set(r.getStatus().equals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION));
-                else if (latch.getCount() == 1)
-                    terminatorReceived.set(r.getStatus().equals(ResponseStatusCode.SUCCESS_TERMINATOR));
+                errorReceived.set(r.getStatus().equals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION));
                 latch.countDown();
-                System.out.println("*******" + r);
                 messages.incrementAndGet();
             });
 
@@ -461,7 +451,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             // make sure no extra message sneak in
             Thread.sleep(1000);
 
-            assertEquals(2, messages.get());
+            assertEquals(1, messages.get());
 
         }
     }

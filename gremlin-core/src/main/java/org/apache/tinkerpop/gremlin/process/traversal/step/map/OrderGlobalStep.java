@@ -21,16 +21,17 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Order;
 import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -40,7 +41,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implements ComparatorHolder<S> {
+public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implements ComparatorHolder<S>, TraversalParent {
 
     private final List<Comparator<S>> comparators = new ArrayList<>();
 
@@ -55,12 +56,14 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
 
     @Override
     public void addComparator(final Comparator<S> comparator) {
+        if (comparator instanceof TraversalComparator)
+            this.integrateChild(((TraversalComparator) comparator).getTraversal());
         this.comparators.add(comparator);
     }
 
     @Override
     public List<Comparator<S>> getComparators() {
-        return this.comparators.isEmpty() ? Arrays.asList((Comparator) Order.incr) : this.comparators;
+        return this.comparators.isEmpty() ? Collections.singletonList((Comparator) Order.incr) : this.comparators;
     }
 
     @Override
@@ -72,6 +75,20 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
+
+    @Override
+    public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
+        return Collections.unmodifiableList(this.comparators.stream()
+                .filter(comparator -> comparator instanceof TraversalComparator)
+                .map(traversalComparator -> ((TraversalComparator<S, E>) traversalComparator).getTraversal())
+                .collect(Collectors.toList()));
+    }
+
+    @Override
+    public void addLocalChild(final Traversal.Admin<?, ?> localChildTraversal) {
+        throw new UnsupportedOperationException("Use OrderGlobalStep.addComparator(" + TraversalComparator.class.getSimpleName() + ") to add a local child traversal:" + this);
+    }
+
 
     /////
 

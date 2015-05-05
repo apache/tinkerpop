@@ -19,11 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.util.ShellGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.LabeledEndStepStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.EngineDependentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.*;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComparatorHolderRemovalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.EngineDependentStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LabeledEndStepStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.TraversalVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -42,7 +43,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
     /**
      * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.
      */
-    public List<TraversalStrategy> toList();
+    public List<TraversalStrategy<?>> toList();
 
     /**
      * Apply all the {@link TraversalStrategy} optimizers to the {@link Traversal} for the stated {@link TraversalEngine}.
@@ -59,7 +60,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      * @param strategies the traversal strategies to add
      * @return the newly updated/sorted traversal strategies collection
      */
-    public TraversalStrategies addStrategies(final TraversalStrategy... strategies);
+    public TraversalStrategies addStrategies(final TraversalStrategy<?>... strategies);
 
     /**
      * Remove all the provided {@link TraversalStrategy} classes from the current collection.
@@ -94,7 +95,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      *
      * @param strategies the traversal strategies to sort
      */
-    public static void sortStrategies(final List<? extends TraversalStrategy> strategies) {
+    public static void sortStrategies(final List<TraversalStrategy<?>> strategies) {
         final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap = new HashMap<>();
         final Set<Class<? extends TraversalStrategy>> strategyClass = new HashSet<>(strategies.size());
         //Initialize data structure
@@ -125,18 +126,18 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                 if (toAdd != null && MultiMap.putAll(dependencyMap, sc, toAdd)) updated = true;
             }
         } while (updated);
-        Collections.sort(strategies, new Comparator<TraversalStrategy>() {
-            @Override
-            public int compare(final TraversalStrategy s1, final TraversalStrategy s2) {
-                boolean s1Before = MultiMap.containsEntry(dependencyMap, s1.getClass(), s2.getClass());
-                boolean s2Before = MultiMap.containsEntry(dependencyMap, s2.getClass(), s1.getClass());
-                if (s1Before && s2Before)
-                    throw new IllegalStateException("Cyclic dependency between traversal strategies: ["
-                            + s1.getClass().getName() + ", " + s2.getClass().getName() + ']');
-                if (s1Before) return -1;
-                else if (s2Before) return 1;
-                else return 0;
-            }
+        Collections.sort(strategies, (strategy1, strategy2) -> {
+            int categoryComparison = strategy1.compareTo(strategy2.getTraversalCategory());
+            if (categoryComparison != 0) return categoryComparison;
+
+            boolean s1Before = MultiMap.containsEntry(dependencyMap, strategy1.getClass(), strategy2.getClass());
+            boolean s2Before = MultiMap.containsEntry(dependencyMap, strategy2.getClass(), strategy1.getClass());
+            if (s1Before && s2Before)
+                throw new IllegalStateException("Cyclic dependency between traversal strategies: ["
+                        + strategy1.getClass().getName() + ", " + strategy2.getClass().getName() + ']');
+            if (s1Before) return -1;
+            else if (s2Before) return 1;
+            else return 0;
         });
     }
 
@@ -147,18 +148,19 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         static {
             final TraversalStrategies coreStrategies = new DefaultTraversalStrategies();
             coreStrategies.addStrategies(
-                    DedupOptimizerStrategy.instance(),
-                    RangeByIsCountStrategy.instance(),
+                    ConjunctionStrategy.instance(),
                     HalfStepTraversalStrategy.instance(),
-                    IdentityRemovalStrategy.instance(),
-                    MatchWhereStrategy.instance(),
-                    ComparatorHolderRemovalStrategy.instance(),
                     LabeledEndStepStrategy.instance(),
-                    //LambdaRestrictionStrategy.instance(),
                     EngineDependentStrategy.instance(),
                     ProfileStrategy.instance(),
-                    TraversalVerificationStrategy.instance(),
-                    ConjunctionStrategy.instance());
+                    ComparatorHolderRemovalStrategy.instance(),
+                    DedupBijectionStrategy.instance(),
+                    IdentityRemovalStrategy.instance(),
+                    MatchWhereStrategy.instance(),
+                    RangeByIsCountStrategy.instance(),
+                    ComputerVerificationStrategy.instance());
+            //LambdaRestrictionStrategy.instance(),
+
             CACHE.put(Graph.class, coreStrategies.clone());
             CACHE.put(EmptyGraph.class, new DefaultTraversalStrategies());
         }

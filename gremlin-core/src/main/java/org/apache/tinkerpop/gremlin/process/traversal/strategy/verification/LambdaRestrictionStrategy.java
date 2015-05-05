@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -27,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy {
+public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
 
     private static final LambdaRestrictionStrategy INSTANCE = new LambdaRestrictionStrategy();
 

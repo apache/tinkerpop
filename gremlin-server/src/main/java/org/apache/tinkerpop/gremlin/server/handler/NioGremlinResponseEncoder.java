@@ -51,27 +51,16 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
         final boolean useBinary = ctx.channel().attr(StateKey.USE_BINARY).get();
 
         try {
-            if (useBinary) {
-                if (responseMessage.getStatus().getCode().isSuccess())
-                    byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, ctx.alloc()));
-                else {
-                    byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, ctx.alloc()));
-                    final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                    byteBuf.writeBytes(serializer.serializeResponseAsBinary(terminator, ctx.alloc()));
-                    errorMeter.mark();
-                }
-            } else {
+            if (!responseMessage.getStatus().getCode().isSuccess())
+                errorMeter.mark();
+
+            if (useBinary)
+                byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, ctx.alloc()));
+            else {
                 // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
                 // instance on the channel.
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                if (responseMessage.getStatus().getCode().isSuccess())
-                    byteBuf.writeBytes(textSerializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
-                else {
-                    byteBuf.writeBytes(textSerializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
-                    final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                    byteBuf.writeBytes(textSerializer.serializeResponseAsString(terminator).getBytes(UTF8));
-                    errorMeter.mark();
-                }
+                byteBuf.writeBytes(textSerializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
             }
         } catch (Exception ex) {
             errorMeter.mark();
@@ -83,13 +72,9 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
                 byteBuf.writeBytes(serializer.serializeResponseAsBinary(error, ctx.alloc()));
-                final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                byteBuf.writeBytes(serializer.serializeResponseAsBinary(terminator, ctx.alloc()));
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
                 byteBuf.writeBytes(textSerializer.serializeResponseAsString(error).getBytes(UTF8));
-                final ResponseMessage terminator = ResponseMessage.build(responseMessage.getRequestId()).code(ResponseStatusCode.SUCCESS_TERMINATOR).create();
-                byteBuf.writeBytes(textSerializer.serializeResponseAsString(terminator).getBytes(UTF8));
             }
         }
     }
