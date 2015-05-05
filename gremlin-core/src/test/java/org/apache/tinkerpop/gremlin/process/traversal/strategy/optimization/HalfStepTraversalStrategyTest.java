@@ -124,7 +124,9 @@ public class HalfStepTraversalStrategyTest {
                     {__.has(__.out("knows")), __.has(__.outE("knows"))},
                     {__.values().count(), __.properties().count()},
                     {__.values("name").count(), __.properties("name").count()},
-                    {__.has(__.values()), __.has(__.properties())}});
+                    {__.has(__.values()), __.has(__.properties())}/*,
+                    {__.outE().inV().count(), __.outE().count()},
+                    {__.has(__.outE().inV()), __.has(__.outE())}*/});
         }
     }
 }

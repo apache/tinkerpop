@@ -36,7 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class HalfStepTraversalStrategy extends AbstractTraversalStrategy implements TraversalStrategy {
+public class HalfStepTraversalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final HalfStepTraversalStrategy INSTANCE = new HalfStepTraversalStrategy();
 
