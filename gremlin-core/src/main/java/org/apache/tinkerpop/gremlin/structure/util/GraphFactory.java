@@ -52,7 +52,7 @@ public class GraphFactory {
 
         final String clazz = configuration.getString(Graph.GRAPH, null);
         if (null == clazz)
-            throw new RuntimeException("Configuration must contain a valid 'gremlin.graph' setting");
+            throw new RuntimeException(String.format("Configuration must contain a valid '%s' setting", Graph.GRAPH));
 
         final Class graphClass;
         try {
