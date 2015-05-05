@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `GryoPool` now takes a `Configuration` object which allows setting the size of the pool and the `IoRegistry` instance.
 * Added `PersistResultGraphAware` interface which is used by `OutputFormats` to specify persistence possibilities for a Hadoop `GraphComputer`.
 * `ElementIdStrategy` now allows the identifier property to be set directly (and not only by specifying `T.id`).
 * Added sample configuration files for registering a `TraversalStrategy` in Gremlin Server.
