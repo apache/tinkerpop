@@ -41,8 +41,10 @@ public class ProfilingApplication {
     private final Cluster cluster;
     private final int requests;
     private final int clients;
+    private final int execution;
 
-    public ProfilingApplication(final Cluster cluster, final int clients, final int requests) {
+    public ProfilingApplication(final int execution, final Cluster cluster, final int clients, final int requests) {
+        this.execution = execution;
         this.cluster = cluster;
         this.clients = clients;
         this.requests = requests;
@@ -57,6 +59,7 @@ public class ProfilingApplication {
 
         final List<Thread> threads = IntStream.range(0, clients).mapToObj(t -> new Thread(() -> {
             final Client client = cluster.connect();
+            final String executionId = "[" + execution + "-"  + t + "]";
             try {
                 final CountDownLatch latch = new CountDownLatch(requests);
                 client.init();
@@ -86,14 +89,14 @@ public class ProfilingApplication {
                 final long requestCount = requests;
                 final long reqSec = Math.round(requestCount / totalSeconds);
                 rps.put(Thread.currentThread(), reqSec);
-                System.out.println(String.format("[" + t + "] clients: %s | requests: %s | time(s): %s | req/sec: %s | too slow: %s", clients, requestCount, totalSeconds, reqSec, tooSlow.get()));
+                System.out.println(String.format(executionId + " clients: %s | requests: %s | time(s): %s | req/sec: %s | too slow: %s", clients, requestCount, totalSeconds, reqSec, tooSlow.get()));
             } catch (Exception ex) {
                 ex.printStackTrace();
                 throw new RuntimeException(ex);
             } finally {
                 if (client != null) client.close();
             }
-        }, "benchmark-client-" + t)).collect(Collectors.toList());
+        }, "benchmark-client-" + execution + "-"  + t)).collect(Collectors.toList());
 
         threads.forEach(t -> {
             try {
@@ -131,12 +134,12 @@ public class ProfilingApplication {
                     .workerPoolSize(clients * 2).create();
 
             for (int ix = 0; ix < warmups; ix ++) {
-                new ProfilingApplication(cluster, clients, requests).execute();
+                new ProfilingApplication(ix + 1, cluster, clients, requests).execute();
             }
 
             long totalRequestsPerSecond = 0;
             for (int ix = 0; ix < executions; ix ++) {
-                totalRequestsPerSecond += new ProfilingApplication(cluster, clients, requests).execute();
+                totalRequestsPerSecond += new ProfilingApplication(ix + 1, cluster, clients, requests).execute();
             }
 
             System.out.println(String.format("avg req/sec: %s", totalRequestsPerSecond / executions));
