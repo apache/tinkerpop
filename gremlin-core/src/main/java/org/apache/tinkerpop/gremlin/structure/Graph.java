@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEn
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.util.FeatureDescriptor;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.javatuples.Pair;
 
@@ -55,6 +56,9 @@ import java.util.stream.Collectors;
  */
 public interface Graph extends AutoCloseable, Host {
 
+    /**
+     * Configuration key used by {@link GraphFactory}} to determine which graph to instantiate.
+     */
     public static final String GRAPH = "gremlin.graph";
 
     /**
