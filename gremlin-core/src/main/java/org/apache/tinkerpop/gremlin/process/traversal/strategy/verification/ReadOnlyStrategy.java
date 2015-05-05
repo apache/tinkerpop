@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
- * Detects steps marked with {@link Mutating} and throw an {@link IllegalStateException} if one is found.
+ * Detects steps marked with {@link Mutating} and throws an {@link IllegalStateException} if one is found.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

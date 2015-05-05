@@ -42,6 +42,9 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy<Travers
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
+        if (!TraversalHelper.hasStepOfAssignableClass(ConjunctionStep.ConjunctionMarker.class, traversal))
+            return;
+
         processConjunctionMarker(AndStep.AndMarker.class, traversal);
         processConjunctionMarker(OrStep.OrMarker.class, traversal);
     }
