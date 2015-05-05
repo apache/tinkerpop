@@ -56,13 +56,9 @@ public class HalfStepTraversalStrategy extends AbstractTraversalStrategy<Travers
                 if (parent instanceof HasTraversalStep) {
                     stepToReplace = curr;
                 }
-            } else if (prev instanceof VertexStep && Vertex.class.equals(((VertexStep) prev).getReturnClass())) {
+            } else if (prev instanceof VertexStep && Vertex.class.equals(((VertexStep) prev).getReturnClass()) ||
+                    prev instanceof PropertiesStep && PropertyType.VALUE.equals(((PropertiesStep) prev).getReturnType())) {
                 if (curr instanceof CountGlobalStep) {
-                    stepToReplace = prev;
-                }
-            } else if (curr instanceof CountGlobalStep) {
-                if (prev instanceof VertexStep && Vertex.class.equals(((VertexStep) prev).getReturnClass()) ||
-                        prev instanceof PropertiesStep && PropertyType.VALUE.equals(((PropertiesStep) prev).getReturnType())) {
                     stepToReplace = prev;
                 }
             }
