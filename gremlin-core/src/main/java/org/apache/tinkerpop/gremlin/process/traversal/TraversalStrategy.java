@@ -18,6 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
@@ -51,6 +56,9 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
         return 0;
     }
 
+    /**
+     * Implemented by strategies that adds "application logic" to the traversal (e.g. {@link PartitionStrategy}).
+     */
     public interface DecorationStrategy extends TraversalStrategy<DecorationStrategy> {
 
         @Override
@@ -73,6 +81,10 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
         }
     }
 
+    /**
+     * Implemented by strategies that rewrite the traversal to be more efficient, but with the same semantics
+     * (e.g. {@link RangeByIsCountStrategy}).
+     */
     public interface OptimizationStrategy extends TraversalStrategy<OptimizationStrategy> {
 
         @Override
@@ -95,6 +107,10 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
         }
     }
 
+    /**
+     * Implemented by strategies that do final behaviors that require a fully compiled traversal to work (e.g.
+     * {@link ProfileStrategy}).
+     */
     public interface FinalizationStrategy extends TraversalStrategy<FinalizationStrategy> {
 
         @Override
@@ -116,7 +132,11 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
                 return 0;
         }
     }
-
+    /**
+     * Implemented by strategies where there is no more behavioral tweaking of the traversal required.  Strategies that
+     * implement this marker will simply analyze the traversal and throw exceptions if the traversal is not correct
+     * for the execution  (e.g. {@link LambdaRestrictionStrategy}).
+     */
     public interface VerificationStrategy extends TraversalStrategy<VerificationStrategy> {
 
         @Override
