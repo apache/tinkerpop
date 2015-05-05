@@ -25,8 +25,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.ArrayList;
@@ -58,8 +58,9 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     public DefaultTraversal(final Graph graph) {
         this.graph = graph;
+        // necessary for anonymous traversals without a source (rethink how this works in the future)
         this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(TraversalStrategies.GlobalCache.getGraphClass(this.graph)));
-        this.traversalEngine = StandardTraversalEngine.instance(); // TODO: remove and then clean up v.outE
+        this.traversalEngine = StandardTraversalEngine.instance();
     }
 
     @Override
