@@ -128,19 +128,24 @@ public class ProfilingApplication {
             final int warmups = 3;
             final int executions = 10;
             final int clients = 1;
-            final int requests = 100000;
+            final int requests = 10000;
             final Cluster cluster = Cluster.build(host)
                     .minConnectionPoolSize(256)
                     .maxConnectionPoolSize(256)
                     .nioPoolSize(clients)
                     .workerPoolSize(clients * 2).create();
 
+            System.out.println("---------------------------WARMUP CYCLE---------------------------");
             for (int ix = 0; ix < warmups; ix ++) {
+                TimeUnit.SECONDS.sleep(1); // pause between executions
                 new ProfilingApplication("warmup-" + (ix + 1), cluster, clients, requests).execute();
             }
 
+
+            System.out.println("----------------------------TEST CYCLE----------------------------");
             long totalRequestsPerSecond = 0;
             for (int ix = 0; ix < executions; ix ++) {
+                TimeUnit.SECONDS.sleep(1); // pause between executions
                 totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests).execute();
             }
 
