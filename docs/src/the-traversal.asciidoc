@@ -252,6 +252,17 @@ g.V().as('a').out('created').as('b').select().by('name') <2>
 <1> Select the objects labeled "a" and "b" from the path.
 <2> Select the objects labeled "a" and "b" from the path and, for each object, project its name value.
 
+A step can have any number of labels associated with it. This is useful for referencing the same step multiple times in a future step.
+
+[gremlin-groovy,modern]
+----
+g.V().hasLabel('software').as('a','b','c').
+   select().
+     by('name').
+     by('lang').
+     by(__.in('created').values('name').fold())
+----
+
 [[by-step]]
 By Step
 ~~~~~~~
@@ -460,7 +471,7 @@ g.V().values('age').sum() <6>
 Group Step
 ~~~~~~~~~~
 
-As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actually path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `group()`-step (*sideEffect*) is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
+As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actual path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `group()`-step (*sideEffect*) is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
 
 [gremlin-groovy,modern]
 ----
@@ -495,7 +506,7 @@ g.V().hasLabel('person').values('age').groupCount()
 g.V().hasLabel('person').groupCount().by('age') <1>
 ----
 
-<1> You can also supply a pre-group projection.
+<1> You can also supply a pre-group projection, where the provided <<by-step,`by()`>>-modulation determines what to group the incoming object by.
 
 There is one person that is 32, one person that is 35, one person that is 27, and one person that is 29.
 
@@ -876,7 +887,6 @@ g.V().hasLabel('person').order().by(shuffle)
 ----
 
 IMPORTANT: `order(local)` orders the current, local object (not the objects in the traversal stream). This works for `Collection`- and `Map`-type objects. For any other object, the object is returned unchanged.
-
 
 [[path-step]]
 Path Step
@@ -1492,15 +1502,16 @@ TraversalStrategy
 
 image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in multiple situations:
 
- * There is a more efficient way to express the traversal at the TinkerPop3 level.
- * There is a more efficient way to express the traversal at the graph vendor level.
- * There are generally useful features that can be automatically embedded into the traversal logic and tend to be applicable to end-users.
+ * There is an application-level feature that can be embedded into the traversal logic (*decoration*).
+ * There is a more efficient way to express the traversal at the TinkerPop3 or graph vendor level (*optimization*).
+ * There are are some final adjustments required before executing the traversal (*finalization*).
+ * There are certain traversals that are not legal for the application or traversal engine (*verification*).
 
-A simple TraversalStrategy is the `IdentityRemovalStrategy` and it is a type-1 strategy defined as follows:
+A simple `OptimizationStrategy` is the `IdentityRemovalStrategy`.
 
 [source,java]
 ----
-public class IdentityRemovalStrategy extends AbstractTraversalStrategy {
+public class IdentityRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final IdentityRemovalStrategy INSTANCE = new IdentityRemovalStrategy();
 
@@ -1508,7 +1519,7 @@ public class IdentityRemovalStrategy extends AbstractTraversalStrategy {
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
+    public void apply(final Traversal.Admin<?, ?> traversal) {
         if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
             return;
         TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream()
@@ -1522,13 +1533,15 @@ public class IdentityRemovalStrategy extends AbstractTraversalStrategy {
 }
 ----
 
-This strategy simply removes any unlabeled `IdentityStep` steps in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. For those traversal strategies that require other strategies to execute prior or post to the strategy, then the following two methods can be defined in `TraversalStrategy` (with defaults being an empty set).
+This strategy simply removes any unlabeled `IdentityStep` steps in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. For those traversal strategies that require other strategies to execute prior or post to the strategy, then the following two methods can be defined in `TraversalStrategy` (with defaults being an empty set). If the `TraversalStrategy` is in a particular traversal category (i.e. decoration, optimization, finalization, or verification), then priors and posts are only possible within the category.
 
 [source,java]
-public Set<Class<? extends TraversalStrategy>> applyPrior();
-public Set<Class<? extends TraversalStrategy>> applyPost();
+public Set<Class<? extends S>> applyPrior();
+public Set<Class<? extends S>> applyPost();
 
-Type-2 strategies are defined by graph vendors who implement TinkerPop3.
+IMPORTANT: `TraversalStrategy` categories are sorted within their category and the categories are then executed in the following order: decoration, optimization, finalization, and verification. If a designed strategy does not fit cleanly into these categories, then it can implement `TraversalStrategy` and its prior and posts can reference strategies within any category.
+
+Another example `OptimizationStrategy` in action is provided below.
 
 [source,groovy]
 g.V().has('name','marko')
@@ -1537,42 +1550,46 @@ The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<
 
 [source,java]
 ----
-public class TinkerGraphStepStrategy extends AbstractTraversalStrategy {
+public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final TinkerGraphStepStrategy INSTANCE = new TinkerGraphStepStrategy();
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>();
+
+    static {
+        PRIORS.add(IdentityRemovalStrategy.class);
+    }
 
     private TinkerGraphStepStrategy() {
     }
 
     @Override
-    public void apply(final Traversal.Admin<?, ?> traversal, final TraversalEngine engine) {
-        if (engine.equals(TraversalEngine.COMPUTER))
+    public void apply(final Traversal.Admin<?, ?> traversal) {
+        if (traversal.getEngine().isComputer())
             return;
 
-        final Step<?, ?> startStep = TraversalHelper.getStart(traversal);
+        final Step<?, ?> startStep = traversal.getStartStep();
         if (startStep instanceof GraphStep) {
             final GraphStep<?> originalGraphStep = (GraphStep) startStep;
             final TinkerGraphStep<?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
-            TraversalHelper.replaceStep(startStep, tinkerGraphStep, traversal);
+            TraversalHelper.replaceStep(startStep, (Step) tinkerGraphStep, traversal);
 
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
             while (true) {
                 if (currentStep instanceof HasContainerHolder) {
                     tinkerGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
-                    if (TraversalHelper.isLabeled(currentStep)) {
-                        final IdentityStep identityStep = new IdentityStep<>(traversal);
-                        identityStep.setLabel(currentStep.getLabel());
-                        TraversalHelper.insertAfterStep(identityStep, currentStep, traversal);
-                    }
+                    currentStep.getLabels().forEach(tinkerGraphStep::addLabel);
                     traversal.removeStep(currentStep);
-                } else if (currentStep instanceof IdentityStep) {
-                    // do nothing
                 } else {
                     break;
                 }
                 currentStep = currentStep.getNextStep();
             }
         }
+    }
+
+    @Override
+    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
+        return PRIORS;
     }
 
     public static TinkerGraphStepStrategy instance() {
@@ -1591,7 +1608,7 @@ t.iterate(); null
 t.toString()
 ----
 
-TinkerPop has a number of type-3 strategies distributed as part of its core library.  These strategies add generalized features to a traversal that are typically useful to end-users.  The following sections detail these strategies:
+A collection of useful `DecorationStrategy` strategies are provided with TinkerPop3 and are generally useful to end-users.  The following sub-sections detail these strategies:
 
 ElementIdStrategy
 ~~~~~~~~~~~~~~~~~
@@ -1601,8 +1618,8 @@ ElementIdStrategy
 [gremlin-groovy]
 ----
 g = TinkerGraph.open().traversal()
-v = g.addV(id,"42a")
-g.V("42a")
+v = g.addV(id,'42a')
+g.V('42a')
 ----
 
 Other `Graph` implementations, such as Neo4j, generate element identifiers automatically and cannot be assigned.  As a helper, `ElementIdStrategy` can be used to make identifier assignment possible by using vertex and edge indicies under the hood.
@@ -1615,7 +1632,7 @@ gremlin> strategy = ElementIdStrategy.build().create()
 ==>ElementIdStrategy
 gremlin> g = GraphTraversalSource.build().with(strategy).create(graph)
 ==>graphtraversalsource[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]], standard]
-gremlin> g.addV(id, "42a").id()
+gremlin> g.addV(id, '42a').id()
 ==>42a
 ----
 
@@ -1645,7 +1662,7 @@ graph = TinkerFactory.createModern()
 l = new ConsoleMutationListener(graph)
 strategy = EventStrategy.build().addListener(l).create()
 g = GraphTraversalSource.build().with(strategy).create(graph)
-g.addV("name","stephen")
+g.addV('name','stephen')
 g.E().drop()
 ----
 
