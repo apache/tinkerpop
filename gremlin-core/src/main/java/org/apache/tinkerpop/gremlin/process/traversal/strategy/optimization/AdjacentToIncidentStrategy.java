@@ -36,7 +36,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy>
+        implements TraversalStrategy.OptimizationStrategy {
 
     private static final AdjacentToIncidentStrategy INSTANCE = new AdjacentToIncidentStrategy();
 
@@ -49,31 +50,39 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
         Step prev = null;
         for (int i = 0; i <= size; i++) {
             final Step curr = traversal.getSteps().get(i);
-            Step stepToReplace = null;
-            if (i == size && ((curr instanceof VertexStep && Vertex.class.equals(((VertexStep) curr).getReturnClass())) ||
-                    (curr instanceof PropertiesStep && PropertyType.VALUE.equals(((PropertiesStep) curr).getReturnType())))) {
+            if (i == size && isOptimizable(curr)) {
                 final TraversalParent parent = curr.getTraversal().getParent();
                 if (parent instanceof HasTraversalStep) {
-                    stepToReplace = curr;
+                    optimizeStep(traversal, curr);
                 }
-            } else if (prev instanceof VertexStep && Vertex.class.equals(((VertexStep) prev).getReturnClass()) ||
-                    prev instanceof PropertiesStep && PropertyType.VALUE.equals(((PropertiesStep) prev).getReturnType())) {
+            } else if (isOptimizable(prev)) {
                 if (curr instanceof CountGlobalStep) {
-                    stepToReplace = prev;
+                    optimizeStep(traversal, prev);
                 }
-            }
-            if (stepToReplace instanceof VertexStep) {
-                final VertexStep vs = (VertexStep) stepToReplace;
-                TraversalHelper.replaceStep(stepToReplace, new VertexStep<>(traversal, Edge.class, vs.getDirection(),
-                        vs.getEdgeLabels()), traversal);
-            } else if (stepToReplace instanceof PropertiesStep) {
-                final PropertiesStep ps = (PropertiesStep) stepToReplace;
-                TraversalHelper.replaceStep(stepToReplace, new PropertiesStep(traversal, PropertyType.PROPERTY, ps.getPropertyKeys()), traversal);
             }
             if (!(curr instanceof RangeGlobalStep)) {
                 prev = curr;
             }
         }
+    }
+
+    private static boolean isOptimizable(final Step step) {
+        return ((step instanceof VertexStep && Vertex.class.equals(((VertexStep) step).getReturnClass())) ||
+                (step instanceof PropertiesStep && PropertyType.VALUE.equals(((PropertiesStep) step).getReturnType())));
+    }
+
+    private static void optimizeStep(final Traversal.Admin traversal, final Step step) {
+        final Step newStep;
+        if (step instanceof VertexStep) {
+            final VertexStep vs = (VertexStep) step;
+            newStep = new VertexStep<>(traversal, Edge.class, vs.getDirection(), vs.getEdgeLabels());
+        } else if (step instanceof PropertiesStep) {
+            final PropertiesStep ps = (PropertiesStep) step;
+            newStep = new PropertiesStep(traversal, PropertyType.PROPERTY, ps.getPropertyKeys());
+        } else {
+            return;
+        }
+        TraversalHelper.replaceStep(step, newStep, traversal);
     }
 
     public static AdjacentToIncidentStrategy instance() {
