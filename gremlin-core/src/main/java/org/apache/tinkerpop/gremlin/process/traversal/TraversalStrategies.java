@@ -149,10 +149,10 @@ public interface TraversalStrategies extends Serializable, Cloneable {
             final TraversalStrategies coreStrategies = new DefaultTraversalStrategies();
             coreStrategies.addStrategies(
                     ConjunctionStrategy.instance(),
-                    HalfStepTraversalStrategy.instance(),
                     LabeledEndStepStrategy.instance(),
                     EngineDependentStrategy.instance(),
                     ProfileStrategy.instance(),
+                    AdjacentToIncidentStrategy.instance(),
                     ComparatorHolderRemovalStrategy.instance(),
                     DedupBijectionStrategy.instance(),
                     IdentityRemovalStrategy.instance(),

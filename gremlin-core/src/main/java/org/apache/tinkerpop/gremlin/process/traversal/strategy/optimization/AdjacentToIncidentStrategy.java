@@ -36,11 +36,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class HalfStepTraversalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
-    private static final HalfStepTraversalStrategy INSTANCE = new HalfStepTraversalStrategy();
+    private static final AdjacentToIncidentStrategy INSTANCE = new AdjacentToIncidentStrategy();
 
-    private HalfStepTraversalStrategy() {
+    private AdjacentToIncidentStrategy() {
     }
 
     @Override
@@ -64,7 +64,7 @@ public class HalfStepTraversalStrategy extends AbstractTraversalStrategy<Travers
             }
             if (stepToReplace instanceof VertexStep) {
                 final VertexStep vs = (VertexStep) stepToReplace;
-                TraversalHelper.replaceStep(stepToReplace, new VertexStep(traversal, Edge.class, vs.getDirection(),
+                TraversalHelper.replaceStep(stepToReplace, new VertexStep<>(traversal, Edge.class, vs.getDirection(),
                         vs.getEdgeLabels()), traversal);
             } else if (stepToReplace instanceof PropertiesStep) {
                 final PropertiesStep ps = (PropertiesStep) stepToReplace;
@@ -76,7 +76,7 @@ public class HalfStepTraversalStrategy extends AbstractTraversalStrategy<Travers
         }
     }
 
-    public static HalfStepTraversalStrategy instance() {
+    public static AdjacentToIncidentStrategy instance() {
         return INSTANCE;
     }
 }

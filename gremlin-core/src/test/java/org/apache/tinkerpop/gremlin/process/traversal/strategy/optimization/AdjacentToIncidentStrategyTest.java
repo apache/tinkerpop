@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 @RunWith(Enclosed.class)
-public class HalfStepTraversalStrategyTest {
+public class AdjacentToIncidentStrategyTest {
 
     @RunWith(Parameterized.class)
     public static class StandardTest extends AbstractHalfStepTraversalStrategyTest {
@@ -99,7 +99,7 @@ public class HalfStepTraversalStrategyTest {
 
         void applyHalfStepTraversalStrategy(final Traversal traversal) {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(HalfStepTraversalStrategy.instance());
+            strategies.addStrategies(AdjacentToIncidentStrategy.instance());
 
             traversal.asAdmin().setStrategies(strategies);
             traversal.asAdmin().applyStrategies();
