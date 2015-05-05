@@ -25,6 +25,9 @@ import java.io.Serializable;
 import java.util.Optional;
 
 /**
+ * A TraversalSource is responsible for generating a {@link Traversal}. A TraversalSource, once built, can generate any number of {@link Traversal} instances.
+ * Each traversal DSL will maintain a corresponding {@link TraversalSource} which specifies the methods which being a "fluent-chaining" of traversal steps.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TraversalSource {

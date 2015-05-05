@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal;
+package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import java.util.NoSuchElementException;
 

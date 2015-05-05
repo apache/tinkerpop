@@ -30,7 +30,7 @@ import java.util.Optional;
  * A TraversalEngine is reponsible for executing a {@link Traversal}. There are two {@link Type}s of TraversalEngines.
  * {@link Type#STANDARD} is the OLTP, iterator-based model of graph traversal.
  * {@link Type#COMPUTER} is the OLAP, message passing model of graph traversal.
- * Every {@link TraversalSource} should be provided a {@link TraversalEngine.Builder} so it can construct an engine each spawned {@link Traversal}.
+ * Every {@link TraversalSource} should be provided a {@link TraversalEngine.Builder} so it can construct an engine for each spawned {@link Traversal}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */

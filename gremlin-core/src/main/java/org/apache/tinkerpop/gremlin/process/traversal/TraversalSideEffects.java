@@ -28,6 +28,9 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
+ * A {@link Traversal} can maintain global sideEffects.
+ * Unlike {@link Traverser} "sacks" which are local sideEffects, TraversalSideEffects are accessible by all {@link Traverser} instances within the {@link Traversal}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TraversalSideEffects extends Cloneable, Serializable {
@@ -102,10 +105,31 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
             this.registerSupplier(key, supplier);
     }
 
+    /**
+     * Set the initial value of each {@link Traverser} "sack" along with the operator for splitting sacks.
+     * If no operator is provided, then a direct memory copy is assumed (this is typically good for primitive types and strings).
+     *
+     * @param initialValue  the initial value supplier of the traverser sack
+     * @param splitOperator the split operator for splitting traverser sacks
+     * @param <S>           the sack type
+     */
     public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator);
 
+    /**
+     * If sacks are enabled, get the initial value of the {@link Traverser} sack.
+     *
+     * @param <S> the sack type
+     * @return the supplier of the initial value of the traverser sack
+     */
     public <S> Optional<Supplier<S>> getSackInitialValue();
 
+    /**
+     * If sacks are enabled and a split operator has been specified, then get it.
+     * The split operator is used to split a stack when a bifurcation in a {@link Traverser} happens.
+     *
+     * @param <S> the sack type
+     * @return the operator for splitting a traverser sack
+     */
     public <S> Optional<UnaryOperator<S>> getSackSplitOperator();
 
     /**

@@ -34,5 +34,5 @@ public enum TraverserRequirement {
     PATH,
     SACK,
     SIDE_EFFECTS,
-    // NESTED_TRAVERSALS
+
 }

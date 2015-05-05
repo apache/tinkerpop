@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.Set;
 
 /**

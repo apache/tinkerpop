@@ -35,6 +35,9 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
+ * A {@link Traversal} maintains a set of {@link TraversalStrategy} instances within a TraversalStrategies object.
+ * TraversalStrategies are responsible for compiling a traversal prior to its execution.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
  */

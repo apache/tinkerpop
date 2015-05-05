@@ -29,7 +29,9 @@ import java.util.Set;
 
 /**
  * A {@link TraversalStrategy} defines a particular atomic operation for mutating a {@link Traversal} prior to its evaluation.
- * Traversal strategies are typically used for optimizing a traversal for the particular underlying graph engine.
+ * There are 4 typical "traversal categories": {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link FinalizationStrategy}, and {@link VerificationStrategy}.
+ * Strategies within a category are sorted amongst themselves and then category sorts are applied in the ordered specified previous.
+ * If a strategy does not fit within the specified categories, then it can simply implement {@link TraversalStrategy} and can have priors/posts that span categories.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
@@ -135,7 +137,7 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
     /**
      * Implemented by strategies where there is no more behavioral tweaking of the traversal required.  Strategies that
      * implement this marker will simply analyze the traversal and throw exceptions if the traversal is not correct
-     * for the execution  (e.g. {@link LambdaRestrictionStrategy}).
+     * for the execution context (e.g. {@link LambdaRestrictionStrategy}).
      */
     public interface VerificationStrategy extends TraversalStrategy<VerificationStrategy> {
 

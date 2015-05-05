@@ -55,11 +55,6 @@ import java.util.stream.Collectors;
 public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
 
     /**
-     * Used for reflection based access to the static "of" method of a Traversal.
-     */
-    public static final String OF = "of";
-
-    /**
      * Get access to administrative methods of the traversal via its accompanying {@link Traversal.Admin}.
      *
      * @return the admin of this traversal

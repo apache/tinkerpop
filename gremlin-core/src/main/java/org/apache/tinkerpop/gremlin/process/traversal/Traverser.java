@@ -28,7 +28,7 @@ import java.util.function.Function;
  * A traverser maintains a reference to the current object, a traverser-local "sack", a traversal-global sideEffect,
  * a bulk count, and a path history.
  * <p/>
- * Different types of traverser can exist depending on the semantics of the traversal and the desire for
+ * Different types of traversers can exist depending on the semantics of the traversal and the desire for
  * space/time optimizations of the developer.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

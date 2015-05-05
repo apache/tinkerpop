@@ -24,6 +24,10 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
+ * A TraverserGenerator will generate traversers for a particular {@link Traversal}. In essence, wrap objects in a {@link Traverser}.
+ * Typically the {@link TraverserGenerator} chosen is determined by the {@link TraverserRequirement} of the {@link Traversal}.
+ * Simple requirements, simpler traversers. Complex requirements, complex traversers.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface TraverserGenerator {
