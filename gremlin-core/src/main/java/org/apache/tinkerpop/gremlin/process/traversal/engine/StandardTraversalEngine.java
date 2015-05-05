@@ -38,11 +38,6 @@ public final class StandardTraversalEngine implements TraversalEngine {
     }
 
     @Override
-    public void processTraversal(final Traversal.Admin<?, ?> traversal) {
-
-    }
-
-    @Override
     public Type getType() {
         return Type.STANDARD;
     }

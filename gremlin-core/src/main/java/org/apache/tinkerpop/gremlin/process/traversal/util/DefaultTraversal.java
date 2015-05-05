@@ -86,7 +86,6 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 }
             }
         }
-        this.traversalEngine.processTraversal(this);
         this.finalEndStep = this.getEndStep();
         this.locked = true;
     }

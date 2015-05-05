@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -30,8 +32,6 @@ import java.util.Optional;
 public interface TraversalEngine extends Serializable {
 
     public enum Type {STANDARD, COMPUTER}
-
-    public void processTraversal(final Traversal.Admin<?, ?> traversal);
 
     public Type getType();
 
@@ -43,6 +43,14 @@ public interface TraversalEngine extends Serializable {
 
     public default boolean isComputer() {
         return this.getType().equals(Type.COMPUTER);
+    }
+
+    public default List<TraversalStrategy> getWithStrategies() {
+        return Collections.emptyList();
+    }
+
+    public default List<Class<? extends TraversalStrategy>> getWithoutStrategies() {
+        return Collections.emptyList();
     }
 
     ///////////

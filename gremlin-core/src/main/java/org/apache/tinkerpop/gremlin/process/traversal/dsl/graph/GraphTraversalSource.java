@@ -36,7 +36,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -72,6 +71,9 @@ public class GraphTraversalSource implements TraversalSource {
         this.engine = engine;
         this.withStrategies = withStrategies;
         this.withoutStrategies = withoutStrategies;
+        final TraversalEngine tempEngine = this.engine.create(this.graph);
+        this.withStrategies.addAll(tempEngine.getWithStrategies());
+        this.withoutStrategies.addAll(tempEngine.getWithoutStrategies());
         final TraversalStrategies tempStrategies = TraversalStrategies.GlobalCache.getStrategies(TraversalStrategies.GlobalCache.getGraphClass(this.graph));
         this.strategies = withStrategies.isEmpty() && withoutStrategies.isEmpty() ?
                 tempStrategies :
@@ -82,7 +84,8 @@ public class GraphTraversalSource implements TraversalSource {
 
     private <S> GraphTraversal.Admin<S, S> generateTraversal() {
         final GraphTraversal.Admin<S, S> traversal = new DefaultGraphTraversal<>(this.graph);
-        traversal.setEngine(this.engine.create(this.graph));
+        final TraversalEngine engine = this.engine.create(this.graph);
+        traversal.setEngine(engine);
         traversal.setStrategies(this.strategies);
         return traversal;
     }
@@ -175,8 +178,8 @@ public class GraphTraversalSource implements TraversalSource {
     public static class Builder implements TraversalSource.Builder<GraphTraversalSource> {
 
         private TraversalEngine.Builder engineBuilder = StandardTraversalEngine.build();
-        private List<TraversalStrategy> withStrategies = null;
-        private List<Class<? extends TraversalStrategy>> withoutStrategies = null;
+        private List<TraversalStrategy> withStrategies = new ArrayList<>();
+        private List<Class<? extends TraversalStrategy>> withoutStrategies = new ArrayList<>();
 
         private Builder() {
         }
@@ -189,23 +192,19 @@ public class GraphTraversalSource implements TraversalSource {
 
         @Override
         public Builder with(final TraversalStrategy strategy) {
-            if (null == this.withStrategies) this.withStrategies = new ArrayList<>();
             this.withStrategies.add(strategy);
             return this;
         }
 
         @Override
         public TraversalSource.Builder without(Class<? extends TraversalStrategy> strategyClass) {
-            if (null == this.withoutStrategies) this.withoutStrategies = new ArrayList<>();
             this.withoutStrategies.add(strategyClass);
             return this;
         }
 
         @Override
         public GraphTraversalSource create(final Graph graph) {
-            return new GraphTraversalSource(graph, this.engineBuilder,
-                    null == this.withStrategies ? Collections.emptyList() : this.withStrategies,
-                    null == this.withoutStrategies ? Collections.emptyList() : this.withoutStrategies);
+            return new GraphTraversalSource(graph, this.engineBuilder, this.withStrategies, this.withoutStrategies);
         }
     }
 
