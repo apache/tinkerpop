@@ -82,9 +82,6 @@ public class ProfilingApplication {
 
                 final long end = System.nanoTime();
                 final long total = end - start;
-
-                System.out.println("All responses for [" + t + "] are accounted for at: " + end);
-
                 final long totalSeconds = Math.round(total / 1000000000d);
                 final long requestCount = requests;
                 final long reqSec = Math.round(requestCount / totalSeconds);
@@ -121,12 +118,10 @@ public class ProfilingApplication {
 
     public static void main(final String[] args) {
         try {
-            System.out.println("Initializing at: " + System.nanoTime());
-
             final String host = args.length == 0 ? "localhost" : args[0];
 
-            final int warmups = 1;
-            final int executions = 1;
+            final int warmups = 3;
+            final int executions = 10;
             final int clients = 1;
             final int requests = 10000;
             final Cluster cluster = Cluster.build(host)
