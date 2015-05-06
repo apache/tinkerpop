@@ -36,7 +36,7 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
         super(traversal);
     }
 
-    public abstract void barrierConsumer(final TraverserSet<S> traverserSet);
+    protected abstract void barrierConsumer(final TraverserSet<S> traverserSet);
 
     @Override
     public Set<TraverserRequirement> getRequirements() {

@@ -50,7 +50,7 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
     }
 
     @Override
-    public void barrierConsumer(final TraverserSet<S> traverserSet) {
+    protected void barrierConsumer(final TraverserSet<S> traverserSet) {
         traverserSet.sort(this.comparators.isEmpty() ? new ComparatorTraverser(Order.incr) : new ChainedComparator(ComparatorTraverser.convertComparator((List) this.comparators)));
     }
 

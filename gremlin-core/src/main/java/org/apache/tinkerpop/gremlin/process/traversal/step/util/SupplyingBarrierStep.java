@@ -34,7 +34,7 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> {
         super(traversal);
     }
 
-    public abstract E supply();
+    protected abstract E supply();
 
     @Override
     public void reset() {

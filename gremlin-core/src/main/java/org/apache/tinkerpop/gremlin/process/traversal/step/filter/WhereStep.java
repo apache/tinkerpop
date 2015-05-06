@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.MarkerIdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.P;
@@ -66,7 +65,6 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
         this.firstKey = startStep.getLabels().iterator().next();
         /// get the end-step as()
         Step<?, ?> endStep = this.traversalConstraint.getEndStep();
-        if (endStep instanceof MarkerIdentityStep) endStep = endStep.getPreviousStep();  // DAH
         if (endStep.getLabels().size() > 1)
             throw new IllegalArgumentException("Where traversal can not have multiple labels on the end step: " + this.traversalConstraint);
         this.secondKey = endStep.getLabels().isEmpty() ? null : endStep.getLabels().iterator().next();
