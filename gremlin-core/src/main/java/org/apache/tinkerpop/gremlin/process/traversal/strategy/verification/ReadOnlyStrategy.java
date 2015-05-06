@@ -22,12 +22,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 /**
  * Detects steps marked with {@link Mutating} and throws an {@link IllegalStateException} if one is found.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @example <pre>
+ * __.out().addE()                 // throws an IllegalStateException
+ * __.addV()                       // throws an IllegalStateException
+ * __.property(key,value)          // throws an IllegalStateException
+ * __.out().drop()                 // throws an IllegalStateException
+ * </pre>
  */
 public final class ReadOnlyStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
 
@@ -39,15 +44,10 @@ public final class ReadOnlyStrategy extends AbstractTraversalStrategy<TraversalS
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (traversal.getSteps().stream().anyMatch(step -> step instanceof Mutating))
-            throw new IllegalStateException("The provided traversal has a mutating step and thus is not read only");
+            throw new IllegalStateException("The provided traversal has a mutating step and thus is not read only: " + traversal);
     }
 
     public static ReadOnlyStrategy instance() {
         return INSTANCE;
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.traversalStrategyString(this);
     }
 }

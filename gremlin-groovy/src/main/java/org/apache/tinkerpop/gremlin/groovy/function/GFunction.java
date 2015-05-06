@@ -19,13 +19,14 @@
 package org.apache.tinkerpop.gremlin.groovy.function;
 
 import groovy.lang.Closure;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GFunction<A, B> implements Function<A, B> {
+public final class GFunction<A, B> implements Function<A, B>, LambdaHolder {
 
     private final Closure closure;
 

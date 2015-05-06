@@ -18,10 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.DedupBijectionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -42,11 +48,13 @@ public class LambdaRestrictionStrategyTest {
         return Arrays.asList(new Object[][]{
                 {"filter(x->true)", __.filter(x -> true)},
                 {"map(Traverser::get)", __.map(Traverser::get)},
-                {"sideEffect(x -> {int i= 1+1;})", __.sideEffect(x -> {
+                {"sideEffect(x -> {int i = 1+1;})", __.sideEffect(x -> {
                     int i = 1 + 1;
                 })},
                 {"select().by(Object::toString)", __.select().by(Object::toString)},
-                //{"order().by((a,b)->a.compareTo(b))", __.order().by((a, b) -> ((Integer) a).compareTo((Integer) b))},
+                {"order().by((a,b)->a.compareTo(b))", __.order().by((a, b) -> ((Integer) a).compareTo((Integer) b))},
+                {"order(local).by((a,b)->a.compareTo(b))", __.order(Scope.local).by((a, b) -> ((Integer) a).compareTo((Integer) b))},
+                {"__.choose(v->v.toString().equals(\"marko\"),__.out(),__.in())", __.choose(v -> v.toString().equals("marko"), __.out(), __.in())},
         });
     }
 
@@ -59,8 +67,12 @@ public class LambdaRestrictionStrategyTest {
     @Test
     public void shouldNotAllowLambdaSteps() {
         try {
-            LambdaRestrictionStrategy.instance().apply(traversal.asAdmin());
-            fail("The strategy should not allow lambdas.");
+            final TraversalStrategies strategies = new DefaultTraversalStrategies();
+            strategies.addStrategies(LambdaRestrictionStrategy.instance());
+            traversal.asAdmin().setStrategies(strategies);
+            traversal.asAdmin().setEngine(StandardTraversalEngine.instance());
+            traversal.asAdmin().applyStrategies();
+            fail("The strategy should not allow lambdas: " + this.traversal);
         } catch (IllegalStateException ise) {
             assertTrue(ise.getMessage().contains("lambda"));
         }

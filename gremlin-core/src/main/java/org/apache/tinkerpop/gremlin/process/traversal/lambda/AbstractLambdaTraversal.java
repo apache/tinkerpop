@@ -26,11 +26,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_TraverserGenerator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
@@ -42,7 +42,8 @@ import java.util.Optional;
  */
 public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S, E> {
 
-    @Override
+    private TraversalStrategies traversalStrategies = EmptyTraversalStrategies.instance();
+
     public List<Step> getSteps() {
         return Collections.emptyList();
     }
@@ -64,7 +65,7 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public void applyStrategies() throws IllegalStateException {
-
+        this.traversalStrategies.applyStrategies(this);
     }
 
     @Override
@@ -89,7 +90,7 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public void setStrategies(final TraversalStrategies strategies) {
-
+        this.traversalStrategies = strategies;
     }
 
     @Override

@@ -19,13 +19,14 @@
 package org.apache.tinkerpop.gremlin.groovy.function;
 
 import groovy.lang.Closure;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 
 import java.util.function.UnaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GUnaryOperator<A> implements UnaryOperator<A> {
+public final class GUnaryOperator<A> implements UnaryOperator<A>, LambdaHolder {
 
     private final Closure closure;
 

@@ -21,12 +21,26 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 
+import java.util.Comparator;
+
 /**
+ * LambdaRestrictionStrategy does not allow lambdas to be used in a {@link Traversal}.
+ * The contents of a lambda can not be analyzed/optimized and thus, reduce the abilities of other {@link TraversalStrategy} instances to reason about the traversal.
+ * This strategy is not activated by default. However, graph system vendors may choose to make this a default strategy in order to ensure their respective strategies are better able to operate.
+ * <p/>
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @example <pre>
+ * __.out().map(v -> v.get().value("name"))           // throws an IllegalStateException
+ * __.out().filter(v -> v.bulk() > 2)                 // throws an IllegalStateException
+ * __.choose(v -> v.sack() == 1,out(),in())           // throws an IllegalStateException
+ * __.select().by(v -> v.get().id())                  // throws an IllegalStateException
+ * __.order().by(a,b -> a > b)                         // throws an IllegalStateException
+ * </pre>
  */
 public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
 
@@ -42,14 +56,10 @@ public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<T
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (step instanceof LambdaHolder)
                 throw new IllegalStateException("The provided traversal contains a lambda step: " + step);
-            if (step instanceof TraversalParent) {
-                for (final Traversal.Admin<?, ?> localTraversal : ((TraversalParent) step).getLocalChildren()) {  // this is because the lambda traversal do not have strategies
-                    if (localTraversal instanceof LambdaHolder)
-                        throw new IllegalStateException("The provided traversal contains a lambda traversal: " + localTraversal);
-                }
-                for (final Traversal.Admin<?, ?> globalTraversal : ((TraversalParent) step).getGlobalChildren()) {  // this is because the lambda traversal do not have strategies
-                    if (globalTraversal instanceof LambdaHolder)
-                        throw new IllegalStateException("The provided traversal contains a lambda traversal: " + globalTraversal);
+            if (step instanceof ComparatorHolder) {
+                for (final Comparator<?> comparator : ((ComparatorHolder<?>) step).getComparators()) {
+                    if (comparator instanceof LambdaHolder || comparator.toString().contains("$$Lambda$"))
+                        throw new IllegalStateException("The provided step contains a lambda comparator: " + step);
                 }
             }
         }

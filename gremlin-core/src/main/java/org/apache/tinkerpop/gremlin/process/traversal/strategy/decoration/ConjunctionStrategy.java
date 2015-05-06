@@ -31,7 +31,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 /**
+ * ConjunctionStrategy rewrites the binary conjunction form of <code>a.and().b</code> into a {@link AndStep} of <code>and(a,b)</code> (likewise for {@link OrStep}.
+ * <p/>
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @example <pre>
+ * __.has("name","stephen").or().has(__.out("knows").has("name","stephen"))   // is replaced by __.or(__.has("name","stephen"),__.has(__.out("knows").has("name","stephen")))
+ * __.out("a").out("b").and().out("c").or().out("d")                          // is replaced by __.or(__.and(__.out("a").out("b"), __.out("c")), __.out("d"))
+ * </pre>
  */
 public final class ConjunctionStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 

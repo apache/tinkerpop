@@ -25,7 +25,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 /**
+ * IdentityRemovalStrategy looks for unlabeled {@link IdentityStep} instances and removes them.
+ * <p/>
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @example <pre>
+ * __.out().identity().count()            // is replaced by __.out().count()
+ * __.identity().as("a").in().identity()  // is replaced by __.identity().as("a").in()
+ * </pre>
  */
 public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 

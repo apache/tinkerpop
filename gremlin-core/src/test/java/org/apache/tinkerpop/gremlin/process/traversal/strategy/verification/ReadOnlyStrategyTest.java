@@ -65,10 +65,10 @@ public class ReadOnlyStrategyTest {
     @Test
     public void shouldPreventMutatingStepsFromBeingInTheTraversal() {
         try {
-            ReadOnlyStrategy.instance().apply(traversal.asAdmin());
+            ReadOnlyStrategy.instance().apply(this.traversal.asAdmin());
             fail("The strategy should have found a mutating step.");
         } catch (IllegalStateException ise) {
-            assertEquals("The provided traversal has a mutating step and thus is not read only", ise.getMessage());
+            assertEquals("The provided traversal has a mutating step and thus is not read only: " + this.traversal, ise.getMessage());
         }
     }
 }

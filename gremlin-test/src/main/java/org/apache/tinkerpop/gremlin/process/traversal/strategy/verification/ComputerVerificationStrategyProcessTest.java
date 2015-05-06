@@ -33,10 +33,10 @@ import static org.junit.Assert.fail;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class TraversalVerificationStrategyTest extends AbstractGremlinProcessTest {
+public abstract class ComputerVerificationStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends TraversalVerificationStrategyTest {
+    public static class StandardTraversals extends ComputerVerificationStrategyProcessTest {
         @Test
         @LoadGraphWith(MODERN)
         public void shouldAllowNestedGlobalTraversalToHaveBarriers() {
@@ -69,7 +69,7 @@ public abstract class TraversalVerificationStrategyTest extends AbstractGremlinP
     }
 
     @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends TraversalVerificationStrategyTest {
+    public static class ComputerTraversals extends ComputerVerificationStrategyProcessTest {
 
         @Test
         @LoadGraphWith(MODERN)
