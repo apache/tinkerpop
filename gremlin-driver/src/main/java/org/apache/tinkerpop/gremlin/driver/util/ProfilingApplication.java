@@ -20,7 +20,12 @@ package org.apache.tinkerpop.gremlin.driver.util;
 
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,7 +71,7 @@ public class ProfilingApplication {
 
                 // timer starts after init of all clients
                 final long start = System.nanoTime();
-                IntStream.range(0, requests).forEach(i -> {
+                IntStream.range(0, requests).forEach(i ->
                     client.submitAsync("1+1").thenAcceptAsync(r -> {
                         try {
                             r.all().get(125, TimeUnit.MILLISECONDS);
@@ -77,8 +82,8 @@ public class ProfilingApplication {
                         } finally {
                             latch.countDown();
                         }
-                    });
-                });
+                    })
+                );
 
                 // finish once all requests are accounted for
                 latch.await();
@@ -122,24 +127,39 @@ public class ProfilingApplication {
 
     public static void main(final String[] args) {
         try {
-            final String host = args.length == 0 ? "localhost" : args[0];
+            final Map<String,Object> options = ElementHelper.asMap(args);
+            final String host = options.getOrDefault("host", "localhost").toString();
+            final int warmups = Integer.parseInt(options.getOrDefault("warmups", "5").toString());
+            final int executions = Integer.parseInt(options.getOrDefault("executions", "10").toString());
+            final int clients = Integer.parseInt(options.getOrDefault("clients", "1").toString());
+            final int requests = Integer.parseInt(options.getOrDefault("requests", "10000").toString());
+            final int minConnectionPoolSize = Integer.parseInt(options.getOrDefault("minConnectionPoolSize", "256").toString());
+            final int maxConnectionPoolSize = Integer.parseInt(options.getOrDefault("maxConnectionPoolSize", "256").toString());
+            final int maxSimultaneousRequestsPerConnection = Integer.parseInt(options.getOrDefault("maxSimultaneousRequestsPerConnection", "32").toString());
+            final int maxInProcessPerConnection = Integer.parseInt(options.getOrDefault("maxInProcessPerConnection", "8").toString());
+            final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "4").toString());
 
-            final int warmups = 5;
-            final int executions = 10;
-            final int clients = 1;
-            final int requests = 10000;
             final Cluster cluster = Cluster.build(host)
-                    .minConnectionPoolSize(256)
-                    .maxConnectionPoolSize(256)
+                    .minConnectionPoolSize(minConnectionPoolSize)
+                    .maxConnectionPoolSize(maxConnectionPoolSize)
+                    .maxSimultaneousRequestsPerConnection(maxSimultaneousRequestsPerConnection)
+                    .maxInProcessPerConnection(maxInProcessPerConnection)
                     .nioPoolSize(clients)
-                    .workerPoolSize(clients * 2).create();
+                    .workerPoolSize(workerPoolSize).create();
+
+            final Object fileName = options.get("store");
+            final File f = null == fileName ? null : new File(fileName.toString());
+            if (f != null) {
+                try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
+                    writer.println("clients\tminConnectionPoolSize\tmaxConnectionPoolSize\tmaxSimultaneousRequestsPerConnection\tmaxInProcessPerConnection\tworkerPoolSize\trequestPerSecond");
+                }
+            }
 
             System.out.println("---------------------------WARMUP CYCLE---------------------------");
             for (int ix = 0; ix < warmups; ix ++) {
                 TimeUnit.SECONDS.sleep(1); // pause between executions
                 new ProfilingApplication("warmup-" + (ix + 1), cluster, clients, requests).execute();
             }
-
 
             System.out.println("----------------------------TEST CYCLE----------------------------");
             long totalRequestsPerSecond = 0;
@@ -148,11 +168,17 @@ public class ProfilingApplication {
                 totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests).execute();
             }
 
-            System.out.println(String.format("avg req/sec: %s", totalRequestsPerSecond / executions));
+            final int averageRequestPerSecond = Math.round(totalRequestsPerSecond / executions);
+            System.out.println(String.format("avg req/sec: %s", averageRequestPerSecond));
+            if (f != null) {
+                try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
+                    writer.println(String.join("\t", String.valueOf(clients), String.valueOf(minConnectionPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(maxSimultaneousRequestsPerConnection), String.valueOf(maxInProcessPerConnection), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
+                }
+            }
+            System.exit(0);
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally {
-            System.exit(0);
+            System.exit(1);
         }
     }
 }
