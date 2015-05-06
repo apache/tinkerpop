@@ -40,10 +40,12 @@ import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
@@ -80,7 +82,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -101,9 +102,6 @@ import static org.mockito.Mockito.mock;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class IoTest extends AbstractGremlinTest {
-
-    private static final String GRAPHML_RESOURCE_PATH_PREFIX = "/org/apache/tinkerpop/gremlin/structure/io/graphml/";
-    private static final String GRAPHSON_RESOURCE_PATH_PREFIX = "/org/apache/tinkerpop/gremlin/structure/io/graphson/";
 
     private Io.Builder<GraphMLIo> graphml;
     private Io.Builder<GraphSONIo> graphson;
@@ -139,7 +137,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadGraphMLAnAllSupportedDataTypes() throws IOException {
         final GraphReader reader = GraphMLReader.build().create();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "graph-types.xml")) {
+        try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graph-types.xml")) {
             reader.readGraph(stream, graph);
         }
 
@@ -195,7 +193,7 @@ public class IoTest extends AbstractGremlinTest {
             final GraphMLWriter w = GraphMLWriter.build().normalize(true).create();
             w.writeGraph(bos, graph);
 
-            final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "tinkerpop-classic-normalized.xml"));
+            final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "tinkerpop-classic-normalized.xml"));
             assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
         }
     }
@@ -218,7 +216,7 @@ public class IoTest extends AbstractGremlinTest {
             final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
             w.writeGraph(bos, graph);
 
-            final String expected = streamToString(IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "tinkerpop-classic-normalized.json"));
+            final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-normalized.json"));
             assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
         }
     }
@@ -1736,7 +1734,7 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadLegacyGraphSON() throws IOException {
         final GraphReader reader = LegacyGraphSONReader.build().create();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHSON_RESOURCE_PATH_PREFIX + "tinkerpop-classic-legacy.json")) {
+        try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-legacy.json")) {
             reader.readGraph(stream, graph);
         }
 
@@ -2365,14 +2363,15 @@ public class IoTest extends AbstractGremlinTest {
         final Source xmlFile = new StreamSource(file);
         final SchemaFactory schemaFactory = SchemaFactory
                 .newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        final Schema schema = schemaFactory.newSchema(IoTest.class.getResource(GRAPHML_RESOURCE_PATH_PREFIX + "graphml-1.1.xsd"));
+        final Schema schema = schemaFactory.newSchema(IoTest.class.getResource(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graphml-1.1.xsd"));
         final Validator validator = schema.newValidator();
         validator.validate(xmlFile);
     }
 
     private static void readGraphMLIntoGraph(final Graph g) throws IOException {
         final GraphReader reader = GraphMLReader.build().create();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(GRAPHML_RESOURCE_PATH_PREFIX + "tinkerpop-classic.xml")) {
+        final String y = TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class);
+        try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "tinkerpop-classic.xml")) {
             reader.readGraph(stream, g);
         }
     }

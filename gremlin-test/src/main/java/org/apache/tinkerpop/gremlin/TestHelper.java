@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLResourceAccess;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
@@ -90,6 +91,14 @@ public final class TestHelper {
         outputStream.close();
         inputStream.close();
         return tempFile;
+    }
+
+    /**
+     * Takes a class and converts its package name to a path that can be used to access a resource in that package.
+     */
+    public static String convertPackageToResourcePath(final Class clazz) {
+        final String packageName = clazz.getPackage().getName();
+        return String.format("/%s/", packageName.replaceAll("\\.", "\\/"));
     }
 
     /**
