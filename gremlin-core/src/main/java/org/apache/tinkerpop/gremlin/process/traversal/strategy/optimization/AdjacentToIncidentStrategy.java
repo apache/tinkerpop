@@ -34,6 +34,23 @@ import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
+ * This strategy looks for vertex- and value-emitting steps followed by a {@link CountGlobalStep} and replaces the
+ * pattern with an edge- or property-emitting step followed by a <code>CountGlobalStep</code>. For example:
+ * <p/>
+ * <code>
+ * __.out().count()          // is replaced by __.outE().count()
+ * __.in().limit(3).count()  // is replaced by __.inE().limit(3).count()
+ * __.values("name").count() // is replaced by __.properties("name").count()
+ * </code>
+ * <p/>
+ * Furthermore, if a vertex- or value-emitting step is the last step in a <code>.has(traversal)</code> child traversal,
+ * it is replaced by an appropriate edge- or property-emitting step. For example:
+ * <p/>
+ * <code>
+ * __.has(out())    // is replaced by __.has(__.outE())
+ * __.has(values()) // is replaced by __.has(__.properties())
+ * </code>
+ *
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy>
@@ -66,11 +83,24 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
         }
     }
 
+    /**
+     * Checks whether a given step is optimizable or not.
+     *
+     * @param step the step to check
+     * @return <code>true</code> if the step is optimizable, otherwise <code>false</code>
+     */
     private static boolean isOptimizable(final Step step) {
         return ((step instanceof VertexStep && Vertex.class.equals(((VertexStep) step).getReturnClass())) ||
                 (step instanceof PropertiesStep && PropertyType.VALUE.equals(((PropertiesStep) step).getReturnType())));
     }
 
+    /**
+     * Optimizes the given step if possible. Basically this method converts <code>.out()</code> to <code>.outE()</code>
+     * and <code>.values()</code> to <code>.properties()</code>.
+     *
+     * @param traversal the traversal that holds the given step
+     * @param step      the step to replace
+     */
     private static void optimizeStep(final Traversal.Admin traversal, final Step step) {
         final Step newStep;
         if (step instanceof VertexStep) {
