@@ -142,8 +142,14 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        final Traversal traversal = g.V().hasNot(out());
-        traversal.iterate();
+        Traversal traversal = g.V().outE().inV().has(__.out("created")).has(__.outE("knows").inV().has("name", "josh"));
+        System.out.println(traversal.toString());
+        traversal.forEachRemaining(System.out::println);
+        System.out.println(traversal.toString());
+        System.out.println("--");
+        traversal = g.V().outE().inV().has(__.out("created")).has(__.outE("knows").inV());
+        System.out.println(traversal.toString());
+        traversal.forEachRemaining(System.out::println);
         System.out.println(traversal.toString());
     }
 

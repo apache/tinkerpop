@@ -34,6 +34,10 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 /**
  * This strategy looks for vertex- and value-emitting steps followed by a {@link CountGlobalStep} and replaces the
  * pattern with an edge- or property-emitting step followed by a <code>CountGlobalStep</code>. Furthermore, if a vertex-
@@ -55,16 +59,18 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
         implements TraversalStrategy.OptimizationStrategy {
 
     private static final AdjacentToIncidentStrategy INSTANCE = new AdjacentToIncidentStrategy();
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = Collections.singleton(IncidentToAdjacentStrategy.class);
 
     private AdjacentToIncidentStrategy() {
     }
 
     @Override
     public void apply(Traversal.Admin<?, ?> traversal) {
-        final int size = traversal.getSteps().size() - 1;
+        final List<Step> steps = traversal.getSteps();
+        final int size = steps.size() - 1;
         Step prev = null;
         for (int i = 0; i <= size; i++) {
-            final Step curr = traversal.getSteps().get(i);
+            final Step curr = steps.get(i);
             if (i == size && isOptimizable(curr)) {
                 final TraversalParent parent = curr.getTraversal().getParent();
                 if (parent instanceof HasTraversalStep || parent instanceof ConjunctionStep) {
@@ -79,6 +85,11 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
                 prev = curr;
             }
         }
+    }
+
+    @Override
+    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
+        return PRIORS;
     }
 
     /**

@@ -153,6 +153,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     ConjunctionStrategy.instance(),
                     EngineDependentStrategy.instance(),
                     ProfileStrategy.instance(),
+                    IncidentToAdjacentStrategy.instance(),
                     AdjacentToIncidentStrategy.instance(),
                     ComparatorHolderRemovalStrategy.instance(),
                     DedupBijectionStrategy.instance(),
