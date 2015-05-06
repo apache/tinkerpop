@@ -25,6 +25,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `Traversal.Admin.setGraph(Graph)` as strategies that need reference to the graph, need it across all nested traversals.
+* `AbstractLambdaTraversal` is now smart about `TraversalParent` and `TraversalStrategies`.
 * Fixed bug in `GraphML` reader that was not allowing `<edge>` elements to come before `<node>` elements as allowable by the GraphML specification.
 * Added `VertexFeature.getCardinality`.
 * Added `AdjacentToIncidentStrategy` which rewrites `out().count()` to `outE().count()` (and similar such patterns).

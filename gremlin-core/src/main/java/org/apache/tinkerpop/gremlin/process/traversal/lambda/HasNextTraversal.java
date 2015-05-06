@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Collections;
@@ -43,6 +42,7 @@ public final class HasNextTraversal<S> implements Traversal.Admin<S, Boolean>, T
 
     public HasNextTraversal(final Admin<S, ?> hasNextTraversal) {
         this.hasNextTraversal = hasNextTraversal;
+        this.hasNextTraversal.setParent(this);
     }
 
     @Override
@@ -153,14 +153,18 @@ public final class HasNextTraversal<S> implements Traversal.Admin<S, Boolean>, T
 
     @Override
     public Optional<Graph> getGraph() {
-        return Optional.empty();
+        return this.hasNextTraversal.getGraph();
+    }
+
+    @Override
+    public void setGraph(final Graph graph) {
+        this.hasNextTraversal.setGraph(graph);
     }
 
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
         return (List) Collections.singletonList(this.hasNextTraversal);
     }
-
 
 
 }
