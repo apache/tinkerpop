@@ -134,6 +134,7 @@ public class ProfilingApplication {
 
         try {
             final String host = options.getOrDefault("host", "localhost").toString();
+            final int timeout = Integer.parseInt(options.getOrDefault("timeout", "1200000").toString());
             final int warmups = Integer.parseInt(options.getOrDefault("warmups", "5").toString());
             final int executions = Integer.parseInt(options.getOrDefault("executions", "10").toString());
             final int clients = Integer.parseInt(options.getOrDefault("clients", "1").toString());
@@ -161,19 +162,22 @@ public class ProfilingApplication {
             }
 
             System.out.println("---------------------------WARMUP CYCLE---------------------------");
-            for (int ix = 0; ix < warmups; ix ++) {
+            for (int ix = 0; ix < warmups; ix++) {
                 TimeUnit.SECONDS.sleep(1); // pause between executions
                 new ProfilingApplication("warmup-" + (ix + 1), cluster, clients, requests).execute();
             }
 
+            final AtomicBoolean exceededTimeout = new AtomicBoolean(false);
+            final long start = System.nanoTime();
             System.out.println("----------------------------TEST CYCLE----------------------------");
             long totalRequestsPerSecond = 0;
-            for (int ix = 0; ix < executions; ix ++) {
+            for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
                 TimeUnit.SECONDS.sleep(1); // pause between executions
+                exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
                 totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests).execute();
             }
 
-            final int averageRequestPerSecond = Math.round(totalRequestsPerSecond / executions);
+            final int averageRequestPerSecond = exceededTimeout.get() ? 0 : Math.round(totalRequestsPerSecond / executions);
             System.out.println(String.format("avg req/sec: %s", averageRequestPerSecond));
             if (f != null) {
                 try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
