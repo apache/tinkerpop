@@ -86,7 +86,7 @@ public class ProfilingApplication {
 
                 final long end = System.nanoTime();
                 final long total = end - start;
-                final long totalSeconds = Math.round(total / 1000000000d);
+                final double totalSeconds = total / 1000000000d;
                 final long requestCount = requests;
                 final long reqSec = Math.round(requestCount / totalSeconds);
                 rps.put(Thread.currentThread(), reqSec);
@@ -125,7 +125,7 @@ public class ProfilingApplication {
         try {
             final String host = args.length == 0 ? "localhost" : args[0];
 
-            final int warmups = 3;
+            final int warmups = 5;
             final int executions = 10;
             final int clients = 1;
             final int requests = 10000;
