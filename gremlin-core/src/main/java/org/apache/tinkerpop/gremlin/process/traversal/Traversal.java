@@ -419,6 +419,8 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
 
         public Optional<Graph> getGraph();
 
+        public void setGraph(final Graph graph);
+
     }
 
 }

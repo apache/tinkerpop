@@ -45,7 +45,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     private Step<?, E> finalEndStep = EmptyStep.instance();
     private final StepPosition stepPosition = new StepPosition();
 
-    protected final transient Graph graph;
+    protected transient Graph graph;
 
     protected List<Step> steps = new ArrayList<>();
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
@@ -78,11 +78,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     globalChild.setStrategies(this.strategies);
                     globalChild.setEngine(this.traversalEngine);
+                    globalChild.setGraph(this.graph);
                     globalChild.applyStrategies();
                 }
                 for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
                     localChild.setStrategies(this.strategies);
                     localChild.setEngine(StandardTraversalEngine.instance());
+                    localChild.setGraph(this.graph);
                     localChild.applyStrategies();
                 }
             }
@@ -251,6 +253,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public Optional<Graph> getGraph() {
         return Optional.ofNullable(this.graph);
+    }
+
+    @Override
+    public void setGraph(final Graph graph) {
+        this.graph = graph;
     }
 
 }

@@ -124,7 +124,8 @@ public class IncidentToAdjacentStrategyTest {
                     {__.bothE().outV(), __.bothE().outV()},
                     {__.outE().as("a").inV(), __.outE().as("a").inV()}, // todo: this can be optimized, but requires a lot more checks
                     {__.outE().inV().path(), __.outE().inV().path()},
-                    {__.outE().inV().map(e -> e), __.outE().inV().map(e -> e)}});
+                    {__.outE().inV().map(e -> e), __.outE().inV().map(e -> e)},
+                    {__.union(__.outE().inV(), __.inE().outV()).path(), __.union(__.outE().inV(), __.inE().outV()).path()}});
         }
     }
 }

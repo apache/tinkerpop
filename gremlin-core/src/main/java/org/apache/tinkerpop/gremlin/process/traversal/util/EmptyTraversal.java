@@ -26,8 +26,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -176,5 +176,10 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public Optional<Graph> getGraph() {
         return Optional.empty();
+    }
+
+    @Override
+    public void setGraph(final Graph graph) {
+
     }
 }

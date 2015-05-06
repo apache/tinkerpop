@@ -43,6 +43,7 @@ import java.util.Optional;
 public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S, E> {
 
     private TraversalStrategies traversalStrategies = EmptyTraversalStrategies.instance();
+    private TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
 
     public List<Step> getSteps() {
         return Collections.emptyList();
@@ -95,17 +96,17 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public TraversalStrategies getStrategies() {
-        return EmptyTraversalStrategies.instance();
+        return this.traversalStrategies;
     }
 
     @Override
     public void setParent(final TraversalParent step) {
-
+        this.traversalParent = step;
     }
 
     @Override
     public TraversalParent getParent() {
-        return (TraversalParent) EmptyStep.instance();
+        return this.traversalParent;
     }
 
     @Override
@@ -144,6 +145,11 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     @Override
     public Optional<Graph> getGraph() {
         return Optional.empty();
+    }
+
+    @Override
+    public void setGraph(final Graph graph) {
+
     }
 
 }
