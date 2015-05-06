@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ConsoleMutationListener;
@@ -42,24 +43,24 @@ public class EventStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"addInE()", __.addInE("test", "x"), 1},
-                {"addInE(args)", __.addInE("test", "x", "this", "that"), 1},
-                {"addOutE()", __.addOutE("test", "x"), 1},
-                {"addOutE(args)", __.addOutE("test", "x", "this", "that"), 1},
-                {"addE(IN)", __.addE(Direction.IN, "test", "test"), 1},
-                {"addE(IN,args)", __.addE(Direction.IN, "test", "test", "this", "that"), 1},
-                {"addE(OUT)", __.addE(Direction.OUT, "test", "test"), 1},
-                {"addE(OUT,args)", __.addE(Direction.OUT, "test", "test", "this", "that"), 1},
-                {"addV()", __.addV(), 1},
-                {"addV(args)", __.addV("test", "this"), 1},
-                {"addV().property(k,v)", __.addV().property("test", "that"), 2},
-                {"properties().drop()", __.properties().drop(), 1},
-                {"properties(k).drop()", __.properties("test").drop(), 1},
-                {"out().drop()", __.out().drop(), 1},
-                {"out(args).drop()", __.out("test").drop(), 1},
-                {"outE().drop()", __.outE().drop(), 1},
-                {"outE().properties().drop()", __.outE().properties().drop(), 1},
-                {"outE(args).drop()", __.outE("test").drop(), 1}});
+                {"addInE()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addInE("test", "x"), 1},
+                {"addInE(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addInE("test", "x", "this", "that"), 1},
+                {"addOutE()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addOutE("test", "x"), 1},
+                {"addOutE(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addOutE("test", "x", "this", "that"), 1},
+                {"addE(IN)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.IN, "test", "test"), 1},
+                {"addE(IN,args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.IN, "test", "test", "this", "that"), 1},
+                {"addE(OUT)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.OUT, "test", "test"), 1},
+                {"addE(OUT,args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.OUT, "test", "test", "this", "that"), 1},
+                {"addV()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV(), 1},
+                {"addV(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV("test", "this"), 1},
+                {"addV().property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV().property("test", "that"), 2},
+                {"properties().drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).properties().drop(), 1},
+                {"properties(k).drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).properties("test").drop(), 1},
+                {"out().drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().drop(), 1},
+                {"out(args).drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).out("test").drop(), 1},
+                {"outE().drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().drop(), 1},
+                {"outE().properties().drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().properties().drop(), 1},
+                {"outE(args).drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).outE("test").drop(), 1}});
     }
 
     @Parameterized.Parameter(value = 0)

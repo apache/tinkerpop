@@ -33,7 +33,7 @@ public class DefaultTraversalTest {
 
     @Test
     public void shouldCloneTraversalCorrectly() throws CloneNotSupportedException {
-        final DefaultGraphTraversal<?, ?> original = new DefaultGraphTraversal<>(EmptyGraph.instance());
+        final DefaultGraphTraversal<?, ?> original = new DefaultGraphTraversal<>();
         original.out().groupCount("m").values("name").count();
         final DefaultTraversal<?, ?> clone = (DefaultTraversal) original.clone();
         assertNotEquals(original.hashCode(), clone.hashCode());

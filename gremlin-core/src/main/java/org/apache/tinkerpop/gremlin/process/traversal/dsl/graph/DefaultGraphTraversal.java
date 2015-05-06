@@ -26,6 +26,10 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
  */
 public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implements GraphTraversal.Admin<S, E> {
 
+    public DefaultGraphTraversal() {
+        super();
+    }
+
     public DefaultGraphTraversal(final Graph graph) {
         super(graph);
     }
