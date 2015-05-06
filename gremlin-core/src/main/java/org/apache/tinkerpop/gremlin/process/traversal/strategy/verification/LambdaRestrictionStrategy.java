@@ -29,7 +29,7 @@ import java.util.Comparator;
 
 /**
  * LambdaRestrictionStrategy does not allow lambdas to be used in a {@link Traversal}.
- * The contents of a lambda can not be analyzed/optimized and thus, reduce the abilities of other {@link TraversalStrategy} instances to reason about the traversal.
+ * The contents of a lambda can not be analyzed/optimized and thus, reduces the ability of other {@link TraversalStrategy} instances to reason about the traversal.
  * This strategy is not activated by default. However, graph system vendors may choose to make this a default strategy in order to ensure their respective strategies are better able to operate.
  * <p/>
  *
@@ -39,7 +39,7 @@ import java.util.Comparator;
  * __.out().filter(v -> v.bulk() > 2)                 // throws an IllegalStateException
  * __.choose(v -> v.sack() == 1,out(),in())           // throws an IllegalStateException
  * __.select().by(v -> v.get().id())                  // throws an IllegalStateException
- * __.order().by(a,b -> a > b)                         // throws an IllegalStateException
+ * __.order().by(a,b -> a > b)                        // throws an IllegalStateException
  * </pre>
  */
 public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
