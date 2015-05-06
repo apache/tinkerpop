@@ -152,6 +152,13 @@ limitations under the License.
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <additionalparam>-Xdoclint:none</additionalparam>
+                    <tags>
+                        <tag>
+                            <name>example</name>
+                            <placement>aoptcmf</placement>
+                            <head>Example:</head>
+                        </tag>
+                    </tags>
                 </configuration>
                 <executions>
                     <execution>

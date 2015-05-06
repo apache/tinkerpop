@@ -35,23 +35,19 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 /**
  * This strategy looks for vertex- and value-emitting steps followed by a {@link CountGlobalStep} and replaces the
- * pattern with an edge- or property-emitting step followed by a <code>CountGlobalStep</code>. For example:
+ * pattern with an edge- or property-emitting step followed by a <code>CountGlobalStep</code>. Furthermore, if a vertex-
+ * or value-emitting step is the last step in a <code>.has(traversal)</code> child traversal, it is replaced by an
+ * appropriate edge- or property-emitting step.
  * <p/>
- * <code>
+ *
+ * @author Daniel Kuppitz (http://gremlin.guru)
+ * @example <pre>
  * __.out().count()          // is replaced by __.outE().count()
  * __.in().limit(3).count()  // is replaced by __.inE().limit(3).count()
  * __.values("name").count() // is replaced by __.properties("name").count()
- * </code>
- * <p/>
- * Furthermore, if a vertex- or value-emitting step is the last step in a <code>.has(traversal)</code> child traversal,
- * it is replaced by an appropriate edge- or property-emitting step. For example:
- * <p/>
- * <code>
- * __.has(out())    // is replaced by __.has(__.outE())
- * __.has(values()) // is replaced by __.has(__.properties())
- * </code>
- *
- * @author Daniel Kuppitz (http://gremlin.guru)
+ * __.has(out())             // is replaced by __.has(__.outE())
+ * __.has(values())          // is replaced by __.has(__.properties())
+ * </pre>
  */
 public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy>
         implements TraversalStrategy.OptimizationStrategy {
