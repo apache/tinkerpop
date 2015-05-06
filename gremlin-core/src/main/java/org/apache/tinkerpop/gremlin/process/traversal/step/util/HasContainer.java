@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -53,7 +54,7 @@ public final class HasContainer implements Serializable {
         // the constructor.  to avoid losing the original value, the string version of the collection is maintained
         // separately
         if (this.key.equals(T.id.getAccessor()) && value instanceof Collection)
-            valuesToStringed = ((Collection<Object>) value).stream().map(Object::toString).collect(Collectors.toList());
+            valuesToStringed = IteratorUtils.set(IteratorUtils.map(((Collection<Object>) value).iterator(), Object::toString));
 
         if (null == this.value && !(this.predicate instanceof Contains)) {
             throw new IllegalArgumentException("For determining the existence of a property, use the Contains predicate with null-value");
