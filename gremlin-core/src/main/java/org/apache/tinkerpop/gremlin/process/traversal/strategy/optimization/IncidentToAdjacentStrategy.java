@@ -51,6 +51,13 @@ import java.util.Set;
  * <p/>
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @example <pre>
+ * __.outE().inV()         // is replaced by __.out()
+ * __.inE().outV()         // is replaced by __.in()
+ * __.bothE().otherV()     // is replaced by __.both()
+ * __.bothE().bothV()      // will not be modified
+ * __.outE().inV().path()  // will not be modified
+ * </pre>
  */
 public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy>
         implements TraversalStrategy.OptimizationStrategy {

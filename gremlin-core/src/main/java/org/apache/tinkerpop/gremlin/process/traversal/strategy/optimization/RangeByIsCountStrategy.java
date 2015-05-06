@@ -30,16 +30,21 @@ import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.P;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiPredicate;
 
 /**
+ * This strategy optimizes any occurrence of {@link CountGlobalStep} followed by an {@link IsStep}. The idea is to limit
+ * the number of incoming elements in a way that it's enough for the {@link IsStep} to decide whether it evaluates
+ * <code>true</code> or <code>false</code>. If the traversal already contains a user supplied limit, the strategy won't
+ * modify it.
+ *
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @example <pre>
+ * __.outE().count().is(0)      // is replaced by __.outE().limit(1).count().is(0)
+ * __.outE().count().is(lt(3))  // is replaced by __.outE().limit(3).count().is(lt(3))
+ * __.outE().count().is(gt(3))  // is replaced by __.outE().limit(4).count().is(gt(3))
+ * </pre>
  */
 public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
