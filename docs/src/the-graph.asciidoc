@@ -269,6 +269,8 @@ As GraphML is a specification for the serialization of an entire graph and not t
 
 CAUTION: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
 
+CAUTION: GraphML, as a specification, allows for `<edge>` and `<node>` elements to appear in any order.  The `GraphMLReader` will support that, however, that capability comes with a limitation. TinkerPop does not allow the vertex label to be changed after the vertex has been created.  Therefore, if an `<edge>` element comes before the `<node>` the label on the vertex will be ignored.  It is thus better to order `<node>` elements in the GraphML to appear before all `<edge>` elements if vertex labels are important to the graph.
+
 The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.xml` and then how to read that file back into a different instance:
 
 [source,java]

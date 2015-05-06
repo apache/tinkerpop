@@ -121,7 +121,18 @@ public class IoTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
     @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
     public void shouldReadGraphML() throws IOException {
-        readGraphMLIntoGraph(graph);
+        readGraphMLIntoGraph(graph, "tinkerpop-classic.xml");
+        assertClassicGraph(graph, false, true);
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+    public void shouldReadGraphMLUnorderedElements() throws IOException {
+        readGraphMLIntoGraph(graph, "tinkerpop-classic-unordered.xml");
         assertClassicGraph(graph, false, true);
     }
 
@@ -2368,10 +2379,9 @@ public class IoTest extends AbstractGremlinTest {
         validator.validate(xmlFile);
     }
 
-    private static void readGraphMLIntoGraph(final Graph g) throws IOException {
+    private static void readGraphMLIntoGraph(final Graph g, final String file) throws IOException {
         final GraphReader reader = GraphMLReader.build().create();
-        final String y = TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class);
-        try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "tinkerpop-classic.xml")) {
+        try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + file)) {
             reader.readGraph(stream, g);
         }
     }

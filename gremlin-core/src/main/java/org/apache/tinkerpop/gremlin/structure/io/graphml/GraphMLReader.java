@@ -123,8 +123,8 @@ public class GraphMLReader implements GraphReader {
                             // graphml allows edges and vertices to be mixed in terms of how they are positioned
                             // in the xml therefore it is possible that an edge is created prior to its definition
                             // as a vertex.
-                            edgeOutVertex = findOrCreate(vertexIdOut, graphToWriteTo, supportsVertexIds, cache);
-                            edgeInVertex = findOrCreate(vertexIdIn, graphToWriteTo, supportsVertexIds, cache);
+                            edgeOutVertex = findOrCreate(vertexIdOut, graphToWriteTo, supportsVertexIds, cache, false);
+                            edgeInVertex = findOrCreate(vertexIdIn, graphToWriteTo, supportsVertexIds, cache, false);
 
                             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
                                 graphToWriteTo.tx().commit();
@@ -163,7 +163,7 @@ public class GraphMLReader implements GraphReader {
                         final String currentVertexLabel = Optional.ofNullable(vertexLabel).orElse(Vertex.DEFAULT_LABEL);
                         final Object[] propsAsArray = vertexProps.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
 
-                        findOrCreate(currentVertexId, graphToWriteTo, supportsVertexIds, cache, ElementHelper.upsert(propsAsArray, T.label, currentVertexLabel));
+                        findOrCreate(currentVertexId, graphToWriteTo, supportsVertexIds, cache, true, ElementHelper.upsert(propsAsArray, T.label, currentVertexLabel));
 
                         if (supportsTx && counter.incrementAndGet() % batchSize == 0)
                             graphToWriteTo.tx().commit();
@@ -278,9 +278,19 @@ public class GraphMLReader implements GraphReader {
     }
 
     private static Vertex findOrCreate(final Object id, final Graph graphToWriteTo, final boolean supportsIds,
-                                       final Map<Object,Vertex> cache, final Object... args) {
+                                       final Map<Object,Vertex> cache, final boolean asVertex, final Object... args) {
         if (cache.containsKey(id)) {
-            return cache.get(id);
+            // if the request to findOrCreate come from a vertex then AND the vertex was already created, that means
+            // that the vertex was created by an edge that arrived first in the stream (allowable via GraphML
+            // specification).  as the edge only carries the vertex id and not its properties, the properties
+            // of the vertex need to be attached at this point.
+            if (asVertex) {
+                final Vertex v = cache.get(id);
+                ElementHelper.attachProperties(v, args);
+                return v;
+            } else {
+                return cache.get(id);
+            }
         } else {
             final Object [] argsReady = supportsIds ? ElementHelper.upsert(args, T.id, id) : args;
             final Vertex v = graphToWriteTo.addVertex(argsReady);
