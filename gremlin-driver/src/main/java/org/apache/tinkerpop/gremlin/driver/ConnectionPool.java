@@ -58,6 +58,7 @@ class ConnectionPool {
     private final int minSimultaneousRequestsPerConnection;
     private final int maxSimultaneousRequestsPerConnection;
     private final int minInProcess;
+    private final String poolLabel;
 
     private final AtomicInteger scheduledForCreation = new AtomicInteger();
 
@@ -70,6 +71,7 @@ class ConnectionPool {
     public ConnectionPool(final Host host, final Cluster cluster) {
         this.host = host;
         this.cluster = cluster;
+        poolLabel = String.format("Connection Pool {host=%s}", host);
 
         final Settings.ConnectionPoolSettings settings = settings();
         this.minPoolSize = settings.minSize;
@@ -129,7 +131,7 @@ class ConnectionPool {
         final int currentPoolSize = connections.size();
         if (leastUsedConn.inFlight.get() >= maxSimultaneousRequestsPerConnection && currentPoolSize < maxPoolSize) {
             logger.debug("Least used {} on {} exceeds maxSimultaneousRequestsPerConnection but pool size {} < maxPoolSize - consider new connection",
-                    leastUsedConn, host, currentPoolSize);
+                    leastUsedConn.getConnectionInfo(), host, currentPoolSize);
             considerNewConnection();
         }
 
@@ -146,7 +148,7 @@ class ConnectionPool {
             }
 
             if (leastUsedConn.inFlight.compareAndSet(inFlight, inFlight + 1)) {
-                logger.debug("Return least used {} on {}", leastUsedConn, host);
+                logger.debug("Return least used {} on {}", leastUsedConn.getConnectionInfo(), host);
                 return leastUsedConn;
             }
         }
@@ -176,10 +178,10 @@ class ConnectionPool {
             final int availableInProcess = connection.availableInProcess();
             if (poolSize > minPoolSize && inFlight <= minSimultaneousRequestsPerConnection) {
                 logger.debug("On {} pool size of {} > minPoolSize {} and inFlight of {} <= minSimultaneousRequestsPerConnection {} so destroy {}",
-                        host, poolSize, minPoolSize, inFlight, minSimultaneousRequestsPerConnection, connection);
+                        host, poolSize, minPoolSize, inFlight, minSimultaneousRequestsPerConnection, connection.getConnectionInfo());
                 destroyConnection(connection);
             } else if (connection.availableInProcess() < minInProcess) {
-                logger.debug("On {} availableInProcess {} < minInProcess {} so replace {}", host, availableInProcess, minInProcess, connection);
+                logger.debug("On {} availableInProcess {} < minInProcess {} so replace {}", host, availableInProcess, minInProcess, connection.getConnectionInfo());
                 replaceConnection(connection);
             } else
                 announceAvailableConnection();
@@ -301,7 +303,7 @@ class ConnectionPool {
         if (connection.inFlight.get() == 0 && bin.remove(connection))
             connection.closeAsync();
 
-        logger.debug("{} destroyed", connection);
+        logger.debug("{} destroyed", connection.getConnectionInfo());
     }
 
     private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
@@ -331,7 +333,7 @@ class ConnectionPool {
                     }
 
                     if (leastUsed.inFlight.compareAndSet(inFlight, inFlight + 1)) {
-                        logger.debug("Return least used {} on {} after waiting", leastUsed, host);
+                        logger.debug("Return least used {} on {} after waiting", leastUsed.getConnectionInfo(), host);
                         return leastUsed;
                     }
                 }
@@ -428,8 +430,7 @@ class ConnectionPool {
         }
     }
 
-    @Override
-    public String toString() {
+    public String getPoolInfo() {
         final StringBuilder sb = new StringBuilder("ConnectionPool (");
         sb.append(host);
         sb.append(") - ");
@@ -438,5 +439,10 @@ class ConnectionPool {
             sb.append(",");
         });
         return sb.toString().trim();
+    }
+
+    @Override
+    public String toString() {
+        return poolLabel;
     }
 }

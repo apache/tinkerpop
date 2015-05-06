@@ -38,6 +38,7 @@ class Host {
     private final URI hostUri;
     private volatile boolean isAvailable;
     private final Cluster cluster;
+    private final String hostLabel;
 
     final AtomicReference<ScheduledFuture<?>> reconnectionAttempt = new AtomicReference<>(null);
 
@@ -45,6 +46,7 @@ class Host {
         this.cluster = cluster;
         this.address = address;
         this.hostUri = makeUriFromAddress(address, cluster.connectionPoolSettings().enableSsl);
+        hostLabel = String.format("Host{address=%s, hostUri=%s}", address, hostUri);
     }
 
     public InetSocketAddress getAddress() {
@@ -92,10 +94,7 @@ class Host {
 
     @Override
     public String toString() {
-        return "Host{" +
-                "address=" + address +
-                ", hostUri=" + hostUri +
-                '}';
+        return hostLabel;
     }
 
     public static interface Listener {

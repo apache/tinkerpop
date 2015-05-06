@@ -64,6 +64,8 @@ class Connection {
     private volatile boolean isDead = false;
     private final int maxInProcess;
 
+    private final String connectionLabel;
+
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
     public Connection(final URI uri, final ConnectionPool pool, final Cluster cluster, final int maxInProcess) throws ConnectionException {
@@ -71,6 +73,8 @@ class Connection {
         this.cluster = cluster;
         this.pool = pool;
         this.maxInProcess = maxInProcess;
+
+        connectionLabel = String.format("Connection{host=%s}", pool.host);
 
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
 
@@ -154,7 +158,7 @@ class Connection {
         final ChannelPromise promise = channel.newPromise()
                 .addListener(f -> {
                     if (!f.isSuccess()) {
-                        logger.debug(String.format("Write on connection %s failed", thisConnection), f.cause());
+                        logger.debug(String.format("Write on connection %s failed", thisConnection.getConnectionInfo()), f.cause());
                         thisConnection.isDead = true;
                         thisConnection.returnToPool();
                         future.completeExceptionally(f.cause());
@@ -185,7 +189,7 @@ class Connection {
         try {
             if (pool != null) pool.returnConnection(this);
         } catch (ConnectionException ce) {
-            logger.debug("Returned {} connection to {} but an error occurred - {}", this, pool, ce.getMessage());
+            logger.debug("Returned {} connection to {} but an error occurred - {}", this.getConnectionInfo(), pool, ce.getMessage());
         }
     }
 
@@ -202,9 +206,13 @@ class Connection {
         channel.close(promise);
     }
 
-    @Override
-    public String toString() {
+    public String getConnectionInfo() {
         return String.format("Connection{host=%s, isDead=%s, inFlight=%s, pending=%s}",
                 pool.host, isDead, inFlight, pending.size());
+    }
+
+    @Override
+    public String toString() {
+        return connectionLabel;
     }
 }
