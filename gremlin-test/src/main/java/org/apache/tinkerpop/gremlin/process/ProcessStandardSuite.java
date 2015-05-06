@@ -72,13 +72,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffect
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ElementIdStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.TraversalVerificationStrategyTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runners.model.InitializationError;
@@ -167,7 +166,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             CoreTraversalTest.class,
 
             // strategy
-            TraversalVerificationStrategyTest.StandardTraversals.class,
+            ComputerVerificationStrategyProcessTest.StandardTraversals.class,
 
             // algorithms
             // PageRankVertexProgramTest.class

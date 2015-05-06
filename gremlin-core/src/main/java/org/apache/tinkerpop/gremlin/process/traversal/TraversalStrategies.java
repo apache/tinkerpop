@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.computer.util.ShellGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.LabeledEndStepStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.EngineDependentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.*;
@@ -152,9 +151,9 @@ public interface TraversalStrategies extends Serializable, Cloneable {
             final TraversalStrategies coreStrategies = new DefaultTraversalStrategies();
             coreStrategies.addStrategies(
                     ConjunctionStrategy.instance(),
-                    LabeledEndStepStrategy.instance(),
                     EngineDependentStrategy.instance(),
                     ProfileStrategy.instance(),
+                    IncidentToAdjacentStrategy.instance(),
                     AdjacentToIncidentStrategy.instance(),
                     ComparatorHolderRemovalStrategy.instance(),
                     DedupBijectionStrategy.instance(),

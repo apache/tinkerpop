@@ -21,27 +21,41 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
+ * DedupBijectionStrategy does deduplication prior to a non-mutating bijective step if there is no <code>by()</code>-modulation on <code>dedup()</code>.
+ * Given that {@link DedupGlobalStep} reduces the number of objects in the stream, it is cheaper to dedup prior.
+ * <p/>
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @example <pre>
+ * __.order().dedup()            // is replaced by __.dedup().order()
+ * </pre>
  */
 public final class DedupBijectionStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final DedupBijectionStrategy INSTANCE = new DedupBijectionStrategy();
+    private static final List<Class<? extends Step>> BIJECTIVE_PIPES = Collections.singletonList(OrderGlobalStep.class);
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>();
+
+    static {
+        PRIORS.add(IdentityRemovalStrategy.class);
+    }
+
 
     private DedupBijectionStrategy() {
     }
 
-    private static final List<Class<? extends Step>> BIJECTIVE_PIPES = Arrays.asList(IdentityStep.class, OrderGlobalStep.class);
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
@@ -53,7 +67,7 @@ public final class DedupBijectionStrategy extends AbstractTraversalStrategy<Trav
             done = true;
             for (int i = 0; i < traversal.getSteps().size(); i++) {
                 final Step step1 = traversal.getSteps().get(i);
-                if (step1 instanceof DedupGlobalStep && !(((DedupGlobalStep) step1).getLocalChildren().get(0) instanceof IdentityTraversal)) {
+                if (step1 instanceof DedupGlobalStep && (((DedupGlobalStep) step1).getLocalChildren().get(0) instanceof IdentityTraversal)) {
                     for (int j = i; j >= 0; j--) {
                         final Step step2 = traversal.getSteps().get(j);
                         if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findAny().isPresent()) {
@@ -68,6 +82,11 @@ public final class DedupBijectionStrategy extends AbstractTraversalStrategy<Trav
                     break;
             }
         }
+    }
+
+    @Override
+    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
+        return PRIORS;
     }
 
     public static DedupBijectionStrategy instance() {

@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -34,7 +33,16 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * MatchWhereStrategy will fold any post-<code>where()</code> step that maintains a traversal constraint into <code>match()</code>.
+ * {@link MatchStep} is intelligent with traversal constraint applications and thus, can more efficiently use the constraint of {@link WhereStep}.
+ * <p/>
+ * <p/>
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @example <pre>
+ * __.match(a,b).where(c)            // is replaced by __.match(a,b,c)
+ * __.match(a,b).select().where(c)  // is replaced by __.match(a,b,c).select()
+ * </pre>
  */
 public final class MatchWhereStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
@@ -57,7 +65,7 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
         for (final MatchStep matchStep : matchSteps) {
             boolean foundWhereWithNoTraversal = false;
             Step currentStep = matchStep.getNextStep();
-            while (currentStep instanceof WhereStep || currentStep instanceof SelectStep || currentStep instanceof SelectOneStep || currentStep instanceof IdentityStep) {
+            while (currentStep instanceof WhereStep || currentStep instanceof SelectStep || currentStep instanceof SelectOneStep) {
                 if (currentStep instanceof WhereStep) {
                     if (!((WhereStep) currentStep).getLocalChildren().isEmpty()) {
                         matchStep.addTraversal(((WhereStep<?>) currentStep).getLocalChildren().get(0));
@@ -66,10 +74,10 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
                         foundWhereWithNoTraversal = true;
                     }
                 } else if (currentStep instanceof SelectStep) {
-                    if (!((SelectStep) currentStep).getLocalChildren().isEmpty() || foundWhereWithNoTraversal)
+                    if (!currentStep.getLabels().isEmpty() || !((SelectStep) currentStep).getLocalChildren().isEmpty() || foundWhereWithNoTraversal)
                         break;
                 } else if (currentStep instanceof SelectOneStep) {
-                    if (!((SelectOneStep) currentStep).getLocalChildren().isEmpty() || foundWhereWithNoTraversal)
+                    if (!currentStep.getLabels().isEmpty() || !((SelectOneStep) currentStep).getLocalChildren().isEmpty() || foundWhereWithNoTraversal)
                         break;
                 }
                 // else is the identity step

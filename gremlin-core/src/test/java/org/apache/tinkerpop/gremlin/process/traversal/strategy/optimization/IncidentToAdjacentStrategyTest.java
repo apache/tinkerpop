@@ -39,10 +39,10 @@ import static org.mockito.Mockito.when;
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 @RunWith(Enclosed.class)
-public class AdjacentToIncidentStrategyTest {
+public class IncidentToAdjacentStrategyTest {
 
     @RunWith(Parameterized.class)
-    public static class StandardTest extends AbstractAdjacentToIncidentStrategyTest {
+    public static class StandardTest extends AbstractIncidentToAdjacentStrategyTest {
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
@@ -68,7 +68,7 @@ public class AdjacentToIncidentStrategyTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class ComputerTest extends AbstractAdjacentToIncidentStrategyTest {
+    public static class ComputerTest extends AbstractIncidentToAdjacentStrategyTest {
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
@@ -93,13 +93,13 @@ public class AdjacentToIncidentStrategyTest {
         }
     }
 
-    private static abstract class AbstractAdjacentToIncidentStrategyTest {
+    private static abstract class AbstractIncidentToAdjacentStrategyTest {
 
         protected TraversalEngine traversalEngine;
 
-        void applyAdjacentToIncidentStrategy(final Traversal traversal) {
+        void applyIncidentToAdjacentStrategy(final Traversal traversal) {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(AdjacentToIncidentStrategy.instance());
+            strategies.addStrategies(IncidentToAdjacentStrategy.instance());
 
             traversal.asAdmin().setStrategies(strategies);
             traversal.asAdmin().applyStrategies();
@@ -107,26 +107,24 @@ public class AdjacentToIncidentStrategyTest {
         }
 
         public void doTest(final Traversal traversal, final Traversal optimized) {
-            applyAdjacentToIncidentStrategy(traversal);
+            applyIncidentToAdjacentStrategy(traversal);
             assertEquals(optimized.toString(), traversal.toString());
         }
 
         static Iterable<Object[]> generateTestParameters() {
 
             return Arrays.asList(new Traversal[][]{
-                    {__.out().count(), __.outE().count()},
-                    {__.in().count(), __.inE().count()},
-                    {__.both().count(), __.bothE().count()},
-                    {__.out("knows").count(), __.outE("knows").count()},
-                    {__.out("knows", "likes").count(), __.outE("knows", "likes").count()},
-                    {__.has(__.out()), __.has(__.outE())},
-                    {__.hasNot(__.out()), __.hasNot(__.outE())},
-                    {__.has(__.out("knows")), __.has(__.outE("knows"))},
-                    {__.values().count(), __.properties().count()},
-                    {__.values("name").count(), __.properties("name").count()},
-                    {__.has(__.values()), __.has(__.properties())},
-                    {__.and(__.out(), __.in()), __.and(__.outE(), __.inE())},
-                    {__.or(__.out(), __.in()), __.or(__.outE(), __.inE())}});
+                    {__.outE().inV(), __.out()},
+                    {__.inE().outV(), __.in()},
+                    {__.bothE().otherV(), __.both()},
+                    {__.outE().outV(), __.outE().outV()},
+                    {__.inE().inV(), __.inE().inV()},
+                    {__.bothE().bothV(), __.bothE().bothV()},
+                    {__.bothE().inV(), __.bothE().inV()},
+                    {__.bothE().outV(), __.bothE().outV()},
+                    {__.outE().as("a").inV(), __.outE().as("a").inV()}, // todo: this can be optimized, but requires a lot more checks
+                    {__.outE().inV().path(), __.outE().inV().path()},
+                    {__.outE().inV().map(e -> e), __.outE().inV().map(e -> e)}});
         }
     }
 }

@@ -19,13 +19,14 @@
 package org.apache.tinkerpop.gremlin.groovy.function;
 
 import groovy.lang.Closure;
+import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 
 import java.util.Comparator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GComparator<A> implements Comparator<A> {
+public final class GComparator<A> implements Comparator<A>, LambdaHolder {
 
     private final Closure closure;
 
@@ -48,6 +49,6 @@ public final class GComparator<A> implements Comparator<A> {
 
     @Override
     public String toString() {
-        return "comparator";
+        return "lambda";
     }
 }
