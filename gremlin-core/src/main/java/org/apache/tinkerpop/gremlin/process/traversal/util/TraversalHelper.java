@@ -28,13 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -211,6 +205,22 @@ public final class TraversalHelper {
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (superClass.isAssignableFrom(step.getClass())) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasStepOfAssignableClassRecursively(final Class stepClass, final Traversal.Admin<?, ?> traversal) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (stepClass.isAssignableFrom(step.getClass())) {
+                return true;
+            }
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
+                    if (hasStepOfAssignableClassRecursively(stepClass, globalChild)) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
