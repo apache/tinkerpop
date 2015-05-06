@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
@@ -36,8 +37,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 /**
  * This strategy looks for vertex- and value-emitting steps followed by a {@link CountGlobalStep} and replaces the
  * pattern with an edge- or property-emitting step followed by a <code>CountGlobalStep</code>. Furthermore, if a vertex-
- * or value-emitting step is the last step in a <code>.has(traversal)</code> child traversal, it is replaced by an
- * appropriate edge- or property-emitting step.
+ * or value-emitting step is the last step in a <code>.has(traversal)</code>, <code>.and(traversal, ...)</code> or
+ * <code>.or(traversal, ...)</code> child traversal, it is replaced by an appropriate edge- or property-emitting step.
  * <p/>
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -45,8 +46,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
  * __.out().count()          // is replaced by __.outE().count()
  * __.in().limit(3).count()  // is replaced by __.inE().limit(3).count()
  * __.values("name").count() // is replaced by __.properties("name").count()
- * __.has(out())             // is replaced by __.has(__.outE())
- * __.has(values())          // is replaced by __.has(__.properties())
+ * __.has(__.out())          // is replaced by __.has(__.outE())
+ * __.has(__.values())       // is replaced by __.has(__.properties())
+ * __.and(__.in(), __.out()) // is replaced by __.and(__.inE(), __.outE())
  * </pre>
  */
 public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy>
@@ -65,7 +67,7 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
             final Step curr = traversal.getSteps().get(i);
             if (i == size && isOptimizable(curr)) {
                 final TraversalParent parent = curr.getTraversal().getParent();
-                if (parent instanceof HasTraversalStep) {
+                if (parent instanceof HasTraversalStep || parent instanceof ConjunctionStep) {
                     optimizeStep(traversal, curr);
                 }
             } else if (isOptimizable(prev)) {

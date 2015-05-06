@@ -124,7 +124,9 @@ public class AdjacentToIncidentStrategyTest {
                     {__.has(__.out("knows")), __.has(__.outE("knows"))},
                     {__.values().count(), __.properties().count()},
                     {__.values("name").count(), __.properties("name").count()},
-                    {__.has(__.values()), __.has(__.properties())}});
+                    {__.has(__.values()), __.has(__.properties())},
+                    {__.and(__.out(), __.in()), __.and(__.outE(), __.inE())},
+                    {__.or(__.out(), __.in()), __.or(__.outE(), __.inE())}});
         }
     }
 }
