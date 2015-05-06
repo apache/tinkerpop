@@ -141,8 +141,8 @@ public class RangeByIsCountStrategyTest {
             strategies.addStrategies(RangeByIsCountStrategy.instance());
 
             traversal.asAdmin().setStrategies(strategies);
+            traversal.asAdmin().setEngine(this.traversalEngine);
             traversal.asAdmin().applyStrategies();
-            traversal.asAdmin().setEngine(traversalEngine);
         }
 
         public void doTest(final Object predicate, final long expectedHighRange) {

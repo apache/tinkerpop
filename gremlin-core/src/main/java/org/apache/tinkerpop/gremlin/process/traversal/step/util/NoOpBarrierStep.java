@@ -34,7 +34,7 @@ public final class NoOpBarrierStep<S> extends CollectingBarrierStep<S> {
     }
 
     @Override
-    public void barrierConsumer(final TraverserSet<S> traverserSet) {
+    protected void barrierConsumer(final TraverserSet<S> traverserSet) {
 
     }
 }

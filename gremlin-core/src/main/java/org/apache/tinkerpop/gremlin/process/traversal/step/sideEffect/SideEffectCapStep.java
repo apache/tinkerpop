@@ -61,7 +61,7 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
     }
 
     @Override
-    public E supply() {
+    protected E supply() {
         return this.sideEffectKeys.size() == 1 ?
                 this.getTraversal().asAdmin().getSideEffects().<E>get(this.sideEffectKeys.get(0)).get() :
                 (E) this.getMapOfSideEffects();

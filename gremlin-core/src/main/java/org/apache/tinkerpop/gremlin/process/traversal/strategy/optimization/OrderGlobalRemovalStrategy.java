@@ -21,18 +21,28 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 /**
+ * OrderGlobalRemovalStrategy will remove all {@link OrderGlobalStep} instances in an {@link Traversal} as long as it is not the final, end-step.
+ * This strategy is only applied when the {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine} is a {@link org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine}.
+ * Mid-traversal ordering does not make sense in a distributed, parallel computation as at the next step, everything is executed in parallel again (thus, loosing the order).
+ * However, if the last step is an {@link OrderGlobalStep}, then the result set is ordered accordingly.
+ * <p/>
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @example <pre>
+ * __.order().out()             // is replaced by out() (OLAP only)
+ * __.out().order().by("name")  // is not replaced
+ * </pre>
  */
-public final class ComparatorHolderRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+public final class OrderGlobalRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
-    private static final ComparatorHolderRemovalStrategy INSTANCE = new ComparatorHolderRemovalStrategy();
+    private static final OrderGlobalRemovalStrategy INSTANCE = new OrderGlobalRemovalStrategy();
 
-    private ComparatorHolderRemovalStrategy() {
+    private OrderGlobalRemovalStrategy() {
     }
 
     @Override
@@ -40,16 +50,16 @@ public final class ComparatorHolderRemovalStrategy extends AbstractTraversalStra
         if (traversal.getEngine().isStandard())
             return;
 
-        if (TraversalHelper.hasStepOfAssignableClass(ComparatorHolder.class, traversal)) {
+        if (TraversalHelper.hasStepOfAssignableClass(OrderGlobalStep.class, traversal)) {
             final Step endStep = traversal.getEndStep();
-            TraversalHelper.getStepsOfAssignableClass(ComparatorHolder.class, traversal)
+            TraversalHelper.getStepsOfAssignableClass(OrderGlobalStep.class, traversal)
                     .stream()
                     .filter(step -> step != endStep)
-                    .forEach(step -> traversal.removeStep((Step)step));
+                    .forEach(step -> traversal.removeStep((Step) step));
         }
     }
 
-    public static ComparatorHolderRemovalStrategy instance() {
+    public static OrderGlobalRemovalStrategy instance() {
         return INSTANCE;
     }
 }
