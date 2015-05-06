@@ -19,10 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -40,20 +42,20 @@ public class ReadOnlyStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"addInE()", __.addInE("test", "x")},
-                {"addInE(args)", __.addInE("test", "x", "this", "that")},
-                {"addOutE()", __.addOutE("test", "x")},
-                {"addOutE(args)", __.addOutE("test", "x", "this", "that")},
-                {"addE(IN)", __.addE(Direction.IN, "test", "test")},
-                {"addE(IN,args)", __.addE(Direction.IN, "test", "test", "this", "that")},
-                {"addE(OUT)", __.addE(Direction.OUT, "test", "test")},
-                {"addE(OUT,args)", __.addE(Direction.OUT, "test", "test", "this", "that")},
-                {"outE().property(k,v)", __.outE().property("test", "test")},
-                {"out().properties(k).property(k,v)", __.out().properties("test").property("test", "that")},
-                {"out().property(k,v)", __.out().property("test", "test")},
-                {"out().property(Cardinality,k,v)", __.out().property(VertexProperty.Cardinality.list, "test", "test")},
-                {"addV(args)", __.addV("test", "test", "this", "that")},
-                {"addV()", __.addV()}});
+                {"addInE()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addInE("test", "x")},
+                {"addInE(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addInE("test", "x", "this", "that")},
+                {"addOutE()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addOutE("test", "x")},
+                {"addOutE(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addOutE("test", "x", "this", "that")},
+                {"addE(IN)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.IN, "test", "test")},
+                {"addE(IN,args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.IN, "test", "test", "this", "that")},
+                {"addE(OUT)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.OUT, "test", "test")},
+                {"addE(OUT,args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.OUT, "test", "test", "this", "that")},
+                {"outE().property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().property("test", "test")},
+                {"out().properties(k).property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().properties("test").property("test", "that")},
+                {"out().property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().property("test", "test")},
+                {"out().property(Cardinality,k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().property(VertexProperty.Cardinality.list, "test", "test")},
+                {"addV(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV("test", "test", "this", "that")},
+                {"addV()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV()}});
     }
 
     @Parameterized.Parameter(value = 0)

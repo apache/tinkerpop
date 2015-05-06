@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEn
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,23 +45,24 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     private long lastEndCount = 0l;
     private Step<?, E> finalEndStep = EmptyStep.instance();
     private final StepPosition stepPosition = new StepPosition();
-
     protected transient Graph graph;
-
     protected List<Step> steps = new ArrayList<>();
+    protected TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected TraversalStrategies strategies;
     protected TraversalEngine traversalEngine;
-
     protected boolean locked = false;
 
-    protected TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
+    public DefaultTraversal() {
+        this.graph = null;
+        // necessary for anonymous traversals without a graph start (rethink how this works in the future)
+        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(TraversalStrategies.GlobalCache.getGraphClass(EmptyGraph.instance())));
+        this.traversalEngine = StandardTraversalEngine.instance();
+    }
+
 
     public DefaultTraversal(final Graph graph) {
         this.graph = graph;
-        // necessary for anonymous traversals without a source (rethink how this works in the future)
-        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(TraversalStrategies.GlobalCache.getGraphClass(this.graph)));
-        this.traversalEngine = StandardTraversalEngine.instance();
     }
 
     @Override
@@ -73,18 +75,19 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         if (this.locked) throw Traversal.Exceptions.traversalIsLocked();
         TraversalHelper.reIdSteps(this.stepPosition, this);
         this.strategies.applyStrategies(this);
+        boolean hasGraph = null != this.graph;
         for (final Step<?, ?> step : this.getSteps()) {
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     globalChild.setStrategies(this.strategies);
                     globalChild.setEngine(this.traversalEngine);
-                    globalChild.setGraph(this.graph);
+                    if (hasGraph) globalChild.setGraph(this.graph);
                     globalChild.applyStrategies();
                 }
                 for (final Traversal.Admin<?, ?> localChild : ((TraversalParent) step).getLocalChildren()) {
                     localChild.setStrategies(this.strategies);
                     localChild.setEngine(StandardTraversalEngine.instance());
-                    localChild.setGraph(this.graph);
+                    if (hasGraph) localChild.setGraph(this.graph);
                     localChild.applyStrategies();
                 }
             }

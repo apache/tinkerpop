@@ -44,6 +44,7 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     private TraversalStrategies traversalStrategies = EmptyTraversalStrategies.instance();
     private TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
+    private transient Graph graph = null;
 
     public List<Step> getSteps() {
         return Collections.emptyList();
@@ -144,12 +145,12 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public Optional<Graph> getGraph() {
-        return Optional.empty();
+        return Optional.ofNullable(this.graph);
     }
 
     @Override
     public void setGraph(final Graph graph) {
-
+        this.graph = graph;
     }
 
 }

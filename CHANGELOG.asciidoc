@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Anonymous traversal no longer have `EmptyGraph` as their graph, but instead use `Optional<Graph>.isPresent() == false`.
 * Added `Traversal.Admin.setGraph(Graph)` as strategies that need reference to the graph, need it across all nested traversals.
 * `AbstractLambdaTraversal` is now smart about `TraversalParent` and `TraversalStrategies`.
 * Fixed bug in `GraphML` reader that was not allowing `<edge>` elements to come before `<node>` elements as allowable by the GraphML specification.

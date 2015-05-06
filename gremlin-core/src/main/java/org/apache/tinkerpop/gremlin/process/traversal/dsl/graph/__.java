@@ -53,7 +53,7 @@ public class __ {
     //////////////////////////////////////////////////////////////////////
 
     public static <A> GraphTraversal<A, A> start() {
-        return new DefaultGraphTraversal<>(EmptyGraph.instance());
+        return new DefaultGraphTraversal<>();
     }
 
     public static <A> GraphTraversal<A, A> __(final Object... starts) {
