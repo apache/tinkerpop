@@ -84,6 +84,11 @@ public abstract class GroovyHasTest {
         }
 
         @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2_3X(final Object v1Id, final Object v2Id, final Object v3Id) {
+            g.V(v1Id).out.hasId(v2Id, v3Id)
+        }
+
+        @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X() {
             g.V.has('age', gt(30))
         }
@@ -164,6 +169,11 @@ public abstract class GroovyHasTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2X(final Object v1Id, final Object v2Id) {
             ComputerTestHelper.compute(" g.V(v1Id).out.hasId(v2Id)", g, "v1Id", v1Id, "v2Id", v2Id);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2_3X(final Object v1Id, final Object v2Id, final Object v3Id) {
+            ComputerTestHelper.compute(" g.V(v1Id).out.hasId(v2Id, v3Id)", g, "v1Id", v1Id, "v2Id", v2Id, "v3Id", v3Id);
         }
 
         @Override

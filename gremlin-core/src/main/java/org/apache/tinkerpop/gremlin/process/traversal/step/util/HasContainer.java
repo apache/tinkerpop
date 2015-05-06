@@ -27,9 +27,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -39,11 +41,20 @@ public final class HasContainer implements Serializable {
     public String key;
     public BiPredicate predicate;
     public Object value;
+    private Collection<String> valuesToStringed;
 
     public HasContainer(final String key, final BiPredicate predicate, final Object value) {
         this.key = key;
         this.predicate = predicate;
         this.value = value;
+
+        // if the key being evaluated is id then the has() test can evaluate as a toString() representation of the
+        // identifier.  this could be done in the test() method but it seems cheaper to do the conversion once in
+        // the constructor.  to avoid losing the original value, the string version of the collection is maintained
+        // separately
+        if (this.key.equals(T.id.getAccessor()) && value instanceof Collection)
+            valuesToStringed = ((Collection<Object>) value).stream().map(Object::toString).collect(Collectors.toList());
+
         if (null == this.value && !(this.predicate instanceof Contains)) {
             throw new IllegalArgumentException("For determining the existence of a property, use the Contains predicate with null-value");
         }
@@ -54,7 +65,10 @@ public final class HasContainer implements Serializable {
             // it is OK to evaluate equality of ids via toString() now given that the toString() the test suite
             // enforces the value of id().toString() to be a first class representation of the identifier
             if (this.key.equals(T.id.getAccessor()))
-                return this.predicate.test(element.id().toString(), this.value.toString());
+                if (value instanceof Collection)
+                    return this.predicate.test(element.id().toString(), valuesToStringed);
+                else
+                    return this.predicate.test(element.id().toString(), this.value.toString());
             else if (this.key.equals(T.label.getAccessor()))
                 return this.predicate.test(element.label(), this.value);
             else if (element instanceof VertexProperty && this.key.equals(T.value.getAccessor()))
