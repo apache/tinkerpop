@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
@@ -81,7 +83,10 @@ public class GryoReader implements GraphReader {
         // have vertex labels in the output we can't do this single pass
         final Map<StarGraph.StarVertex,Vertex> cache = new HashMap<>();
         final AtomicLong counter = new AtomicLong(0);
+
+        final boolean supportsUserSuppliedIdsOnEdge = graphToWriteTo.features().edge().supportsUserSuppliedIds();
         final boolean supportsTx = graphToWriteTo.features().graph().supportsTransactions();
+
         IteratorUtils.iterate(new VertexInputIterator(new Input(inputStream), attachable -> {
             final Vertex v = cache.put((StarGraph.StarVertex) attachable.get(), attachable.attach(Attachable.Method.create(graphToWriteTo)));
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
@@ -89,7 +94,13 @@ public class GryoReader implements GraphReader {
             return v;
         }, null, null));
         cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.OUT).forEachRemaining(e -> {
-            ((StarGraph.StarEdge) e).attach(Attachable.Method.create(kv.getValue()));
+            // can't use a standard Attachable attach method here because we have to use the cache for those
+            // graphs that don't support userSuppliedIds on edges. note that outVertex/inVertex methods return
+            // StarAdjacentVertex whose equality should match StarVertex.
+            final Vertex cachedOutV = cache.get(e.outVertex());
+            final Vertex cachedInV = cache.get(e.inVertex());
+            final Edge newEdge = supportsUserSuppliedIdsOnEdge ? cachedOutV.addEdge(e.label(), cachedInV, T.id, e.id()) : cachedOutV.addEdge(e.label(), cachedInV);
+            e.properties().forEachRemaining(p -> newEdge.property(p.key(), p.value()));
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
                 graphToWriteTo.tx().commit();
         }));

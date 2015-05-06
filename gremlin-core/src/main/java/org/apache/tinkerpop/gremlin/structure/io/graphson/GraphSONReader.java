@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
@@ -88,7 +89,10 @@ public class GraphSONReader implements GraphReader {
         // have vertex labels in the output we can't do this single pass
         final Map<StarGraph.StarVertex,Vertex> cache = new HashMap<>();
         final AtomicLong counter = new AtomicLong(0);
+
         final boolean supportsTx = graphToWriteTo.features().graph().supportsTransactions();
+        final boolean supportsUserSuppliedIdsOnEdge = graphToWriteTo.features().edge().supportsUserSuppliedIds();
+
         final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
         br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), null, null, Direction.OUT))).forEach(vertex -> {
             final Attachable<Vertex> attachable = (Attachable<Vertex>) vertex;
@@ -97,7 +101,13 @@ public class GraphSONReader implements GraphReader {
                 graphToWriteTo.tx().commit();
         });
         cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.OUT).forEachRemaining(e -> {
-            ((StarGraph.StarEdge) e).attach(Attachable.Method.create(kv.getValue()));
+            // can't use a standard Attachable attach method here because we have to use the cache for those
+            // graphs that don't support userSuppliedIds on edges.  note that outVertex/inVertex methods return
+            // StarAdjacentVertex whose equality should match StarVertex.
+            final Vertex cachedOutV = cache.get(e.outVertex());
+            final Vertex cachedInV = cache.get(e.inVertex());
+            final Edge newEdge = supportsUserSuppliedIdsOnEdge ? cachedOutV.addEdge(e.label(), cachedInV, T.id, e.id()) : cachedOutV.addEdge(e.label(), cachedInV);
+            e.properties().forEachRemaining(p -> newEdge.property(p.key(), p.value()));
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
                 graphToWriteTo.tx().commit();
         }));
