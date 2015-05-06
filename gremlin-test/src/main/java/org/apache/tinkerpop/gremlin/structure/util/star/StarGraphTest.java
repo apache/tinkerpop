@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -60,12 +61,18 @@ public class StarGraphTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
     public void shouldHashAndEqualsCorrectly() {
         final Vertex gremlin = g.V(convertToVertexId("gremlin")).next();
-        final StarGraph starGraph = StarGraph.of(gremlin);
-        final StarGraph.StarVertex gremlinStar = starGraph.getStarVertex();
+        final StarGraph gremlinStarGraph = StarGraph.of(gremlin);
+        final StarGraph.StarVertex gremlinStar = gremlinStarGraph.getStarVertex();
+
+        final Vertex marko = g.V(convertToVertexId("marko")).next();
+        final StarGraph markoStarGraph = StarGraph.of(marko);
+        final StarGraph.StarAdjacentVertex gremlinStarAdjacentGraph = (StarGraph.StarAdjacentVertex) IteratorUtils.filter(markoStarGraph.getStarVertex().edges(Direction.OUT, "uses"), x -> x.inVertex().id().equals(convertToVertexId("gremlin"))).next().inVertex();
+
         final Set<Vertex> set = new HashSet<>();
         for (int i = 0; i < 100; i++) {
             set.add(gremlin);
             set.add(gremlinStar);
+            set.add(gremlinStarAdjacentGraph);
         }
         assertEquals(1, set.size());
     }
