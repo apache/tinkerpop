@@ -22,8 +22,10 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.List;
@@ -33,6 +35,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -126,8 +129,10 @@ public class ProfilingApplication {
     }
 
     public static void main(final String[] args) {
+        final Map<String,Object> options = ElementHelper.asMap(args);
+        final boolean noExit = Boolean.parseBoolean(options.getOrDefault("noExit", "false").toString());
+
         try {
-            final Map<String,Object> options = ElementHelper.asMap(args);
             final String host = options.getOrDefault("host", "localhost").toString();
             final int warmups = Integer.parseInt(options.getOrDefault("warmups", "5").toString());
             final int executions = Integer.parseInt(options.getOrDefault("executions", "10").toString());
@@ -149,7 +154,7 @@ public class ProfilingApplication {
 
             final Object fileName = options.get("store");
             final File f = null == fileName ? null : new File(fileName.toString());
-            if (f != null) {
+            if (f != null && f.length() == 0) {
                 try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
                     writer.println("clients\tminConnectionPoolSize\tmaxConnectionPoolSize\tmaxSimultaneousRequestsPerConnection\tmaxInProcessPerConnection\tworkerPoolSize\trequestPerSecond");
                 }
@@ -175,10 +180,11 @@ public class ProfilingApplication {
                     writer.println(String.join("\t", String.valueOf(clients), String.valueOf(minConnectionPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(maxSimultaneousRequestsPerConnection), String.valueOf(maxInProcessPerConnection), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
                 }
             }
-            System.exit(0);
+
+            if (!noExit) System.exit(0);
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.exit(1);
+            if (!noExit) System.exit(1);
         }
     }
 }
