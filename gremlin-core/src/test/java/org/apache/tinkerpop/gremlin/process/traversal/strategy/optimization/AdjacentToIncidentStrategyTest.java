@@ -102,8 +102,8 @@ public class AdjacentToIncidentStrategyTest {
             strategies.addStrategies(AdjacentToIncidentStrategy.instance());
 
             traversal.asAdmin().setStrategies(strategies);
+            traversal.asAdmin().setEngine(this.traversalEngine);
             traversal.asAdmin().applyStrategies();
-            traversal.asAdmin().setEngine(traversalEngine);
         }
 
         public void doTest(final Traversal traversal, final Traversal optimized) {

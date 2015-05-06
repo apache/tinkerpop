@@ -21,6 +21,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -42,36 +43,10 @@ import static org.mockito.Mockito.when;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Enclosed.class)
-public class MatchWhereStrategyTest {
+public class OrderGlobalRemovalStrategyTest {
 
     @RunWith(Parameterized.class)
-    public static class StandardTest extends AbstractMatchWhereStrategyTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return generateTestParameters();
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public Traversal original;
-
-        @Parameterized.Parameter(value = 1)
-        public Traversal optimized;
-
-        @Before
-        public void setup() {
-            this.traversalEngine = mock(TraversalEngine.class);
-            when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.STANDARD);
-        }
-
-        @Test
-        public void shouldApplyStrategy() {
-            doTest(original, optimized);
-        }
-    }
-
-    @RunWith(Parameterized.class)
-    public static class ComputerTest extends AbstractMatchWhereStrategyTest {
+    public static class ComputerTest extends OrderGlobalRemovalStrategyTest.AbstractOrderGlobalRemovalStrategyTest {
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
@@ -96,31 +71,30 @@ public class MatchWhereStrategyTest {
         }
     }
 
-    private static abstract class AbstractMatchWhereStrategyTest {
+    private static abstract class AbstractOrderGlobalRemovalStrategyTest {
 
         protected TraversalEngine traversalEngine;
 
-        void applyMatchWhereStrategy(final Traversal traversal) {
+        void applyOrderGlobalRemovalStrategy(final Traversal traversal) {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(MatchWhereStrategy.instance(), IdentityRemovalStrategy.instance());
-
+            strategies.addStrategies(OrderGlobalRemovalStrategy.instance());
             traversal.asAdmin().setStrategies(strategies);
             traversal.asAdmin().setEngine(this.traversalEngine);
             traversal.asAdmin().applyStrategies();
-
         }
 
         public void doTest(final Traversal traversal, final Traversal optimized) {
-            applyMatchWhereStrategy(traversal);
+            applyOrderGlobalRemovalStrategy(traversal);
             assertEquals(optimized.toString(), traversal.toString());
         }
 
         static Iterable<Object[]> generateTestParameters() {
 
             return Arrays.asList(new Traversal[][]{
-                    {__.match("a", __.as("a").out().as("b")).where(__.as("b").out("knows")), __.match("a", __.as("a").out().as("b"), __.as("b").out("knows"))},
-                    {__.match("a", __.as("a").out().as("b")).select().where(__.as("b").out("knows")), __.match("a", __.as("a").out().as("b"), __.as("b").out("knows")).select()},
-                    {__.match("a", __.as("a").out().as("b")).select().as("x").where(__.as("b").out("knows")), __.match("a", __.as("a").out().as("b")).select().as("x").where(__.as("b").out("knows"))}
+                    {__.out().order().out(), __.out().out()},
+                    {__.out().order().order().out(), __.out().out()},
+                    {__.out().order(), __.out().order()},
+                    {__.out().order(Scope.local).out(), __.out().order(Scope.local).out()},
             });
         }
     }
