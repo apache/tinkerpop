@@ -251,31 +251,65 @@ public class Cluster {
             return this;
         }
 
+        /**
+         * The minimum number of in-flight requests that can occur on a {@link Connection} before it is considered
+         * for closing on return to the {@link ConnectionPool}.
+         */
         public Builder minInProcessPerConnection(final int minInProcessPerConnection) {
             this.minInProcessPerConnection = minInProcessPerConnection;
             return this;
         }
 
+        /**
+         * The maximum number of in-flight requests that can occur on a {@link Connection}. This represents an
+         * indication of how busy a {@link Connection} is allowed to be.  This number is linked to the
+         * {@link #maxSimultaneousUsagePerConnection} setting, but is slightly different in that it refers to
+         * the total number of requests on a {@link Connection}.  In other words, a {@link Connection} might
+         * be borrowed once to have multiple requests executed against it.  This number controls the maximum
+         * number of requests whereas {@link #maxInProcessPerConnection} controls the times borrowed.
+         */
         public Builder maxInProcessPerConnection(final int maxInProcessPerConnection) {
             this.maxInProcessPerConnection = maxInProcessPerConnection;
             return this;
         }
 
+        /**
+         * The maximum number of times that a {@link Connection} can be borrowed from the pool simultaneously.
+         * This represents an indication of how busy a {@link Connection} is allowed to be.  Set too large and the
+         * {@link Connection} may queue requests too quickly, rather than wait for an available {@link Connection}
+         * or create a fresh one.  If set too small, the {@link Connection} will show as busy very quickly thus
+         * forcing waits for available {@link Connection} instances in the pool when there is more capacity available.
+         */
         public Builder maxSimultaneousUsagePerConnection(final int maxSimultaneousUsagePerConnection) {
             this.maxSimultaneousUsagePerConnection = maxSimultaneousUsagePerConnection;
             return this;
         }
 
+        /**
+         * The minimum number of times that a {@link Connection} should be borrowed from the pool before it falls
+         * under consideration for closing.  If a {@link Connection} is not busy and the
+         * {@link #minConnectionPoolSize} is exceeded, then there is no reason to keep that connection open.  Set
+         * too large and {@link Connection} that isn't busy will continue to consume resources when it is not being
+         * used.  Set too small and {@link Connection} instances will be destroyed when the driver might still be
+         * busy.
+         */
         public Builder minSimultaneousUsagePerConnection(final int minSimultaneousUsagePerConnection) {
             this.minSimultaneousUsagePerConnection = minSimultaneousUsagePerConnection;
             return this;
         }
 
+        /**
+         * The maximum size that the {@link ConnectionPool} can grow.
+         */
         public Builder maxConnectionPoolSize(final int maxSize) {
             this.maxConnectionPoolSize = maxSize;
             return this;
         }
 
+        /**
+         * The minimum size of the {@link ConnectionPool}.  When the {@link Client} is started, {@link Connection}
+         * objects will be initially constructed to this size.
+         */
         public Builder minConnectionPoolSize(final int minSize) {
             this.minConnectionPoolSize = minSize;
             return this;

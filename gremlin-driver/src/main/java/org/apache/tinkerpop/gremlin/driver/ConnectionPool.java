@@ -160,12 +160,12 @@ class ConnectionPool {
         logger.debug("Attempting to return {} on {}", connection, host);
         if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
-        int inFlight = connection.borrowed.decrementAndGet();
+        int borrowed = connection.borrowed.decrementAndGet();
         if (connection.isDead()) {
             logger.debug("Marking {} as dead", this.host);
             considerUnavailable();
         } else {
-            if (bin.contains(connection) && inFlight == 0) {
+            if (bin.contains(connection) && borrowed == 0) {
                 logger.debug("{} is already in the bin and it has no inflight requests so it is safe to close", connection);
                 if (bin.remove(connection))
                     connection.closeAsync();
@@ -178,10 +178,10 @@ class ConnectionPool {
             // then let the world know the connection is available.
             final int poolSize = connections.size();
             final int availableInProcess = connection.availableInProcess();
-            if (poolSize > minPoolSize && inFlight <= minSimultaneousUsagePerConnection) {
+            if (poolSize > minPoolSize && borrowed <= minSimultaneousUsagePerConnection) {
                 if (logger.isDebugEnabled())
                     logger.debug("On {} pool size of {} > minPoolSize {} and borrowed of {} <= minSimultaneousUsagePerConnection {} so destroy {}",
-                            host, poolSize, minPoolSize, inFlight, minSimultaneousUsagePerConnection, connection.getConnectionInfo());
+                            host, poolSize, minPoolSize, borrowed, minSimultaneousUsagePerConnection, connection.getConnectionInfo());
                 destroyConnection(connection);
             } else if (connection.availableInProcess() < minInProcess) {
                 if (logger.isDebugEnabled())
