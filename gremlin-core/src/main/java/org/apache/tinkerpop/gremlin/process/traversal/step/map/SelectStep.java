@@ -19,8 +19,10 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -36,13 +38,15 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements TraversalParent {
+public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Scoping, TraversalParent {
 
-    protected TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
+    private TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
+    private Scope scope;
     private final List<String> selectLabels;
 
-    public SelectStep(final Traversal.Admin traversal, final String... selectLabels) {
+    public SelectStep(final Traversal.Admin traversal, final Scope scope, final String... selectLabels) {
         super(traversal);
+        this.scope = scope;
         this.selectLabels = Arrays.asList(selectLabels);
     }
 
@@ -51,7 +55,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         final S start = traverser.get();
         final Map<String, E> bindings = new LinkedHashMap<>();
 
-        if (start instanceof Map) {
+        if (Scope.local == this.scope) {
             if (this.selectLabels.isEmpty())
                 ((Map<String, Object>) start).forEach((key, value) -> bindings.put(key, (E) TraversalUtil.apply(value, this.traversalRing.next())));
             else
@@ -76,7 +80,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.selectLabels, this.traversalRing);
+        return TraversalHelper.makeStepString(this, this.scope, this.selectLabels, this.traversalRing);
     }
 
     @Override
@@ -101,6 +105,15 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.PATH);
+        return this.getSelfAndChildRequirements(this.scope == Scope.local ? TraverserRequirement.OBJECT : TraverserRequirement.PATH);
+    }
+
+    public void setScope(final Scope scope) {
+        this.scope = scope;
+    }
+
+    @Override
+    public Scope recommendNextScope() {
+        return this.scope.opposite();
     }
 }

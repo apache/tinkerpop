@@ -64,7 +64,7 @@ public interface Channelizer extends ChannelHandler {
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
         protected Connection connection;
         protected Cluster cluster;
-        private ConcurrentMap<UUID, ResponseQueue> pending;
+        private ConcurrentMap<UUID, ResultQueue> pending;
 
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
 

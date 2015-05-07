@@ -18,13 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.structure.T
+import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import static org.apache.tinkerpop.gremlin.structure.P.*;
-import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.structure.T
+import org.apache.tinkerpop.gremlin.structure.Vertex
+
+import static org.apache.tinkerpop.gremlin.structure.P.neq;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -156,7 +158,7 @@ public abstract class GroovyMatchTest {
                     __.as("a").out("created").has("name", "lop").as("b"),
                     __.as("b").in("created").has("age", 29).as("c"))
                     .where(__.as("c").repeat(__.out()).times(2))
-                    .select.by('name')
+                    .select().by('name')
         }
 
         @Override

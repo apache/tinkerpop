@@ -69,8 +69,8 @@ class Settings {
         public boolean enableSsl = false;
         public int minSize = ConnectionPool.MIN_POOL_SIZE;
         public int maxSize = ConnectionPool.MAX_POOL_SIZE;
-        public int minSimultaneousRequestsPerConnection = ConnectionPool.MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
-        public int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
+        public int minSimultaneousUsagePerConnection = ConnectionPool.MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
+        public int maxSimultaneousUsagePerConnection = ConnectionPool.MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
         public int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         public int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
         public int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;

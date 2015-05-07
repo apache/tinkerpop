@@ -22,10 +22,8 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.List;
@@ -134,6 +132,7 @@ public class ProfilingApplication {
 
         try {
             final String host = options.getOrDefault("host", "localhost").toString();
+            final int minExpectedRps = Integer.parseInt(options.getOrDefault("minExpectedRps", "1000").toString());
             final int timeout = Integer.parseInt(options.getOrDefault("timeout", "1200000").toString());
             final int warmups = Integer.parseInt(options.getOrDefault("warmups", "5").toString());
             final int executions = Integer.parseInt(options.getOrDefault("executions", "10").toString());
@@ -141,14 +140,18 @@ public class ProfilingApplication {
             final int requests = Integer.parseInt(options.getOrDefault("requests", "10000").toString());
             final int minConnectionPoolSize = Integer.parseInt(options.getOrDefault("minConnectionPoolSize", "256").toString());
             final int maxConnectionPoolSize = Integer.parseInt(options.getOrDefault("maxConnectionPoolSize", "256").toString());
-            final int maxSimultaneousRequestsPerConnection = Integer.parseInt(options.getOrDefault("maxSimultaneousRequestsPerConnection", "32").toString());
-            final int maxInProcessPerConnection = Integer.parseInt(options.getOrDefault("maxInProcessPerConnection", "8").toString());
-            final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "4").toString());
+            final int minSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("minSimultaneousUsagePerConnection", "8").toString());
+            final int maxSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("maxSimultaneousUsagePerConnection", "32").toString());
+            final int maxInProcessPerConnection = Integer.parseInt(options.getOrDefault("maxInProcessPerConnection", "64").toString());
+            final int minInProcessPerConnection = Integer.parseInt(options.getOrDefault("minInProcessPerConnection", "16").toString());
+            final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "16").toString());
 
             final Cluster cluster = Cluster.build(host)
                     .minConnectionPoolSize(minConnectionPoolSize)
                     .maxConnectionPoolSize(maxConnectionPoolSize)
-                    .maxSimultaneousRequestsPerConnection(maxSimultaneousRequestsPerConnection)
+                    .minSimultaneousUsagePerConnection(minSimultaneousUsagePerConnection)
+                    .maxSimultaneousUsagePerConnection(maxSimultaneousUsagePerConnection)
+                    .minInProcessPerConnection(minInProcessPerConnection)
                     .maxInProcessPerConnection(maxInProcessPerConnection)
                     .nioPoolSize(clients)
                     .workerPoolSize(workerPoolSize).create();
@@ -157,31 +160,38 @@ public class ProfilingApplication {
             final File f = null == fileName ? null : new File(fileName.toString());
             if (f != null && f.length() == 0) {
                 try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
-                    writer.println("clients\tminConnectionPoolSize\tmaxConnectionPoolSize\tmaxSimultaneousRequestsPerConnection\tmaxInProcessPerConnection\tworkerPoolSize\trequestPerSecond");
+                    writer.println("clients\tminConnectionPoolSize\tmaxConnectionPoolSize\tmaxSimultaneousUsagePerConnection\tmaxInProcessPerConnection\tworkerPoolSize\trequestPerSecond");
                 }
             }
 
+            // not much point to continuing with a line of tests if we can't get at least minExpectedRps.
+            final AtomicBoolean meetsRpsExpectation = new AtomicBoolean(true);
             System.out.println("---------------------------WARMUP CYCLE---------------------------");
-            for (int ix = 0; ix < warmups; ix++) {
+            for (int ix = 0; ix < warmups && meetsRpsExpectation.get(); ix++) {
+                final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, clients, 1000).execute();
+                meetsRpsExpectation.set(averageRequestsPerSecond > minExpectedRps);
                 TimeUnit.SECONDS.sleep(1); // pause between executions
-                new ProfilingApplication("warmup-" + (ix + 1), cluster, clients, requests).execute();
             }
 
             final AtomicBoolean exceededTimeout = new AtomicBoolean(false);
-            final long start = System.nanoTime();
-            System.out.println("----------------------------TEST CYCLE----------------------------");
             long totalRequestsPerSecond = 0;
-            for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
-                TimeUnit.SECONDS.sleep(1); // pause between executions
-                totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests).execute();
-                exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
+
+            // no need to execute this if we didn't pass the basic expectation in the warmups
+            if (meetsRpsExpectation.get()) {
+                final long start = System.nanoTime();
+                System.out.println("----------------------------TEST CYCLE----------------------------");
+                for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
+                    totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests).execute();
+                    exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
+                    TimeUnit.SECONDS.sleep(1); // pause between executions
+                }
             }
 
-            final int averageRequestPerSecond = exceededTimeout.get() ? 0 : Math.round(totalRequestsPerSecond / executions);
+            final int averageRequestPerSecond = !meetsRpsExpectation.get() || exceededTimeout.get() ? 0 : Math.round(totalRequestsPerSecond / executions);
             System.out.println(String.format("avg req/sec: %s", averageRequestPerSecond));
             if (f != null) {
                 try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
-                    writer.println(String.join("\t", String.valueOf(clients), String.valueOf(minConnectionPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(maxSimultaneousRequestsPerConnection), String.valueOf(maxInProcessPerConnection), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
+                    writer.println(String.join("\t", String.valueOf(clients), String.valueOf(minConnectionPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(maxSimultaneousUsagePerConnection), String.valueOf(maxInProcessPerConnection), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
                 }
             }
 

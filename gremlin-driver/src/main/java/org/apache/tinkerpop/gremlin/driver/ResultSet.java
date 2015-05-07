@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import io.netty.channel.Channel;
 
 import java.util.ArrayList;
@@ -43,15 +41,15 @@ import java.util.stream.StreamSupport;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ResultSet implements Iterable<Result> {
-    private final ResponseQueue responseQueue;
+    private final ResultQueue resultQueue;
     private final ExecutorService executor;
     private final Channel channel;
     private final Supplier<Void> onChannelError;
 
-    public ResultSet(final ResponseQueue responseQueue, final ExecutorService executor,
+    public ResultSet(final ResultQueue resultQueue, final ExecutorService executor,
                      final Channel channel, final Supplier<Void> onChannelError) {
         this.executor = executor;
-        this.responseQueue = responseQueue;
+        this.resultQueue = resultQueue;
         this.channel = channel;
         this.onChannelError = onChannelError;
     }
@@ -60,42 +58,42 @@ public class ResultSet implements Iterable<Result> {
      * Determines if all items have been returned to the client.
      */
     public boolean allItemsAvailable() {
-        return responseQueue.getStatus() == ResponseQueue.Status.COMPLETE;
+        return resultQueue.getStatus() == ResultQueue.Status.COMPLETE;
     }
 
     /**
      * Gets the number of items available on the client.
      */
     public int getAvailableItemCount() {
-        return responseQueue.size();
+        return resultQueue.size();
     }
 
     /**
      * Determines if there are any remaining items being streamed to the client.
      */
     public boolean isExhausted() {
-        if (!responseQueue.isEmpty())
+        if (!resultQueue.isEmpty())
             return false;
 
         internalAwaitItems(1);
 
-        assert !responseQueue.isEmpty() || allItemsAvailable();
-        return responseQueue.isEmpty();
+        assert !resultQueue.isEmpty() || allItemsAvailable();
+        return resultQueue.isEmpty();
     }
 
     /**
      * Get the next {@link Result} from the stream, blocking until one is available.
      */
     public Result one() {
-        ResponseMessage msg = responseQueue.poll();
-        if (msg != null)
-            return new Result(msg);
+        Result result = resultQueue.poll();
+        if (result != null)
+            return result;
 
         internalAwaitItems(1);
 
-        msg = responseQueue.poll();
-        if (msg != null)
-            return new Result(msg);
+        result = resultQueue.poll();
+        if (result != null)
+            return result;
         else
             return null;
     }
@@ -118,9 +116,9 @@ public class ResultSet implements Iterable<Result> {
         return CompletableFuture.supplyAsync(() -> {
             final List<Result> list = new ArrayList<>();
             while (!isExhausted()) {
-                final ResponseMessage msg = responseQueue.poll();
-                if (msg != null)
-                    list.add(new Result(msg));
+                final Result result = resultQueue.poll();
+                if (result != null)
+                    list.add(result);
             }
             return list;
         }, executor);

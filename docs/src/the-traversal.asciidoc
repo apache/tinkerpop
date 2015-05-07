@@ -1169,9 +1169,9 @@ The second use case is best understood in terms of <<match-step,`match()`>>-step
 [gremlin-groovy,modern]
 ----
 g.V().range(0, 2).as('a').map {[b:1,c:2]} <1>
-g.V().range(0, 2).as('a').map {[b:1,c:2]}.select() <2>
-g.V().range(0, 2).as('a').map {[b:1,c:2]}.select('a','c') <3>
-g.V().range(0, 2).as('a').map {[b:1,c:2]}.select('c') <4>
+g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(local) <2>
+g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(local,'a','c') <3>
+g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(local,'c') <4>
 ----
 
 <1> A contrived example to create a `Map<String,Object>` flow as a foundation for the examples to follow.

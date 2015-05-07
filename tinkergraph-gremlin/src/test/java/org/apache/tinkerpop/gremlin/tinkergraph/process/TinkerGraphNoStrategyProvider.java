@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ScopingStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
@@ -39,7 +40,11 @@ import java.util.HashSet;
  */
 public class TinkerGraphNoStrategyProvider extends TinkerGraphProvider {
 
-    private static final HashSet<Class<? extends TraversalStrategy>> REQUIRED_STRATEGIES = new HashSet<>(Arrays.asList(TinkerGraphStepStrategy.class, ProfileStrategy.class, ConjunctionStrategy.class));
+    private static final HashSet<Class<? extends TraversalStrategy>> REQUIRED_STRATEGIES = new HashSet<>(Arrays.asList(
+            TinkerGraphStepStrategy.class,
+            ProfileStrategy.class,
+            ScopingStrategy.class,
+            ConjunctionStrategy.class));
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {

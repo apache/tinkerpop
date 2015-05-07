@@ -29,37 +29,50 @@ import java.util.stream.Stream;
  */
 public class ConfigurationEvaluator {
 
-    private final List<Integer> minConnectionPoolSizeRange = Arrays.asList(1,4,8,12,16,32,64,96,128,160,192,224,256,384,512);
-    private final List<Integer> maxConnectionPoolSizeRange = Arrays.asList(4,8,12,16,32,64,96,128,160,192,224,256,384,512);
-    private final List<Integer> maxSimultaneousRequestsPerConnectionRange = Arrays.asList(2,3,4,5,8,16,24,32,64,96,128);
-    private final List<Integer> maxInProcessPerConnectionRange = Arrays.asList(1,2,4,8,12,16,32,64,96,128);
-    private final List<Integer> workerPoolSizeRange = Arrays.asList(1,2,3,4,8,16,32);
+    private final List<Integer> minConnectionPoolSizeRange = Arrays.asList(4,8,12,16,32,64,96,128,192,256,384,512);
+    private final List<Integer> maxConnectionPoolSizeRange = Arrays.asList(4,8,12,16,32,64,96,128,192,256,384,512);
+    private final List<Integer> minSimultaneousUsagePerConnectionRange = Arrays.asList(4,8,16,24,32,64,96,128);
+    private final List<Integer> maxSimultaneousUsagePerConnectionRange = Arrays.asList(4,8,16,24,32,64,96,128);
+    private final List<Integer> minInProcessPerConnectionRange = Arrays.asList(2,4,8,16,32,64,96,128);
+    private final List<Integer> maxInProcessPerConnectionRange = Arrays.asList(4,8,16,32,64,96,128);
+    private final List<Integer> workerPoolSizeRange = Arrays.asList(2,3,4,8,16,32);
 
     public Stream<String[]> generate(final String [] args) {
         final Set<Set<Integer>> configsTried = new HashSet<>();
-        for (int iv = 0; iv < workerPoolSizeRange.size(); iv++) {
-            for (int iw = 0; iw < maxInProcessPerConnectionRange.size(); iw++) {
-                for (int ix = 0; ix < minConnectionPoolSizeRange.size(); ix++) {
-                    for (int iy = 0; iy < maxConnectionPoolSizeRange.size(); iy++) {
-                        for (int iz = 0; iz < maxSimultaneousRequestsPerConnectionRange.size(); iz++) {
-                            if (minConnectionPoolSizeRange.get(ix) <= maxConnectionPoolSizeRange.get(iy)) {
-                                final Set s = new HashSet(Arrays.asList(iv, iw, ix, iy, iz));
-                                if (!configsTried.contains(s)) {
-                                    final Object[] argsToProfiler =
-                                            Stream.of("workerPoolSize", workerPoolSizeRange.get(iv).toString(),
-                                                      "maxInProcessPerConnection", maxInProcessPerConnectionRange.get(iw).toString(),
-                                                      "minConnectionPoolSize", minConnectionPoolSizeRange.get(ix).toString(),
-                                                      "maxConnectionPoolSize", maxConnectionPoolSizeRange.get(iy).toString(),
-                                                      "maxSimultaneousRequestsPerConnection", maxSimultaneousRequestsPerConnectionRange.get(iz).toString(),
-                                                      "noExit", Boolean.TRUE.toString()).toArray();
 
-                                    final Object[] withExtraArgs = args.length > 0 ? Stream.concat(Stream.of(args), Stream.of(argsToProfiler)).toArray() : argsToProfiler;
+        // get ready for the some serious brute-force action here
+        for (int it = 0; it < workerPoolSizeRange.size(); it++) {
+            for (int iu = 0; iu < minInProcessPerConnectionRange.size(); iu++) {
+                for (int iv = 0; iv < maxInProcessPerConnectionRange.size(); iv++) {
+                    for (int iw = 0; iw < minConnectionPoolSizeRange.size(); iw++) {
+                        for (int ix = 0; ix < maxConnectionPoolSizeRange.size(); ix++) {
+                            for (int iy = 0; iy < minSimultaneousUsagePerConnectionRange.size(); iy++) {
+                                for (int iz = 0; iz < maxSimultaneousUsagePerConnectionRange.size(); iz++) {
+                                    if (minConnectionPoolSizeRange.get(iw) <= maxConnectionPoolSizeRange.get(ix)
+                                            && minInProcessPerConnectionRange.get(iu) <= maxInProcessPerConnectionRange.get(iv)
+                                            && minSimultaneousUsagePerConnectionRange.get(iy) <= maxSimultaneousUsagePerConnectionRange.get(iz)
+                                            && maxSimultaneousUsagePerConnectionRange.get(iz) <= maxInProcessPerConnectionRange.get(iv)) {
+                                        final Set s = new HashSet(Arrays.asList(it, iu, iv, iw, ix, iy, iz));
+                                        if (!configsTried.contains(s)) {
+                                            final Object[] argsToProfiler =
+                                                    Stream.of("workerPoolSize", workerPoolSizeRange.get(it).toString(),
+                                                            "minInProcessPerConnection", minInProcessPerConnectionRange.get(iu).toString(),
+                                                            "maxInProcessPerConnection", maxInProcessPerConnectionRange.get(iv).toString(),
+                                                            "minConnectionPoolSize", minConnectionPoolSizeRange.get(iw).toString(),
+                                                            "maxConnectionPoolSize", maxConnectionPoolSizeRange.get(ix).toString(),
+                                                            "minSimultaneousUsagePerConnection", minSimultaneousUsagePerConnectionRange.get(iy).toString(),
+                                                            "maxSimultaneousUsagePerConnection", maxSimultaneousUsagePerConnectionRange.get(iz).toString(),
+                                                            "noExit", Boolean.TRUE.toString()).toArray();
 
-                                    final String[] stringProfilerArgs = Arrays.copyOf(withExtraArgs, withExtraArgs.length, String[].class);
-                                    System.out.println("Testing with: " + Arrays.toString(stringProfilerArgs));
-                                    ProfilingApplication.main(stringProfilerArgs);
+                                            final Object[] withExtraArgs = args.length > 0 ? Stream.concat(Stream.of(args), Stream.of(argsToProfiler)).toArray() : argsToProfiler;
 
-                                    configsTried.add(s);
+                                            final String[] stringProfilerArgs = Arrays.copyOf(withExtraArgs, withExtraArgs.length, String[].class);
+                                            System.out.println("Testing with: " + Arrays.toString(stringProfilerArgs));
+                                            ProfilingApplication.main(stringProfilerArgs);
+
+                                            configsTried.add(s);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -67,6 +80,7 @@ public class ConfigurationEvaluator {
                 }
             }
         }
+
 
         System.out.println(configsTried.size());
         return null;

@@ -29,5 +29,5 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ProcessStandardSuite.class)
 @ProcessStandardSuite.GraphProviderClass(provider = TinkerGraphNoStrategyProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphNoStrategyProcessStandardTest {
+public class TinkerGraphNoStrategyProcessStandardIntegrateTest {
 }

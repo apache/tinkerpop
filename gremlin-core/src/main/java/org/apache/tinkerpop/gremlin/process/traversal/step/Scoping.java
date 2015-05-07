@@ -19,17 +19,14 @@
  *
  */
 
-package org.apache.tinkerpop.gremlin.tinkergraph.process;
+package org.apache.tinkerpop.gremlin.process.traversal.step;
 
-import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.runner.RunWith;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessComputerSuite.class)
-@ProcessComputerSuite.GraphProviderClass(provider = TinkerGraphNoStrategyComputerProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphNoStrategyProcessComputerTest {
+public interface Scoping {
 
+    public Scope recommendNextScope();
 }

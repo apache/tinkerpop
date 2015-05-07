@@ -18,14 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map.match;
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -47,7 +49,7 @@ import java.util.function.Function;
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  */
-public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> implements TraversalParent {
+public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> implements Scoping, TraversalParent {
 
     static final BiConsumer<String, Object> TRIVIAL_CONSUMER = (s, t) -> {
     };
@@ -181,15 +183,15 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     }
 
     private void addTraversalPrivate(final Traversal<S, S> traversal) {
-        final Step<S,?> startStep = traversal.asAdmin().getStartStep();
+        final Step<S, ?> startStep = traversal.asAdmin().getStartStep();
         if (startStep.getLabels().isEmpty())
             throw new IllegalArgumentException("Match traversals must have their start step labeled with as(): " + traversal);
         if (startStep.getLabels().size() > 1)
             throw new IllegalArgumentException("Match traversals can not have multiple labels on the start step: " + traversal);
         final String startAs = traversal.asAdmin().getStartStep().getLabels().iterator().next();
         ///
-        final Step<?,S> endStep = traversal.asAdmin().getEndStep();
-        if(endStep.getLabels().size() > 1)
+        final Step<?, S> endStep = traversal.asAdmin().getEndStep();
+        if (endStep.getLabels().size() > 1)
             throw new IllegalArgumentException("Match traversals can not have multiple labels on the end step: " + traversal);
 
         String endAs = endStep.getLabels().isEmpty() ? null : endStep.getLabels().iterator().next();
@@ -402,6 +404,11 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     @Override
     public List<Traversal> getLocalChildren() {
         return this.traversals;
+    }
+
+    @Override
+    public Scope recommendNextScope() {
+        return Scope.local;
     }
 
     /**
