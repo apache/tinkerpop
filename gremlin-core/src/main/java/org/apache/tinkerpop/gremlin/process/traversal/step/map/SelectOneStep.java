@@ -55,7 +55,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.selectLabel, this.selectTraversal);
+        return TraversalHelper.makeStepString(this, this.scope, this.selectLabel, this.selectTraversal);
     }
 
     @Override
@@ -77,7 +77,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.PATH);
+        return this.getSelfAndChildRequirements(this.scope == Scope.local ? TraverserRequirement.OBJECT : TraverserRequirement.PATH);
     }
 
     public void setScope(final Scope scope) {

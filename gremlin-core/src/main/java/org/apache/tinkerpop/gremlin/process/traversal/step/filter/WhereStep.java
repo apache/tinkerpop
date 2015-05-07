@@ -159,7 +159,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.firstKey, this.biPredicate, this.secondKey, this.traversalConstraint);
+        return TraversalHelper.makeStepString(this, this.scope, this.firstKey, this.biPredicate, this.secondKey, this.traversalConstraint);
     }
 
     @Override

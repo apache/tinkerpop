@@ -80,7 +80,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.selectLabels, this.traversalRing);
+        return TraversalHelper.makeStepString(this, this.scope, this.selectLabels, this.traversalRing);
     }
 
     @Override
