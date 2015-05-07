@@ -109,8 +109,8 @@ public class Cluster {
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .maxInProcessPerConnection(settings.connectionPool.maxInProcessPerConnection)
-                .maxSimultaneousRequestsPerConnection(settings.connectionPool.maxSimultaneousRequestsPerConnection)
-                .minSimultaneousRequestsPerConnection(settings.connectionPool.minSimultaneousRequestsPerConnection)
+                .maxSimultaneousRequestsPerConnection(settings.connectionPool.maxSimultaneousUsagePerConnection)
+                .minSimultaneousRequestsPerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
                 .minConnectionPoolSize(settings.connectionPool.minSize);
 
@@ -192,8 +192,8 @@ public class Cluster {
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
         private int minConnectionPoolSize = ConnectionPool.MIN_POOL_SIZE;
         private int maxConnectionPoolSize = ConnectionPool.MAX_POOL_SIZE;
-        private int minSimultaneousRequestsPerConnection = ConnectionPool.MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
-        private int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION;
+        private int minSimultaneousRequestsPerConnection = ConnectionPool.MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
+        private int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
         private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
@@ -356,8 +356,8 @@ public class Cluster {
             final Settings.ConnectionPoolSettings connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxInProcessPerConnection = this.maxInProcessPerConnection;
             connectionPoolSettings.minInProcessPerConnection = this.minInProcessPerConnection;
-            connectionPoolSettings.maxSimultaneousRequestsPerConnection = this.maxSimultaneousRequestsPerConnection;
-            connectionPoolSettings.minSimultaneousRequestsPerConnection = this.minSimultaneousRequestsPerConnection;
+            connectionPoolSettings.maxSimultaneousUsagePerConnection = this.maxSimultaneousRequestsPerConnection;
+            connectionPoolSettings.minSimultaneousUsagePerConnection = this.minSimultaneousRequestsPerConnection;
             connectionPoolSettings.maxSize = this.maxConnectionPoolSize;
             connectionPoolSettings.minSize = this.minConnectionPoolSize;
             connectionPoolSettings.maxWaitForConnection = this.maxWaitForConnection;

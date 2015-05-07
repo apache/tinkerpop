@@ -31,7 +31,7 @@ public class ConfigurationEvaluator {
 
     private final List<Integer> minConnectionPoolSizeRange = Arrays.asList(1,4,8,12,16,32,64,96,128,160,192,224,256,384,512);
     private final List<Integer> maxConnectionPoolSizeRange = Arrays.asList(4,8,12,16,32,64,96,128,160,192,224,256,384,512);
-    private final List<Integer> maxSimultaneousRequestsPerConnectionRange = Arrays.asList(2,3,4,5,8,16,24,32,64,96,128);
+    private final List<Integer> maxSimultaneousUsagePerConnectionRange = Arrays.asList(2,3,4,5,8,16,24,32,64,96,128);
     private final List<Integer> maxInProcessPerConnectionRange = Arrays.asList(1,2,4,8,12,16,32,64,96,128);
     private final List<Integer> workerPoolSizeRange = Arrays.asList(1,2,3,4,8,16,32);
 
@@ -41,7 +41,7 @@ public class ConfigurationEvaluator {
             for (int iw = 0; iw < maxInProcessPerConnectionRange.size(); iw++) {
                 for (int ix = 0; ix < minConnectionPoolSizeRange.size(); ix++) {
                     for (int iy = 0; iy < maxConnectionPoolSizeRange.size(); iy++) {
-                        for (int iz = 0; iz < maxSimultaneousRequestsPerConnectionRange.size(); iz++) {
+                        for (int iz = 0; iz < maxSimultaneousUsagePerConnectionRange.size(); iz++) {
                             if (minConnectionPoolSizeRange.get(ix) <= maxConnectionPoolSizeRange.get(iy)) {
                                 final Set s = new HashSet(Arrays.asList(iv, iw, ix, iy, iz));
                                 if (!configsTried.contains(s)) {
@@ -50,7 +50,7 @@ public class ConfigurationEvaluator {
                                                       "maxInProcessPerConnection", maxInProcessPerConnectionRange.get(iw).toString(),
                                                       "minConnectionPoolSize", minConnectionPoolSizeRange.get(ix).toString(),
                                                       "maxConnectionPoolSize", maxConnectionPoolSizeRange.get(iy).toString(),
-                                                      "maxSimultaneousRequestsPerConnection", maxSimultaneousRequestsPerConnectionRange.get(iz).toString(),
+                                                      "maxSimultaneousUsagePerConnection", maxSimultaneousUsagePerConnectionRange.get(iz).toString(),
                                                       "noExit", Boolean.TRUE.toString()).toArray();
 
                                     final Object[] withExtraArgs = args.length > 0 ? Stream.concat(Stream.of(args), Stream.of(argsToProfiler)).toArray() : argsToProfiler;

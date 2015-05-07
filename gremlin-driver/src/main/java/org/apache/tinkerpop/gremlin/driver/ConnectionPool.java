@@ -45,8 +45,8 @@ class ConnectionPool {
 
     public static final int MIN_POOL_SIZE = 2;
     public static final int MAX_POOL_SIZE = 8;
-    public static final int MIN_SIMULTANEOUS_REQUESTS_PER_CONNECTION = 8;
-    public static final int MAX_SIMULTANEOUS_REQUESTS_PER_CONNECTION = 16;
+    public static final int MIN_SIMULTANEOUS_USAGE_PER_CONNECTION = 8;
+    public static final int MAX_SIMULTANEOUS_USAGE_PER_CONNECTION = 16;
 
     public final Host host;
     private final Cluster cluster;
@@ -55,8 +55,8 @@ class ConnectionPool {
     private final Set<Connection> bin = new CopyOnWriteArraySet<>();
     private final int minPoolSize;
     private final int maxPoolSize;
-    private final int minSimultaneousRequestsPerConnection;
-    private final int maxSimultaneousRequestsPerConnection;
+    private final int minSimultaneousUsagePerConnection;
+    private final int maxSimultaneousUsagePerConnection;
     private final int minInProcess;
     private final String poolLabel;
 
@@ -76,8 +76,8 @@ class ConnectionPool {
         final Settings.ConnectionPoolSettings settings = settings();
         this.minPoolSize = settings.minSize;
         this.maxPoolSize = settings.maxSize;
-        this.minSimultaneousRequestsPerConnection = settings.minSimultaneousRequestsPerConnection;
-        this.maxSimultaneousRequestsPerConnection = settings.maxSimultaneousRequestsPerConnection;
+        this.minSimultaneousUsagePerConnection = settings.minSimultaneousUsagePerConnection;
+        this.maxSimultaneousUsagePerConnection = settings.maxSimultaneousUsagePerConnection;
         this.minInProcess = settings.minInProcessPerConnection;
 
         final List<Connection> l = new ArrayList<>(minPoolSize);
@@ -126,12 +126,12 @@ class ConnectionPool {
             return waitForConnection(timeout, unit);
         }
 
-        // if the number in flight on the least used connection exceeds the max allowed and the pool size is
+        // if the number borrowed on the least used connection exceeds the max allowed and the pool size is
         // not at maximum then consider opening a connection
         final int currentPoolSize = connections.size();
-        if (leastUsedConn.borrowed.get() >= maxSimultaneousRequestsPerConnection && currentPoolSize < maxPoolSize) {
+        if (leastUsedConn.borrowed.get() >= maxSimultaneousUsagePerConnection && currentPoolSize < maxPoolSize) {
             if (logger.isDebugEnabled())
-                logger.debug("Least used {} on {} exceeds maxSimultaneousRequestsPerConnection but pool size {} < maxPoolSize - consider new connection",
+                logger.debug("Least used {} on {} exceeds maxSimultaneousUsagePerConnection but pool size {} < maxPoolSize - consider new connection",
                         leastUsedConn.getConnectionInfo(), host, currentPoolSize);
             considerNewConnection();
         }
@@ -178,10 +178,10 @@ class ConnectionPool {
             // then let the world know the connection is available.
             final int poolSize = connections.size();
             final int availableInProcess = connection.availableInProcess();
-            if (poolSize > minPoolSize && inFlight <= minSimultaneousRequestsPerConnection) {
+            if (poolSize > minPoolSize && inFlight <= minSimultaneousUsagePerConnection) {
                 if (logger.isDebugEnabled())
-                    logger.debug("On {} pool size of {} > minPoolSize {} and borrowed of {} <= minSimultaneousRequestsPerConnection {} so destroy {}",
-                            host, poolSize, minPoolSize, inFlight, minSimultaneousRequestsPerConnection, connection.getConnectionInfo());
+                    logger.debug("On {} pool size of {} > minPoolSize {} and borrowed of {} <= minSimultaneousUsagePerConnection {} so destroy {}",
+                            host, poolSize, minPoolSize, inFlight, minSimultaneousUsagePerConnection, connection.getConnectionInfo());
                 destroyConnection(connection);
             } else if (connection.availableInProcess() < minInProcess) {
                 if (logger.isDebugEnabled())
