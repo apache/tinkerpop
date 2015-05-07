@@ -761,18 +761,10 @@ limitations under the License.
                                     <sourceFileIncludes>
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/*.java</sourceFileInclude>
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/*.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/graphml/*.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/graphson/*.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/gryo/*.java
-                                        </sourceFileInclude>
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/process/*.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/computer/*.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/graph/*.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/util/*.java</sourceFileInclude>
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/computer/*.java</sourceFileInclude>
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/traversal/*.java</sourceFileInclude>
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/*.java</sourceFileInclude>
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/driver/*.java</sourceFileInclude>
                                     </sourceFileIncludes>
                                     <additionalDependencies>
