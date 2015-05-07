@@ -60,7 +60,12 @@ class Connection {
     public static final int RECONNECT_INTERVAL = 1000;
     public static final int RESULT_ITERATION_BATCH_SIZE = 64;
 
-    public final AtomicInteger inFlight = new AtomicInteger(0);
+    /**
+     * When a {@code Connection} is borrowed from the pool, this number is incremented to indicate the number of
+     * times it has been taken and is decremented when it is returned.  This number is one indication as to how
+     * busy a particular {@code Connection} is.
+     */
+    public final AtomicInteger borrowed = new AtomicInteger(0);
     private volatile boolean isDead = false;
     private final int maxInProcess;
 
@@ -209,8 +214,8 @@ class Connection {
     }
 
     public String getConnectionInfo() {
-        return String.format("Connection{host=%s, isDead=%s, inFlight=%s, pending=%s}",
-                pool.host, isDead, inFlight, pending.size());
+        return String.format("Connection{host=%s, isDead=%s, borrowed=%s, pending=%s}",
+                pool.host, isDead, borrowed, pending.size());
     }
 
     @Override

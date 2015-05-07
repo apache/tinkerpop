@@ -129,7 +129,7 @@ class ConnectionPool {
         // if the number in flight on the least used connection exceeds the max allowed and the pool size is
         // not at maximum then consider opening a connection
         final int currentPoolSize = connections.size();
-        if (leastUsedConn.inFlight.get() >= maxSimultaneousRequestsPerConnection && currentPoolSize < maxPoolSize) {
+        if (leastUsedConn.borrowed.get() >= maxSimultaneousRequestsPerConnection && currentPoolSize < maxPoolSize) {
             if (logger.isDebugEnabled())
                 logger.debug("Least used {} on {} exceeds maxSimultaneousRequestsPerConnection but pool size {} < maxPoolSize - consider new connection",
                         leastUsedConn.getConnectionInfo(), host, currentPoolSize);
@@ -137,18 +137,18 @@ class ConnectionPool {
         }
 
         while (true) {
-            final int inFlight = leastUsedConn.inFlight.get();
+            final int inFlight = leastUsedConn.borrowed.get();
             final int availableInProcess = leastUsedConn.availableInProcess();
 
             // if the number in flight starts to exceed what's available for this connection, then we need
             // to wait for a connection to become available.
             if (inFlight >= leastUsedConn.availableInProcess()) {
-                logger.debug("Least used connection selected from pool for {} but inFlight [{}] >= availableInProcess [{}] - wait",
+                logger.debug("Least used connection selected from pool for {} but borrowed [{}] >= availableInProcess [{}] - wait",
                         host, inFlight, availableInProcess);
                 return waitForConnection(timeout, unit);
             }
 
-            if (leastUsedConn.inFlight.compareAndSet(inFlight, inFlight + 1)) {
+            if (leastUsedConn.borrowed.compareAndSet(inFlight, inFlight + 1)) {
                 if (logger.isDebugEnabled())
                     logger.debug("Return least used {} on {}", leastUsedConn.getConnectionInfo(), host);
                 return leastUsedConn;
@@ -160,7 +160,7 @@ class ConnectionPool {
         logger.debug("Attempting to return {} on {}", connection, host);
         if (isClosed()) throw new ConnectionException(host.getHostUri(), host.getAddress(), "Pool is shutdown");
 
-        int inFlight = connection.inFlight.decrementAndGet();
+        int inFlight = connection.borrowed.decrementAndGet();
         if (connection.isDead()) {
             logger.debug("Marking {} as dead", this.host);
             considerUnavailable();
@@ -180,7 +180,7 @@ class ConnectionPool {
             final int availableInProcess = connection.availableInProcess();
             if (poolSize > minPoolSize && inFlight <= minSimultaneousRequestsPerConnection) {
                 if (logger.isDebugEnabled())
-                    logger.debug("On {} pool size of {} > minPoolSize {} and inFlight of {} <= minSimultaneousRequestsPerConnection {} so destroy {}",
+                    logger.debug("On {} pool size of {} > minPoolSize {} and borrowed of {} <= minSimultaneousRequestsPerConnection {} so destroy {}",
                             host, poolSize, minPoolSize, inFlight, minSimultaneousRequestsPerConnection, connection.getConnectionInfo());
                 destroyConnection(connection);
             } else if (connection.availableInProcess() < minInProcess) {
@@ -304,7 +304,7 @@ class ConnectionPool {
         bin.add(connection);
         connections.remove(connection);
 
-        if (connection.inFlight.get() == 0 && bin.remove(connection))
+        if (connection.borrowed.get() == 0 && bin.remove(connection))
             connection.closeAsync();
 
         if (logger.isDebugEnabled())
@@ -329,15 +329,15 @@ class ConnectionPool {
             final Connection leastUsed = selectLeastUsed();
             if (leastUsed != null) {
                 while (true) {
-                    final int inFlight = leastUsed.inFlight.get();
+                    final int inFlight = leastUsed.borrowed.get();
                     final int availableInProcess = leastUsed.availableInProcess();
                     if (inFlight >= availableInProcess) {
-                        logger.debug("Least used {} on {} has requests inFlight [{}] >= availableInProcess [{}] - may timeout waiting for connection",
+                        logger.debug("Least used {} on {} has requests borrowed [{}] >= availableInProcess [{}] - may timeout waiting for connection",
                                 leastUsed, host, inFlight, availableInProcess);
                         break;
                     }
 
-                    if (leastUsed.inFlight.compareAndSet(inFlight, inFlight + 1)) {
+                    if (leastUsed.borrowed.compareAndSet(inFlight, inFlight + 1)) {
                         if (logger.isDebugEnabled())
                             logger.debug("Return least used {} on {} after waiting", leastUsed.getConnectionInfo(), host);
                         return leastUsed;
@@ -402,7 +402,7 @@ class ConnectionPool {
         int minInFlight = Integer.MAX_VALUE;
         Connection leastBusy = null;
         for (Connection connection : connections) {
-            int inFlight = connection.inFlight.get();
+            int inFlight = connection.borrowed.get();
             if (!connection.isDead() && inFlight < minInFlight) {
                 minInFlight = inFlight;
                 leastBusy = connection;
