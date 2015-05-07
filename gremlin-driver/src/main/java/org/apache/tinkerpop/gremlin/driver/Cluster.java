@@ -109,8 +109,8 @@ public class Cluster {
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .maxInProcessPerConnection(settings.connectionPool.maxInProcessPerConnection)
-                .maxSimultaneousRequestsPerConnection(settings.connectionPool.maxSimultaneousUsagePerConnection)
-                .minSimultaneousRequestsPerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
+                .maxSimultaneousUsagePerConnection(settings.connectionPool.maxSimultaneousUsagePerConnection)
+                .minSimultaneousUsagePerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
                 .minConnectionPoolSize(settings.connectionPool.minSize);
 
@@ -192,8 +192,8 @@ public class Cluster {
         private int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
         private int minConnectionPoolSize = ConnectionPool.MIN_POOL_SIZE;
         private int maxConnectionPoolSize = ConnectionPool.MAX_POOL_SIZE;
-        private int minSimultaneousRequestsPerConnection = ConnectionPool.MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
-        private int maxSimultaneousRequestsPerConnection = ConnectionPool.MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
+        private int minSimultaneousUsagePerConnection = ConnectionPool.MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
+        private int maxSimultaneousUsagePerConnection = ConnectionPool.MAX_SIMULTANEOUS_USAGE_PER_CONNECTION;
         private int maxInProcessPerConnection = Connection.MAX_IN_PROCESS;
         private int minInProcessPerConnection = Connection.MIN_IN_PROCESS;
         private int maxWaitForConnection = Connection.MAX_WAIT_FOR_CONNECTION;
@@ -261,13 +261,13 @@ public class Cluster {
             return this;
         }
 
-        public Builder maxSimultaneousRequestsPerConnection(final int maxSimultaneousRequestsPerConnection) {
-            this.maxSimultaneousRequestsPerConnection = maxSimultaneousRequestsPerConnection;
+        public Builder maxSimultaneousUsagePerConnection(final int maxSimultaneousUsagePerConnection) {
+            this.maxSimultaneousUsagePerConnection = maxSimultaneousUsagePerConnection;
             return this;
         }
 
-        public Builder minSimultaneousRequestsPerConnection(final int minSimultaneousRequestsPerConnection) {
-            this.minSimultaneousRequestsPerConnection = minSimultaneousRequestsPerConnection;
+        public Builder minSimultaneousUsagePerConnection(final int minSimultaneousUsagePerConnection) {
+            this.minSimultaneousUsagePerConnection = minSimultaneousUsagePerConnection;
             return this;
         }
 
@@ -356,8 +356,8 @@ public class Cluster {
             final Settings.ConnectionPoolSettings connectionPoolSettings = new Settings.ConnectionPoolSettings();
             connectionPoolSettings.maxInProcessPerConnection = this.maxInProcessPerConnection;
             connectionPoolSettings.minInProcessPerConnection = this.minInProcessPerConnection;
-            connectionPoolSettings.maxSimultaneousUsagePerConnection = this.maxSimultaneousRequestsPerConnection;
-            connectionPoolSettings.minSimultaneousUsagePerConnection = this.minSimultaneousRequestsPerConnection;
+            connectionPoolSettings.maxSimultaneousUsagePerConnection = this.maxSimultaneousUsagePerConnection;
+            connectionPoolSettings.minSimultaneousUsagePerConnection = this.minSimultaneousUsagePerConnection;
             connectionPoolSettings.maxSize = this.maxConnectionPoolSize;
             connectionPoolSettings.minSize = this.minConnectionPoolSize;
             connectionPoolSettings.maxWaitForConnection = this.maxWaitForConnection;

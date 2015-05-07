@@ -22,10 +22,8 @@ import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.List;
@@ -148,7 +146,7 @@ public class ProfilingApplication {
             final Cluster cluster = Cluster.build(host)
                     .minConnectionPoolSize(minConnectionPoolSize)
                     .maxConnectionPoolSize(maxConnectionPoolSize)
-                    .maxSimultaneousRequestsPerConnection(maxSimultaneousUsagePerConnection)
+                    .maxSimultaneousUsagePerConnection(maxSimultaneousUsagePerConnection)
                     .maxInProcessPerConnection(maxInProcessPerConnection)
                     .nioPoolSize(clients)
                     .workerPoolSize(workerPoolSize).create();
