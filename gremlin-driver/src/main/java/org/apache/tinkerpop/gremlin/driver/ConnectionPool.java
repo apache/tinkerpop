@@ -130,8 +130,9 @@ class ConnectionPool {
         // not at maximum then consider opening a connection
         final int currentPoolSize = connections.size();
         if (leastUsedConn.inFlight.get() >= maxSimultaneousRequestsPerConnection && currentPoolSize < maxPoolSize) {
-            logger.debug("Least used {} on {} exceeds maxSimultaneousRequestsPerConnection but pool size {} < maxPoolSize - consider new connection",
-                    leastUsedConn.getConnectionInfo(), host, currentPoolSize);
+            if (logger.isDebugEnabled())
+                logger.debug("Least used {} on {} exceeds maxSimultaneousRequestsPerConnection but pool size {} < maxPoolSize - consider new connection",
+                        leastUsedConn.getConnectionInfo(), host, currentPoolSize);
             considerNewConnection();
         }
 
@@ -148,7 +149,8 @@ class ConnectionPool {
             }
 
             if (leastUsedConn.inFlight.compareAndSet(inFlight, inFlight + 1)) {
-                logger.debug("Return least used {} on {}", leastUsedConn.getConnectionInfo(), host);
+                if (logger.isDebugEnabled())
+                    logger.debug("Return least used {} on {}", leastUsedConn.getConnectionInfo(), host);
                 return leastUsedConn;
             }
         }
@@ -177,11 +179,13 @@ class ConnectionPool {
             final int poolSize = connections.size();
             final int availableInProcess = connection.availableInProcess();
             if (poolSize > minPoolSize && inFlight <= minSimultaneousRequestsPerConnection) {
-                logger.debug("On {} pool size of {} > minPoolSize {} and inFlight of {} <= minSimultaneousRequestsPerConnection {} so destroy {}",
-                        host, poolSize, minPoolSize, inFlight, minSimultaneousRequestsPerConnection, connection.getConnectionInfo());
+                if (logger.isDebugEnabled())
+                    logger.debug("On {} pool size of {} > minPoolSize {} and inFlight of {} <= minSimultaneousRequestsPerConnection {} so destroy {}",
+                            host, poolSize, minPoolSize, inFlight, minSimultaneousRequestsPerConnection, connection.getConnectionInfo());
                 destroyConnection(connection);
             } else if (connection.availableInProcess() < minInProcess) {
-                logger.debug("On {} availableInProcess {} < minInProcess {} so replace {}", host, availableInProcess, minInProcess, connection.getConnectionInfo());
+                if (logger.isDebugEnabled())
+                    logger.debug("On {} availableInProcess {} < minInProcess {} so replace {}", host, availableInProcess, minInProcess, connection.getConnectionInfo());
                 replaceConnection(connection);
             } else
                 announceAvailableConnection();
@@ -303,7 +307,8 @@ class ConnectionPool {
         if (connection.inFlight.get() == 0 && bin.remove(connection))
             connection.closeAsync();
 
-        logger.debug("{} destroyed", connection.getConnectionInfo());
+        if (logger.isDebugEnabled())
+            logger.debug("{} destroyed", connection.getConnectionInfo());
     }
 
     private Connection waitForConnection(final long timeout, final TimeUnit unit) throws TimeoutException, ConnectionException {
@@ -333,7 +338,8 @@ class ConnectionPool {
                     }
 
                     if (leastUsed.inFlight.compareAndSet(inFlight, inFlight + 1)) {
-                        logger.debug("Return least used {} on {} after waiting", leastUsed.getConnectionInfo(), host);
+                        if (logger.isDebugEnabled())
+                            logger.debug("Return least used {} on {} after waiting", leastUsed.getConnectionInfo(), host);
                         return leastUsed;
                     }
                 }

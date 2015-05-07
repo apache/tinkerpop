@@ -158,7 +158,8 @@ class Connection {
         final ChannelPromise promise = channel.newPromise()
                 .addListener(f -> {
                     if (!f.isSuccess()) {
-                        logger.debug(String.format("Write on connection %s failed", thisConnection.getConnectionInfo()), f.cause());
+                        if (logger.isDebugEnabled())
+                            logger.debug(String.format("Write on connection %s failed", thisConnection.getConnectionInfo()), f.cause());
                         thisConnection.isDead = true;
                         thisConnection.returnToPool();
                         future.completeExceptionally(f.cause());
@@ -189,7 +190,8 @@ class Connection {
         try {
             if (pool != null) pool.returnConnection(this);
         } catch (ConnectionException ce) {
-            logger.debug("Returned {} connection to {} but an error occurred - {}", this.getConnectionInfo(), pool, ce.getMessage());
+            if (logger.isDebugEnabled())
+                logger.debug("Returned {} connection to {} but an error occurred - {}", this.getConnectionInfo(), pool, ce.getMessage());
         }
     }
 
