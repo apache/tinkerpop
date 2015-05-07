@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -210,6 +211,12 @@ public final class TraversalHelper {
         return false;
     }
 
+    /**
+     * @param stepClass the step class to look for
+     * @param traversal the traversal in which to look for the given step class
+     * @return <code>true</code> if any step in the given traversal (and its child traversals) is an instance of the
+     * given <code>stepClass</code>, otherwise <code>false</code>.
+     */
     public static boolean hasStepOfAssignableClassRecursively(final Class stepClass, final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (stepClass.isAssignableFrom(step.getClass())) {
@@ -218,6 +225,30 @@ public final class TraversalHelper {
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
                     if (hasStepOfAssignableClassRecursively(stepClass, globalChild)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param stepClasses the step classes to look for
+     * @param traversal   the traversal in which to look for the given step classes
+     * @return <code>true</code> if any step in the given traversal (and its child traversals) is an instance of a class
+     * provided in <code>stepClasses</code>, otherwise <code>false</code>.
+     */
+    public static boolean hasStepOfAssignableClassRecursively(final Collection<Class> stepClasses, final Traversal.Admin<?, ?> traversal) {
+        if (stepClasses.size() == 1)
+            return hasStepOfAssignableClassRecursively(stepClasses.iterator().next(), traversal);
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (IteratorUtils.anyMatch(stepClasses.iterator(), stepClass -> stepClass.isAssignableFrom(step.getClass()))) {
+                return true;
+            }
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
+                    if (hasStepOfAssignableClassRecursively(stepClasses, globalChild)) {
                         return true;
                     }
                 }

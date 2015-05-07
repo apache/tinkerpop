@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
@@ -74,8 +73,8 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
     @Override
     public void apply(Traversal.Admin<?, ?> traversal) {
         final Traversal.Admin root = TraversalHelper.getRootTraversal(traversal);
-        if (IteratorUtils.anyMatch(InvalidatingStepClasses.iterator(), stepClass ->
-                TraversalHelper.hasStepOfAssignableClassRecursively(stepClass, root))) return;
+        if (TraversalHelper.hasStepOfAssignableClassRecursively(InvalidatingStepClasses, root))
+            return;
         final Collection<Pair<VertexStep, Step>> stepsToReplace = new ArrayList<>();
         Step prev = null;
         for (final Step curr : traversal.getSteps()) {
