@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -26,21 +25,17 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
-import java.util.UUID;
-
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ResultTest {
-    private final UUID id = UUID.fromString("AB23423F-ED64-486B-8976-DBFD0DB85318");
     private final Graph g = TinkerFactory.createClassic();
 
     @Test
     public void shouldGetString() {
-        final ResponseMessage msg = ResponseMessage.build(id).result("string").create();
-        final Result result = new Result(msg);
+        final Result result = new Result("string");
 
         assertEquals("string", result.getString());
         assertEquals("string", result.get(String.class));
@@ -48,8 +43,7 @@ public class ResultTest {
 
     @Test
     public void shouldGetInt() {
-        final ResponseMessage msg = ResponseMessage.build(id).result(100).create();
-        final Result result = new Result(msg);
+        final Result result = new Result(100);
 
         assertEquals(100, result.getInt());
         assertEquals(100, result.get(Integer.class).intValue());
@@ -57,8 +51,7 @@ public class ResultTest {
 
     @Test
     public void shouldGetByte() {
-        final ResponseMessage msg = ResponseMessage.build(id).result((byte) 100).create();
-        final Result result = new Result(msg);
+        final Result result = new Result((byte) 100);
 
         assertEquals((byte) 100, result.getByte());
         assertEquals((byte) 100, result.get(Byte.class).byteValue());
@@ -66,8 +59,7 @@ public class ResultTest {
 
     @Test
     public void shouldGetShort() {
-        final ResponseMessage msg = ResponseMessage.build(id).result((short) 100).create();
-        final Result result = new Result(msg);
+        final Result result = new Result((short) 100);
 
         assertEquals((short) 100, result.getShort());
         assertEquals((short) 100, result.get(Short.class).shortValue());
@@ -75,8 +67,7 @@ public class ResultTest {
 
     @Test
     public void shouldGetLong() {
-        final ResponseMessage msg = ResponseMessage.build(id).result(100l).create();
-        final Result result = new Result(msg);
+        final Result result = new Result(100l);
 
         assertEquals((long) 100, result.getLong());
         assertEquals((long) 100, result.get(Long.class).longValue());
@@ -84,8 +75,7 @@ public class ResultTest {
 
     @Test
     public void shouldGetFloat() {
-        final ResponseMessage msg = ResponseMessage.build(id).result(100.001f).create();
-        final Result result = new Result(msg);
+        final Result result = new Result(100.001f);
 
         assertEquals(100.001f, result.getFloat(), 0.0001f);
         assertEquals(100.001f, result.get(Float.class).floatValue(), 0.0001f);
@@ -93,8 +83,7 @@ public class ResultTest {
 
     @Test
     public void shouldGetDouble() {
-        final ResponseMessage msg = ResponseMessage.build(id).result(100.001d).create();
-        final Result result = new Result(msg);
+        final Result result = new Result(100.001d);
 
         assertEquals(100.001d, result.getDouble(), 0.0001d);
         assertEquals(100.001d, result.get(Double.class), 0.0001d);
@@ -102,8 +91,7 @@ public class ResultTest {
 
     @Test
     public void shouldGetBoolean() {
-        final ResponseMessage msg = ResponseMessage.build(id).result(true).create();
-        final Result result = new Result(msg);
+        final Result result = new Result(true);
 
         assertEquals(true, result.getBoolean());
         assertEquals(true, result.get(Boolean.class));
@@ -112,8 +100,7 @@ public class ResultTest {
     @Test
     public void shouldGetVertex() {
         final Vertex v = g.vertices(1).next();
-        final ResponseMessage msg = ResponseMessage.build(id).result(v).create();
-        final Result result = new Result(msg);
+        final Result result = new Result(v);
 
         assertEquals(v, result.getVertex());
         assertEquals(v, result.get(Vertex.class));
@@ -124,8 +111,7 @@ public class ResultTest {
     @Test
     public void shouldGetEdge() {
         final Edge e = g.edges(11).next();
-        final ResponseMessage msg = ResponseMessage.build(id).result(e).create();
-        final Result result = new Result(msg);
+        final Result result = new Result(e);
 
         assertEquals(e, result.getEdge());
         assertEquals(e, result.get(Edge.class));
