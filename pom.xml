@@ -93,7 +93,7 @@ limitations under the License.
     </scm>
     <properties>
         <groovy.version>2.4.1</groovy.version>
-        <junit.version>4.11</junit.version>
+        <junit.version>4.12</junit.version>
         <!-- Directory containing the file ${log4j.properties} defined
              above.  Maven interpolates ${project.basedir} in the
              context of child modules, so path this relative to one of
