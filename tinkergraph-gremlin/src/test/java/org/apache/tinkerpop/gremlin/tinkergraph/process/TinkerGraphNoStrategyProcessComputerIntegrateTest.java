@@ -30,6 +30,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(ProcessComputerSuite.class)
 @ProcessComputerSuite.GraphProviderClass(provider = TinkerGraphNoStrategyComputerProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphNoStrategyProcessComputerTest {
+public class TinkerGraphNoStrategyProcessComputerIntegrateTest {
 
 }
