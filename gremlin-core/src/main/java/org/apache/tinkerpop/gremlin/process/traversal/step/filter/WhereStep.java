@@ -96,23 +96,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
                     throw new IllegalArgumentException("The provided key is not in the current map: " + this.firstKey);
                 if (null != this.secondKey && !map.containsKey(this.secondKey))
                     throw new IllegalArgumentException("The provided key is not in the current map: " + this.secondKey);
-                final Object endObject = null == this.secondKey ? null : map.get(this.secondKey);
-                //
-                this.traversalConstraint.addStart(this.getTraversal().asAdmin().getTraverserGenerator().generate(startObject, this.traversalConstraint.getStartStep(), traverser.bulk()));
-                if (null == endObject) {
-                    if (this.traversalConstraint.hasNext()) {
-                        this.traversalConstraint.reset();
-                        return true;
-                    }
-                } else {
-                    while (this.traversalConstraint.hasNext()) {
-                        if (this.traversalConstraint.next().equals(endObject)) {
-                            this.traversalConstraint.reset();
-                            return true;
-                        }
-                    }
-                }
-                return false;
+                return this.testTraversalConstraint(traverser, startObject, null == this.secondKey ? null : map.get(this.secondKey));
+
             }
         } else {
             final Path path = traverser.path();
@@ -131,25 +116,27 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
                     throw new IllegalArgumentException("The provided label is not in the current path: " + this.firstKey);
                 if (null != this.secondKey && !path.hasLabel(this.secondKey))
                     throw new IllegalArgumentException("The provided label is not in the current path: " + this.secondKey);
-                final Object endObject = null == this.secondKey ? null : path.get(this.secondKey);
-                //
-                this.traversalConstraint.addStart(this.getTraversal().asAdmin().getTraverserGenerator().generate(startObject, this.traversalConstraint.getStartStep(), traverser.bulk()));
-                if (null == endObject) {
-                    if (this.traversalConstraint.hasNext()) {
-                        this.traversalConstraint.reset();
-                        return true;
-                    }
-                } else {
-                    while (this.traversalConstraint.hasNext()) {
-                        if (this.traversalConstraint.next().equals(endObject)) {
-                            this.traversalConstraint.reset();
-                            return true;
-                        }
-                    }
-                }
-                return false;
+                return this.testTraversalConstraint(traverser, startObject, null == this.secondKey ? null : path.get(this.secondKey));
             }
         }
+    }
+
+    private boolean testTraversalConstraint(final Traverser traverser, final Object start, final Object end) {
+        this.traversalConstraint.addStart(this.getTraversal().asAdmin().getTraverserGenerator().generate(start, this.traversalConstraint.getStartStep(), traverser.bulk()));
+        if (null == end) {
+            if (this.traversalConstraint.hasNext()) {
+                this.traversalConstraint.reset();
+                return true;
+            }
+        } else {
+            while (this.traversalConstraint.hasNext()) {
+                if (this.traversalConstraint.next().equals(end)) {
+                    this.traversalConstraint.reset();
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
