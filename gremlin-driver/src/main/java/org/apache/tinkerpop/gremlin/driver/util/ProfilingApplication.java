@@ -173,8 +173,8 @@ public class ProfilingApplication {
             long totalRequestsPerSecond = 0;
             for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
                 TimeUnit.SECONDS.sleep(1); // pause between executions
-                exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
                 totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests).execute();
+                exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
             }
 
             final int averageRequestPerSecond = exceededTimeout.get() ? 0 : Math.round(totalRequestsPerSecond / executions);
