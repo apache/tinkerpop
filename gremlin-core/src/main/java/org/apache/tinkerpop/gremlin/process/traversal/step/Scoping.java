@@ -28,5 +28,5 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
  */
 public interface Scoping {
 
-    public Scope getScope();
+    public Scope recommendNextScope();
 }

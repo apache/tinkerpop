@@ -113,7 +113,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     }
 
     @Override
-    public Scope getScope() {
-        return this.scope;
+    public Scope recommendNextScope() {
+        return this.scope.opposite();
     }
 }

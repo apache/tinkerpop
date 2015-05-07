@@ -180,7 +180,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     }
 
     @Override
-    public Scope getScope() {
+    public Scope recommendNextScope() {
         return this.scope;
     }
 }

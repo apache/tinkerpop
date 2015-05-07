@@ -407,7 +407,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     }
 
     @Override
-    public Scope getScope() {
+    public Scope recommendNextScope() {
         return Scope.local;
     }
 

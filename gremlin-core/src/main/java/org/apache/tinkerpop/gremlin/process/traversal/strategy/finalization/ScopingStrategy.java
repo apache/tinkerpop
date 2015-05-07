@@ -44,11 +44,11 @@ public final class ScopingStrategy extends AbstractTraversalStrategy<TraversalSt
         traversal.getSteps().stream().forEach(step -> {
             if (step.getPreviousStep() instanceof Scoping) {
                 if (step instanceof SelectStep)
-                    ((SelectStep) step).setScope(((Scoping) step.getPreviousStep()).getScope());
+                    ((SelectStep) step).setScope(((Scoping) step.getPreviousStep()).recommendNextScope());
                 else if (step instanceof SelectOneStep)
-                    ((SelectOneStep) step).setScope(((Scoping) step.getPreviousStep()).getScope());
+                    ((SelectOneStep) step).setScope(((Scoping) step.getPreviousStep()).recommendNextScope());
                 else if (step instanceof WhereStep)
-                    ((WhereStep) step).setScope(((Scoping) step.getPreviousStep()).getScope());
+                    ((WhereStep) step).setScope(((Scoping) step.getPreviousStep()).recommendNextScope());
             }
         });
     }
