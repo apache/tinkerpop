@@ -1450,6 +1450,23 @@ g.V(4).inE().bothV()
 <4> Moving forward touching edges and vertices.
 <5> Moving forward only touching vertices.
 
+[[where-step]]
+Where Step
+~~~~~~~~~~
+
+The `where()`-step filters the current object based on either the object itself (`Scope.local`) or the path history of the object (`Scope.global`) (*filter*). This step is typically used in conjuction with either <<match-step,`match()`>>-step or <<select-step,`select()`>>-step, but can be used in isolation.
+
+[gremlin-groovy,modern]
+----
+g.V().has('name','marko').as('a').
+  out('created').in('created').as('b').
+  where('a',neq('b')).values('name') <1>
+----
+
+<1> Who are Marko's collaborators, where Marko can not be his own collaborator?
+
+Please see <<using-where-with-match,`match().where()`>> and <<using-where-with-select,`select().where()`>> for how `where()` can be used in conjection with `Map<String,Object>` projecting steps.
+
 [[a-note-on-barrier-steps]]
 A Note on Barrier Steps
 -----------------------
