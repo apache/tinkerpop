@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
@@ -36,18 +37,19 @@ import java.util.Set;
  */
 public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent {
 
+    private final Scope scope;
     private final String selectLabel;
     private Traversal.Admin<Object, Object> selectTraversal = new IdentityTraversal<>();
 
-    public SelectOneStep(final Traversal.Admin traversal, final String selectLabel) {
+    public SelectOneStep(final Traversal.Admin traversal, final Scope scope, final String selectLabel) {
         super(traversal);
+        this.scope = scope;
         this.selectLabel = selectLabel;
     }
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        final S start = traverser.get();
-        return (E) TraversalUtil.apply(start instanceof Map ? ((Map) start).get(this.selectLabel) : traverser.path().<Object>get(this.selectLabel), this.selectTraversal);
+        return (E) TraversalUtil.apply(Scope.local == this.scope ? ((Map) traverser.get()).get(this.selectLabel) : traverser.path().<Object>get(this.selectLabel), this.selectTraversal);
     }
 
     @Override

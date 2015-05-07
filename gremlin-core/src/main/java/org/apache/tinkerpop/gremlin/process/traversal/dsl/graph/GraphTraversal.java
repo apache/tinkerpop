@@ -290,12 +290,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
 
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Scope scope, final String... stepLabels) {
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), scope, stepLabels));
+    }
+
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final String... stepLabels) {
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), stepLabels));
+        return this.select(Scope.global, stepLabels);
+    }
+
+    public default <E2> GraphTraversal<S, E2> select(final Scope scope, final String stepLabel) {
+        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), scope, stepLabel));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String stepLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), stepLabel));
+        return this.select(Scope.global, stepLabel);
     }
 
     public default <E2> GraphTraversal<S, E2> unfold() {

@@ -670,7 +670,7 @@ g.V().match('a',
         __.as('a').out('created').as('b'),
         __.as('b').has('name', 'lop'),
         __.as('b').in('created').as('c'),
-        __.as('c').has('age', 29)).select('a','c').by('name')
+        __.as('c').has('age', 29)).select(local,'a','c').by('name')
 ----
 
 Note that the above can also be more concisely written as below which demonstrates that imperative inner-traversals can be arbitrarily defined.
@@ -679,7 +679,7 @@ Note that the above can also be more concisely written as below which demonstrat
 ----
 g.V().match('a',
         __.as('a').out('created').has('name', 'lop').as('b'),
-        __.as('b').in('created').has('age', 29).as('c')).select('a','c').by('name')
+        __.as('b').in('created').has('age', 29).as('c')).select(local,'a','c').by('name')
 ----
 
 [[grateful-dead]]
@@ -695,7 +695,7 @@ g = graph.traversal(standard())
 g.V().match('a',
         __.as('a').has('name', 'Garcia'),
         __.as('a').in('writtenBy').as('b'),
-        __.as('a').in('sungBy').as('b')).select('b').values('name')
+        __.as('a').in('sungBy').as('b')).select(local,'b').values('name')
 ----
 
 Among the features which differentiate `match()` from SPARQL are:
@@ -706,7 +706,7 @@ g.V().match('a',
         __.as('a').out('created').has('name','lop').as('b'), <1>
         __.as('b').in('created').has('age', 29).as('c'),
         __.as('c').repeat(out()).times(2)). <2>
-          select('c').out('knows').dedup().values('name') <3>
+          select(local,'c').out('knows').dedup().values('name') <3>
 ----
 
 <1> *Patterns of arbitrary complexity*: `match()` is not restricted to triple patterns or property paths.
@@ -720,11 +720,11 @@ To extend point #3, it is possible to support going from imperative, to declarat
 g.V().match('a',
         __.as('a').out('knows').as('b'),
         __.as('b').out('created').has('name','lop')).
-        select('b').out('created').
+        select(local,'b').out('created').
           match('a',
             __.as('a').in('created').as('b'),
             __.as('b').out('knows').as('c')).
-            select('c').values('name')
+            select(local,'c').values('name')
 ----
 
 Like all other steps in Gremlin, `match()` is a function and thus, `match()` within `match()` is a natural consequence of Gremlin's functional foundation (i.e. recursive matching).
@@ -737,8 +737,8 @@ g.V().match('a',
         __.as('b').match('x',
                  __.as('x').out('created').as('y'),
                  __.as('y').has('name','ripple')).
-                 select('y').as('c')).
-        select('a','c').by('name')
+                 select(local,'y').as('c')).
+        select(local,'a','c').by('name')
 ----
 
 WARNING: Currently, `match()` does not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
@@ -754,7 +754,7 @@ Match is typically used in conjunction with both `select()` (demonstrated previo
 g.V().match('a',
         __.as('a').out('created').as('b'),
         __.as('b').in('created').as('c')).
-          where('a', neq('c')).select('a','c').by('name')
+          where('a', neq('c')).select(local,'a','c').by('name')
 ----
 
 The `where()`-step can take either a `BiPredicate` (first example below) or a `Traversal` (second example below). Using `MatchWhereStrategy`, `where()`-clauses can be automatically folded into `match()` and thus, subject to `match()`-steps budget-match algorithm.
@@ -765,7 +765,7 @@ traversal = g.V().match('a',
                     __.as('a').out('created').as('b'),
                     __.as('b').in('created').as('c')).
                       where(__.as('a').out('knows').as('c')). <1>
-                      select('a','c').by('name'); null <2>
+                      select(local,'a','c').by('name'); null <2>
 traversal.toString() <3>
 traversal <4> <5>
 traversal.toString() <6>
@@ -1169,9 +1169,9 @@ The second use case is best understood in terms of <<match-step,`match()`>>-step
 [gremlin-groovy,modern]
 ----
 g.V().range(0, 2).as('a').map {[b:1,c:2]} <1>
-g.V().range(0, 2).as('a').map {[b:1,c:2]}.select() <2>
-g.V().range(0, 2).as('a').map {[b:1,c:2]}.select('a','c') <3>
-g.V().range(0, 2).as('a').map {[b:1,c:2]}.select('c') <4>
+g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(local) <2>
+g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(local,'a','c') <3>
+g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(local,'c') <4>
 ----
 
 <1> A contrived example to create a `Map<String,Object>` flow as a foundation for the examples to follow.
