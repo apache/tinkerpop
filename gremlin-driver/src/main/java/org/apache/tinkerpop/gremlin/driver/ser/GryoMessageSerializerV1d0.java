@@ -177,7 +177,7 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
 
                 return ResponseMessage.build(requestId)
                         .code(ResponseStatusCode.getFromValue(status))
-                        .statusMessage(statusMsg)
+                        .statusMessage(statusMsg.intern())
                         .statusAttributes(statusAttributes)
                         .result(result)
                         .responseMetaData(metaAttributes)
