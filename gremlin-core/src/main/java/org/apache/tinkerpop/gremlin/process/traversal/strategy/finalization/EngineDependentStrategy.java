@@ -24,6 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 
 /**
+ * A {@link org.apache.tinkerpop.gremlin.process.traversal.Step} can extend {@link EngineDependent}.
+ * If it does, that means that the steps internal logic is modulated by whether the execution is via {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type#STANDARD} or {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type#COMPUTER}.
+ * EngineDependentStrategy simply locates all engine dependent steps and provides the respective {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class EngineDependentStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy> implements TraversalStrategy.FinalizationStrategy {

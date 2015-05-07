@@ -25,12 +25,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -95,6 +98,12 @@ public final class ComputerTraversalEngine implements TraversalEngine {
     public static class ComputerResultStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy> implements TraversalStrategy.FinalizationStrategy {
 
         private static final ComputerResultStrategy INSTANCE = new ComputerResultStrategy();
+        private static final Set<Class<? extends FinalizationStrategy>> PRIORS = new HashSet<>();
+
+        static {
+            PRIORS.add(ProfileStrategy.class);
+        }
+
 
         private ComputerResultStrategy() {
 
@@ -107,6 +116,11 @@ public final class ComputerTraversalEngine implements TraversalEngine {
                 if (engine.isComputer())
                     traversal.addStep(new ComputerResultStep<>(traversal, engine.getGraphComputer().get(), true));
             }
+        }
+
+        @Override
+        public Set<Class<? extends FinalizationStrategy>> applyPrior() {
+            return PRIORS;
         }
 
         public static ComputerResultStrategy instance() {

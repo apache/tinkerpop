@@ -29,9 +29,14 @@ import java.util.Set;
 
 /**
  * A {@link TraversalStrategy} defines a particular atomic operation for mutating a {@link Traversal} prior to its evaluation.
- * There are 4 typical "traversal categories": {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link FinalizationStrategy}, and {@link VerificationStrategy}.
+ * There are 4 pre-defined "traversal categories": {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link FinalizationStrategy}, and {@link VerificationStrategy}.
  * Strategies within a category are sorted amongst themselves and then category sorts are applied in the ordered specified previous.
+ * That is, decorations are applied, then optimizations, then finalizations, and finally, verifications.
  * If a strategy does not fit within the specified categories, then it can simply implement {@link TraversalStrategy} and can have priors/posts that span categories.
+ * <p/>
+ * A traversal strategy should be a final class as various internal operations on a strategy are based on its ability to be assigned to more general classes.
+ * A traversal strategy should typically be stateless with a public static <code>instance()</code> method.
+ * However, at limit, a traversal strategy can have a state defining constructor (typically via a "builder"), but that state can not mutate once instantiated.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
@@ -41,14 +46,31 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
 
     public void apply(final Traversal.Admin<?, ?> traversal);
 
+    /**
+     * The set of strategies that must be executed before this strategy is executed.
+     * If there are no ordering requirements, the default implementation returns an empty set.
+     *
+     * @return the set of strategies that must be executed prior to this one.
+     */
     public default Set<Class<? extends S>> applyPrior() {
         return Collections.emptySet();
     }
 
+    /**
+     * The set of strategies that must be executed after this strategy is executed.
+     * If there are no ordering requirements, the default implementation returns an empty set.
+     *
+     * @return the set of strategies that must be executed post this one
+     */
     public default Set<Class<? extends S>> applyPost() {
         return Collections.emptySet();
     }
 
+    /**
+     * The type of traversal strategy -- i.e. {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link FinalizationStrategy}, or {@link VerificationStrategy}.
+     *
+     * @return the traversal strategy category class
+     */
     public default Class<S> getTraversalCategory() {
         return (Class) TraversalStrategy.class;
     }
@@ -134,9 +156,10 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
                 return 0;
         }
     }
+
     /**
      * Implemented by strategies where there is no more behavioral tweaking of the traversal required.  Strategies that
-     * implement this marker will simply analyze the traversal and throw exceptions if the traversal is not correct
+     * implement this category will simply analyze the traversal and throw exceptions if the traversal is not correct
      * for the execution context (e.g. {@link LambdaRestrictionStrategy}).
      */
     public interface VerificationStrategy extends TraversalStrategy<VerificationStrategy> {
