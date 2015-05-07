@@ -29,13 +29,13 @@ import java.util.stream.Stream;
  */
 public class ConfigurationEvaluator {
 
-    private final List<Integer> minConnectionPoolSizeRange = Arrays.asList(1,4,8,12,16,32,64,96,128,192,256,384,512);
+    private final List<Integer> minConnectionPoolSizeRange = Arrays.asList(4,8,12,16,32,64,96,128,192,256,384,512);
     private final List<Integer> maxConnectionPoolSizeRange = Arrays.asList(4,8,12,16,32,64,96,128,192,256,384,512);
-    private final List<Integer> minSimultaneousUsagePerConnectionRange = Arrays.asList(2,4,8,16,24,32,64,96,128);
+    private final List<Integer> minSimultaneousUsagePerConnectionRange = Arrays.asList(4,8,16,24,32,64,96,128);
     private final List<Integer> maxSimultaneousUsagePerConnectionRange = Arrays.asList(4,8,16,24,32,64,96,128);
     private final List<Integer> minInProcessPerConnectionRange = Arrays.asList(2,4,8,16,32,64,96,128);
     private final List<Integer> maxInProcessPerConnectionRange = Arrays.asList(4,8,16,32,64,96,128);
-    private final List<Integer> workerPoolSizeRange = Arrays.asList(1,2,3,4,8,16,32);
+    private final List<Integer> workerPoolSizeRange = Arrays.asList(2,3,4,8,16,32);
 
     public Stream<String[]> generate(final String [] args) {
         final Set<Set<Integer>> configsTried = new HashSet<>();

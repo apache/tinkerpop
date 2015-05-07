@@ -132,6 +132,7 @@ public class ProfilingApplication {
 
         try {
             final String host = options.getOrDefault("host", "localhost").toString();
+            final int minExpectedRps = Integer.parseInt(options.getOrDefault("minExpectedRps", "1000").toString());
             final int timeout = Integer.parseInt(options.getOrDefault("timeout", "1200000").toString());
             final int warmups = Integer.parseInt(options.getOrDefault("warmups", "5").toString());
             final int executions = Integer.parseInt(options.getOrDefault("executions", "10").toString());
@@ -163,23 +164,30 @@ public class ProfilingApplication {
                 }
             }
 
+            // not much point to continuing with a line of tests if we can't get at least minExpectedRps.
+            final AtomicBoolean meetsRpsExpectation = new AtomicBoolean(true);
             System.out.println("---------------------------WARMUP CYCLE---------------------------");
-            for (int ix = 0; ix < warmups; ix++) {
-                new ProfilingApplication("warmup-" + (ix + 1), cluster, clients, requests).execute();
+            for (int ix = 0; ix < warmups && meetsRpsExpectation.get(); ix++) {
+                final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, clients, 1000).execute();
+                meetsRpsExpectation.set(averageRequestsPerSecond > minExpectedRps);
                 TimeUnit.SECONDS.sleep(1); // pause between executions
             }
 
             final AtomicBoolean exceededTimeout = new AtomicBoolean(false);
-            final long start = System.nanoTime();
-            System.out.println("----------------------------TEST CYCLE----------------------------");
             long totalRequestsPerSecond = 0;
-            for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
-                totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests).execute();
-                exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
-                TimeUnit.SECONDS.sleep(1); // pause between executions
+
+            // no need to execute this if we didn't pass the basic expectation in the warmups
+            if (meetsRpsExpectation.get()) {
+                final long start = System.nanoTime();
+                System.out.println("----------------------------TEST CYCLE----------------------------");
+                for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
+                    totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests).execute();
+                    exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
+                    TimeUnit.SECONDS.sleep(1); // pause between executions
+                }
             }
 
-            final int averageRequestPerSecond = exceededTimeout.get() ? 0 : Math.round(totalRequestsPerSecond / executions);
+            final int averageRequestPerSecond = !meetsRpsExpectation.get() || exceededTimeout.get() ? 0 : Math.round(totalRequestsPerSecond / executions);
             System.out.println(String.format("avg req/sec: %s", averageRequestPerSecond));
             if (f != null) {
                 try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
