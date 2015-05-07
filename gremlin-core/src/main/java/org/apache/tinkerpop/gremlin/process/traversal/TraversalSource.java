@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -37,6 +38,8 @@ public interface TraversalSource {
     public Optional<GraphComputer> getGraphComputer();
 
     public Optional<Graph> getGraph();
+
+    public List<TraversalStrategy> getStrategies();
 
     ////////////////
 

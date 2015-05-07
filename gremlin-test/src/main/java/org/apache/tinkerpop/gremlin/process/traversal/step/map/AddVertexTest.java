@@ -56,8 +56,9 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
             assertEquals(0, vertex.<Integer>value("age").intValue());
             count++;
         }
-        assertEquals(12, IteratorUtils.count(graph.vertices()));
         assertEquals(6, count);
+        assertEquals(12, IteratorUtils.count(graph.vertices()));
+
     }
 
     @Test

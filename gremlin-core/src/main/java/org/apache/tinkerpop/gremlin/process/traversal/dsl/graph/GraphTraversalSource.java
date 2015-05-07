@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -148,6 +149,10 @@ public class GraphTraversalSource implements TraversalSource {
         return new Builder();
     }
 
+    @Override
+    public List<TraversalStrategy> getStrategies() {
+        return Collections.unmodifiableList(this.strategies.toList());
+    }
 
     @Override
     public Optional<GraphComputer> getGraphComputer() {
@@ -196,7 +201,7 @@ public class GraphTraversalSource implements TraversalSource {
         }
 
         @Override
-        public TraversalSource.Builder without(Class<? extends TraversalStrategy> strategyClass) {
+        public TraversalSource.Builder without(final Class<? extends TraversalStrategy> strategyClass) {
             this.withoutStrategies.add(strategyClass);
             return this;
         }
