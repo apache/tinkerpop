@@ -42,7 +42,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 /**
- * A bunch of Gremlin Server instances.
+ * A connection to a set of one or more Gremlin Server instances.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
