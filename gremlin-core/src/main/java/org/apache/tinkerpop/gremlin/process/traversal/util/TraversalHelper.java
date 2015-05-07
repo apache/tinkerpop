@@ -41,7 +41,7 @@ public final class TraversalHelper {
     private TraversalHelper() {
     }
 
-    public static <S, E> Step<S, E> getStepByLabel(final String label, final Traversal.Admin<?, ?> traversal) {
+    /*public static <S, E> Step<S, E> getStepByLabel(final String label, final Traversal.Admin<?, ?> traversal) {
         return traversal.getSteps().stream()
                 .filter(step -> step.getLabels().contains(label))
                 .findAny()
@@ -77,7 +77,7 @@ public final class TraversalHelper {
             steps.add(temp);
         }
         return steps;
-    }
+    }*/
 
     public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
         char state = 'v';
