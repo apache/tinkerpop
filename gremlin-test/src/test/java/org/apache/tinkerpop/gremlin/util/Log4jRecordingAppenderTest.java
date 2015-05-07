@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 public class Log4jRecordingAppenderTest {
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(Log4jRecordingAppenderTest.class);
     private Log4jRecordingAppender recordingAppender = null;
+    private static final String lineSeparator = System.getProperty("line.separator");
 
     @Before
     public void setupForEachTest() {
@@ -55,9 +56,9 @@ public class Log4jRecordingAppenderTest {
     @Test
     public void shouldRecordMessages() {
         assertEquals(3, recordingAppender.getMessages().size());
-        assertEquals("ERROR - ERROR\n", recordingAppender.getMessages().get(0));
-        assertEquals("WARN - WARN\n", recordingAppender.getMessages().get(1));
-        assertEquals("INFO - INFO\n", recordingAppender.getMessages().get(2));
+        assertEquals("ERROR - ERROR" + lineSeparator, recordingAppender.getMessages().get(0));
+        assertEquals("WARN - WARN"  + lineSeparator, recordingAppender.getMessages().get(1));
+        assertEquals("INFO - INFO" + lineSeparator, recordingAppender.getMessages().get(2));
     }
 
     @Test
