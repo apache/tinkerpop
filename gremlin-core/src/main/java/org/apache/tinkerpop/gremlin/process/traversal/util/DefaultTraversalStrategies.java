@@ -47,7 +47,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
                 added = true;
             }
         }
-        if (added) TraversalStrategies.sortStrategies(this.traversalStrategies);
+        if (added) this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
         return this;
     }
 
@@ -62,7 +62,7 @@ public class DefaultTraversalStrategies implements TraversalStrategies {
                 removed = true;
             }
         }
-        if (removed) TraversalStrategies.sortStrategies(this.traversalStrategies);
+        if (removed) this.traversalStrategies = TraversalStrategies.sortStrategies(this.traversalStrategies);
         return this;
     }
 
