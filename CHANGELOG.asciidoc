@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* TinkerGraph process suite tests are now running with and without strategies in place.
 * Added `IncidentToAdjacentStrategy` which rewrites `outE().inV()`, `inE().outV()` and `bothE().otherV()` to `out()`, `in()` and `both()` respectively.
 * Renamed `ComparatorHolderRemovalStrategy` to `OrderGlobalRemovalStrategy` as it now only applies to `OrderGlobalStep`.
 * Anonymous traversal no longer have `EmptyGraph` as their graph, but instead use `Optional<Graph>.isPresent() == false`.
