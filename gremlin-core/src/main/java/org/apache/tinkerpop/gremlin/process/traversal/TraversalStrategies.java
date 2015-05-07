@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.util.tools.MultiMap;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A {@link Traversal} maintains a set of {@link TraversalStrategy} instances within a TraversalStrategies object.
@@ -41,6 +42,8 @@ import java.util.*;
  * @author Matthias Broecheler (me@matthiasb.com)
  */
 public interface TraversalStrategies extends Serializable, Cloneable {
+
+    static List<Class<? extends TraversalStrategy>> strategyCategories = Collections.unmodifiableList(Arrays.asList(TraversalStrategy.DecorationStrategy.class, TraversalStrategy.OptimizationStrategy.class, TraversalStrategy.FinalizationStrategy.class, TraversalStrategy.VerificationStrategy.class));
 
     /**
      * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.
@@ -97,51 +100,82 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      *
      * @param strategies the traversal strategies to sort
      */
-    public static void sortStrategies(final List<TraversalStrategy<?>> strategies) {
+    public static List<TraversalStrategy<?>> sortStrategies(final List<TraversalStrategy<?>> strategies) {
         final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap = new HashMap<>();
-        final Set<Class<? extends TraversalStrategy>> strategyClass = new HashSet<>(strategies.size());
+        final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> strategiesByCategory = new HashMap();
+        final Set<Class<? extends TraversalStrategy>> strategyClasses = new HashSet<>(strategies.size());
         //Initialize data structure
-        strategies.forEach(s -> strategyClass.add(s.getClass()));
+        strategies.forEach(s -> {
+            strategyClasses.add(s.getClass());
+            MultiMap.put(strategiesByCategory, s.getTraversalCategory(), s.getClass());
+        });
+
 
         //Initialize all the dependencies
         strategies.forEach(strategy -> {
             strategy.applyPrior().forEach(s -> {
-                if (strategyClass.contains(s)) MultiMap.put(dependencyMap, s, strategy.getClass());
+                if (strategyClasses.contains(s)) MultiMap.put(dependencyMap, strategy.getClass(), s);
             });
             strategy.applyPost().forEach(s -> {
-                if (strategyClass.contains(s)) MultiMap.put(dependencyMap, strategy.getClass(), s);
+                if (strategyClasses.contains(s)) MultiMap.put(dependencyMap, s, strategy.getClass());
             });
         });
-        //Now, compute transitive closure until convergence
-        boolean updated;
-        do {
-            updated = false;
-            for (final Class<? extends TraversalStrategy> sc : strategyClass) {
-                List<Class<? extends TraversalStrategy>> toAdd = null;
-                for (Class<? extends TraversalStrategy> before : MultiMap.get(dependencyMap, sc)) {
-                    final Set<Class<? extends TraversalStrategy>> beforeDep = MultiMap.get(dependencyMap, before);
-                    if (!beforeDep.isEmpty()) {
-                        if (toAdd == null) toAdd = new ArrayList<>(beforeDep.size());
-                        toAdd.addAll(beforeDep);
-                    }
-                }
-                if (toAdd != null && MultiMap.putAll(dependencyMap, sc, toAdd)) updated = true;
-            }
-        } while (updated);
-        Collections.sort(strategies, (strategy1, strategy2) -> {
-            int categoryComparison = strategy1.compareTo(strategy2.getTraversalCategory());
-            if (categoryComparison != 0) return categoryComparison;
 
-            boolean s1Before = MultiMap.containsEntry(dependencyMap, strategy1.getClass(), strategy2.getClass());
-            boolean s2Before = MultiMap.containsEntry(dependencyMap, strategy2.getClass(), strategy1.getClass());
-            if (s1Before && s2Before)
-                throw new IllegalStateException("Cyclic dependency between traversal strategies: ["
-                        + strategy1.getClass().getName() + ", " + strategy2.getClass().getName() + ']');
-            if (s1Before) return -1;
-            else if (s2Before) return 1;
-            else return 0;
-        });
+        //Add dependencies by category
+        List<Class<? extends TraversalStrategy>> strategiesInPreviousCategories = new ArrayList<>();
+        for(Class<? extends TraversalStrategy> category : strategyCategories) {
+            Set<Class<? extends TraversalStrategy>> strategiesInThisCategory = MultiMap.get(strategiesByCategory, category);
+            for(Class<? extends TraversalStrategy> strategy :  strategiesInThisCategory) {
+                for(Class<? extends TraversalStrategy> previousStrategy : strategiesInPreviousCategories) {
+                    MultiMap.put(dependencyMap, strategy, previousStrategy);
+                }
+            }
+            strategiesInPreviousCategories.addAll(strategiesInThisCategory);
+        }
+
+        //Finally sort via t-sort
+        List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses = new ArrayList<>(strategies.stream().map(s->s.getClass()).collect(Collectors.toSet()));
+        List<Class<? extends TraversalStrategy>> sortedStrategyClasses = new ArrayList<>();
+        Set<Class<? extends TraversalStrategy>> seenStrategyClasses = new HashSet<>();
+
+        while(!unprocessedStrategyClasses.isEmpty()) {
+            Class<? extends TraversalStrategy> strategy = unprocessedStrategyClasses.get(0);
+            visit(dependencyMap, sortedStrategyClasses, seenStrategyClasses, unprocessedStrategyClasses, strategy);
+        }
+
+        List<TraversalStrategy<?>> sortedStrategies = new ArrayList<>();
+        //We now have a list of sorted strategy classes
+        for(Class<? extends TraversalStrategy> strategyClass : sortedStrategyClasses) {
+            for(TraversalStrategy strategy : strategies)  {
+                if(strategy.getClass().equals(strategyClass)) {
+                    sortedStrategies.add(strategy);
+                }
+            }
+        }
+
+
+        return sortedStrategies;
     }
+
+
+    static void visit(Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap, List<Class<? extends TraversalStrategy>> sortedStrategyClasses, Set<Class<? extends TraversalStrategy>> seenStrategyClases, List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses, Class<? extends TraversalStrategy> strategyClass) {
+        if(seenStrategyClases.contains(strategyClass)) {
+            throw new IllegalStateException("Cyclic dependency between traversal strategies: ["
+                    + seenStrategyClases + ']');
+        }
+
+
+        if(unprocessedStrategyClasses.contains(strategyClass)) {
+            seenStrategyClases.add(strategyClass);
+            for (Class<? extends TraversalStrategy> dependency : MultiMap.get(dependencyMap, strategyClass)) {
+                visit(dependencyMap, sortedStrategyClasses, seenStrategyClases, unprocessedStrategyClasses, dependency);
+            }
+            seenStrategyClases.remove(strategyClass);
+            unprocessedStrategyClasses.remove(strategyClass);
+            sortedStrategyClasses.add(strategyClass);
+        }
+    }
+
 
     public static final class GlobalCache {
 

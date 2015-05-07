@@ -41,10 +41,16 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
 
     public void apply(final Traversal.Admin<?, ?> traversal);
 
+    /**
+     * @return The strategies that will be applied before this strategy.
+     */
     public default Set<Class<? extends S>> applyPrior() {
         return Collections.emptySet();
     }
 
+    /**
+     * @return The strategies that will be applied after this strategy.
+     */
     public default Set<Class<? extends S>> applyPost() {
         return Collections.emptySet();
     }

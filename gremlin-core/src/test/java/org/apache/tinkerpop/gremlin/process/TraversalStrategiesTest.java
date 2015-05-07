@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,27 +51,29 @@ public class TraversalStrategiesTest {
                 c = new StrategyC(),
                 d = new StrategyD(),
                 e = new StrategyE(),
-                k = new StrategyK();
+                k = new StrategyK(),
+                l = new StrategyL(),
+                m = new StrategyM(),
+                n = new StrategyN(),
+                o = new StrategyO();
 
         List<TraversalStrategy<?>> s;
 
         //Dependency well defined
         s = Arrays.asList(b, a);
-        TraversalStrategies.sortStrategies(s);
+        s = TraversalStrategies.sortStrategies(s);
         assertEquals(2, s.size());
         assertEquals(a, s.get(0));
         assertEquals(b, s.get(1));
 
         //No dependency
         s = Arrays.asList(c, a);
-        TraversalStrategies.sortStrategies(s);
+        s = TraversalStrategies.sortStrategies(s);
         assertEquals(2, s.size());
-        assertEquals(c, s.get(0));
-        assertEquals(a, s.get(1));
 
         //Dependency well defined
         s = Arrays.asList(c, a, b);
-        TraversalStrategies.sortStrategies(s);
+        s = TraversalStrategies.sortStrategies(s);
         assertEquals(3, s.size());
         assertEquals(a, s.get(0));
         assertEquals(b, s.get(1));
@@ -88,7 +90,7 @@ public class TraversalStrategiesTest {
 
         //Dependency well defined
         s = Arrays.asList(d, c, a, e, b);
-        TraversalStrategies.sortStrategies(s);
+        s = TraversalStrategies.sortStrategies(s);
         assertEquals(5, s.size());
         assertEquals(a, s.get(0));
         assertEquals(b, s.get(1));
@@ -104,6 +106,12 @@ public class TraversalStrategiesTest {
         } catch (IllegalStateException ex) {
             assertTrue(ex.getMessage().toLowerCase().contains("cyclic"));
         }
+
+        //Lots of strategies
+        s = Arrays.asList(b, l, m, n, o, a);
+        s = TraversalStrategies.sortStrategies(s);
+        assertTrue(s.indexOf(a) < s.indexOf(b));
+
     }
 
 
@@ -171,6 +179,25 @@ public class TraversalStrategiesTest {
 
     }
 
+    public static class StrategyL extends DummyStrategy {
+
+    }
+
+
+    public static class StrategyM extends DummyStrategy {
+
+    }
+
+    public static class StrategyN extends DummyStrategy {
+
+    }
+
+    public static class StrategyO extends DummyStrategy {
+
+    }
+
+
+
     private static class DummyStrategy<S extends TraversalStrategy> extends AbstractTraversalStrategy<S> {
 
         @Override
@@ -197,14 +224,14 @@ public class TraversalStrategiesTest {
 
         //in category sorting
         s = Arrays.asList(b, a);
-        TraversalStrategies.sortStrategies(s);
+        s = TraversalStrategies.sortStrategies(s);
         assertEquals(2, s.size());
         assertEquals(a, s.get(0));
         assertEquals(b, s.get(1));
 
         //mixed category sorting
         s = Arrays.asList(a, e, b, d);
-        TraversalStrategies.sortStrategies(s);
+        s = TraversalStrategies.sortStrategies(s);
         assertEquals(4, s.size());
         assertEquals(a, s.get(0));
         assertEquals(b, s.get(1));
@@ -213,7 +240,7 @@ public class TraversalStrategiesTest {
 
         //full reverse sorting
         s = Arrays.asList(k,e,d,c,b,a);
-        TraversalStrategies.sortStrategies(s);
+        s = TraversalStrategies.sortStrategies(s);
         assertEquals(6, s.size());
         assertEquals(a, s.get(0));
         assertEquals(b, s.get(1));
