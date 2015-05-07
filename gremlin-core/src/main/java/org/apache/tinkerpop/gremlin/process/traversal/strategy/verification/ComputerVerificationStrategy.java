@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -54,18 +55,18 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
-                throw new IllegalStateException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step);
+            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof DedupGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
+                throw new ComputerVerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
 
             if (step instanceof TraversalParent) {
                 final Optional<Traversal.Admin<Object, Object>> traversalOptional = ((TraversalParent) step).getLocalChildren().stream()
                         .filter(t -> !TraversalHelper.isLocalStarGraph(t.asAdmin()))
                         .findAny();
                 if (traversalOptional.isPresent())
-                    throw new IllegalStateException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get());
+                    throw new ComputerVerificationException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get(), traversal);
             }
             if (step instanceof Mutating)
-                throw new IllegalStateException("Muting steps are currently not supported by GraphComputer traversals");
+                throw new ComputerVerificationException("Muting steps are currently not supported by GraphComputer traversals", traversal);
         }
     }
 

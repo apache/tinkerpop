@@ -20,12 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 
@@ -36,6 +37,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class BranchTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX();
@@ -44,7 +46,6 @@ public abstract class BranchTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
         final Traversal<Vertex, Object> traversal = get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX();
         printTraversalForm(traversal);

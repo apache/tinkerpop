@@ -20,12 +20,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +41,7 @@ import static org.junit.Assert.assertFalse;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Joshua Shinavier (http://fortytwo.net)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX();

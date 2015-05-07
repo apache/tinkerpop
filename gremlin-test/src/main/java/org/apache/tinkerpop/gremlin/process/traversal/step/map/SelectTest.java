@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Order;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.*;
 
@@ -45,6 +46,7 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_select(final Object v1Id);
@@ -115,7 +117,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX() {
         final Traversal<Vertex, Map<String, String>> traversal = get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -146,7 +147,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    //@IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_outXknowsX_asXbX_selectXaX_byXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -160,7 +160,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_asXaX_out_asXbX_select_byXnameX() {
         Arrays.asList(
                 get_g_V_asXaX_out_asXbX_select_byXnameX(),
@@ -179,7 +178,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_asXaX_name_order_asXbX_select_byXnameX_byXitX() {
         Arrays.asList(
                 get_g_V_asXaX_name_order_asXbX_select_byXnameX_by_XitX()).forEach(traversal -> {
@@ -197,7 +195,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(CREW)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX();
         printTraversalForm(traversal);
@@ -220,7 +217,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @Ignore
     public void g_V_label_groupCount_asXxX_select() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_label_groupCount_asXxX_select();
@@ -241,7 +237,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @Ignore("There is a HashMap to Element cast problem happening here for some reason in both OLTP and OLAP -- has to do with local barriers! -- thus, bad test.")
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by();
         printTraversalForm(traversal);
@@ -456,7 +451,6 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
         final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX();
         printTraversalForm(traversal);

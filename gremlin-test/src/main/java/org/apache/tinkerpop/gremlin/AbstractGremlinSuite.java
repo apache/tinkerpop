@@ -26,15 +26,12 @@ import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,14 +78,14 @@ public abstract class AbstractGremlinSuite extends Suite {
     /**
      * Constructs a Gremlin Test Suite implementation.
      *
-     * @param klass Required for JUnit Suite construction
-     * @param builder Required for JUnit Suite construction
-     * @param testsToExecute The list of tests to execute
-     * @param testsToEnforce The list of tests to "enforce" such that a check is made to ensure that in this list,
-     *                       there exists an implementation in the testsToExecute (use {@code null} for no
-     *                       enforcement).
-     * @param gremlinFlavorSuite Ignore validation of {@link org.apache.tinkerpop.gremlin.structure.Graph.OptIn}
-     *                           annotations which is typically reserved for structure tests
+     * @param klass               Required for JUnit Suite construction
+     * @param builder             Required for JUnit Suite construction
+     * @param testsToExecute      The list of tests to execute
+     * @param testsToEnforce      The list of tests to "enforce" such that a check is made to ensure that in this list,
+     *                            there exists an implementation in the testsToExecute (use {@code null} for no
+     *                            enforcement).
+     * @param gremlinFlavorSuite  Ignore validation of {@link org.apache.tinkerpop.gremlin.structure.Graph.OptIn}
+     *                            annotations which is typically reserved for structure tests
      * @param traversalEngineType The {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type} to
      *                            enforce on this suite
      */

@@ -20,12 +20,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +37,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class PropertiesTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value();

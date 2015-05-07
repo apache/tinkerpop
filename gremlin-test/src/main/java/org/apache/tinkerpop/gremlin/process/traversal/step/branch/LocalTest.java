@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -28,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Order;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -41,6 +43,7 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class LocalTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value();

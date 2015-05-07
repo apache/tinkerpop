@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -37,6 +38,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import static org.apache.tinkerpop.gremlin.structure.P.*;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -64,6 +66,7 @@ import static org.junit.Assert.fail;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     // very basic query

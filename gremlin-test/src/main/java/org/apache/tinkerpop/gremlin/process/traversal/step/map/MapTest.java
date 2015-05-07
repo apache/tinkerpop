@@ -20,12 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.List;
 
@@ -35,6 +36,7 @@ import static org.junit.Assert.*;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class MapTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id);
 
@@ -48,7 +50,6 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_mapXnameX() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_mapXnameX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -58,7 +59,6 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_outE_label_mapXlengthX() {
         final Traversal<Vertex, Integer> traversal = get_g_VX1X_outE_label_mapXlengthX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -71,7 +71,6 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_out_mapXnameX_mapXlengthX() {
         final Traversal<Vertex, Integer> traversal = get_g_VX1X_out_mapXnameX_mapXlengthX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -84,7 +83,6 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_asXaX_out_mapXa_nameX() {
         int marko = 0;
         int peter = 0;
@@ -108,7 +106,6 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_asXaX_out_out_mapXa_name_it_nameX() {
         final Traversal<Vertex, String> traversal = get_g_withPath_V_asXaX_out_out_mapXa_name_it_nameX();
         int counter = 0;

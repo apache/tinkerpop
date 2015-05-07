@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Order;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_name_order();
@@ -82,7 +84,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_name_order_byXa1_b1X_byXb2_a2X() {
         final Traversal<Vertex, String> traversal = get_g_V_name_order_byXa1_b1X_byXb2_a2X();
         printTraversalForm(traversal);
@@ -98,7 +99,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_order_byXname_incrX_name() {
         Arrays.asList(get_g_V_order_byXname_incrX_name(), get_g_V_order_byXnameX_name()).forEach(traversal -> {
             printTraversalForm(traversal);
@@ -115,7 +115,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_outE_order_byXweight_decrX_weight() {
         final Traversal<Vertex, Double> traversal = get_g_V_outE_order_byXweight_decrX_weight();
         printTraversalForm(traversal);
@@ -132,7 +131,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
         final Traversal<Vertex, String> traversal = get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name();
         printTraversalForm(traversal);
@@ -183,7 +181,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX() {
         final Traversal<Vertex, Map<Integer, Integer>> traversal = get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -209,7 +206,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_order_byXoutE_count__decrX() {
         Arrays.asList(get_g_V_order_byXoutE_count__decrX()).forEach(traversal -> {
             printTraversalForm(traversal);

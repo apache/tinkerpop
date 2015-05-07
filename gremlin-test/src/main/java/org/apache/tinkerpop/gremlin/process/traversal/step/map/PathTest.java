@@ -20,13 +20,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -39,6 +40,7 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class PathTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_VX1X_name_path(final Object v1Id);
@@ -65,7 +67,6 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_path_byXageX_byXnameX() {
         final Traversal<Vertex, Path> traversal = get_g_VX1X_out_path_byXageX_byXnameX(convertToVertexId("marko"));
@@ -84,7 +85,6 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_V_repeatXoutX_timesX2X_path_byXitX_byXnameX_byXlangX() {
         final Traversal<Vertex, Path> traversal = get_g_V_repeatXoutX_timesX2X_path_by_byXnameX_byXlangX();
@@ -102,7 +102,6 @@ public abstract class PathTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_V_out_out_path_byXnameX_byXageX() {
         final Traversal<Vertex, Path> traversal = get_g_V_out_out_path_byXnameX_byXageX();

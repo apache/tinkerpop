@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ import static org.junit.Assert.*;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class CoalesceTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_coalesceXoutXfooX_outXbarXX();
@@ -96,7 +98,6 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
         final Traversal<Vertex, Path> traversal = get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX();

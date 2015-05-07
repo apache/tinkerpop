@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,6 +39,7 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class TreeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX();
@@ -53,7 +55,6 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id);
 
     @Test
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_out_tree_byXnameX() {
         final List<Traversal<Vertex, Tree>> traversals = Arrays.asList(

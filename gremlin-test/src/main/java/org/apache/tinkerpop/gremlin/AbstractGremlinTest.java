@@ -34,13 +34,7 @@ import org.junit.Rule;
 import org.junit.rules.TestName;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -234,6 +228,10 @@ public abstract class AbstractGremlinTest {
         if (!muted) System.out.println("   pre-strategy:" + traversal);
         traversal.hasNext();
         if (!muted) System.out.println("  post-strategy:" + traversal);
+    }
+
+    public boolean isComputerTest() {
+        return this.graphComputerClass.isPresent();
     }
 
     public static Consumer<Graph> assertVertexEdgeCounts(final int expectedVertexCount, final int expectedEdgeCount) {

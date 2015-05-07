@@ -20,13 +20,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.*;
 
@@ -39,6 +40,7 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_exceptXg_v2X(final Object v1Id, final Object v2Id);
@@ -59,7 +61,6 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_out_exceptXg_v2X() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_exceptXg_v2X(convertToVertexId("marko"), convertToVertexId("vadas"));
         printTraversalForm(traversal);
@@ -86,7 +87,6 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_outXcreatedX_inXcreatedX_exceptXg_v1X_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_outXcreatedX_inXcreatedX_exceptXg_v1X_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -99,7 +99,6 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_exceptXg_V_toListX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_exceptXg_V_toListX();
         printTraversalForm(traversal);
@@ -110,7 +109,6 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_exceptXX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_exceptXX();
         printTraversalForm(traversal);
@@ -134,7 +132,6 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_repeatXbothEXcreatedX_dedup_otherVX_emit_path() {
         final Traversal<Vertex, Path> traversal = get_g_VX1X_repeatXbothEXcreatedX_dedup_otherVX_emit_path(convertToVertexId("marko"));
         printTraversalForm(traversal);

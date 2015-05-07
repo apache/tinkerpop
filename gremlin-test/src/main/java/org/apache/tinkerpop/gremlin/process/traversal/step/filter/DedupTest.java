@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -45,6 +46,7 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_both_dedup_name();
@@ -57,7 +59,6 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_both_dedup_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_dedup_name();
         printTraversalForm(traversal);
@@ -74,7 +75,6 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name();
         printTraversalForm(traversal);
@@ -86,7 +86,6 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_both_name_orderXa_bX_dedup() {
         final Traversal<Vertex, String> traversal = get_g_V_both_name_orderXa_bX_dedup();
         printTraversalForm(traversal);

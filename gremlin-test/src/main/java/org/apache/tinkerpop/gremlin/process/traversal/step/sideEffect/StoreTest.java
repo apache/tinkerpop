@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
@@ -27,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.HashSetSupplier;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.Collection;
 import java.util.Set;
@@ -39,6 +41,7 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class StoreTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX();
 

@@ -20,12 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +38,7 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_unionXout__inX_name();
@@ -126,7 +128,6 @@ public abstract class UnionTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     // NEED TO DETERMINE IF TRAVERSAL IS LOCAL AND THEN ALLOW COUNT ON LOCALS
     public void g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX() {
         final Traversal<Vertex, Number> traversal = get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(convertToVertexId("marko"), convertToVertexId("vadas"));

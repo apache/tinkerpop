@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetr
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,6 +49,7 @@ import static org.junit.Assert.*;
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_out_out_profile();
 
@@ -131,7 +133,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_sleep_sleep_profile() {
         final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_sleep_sleep_profile();
         printTraversalForm(traversal);
@@ -167,7 +168,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_repeat_both_modern_profile() {
         final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_repeat_both_profile();
         printTraversalForm(traversal);
@@ -264,7 +264,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void testProfileStrategyCallback() {
         final Traversal<Vertex, StandardTraversalMetrics> t = get_g_V_out_out_profile();
         MockStep mockStep = new MockStep(t.asAdmin());

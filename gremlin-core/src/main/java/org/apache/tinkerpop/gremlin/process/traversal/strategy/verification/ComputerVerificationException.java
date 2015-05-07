@@ -16,22 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process;
+package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 /**
- * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-@Inherited
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface IgnoreEngine {
-    public TraversalEngine.Type value();
+public class ComputerVerificationException extends IllegalStateException {
+
+    private final Traversal traversal;
+
+    public ComputerVerificationException(final String message, final Traversal traversal) {
+        super(message);
+        this.traversal = traversal;
+    }
+
+    public Traversal getTraversal() { return this.traversal; }
 }
