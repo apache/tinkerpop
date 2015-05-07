@@ -132,7 +132,8 @@ public abstract class Client {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {
-            logger.debug("Submitted {} to - {}", msg, null == connection ? "connection not initialized" : connection.toString());
+            if (logger.isDebugEnabled())
+                logger.debug("Submitted {} to - {}", msg, null == connection ? "connection not initialized" : connection.toString());
         }
     }
 
