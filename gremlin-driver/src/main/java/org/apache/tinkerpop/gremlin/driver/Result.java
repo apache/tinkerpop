@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseResult;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -31,8 +31,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 public class Result {
     final Object resultObject;
 
-    public Result(final ResponseMessage response) {
-        this.resultObject = response.getResult().getData();
+    /**
+     * Constructs a "result" from data found in {@link ResponseResult#getData()}.
+     */
+    public Result(final Object responseData) {
+        this.resultObject = responseData;
     }
 
     public String getString() {

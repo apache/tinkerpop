@@ -32,13 +32,13 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class ResponseQueue {
+class ResultQueue {
     public enum Status {
         FETCHING,
         COMPLETE
     }
 
-    private final LinkedBlockingQueue<ResponseMessage> responseQueue;
+    private final LinkedBlockingQueue<Result> resultLinkedBlockingQueue;
 
     private volatile Status status = Status.FETCHING;
 
@@ -46,18 +46,18 @@ class ResponseQueue {
 
     private final CompletableFuture<Void> readComplete;
 
-    public ResponseQueue(final LinkedBlockingQueue<ResponseMessage> responseQueue, final CompletableFuture<Void> readComplete) {
-        this.responseQueue = responseQueue;
+    public ResultQueue(final LinkedBlockingQueue<Result> resultLinkedBlockingQueue, final CompletableFuture<Void> readComplete) {
+        this.resultLinkedBlockingQueue = resultLinkedBlockingQueue;
         this.readComplete = readComplete;
     }
 
-    public void add(final ResponseMessage msg) {
-        this.responseQueue.offer(msg);
+    public void add(final Result result) {
+        this.resultLinkedBlockingQueue.offer(result);
     }
 
     public int size() {
         if (error.get() != null) throw new RuntimeException(error.get());
-        return this.responseQueue.size();
+        return this.resultLinkedBlockingQueue.size();
     }
 
     public boolean isEmpty() {
@@ -65,20 +65,20 @@ class ResponseQueue {
         return this.size() == 0;
     }
 
-    public ResponseMessage poll() {
-        ResponseMessage msg = null;
+    public Result poll() {
+        Result result = null;
         do {
             if (error.get() != null) throw new RuntimeException(error.get());
             try {
-                msg = responseQueue.poll(10, TimeUnit.MILLISECONDS);
+                result = resultLinkedBlockingQueue.poll(10, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ie) {
                 error.set(new RuntimeException(ie));
             }
-        } while (null == msg && status == Status.FETCHING);
+        } while (null == result && status == Status.FETCHING);
 
         if (error.get() != null) throw new RuntimeException(error.get());
 
-        return msg;
+        return result;
     }
 
     public Status getStatus() {

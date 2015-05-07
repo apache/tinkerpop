@@ -37,13 +37,13 @@ import java.util.concurrent.ConcurrentMap;
 class Handler {
 
     /**
-     * Takes a map of requests pending responses and writes responses to the {@link ResponseQueue} of a request
+     * Takes a map of requests pending responses and writes responses to the {@link ResultQueue} of a request
      * as the {@link ResponseMessage} objects are deserialized.
      */
     static class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
-        private final ConcurrentMap<UUID, ResponseQueue> pending;
+        private final ConcurrentMap<UUID, ResultQueue> pending;
 
-        public GremlinResponseHandler(final ConcurrentMap<UUID, ResponseQueue> pending) {
+        public GremlinResponseHandler(final ConcurrentMap<UUID, ResultQueue> pending) {
             this.pending = pending;
         }
 
@@ -54,21 +54,13 @@ class Handler {
                         response.getStatus().getCode() == ResponseStatusCode.PARTIAL_CONTENT) {
                     final Object data = response.getResult().getData();
                     if (data instanceof List) {
-                        // unrolls the collection into individual response messages to be handled by the queue. of
-                        // course, this assumes that the list is of size greater than 1 - else it can be treated as
-                        // a normal object as there is no need to create new ResponseMessage instances for it
+                        // unrolls the collection into individual results to be handled by the queue.
                         final List<Object> listToUnroll = (List<Object>) data;
-                        final ResponseQueue queue = pending.get(response.getRequestId());
-                        if (listToUnroll.size() == 1) {
-                            queue.add(response);
-                        } else {
-                            listToUnroll.forEach(item -> queue.add(
-                                    ResponseMessage.build(response.getRequestId())
-                                            .result(item).create()));
-                        }
+                        final ResultQueue queue = pending.get(response.getRequestId());
+                        listToUnroll.forEach(item -> queue.add(new Result(item)));
                     } else {
                         // since this is not a list it can just be added to the queue
-                        pending.get(response.getRequestId()).add(response);
+                        pending.get(response.getRequestId()).add(new Result(response.getResult().getData()));
                     }
                 } else {
                     pending.get(response.getRequestId()).markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage()));

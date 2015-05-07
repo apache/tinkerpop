@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
@@ -48,7 +47,7 @@ class Connection {
 
     private final Channel channel;
     private final URI uri;
-    private final ConcurrentMap<UUID, ResponseQueue> pending = new ConcurrentHashMap<>();
+    private final ConcurrentMap<UUID, ResultQueue> pending = new ConcurrentHashMap<>();
     private final Cluster cluster;
     private final ConnectionPool pool;
 
@@ -123,7 +122,7 @@ class Connection {
         return cluster;
     }
 
-    ConcurrentMap<UUID, ResponseQueue> getPending() {
+    ConcurrentMap<UUID, ResultQueue> getPending() {
         return pending;
     }
 
@@ -169,14 +168,14 @@ class Connection {
                         thisConnection.returnToPool();
                         future.completeExceptionally(f.cause());
                     } else {
-                        final LinkedBlockingQueue<ResponseMessage> responseQueue = new LinkedBlockingQueue<>();
+                        final LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
                         final CompletableFuture<Void> readCompleted = new CompletableFuture<>();
                         readCompleted.thenAcceptAsync(v -> {
                             thisConnection.returnToPool();
                             if (isClosed() && pending.isEmpty())
                                 shutdown(closeFuture.get());
                         });
-                        final ResponseQueue handler = new ResponseQueue(responseQueue, readCompleted);
+                        final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
                         final ResultSet resultSet = new ResultSet(handler, cluster.executor(), channel,
                                 () -> {
