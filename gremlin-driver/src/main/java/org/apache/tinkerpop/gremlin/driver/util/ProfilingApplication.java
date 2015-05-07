@@ -165,8 +165,8 @@ public class ProfilingApplication {
 
             System.out.println("---------------------------WARMUP CYCLE---------------------------");
             for (int ix = 0; ix < warmups; ix++) {
-                TimeUnit.SECONDS.sleep(1); // pause between executions
                 new ProfilingApplication("warmup-" + (ix + 1), cluster, clients, requests).execute();
+                TimeUnit.SECONDS.sleep(1); // pause between executions
             }
 
             final AtomicBoolean exceededTimeout = new AtomicBoolean(false);
@@ -174,9 +174,9 @@ public class ProfilingApplication {
             System.out.println("----------------------------TEST CYCLE----------------------------");
             long totalRequestsPerSecond = 0;
             for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
-                TimeUnit.SECONDS.sleep(1); // pause between executions
                 totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests).execute();
                 exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
+                TimeUnit.SECONDS.sleep(1); // pause between executions
             }
 
             final int averageRequestPerSecond = exceededTimeout.get() ? 0 : Math.round(totalRequestsPerSecond / executions);
