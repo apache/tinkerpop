@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A queue of incoming {@link ResponseMessage} objects.  The queue is updated by the
- * {@link org.apache.tinkerpop.gremlin.driver.Handler.GremlinResponseHandler} until a response terminator is identified.  At that point the fetch
+ * {@link Handler.GremlinResponseHandler} until a response terminator is identified.  At that point the fetch
  * status is changed to {@link Status#COMPLETE} and all results have made it client side.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
