@@ -147,6 +147,8 @@ import java.util.function.Predicate;
  */
 public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
+    //static P[] EMPTY_P = new P[0];
+
     public interface Admin<S, E> extends Traversal.Admin<S, E>, GraphTraversal<S, E> {
 
         @Override
@@ -477,28 +479,28 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new HasTraversalStep<>(this.asAdmin(), (Traversal.Admin<E, ?>) hasNotNextTraversal, true));
     }
 
-    public default GraphTraversal<S, E> has(final String key, final P<?>... predicates) {
-        return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(key, predicates)));
+    public default GraphTraversal<S, E> has(final String key, final P<?> predicate, final P<?>... predicates) {
+        return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(key, predicate, predicates)));
     }
 
-    public default GraphTraversal<S, E> has(final T accessor, final P<?>... predicates) {
-        return this.has(accessor.getAccessor(), predicates);
+    public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate, final P<?>... predicates) {
+        return this.has(accessor.getAccessor(), predicate, predicates);
     }
 
     public default GraphTraversal<S, E> has(final String key, final Object value) {
-        return this.has(key, new P<?>[]{value instanceof P ? (P) value : P.eq(value)});
+        return this.has(key, value instanceof P ? (P) value : P.eq(value), new P[0]);
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
         return this.has(accessor.getAccessor(), value);
     }
 
-    public default GraphTraversal<S, E> has(final String label, final String key, final P<?>... predicates) {
-        return this.has(T.label, label).has(key, predicates);
+    public default GraphTraversal<S, E> has(final String label, final String key, final P<?> predicate, final P<?>... predicates) {
+        return this.has(T.label, label).has(key, predicate, predicates);
     }
 
     public default GraphTraversal<S, E> has(final String label, final String key, final Object value) {
-        return this.has(label, key, new P<?>[]{value instanceof P ? (P) value : P.eq(value)});
+        return this.has(label, key, value instanceof P ? (P) value : P.eq(value), new P[0]);
     }
 
     public default GraphTraversal<S, E> has(final String key) {
@@ -525,12 +527,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return values.length == 1 ? this.has(T.value, values[0]) : this.has(T.value, P.within(values));
     }
 
-    public default GraphTraversal<S, E> is(final P<E>... predicates) {
-        return this.asAdmin().addStep(new IsStep<>(this.asAdmin(), predicates));
+    public default GraphTraversal<S, E> is(final P<E> predicate, final P<E>... predicates) {
+        return this.asAdmin().addStep(new IsStep<>(this.asAdmin(), predicate, predicates));
     }
 
     public default GraphTraversal<S, E> is(final Object value) {
-        return this.is(new P[]{value instanceof P ? (P) value : P.eq(value)});
+        return this.is(value instanceof P ? (P<E>) value : P.eq((E)value), new P[0]);
     }
 
     public default GraphTraversal<S, E> coin(final double probability) {

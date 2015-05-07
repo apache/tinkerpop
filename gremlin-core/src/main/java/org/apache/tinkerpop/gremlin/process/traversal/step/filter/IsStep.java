@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.P;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -34,12 +35,14 @@ import java.util.Set;
  */
 public final class IsStep<S> extends FilterStep<S> {
 
-    private final List<P<S>> predicates;
+    private final List<P<S>> predicates = new ArrayList<>();
     // todo: boolean isSizeOne for optimization
 
-    public IsStep(final Traversal.Admin traversal, final P<S>... predicates) {
+    public IsStep(final Traversal.Admin traversal, final P<S> predicate, final P<S>... predicates) {
         super(traversal);
-        this.predicates = Arrays.asList(predicates);
+        this.predicates.add(predicate);
+        if (predicates.length > 0)
+            this.predicates.addAll(Arrays.asList(predicates));
     }
 
     @Override

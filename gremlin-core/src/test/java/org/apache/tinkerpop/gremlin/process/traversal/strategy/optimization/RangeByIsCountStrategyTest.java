@@ -148,10 +148,8 @@ public class RangeByIsCountStrategyTest {
         public void doTest(final Object predicate, final long expectedHighRange) {
             final AtomicInteger counter = new AtomicInteger(0);
             final Traversal traversal;
-            if (predicate instanceof P) {
-                traversal = __.out().count().is(new P[]{(P) predicate});
-            } else if (predicate instanceof P[]) {
-                traversal = __.out().count().is((P[]) predicate);
+            if (predicate instanceof P[]) {
+                traversal = __.out().count().is(((P[])predicate)[0],(P[])predicate);
             } else {
                 traversal = __.out().count().is(predicate);
             }
