@@ -142,9 +142,9 @@ public class ProfilingApplication {
             final int maxConnectionPoolSize = Integer.parseInt(options.getOrDefault("maxConnectionPoolSize", "256").toString());
             final int minSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("minSimultaneousUsagePerConnection", "8").toString());
             final int maxSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("maxSimultaneousUsagePerConnection", "32").toString());
-            final int maxInProcessPerConnection = Integer.parseInt(options.getOrDefault("maxInProcessPerConnection", "8").toString());
-            final int minInProcessPerConnection = Integer.parseInt(options.getOrDefault("minInProcessPerConnection", "1").toString());
-            final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "4").toString());
+            final int maxInProcessPerConnection = Integer.parseInt(options.getOrDefault("maxInProcessPerConnection", "64").toString());
+            final int minInProcessPerConnection = Integer.parseInt(options.getOrDefault("minInProcessPerConnection", "16").toString());
+            final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "16").toString());
 
             final Cluster cluster = Cluster.build(host)
                     .minConnectionPoolSize(minConnectionPoolSize)
