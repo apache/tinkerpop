@@ -34,14 +34,24 @@ public class ResponseStatus {
         this.attributes = attributes;
     }
 
+    /**
+     * Gets the {@link ResponseStatusCode} that describes how the server responded to the request.
+     */
     public ResponseStatusCode getCode() {
         return code;
     }
 
+    /**
+     * Gets the message associated with the code.
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Gets the meta-data related to the response.  If meta-data is returned it is to be considered specific to the
+     * "op" that is executed.  Not all "op" implementations will return meta-data.
+     */
     public Map<String, Object> getAttributes() {
         return attributes;
     }
