@@ -85,8 +85,8 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    public Scope getScope() {
-        return this.scope;
+    public Scope recommendNextScope() {
+        return Scope.global;
     }
 }
 

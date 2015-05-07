@@ -27,5 +27,9 @@ package org.apache.tinkerpop.gremlin.process.traversal;
  */
 public enum Scope {
 
-    global, local
+    global, local;
+
+    public Scope opposite() {
+        return global.equals(this) ? local : global;
+    }
 }
