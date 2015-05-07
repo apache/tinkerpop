@@ -765,7 +765,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_dX_whereXc_sungBy_dX_whereXd_hasXname_GarciaXX() {
-            return g.V().match("a",
+            return g.V().<Vertex>match("a",
                     as("a").in("sungBy").as("b"),
                     as("a").in("writtenBy").as("c"),
                     as("b").out("writtenBy").as("d"))
