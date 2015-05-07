@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -35,9 +36,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent {
+public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, Scoping {
 
-    private final Scope scope;
+    private Scope scope;
     private final String selectLabel;
     private Traversal.Admin<Object, Object> selectTraversal = new IdentityTraversal<>();
 
@@ -77,6 +78,15 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.PATH);
+    }
+
+    public void setScope(final Scope scope) {
+        this.scope = scope;
+    }
+
+    @Override
+    public Scope getScope() {
+        return this.scope;
     }
 }
 

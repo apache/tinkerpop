@@ -655,7 +655,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_matchXa_out_bX_selectXb_idX() {
-            return g.V().match("a", as("a").out().as("b")).select(Scope.local, "b").by(T.id);
+            return g.V().match("a", as("a").out().as("b")).select("b").by(T.id);
         }
 
         @Override
@@ -685,7 +685,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXab_nameX() {
             return g.V().match("a",
                     as("a").out("created").as("b"),
-                    __.<Vertex>as("a").repeat(out()).times(2).as("b")).<String>select(Scope.local, "a", "b").by("name");
+                    __.<Vertex>as("a").repeat(out()).times(2).as("b")).<String>select("a", "b").by("name");
         }
 
         @Override
@@ -693,7 +693,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match("a",
                     as("a").out("created").has("name", "lop").as("b"),
                     as("b").in("created").has("age", 29).as("c"),
-                    __.<Vertex>as("c").repeat(out()).times(2)).<String>select(Scope.local).by("name");
+                    __.<Vertex>as("c").repeat(out()).times(2)).<String>select().by("name");
         }
 
         @Override
@@ -701,14 +701,14 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match("a",
                     as("a").out("created").has("name", "lop").as("b"),
                     as("b").in("created").has("age", 29).as("c"))
-                    .where(__.<Vertex>as("c").repeat(out()).times(2)).<String>select(Scope.local).by("name");
+                    .where(__.<Vertex>as("c").repeat(out()).times(2)).<String>select().by("name");
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_out_out_matchXa_0created_b__b_0knows_cX_selectXcX_outXcreatedX_name() {
             return g.V().out().out().match("a",
                     as("a").in("created").as("b"),
-                    as("b").in("knows").as("c")).select(Scope.local, "c").out("created").values("name");
+                    as("b").in("knows").as("c")).select("c").out("created").values("name");
         }
 
         @Override
@@ -731,7 +731,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     as("b").out("created").has("name", "lop"),
                     as("b").match("a1",
                             as("a1").out("created").as("b1"),
-                            as("b1").in("created").as("c1")).select(Scope.local, "c1").as("c")).<String>select(Scope.local).by("name");
+                            as("b1").in("created").as("c1")).select("c1").as("c")).<String>select().by("name");
         }
 
         @Override
@@ -779,7 +779,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     as("a").out("created").as("b"),
                     as("b").in("created").as("c"))
                     .where("a", neq("c"))
-                    .<String>select(Scope.local, "a", "c").by("name");
+                    .<String>select("a", "c").by("name");
         }
 
         /*@Override

@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
-import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local
 import static org.apache.tinkerpop.gremlin.structure.P.neq;
 
 /**
@@ -43,7 +42,7 @@ public abstract class GroovyMatchTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_matchXa_out_bX_selectXb_idX() {
-            g.V().match('a', __.as('a').out().as('b')).select(local, 'b').by(T.id)
+            g.V().match('a', __.as('a').out().as('b')).select('b').by(T.id)
         }
 
         @Override
@@ -73,7 +72,7 @@ public abstract class GroovyMatchTest {
         public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXab_nameX() {
             g.V().match('a',
                     __.as('a').out('created').as('b'),
-                    __.as('a').repeat(__.out).times(2).as('b')).select(local, 'a', 'b').by('name')
+                    __.as('a').repeat(__.out).times(2).as('b')).select('a', 'b').by('name')
         }
 
         @Override
@@ -81,14 +80,14 @@ public abstract class GroovyMatchTest {
             g.V().match('a',
                     __.as('a').out('created').has('name', 'lop').as('b'),
                     __.as('b').in('created').has('age', 29).as('c'),
-                    __.as('c').repeat(__.out).times(2)).select(local).by('name')
+                    __.as('c').repeat(__.out).times(2)).select.by('name')
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_out_out_matchXa_0created_b__b_0knows_cX_selectXcX_outXcreatedX_name() {
             g.V().out().out().match('a',
                     __.as('a').in('created').as('b'),
-                    __.as('b').in('knows').as('c')).select(local, 'c').out('created').name
+                    __.as('b').in('knows').as('c')).select('c').out('created').name
         }
 
         @Override
@@ -111,7 +110,7 @@ public abstract class GroovyMatchTest {
                     __.as('b').out('created').has('name', 'lop'),
                     __.as('b').match('a1',
                             __.as('a1').out('created').as('b1'),
-                            __.as('b1').in('created').as('c1')).select(local, 'c1').as('c')).select(local).by('name')
+                            __.as('b1').in('created').as('c1')).select('c1').as('c')).select.by('name')
         }
 
         @Override
@@ -159,7 +158,7 @@ public abstract class GroovyMatchTest {
                     __.as("a").out("created").has("name", "lop").as("b"),
                     __.as("b").in("created").has("age", 29).as("c"))
                     .where(__.as("c").repeat(__.out()).times(2))
-                    .select(local).by('name')
+                    .select().by('name')
         }
 
         @Override
@@ -168,7 +167,7 @@ public abstract class GroovyMatchTest {
                     __.as('a').out('created').as('b'),
                     __.as('b').in('created').as('c'))
                     .where('a', neq('c'))
-                    .select(local, 'a', 'c').by('name')
+                    .select('a', 'c').by('name')
         }
 
         /*@Override

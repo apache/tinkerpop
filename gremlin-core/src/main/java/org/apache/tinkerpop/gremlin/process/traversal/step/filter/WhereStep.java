@@ -18,9 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -35,7 +37,7 @@ import java.util.function.BiPredicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WhereStep<E> extends FilterStep<Map<String, E>> implements TraversalParent {
+public final class WhereStep<E> extends FilterStep<Map<String, E>> implements TraversalParent, Scoping {
 
     private final String firstKey;
     private final String secondKey;
@@ -129,5 +131,10 @@ public final class WhereStep<E> extends FilterStep<Map<String, E>> implements Tr
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
+    }
+
+    @Override
+    public Scope getScope() {
+        return Scope.local;
     }
 }
