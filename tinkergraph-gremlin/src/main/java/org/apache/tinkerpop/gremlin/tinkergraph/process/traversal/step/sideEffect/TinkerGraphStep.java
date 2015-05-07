@@ -74,7 +74,7 @@ public class TinkerGraphStep<S extends Element> extends GraphStep<S> implements 
             return this.iteratorList(graph.vertices(this.ids));
         else
             return null == indexedContainer ?
-                    this.iteratorList(graph.vertices()) :
+                    this.iteratorList(graph.vertices()) :   // TODO: IteratorUtils.filter() using iteratorList() semantics.
                     TinkerHelper.queryVertexIndex(graph, indexedContainer.key, indexedContainer.value).stream()
                             .filter(vertex -> HasContainer.testAll(vertex, this.hasContainers))
                             .collect(Collectors.<Vertex>toList()).iterator();

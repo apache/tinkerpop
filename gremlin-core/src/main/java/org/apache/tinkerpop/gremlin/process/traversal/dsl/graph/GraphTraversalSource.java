@@ -151,7 +151,7 @@ public class GraphTraversalSource implements TraversalSource {
 
     @Override
     public List<TraversalStrategy> getStrategies() {
-        return Collections.unmodifiableList(strategies.toList());
+        return Collections.unmodifiableList(this.strategies.toList());
     }
 
     @Override

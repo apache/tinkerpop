@@ -28,6 +28,6 @@ import org.junit.runner.RunWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(ProcessStandardSuite.class)
-@ProcessStandardSuite.GraphProviderClass(provider = TinkerNoStrategyGraphProvider.class, graph = TinkerGraph.class)
+@ProcessStandardSuite.GraphProviderClass(provider = TinkerGraphNoStrategyProvider.class, graph = TinkerGraph.class)
 public class TinkerGraphNoStrategyProcessStandardTest {
 }

@@ -22,10 +22,14 @@ import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * A {@link GraphProvider} that constructs a {@link TraversalSource} with no default strategies applied.  This allows
@@ -33,7 +37,9 @@ import java.util.Arrays;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TinkerNoStrategyGraphProvider extends TinkerGraphProvider {
+public class TinkerGraphNoStrategyProvider extends TinkerGraphProvider {
+
+    private static final HashSet<Class<? extends TraversalStrategy>> REQUIRED_STRATEGIES = new HashSet<>(Arrays.asList(TinkerGraphStepStrategy.class, ProfileStrategy.class, ConjunctionStrategy.class));
 
     @Override
     public GraphTraversalSource traversal(final Graph graph) {
@@ -50,8 +56,8 @@ public class TinkerNoStrategyGraphProvider extends TinkerGraphProvider {
 
     private GraphTraversalSource.Builder createBuilder(Graph graph) {
         final GraphTraversalSource g = super.traversal(graph);
-        final GraphTraversalSource.Builder builder = GraphTraversalSource.build();
-        g.getStrategies().stream().map(strategy -> strategy.getClass()).forEach(builder::without);
+        final GraphTraversalSource.Builder builder = g.asBuilder();
+        g.getStrategies().stream().map(strategy -> strategy.getClass()).filter(clazz -> !REQUIRED_STRATEGIES.contains(clazz)).forEach(builder::without);
         return builder;
     }
 }
