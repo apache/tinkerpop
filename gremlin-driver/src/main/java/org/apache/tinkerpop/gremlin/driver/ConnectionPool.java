@@ -189,7 +189,7 @@ class ConnectionPool {
                     logger.debug("On {} pool size of {} > minPoolSize {} and borrowed of {} <= minSimultaneousUsagePerConnection {} so destroy {}",
                             host, poolSize, minPoolSize, borrowed, minSimultaneousUsagePerConnection, connection.getConnectionInfo());
                 destroyConnection(connection);
-            } else if (connection.availableInProcess() < minInProcess) {
+            } else if (availableInProcess < minInProcess) {
                 if (logger.isDebugEnabled())
                     logger.debug("On {} availableInProcess {} < minInProcess {} so replace {}", host, availableInProcess, minInProcess, connection.getConnectionInfo());
                 replaceConnection(connection);

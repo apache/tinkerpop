@@ -139,14 +139,18 @@ public class ProfilingApplication {
             final int requests = Integer.parseInt(options.getOrDefault("requests", "10000").toString());
             final int minConnectionPoolSize = Integer.parseInt(options.getOrDefault("minConnectionPoolSize", "256").toString());
             final int maxConnectionPoolSize = Integer.parseInt(options.getOrDefault("maxConnectionPoolSize", "256").toString());
+            final int minSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("minSimultaneousUsagePerConnection", "8").toString());
             final int maxSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("maxSimultaneousUsagePerConnection", "32").toString());
             final int maxInProcessPerConnection = Integer.parseInt(options.getOrDefault("maxInProcessPerConnection", "8").toString());
+            final int minInProcessPerConnection = Integer.parseInt(options.getOrDefault("minInProcessPerConnection", "1").toString());
             final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "4").toString());
 
             final Cluster cluster = Cluster.build(host)
                     .minConnectionPoolSize(minConnectionPoolSize)
                     .maxConnectionPoolSize(maxConnectionPoolSize)
+                    .minSimultaneousUsagePerConnection(minSimultaneousUsagePerConnection)
                     .maxSimultaneousUsagePerConnection(maxSimultaneousUsagePerConnection)
+                    .minInProcessPerConnection(minInProcessPerConnection)
                     .maxInProcessPerConnection(maxInProcessPerConnection)
                     .nioPoolSize(clients)
                     .workerPoolSize(workerPoolSize).create();
