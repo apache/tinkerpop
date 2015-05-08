@@ -78,7 +78,7 @@ public abstract class GroovyLocalTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX2XX_otherV_name(final Object v4Id) {
-            g.V(v4Id).local(__.bothE.limit(2).otherV).name
+            g.V(v4Id).local(__.bothE.limit(2)).otherV.name
         }
 
         @Override
