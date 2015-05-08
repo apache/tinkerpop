@@ -18,13 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.master.MasterCompute;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.MemoryHelper;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.DataInput;
@@ -64,7 +67,8 @@ public class GiraphMemory extends MasterCompute implements Memory {
     public void compute() {
         this.isMasterCompute = true;
         if (0 == this.getSuperstep()) { // setup
-            this.vertexProgram = VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(this.getConf()));
+            final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(this.getConf());
+            this.vertexProgram = VertexProgram.createVertexProgram(HadoopGraph.open(apacheConfiguration), apacheConfiguration);
             this.memoryKeys = new HashSet<>(this.vertexProgram.getMemoryComputeKeys());
             try {
                 for (final String key : this.memoryKeys) {

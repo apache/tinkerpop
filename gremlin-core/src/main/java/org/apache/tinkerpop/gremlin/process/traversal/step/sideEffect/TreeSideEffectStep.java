@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.TreeSupplier;
 
@@ -138,7 +139,7 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
         }
 
         @Override
-        public void loadState(final Configuration configuration) {
+        public void loadState(final Graph graph, final Configuration configuration) {
             this.sideEffectKey = configuration.getString(TREE_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY);
         }
 

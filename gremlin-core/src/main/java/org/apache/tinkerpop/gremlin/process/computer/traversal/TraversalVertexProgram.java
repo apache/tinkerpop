@@ -96,11 +96,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
      * A helper method to yield a {@link Supplier} of {@link Traversal} from the {@link Configuration}.
      * The supplier is either a {@link Class}, {@link org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineLambda}, or a direct Java8 lambda.
      *
+     * @param graph         the graph that the traversal will run against
      * @param configuration The configuration containing the public static TRAVERSAL_SUPPLIER key.
      * @return the traversal supplier in the configuration
      */
-    public static Supplier<Traversal.Admin<?, ?>> getTraversalSupplier(final Configuration configuration) {
-        return LambdaHolder.<Supplier<Traversal.Admin<?, ?>>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
+    public static Traversal.Admin<?, ?> getTraversal(final Graph graph, final Configuration configuration) {
+        return VertexProgram.<TraversalVertexProgram>createVertexProgram(graph, configuration).getTraversal();
     }
 
     public Traversal.Admin<?, ?> getTraversal() {
@@ -108,13 +109,16 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     }
 
     @Override
-    public void loadState(final Configuration configuration) {
+    public void loadState(final Graph graph, final Configuration configuration) {
         this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);
         if (null == this.traversalSupplier) {
             throw new IllegalArgumentException("The configuration does not have a traversal supplier");
         }
         this.traversal = this.traversalSupplier.get().get();
-        if (!this.traversal.isLocked()) this.traversal.applyStrategies();
+        if (!this.traversal.isLocked()) {
+            this.traversal.setGraph(graph);
+            this.traversal.applyStrategies();
+        }
         ((ComputerResultStep) this.traversal.getEndStep()).byPass();
         this.traversalMatrix = new TraversalMatrix<>(this.traversal);
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal)) {

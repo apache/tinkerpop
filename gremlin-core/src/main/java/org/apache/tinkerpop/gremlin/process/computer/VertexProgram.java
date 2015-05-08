@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.lang.reflect.Constructor;
@@ -62,12 +63,11 @@ public interface VertexProgram<M> extends Cloneable {
      * When it is necessary to load the state of the VertexProgram, this method is called.
      * This is typically required when the VertexProgram needs to be serialized to another machine.
      * Note that what is loaded is simply the instance state, not any processed data.
-     * It is possible for this method to be called for each and every vertex in the graph.
-     * Thus, it is important to only store/load that state which is needed during execution in order to reduce startup time.
      *
+     * @param graph         the graph that the VertexProgram will run against
      * @param configuration the configuration to load the state of the VertexProgram from.
      */
-    public default void loadState(final Configuration configuration) {
+    public default void loadState(final Graph graph, final Configuration configuration) {
 
     }
 
@@ -201,19 +201,20 @@ public interface VertexProgram<M> extends Cloneable {
     /**
      * A helper method to construct a {@link VertexProgram} given the content of the supplied configuration.
      * The class of the VertexProgram is read from the {@link VertexProgram#VERTEX_PROGRAM} static configuration key.
-     * Once the VertexProgram is constructed, {@link VertexProgram#loadState} method is called with the provided configuration.
+     * Once the VertexProgram is constructed, {@link VertexProgram#loadState} method is called with the provided graph and configuration.
      *
+     * @param graph         The graph that the vertex program will execute against
      * @param configuration A configuration with requisite information to build a vertex program
      * @param <V>           The vertex program type
      * @return the newly constructed vertex program
      */
-    public static <V extends VertexProgram> V createVertexProgram(final Configuration configuration) {
+    public static <V extends VertexProgram> V createVertexProgram(final Graph graph, final Configuration configuration) {
         try {
             final Class<V> vertexProgramClass = (Class) Class.forName(configuration.getString(VERTEX_PROGRAM));
             final Constructor<V> constructor = vertexProgramClass.getDeclaredConstructor();
             constructor.setAccessible(true);
             final V vertexProgram = constructor.newInstance();
-            vertexProgram.loadState(configuration);
+            vertexProgram.loadState(graph, configuration);
             return vertexProgram;
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -224,7 +225,7 @@ public interface VertexProgram<M> extends Cloneable {
 
         public Builder configure(final Object... keyValues);
 
-        public <P extends VertexProgram> P create();
+        public <P extends VertexProgram> P create(final Graph graph);
 
     }
 

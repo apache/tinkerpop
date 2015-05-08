@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
@@ -187,12 +188,10 @@ public final class GroupSideEffectStep<S, K, V, R> extends SideEffectStep<S> imp
         }
 
         @Override
-        public void loadState(final Configuration configuration) {
+        public void loadState(final Graph graph, final Configuration configuration) {
             this.sideEffectKey = configuration.getString(GROUP_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY);
             this.groupStepId = configuration.getString(GROUP_SIDE_EFFECT_STEP_STEP_ID);
-            final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
-            if (!traversal.isLocked())
-                traversal.applyStrategies(); // TODO: this is a scary error prone requirement, but only a problem for GroupStep
+            final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversal(graph, configuration);
             final GroupSideEffectStep groupSideEffectStep = new TraversalMatrix<>(traversal).getStepById(this.groupStepId);
             this.reduceTraversal = groupSideEffectStep.getReduceTraversal();
             this.mapSupplier = traversal.getSideEffects().<Map<K, R>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
