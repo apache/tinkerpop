@@ -52,11 +52,15 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX2X();
 
+    public abstract Traversal<Vertex, String> get_g_V_valuesXnameX_order_tail();
+
     public abstract Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X();
 
     public abstract Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_2X();
 
     public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X();
+
+    public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX();
 
     public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXlimitXlocal_0XX_tailXlocal_1X();
 
@@ -80,6 +84,15 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, String> traversal = get_g_V_valuesXnameX_order_tailX2X();
         printTraversalForm(traversal);
         assertEquals(Arrays.asList("ripple", "vadas"), traversal.toList());
+    }
+
+    /** Scenario: Default is global, N=1 */
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_valuesXnameX_order_tail() {
+        final Traversal<Vertex, String> traversal = get_g_V_valuesXnameX_order_tail();
+        printTraversalForm(traversal);
+        assertEquals(Arrays.asList("vadas"), traversal.toList());
     }
 
     /** Scenario: Global scope, not enough elements */
@@ -110,6 +123,17 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
         final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X();
+        printTraversalForm(traversal);
+        final Set<String> expected = new HashSet(Arrays.asList("ripple", "lop"));
+        final Set<String> actual = new HashSet(traversal.toList());
+        assertEquals(expected, actual);
+    }
+
+    /** Scenario: Local scope, List input, default N=1 */
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX();
         printTraversalForm(traversal);
         final Set<String> expected = new HashSet(Arrays.asList("ripple", "lop"));
         final Set<String> actual = new HashSet(traversal.toList());
@@ -166,6 +190,11 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
         }
 
         @Override
+        public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tail() {
+            return g.V().<String>values("name").order().tail();
+        }
+
+        @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X() {
             return g.V().<String>values("name").order().tail(7);
         }
@@ -178,6 +207,11 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
             return g.V().as("a").out().as("a").out().as("a").<String>select("a").by(unfold().values("name").fold()).tail(local, 1);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
+            return g.V().as("a").out().as("a").out().as("a").<String>select("a").by(unfold().values("name").fold()).tail(local);
         }
 
         @Override
