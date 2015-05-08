@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLResourceAccess;
+import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.File;
@@ -31,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -130,15 +132,15 @@ public final class TestHelper {
             }
         }
         if (testEdges) {
-            Iterator<Edge> originalEdges = IteratorUtils.set(originalVertex.edges(Direction.OUT)).iterator();
-            Iterator<Edge> otherEdges = IteratorUtils.set(otherVertex.edges(Direction.OUT)).iterator();
+            Iterator<Edge> originalEdges = IteratorUtils.list(originalVertex.edges(Direction.OUT), Comparators.ELEMENT_COMPARATOR).iterator();
+            Iterator<Edge> otherEdges = IteratorUtils.list(otherVertex.edges(Direction.OUT), Comparators.ELEMENT_COMPARATOR).iterator();
             while (originalEdges.hasNext()) {
                 validateEdgeEquality(originalEdges.next(), otherEdges.next());
             }
             assertFalse(otherEdges.hasNext());
 
-            originalEdges = IteratorUtils.set(originalVertex.edges(Direction.IN)).iterator();
-            otherEdges = IteratorUtils.set(otherVertex.edges(Direction.IN)).iterator();
+            originalEdges = IteratorUtils.list(originalVertex.edges(Direction.IN), Comparators.ELEMENT_COMPARATOR).iterator();
+            otherEdges = IteratorUtils.list(otherVertex.edges(Direction.IN), Comparators.ELEMENT_COMPARATOR).iterator();
             while (originalEdges.hasNext()) {
                 validateEdgeEquality(originalEdges.next(), otherEdges.next());
             }
