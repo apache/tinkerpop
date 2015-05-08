@@ -537,7 +537,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> is(final Object value) {
-        return this.is(value instanceof P ? (P<E>) value : P.eq((E) value), new P[0]);
+        if (value instanceof P[]) {
+            final Pair<P, P[]> split = P.splitForAPI((P[]) value);
+            return this.is(split.getValue0(), split.getValue1());
+        } else
+            return this.is(value instanceof P ? (P<E>) value : P.eq((E) value), new P[0]);
     }
 
     public default GraphTraversal<S, E> coin(final double probability) {
