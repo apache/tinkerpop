@@ -29,19 +29,19 @@ import org.apache.tinkerpop.gremlin.structure.Graph
  */
 public class ComputerTestHelper {
 
-    public static final Traversal compute(
+    public static final Traversal.Admin<?,?> compute(
             final Graph graph,
             final TraversalSource.Builder builder,
             final String scriptEngineName,
             final String traversalScript,
             final Object... bindings) {
 
-        final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(graph.getClass(), builder, scriptEngineName, traversalScript, bindings).create();
+        final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(builder, scriptEngineName, traversalScript, bindings).create(graph);
         final ComputerResult result = builder.create(graph).getGraphComputer().get().program(program).submit().get();
         return program.computerResultTraversal(result);
     }
 
-    public static final Traversal compute(final String script, final GraphTraversalSource g, final Object... bindings) {
+    public static final <S,E> Traversal.Admin<S,E> compute(final String script, final GraphTraversalSource g, final Object... bindings) {
         return ComputerTestHelper.compute(g.getGraph().get(), g.asBuilder(), "gremlin-groovy", script, bindings);
     }
 }

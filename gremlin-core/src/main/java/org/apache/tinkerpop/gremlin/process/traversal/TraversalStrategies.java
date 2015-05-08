@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.computer.util.ShellGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.EngineDependentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
@@ -215,10 +214,6 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                 else return CACHE.get(Graph.class);
             }
             return traversalStrategies;
-        }
-
-        public static Class<? extends Graph> getGraphClass(final Graph graph) {
-            return graph instanceof ShellGraph ? ((ShellGraph) graph).getGraphClass() : graph.getClass();
         }
     }
 

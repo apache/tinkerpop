@@ -23,10 +23,13 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalObjectFunction;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalScriptFunction;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
-import org.apache.tinkerpop.gremlin.process.computer.util.LambdaHolder;
+import org.apache.tinkerpop.gremlin.process.computer.util.ConfigurationTraversal;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -61,10 +64,10 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     private static final String MAX_ITERATIONS = "gremlin.peerPressureVertexProgram.maxIterations";
     private static final String DISTRIBUTE_VOTE = "gremlin.peerPressureVertexProgram.distributeVote";
-    private static final String INCIDENT_TRAVERSAL_SUPPLIER = "gremlin.peerPressureVertexProgram.incidentTraversalSupplier";
+    private static final String TRAVERSAL_SUPPLIER = "gremlin.peerPressureVertexProgram.traversalSupplier";
     private static final String VOTE_TO_HALT = "gremlin.peerPressureVertexProgram.voteToHalt";
 
-    private LambdaHolder<Supplier<Traversal<Vertex, Edge>>> traversalSupplier;
+    private ConfigurationTraversal<Vertex, Edge> configurationTraversal;
     private int maxIterations = 30;
     private boolean distributeVote = false;
 
@@ -77,9 +80,9 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
-        this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
-        if (null != this.traversalSupplier) {
-            this.voteScope = MessageScope.Local.of(this.traversalSupplier.get());
+        if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
+            this.configurationTraversal = ConfigurationTraversal.loadState(graph, configuration, TRAVERSAL_SUPPLIER);
+            this.voteScope = MessageScope.Local.of(this.configurationTraversal);
             this.countScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.voteScope));
         }
         this.maxIterations = configuration.getInt(MAX_ITERATIONS, 30);
@@ -89,7 +92,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     @Override
     public void storeState(final Configuration configuration) {
         super.storeState(configuration);
-        this.traversalSupplier.storeState(configuration);
+        this.configurationTraversal.storeState(configuration);
         configuration.setProperty(MAX_ITERATIONS, this.maxIterations);
         configuration.setProperty(DISTRIBUTE_VOTE, this.distributeVote);
 
@@ -211,22 +214,19 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
             return this;
         }
 
-        public Builder incident(final String scriptEngine, final String traversalScript) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, INCIDENT_TRAVERSAL_SUPPLIER, new String[]{scriptEngine, traversalScript});
+        public Builder traversal(final TraversalSource.Builder builder, final String scriptEngine, final String traversalScript, final Object... bindings) {
+            ConfigurationTraversal.storeState(new TraversalScriptFunction<>(builder, scriptEngine, traversalScript, bindings), this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 
-        public Builder incident(final String traversalScript) {
-            return incident(GREMLIN_GROOVY, traversalScript);
-        }
-
-        public Builder incident(final Supplier<Traversal<Vertex, Edge>> traversal) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, INCIDENT_TRAVERSAL_SUPPLIER, traversal);
+        public Builder traversal(final Traversal.Admin<Vertex, Edge> traversal) {
+            ConfigurationTraversal.storeState(new TraversalObjectFunction<>(traversal), this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 
-        public Builder incident(final Class<Supplier<Traversal<Vertex, Edge>>> traversalClass) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, INCIDENT_TRAVERSAL_SUPPLIER, traversalClass);
+
+        public Builder traversal(final Class<Supplier<Traversal.Admin<Vertex, Edge>>> traversalClass) {
+            ConfigurationTraversal.storeState(traversalClass, this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 
