@@ -356,6 +356,7 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_PERSISTENCE)
     public void shouldCommitOnShutdownByDefault() throws Exception {
         final Vertex v1 = graph.addVertex("name", "marko");
         final Object oid = v1.id();
@@ -369,14 +370,23 @@ public class TransactionTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_PERSISTENCE)
     public void shouldRollbackOnShutdownWhenConfigured() throws Exception {
+        final Vertex v2 = graph.addVertex("name", "stephen");
+        graph.tx().commit();
+
         final Vertex v1 = graph.addVertex("name", "marko");
         final Object oid = v1.id();
         g.tx().onClose(Transaction.CLOSE_BEHAVIOR.ROLLBACK);
         graph.close();
 
         graph = graphProvider.openTestGraph(config);
+
+        // this was committed
+        assertTrue(graph.vertices(v2.id()).hasNext());
+
         try {
+            // this was not
             graph.vertices(oid).next();
             fail("Vertex should not be found as close behavior was set to rollback");
         } catch (Exception ex) {
