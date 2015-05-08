@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,6 +49,8 @@ public class ProfilingApplication {
     private final int requests;
     private final int clients;
     private final String executionName;
+
+    private static final ExecutorService executor = Executors.newFixedThreadPool(8);
 
     public ProfilingApplication(final String executionName, final Cluster cluster, final int clients, final int requests) {
         this.executionName = executionName;
@@ -83,7 +87,7 @@ public class ProfilingApplication {
                         } finally {
                             latch.countDown();
                         }
-                    })
+                    }, executor)
                 );
 
                 // finish once all requests are accounted for
