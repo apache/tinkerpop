@@ -43,42 +43,42 @@ public abstract class GroovyTailTest {
     public static class StandardTraversals extends TailTest {
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_id_order_tailXglobal_2X() {
-            g.V.id.order.tail(global, 2)
+        public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailXglobal_2X() {
+            g.V.values('name')order.tail(global, 2)
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_id_order_tailX2X() {
-            g.V.id.order.tail(2)
+        public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX2X() {
+            g.V.values('name')order.tail(2)
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_id_order_tailX7X() {
-            g.V.id.order.tail(7)
+        public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X() {
+            g.V.values('name')order.tail(7)
         }
 
         @Override
-        public Traversal<Vertex, List<Object>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_id_foldX_tailXlocal_2X() {
-            g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().id.fold).tail(local, 2)
+        public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_2X() {
+            g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 2)
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_id_foldX_tailXlocal_1X() {
-            g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().id.fold).tail(local, 1)
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
+            g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 1)
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXlimitXlocal_0XX_tailXlocal_1X() {
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXlimitXlocal_0XX_tailXlocal_1X() {
             g.V.as('a').out.as('a').out.as('a').select('a').by(limit(local, 0)).tail(local, 1)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXT_idX_tailXlocal_2X() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_2X() {
             g.V.as('a').out.as('b').out.as('c').select.by(T.id).tail(local, 2)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXT_idX_tailXlocal_1X() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_1X() {
             g.V.as('a').out.as('b').out.as('c').select.by(T.id).tail(local, 1)
         }
     }
@@ -89,31 +89,31 @@ public abstract class GroovyTailTest {
         @Override
         @Test
         @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_id_order_tailXglobal_2X() {
+        public void g_V_valuesXnameX_order_tailXglobal_2X() {
         }
 
         @Override
         @Test
         @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_id_order_tailX2X() {
+        public void g_V_valuesXnameX_order_tailX2X() {
         }
 
         @Override
         @Test
         @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_id_order_tailX7X() {
+        public void g_V_valuesXnameX_order_tailX7X() {
         }
 
         @Override
         @Test
         @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_id_foldX_tailXlocal_2X() {
+        public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_2X() {
         }
 
         @Override
         @Test
         @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_id_foldX_tailXlocal_1X() {
+        public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
         }
 
         @Override
@@ -125,59 +125,59 @@ public abstract class GroovyTailTest {
         @Override
         @Test
         @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_asXaX_out_asXbX_out_asXcX_select_byXT_idX_tailXlocal_2X() {
+        public void g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_2X() {
         }
 
         @Override
         @Test
         @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_asXaX_out_asXbX_out_asXcX_select_byXT_idX_tailXlocal_1X() {
+        public void g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_1X() {
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_id_order_tailXglobal_2X() {
+        public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailXglobal_2X() {
             // override with nothing until the test itself is supported
             return null
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_id_order_tailX2X() {
+        public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX2X() {
             // override with nothing until the test itself is supported
             return null
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_id_order_tailX7X() {
+        public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X() {
             // override with nothing until the test itself is supported
             return null
         }
 
         @Override
-        public Traversal<Vertex, List<Object>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_id_foldX_tailXlocal_2X() {
+        public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_2X() {
             // override with nothing until the test itself is supported
             return null
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_id_foldX_tailXlocal_1X() {
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
             // override with nothing until the test itself is supported
             return null
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXlimitXlocal_0XX_tailXlocal_1X() {
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXlimitXlocal_0XX_tailXlocal_1X() {
             // override with nothing until the test itself is supported
             return null
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXT_idX_tailXlocal_2X() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_2X() {
             // override with nothing until the test itself is supported
             return null
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXT_idX_tailXlocal_1X() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_1X() {
             // override with nothing until the test itself is supported
             return null
         }
