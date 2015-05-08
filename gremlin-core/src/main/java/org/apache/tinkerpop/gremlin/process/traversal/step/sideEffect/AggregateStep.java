@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
@@ -130,9 +131,9 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
         }
 
         @Override
-        public void loadState(final Configuration configuration) {
+        public void loadState(final Graph graph, final Configuration configuration) {
             this.sideEffectKey = configuration.getString(AGGREGATE_STEP_SIDE_EFFECT_KEY);
-            this.collectionSupplier = TraversalVertexProgram.getTraversalSupplier(configuration).get().getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
+            this.collectionSupplier = TraversalVertexProgram.getTraversal(graph, configuration).getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
         }
 
         @Override

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -53,7 +54,7 @@ public abstract class AbstractVertexProgramBuilder<B extends VertexProgram.Build
     }
 
     @Override
-    public <P extends VertexProgram> P create() {
-        return (P) VertexProgram.createVertexProgram(this.configuration);
+    public <P extends VertexProgram> P create(final Graph graph) {
+        return (P) VertexProgram.createVertexProgram(graph, this.configuration);
     }
 }

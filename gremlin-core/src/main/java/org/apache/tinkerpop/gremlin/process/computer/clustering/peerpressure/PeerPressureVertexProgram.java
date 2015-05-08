@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -75,7 +76,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
     }
 
     @Override
-    public void loadState(final Configuration configuration) {
+    public void loadState(final Graph graph, final Configuration configuration) {
         this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
         if (null != this.traversalSupplier) {
             this.voteScope = MessageScope.Local.of(this.traversalSupplier.get());

@@ -18,9 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.combiner.Combiner;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfigurable;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
@@ -49,7 +51,8 @@ public class GiraphMessageCombiner extends Combiner<ObjectWritable, ObjectWritab
     @Override
     public void setConf(final ImmutableClassesGiraphConfiguration configuration) {
         this.configuration = configuration;
-        this.messageCombiner = (MessageCombiner) VertexProgram.createVertexProgram(ConfUtil.makeApacheConfiguration(configuration)).getMessageCombiner().get();
+        final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(configuration);
+        this.messageCombiner = (MessageCombiner) VertexProgram.createVertexProgram(HadoopGraph.open(apacheConfiguration), apacheConfiguration).getMessageCombiner().get();
     }
 
     @Override
