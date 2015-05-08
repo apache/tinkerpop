@@ -132,7 +132,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
         @Override
         public void loadState(final Configuration configuration) {
             this.sideEffectKey = configuration.getString(AGGREGATE_STEP_SIDE_EFFECT_KEY);
-            this.collectionSupplier = TraversalVertexProgram.getTraversal(configuration).getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
+            this.collectionSupplier = TraversalVertexProgram.getTraversalSupplier(configuration).get().getSideEffects().<Collection>getRegisteredSupplier(this.sideEffectKey).orElse(BulkSet::new);
         }
 
         @Override

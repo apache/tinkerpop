@@ -190,7 +190,9 @@ public final class GroupSideEffectStep<S, K, V, R> extends SideEffectStep<S> imp
         public void loadState(final Configuration configuration) {
             this.sideEffectKey = configuration.getString(GROUP_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY);
             this.groupStepId = configuration.getString(GROUP_SIDE_EFFECT_STEP_STEP_ID);
-            final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversal(configuration);
+            final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
+            if (!traversal.isLocked())
+                traversal.applyStrategies(); // TODO: this is a scary error prone requirement, but only a problem for GroupStep
             final GroupSideEffectStep groupSideEffectStep = new TraversalMatrix<>(traversal).getStepById(this.groupStepId);
             this.reduceTraversal = groupSideEffectStep.getReduceTraversal();
             this.mapSupplier = traversal.getSideEffects().<Map<K, R>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
