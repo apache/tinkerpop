@@ -72,7 +72,7 @@ public class StarGraphTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
-    public void shoudlValidateThatOriginalAndStarVerticesHaveTheSameTopology() {
+    public void shouldValidateThatOriginalAndStarVerticesHaveTheSameTopology() {
         g.V().forEachRemaining(vertex -> TestHelper.validateEquality(vertex, StarGraph.of(vertex).getStarVertex()));
     }
 
@@ -84,7 +84,7 @@ public class StarGraphTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.CREW)
-    public void shouldAttacheWithGetMethod() {
+    public void shouldAttachWithGetMethod() {
         // vertex host
         g.V().forEachRemaining(vertex -> TestHelper.validateEquality(vertex, StarGraph.of(vertex).getStarVertex().attach(Attachable.Method.get(vertex))));
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().properties().forEachRemaining(vertexProperty -> TestHelper.validateEquality(vertexProperty, ((Attachable<VertexProperty>) vertexProperty).attach(Attachable.Method.get(vertex)))));
@@ -110,7 +110,7 @@ public class StarGraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
-    public void shoudlAttachWithCreateMethod() {
+    public void shouldAttachWithCreateMethod() {
         final Random random = new Random(234335l);
         StarGraph starGraph = StarGraph.open();
         Vertex starVertex = starGraph.addVertex(T.label, "person", "name", "stephen", "name", "spmallete");
