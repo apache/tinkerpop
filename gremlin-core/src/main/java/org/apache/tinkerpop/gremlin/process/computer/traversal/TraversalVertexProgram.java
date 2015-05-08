@@ -99,29 +99,20 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
      * @param configuration The configuration containing the public static TRAVERSAL_SUPPLIER key.
      * @return the traversal supplier in the configuration
      */
-    public static Supplier<Traversal.Admin<?, ?>> getTraversalSupplier(final Configuration configuration) {
-        return LambdaHolder.<Supplier<Traversal.Admin<?, ?>>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
+    public static Traversal.Admin<?, ?> getTraversal(final Configuration configuration) {
+        return VertexProgram.<TraversalVertexProgram>createVertexProgram(configuration).getTraversal();
     }
 
     public Traversal.Admin<?, ?> getTraversal() {
+        this.compileTraversal(Optional.empty());
         return this.traversal;
     }
 
     @Override
     public void loadState(final Configuration configuration) {
         this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);
-        if (null == this.traversalSupplier) {
+        if (null == this.traversalSupplier)
             throw new IllegalArgumentException("The configuration does not have a traversal supplier");
-        }
-        this.traversal = this.traversalSupplier.get().get();
-        if (!this.traversal.isLocked()) this.traversal.applyStrategies();
-        ((ComputerResultStep) this.traversal.getEndStep()).byPass();
-        this.traversalMatrix = new TraversalMatrix<>(this.traversal);
-        for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal)) {
-            this.mapReducers.add(mapReducer.getMapReduce());
-        }
-        if (!(this.traversal.getEndStep().getPreviousStep() instanceof SideEffectCapStep) && !(this.traversal.getEndStep().getPreviousStep() instanceof ReducingBarrierStep))
-            this.mapReducers.add(new TraverserMapReduce(this.traversal.getEndStep().getPreviousStep()));
     }
 
     @Override
@@ -142,6 +133,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public void execute(final Vertex vertex, final Messenger<TraverserSet<?>> messenger, final Memory memory) {
+        this.compileTraversal(Optional.of(vertex));
         this.traversal.getSideEffects().setLocalVertex(vertex);
         if (memory.isInitialIteration()) {    // ITERATION 1
             final TraverserSet<Object> haltedTraversers = new TraverserSet<>();
@@ -210,6 +202,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public Set<MapReduce> getMapReducers() {
+        this.compileTraversal(Optional.<Vertex>empty());
         return this.mapReducers;
     }
 
@@ -222,8 +215,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public TraversalVertexProgram clone() {
         try {
             final TraversalVertexProgram clone = (TraversalVertexProgram) super.clone();
-            clone.traversal = this.traversal.clone();
-            clone.traversalMatrix = new TraversalMatrix<>(clone.traversal);
+            if (null != this.traversal) {
+                clone.traversal = this.traversal.clone();
+                clone.traversalMatrix = new TraversalMatrix<>(clone.traversal);
+            }
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
@@ -242,7 +237,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
     @Override
     public String toString() {
-        final String traversalString = this.traversal.toString().substring(1);
+        final String traversalString = this.getTraversal().toString().substring(1);
         return StringFactory.vertexProgramString(this, traversalString.substring(0, traversalString.length() - 1));
     }
 
@@ -265,6 +260,24 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         final Traversal.Admin<S, E> traversal = (Traversal.Admin<S, E>) this.getTraversal();
         ((ComputerResultStep) traversal.getEndStep()).populateTraversers(result);
         return traversal;
+    }
+
+    private void compileTraversal(final Optional<Vertex> currentVertex) {
+        if (null != this.traversal)
+            return;
+
+        this.traversal = this.traversalSupplier.get().get();
+        if (!this.traversal.isLocked()) {
+            if (currentVertex.isPresent()) this.traversal.setGraph(currentVertex.get().graph());
+            this.traversal.applyStrategies();
+        }
+        ((ComputerResultStep) this.traversal.getEndStep()).byPass();
+        this.traversalMatrix = new TraversalMatrix<>(this.traversal);
+        for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal)) {
+            this.mapReducers.add(mapReducer.getMapReduce());
+        }
+        if (!(this.traversal.getEndStep().getPreviousStep() instanceof SideEffectCapStep) && !(this.traversal.getEndStep().getPreviousStep() instanceof ReducingBarrierStep))
+            this.mapReducers.add(new TraverserMapReduce(this.traversal.getEndStep().getPreviousStep()));
     }
 
     //////////////

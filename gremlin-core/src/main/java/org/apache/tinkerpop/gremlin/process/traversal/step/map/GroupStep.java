@@ -211,9 +211,7 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
         @Override
         public void loadState(final Configuration configuration) {
             this.groupStepId = configuration.getString(GROUP_BY_STEP_STEP_ID);
-            final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversalSupplier(configuration).get();
-            if (!traversal.isLocked())
-                traversal.applyStrategies(); // TODO: this is a scary error prone requirement, but only a problem for GroupStep
+            final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversal(configuration);
             final GroupStep groupStep = new TraversalMatrix<>(traversal).getStepById(this.groupStepId);
             this.reduceTraversal = groupStep.getReduceTraversal();
         }

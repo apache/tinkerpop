@@ -129,7 +129,7 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
         @Override
         public void loadState(final Configuration configuration) {
             this.sideEffectKey = configuration.getString(GROUP_COUNT_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY);
-            this.mapSupplier = TraversalVertexProgram.getTraversalSupplier(configuration).get().getSideEffects().<Map<E, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
+            this.mapSupplier = TraversalVertexProgram.getTraversal(configuration).getSideEffects().<Map<E, Long>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMap::new);
         }
 
         @Override
