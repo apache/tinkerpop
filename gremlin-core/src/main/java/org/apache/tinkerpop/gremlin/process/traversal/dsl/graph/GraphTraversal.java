@@ -55,6 +55,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RetainStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
@@ -93,6 +94,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
@@ -555,6 +557,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> limit(final Scope scope, final long limit) {
         return this.range(scope, 0, limit);
+    }
+
+    public default GraphTraversal<S, E> tail() {
+        return this.tail(1);
+    }
+
+    public default GraphTraversal<S, E> tail(final long limit) {
+        return this.tail(Scope.global, limit);
+    }
+
+    public default GraphTraversal<S, E> tail(final Scope scope) {
+        return this.tail(scope, 1);
+    }
+
+    public default GraphTraversal<S, E> tail(final Scope scope, final long limit) {
+        return this.asAdmin().addStep(scope.equals(Scope.global)
+                ? new TailGlobalStep<>(this.asAdmin(), limit)
+                : new TailLocalStep<>(this.asAdmin(), limit));
     }
 
     public default GraphTraversal<S, E> retain(final String sideEffectKeyOrPathLabel) {
