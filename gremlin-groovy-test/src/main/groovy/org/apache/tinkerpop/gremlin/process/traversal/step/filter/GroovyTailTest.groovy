@@ -53,6 +53,11 @@ public abstract class GroovyTailTest {
         }
 
         @Override
+        public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tail() {
+            g.V.values('name')order.tail
+        }
+
+        @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X() {
             g.V.values('name')order.tail(7)
         }
@@ -65,6 +70,11 @@ public abstract class GroovyTailTest {
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
             g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 1)
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
+            g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local)
         }
 
         @Override
@@ -101,6 +111,12 @@ public abstract class GroovyTailTest {
         @Override
         @Test
         @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_valuesXnameX_order_tail() {
+        }
+
+        @Override
+        @Test
+        @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
         public void g_V_valuesXnameX_order_tailX7X() {
         }
 
@@ -114,6 +130,12 @@ public abstract class GroovyTailTest {
         @Test
         @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
         public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
+        }
+
+        @Override
+        @Test
+        @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
         }
 
         @Override
@@ -147,6 +169,12 @@ public abstract class GroovyTailTest {
         }
 
         @Override
+        public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tail() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X() {
             // override with nothing until the test itself is supported
             return null
@@ -160,6 +188,12 @@ public abstract class GroovyTailTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
             // override with nothing until the test itself is supported
             return null
         }
