@@ -20,12 +20,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -80,7 +82,10 @@ public final class TraversalHelper {
     }*/
 
     public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
-        char state = 'v';
+        return isLocalStarGraph(traversal, 'v');
+    }
+
+    private static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal, char state) {
         for (final Step step : traversal.getSteps()) {
             if (step instanceof PropertiesStep && state == 'u')
                 return false;
@@ -93,6 +98,15 @@ public final class TraversalHelper {
                 }
             } else if (step instanceof EdgeVertexStep) {
                 if (state == 'e') state = 'u';
+            } else if (step instanceof TraversalParent) {
+                final char currState = state;
+                if (((TraversalParent) step).getLocalChildren().stream()
+                        .filter(t -> !isLocalStarGraph(t.asAdmin(), currState))
+                        .findAny().isPresent()) return false;
+            } else if (step instanceof HasContainerHolder && state == 'u') {
+                if (((HasContainerHolder) step).getHasContainers().stream()
+                        .filter(c -> !c.key.equals(T.id.getAccessor())) // TODO: are labels available?
+                        .findAny().isPresent()) return false;
             }
         }
         return true;
