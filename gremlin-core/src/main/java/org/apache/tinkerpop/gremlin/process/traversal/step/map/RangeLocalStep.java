@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.*;
 
@@ -75,6 +76,11 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
             return (S) result;
         }
         return start;
+    }
+
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.low, this.high);
     }
 
     @Override
