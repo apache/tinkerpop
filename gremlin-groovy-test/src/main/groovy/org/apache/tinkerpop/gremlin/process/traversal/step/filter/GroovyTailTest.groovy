@@ -48,6 +48,11 @@ public abstract class GroovyTailTest {
         }
 
         @Override
+        public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tail() {
+            g.V.values('name')order.tail
+        }
+
+        @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X() {
             g.V.values('name').order.tail(7)
         }
@@ -60,6 +65,11 @@ public abstract class GroovyTailTest {
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
             g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 1)
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
+            g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local)
         }
 
         @Override

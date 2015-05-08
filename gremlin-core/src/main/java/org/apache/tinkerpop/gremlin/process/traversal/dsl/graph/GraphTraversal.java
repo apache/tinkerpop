@@ -550,8 +550,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.range(scope, 0, limit);
     }
 
+    public default GraphTraversal<S, E> tail() {
+        return this.tail(1);
+    }
+
     public default GraphTraversal<S, E> tail(final long limit) {
         return this.tail(Scope.global, limit);
+    }
+
+    public default GraphTraversal<S, E> tail(final Scope scope) {
+        return this.tail(scope, 1);
     }
 
     public default GraphTraversal<S, E> tail(final Scope scope, final long limit) {
