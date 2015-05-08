@@ -56,7 +56,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(Enclosed.class)
 public class SerializationTest {
-    public static class KryoTest extends AbstractGremlinTest {
+    public static class GryoTest extends AbstractGremlinTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertexAsDetached() throws Exception {
