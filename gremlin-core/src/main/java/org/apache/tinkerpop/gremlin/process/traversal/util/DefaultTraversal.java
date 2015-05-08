@@ -50,14 +50,13 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected TraversalStrategies strategies;
-    protected TraversalEngine traversalEngine;
+    protected TraversalEngine traversalEngine = StandardTraversalEngine.instance(); // necessary for strategies that need the engine in OLAP message passing (not so bueno)
     protected boolean locked = false;
 
     public DefaultTraversal() {
         this.graph = null;
         // necessary for anonymous traversals without a graph start (rethink how this works in the future)
         this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(TraversalStrategies.GlobalCache.getGraphClass(EmptyGraph.instance())));
-        this.traversalEngine = StandardTraversalEngine.instance();
     }
 
 
