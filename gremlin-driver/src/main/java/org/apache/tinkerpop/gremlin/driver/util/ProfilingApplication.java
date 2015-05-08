@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.util;
 
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -31,6 +32,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -50,13 +52,14 @@ public class ProfilingApplication {
     private final int clients;
     private final String executionName;
 
-    private static final ExecutorService executor = Executors.newFixedThreadPool(8);
+    private final ExecutorService executor;
 
-    public ProfilingApplication(final String executionName, final Cluster cluster, final int clients, final int requests) {
+    public ProfilingApplication(final String executionName, final Cluster cluster, final int clients, final int requests, final ExecutorService executor) {
         this.executionName = executionName;
         this.cluster = cluster;
         this.clients = clients;
         this.requests = requests;
+        this.executor = executor;
     }
 
     public long execute() throws Exception {
@@ -133,6 +136,9 @@ public class ProfilingApplication {
     public static void main(final String[] args) {
         final Map<String,Object> options = ElementHelper.asMap(args);
         final boolean noExit = Boolean.parseBoolean(options.getOrDefault("noExit", "false").toString());
+        final int parallelism = Integer.parseInt(options.getOrDefault("parallelism", "4").toString());
+        final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("profiler-%d").build();
+        final ExecutorService executor = Executors.newFixedThreadPool(parallelism, threadFactory);
 
         try {
             final String host = options.getOrDefault("host", "localhost").toString();
@@ -164,7 +170,7 @@ public class ProfilingApplication {
             final File f = null == fileName ? null : new File(fileName.toString());
             if (f != null && f.length() == 0) {
                 try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
-                    writer.println("clients\tminConnectionPoolSize\tmaxConnectionPoolSize\tmaxSimultaneousUsagePerConnection\tmaxInProcessPerConnection\tworkerPoolSize\trequestPerSecond");
+                    writer.println("clients\tminConnectionPoolSize\tmaxConnectionPoolSize\tminSimultaneousUsagePerConnection\tmaxSimultaneousUsagePerConnection\tminInProcessPerConnection\tmaxInProcessPerConnection\tworkerPoolSize\trequestPerSecond");
                 }
             }
 
@@ -172,7 +178,7 @@ public class ProfilingApplication {
             final AtomicBoolean meetsRpsExpectation = new AtomicBoolean(true);
             System.out.println("---------------------------WARMUP CYCLE---------------------------");
             for (int ix = 0; ix < warmups && meetsRpsExpectation.get(); ix++) {
-                final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, clients, 1000).execute();
+                final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, clients, 1000, executor).execute();
                 meetsRpsExpectation.set(averageRequestsPerSecond > minExpectedRps);
                 TimeUnit.SECONDS.sleep(1); // pause between executions
             }
@@ -185,7 +191,7 @@ public class ProfilingApplication {
                 final long start = System.nanoTime();
                 System.out.println("----------------------------TEST CYCLE----------------------------");
                 for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
-                    totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests).execute();
+                    totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, clients, requests, executor).execute();
                     exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
                     TimeUnit.SECONDS.sleep(1); // pause between executions
                 }
@@ -195,7 +201,7 @@ public class ProfilingApplication {
             System.out.println(String.format("avg req/sec: %s", averageRequestPerSecond));
             if (f != null) {
                 try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
-                    writer.println(String.join("\t", String.valueOf(clients), String.valueOf(minConnectionPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(maxSimultaneousUsagePerConnection), String.valueOf(maxInProcessPerConnection), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
+                    writer.println(String.join("\t", String.valueOf(clients), String.valueOf(minConnectionPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(minSimultaneousUsagePerConnection), String.valueOf(maxSimultaneousUsagePerConnection), String.valueOf(minInProcessPerConnection), String.valueOf(maxInProcessPerConnection), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
                 }
             }
 
@@ -203,6 +209,8 @@ public class ProfilingApplication {
         } catch (Exception ex) {
             ex.printStackTrace();
             if (!noExit) System.exit(1);
+        } finally {
+            executor.shutdown();
         }
     }
 }
