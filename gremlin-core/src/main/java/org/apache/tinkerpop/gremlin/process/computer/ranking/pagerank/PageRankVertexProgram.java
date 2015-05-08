@@ -24,10 +24,13 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalObjectFunction;
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalScriptFunction;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
-import org.apache.tinkerpop.gremlin.process.computer.util.LambdaHolder;
+import org.apache.tinkerpop.gremlin.process.computer.util.ConfigurationTraversal;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -40,7 +43,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -56,9 +59,9 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
     private static final String VERTEX_COUNT = "gremlin.pageRankVertexProgram.vertexCount";
     private static final String ALPHA = "gremlin.pageRankVertexProgram.alpha";
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
-    private static final String INCIDENT_TRAVERSAL_SUPPLIER = "gremlin.pageRankVertexProgram.incidentTraversalSupplier";
+    private static final String TRAVERSAL_SUPPLIER = "gremlin.pageRankVertexProgram.traversalSupplier";
 
-    private LambdaHolder<Supplier<Traversal<Vertex, Edge>>> traversalSupplier;
+    private ConfigurationTraversal<Vertex, Edge> configurationTraversal;
     private double vertexCountAsDouble = 1.0d;
     private double alpha = 0.85d;
     private int totalIterations = 30;
@@ -71,9 +74,9 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
-        this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
-        if (null != this.traversalSupplier) {
-            this.incidentMessageScope = MessageScope.Local.of(this.traversalSupplier.get());
+        if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
+            this.configurationTraversal = ConfigurationTraversal.loadState(graph, configuration, TRAVERSAL_SUPPLIER);
+            this.incidentMessageScope = MessageScope.Local.of(this.configurationTraversal);
             this.countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
         }
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
@@ -87,8 +90,8 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         configuration.setProperty(VERTEX_COUNT, this.vertexCountAsDouble);
         configuration.setProperty(ALPHA, this.alpha);
         configuration.setProperty(TOTAL_ITERATIONS, this.totalIterations);
-        if (null != this.traversalSupplier) {
-            this.traversalSupplier.storeState(configuration);
+        if (null != this.configurationTraversal) {
+            this.configurationTraversal.storeState(configuration);
         }
     }
 
@@ -174,22 +177,19 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
             return this;
         }
 
-        public Builder incident(final String scriptEngine, final String traversalScript) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SCRIPT, INCIDENT_TRAVERSAL_SUPPLIER, new String[]{scriptEngine, traversalScript});
+        public Builder traversal(final TraversalSource.Builder builder, final String scriptEngine, final String traversalScript, final Object... bindings) {
+            ConfigurationTraversal.storeState(new TraversalScriptFunction<>(builder, scriptEngine, traversalScript, bindings), this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 
-        public Builder incident(final String traversalScript) {
-            return incident(GREMLIN_GROOVY, traversalScript);
-        }
-
-        public Builder incident(final Supplier<Traversal<Vertex, Edge>> traversal) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, INCIDENT_TRAVERSAL_SUPPLIER, traversal);
+        public Builder traversal(final Traversal.Admin<Vertex, Edge> traversal) {
+            ConfigurationTraversal.storeState(new TraversalObjectFunction<>(traversal), this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 
-        public Builder incident(final Class<Supplier<Traversal<Vertex, Edge>>> traversalClass) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, INCIDENT_TRAVERSAL_SUPPLIER, traversalClass);
+
+        public Builder traversal(final Class<Function<Graph, Traversal.Admin<Vertex, Edge>>> traversalClass) {
+            ConfigurationTraversal.storeState(traversalClass, this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 

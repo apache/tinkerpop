@@ -19,25 +19,29 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalSupplier<S, E> implements Supplier<Traversal.Admin<S, E>>, Serializable {
+public final class TraversalObjectFunction<S, E> implements Function<Graph, Traversal.Admin<S, E>>, Serializable {
 
     private final Traversal.Admin<S, E> traversal;
-    private final boolean cloneOnGet;
 
-    public TraversalSupplier(final Traversal.Admin<S, E> traversal, final boolean cloneOnGet) {
+    public TraversalObjectFunction(final Traversal.Admin<S, E> traversal) {
         this.traversal = traversal;
-        this.cloneOnGet = cloneOnGet;
     }
 
     @Override
-    public Traversal.Admin<S, E> get() {
-        return this.cloneOnGet ? this.traversal.clone() : this.traversal;
+    public Traversal.Admin<S, E> apply(final Graph graph) {
+        final Traversal.Admin<S, E> clone = this.traversal.clone();
+        if (!clone.isLocked()) {
+            clone.setGraph(graph);
+            clone.applyStrategies();
+        }
+        return clone;
     }
 }

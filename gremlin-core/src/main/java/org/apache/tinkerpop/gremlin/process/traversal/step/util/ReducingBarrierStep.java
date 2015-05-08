@@ -129,7 +129,8 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
         }
 
-        public void loadState(final Configuration configuration) {
+        @Override
+        public void loadState(final Graph graph, final Configuration configuration) {
             this.seedSupplier = VertexProgramHelper.deserialize(configuration, REDUCING_BARRIER_STEP_SEED_SUPPLIER);
             this.biFunction = VertexProgramHelper.deserialize(configuration, REDUCING_BARRIER_STEP_BI_FUNCTION);
         }
