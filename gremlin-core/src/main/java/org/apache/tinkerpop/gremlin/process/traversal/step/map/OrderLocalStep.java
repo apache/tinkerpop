@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,7 +64,7 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Compara
 
     @Override
     public List<Comparator<M>> getComparators() {
-        return this.comparators;
+        return Collections.unmodifiableList(this.comparators);
     }
 
     @Override
