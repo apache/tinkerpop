@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -32,18 +32,18 @@ public abstract class GroovyAddEdgeTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).as('a').out('created').addOutE('createdBy', 'a')", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').addOutE('createdBy', 'a')", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(
                 final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).as('a').out('created').addOutE('createdBy', 'a', 'weight', 2)", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').addOutE('createdBy', 'a', 'weight', 2)", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_addOutEXexistsWith__g_V__time_nowX() {
-            GroovyTestHelper.compute("g.V.addOutE('existsWith', g.V, 'time', 'now')", g)
+            TraversalScriptHelper.compute("g.V.addOutE('existsWith', g.V, 'time', 'now')", g)
         }
     }
 }

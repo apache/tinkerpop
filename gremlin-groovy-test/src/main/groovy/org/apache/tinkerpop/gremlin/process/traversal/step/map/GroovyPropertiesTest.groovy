@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -31,17 +31,17 @@ public abstract class GroovyPropertiesTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {
-            GroovyTestHelper.compute("g.V.has('age').properties('name', 'age').value", g)
+            TraversalScriptHelper.compute("g.V.has('age').properties('name', 'age').value", g)
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXage_nameX_value() {
-            GroovyTestHelper.compute("g.V.has('age').properties('age', 'name').value", g)
+            TraversalScriptHelper.compute("g.V.has('age').properties('age', 'name').value", g)
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_properties_hasXid_nameIdX_value(final Object nameId) {
-            GroovyTestHelper.compute("g.V.has('age').properties().has(T.id, nameId).value()", g, "nameId", nameId)
+            TraversalScriptHelper.compute("g.V.has('age').properties().has(T.id, nameId).value()", g, "nameId", nameId)
         }
     }
 

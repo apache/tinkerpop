@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -30,17 +30,17 @@ public abstract class GroovyFoldTest {
     public static class Traversals extends FoldTest {
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
-            GroovyTestHelper.compute("g.V.fold", g)
+            TraversalScriptHelper.compute("g.V.fold", g)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
-            GroovyTestHelper.compute("g.V.fold.unfold", g)
+            TraversalScriptHelper.compute("g.V.fold.unfold", g)
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
-            GroovyTestHelper.compute("g.V.age.fold(0) { seed, age -> seed + age }", g)
+            TraversalScriptHelper.compute("g.V.age.fold(0) { seed, age -> seed + age }", g)
         }
     }
 }

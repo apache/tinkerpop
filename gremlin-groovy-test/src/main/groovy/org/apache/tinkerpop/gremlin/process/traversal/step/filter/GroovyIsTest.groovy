@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -31,27 +31,27 @@ public abstract class GroovyIsTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isX32X() {
-            GroovyTestHelper.compute("g.V.age.is(32)", g)
+            TraversalScriptHelper.compute("g.V.age.is(32)", g)
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXlte_30X() {
-            GroovyTestHelper.compute("g.V.age.is(lte(30))", g)
+            TraversalScriptHelper.compute("g.V.age.is(lte(30))", g)
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_valuesXageX_isXgte_29X_isXlt_34X() {
-            GroovyTestHelper.compute("g.V.age.is(gte(29)).is(lt(34))", g)
+            TraversalScriptHelper.compute("g.V.age.is(gte(29)).is(lt(34))", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX() {
-            GroovyTestHelper.compute("g.V.has(__.in('created').count.is(1)).name", g)
+            TraversalScriptHelper.compute("g.V.has(__.in('created').count.is(1)).name", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
-            GroovyTestHelper.compute("g.V.has(__.in('created').count.is(gte(2l))).name", g)
+            TraversalScriptHelper.compute("g.V.has(__.in('created').count.is(gte(2l))).name", g)
         }
     }
 }

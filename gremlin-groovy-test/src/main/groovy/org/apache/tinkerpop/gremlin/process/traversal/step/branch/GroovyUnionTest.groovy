@@ -18,10 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -32,23 +30,23 @@ public abstract class GroovyUnionTest {
     public static class Traversals extends UnionTest {
 
         public Traversal<Vertex, String> get_g_V_unionXout__inX_name() {
-            GroovyTestHelper.compute("g.V.union(__.out, __.in).name", g)
+            TraversalScriptHelper.compute("g.V.union(__.out, __.in).name", g)
         }
 
         public Traversal<Vertex, String> get_g_VX1X_unionXrepeatXoutX_timesX2X__outX_name(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).union(repeat(__.out).times(2), __.out).name", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).union(repeat(__.out).times(2), __.out).name", g, "v1Id", v1Id)
         }
 
         public Traversal<Vertex, String> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX() {
-            GroovyTestHelper.compute("g.V.choose(__.label.is('person'), union(__.out.lang, __.out.name), __.in.label)", g)
+            TraversalScriptHelper.compute("g.V.choose(__.label.is('person'), union(__.out.lang, __.out.name), __.in.label)", g)
         }
 
         public Traversal<Vertex, Map<String, Long>> get_g_V_chooseXlabel_is_person__unionX__out_lang__out_nameX__in_labelX_groupCount() {
-            GroovyTestHelper.compute("g.V.choose(__.label.is('person'), union(__.out.lang, __.out.name), __.in.label).groupCount", g)
+            TraversalScriptHelper.compute("g.V.choose(__.label.is('person'), union(__.out.lang, __.out.name), __.in.label).groupCount", g)
         }
 
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXunionXoutXcreatedX__inXcreatedXX_timesX2X__repeatXunionXinXcreatedX__outXcreatedXX_timesX2XX_label_groupCount() {
-            GroovyTestHelper.compute("""
+            TraversalScriptHelper.compute("""
             g.V.union(
                     repeat(union(
                             out('created'),
@@ -62,7 +60,7 @@ public abstract class GroovyUnionTest {
         @Override
         public Traversal<Vertex, Number> get_g_VX1_2X_unionXoutE_count__inE_count__outE_weight_sumX(
                 final Object v1Id, final Object v2Id) {
-            GroovyTestHelper.compute("g.V(v1Id, v2Id).union(outE().count, inE().count, outE().weight.sum)", g, "v1Id", v1Id, "v2Id", v2Id);
+            TraversalScriptHelper.compute("g.V(v1Id, v2Id).union(outE().count, inE().count, outE().weight.sum)", g, "v1Id", v1Id, "v2Id", v2Id);
         }
     }
 }

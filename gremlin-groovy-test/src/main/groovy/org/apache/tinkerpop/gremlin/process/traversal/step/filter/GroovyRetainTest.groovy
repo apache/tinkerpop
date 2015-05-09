@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -30,17 +30,17 @@ public abstract class GroovyRetainTest {
     public static class Traversals extends RetainTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_retainXg_v2X(final Object v1Id, final Object v2Id) {
-            GroovyTestHelper.compute("g.V(v1Id).out.retain(g.V(v2Id).next())", g, "v1Id", v1Id, "v2Id", v2Id);
+            TraversalScriptHelper.compute("g.V(v1Id).out.retain(g.V(v2Id).next())", g, "v1Id", v1Id, "v2Id", v2Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_retainXxX(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).out.aggregate('x').out.retain('x')", g, "v1Id", v1Id);
+            TraversalScriptHelper.compute("g.V(v1Id).out.aggregate('x').out.retain('x')", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_retainXaX_name(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).as('a').out('created').in('created').retain('a').name", g, "v1Id", v1Id);
+            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').in('created').retain('a').name", g, "v1Id", v1Id);
         }
     }
 }

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -32,47 +32,47 @@ public abstract class GroovyRepeatTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXoutX_timesX2X_emit_path() {
-            GroovyTestHelper.compute("g.V.repeat(__.out).times(2).emit.path", g)
+            TraversalScriptHelper.compute("g.V.repeat(__.out).times(2).emit.path", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_repeatXoutX_timesX2X_repeatXinX_timesX2X_name() {
-            GroovyTestHelper.compute("g.V.repeat(__.out).times(2).repeat(__.in).times(2).name", g)
+            TraversalScriptHelper.compute("g.V.repeat(__.out).times(2).repeat(__.in).times(2).name", g)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X() {
-            GroovyTestHelper.compute("g.V.repeat(__.out).times(2)", g)
+            TraversalScriptHelper.compute("g.V.repeat(__.out).times(2)", g)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXoutX_timesX2X_emit() {
-            GroovyTestHelper.compute("g.V.repeat(__.out).times(2).emit", g)
+            TraversalScriptHelper.compute("g.V.repeat(__.out).times(2).emit", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_timesX2X_repeatXoutX_name(Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).times(2).repeat(__.out).name", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).times(2).repeat(__.out).name", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_emit_repeatXoutX_timesX2X_path() {
-            GroovyTestHelper.compute("g.V.emit.repeat(__.out).times(2).path", g)
+            TraversalScriptHelper.compute("g.V.emit.repeat(__.out).times(2).path", g)
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_emit_timesX2X_repeatXoutX_path() {
-            GroovyTestHelper.compute("g.V.emit.times(2).repeat(__.out).path", g)
+            TraversalScriptHelper.compute("g.V.emit.times(2).repeat(__.out).path", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_emitXhasXlabel_personXX_repeatXoutX_name(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).emit(has(T.label, 'person')).repeat(__.out).name", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).emit(has(T.label, 'person')).repeat(__.out).name", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
-            GroovyTestHelper.compute("g.V.repeat(groupCount('m').by('name').out).times(2).cap('m')", g)
+            TraversalScriptHelper.compute("g.V.repeat(groupCount('m').by('name').out).times(2).cap('m')", g)
         }
     }
 }

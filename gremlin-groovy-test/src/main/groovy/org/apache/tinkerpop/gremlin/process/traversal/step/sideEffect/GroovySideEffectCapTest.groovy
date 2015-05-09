@@ -18,13 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -33,12 +30,12 @@ public abstract class GroovySideEffectCapTest {
     public static class Traversals extends SideEffectCapTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_hasXageX_groupCountXaX_byXnameX_out_capXaX() {
-            GroovyTestHelper.compute("g.V.has('age').groupCount('a').by('name').out.cap('a')", g)
+            TraversalScriptHelper.compute("g.V.has('age').groupCount('a').by('name').out.cap('a')", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Map<Object, Long>>> get_g_V_chooseXlabel_person__age_groupCountXaX__name_groupCountXbXX_capXa_bX() {
-            GroovyTestHelper.compute("""
+            TraversalScriptHelper.compute("""
             g.V.choose(__.has(T.label, 'person'),
                     __.age.groupCount('a'),
                     __.values("name").groupCount('b')).cap('a', 'b')

@@ -18,19 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
-import org.apache.tinkerpop.gremlin.process.traversal.Scope
-import org.apache.tinkerpop.gremlin.structure.T
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
-import org.junit.Test
-
-import static __.bothE
-import static __.sample
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,27 +32,27 @@ public abstract class GroovySampleTest {
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX1X() {
-            GroovyTestHelper.compute("g.E.sample(1)",g)
+            TraversalScriptHelper.compute("g.E.sample(1)",g)
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_sampleX2X_byXweightX() {
-            GroovyTestHelper.compute("g.E.sample(2).by('weight')",g)
+            TraversalScriptHelper.compute("g.E.sample(2).by('weight')",g)
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX() {
-            GroovyTestHelper.compute("g.V.local(__.outE.sample(1).by('weight'))",g)
+            TraversalScriptHelper.compute("g.V.local(__.outE.sample(1).by('weight'))",g)
         }
 
         @Override
         Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
-            GroovyTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(local, 2))",g)
+            TraversalScriptHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(local, 2))",g)
         }
 
         @Override
         Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
-            GroovyTestHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(local, 5))",g)
+            TraversalScriptHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(sample(local, 5))",g)
         }
     }
 }

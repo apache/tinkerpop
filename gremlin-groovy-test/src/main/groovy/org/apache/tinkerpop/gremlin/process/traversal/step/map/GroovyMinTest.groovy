@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -31,17 +31,17 @@ public abstract class GroovyMinTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_min() {
-            GroovyTestHelper.compute("g.V.age.min", g)
+            TraversalScriptHelper.compute("g.V.age.min", g)
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min() {
-            GroovyTestHelper.compute("g.V.repeat(__.both).times(5).age.min", g)
+            TraversalScriptHelper.compute("g.V.repeat(__.both).times(5).age.min", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXminXlocalXX() {
-            GroovyTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(min(local))", g)
+            TraversalScriptHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(min(local))", g)
         }
     }
 }

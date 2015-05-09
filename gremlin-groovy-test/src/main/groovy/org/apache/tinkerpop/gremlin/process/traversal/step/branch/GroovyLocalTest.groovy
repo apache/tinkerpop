@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -32,52 +32,52 @@ public abstract class GroovyLocalTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
-            GroovyTestHelper.compute("g.V.local(__.properties('location').order.by(T.value,Order.incr).limit(2)).value", g);
+            TraversalScriptHelper.compute("g.V.local(__.properties('location').order.by(T.value,Order.incr).limit(2)).value", g);
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXlabel_personX_asXaX_localXoutXcreatedX_asXbXX_selectXa_bX_byXnameX_byXidX() {
-            GroovyTestHelper.compute("g.V.has(T.label, 'person').as('a').local(__.out('created').as('b')).select('a', 'b').by('name').by(T.id)", g);
+            TraversalScriptHelper.compute("g.V.has(T.label, 'person').as('a').local(__.out('created').as('b')).select('a', 'b').by('name').by(T.id)", g);
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_localXoutE_countX() {
-            GroovyTestHelper.compute("g.V.local(__.outE.count())", g);
+            TraversalScriptHelper.compute("g.V.local(__.outE.count())", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_localXoutEXknowsX_limitX1XX_inV_name(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).local(__.outE('knows').limit(1)).inV.name", g, "v1Id", v1Id);
+            TraversalScriptHelper.compute("g.V(v1Id).local(__.outE('knows').limit(1)).inV.name", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXbothEXcreatedX_limitX1XX_otherV_name() {
-            GroovyTestHelper.compute("g.V().local(__.bothE('created').limit(1)).otherV.name", g);
+            TraversalScriptHelper.compute("g.V().local(__.bothE('created').limit(1)).otherV.name", g);
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX4X_localXbothEX1_createdX_limitX1XX(final Object v4Id) {
-            GroovyTestHelper.compute("g.V(v4Id).local(__.bothE('created').limit(1))", g, "v4Id", v4Id);
+            TraversalScriptHelper.compute("g.V(v4Id).local(__.bothE('created').limit(1))", g, "v4Id", v4Id);
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX4X_localXbothEXknows_createdX_limitX1XX(final Object v4Id) {
-            GroovyTestHelper.compute("g.V(v4Id).local(__.bothE('knows', 'created').limit(1))", g, "v4Id", v4Id);
+            TraversalScriptHelper.compute("g.V(v4Id).local(__.bothE('knows', 'created').limit(1))", g, "v4Id", v4Id);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX1XX_otherV_name(final Object v4Id) {
-            GroovyTestHelper.compute("g.V(v4Id).local(__.bothE.limit(1)).otherV.name", g, "v4Id", v4Id);
+            TraversalScriptHelper.compute("g.V(v4Id).local(__.bothE.limit(1)).otherV.name", g, "v4Id", v4Id);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX4X_localXbothE_limitX2XX_otherV_name(final Object v4Id) {
-            GroovyTestHelper.compute("g.V(v4Id).local(__.bothE.limit(2)).otherV.name", g, "v4Id", v4Id);
+            TraversalScriptHelper.compute("g.V(v4Id).local(__.bothE.limit(2)).otherV.name", g, "v4Id", v4Id);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXinEXknowsX_limitX2XX_outV_name() {
-            GroovyTestHelper.compute("g.V().local(__.inE('knows').limit(2).outV).name", g);
+            TraversalScriptHelper.compute("g.V().local(__.inE('knows').limit(2).outV).name", g);
         }
     }
 }

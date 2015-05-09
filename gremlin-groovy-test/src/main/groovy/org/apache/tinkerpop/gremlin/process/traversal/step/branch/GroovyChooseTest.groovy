@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -31,7 +31,7 @@ public abstract class GroovyChooseTest {
     public static class Traversals extends ChooseTest {
         @Override
         public Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX() {
-            GroovyTestHelper.compute("g.V.choose(__.out.count).option(2L, __.values('name')).option(3L, __.valueMap())", g);
+            TraversalScriptHelper.compute("g.V.choose(__.out.count).option(2L, __.values('name')).option(3L, __.valueMap())", g);
         }
     }
 }

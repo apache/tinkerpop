@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -30,17 +30,17 @@ public abstract class GroovyHasNotTest {
     public static class Traversals extends HasNotTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasNotXprop(final Object v1Id, final String propertyKey) {
-            GroovyTestHelper.compute("g.V(v1Id).hasNot('${propertyKey}')", g, "v1Id", v1Id);
+            TraversalScriptHelper.compute("g.V(v1Id).hasNot('${propertyKey}')", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey) {
-            GroovyTestHelper.compute("g.V.hasNot('${propertyKey}')", g);
+            TraversalScriptHelper.compute("g.V.hasNot('${propertyKey}')", g);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX() {
-            GroovyTestHelper.compute("return g.V().hasNot(__.out('created')).values('name')", g);
+            TraversalScriptHelper.compute("return g.V().hasNot(__.out('created')).values('name')", g);
         }
     }
 }

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -32,32 +32,32 @@ public abstract class GroovyTreeTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
-            GroovyTestHelper.compute("g.V.out.out.tree.by(id)", g)
+            TraversalScriptHelper.compute("g.V.out.out.tree.by(id)", g)
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX_capXaX() {
-            GroovyTestHelper.compute("g.V.out.out.tree('a').by(id).cap('a')", g)
+            TraversalScriptHelper.compute("g.V.out.out.tree('a').by(id).cap('a')", g)
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_tree() {
-            GroovyTestHelper.compute("g.V.out.out.tree()", g)
+            TraversalScriptHelper.compute("g.V.out.out.tree()", g)
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_capXaX() {
-            GroovyTestHelper.compute("g.V.out.out.tree('a').cap('a')", g)
+            TraversalScriptHelper.compute("g.V.out.out.tree('a').cap('a')", g)
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).out.out.tree('a').by('name').both.both.cap('a')", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).out.out.tree('a').by('name').both.both.cap('a')", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).out.out.tree.by('name')", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).out.out.tree.by('name')", g, "v1Id", v1Id)
         }
 
     }

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -33,22 +33,22 @@ public abstract class GroovyWhereTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
-            GroovyTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', eq('b'))", g)
+            TraversalScriptHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', eq('b'))", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX() {
-            GroovyTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', neq('b'))", g)
+            TraversalScriptHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', neq('b'))", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXb_hasXname_markoXX() {
-            GroovyTestHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where(__.as('b').has('name', 'marko'))", g)
+            TraversalScriptHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where(__.as('b').has('name', 'marko'))", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_outXknowsX_bX() {
-            GroovyTestHelper.compute("g.V().has('age').as('a').out.in.has('age').as('b').select().where(__.as('a').out('knows').as('b'))", g)
+            TraversalScriptHelper.compute("g.V().has('age').as('a').out.in.has('age').as('b').select().where(__.as('a').out('knows').as('b'))", g)
         }
 
         /// where(global)
@@ -56,13 +56,13 @@ public abstract class GroovyWhereTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neq_bX_name(
                 final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).as('a').out('created').in('created').as('b').where('a', neq('b')).name", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').in('created').as('b').where('a', neq('b')).name", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX(
                 final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).as('a').out('created').in('created').as('b').where(__.as('b').out('created').has('name','ripple')).values('age','name')", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').in('created').as('b').where(__.as('b').out('created').has('name','ripple')).values('age','name')", g, "v1Id", v1Id)
         }
     }
 }

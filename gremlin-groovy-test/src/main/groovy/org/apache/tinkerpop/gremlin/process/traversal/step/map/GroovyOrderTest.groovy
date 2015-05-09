@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -31,43 +31,43 @@ public abstract class GroovyOrderTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_order() {
-            GroovyTestHelper.compute("g.V().name.order()", g)
+            TraversalScriptHelper.compute("g.V().name.order()", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_name_order_byXa1_b1X_byXb2_a2X() {
-            GroovyTestHelper.compute("g.V.name.order.by { a, b -> a[1] <=> b[1] }.by { a, b -> b[2] <=> a[2] }", g)
+            TraversalScriptHelper.compute("g.V.name.order.by { a, b -> a[1] <=> b[1] }.by { a, b -> b[2] <=> a[2] }", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXname_incrX_name() {
-            GroovyTestHelper.compute("g.V.order.by('name', Order.incr).name", g)
+            TraversalScriptHelper.compute("g.V.order.by('name', Order.incr).name", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
-            GroovyTestHelper.compute("g.V.order.by('name', Order.incr).name", g)
+            TraversalScriptHelper.compute("g.V.order.by('name', Order.incr).name", g)
         }
 
         @Override
         public Traversal<Vertex, Double> get_g_V_outE_order_byXweight_decrX_weight() {
-            GroovyTestHelper.compute("g.V.outE.order.by('weight', Order.decr).weight", g)
+            TraversalScriptHelper.compute("g.V.outE.order.by('weight', Order.decr).weight", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name() {
-            GroovyTestHelper.compute("g.V.order.by('name', { a, b -> a[1].compareTo(b[1]) }).by('name', { a, b -> b[2].compareTo(a[2]) }).name", g)
+            TraversalScriptHelper.compute("g.V.order.by('name', { a, b -> a[1].compareTo(b[1]) }).by('name', { a, b -> b[2].compareTo(a[2]) }).name", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_select() {
-            GroovyTestHelper.compute("g.V.as('a').out('created').as('b').order.by(Order.shuffle).select()", g)
+            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').order.by(Order.shuffle).select()", g)
         }
 
         @Override
         public Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(
                 final Object v1Id) {
-            GroovyTestHelper.compute("""g.V(v1Id).map {
+            TraversalScriptHelper.compute("""g.V(v1Id).map {
                 final Map map = [:];
                 map[1] = it.age;
                 map[2] = it.age * 2;
@@ -79,7 +79,7 @@ public abstract class GroovyOrderTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
-            GroovyTestHelper.compute("g.V.order.by(__.outE.count, decr)", g)
+            TraversalScriptHelper.compute("g.V.order.by(__.outE.count, decr)", g)
         }
     }
 }

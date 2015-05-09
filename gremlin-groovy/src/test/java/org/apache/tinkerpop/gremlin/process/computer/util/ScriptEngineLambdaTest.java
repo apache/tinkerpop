@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
+import org.apache.tinkerpop.gremlin.util.function.ScriptEngineLambda;
 import org.junit.AfterClass;
 import org.junit.Test;
 

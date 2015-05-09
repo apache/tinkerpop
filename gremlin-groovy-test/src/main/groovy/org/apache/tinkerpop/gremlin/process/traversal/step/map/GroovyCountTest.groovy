@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -30,37 +30,37 @@ public abstract class GroovyCountTest {
     public static class Traversals extends CountTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_count() {
-            GroovyTestHelper.compute("g.V.count()", g)
+            TraversalScriptHelper.compute("g.V.count()", g)
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_out_count() {
-            GroovyTestHelper.compute("g.V.out.count", g)
+            TraversalScriptHelper.compute("g.V.out.count", g)
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_both_both_count() {
-            GroovyTestHelper.compute("g.V.both.both.count()", g)
+            TraversalScriptHelper.compute("g.V.both.both.count()", g)
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX3X_count() {
-            GroovyTestHelper.compute("g.V().repeat(__.out).times(3).count()", g);
+            TraversalScriptHelper.compute("g.V().repeat(__.out).times(3).count()", g);
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count() {
-            GroovyTestHelper.compute("g.V.repeat(__.out).times(8).count()", g);
+            TraversalScriptHelper.compute("g.V.repeat(__.out).times(8).count()", g);
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_hasXnoX_count() {
-            GroovyTestHelper.compute("g.V.has('no').count", g)
+            TraversalScriptHelper.compute("g.V.has('no').count", g)
         }
 
         @Override
         public Traversal<Vertex, Long> get_g_V_fold_countXlocalX() {
-            GroovyTestHelper.compute("g.V.fold.count(local)", g);
+            TraversalScriptHelper.compute("g.V.fold.count(local)", g);
         }
     }
 }

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -31,88 +31,88 @@ public abstract class GroovyHasTest {
     public static class Traversals extends HasTest {
         @Override
         public Traversal<Edge, Edge> get_g_EX11X_outV_outE_hasXid_10X(final Object e11Id, final Object e8Id) {
-            GroovyTestHelper.compute("g.E(e11Id).outV.outE.has(T.id, e8Id)", g, "e11Id", e11Id, "e8Id", e8Id);
+            TraversalScriptHelper.compute("g.E(e11Id).outV.outE.has(T.id, e8Id)", g, "e11Id", e11Id, "e8Id", e8Id);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_name() {
-            GroovyTestHelper.compute("g.V.out('knows').has(__.out('created')).name", g);
+            TraversalScriptHelper.compute("g.V.out('knows').has(__.out('created')).name", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXkeyX(final Object v1Id, final String key) {
-            GroovyTestHelper.compute("g.V(v1Id).has('${key}')", g, "v1Id", v1Id);
+            TraversalScriptHelper.compute("g.V(v1Id).has('${key}')", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXname_markoX(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).has('name', 'marko')", g, "v1Id", v1Id);
+            TraversalScriptHelper.compute("g.V(v1Id).has('name', 'marko')", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX() {
-            GroovyTestHelper.compute("g.V.has('name', 'marko')", g);
+            TraversalScriptHelper.compute("g.V.has('name', 'marko')", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_blahX() {
-            GroovyTestHelper.compute(" g.V.has('name', 'blah')", g);
+            TraversalScriptHelper.compute(" g.V.has('name', 'blah')", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXblahX() {
-            GroovyTestHelper.compute("g.V.has('blah')", g);
+            TraversalScriptHelper.compute("g.V.has('blah')", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).has('age', gt(30))", g, "v1Id", v1Id);
+            TraversalScriptHelper.compute("g.V(v1Id).has('age', gt(30))", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2X(final Object v1Id, final Object v2Id) {
-            GroovyTestHelper.compute(" g.V(v1Id).out.hasId(v2Id)", g, "v1Id", v1Id, "v2Id", v2Id);
+            TraversalScriptHelper.compute(" g.V(v1Id).out.hasId(v2Id)", g, "v1Id", v1Id, "v2Id", v2Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2_3X(
                 final Object v1Id, final Object v2Id, final Object v3Id) {
-            GroovyTestHelper.compute(" g.V(v1Id).out.hasId(v2Id, v3Id)", g, "v1Id", v1Id, "v2Id", v2Id, "v3Id", v3Id);
+            TraversalScriptHelper.compute(" g.V(v1Id).out.hasId(v2Id, v3Id)", g, "v1Id", v1Id, "v2Id", v2Id, "v3Id", v3Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXage_gt_30X() {
-            GroovyTestHelper.compute("g.V.has('age', gt(30))", g);
+            TraversalScriptHelper.compute("g.V.has('age', gt(30))", g);
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id) {
-            GroovyTestHelper.compute("g.E(e7Id).hasLabel('knows')", g, "e7Id", e7Id);
+            TraversalScriptHelper.compute("g.E(e7Id).hasLabel('knows')", g, "e7Id", e7Id);
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasLabelXknowsX() {
-            GroovyTestHelper.compute("g.E.hasLabel('knows')", g);
+            TraversalScriptHelper.compute("g.E.hasLabel('knows')", g);
         }
 
         @Override
         public Traversal<Edge, Edge> get_g_E_hasLabelXuses_traversesX() {
-            GroovyTestHelper.compute("g.E.hasLabel('uses', 'traverses')", g);
+            TraversalScriptHelper.compute("g.E.hasLabel('uses', 'traverses')", g);
         }
 
         @Override
         Traversal<Vertex, Vertex> get_g_V_hasLabelXperson_software_blahX() {
-            GroovyTestHelper.compute("g.V.hasLabel('person', 'software', 'blah')", g);
+            TraversalScriptHelper.compute("g.V.hasLabel('person', 'software', 'blah')", g);
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age() {
-            GroovyTestHelper.compute("g.V.has('person', 'name', 'marko').age", g);
+            TraversalScriptHelper.compute("g.V.has('person', 'name', 'marko').age", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).outE.has('weight', inside(0.0d, 0.6d)).inV", g, "v1Id", v1Id);
+            TraversalScriptHelper.compute("g.V(v1Id).outE.has('weight', inside(0.0d, 0.6d)).inV", g, "v1Id", v1Id);
         }
     }
 }

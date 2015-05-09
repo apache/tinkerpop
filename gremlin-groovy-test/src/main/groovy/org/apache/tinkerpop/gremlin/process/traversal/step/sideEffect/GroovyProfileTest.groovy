@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -38,17 +38,17 @@ public abstract class GroovyProfileTest {
 
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile() {
-            GroovyTestHelper.compute("g.V.repeat(__.both()).times(3).profile()", g);
+            TraversalScriptHelper.compute("g.V.repeat(__.both()).times(3).profile()", g);
         }
 
         @Override
         Traversal<Vertex, StandardTraversalMetrics> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
-            GroovyTestHelper.compute("g.V().has(__.in('created').count().is(1l)).values('name').profile()", g);
+            TraversalScriptHelper.compute("g.V().has(__.in('created').count().is(1l)).values('name').profile()", g);
         }
 
         @Override
         Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile() {
-            GroovyTestHelper.compute("g.V().sideEffect{Thread.sleep(10)}.sideEffect{Thread.sleep(5)}.profile()", g)
+            TraversalScriptHelper.compute("g.V().sideEffect{Thread.sleep(10)}.sideEffect{Thread.sleep(5)}.profile()", g)
         }
     }
 }

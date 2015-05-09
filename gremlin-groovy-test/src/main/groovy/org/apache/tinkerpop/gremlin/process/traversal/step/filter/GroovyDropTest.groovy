@@ -19,7 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -34,17 +34,17 @@ public abstract class GroovyDropTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_drop() {
-            GroovyTestHelper.compute("g.V.drop", g)
+            TraversalScriptHelper.compute("g.V.drop", g)
         }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_outE_drop() {
-            GroovyTestHelper.compute("g.V.outE.drop", g)
+            TraversalScriptHelper.compute("g.V.outE.drop", g)
         }
 
         @Override
         public Traversal<Vertex, VertexProperty> get_g_V_properties_drop() {
-            GroovyTestHelper.compute("g.V.properties().drop", g)
+            TraversalScriptHelper.compute("g.V.properties().drop", g)
         }
     }
 }

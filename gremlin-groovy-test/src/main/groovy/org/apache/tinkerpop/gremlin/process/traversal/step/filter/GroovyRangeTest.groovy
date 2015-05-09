@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -31,37 +31,37 @@ public abstract class GroovyRangeTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_out_limitX2X(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).out.limit(2)", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).out.limit(2)", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_localXoutE_limitX1X_inVX_limitX3X() {
-            GroovyTestHelper.compute("g.V.local(__.outE.limit(3)).inV.limit(3)", g)
+            TraversalScriptHelper.compute("g.V.local(__.outE.limit(3)).inV.limit(3)", g)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXknowsX_outEXcreatedX_rangeX0_1X_inV(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).out('knows').outE('created')[0].inV()", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).out('knows').outE('created')[0].inV()", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXknowsX_outXcreatedX_rangeX0_1X(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).out('knows').out('created')[0]", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).out('knows').out('created')[0]", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_rangeX1_3X(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).out('created').in('created')[1..3]", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).out('created').in('created')[1..3]", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inEXcreatedX_rangeX1_3X_outV(final Object v1Id) {
-            GroovyTestHelper.compute("g.V(v1Id).out('created').inE('created')[1..3].outV", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).out('created').inE('created')[1..3].outV", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_rangeX5_11X() {
-            GroovyTestHelper.compute("g.V().repeat(__.both).times(3)[5..11]", g)
+            TraversalScriptHelper.compute("g.V().repeat(__.both).times(3)[5..11]", g)
         }
     }
 }

@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -32,12 +32,12 @@ public abstract class GroovyUnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {
-            GroovyTestHelper.compute("g.V.local(__.outE.fold).unfold", g)
+            TraversalScriptHelper.compute("g.V.local(__.outE.fold).unfold", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX() {
-            GroovyTestHelper.compute("g.V.valueMap.unfold.map { it.key }", g)
+            TraversalScriptHelper.compute("g.V.valueMap.unfold.map { it.key }", g)
         }
     }
 

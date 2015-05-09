@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -31,12 +31,12 @@ public abstract class GroovyAndTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXhasXage_gt_27X__outE_count_gt_2X_name() {
-            GroovyTestHelper.compute("g.V.and(has('age',gt(27)), outE().count.is(gte(2l))).name", g)
+            TraversalScriptHelper.compute("g.V.and(has('age',gt(27)), outE().count.is(gte(2l))).name", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name() {
-            GroovyTestHelper.compute("g.V.and(outE(), has(T.label, 'person') & has('age', gte(32))).name", g)
+            TraversalScriptHelper.compute("g.V.and(outE(), has(T.label, 'person') & has('age', gte(32))).name", g)
         }
     }
 }

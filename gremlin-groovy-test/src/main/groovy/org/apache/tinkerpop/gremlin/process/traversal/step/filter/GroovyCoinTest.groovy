@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -30,12 +30,12 @@ public abstract class GroovyCoinTest {
     public static class Traversals extends CoinTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
-            GroovyTestHelper.compute("g.V.coin(1.0f)", g);
+            TraversalScriptHelper.compute("g.V.coin(1.0f)", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX0X() {
-            GroovyTestHelper.compute("g.V.coin(0.0f)", g);
+            TraversalScriptHelper.compute("g.V.coin(0.0f)", g);
         }
     }
 }
