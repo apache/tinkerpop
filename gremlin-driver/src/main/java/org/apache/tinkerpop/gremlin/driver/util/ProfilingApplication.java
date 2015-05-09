@@ -101,7 +101,7 @@ public class ProfilingApplication {
     public static void main(final String[] args) {
         final Map<String,Object> options = ElementHelper.asMap(args);
         final boolean noExit = Boolean.parseBoolean(options.getOrDefault("noExit", "false").toString());
-        final int parallelism = Integer.parseInt(options.getOrDefault("parallelism", "2").toString());
+        final int parallelism = Integer.parseInt(options.getOrDefault("parallelism", "16").toString());
         final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("profiler-%d").build();
         final ExecutorService executor = Executors.newFixedThreadPool(parallelism, threadFactory);
 
@@ -111,7 +111,7 @@ public class ProfilingApplication {
             final int timeout = Integer.parseInt(options.getOrDefault("timeout", "1200000").toString());
             final int warmups = Integer.parseInt(options.getOrDefault("warmups", "5").toString());
             final int executions = Integer.parseInt(options.getOrDefault("executions", "10").toString());
-            final int nioPoolSize = Integer.parseInt(options.getOrDefault("nioPoolSize", "2").toString());
+            final int nioPoolSize = Integer.parseInt(options.getOrDefault("nioPoolSize", "1").toString());
             final int requests = Integer.parseInt(options.getOrDefault("requests", "10000").toString());
             final int minConnectionPoolSize = Integer.parseInt(options.getOrDefault("minConnectionPoolSize", "256").toString());
             final int maxConnectionPoolSize = Integer.parseInt(options.getOrDefault("maxConnectionPoolSize", "256").toString());
@@ -119,7 +119,7 @@ public class ProfilingApplication {
             final int maxSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("maxSimultaneousUsagePerConnection", "32").toString());
             final int maxInProcessPerConnection = Integer.parseInt(options.getOrDefault("maxInProcessPerConnection", "64").toString());
             final int minInProcessPerConnection = Integer.parseInt(options.getOrDefault("minInProcessPerConnection", "16").toString());
-            final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "16").toString());
+            final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "2").toString());
 
             final Cluster cluster = Cluster.build(host)
                     .minConnectionPoolSize(minConnectionPoolSize)
@@ -135,7 +135,7 @@ public class ProfilingApplication {
             final File f = null == fileName ? null : new File(fileName.toString());
             if (f != null && f.length() == 0) {
                 try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
-                    writer.println("nioPoolSize\tminConnectionPoolSize\tmaxConnectionPoolSize\tminSimultaneousUsagePerConnection\tmaxSimultaneousUsagePerConnection\tminInProcessPerConnection\tmaxInProcessPerConnection\tworkerPoolSize\trequestPerSecond");
+                    writer.println("parallelism\nioPoolSize\tminConnectionPoolSize\tmaxConnectionPoolSize\tminSimultaneousUsagePerConnection\tmaxSimultaneousUsagePerConnection\tminInProcessPerConnection\tmaxInProcessPerConnection\tworkerPoolSize\trequestPerSecond");
                 }
             }
 
@@ -166,7 +166,7 @@ public class ProfilingApplication {
             System.out.println(String.format("avg req/sec: %s", averageRequestPerSecond));
             if (f != null) {
                 try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
-                    writer.println(String.join("\t", String.valueOf(nioPoolSize), String.valueOf(minConnectionPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(minSimultaneousUsagePerConnection), String.valueOf(maxSimultaneousUsagePerConnection), String.valueOf(minInProcessPerConnection), String.valueOf(maxInProcessPerConnection), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
+                    writer.println(String.join("\t", String.valueOf(parallelism), "\t", String.valueOf(nioPoolSize), String.valueOf(minConnectionPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(minSimultaneousUsagePerConnection), String.valueOf(maxSimultaneousUsagePerConnection), String.valueOf(minInProcessPerConnection), String.valueOf(maxInProcessPerConnection), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
                 }
             }
 
