@@ -32,8 +32,7 @@ import static org.apache.tinkerpop.gremlin.structure.P.neq;
  */
 public abstract class GroovyMatchTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends MatchTest {
+    public static class Traversals extends MatchTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {

@@ -18,18 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.example;
 
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collection;
-import java.util.function.Supplier;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalSupplier3 implements Supplier<Traversal> {
+public class TraversalSupplier3 implements Function<Graph, Traversal<Vertex, Map<String, List<Vertex>>>> {
     @Override
-    public Traversal get() {
-        return HadoopGraph.open().traversal().V().<String>values("name").group().<String>by(s -> s.substring(1, 2)).by(v -> v).<Collection>by(Collection::size);
+    public Traversal<Vertex, Map<String, List<Vertex>>> apply(final Graph graph) {
+        return (Traversal) graph.traversal().V().<String>values("name").group().<String>by(s -> s.substring(1, 2)).by(v -> v).<Collection>by(Collection::size);
     }
 }

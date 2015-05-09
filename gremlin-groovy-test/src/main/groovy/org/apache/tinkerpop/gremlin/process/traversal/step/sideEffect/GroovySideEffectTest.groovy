@@ -18,9 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
+import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -28,29 +27,28 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovySideEffectTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends SideEffectTest {
+    public static class Traversals extends SideEffectTest {
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_sideEffectXstore_aX_name(final Object v1Id) {
-            g.withSideEffect('a') { [] }.V(v1Id).sideEffect {
+            GroovyTestHelper.compute("""g.withSideEffect('a') { [] }.V(v1Id).sideEffect {
                 it.sideEffects('a').clear();
                 it.sideEffects('a').add(it.get());
-            }.name;
+            }.name""", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_out_sideEffectXincr_cX_name(final Object v1Id) {
-            g.withSideEffect('c') { [0] }.V(v1Id).out.sideEffect {
-                def temp = it.sideEffects('c')[0];
+            GroovyTestHelper.compute("""g.withSideEffect('c') { [0] }.V(v1Id).out.sideEffect {
+                temp = it.sideEffects('c')[0];
                 it.sideEffects('c').clear();
                 it.sideEffects('c').add(temp + 1);
-            }.name
+            }.name""", g, "v1Id", v1Id)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_VX1X_out_sideEffectXX_name(final Object v1Id) {
-            g.V(v1Id).out().sideEffect {}.name
+            GroovyTestHelper.compute("g.V(v1Id).out().sideEffect {}.name", g, "v1Id", v1Id)
         }
     }
 }

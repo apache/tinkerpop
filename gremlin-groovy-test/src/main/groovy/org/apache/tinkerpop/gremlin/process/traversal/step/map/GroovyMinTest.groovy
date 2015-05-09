@@ -18,57 +18,30 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.traversal.Scope
+import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Vertex
-
-import static __.bothE
-import static __.min
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyMinTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends MinTest {
+    public static class Traversals extends MinTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_min() {
-            g.V.age.min
+            GroovyTestHelper.compute("g.V.age.min", g)
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min() {
-            g.V.repeat(__.both).times(5).age.min
+            GroovyTestHelper.compute("g.V.repeat(__.both).times(5).age.min", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXminXlocalXX() {
-            g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(min(Scope.local))
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends MinTest {
-
-        @Override
-        public Traversal<Vertex, Integer> get_g_V_age_min() {
-            ComputerTestHelper.compute("g.V.age.min", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Integer> get_g_V_repeatXbothX_timesX5X_age_min() {
-            ComputerTestHelper.compute("g.V.repeat(__.both).times(5).age.min", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXminXlocalXX() {
-            ComputerTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(min(Scope.local))", g)
+            GroovyTestHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().values('weight').fold()).by(min(local))", g)
         }
     }
 }

@@ -18,31 +18,28 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
+import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovySubgraphTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends SubgraphTest {
+    public static class Traversals extends SubgraphTest {
 
         @Override
         public Traversal<Vertex, Graph> get_g_V_withSideEffectXsgX_outEXknowsX_subgraphXsgX_name_capXsgX(
                 final Object v1Id, final Graph subgraph) {
-            g.withSideEffect('sg') { subgraph }.V(v1Id).outE('knows').subgraph('sg').name.cap('sg')
+            GroovyTestHelper.compute("g.withSideEffect('sg') { subgraph }.V(v1Id).outE('knows').subgraph('sg').name.cap('sg')", g, "v1Id", v1Id, "subgraph", subgraph)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_withSideEffectXsgX_repeatXbothEXcreatedX_subgraphXsgX_outVX_timesX5X_name_dedup(
                 final Graph subgraph) {
-            g.withSideEffect('sg') { subgraph }.V.repeat(__.bothE('created').subgraph('sg').outV).times(5).name.dedup
+            GroovyTestHelper.compute("g.withSideEffect('sg') { subgraph }.V.repeat(__.bothE('created').subgraph('sg').outV).times(5).name.dedup", g, "subgraph", subgraph)
         }
     }
 }

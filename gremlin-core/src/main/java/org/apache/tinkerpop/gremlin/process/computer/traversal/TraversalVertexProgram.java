@@ -94,12 +94,11 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     }
 
     /**
-     * A helper method to yield a {@link Supplier} of {@link Traversal} from the {@link Configuration}.
-     * The supplier is either a {@link Class}, {@link org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineLambda}, or a direct Java8 lambda.
+     * A helper method to yield a {@link Traversal} from the {@link Graph} and provided {@link Configuration}.
      *
      * @param graph         the graph that the traversal will run against
-     * @param configuration The configuration containing the public static TRAVERSAL_SUPPLIER key.
-     * @return the traversal supplier in the configuration
+     * @param configuration The configuration containing the TRAVERSAL_SUPPLIER key.
+     * @return the traversal supplied by the configuration
      */
     public static Traversal.Admin<?, ?> getTraversal(final Graph graph, final Configuration configuration) {
         return VertexProgram.<TraversalVertexProgram>createVertexProgram(graph, configuration).getTraversal();
@@ -113,7 +112,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     public void loadState(final Graph graph, final Configuration configuration) {
         this.configurationTraversal = ConfigurationTraversal.loadState(graph, configuration, TRAVERSAL_SUPPLIER);
         if (null == this.configurationTraversal) {
-            throw new IllegalArgumentException("The configuration does not have a traversal supplier");
+            throw new IllegalArgumentException("The configuration does not have a traversal supplier:" + TRAVERSAL_SUPPLIER);
         }
         this.traversal = this.configurationTraversal.get();
         ((ComputerResultStep) this.traversal.getEndStep()).byPass();
@@ -291,7 +290,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         }
 
 
-        public Builder traversal(final Class<Function<Graph,Traversal.Admin<?, ?>>> traversalClass) {
+        public Builder traversal(final Class<Function<Graph, Traversal.Admin<?, ?>>> traversalClass) {
             ConfigurationTraversal.storeState(traversalClass, this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }

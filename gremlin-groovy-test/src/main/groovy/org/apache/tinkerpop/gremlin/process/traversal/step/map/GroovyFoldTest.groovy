@@ -18,59 +18,29 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
-import org.junit.Test
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyFoldTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends FoldTest {
+    public static class Traversals extends FoldTest {
         @Override
         public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
-            g.V.fold
+            GroovyTestHelper.compute("g.V.fold", g)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
-            g.V.fold.unfold
+            GroovyTestHelper.compute("g.V.fold.unfold", g)
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
-            g.V.age.fold(0) { seed, age -> seed + age };
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends FoldTest {
-        @Override
-        public Traversal<Vertex, List<Vertex>> get_g_V_fold() {
-            ComputerTestHelper.compute("g.V.fold", g)
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_fold_unfold() {
-            // Does not work in OLAP cause fold() is not an endstep.
-        }
-
-        @Override
-        public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
-            ComputerTestHelper.compute("g.V.age.fold(0) { seed, age -> seed + age }", g);
-        }
-
-        @Override
-        Traversal<Vertex, Vertex> get_g_V_fold_unfold() {
-            // override with nothing until the test itself is supported
-            return null
+            GroovyTestHelper.compute("g.V.age.fold(0) { seed, age -> seed + age }", g)
         }
     }
 }

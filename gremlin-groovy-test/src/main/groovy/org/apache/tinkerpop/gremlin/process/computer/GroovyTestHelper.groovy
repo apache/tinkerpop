@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer
 
+import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalScriptFunction
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
@@ -27,21 +28,26 @@ import org.apache.tinkerpop.gremlin.structure.Graph
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ComputerTestHelper {
+public class GroovyTestHelper {
 
-    public static final Traversal.Admin<?,?> compute(
+    public static final Traversal.Admin<?, ?> compute(
             final Graph graph,
             final TraversalSource.Builder builder,
             final String scriptEngineName,
             final String traversalScript,
             final Object... bindings) {
 
-        final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(builder, scriptEngineName, traversalScript, bindings).create(graph);
-        final ComputerResult result = builder.create(graph).getGraphComputer().get().program(program).submit().get();
-        return program.computerResultTraversal(result);
+        if (builder.create(graph).getGraphComputer().isPresent()) {
+            final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(builder, scriptEngineName, traversalScript, bindings).create(graph);
+            final ComputerResult result = builder.create(graph).getGraphComputer().get().program(program).submit().get();
+            return program.computerResultTraversal(result);
+        } else {
+            return new TraversalScriptFunction<>(builder, scriptEngineName, traversalScript, bindings).apply(graph);
+        }
     }
 
-    public static final <S,E> Traversal.Admin<S,E> compute(final String script, final GraphTraversalSource g, final Object... bindings) {
-        return ComputerTestHelper.compute(g.getGraph().get(), g.asBuilder(), "gremlin-groovy", script, bindings);
+    public static final <S, E> Traversal.Admin<S, E> compute(
+            final String script, final GraphTraversalSource g, final Object... bindings) {
+        return GroovyTestHelper.compute(g.getGraph().get(), g.asBuilder(), "gremlin-groovy", script, bindings);
     }
 }

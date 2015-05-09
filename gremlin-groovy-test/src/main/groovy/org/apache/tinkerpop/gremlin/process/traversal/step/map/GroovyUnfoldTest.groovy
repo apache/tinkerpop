@@ -18,11 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.computer.GroovyTestHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -31,31 +28,16 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyUnfoldTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends UnfoldTest {
+    public static class Traversals extends UnfoldTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {
-            g.V.local(__.outE.fold).unfold
+            GroovyTestHelper.compute("g.V.local(__.outE.fold).unfold", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX() {
-            g.V.valueMap.unfold.map { it.key }
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends UnfoldTest {
-
-        @Override
-        public Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold() {
-            ComputerTestHelper.compute("g.V.local(__.outE.fold).unfold", g)
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX() {
-            ComputerTestHelper.compute("g.V.valueMap.unfold.map { it.key }", g)
+            GroovyTestHelper.compute("g.V.valueMap.unfold.map { it.key }", g)
         }
     }
 
