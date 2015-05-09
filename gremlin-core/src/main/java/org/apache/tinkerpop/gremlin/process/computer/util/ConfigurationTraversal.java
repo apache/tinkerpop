@@ -45,8 +45,6 @@ public final class ConfigurationTraversal<S, E> implements Supplier<Traversal.Ad
     }
 
     public void storeState(final Configuration configuration) {
-        if (null == this.configTraversal)
-            throw new IllegalStateException("The " + ConfigurationTraversal.class.getSimpleName() + " does not have a configuration traversal");
         try {
             VertexProgramHelper.serialize(this.configTraversal, configuration, this.configKey);   // the traversal can not be serialized (probably because of lambdas). As such, try direct reference.
         } catch (final IllegalArgumentException e) {

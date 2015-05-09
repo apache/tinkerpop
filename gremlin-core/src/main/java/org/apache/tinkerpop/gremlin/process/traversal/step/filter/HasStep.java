@@ -58,7 +58,7 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
 
     @Override
     public List<HasContainer> getHasContainers() {
-        return this.hasContainers;
+        return Collections.unmodifiableList(this.hasContainers);
     }
 
     @Override

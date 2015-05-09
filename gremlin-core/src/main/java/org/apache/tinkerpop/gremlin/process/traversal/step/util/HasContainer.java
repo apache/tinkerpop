@@ -121,8 +121,10 @@ public final class HasContainer implements Serializable {
     public static HasContainer[] makeHasContainers(final String key, final P<?> predicate, final P<?>... predicates) {
         final HasContainer[] hasContainers = new HasContainer[predicates.length + 1];
         hasContainers[0] = new HasContainer(key, predicate.getBiPredicate(), predicate.getValue());
-        for (int i = 1; i < predicates.length + 1; i++) {
-            hasContainers[i] = new HasContainer(key, predicates[i].getBiPredicate(), predicates[i].getValue());
+        if (predicates.length > 0) {
+            for (int i = 1; i < predicates.length + 1; i++) {
+                hasContainers[i] = new HasContainer(key, predicates[i-1].getBiPredicate(), predicates[i-1].getValue());
+            }
         }
         return hasContainers;
     }
