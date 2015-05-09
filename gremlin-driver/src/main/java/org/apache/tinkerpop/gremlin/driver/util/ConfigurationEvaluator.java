@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 /**
@@ -39,7 +40,7 @@ public class ConfigurationEvaluator {
     private final List<Integer> nioPoolSizeRange = Arrays.asList(1,2,4);
     private final List<Integer> parallelismSizeRange = Arrays.asList(1,2,4,8,16);
 
-    public Stream<String[]> generate(final String [] args) {
+    public Stream<String[]> generate(final String [] args) throws Exception {
         final Set<Set<Integer>> configsTried = new HashSet<>();
 
         // get ready for the some serious brute-force action here
@@ -75,7 +76,7 @@ public class ConfigurationEvaluator {
                                                     final String[] stringProfilerArgs = Arrays.copyOf(withExtraArgs, withExtraArgs.length, String[].class);
                                                     System.out.println("Testing with: " + Arrays.toString(stringProfilerArgs));
                                                     ProfilingApplication.main(stringProfilerArgs);
-
+                                                    TimeUnit.SECONDS.sleep(5);
                                                     configsTried.add(s);
                                                 }
                                             }

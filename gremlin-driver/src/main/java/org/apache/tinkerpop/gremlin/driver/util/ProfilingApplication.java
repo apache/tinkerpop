@@ -105,32 +105,32 @@ public class ProfilingApplication {
         final BasicThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("profiler-%d").build();
         final ExecutorService executor = Executors.newFixedThreadPool(parallelism, threadFactory);
 
+        final String host = options.getOrDefault("host", "localhost").toString();
+        final int minExpectedRps = Integer.parseInt(options.getOrDefault("minExpectedRps", "1000").toString());
+        final int timeout = Integer.parseInt(options.getOrDefault("timeout", "1200000").toString());
+        final int warmups = Integer.parseInt(options.getOrDefault("warmups", "5").toString());
+        final int executions = Integer.parseInt(options.getOrDefault("executions", "10").toString());
+        final int nioPoolSize = Integer.parseInt(options.getOrDefault("nioPoolSize", "1").toString());
+        final int requests = Integer.parseInt(options.getOrDefault("requests", "10000").toString());
+        final int minConnectionPoolSize = Integer.parseInt(options.getOrDefault("minConnectionPoolSize", "256").toString());
+        final int maxConnectionPoolSize = Integer.parseInt(options.getOrDefault("maxConnectionPoolSize", "256").toString());
+        final int minSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("minSimultaneousUsagePerConnection", "8").toString());
+        final int maxSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("maxSimultaneousUsagePerConnection", "32").toString());
+        final int maxInProcessPerConnection = Integer.parseInt(options.getOrDefault("maxInProcessPerConnection", "64").toString());
+        final int minInProcessPerConnection = Integer.parseInt(options.getOrDefault("minInProcessPerConnection", "16").toString());
+        final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "2").toString());
+
+        final Cluster cluster = Cluster.build(host)
+                .minConnectionPoolSize(minConnectionPoolSize)
+                .maxConnectionPoolSize(maxConnectionPoolSize)
+                .minSimultaneousUsagePerConnection(minSimultaneousUsagePerConnection)
+                .maxSimultaneousUsagePerConnection(maxSimultaneousUsagePerConnection)
+                .minInProcessPerConnection(minInProcessPerConnection)
+                .maxInProcessPerConnection(maxInProcessPerConnection)
+                .nioPoolSize(nioPoolSize)
+                .workerPoolSize(workerPoolSize).create();
+
         try {
-            final String host = options.getOrDefault("host", "localhost").toString();
-            final int minExpectedRps = Integer.parseInt(options.getOrDefault("minExpectedRps", "1000").toString());
-            final int timeout = Integer.parseInt(options.getOrDefault("timeout", "1200000").toString());
-            final int warmups = Integer.parseInt(options.getOrDefault("warmups", "5").toString());
-            final int executions = Integer.parseInt(options.getOrDefault("executions", "10").toString());
-            final int nioPoolSize = Integer.parseInt(options.getOrDefault("nioPoolSize", "1").toString());
-            final int requests = Integer.parseInt(options.getOrDefault("requests", "10000").toString());
-            final int minConnectionPoolSize = Integer.parseInt(options.getOrDefault("minConnectionPoolSize", "256").toString());
-            final int maxConnectionPoolSize = Integer.parseInt(options.getOrDefault("maxConnectionPoolSize", "256").toString());
-            final int minSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("minSimultaneousUsagePerConnection", "8").toString());
-            final int maxSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("maxSimultaneousUsagePerConnection", "32").toString());
-            final int maxInProcessPerConnection = Integer.parseInt(options.getOrDefault("maxInProcessPerConnection", "64").toString());
-            final int minInProcessPerConnection = Integer.parseInt(options.getOrDefault("minInProcessPerConnection", "16").toString());
-            final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "2").toString());
-
-            final Cluster cluster = Cluster.build(host)
-                    .minConnectionPoolSize(minConnectionPoolSize)
-                    .maxConnectionPoolSize(maxConnectionPoolSize)
-                    .minSimultaneousUsagePerConnection(minSimultaneousUsagePerConnection)
-                    .maxSimultaneousUsagePerConnection(maxSimultaneousUsagePerConnection)
-                    .minInProcessPerConnection(minInProcessPerConnection)
-                    .maxInProcessPerConnection(maxInProcessPerConnection)
-                    .nioPoolSize(nioPoolSize)
-                    .workerPoolSize(workerPoolSize).create();
-
             final Object fileName = options.get("store");
             final File f = null == fileName ? null : new File(fileName.toString());
             if (f != null && f.length() == 0) {
@@ -176,6 +176,7 @@ public class ProfilingApplication {
             if (!noExit) System.exit(1);
         } finally {
             executor.shutdown();
+            cluster.close();
         }
     }
 }
