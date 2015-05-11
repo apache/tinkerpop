@@ -133,6 +133,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_sleep_sleep_profile() {
         final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_sleep_sleep_profile();
         printTraversalForm(traversal);
@@ -168,6 +169,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_repeat_both_modern_profile() {
         final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_repeat_both_profile();
         printTraversalForm(traversal);
