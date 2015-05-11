@@ -26,6 +26,8 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -35,12 +37,19 @@ import java.util.Iterator;
  */
 public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
 
+    private ReferenceVertex inVertex;
+    private ReferenceVertex outVertex;
+    private String label;
+
     private ReferenceEdge() {
 
     }
 
     public ReferenceEdge(final Edge edge) {
         super(edge);
+        this.inVertex = new ReferenceVertex(edge.inVertex());
+        this.outVertex = new ReferenceVertex(edge.outVertex());
+        this.label = edge.label();
     }
 
     @Override
@@ -55,7 +64,22 @@ public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction) {
-        return Collections.emptyIterator();
+        if (direction.equals(Direction.OUT))
+            return IteratorUtils.of(this.outVertex);
+        else if (direction.equals(Direction.IN))
+            return IteratorUtils.of(this.inVertex);
+        else
+            return IteratorUtils.of(this.outVertex, this.inVertex);
+    }
+
+    @Override
+    public Vertex inVertex() {
+        return this.inVertex;
+    }
+
+    @Override
+    public Vertex outVertex() {
+        return this.outVertex;
     }
 
     @Override
@@ -65,6 +89,11 @@ public class ReferenceEdge extends ReferenceElement<Edge> implements Edge {
 
     @Override
     public String toString() {
-        return "e[" + this.id + "]";
+        return StringFactory.edgeString(this);
+    }
+
+    @Override
+    public String label() {
+        return this.label;
     }
 }

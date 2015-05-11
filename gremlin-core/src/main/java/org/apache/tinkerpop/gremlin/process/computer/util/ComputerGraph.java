@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.computer.util;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -29,10 +30,17 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedProperty;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,23 +49,28 @@ import java.util.stream.Collectors;
  */
 public final class ComputerGraph implements Graph {
 
-    public enum State {VERTEX_PROGRAM, MAP_REDUCE, NO_OP}
+    private enum State {VERTEX_PROGRAM, MAP_REDUCE, NO_OP}
 
-    private final Graph graph;
+    private ComputerVertex starVertex;
     private final Set<String> computeKeys;
-    private State state = State.VERTEX_PROGRAM;
+    private State state;
 
-    public ComputerGraph(final Graph graph, final Set<String> elementComputeKeys) {
-        this.graph = graph;
-        this.computeKeys = elementComputeKeys;
+    public ComputerGraph(final State state, final Vertex starVertex, final Optional<VertexProgram> vertexProgram) {
+        this.state = state;
+        this.computeKeys = vertexProgram.isPresent() ? vertexProgram.get().getElementComputeKeys() : Collections.emptySet();
+        this.starVertex = new ComputerVertex(starVertex);
     }
 
-    public static Vertex of(final Vertex vertex, final Set<String> elementComputeKeys) {
-        return new ComputerGraph(vertex.graph(), elementComputeKeys).wrapVertex(vertex);
+    public static ComputerVertex vertexProgram(final Vertex starVertex, VertexProgram vertexProgram) {
+        return new ComputerGraph(State.VERTEX_PROGRAM, starVertex, Optional.of(vertexProgram)).getStarVertex();
     }
 
-    private final Vertex wrapVertex(final Vertex vertex) {
-        return new ComputerVertex(vertex);
+    public static ComputerVertex mapReduce(final Vertex starVertex, Optional<VertexProgram> vertexProgram) {
+        return new ComputerGraph(State.MAP_REDUCE, starVertex, vertexProgram).getStarVertex();
+    }
+
+    public ComputerVertex getStarVertex() {
+        return this.starVertex;
     }
 
     public void setState(final State state) {
@@ -66,50 +79,50 @@ public final class ComputerGraph implements Graph {
 
     @Override
     public Vertex addVertex(final Object... keyValues) {
-        return new ComputerVertex(this.graph.addVertex(keyValues));
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException {
-        return this.graph.compute(graphComputerClass);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public GraphComputer compute() throws IllegalArgumentException {
-        return this.graph.compute();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
-        return IteratorUtils.map(this.graph.vertices(vertexIds), vertex -> new ComputerVertex(vertex));
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
-        return IteratorUtils.map(this.graph.edges(edgeIds), edge -> new ComputerEdge(edge));
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Transaction tx() {
-        return this.graph.tx();
+        return this.starVertex.graph().tx();
     }
 
     @Override
     public Variables variables() {
-        return this.graph.variables();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Configuration configuration() {
-        return this.graph.configuration();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void close() throws Exception {
-        this.graph.close();
+        throw new UnsupportedOperationException();
     }
 
-    private class ComputerElement implements Element {
+    private class ComputerElement implements Element, WrappedElement<Element> {
         private final Element element;
 
         public ComputerElement(final Element element) {
@@ -178,25 +191,18 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public boolean equals(final Object other) {
-            return ElementHelper.areEqual(this, other);
+            return this.element.equals(other);
         }
 
-        protected final Vertex asVertex() {
-            return (Vertex) this.element;
-        }
-
-        protected final Edge asEdge() {
-            return (Edge) this.element;
-        }
-
-        protected final <V> VertexProperty<V> asVertexProperty() {
-            return (VertexProperty<V>) this.element;
+        @Override
+        public Element getBaseElement() {
+            return this.element;
         }
     }
 
     ///////////////////////////////////
 
-    private class ComputerVertex extends ComputerElement implements Vertex {
+    private class ComputerVertex extends ComputerElement implements Vertex, WrappedVertex<Vertex> {
 
 
         public ComputerVertex(final Vertex vertex) {
@@ -205,60 +211,65 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public <V> VertexProperty<V> property(final String key) {
-            return new ComputerVertexProperty<>(this.asVertex().property(key));
+            return new ComputerVertexProperty<>(this.getBaseVertex().property(key));
         }
 
         @Override
         public <V> VertexProperty<V> property(final String key, final V value) {
-            if(!computeKeys.contains(key))
+            if (!computeKeys.contains(key))
                 throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
-            return new ComputerVertexProperty<>(this.asVertex().property(key, value));
+            return new ComputerVertexProperty<>(this.getBaseVertex().property(key, value));
         }
 
         @Override
         public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
-            if(!computeKeys.contains(key))
+            if (!computeKeys.contains(key))
                 throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
-            return new ComputerVertexProperty<>(this.asVertex().property(key, value, keyValues));
+            return new ComputerVertexProperty<>(this.getBaseVertex().property(key, value, keyValues));
         }
 
         @Override
         public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
-            if(!computeKeys.contains(key))
+            if (!computeKeys.contains(key))
                 throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
-            return new ComputerVertexProperty<>(this.asVertex().property(cardinality, key, value, keyValues));
+            return new ComputerVertexProperty<>(this.getBaseVertex().property(cardinality, key, value, keyValues));
         }
 
         @Override
         public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
             if (state.equals(State.MAP_REDUCE))
                 throw GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce();
-            return new ComputerEdge(this.asVertex().addEdge(label, inVertex, keyValues));
+            return new ComputerEdge(this.getBaseVertex().addEdge(label, inVertex, keyValues));
         }
 
         @Override
         public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
             if (state.equals(State.MAP_REDUCE))
                 throw GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce();
-            return IteratorUtils.map(this.asVertex().edges(direction, edgeLabels), edge -> new ComputerEdge(edge));
+            return IteratorUtils.map(this.getBaseVertex().edges(direction, edgeLabels), ComputerEdge::new);
         }
 
         @Override
         public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
             if (state.equals(State.MAP_REDUCE))
                 throw GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce();
-            return IteratorUtils.map(this.asVertex().vertices(direction, edgeLabels), vertex -> new ComputerVertex(vertex));
+            return IteratorUtils.map(this.getBaseVertex().vertices(direction, edgeLabels), v -> v.equals(starVertex) ? starVertex : new ComputerAdjacentVertex(v));
         }
 
         @Override
         public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
             return IteratorUtils.map(super.properties(propertyKeys), property -> new ComputerVertexProperty<V>((VertexProperty<V>) property));
         }
+
+        @Override
+        public Vertex getBaseVertex() {
+            return (Vertex) this.getBaseElement();
+        }
     }
 
     ////////////////////////////
 
-    private class ComputerEdge extends ComputerElement implements Edge {
+    private class ComputerEdge extends ComputerElement implements Edge, WrappedEdge<Edge> {
 
         public ComputerEdge(final Edge edge) {
             super(edge);
@@ -267,61 +278,76 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public Iterator<Vertex> vertices(final Direction direction) {
-            return IteratorUtils.map(this.asEdge().vertices(direction), vertex -> new ComputerVertex(vertex));
+            if (direction.equals(Direction.OUT))
+                return IteratorUtils.of(this.outVertex());
+            if (direction.equals(Direction.IN))
+                return IteratorUtils.of(this.inVertex());
+            else
+                return IteratorUtils.of(this.outVertex(), this.inVertex());
         }
 
         @Override
         public Vertex outVertex() {
-            return new ComputerVertex(this.asEdge().outVertex());
+            return this.getBaseEdge().outVertex().equals(starVertex) ? starVertex : new ComputerAdjacentVertex(this.getBaseEdge().outVertex());
         }
 
         @Override
         public Vertex inVertex() {
-            return new ComputerVertex(this.asEdge().inVertex());
+            return this.getBaseEdge().inVertex().equals(starVertex) ? starVertex : new ComputerAdjacentVertex(this.getBaseEdge().inVertex());
         }
 
         @Override
         public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
             return IteratorUtils.map(super.properties(propertyKeys), property -> new ComputerProperty(property));
         }
+
+        @Override
+        public Edge getBaseEdge() {
+            return (Edge) this.getBaseElement();
+        }
     }
 
     ///////////////////////////
 
-    private class ComputerVertexProperty<V> extends ComputerElement implements VertexProperty<V> {
+    private class ComputerVertexProperty<V> extends ComputerElement implements VertexProperty<V>, WrappedVertexProperty<VertexProperty<V>> {
         public ComputerVertexProperty(final VertexProperty<V> vertexProperty) {
             super(vertexProperty);
         }
 
         @Override
         public String key() {
-            return this.asVertexProperty().key();
+            return this.getBaseVertexProperty().key();
         }
 
         @Override
         public V value() throws NoSuchElementException {
-            return this.<V>asVertexProperty().value();
+            return this.<V>getBaseVertexProperty().value();
         }
 
         @Override
         public boolean isPresent() {
-            return this.asVertexProperty().isPresent();
+            return this.getBaseVertexProperty().isPresent();
         }
 
         @Override
         public Vertex element() {
-            return new ComputerVertex(this.asVertexProperty().element());
+            return new ComputerVertex(this.getBaseVertexProperty().element());
         }
 
         @Override
         public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
             return IteratorUtils.map(super.properties(propertyKeys), property -> new ComputerProperty(property));
         }
+
+        @Override
+        public VertexProperty<V> getBaseVertexProperty() {
+            return (VertexProperty<V>) this.getBaseElement();
+        }
     }
 
     ///////////////////////////
 
-    private class ComputerProperty<V> implements Property<V> {
+    private class ComputerProperty<V> implements Property<V>, WrappedProperty<Property<V>> {
 
         private final Property<V> property;
 
@@ -358,6 +384,107 @@ public final class ComputerGraph implements Graph {
         @Override
         public void remove() {
             this.property.remove();
+        }
+
+        @Override
+        public Property<V> getBaseProperty() {
+            return this.property;
+        }
+
+        @Override
+        public String toString() {
+            return this.property.toString();
+        }
+
+        @Override
+        public int hashCode() {
+            return this.property.hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            return ElementHelper.areEqual(this, other);
+        }
+    }
+
+    ///////////////////////////
+
+    private class ComputerAdjacentVertex implements Vertex, WrappedVertex<Vertex> {
+
+        private final Vertex adjacentVertex;
+
+        public ComputerAdjacentVertex(final Vertex adjacentVertex) {
+            this.adjacentVertex = adjacentVertex;
+        }
+
+        @Override
+        public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
+            throw GraphComputer.Exceptions.adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated();
+        }
+
+        @Override
+        public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated();
+        }
+
+        @Override
+        public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
+            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated();
+        }
+
+        @Override
+        public Iterator<Edge> edges(Direction direction, String... edgeLabels) {
+            throw GraphComputer.Exceptions.adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated();
+        }
+
+        @Override
+        public Iterator<Vertex> vertices(Direction direction, String... edgeLabels) {
+            throw GraphComputer.Exceptions.adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated();
+        }
+
+        @Override
+        public Object id() {
+            return this.adjacentVertex.id();
+        }
+
+        @Override
+        public String label() {
+            throw GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead();
+        }
+
+        @Override
+        public Graph graph() {
+            return null;
+        }
+
+        @Override
+        public void remove() {
+
+        }
+
+        @Override
+        public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
+            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated();
+        }
+
+        @Override
+        public int hashCode() {
+            return this.adjacentVertex.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return this.adjacentVertex.toString();
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            return this.adjacentVertex.equals(other);
+        }
+
+        @Override
+        public Vertex getBaseVertex() {
+            return this.adjacentVertex;
         }
     }
 }

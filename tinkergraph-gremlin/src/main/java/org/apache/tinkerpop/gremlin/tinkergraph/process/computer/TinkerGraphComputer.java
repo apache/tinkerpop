@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -120,27 +119,28 @@ public class TinkerGraphComputer implements GraphComputer {
             if (!this.persist.get().equals(Persist.NOTHING))
                 throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph.get(), this.persist.get());
 
-        //final Graph computeGraph = this.graph;
-        final ComputerGraph computeGraph = new ComputerGraph(this.graph, null == this.vertexProgram ? Collections.emptySet() : this.vertexProgram.getElementComputeKeys());
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
             try (final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors())) {
                 if (null != this.vertexProgram) {
                     TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
-                    computeGraph.setState(ComputerGraph.State.VERTEX_PROGRAM);
                     // execute the vertex program
                     this.vertexProgram.setup(this.memory);
                     this.memory.completeSubRound();
                     while (true) {
                         workers.setVertexProgram(this.vertexProgram);
                         workers.vertexProgramWorkerIterationStart(this.memory.asImmutable());
-                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(computeGraph.vertices());
+                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(this.graph.vertices());
                         workers.executeVertexProgram(vertexProgram -> {
                             while (true) {
                                 final Vertex vertex = vertices.next();
                                 if (null == vertex) return;
-                                vertexProgram.execute(vertex, new TinkerMessenger<>(vertex, this.messageBoard, vertexProgram.getMessageCombiner()), this.memory);
+                                vertexProgram.execute(
+                                        ComputerGraph.vertexProgram(vertex, this.vertexProgram),
+                                        new TinkerMessenger<>(vertex, this.messageBoard, vertexProgram.getMessageCombiner()),
+                                        this.memory
+                                );
                             }
                         });
                         workers.vertexProgramWorkerIterationEnd(this.memory.asImmutable());
@@ -158,18 +158,17 @@ public class TinkerGraphComputer implements GraphComputer {
                 }
 
                 // execute mapreduce jobs
-                computeGraph.setState(ComputerGraph.State.MAP_REDUCE);
                 for (final MapReduce mapReduce : mapReducers) {
                     if (mapReduce.doStage(MapReduce.Stage.MAP)) {
                         final TinkerMapEmitter<?, ?> mapEmitter = new TinkerMapEmitter<>(mapReduce.doStage(MapReduce.Stage.REDUCE));
-                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(computeGraph.vertices());
+                        final SynchronizedIterator<Vertex> vertices = new SynchronizedIterator<>(this.graph.vertices());
                         workers.setMapReduce(mapReduce);
                         workers.mapReduceWorkerStart(MapReduce.Stage.MAP);
                         workers.executeMapReduce(workerMapReduce -> {
                             while (true) {
                                 final Vertex vertex = vertices.next();
                                 if (null == vertex) return;
-                                workerMapReduce.map(vertex, mapEmitter);
+                                workerMapReduce.map(ComputerGraph.mapReduce(vertex, Optional.ofNullable(this.vertexProgram)), mapEmitter);
                             }
                         });
                         workers.mapReduceWorkerEnd(MapReduce.Stage.MAP);

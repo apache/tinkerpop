@@ -22,7 +22,6 @@
 package org.apache.tinkerpop.gremlin.structure.util.reference;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -59,6 +58,11 @@ public class ReferenceVertexProperty<V> extends ReferenceElement<VertexProperty<
 
     @Override
     public String key() {
+        return this.key;
+    }
+
+    @Override
+    public String label() {
         return this.key;
     }
 

@@ -192,12 +192,16 @@ public interface GraphComputer {
         private Exceptions() {
         }
 
-        public static IllegalStateException adjacentElementPropertiesCanNotBeRead() {
-            return new IllegalStateException("The properties of an adjacent element can not be read, only its id");
+        public static IllegalStateException adjacentVertexLabelsCanNotBeRead() {
+            return new IllegalStateException("The label of an adjacent vertex can not be read");
         }
 
-        public static IllegalStateException adjacentElementPropertiesCanNotBeWritten() {
-            return new IllegalStateException("The properties of an adjacent element can not be written");
+        public static IllegalStateException adjacentVertexPropertiesCanNotBeReadOrUpdated() {
+            return new IllegalStateException("The properties of an adjacent vertex can not be read or updated");
+        }
+
+        public static IllegalStateException adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated() {
+            return new IllegalStateException("The edges and vertices of an adjacent vertex can not be read or updated");
         }
 
         public static IllegalArgumentException providedKeyIsNotAnElementComputeKey(final String key) {

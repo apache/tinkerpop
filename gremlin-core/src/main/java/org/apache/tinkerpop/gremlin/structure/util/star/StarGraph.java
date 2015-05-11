@@ -478,29 +478,30 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
-            if (!starVertex.equals(inVertex))
-                throw new IllegalStateException("An adjacent vertex can only connect to the star vertex: " + starVertex);
-            return starVertex.addInEdge(label, this, keyValues);
+            if (inVertex.equals(starVertex))
+                return starVertex.addInEdge(label, this, keyValues);
+            else
+                throw GraphComputer.Exceptions.adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated();
         }
 
         @Override
         public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
-            throw Element.Exceptions.propertyAdditionNotSupported();
+            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated();
         }
 
         @Override
         public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
-            throw Element.Exceptions.propertyAdditionNotSupported();
+            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated();
         }
 
         @Override
         public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
-            return Collections.emptyIterator();  // TODO: just return to starVertex?
+            throw GraphComputer.Exceptions.adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated();
         }
 
         @Override
         public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
-            return Collections.emptyIterator();  // TODO: just return star vertex?
+            throw GraphComputer.Exceptions.adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated();
         }
 
         @Override
@@ -510,7 +511,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public String label() {
-            return Vertex.DEFAULT_LABEL;
+            throw GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead();
         }
 
         @Override
@@ -525,7 +526,7 @@ public final class StarGraph implements Graph, Serializable {
 
         @Override
         public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-            return Collections.emptyIterator();
+            throw GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated();
         }
 
         @Override

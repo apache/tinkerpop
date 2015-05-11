@@ -26,10 +26,12 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -54,7 +56,7 @@ public class HadoopMap extends Mapper<NullWritable, VertexWritable, ObjectWritab
     @Override
     public void map(final NullWritable key, final VertexWritable value, final Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable>.Context context) throws IOException, InterruptedException {
         this.mapEmitter.setContext(context);
-        this.mapReduce.map(value.get(), this.mapEmitter);
+        this.mapReduce.map(ComputerGraph.mapReduce(value.get(), Optional.empty()), this.mapEmitter);  // TODO: not Optional.empty()!
     }
 
     @Override

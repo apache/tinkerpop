@@ -68,9 +68,6 @@ public class ExceptionCoverageTest {
             add("org.apache.tinkerpop.gremlin.structure.Graph$Exceptions#traversalEngineNotSupported");
 
             // todo: need to write consistency tests for the following items still...........
-            add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeRead");
-            add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentElementPropertiesCanNotBeWritten");
-            add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#adjacentVerticesCanNotBeQueried");
             add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#supportsDirectObjects");
         }};
 

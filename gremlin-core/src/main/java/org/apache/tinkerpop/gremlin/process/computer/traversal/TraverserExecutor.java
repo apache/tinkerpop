@@ -30,8 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedElement;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceElement;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -64,14 +64,15 @@ public final class TraverserExecutor {
                 if (traverser.get() instanceof Element || traverser.get() instanceof Property) {      // GRAPH OBJECT
                     // if the element is remote, then message, else store it locally for re-processing
                     final Vertex hostingVertex = TraverserExecutor.getHostingVertex(traverser.get());
-                    if (!vertex.equals(hostingVertex)
-                            || traverser.get() instanceof DetachedElement
-                            || traverser.get() instanceof DetachedProperty) { // necessary for path access (but why are these not ReferenceXXX?)
+                    if (!vertex.equals(hostingVertex)) { // necessary for path access
                         voteToHalt.set(false);
                         traverser.detach();
                         messenger.sendMessage(MessageScope.Global.of(hostingVertex), new TraverserSet<>(traverser));
-                    } else
+                    } else {
+                        if (traverser.get() instanceof ReferenceElement || traverser.get() instanceof ReferenceProperty)   // necessary for path access to local object
+                            traverser.attach(Attachable.Method.get(vertex));
                         toProcessTraversers.add(traverser);
+                    }
                 } else                                                                              // STANDARD OBJECT
                     toProcessTraversers.add(traverser);
             });

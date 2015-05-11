@@ -25,11 +25,11 @@ import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -57,6 +57,10 @@ import static org.junit.Assert.*;
         "providedKeyIsNotAnElementComputeKey",
         "isolationNotSupported",
         "incidentAndAdjacentElementsCanNotBeAccessedInMapReduce",
+        "adjacentVertexLabelsCanNotBeRead",
+        "adjacentVertexPropertiesCanNotBeReadOrUpdated",
+        "adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated",
+        "adjacentVerticesCanNotBeQueried",
         "resultGraphPersistCombinationNotSupported" // TODO: NOT TRUE!
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
@@ -645,7 +649,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public void reduce(NullObject key, Iterator<Integer> values, ReduceEmitter<NullObject, Integer> emitter) {
             int sum = 0;
-            while(values.hasNext()) {
+            while (values.hasNext()) {
                 sum = sum + values.next();
             }
             emitter.emit(sum);
@@ -732,7 +736,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public void reduce(final NullObject key, final Iterator<Integer> values, final ReduceEmitter<NullObject, Integer> emitter) {
             int sum = 0;
-            while(values.hasNext()) {
+            while (values.hasNext()) {
                 sum = sum + values.next();
             }
             emitter.emit(sum);
@@ -838,11 +842,144 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     }
 
+    /////////////////////////////////////////////
     @Test
-    @Ignore
     @LoadGraphWith(MODERN)
     public void shouldNotAllowEdgeAccessInMapReduce() throws Exception {
-
+        graph.compute(graphComputerClass.get()).mapReduce(new MapReduceC()).submit().get();
     }
+
+    public static class MapReduceC extends StaticMapReduce<MapReduce.NullObject, MapReduce.NullObject, MapReduce.NullObject, MapReduce.NullObject, MapReduce.NullObject> {
+
+        @Override
+        public boolean doStage(final Stage stage) {
+            return stage.equals(Stage.MAP);
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<MapReduce.NullObject, MapReduce.NullObject> emitter) {
+            try {
+                vertex.edges(Direction.OUT);
+                fail("Edges should not be accessible in MapReduce.map()");
+            } catch (final IllegalStateException e) {
+                assertEquals(GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce().getMessage(), e.getMessage());
+            }
+            try {
+                vertex.edges(Direction.IN);
+                fail("Edges should not be accessible in MapReduce.map()");
+            } catch (final IllegalStateException e) {
+                assertEquals(GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce().getMessage(), e.getMessage());
+            }
+            try {
+                vertex.edges(Direction.BOTH);
+                fail("Edges should not be accessible in MapReduce.map()");
+            } catch (final IllegalStateException e) {
+                assertEquals(GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce().getMessage(), e.getMessage());
+            }
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return MapReduce.NullObject.instance().toString();
+        }
+
+        @Override
+        public MapReduce.NullObject generateFinalResult(final Iterator<KeyValue<MapReduce.NullObject, MapReduce.NullObject>> keyValues) {
+            return MapReduce.NullObject.instance();
+        }
+    }
+    /////////////////////////////////////////////
+
+    /////////////////////////////////////////////
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldOnlyAllowIDAccessOfAdjacentVertices() throws Exception {
+        graph.compute(graphComputerClass.get()).program(new VertexProgramI()).submit().get();
+    }
+
+    public static class VertexProgramI extends StaticVertexProgram<MapReduce.NullObject> {
+
+        @Override
+        public void setup(final Memory memory) {
+
+        }
+
+        @Override
+        public void execute(Vertex vertex, Messenger messenger, Memory memory) {
+            vertex.vertices(Direction.OUT).forEachRemaining(Vertex::id);
+            vertex.vertices(Direction.IN).forEachRemaining(Vertex::id);
+            vertex.vertices(Direction.BOTH).forEachRemaining(Vertex::id);
+            if (vertex.vertices(Direction.OUT).hasNext()) {
+                try {
+                    vertex.vertices(Direction.OUT).forEachRemaining(Vertex::label);
+                    fail("Adjacent vertex labels should not be accessible in VertexProgram.execute()");
+                } catch (IllegalStateException e) {
+                    assertEquals(GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead().getMessage(), e.getMessage());
+                }
+            }
+            if (vertex.vertices(Direction.IN).hasNext()) {
+                try {
+                    vertex.vertices(Direction.IN).forEachRemaining(Vertex::label);
+                    fail("Adjacent vertex labels should not be accessible in VertexProgram.execute()");
+                } catch (IllegalStateException e) {
+                    assertEquals(GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead().getMessage(), e.getMessage());
+                }
+            }
+            if (vertex.vertices(Direction.BOTH).hasNext()) {
+                try {
+                    vertex.vertices(Direction.BOTH).forEachRemaining(Vertex::label);
+                    fail("Adjacent vertex labels should not be accessible in VertexProgram.execute()");
+                } catch (IllegalStateException e) {
+                    assertEquals(GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead().getMessage(), e.getMessage());
+                }
+            }
+            ////////////////////
+            if (vertex.vertices(Direction.OUT).hasNext()) {
+                try {
+                    vertex.vertices(Direction.OUT).forEachRemaining(v -> v.property("name"));
+                    fail("Adjacent vertex properties should not be accessible in VertexProgram.execute()");
+                } catch (IllegalStateException e) {
+                    assertEquals(GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated().getMessage(), e.getMessage());
+                }
+            }
+            if (vertex.vertices(Direction.IN).hasNext()) {
+                try {
+                    vertex.vertices(Direction.IN).forEachRemaining(v -> v.property("name"));
+                    fail("Adjacent vertex properties should not be accessible in VertexProgram.execute()");
+                } catch (IllegalStateException e) {
+                    assertEquals(GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated().getMessage(), e.getMessage());
+                }
+            }
+            if (vertex.vertices(Direction.BOTH).hasNext()) {
+                try {
+                    vertex.vertices(Direction.BOTH).forEachRemaining(v -> v.property("name"));
+                    fail("Adjacent vertex properties should not be accessible in VertexProgram.execute()");
+                } catch (IllegalStateException e) {
+                    assertEquals(GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated().getMessage(), e.getMessage());
+                }
+            }
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            return memory.getIteration() > 1;
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(Memory memory) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.NOTHING;
+        }
+    }
+    /////////////////////////////////////////////
 
 }
