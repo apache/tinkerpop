@@ -41,7 +41,7 @@ public class ConfigurationEvaluator {
     private final List<Integer> parallelismSizeRange = Arrays.asList(1,2,4,8,16);
 
     public Stream<String[]> generate(final String [] args) throws Exception {
-        final Set<Set<Integer>> configsTried = new HashSet<>();
+        final Set<String> configsTried = new HashSet<>();
 
         // get ready for the some serious brute-force action here
         for (int ir = 0; ir < nioPoolSizeRange.size(); ir++) {
@@ -57,7 +57,7 @@ public class ConfigurationEvaluator {
                                                     && minInProcessPerConnectionRange.get(iu) <= maxInProcessPerConnectionRange.get(iv)
                                                     && minSimultaneousUsagePerConnectionRange.get(iy) <= maxSimultaneousUsagePerConnectionRange.get(iz)
                                                     && maxSimultaneousUsagePerConnectionRange.get(iz) <= maxInProcessPerConnectionRange.get(iv)) {
-                                                final Set s = new HashSet(Arrays.asList(it, iu, iv, iw, ix, iy, iz));
+                                                final String s = String.join(",", String.valueOf(ir), String.valueOf(is), String.valueOf(it), String.valueOf(iu), String.valueOf(iv), String.valueOf(iw), String.valueOf(ix), String.valueOf(iy), String.valueOf(iz));
                                                 if (!configsTried.contains(s)) {
                                                     final Object[] argsToProfiler =
                                                             Stream.of("nioPoolSize", nioPoolSizeRange.get(ir).toString(),
