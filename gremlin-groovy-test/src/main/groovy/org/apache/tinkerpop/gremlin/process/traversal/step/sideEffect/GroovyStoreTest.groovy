@@ -18,11 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -30,54 +27,27 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyStoreTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends StoreTest {
+    public static class Traversals extends StoreTest {
 
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
-            g.V().store('a').by('name').out().cap('a');
+            TraversalScriptHelper.compute("g.V().store('a').by('name').out().cap('a')", g)
         }
 
         @Override
         public Traversal<Vertex, Collection> get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(
                 final Object v1Id) {
-            g.V(v1Id).store('a').by('name').out().store('a').by('name').name.cap('a');
+            TraversalScriptHelper.compute("g.V(${v1Id}).store('a').by('name').out().store('a').by('name').name.cap('a')", g)
         }
 
         @Override
         public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
-            g.withSideEffect('a') { [] as Set }.V.both.name.store('a').cap('a')
-        }
-
-
-        @Override
-        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX_capXaX() {
-            g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum).cap('a');
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends StoreTest {
-
-        @Override
-        public Traversal<Vertex, Collection> get_g_V_storeXaX_byXnameX_out_capXaX() {
-            ComputerTestHelper.compute("g.V().store('a').by('name').out().cap('a')", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Collection> get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(
-                final Object v1Id) {
-            ComputerTestHelper.compute("g.V(${v1Id}).store('a').by('name').out().store('a').by('name').name.cap('a')", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Set<String>> get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
-            ComputerTestHelper.compute("g.withSideEffect('a'){[] as Set}.V.both.name.store('a').cap('a')", g);
+            TraversalScriptHelper.compute("g.withSideEffect('a'){[] as Set}.V.both.name.store('a').cap('a')", g);
         }
 
         @Override
         public Traversal<Vertex, Collection> get_g_V_storeXaX_byXoutEXcreatedX_countX_out_out_storeXaX_byXinEXcreatedX_weight_sumX_capXaX() {
-            ComputerTestHelper.compute("g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum).cap('a')", g);
+            TraversalScriptHelper.compute("g.V.store('a').by(__.outE('created').count).out.out.store('a').by(__.inE('created').weight.sum).cap('a')", g);
         }
     }
 }

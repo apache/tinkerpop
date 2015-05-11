@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializable {
+public final class BulkSet<S> extends AbstractSet<S> implements Set<S>, Serializable {
     private final Map<S, Long> map = new LinkedHashMap<>();
 
     @Override

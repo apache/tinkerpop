@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.computer.traversal;
+package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineCache;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -44,6 +44,8 @@ public final class TraversalScriptFunction<S, E> implements Function<Graph, Trav
         this.scriptEngineName = scriptEngineName;
         this.traversalScript = traversalScript;
         this.bindings = bindings;
+        if (this.bindings.length % 2 != 0)
+            throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");
     }
 
     public Traversal.Admin<S, E> apply(final Graph graph) {
@@ -51,16 +53,11 @@ public final class TraversalScriptFunction<S, E> implements Function<Graph, Trav
             final ScriptEngine engine = ScriptEngineCache.get(this.scriptEngineName);
             final Bindings engineBindings = engine.createBindings();
             engineBindings.put("g", this.traversalContextBuilder.create(graph));
-            if (this.bindings.length % 2 != 0)
-                throw new IllegalArgumentException("The provided key/value bindings array length must be a multiple of two");
             for (int i = 0; i < this.bindings.length; i = i + 2) {
                 engineBindings.put((String) this.bindings[i], this.bindings[i + 1]);
             }
             final Traversal.Admin<S, E> traversal = (Traversal.Admin<S, E>) engine.eval(this.traversalScript, engineBindings);
-            if (!traversal.isLocked()) {
-                traversal.setGraph(graph);
-                traversal.applyStrategies();
-            }
+            if (!traversal.isLocked()) traversal.applyStrategies();
             return traversal;
         } catch (final ScriptException e) {
             throw new IllegalStateException(e.getMessage(), e);

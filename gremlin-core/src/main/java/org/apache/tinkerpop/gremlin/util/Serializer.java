@@ -27,7 +27,10 @@ import java.io.ObjectOutputStream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Serializer {
+public final class Serializer {
+
+    private Serializer() {
+    }
 
     public static byte[] serializeObject(final Object object) throws IOException {
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

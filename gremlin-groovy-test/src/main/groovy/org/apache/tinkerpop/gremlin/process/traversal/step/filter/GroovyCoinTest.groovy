@@ -18,10 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -29,31 +27,15 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyCoinTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends CoinTest {
-
+    public static class Traversals extends CoinTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
-            g.V.coin(1.0f)
+            TraversalScriptHelper.compute("g.V.coin(1.0f)", g);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_coinX0X() {
-            g.V.coin(0.0f)
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends CoinTest {
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_coinX1X() {
-            ComputerTestHelper.compute("g.V.coin(1.0f)", g);
-        }
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_V_coinX0X() {
-            ComputerTestHelper.compute("g.V.coin(0.0f)", g);
+            TraversalScriptHelper.compute("g.V.coin(0.0f)", g);
         }
     }
 }

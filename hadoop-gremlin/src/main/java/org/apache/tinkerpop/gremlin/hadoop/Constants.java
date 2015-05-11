@@ -25,6 +25,10 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Constants {
+
+    private Constants() {
+    }
+
     public static final String GREMLIN_HADOOP_INPUT_LOCATION = "gremlin.hadoop.inputLocation";
     public static final String GREMLIN_HADOOP_OUTPUT_LOCATION = "gremlin.hadoop.outputLocation";
     public static final String GREMLIN_HADOOP_GRAPH_INPUT_FORMAT = "gremlin.hadoop.graphInputFormat";

@@ -18,10 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -29,39 +27,20 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyValueMapTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends ValueMapTest {
+    public static class Traversals extends ValueMapTest {
         @Override
         public Traversal<Vertex, Map<String, List>> get_g_V_valueMap() {
-            g.V.valueMap
+            TraversalScriptHelper.compute("g.V.valueMap", g);
         }
 
         @Override
         public Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX() {
-            g.V.valueMap('name', 'age')
+            TraversalScriptHelper.compute("g.V.valueMap('name', 'age')", g);
         }
 
         @Override
         public Traversal<Vertex, Map<String, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id) {
-            g.V(v1Id).out('created').valueMap
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends ValueMapTest {
-        @Override
-        public Traversal<Vertex, Map<String, List>> get_g_V_valueMap() {
-            ComputerTestHelper.compute("g.V.valueMap", g);
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, List>> get_g_V_valueMapXname_ageX() {
-            ComputerTestHelper.compute("g.V.valueMap('name', 'age')", g);
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, List<String>>> get_g_VX1X_outXcreatedX_valueMap(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(v1Id).out('created').valueMap", g, "v1Id", v1Id);
+            TraversalScriptHelper.compute("g.V(v1Id).out('created').valueMap", g, "v1Id", v1Id);
         }
     }
 }

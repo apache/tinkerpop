@@ -33,19 +33,23 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyAndTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyCoinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyCyclicPathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyDedupTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyExceptTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyFilterTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyHasNotTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyHasTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyIsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyOrTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyRangeTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyRetainTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovySampleTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovySimplePathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyWhereTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyAddEdgeTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCoalesceTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyFoldTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMapTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMaxTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMeanTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMinTest;
@@ -64,7 +68,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyInje
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyProfileTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySackTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySideEffectCapTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySideEffectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyStoreTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovySubgraphTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyTreeTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
@@ -91,61 +97,60 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
     private static final Class<?>[] allTests = new Class<?>[]{
 
             //branch
-            GroovyBranchTest.ComputerTraversals.class,
-            GroovyChooseTest.ComputerTraversals.class,
-            GroovyLocalTest.ComputerTraversals.class,
-            GroovyRepeatTest.ComputerTraversals.class,
-            GroovyUnionTest.ComputerTraversals.class,
+            GroovyBranchTest.Traversals.class,
+            GroovyChooseTest.Traversals.class,
+            GroovyLocalTest.Traversals.class,
+            GroovyRepeatTest.Traversals.class,
+            GroovyUnionTest.Traversals.class,
 
             // filter
-            GroovyAndTest.ComputerTraversals.class,
-            GroovyCoinTest.ComputerTraversals.class,
-            GroovyCyclicPathTest.ComputerTraversals.class,
-            GroovyDedupTest.ComputerTraversals.class,
-            // TODO: GroovyExceptTest.ComputerTest.class,
-            GroovyFilterTest.ComputerTraversals.class,
-            GroovyHasNotTest.ComputerTraversals.class,
-            GroovyHasTest.ComputerTraversals.class,
-            GroovyIsTest.ComputerTraversals.class,
-            GroovyOrTest.ComputerTraversals.class,
-            GroovyRangeTest.ComputerTraversals.class,
-            // TODO: GroovyRetainTest.ComputerTest.class,
-            GroovySampleTest.ComputerTraversals.class,
-            GroovySimplePathTest.ComputerTraversals.class,
-            GroovyWhereTest.ComputerTraversals.class,
+            GroovyAndTest.Traversals.class,
+            GroovyCoinTest.Traversals.class,
+            GroovyCyclicPathTest.Traversals.class,
+            GroovyDedupTest.Traversals.class,
+            GroovyExceptTest.Traversals.class,
+            GroovyFilterTest.Traversals.class,
+            GroovyHasNotTest.Traversals.class,
+            GroovyHasTest.Traversals.class,
+            GroovyIsTest.Traversals.class,
+            GroovyOrTest.Traversals.class,
+            GroovyRangeTest.Traversals.class,
+            GroovyRetainTest.Traversals.class,
+            GroovySampleTest.Traversals.class,
+            GroovySimplePathTest.Traversals.class,
+            GroovyWhereTest.Traversals.class,
 
             // map
-            GroovyCoalesceTest.ComputerTraversals.class,
-            GroovyCountTest.ComputerTraversals.class,
-            GroovyFoldTest.ComputerTraversals.class,
-            GroovyMapTest.ComputerTraversals.class,
-            // TODO: GroovyMatchTest.ComputerTest.class,
-            GroovyMaxTest.ComputerTraversals.class,
-            GroovyMeanTest.ComputerTraversals.class,
-            GroovyMinTest.ComputerTraversals.class,
-            GroovyOrderTest.ComputerTraversals.class,
-            GroovyPathTest.ComputerTraversals.class,
-            GroovyPropertiesTest.ComputerTraversals.class,
-            GroovySelectTest.ComputerTraversals.class,
-            GroovySumTest.ComputerTraversals.class,
-            GroovyUnfoldTest.ComputerTraversals.class,
-            GroovyValueMapTest.ComputerTraversals.class,
-            GroovyVertexTest.ComputerTraversals.class,
-
+            GroovyCoalesceTest.Traversals.class,
+            GroovyCountTest.Traversals.class,
+            GroovyFoldTest.Traversals.class,
+            GroovyMapTest.Traversals.class,
+            GroovyMatchTest.Traversals.class,
+            GroovyMaxTest.Traversals.class,
+            GroovyMeanTest.Traversals.class,
+            GroovyMinTest.Traversals.class,
+            GroovyOrderTest.Traversals.class,
+            GroovyPathTest.Traversals.class,
+            GroovyPropertiesTest.Traversals.class,
+            GroovySelectTest.Traversals.class,
+            GroovySumTest.Traversals.class,
+            GroovyUnfoldTest.Traversals.class,
+            GroovyValueMapTest.Traversals.class,
+            GroovyVertexTest.Traversals.class,
 
             // sideEffect
-            // TODO: GroovyAddEdgeTest.ComputerTest.class,
-            GroovyAggregateTest.ComputerTraversals.class,
-            GroovyGroupTest.ComputerTraversals.class,
-            GroovyGroupCountTest.ComputerTraversals.class,
-            GroovyInjectTest.ComputerTraversals.class,
-            GroovyProfileTest.ComputerTraversals.class,
-            GroovySackTest.ComputerTraversals.class,
-            GroovySideEffectCapTest.ComputerTraversals.class,
-            // TODO: GroovySideEffectTest.ComputerTest.class,
-            GroovyStoreTest.ComputerTraversals.class,
-            // TODO: GroovySubgraphTest.ComputerTest.class,
-            GroovyTreeTest.ComputerTraversals.class,
+            GroovyAddEdgeTest.Traversals.class,
+            GroovyAggregateTest.Traversals.class,
+            GroovyGroupTest.Traversals.class,
+            GroovyGroupCountTest.Traversals.class,
+            GroovyInjectTest.Traversals.class,
+            GroovyProfileTest.Traversals.class,
+            GroovySackTest.Traversals.class,
+            GroovySideEffectCapTest.Traversals.class,
+            GroovySideEffectTest.Traversals.class,
+            GroovyStoreTest.Traversals.class,
+            GroovySubgraphTest.Traversals.class,
+            GroovyTreeTest.Traversals.class,
 
             // algorithms
             PageRankVertexProgramTest.class,

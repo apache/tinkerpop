@@ -16,8 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.computer.util;
+package org.apache.tinkerpop.gremlin.util.function;
 
+import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 import org.junit.AfterClass;
 import org.junit.Test;
 

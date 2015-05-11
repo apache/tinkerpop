@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.computer.util;
+package org.apache.tinkerpop.gremlin.util.function;
 
-import org.apache.tinkerpop.gremlin.util.function.TriConsumer;
+import org.apache.tinkerpop.gremlin.util.ScriptEngineCache;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -33,7 +33,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ScriptEngineLambda implements Function, Supplier, Consumer, Predicate, BiConsumer, TriConsumer {
+public final class ScriptEngineLambda implements Function, Supplier, Consumer, Predicate, BiConsumer, TriConsumer {
 
     private static final String A = "a";
     private static final String B = "b";
