@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -84,12 +85,12 @@ public class DetachedGraphTest extends AbstractGremlinTest {
         TestHelper.validateVertexEquality(detachedVertex, createdVertex, false);
         TestHelper.validateVertexEquality(detachedVertex, starVertex, false);
 
-      /*  starGraph.getStarVertex().edges(Direction.BOTH).forEachRemaining(starEdge -> {
+        starGraph.getStarVertex().edges(Direction.BOTH).forEachRemaining(starEdge -> {
             final DetachedEdge detachedEdge = DetachedFactory.detach(starEdge, true);
             final Edge createdEdge = detachedEdge.attach(Attachable.Method.create(random.nextBoolean() ? graph : createdVertex));
             TestHelper.validateEdgeEquality(detachedEdge, starEdge);
             TestHelper.validateEdgeEquality(detachedEdge, createdEdge);
-        });  */ // not possible because star edges don't have adjacent vertex labels
+        });
 
     }
 }
