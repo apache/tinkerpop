@@ -156,6 +156,8 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public <V> Property<V> property(final String key, final V value) {
+            if (state.equals(State.MAP_REDUCE))
+                throw GraphComputer.Exceptions.vertexPropertiesCanNotBeUpdatedInMapReduce();
             return new ComputerProperty<>(this.element.property(key, value));
         }
 
@@ -216,6 +218,8 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public <V> VertexProperty<V> property(final String key, final V value) {
+            if (state.equals(State.MAP_REDUCE))
+                throw GraphComputer.Exceptions.vertexPropertiesCanNotBeUpdatedInMapReduce();
             if (!computeKeys.contains(key))
                 throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
             return new ComputerVertexProperty<>(this.getBaseVertex().property(key, value));
@@ -223,6 +227,8 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+            if (state.equals(State.MAP_REDUCE))
+                throw GraphComputer.Exceptions.vertexPropertiesCanNotBeUpdatedInMapReduce();
             if (!computeKeys.contains(key))
                 throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
             return new ComputerVertexProperty<>(this.getBaseVertex().property(key, value, keyValues));
@@ -230,6 +236,8 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
+            if (state.equals(State.MAP_REDUCE))
+                throw GraphComputer.Exceptions.vertexPropertiesCanNotBeUpdatedInMapReduce();
             if (!computeKeys.contains(key))
                 throw GraphComputer.Exceptions.providedKeyIsNotAnElementComputeKey(key);
             return new ComputerVertexProperty<>(this.getBaseVertex().property(cardinality, key, value, keyValues));

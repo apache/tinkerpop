@@ -192,16 +192,16 @@ public interface GraphComputer {
         private Exceptions() {
         }
 
-        public static IllegalStateException adjacentVertexLabelsCanNotBeRead() {
-            return new IllegalStateException("The label of an adjacent vertex can not be read");
+        public static UnsupportedOperationException adjacentVertexLabelsCanNotBeRead() {
+            return new UnsupportedOperationException("The label of an adjacent vertex can not be read");
         }
 
-        public static IllegalStateException adjacentVertexPropertiesCanNotBeReadOrUpdated() {
-            return new IllegalStateException("The properties of an adjacent vertex can not be read or updated");
+        public static UnsupportedOperationException adjacentVertexPropertiesCanNotBeReadOrUpdated() {
+            return new UnsupportedOperationException("The properties of an adjacent vertex can not be read or updated");
         }
 
-        public static IllegalStateException adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated() {
-            return new IllegalStateException("The edges and vertices of an adjacent vertex can not be read or updated");
+        public static UnsupportedOperationException adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated() {
+            return new UnsupportedOperationException("The edges and vertices of an adjacent vertex can not be read or updated");
         }
 
         public static IllegalArgumentException providedKeyIsNotAnElementComputeKey(final String key) {
@@ -210,10 +210,6 @@ public interface GraphComputer {
 
         public static IllegalArgumentException providedKeyIsNotAMemoryComputeKey(final String key) {
             return new IllegalArgumentException("The provided key is not a memory compute key: " + key);
-        }
-
-        public static IllegalStateException adjacentVerticesCanNotBeQueried() {
-            return new IllegalStateException("It is not possible to query an adjacent vertex in a vertex program");
         }
 
         public static IllegalArgumentException isolationNotSupported(final Isolation isolation) {
@@ -232,8 +228,12 @@ public interface GraphComputer {
             return new IllegalStateException("The computer has no vertex program or map reducers to execute");
         }
 
-        public static IllegalStateException incidentAndAdjacentElementsCanNotBeAccessedInMapReduce() {
-            return new IllegalStateException("The computer is in MapReduce mode and a vertex's incident and adjacent elements can not be accessed");
+        public static UnsupportedOperationException incidentAndAdjacentElementsCanNotBeAccessedInMapReduce() {
+            return new UnsupportedOperationException("The computer is in MapReduce mode and a vertex's incident and adjacent elements can not be accessed");
+        }
+
+        public static UnsupportedOperationException vertexPropertiesCanNotBeUpdatedInMapReduce() {
+            return new UnsupportedOperationException("The computer is in MapReduce mode and a vertex's properties can not be updated");
         }
     }
 
