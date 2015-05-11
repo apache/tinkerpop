@@ -45,8 +45,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.structure.P.neq;
 import static org.junit.Assert.*;
 
-<<<<<<<HEAD
-
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
