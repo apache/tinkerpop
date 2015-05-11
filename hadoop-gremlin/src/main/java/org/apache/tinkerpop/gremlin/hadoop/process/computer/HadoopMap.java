@@ -56,7 +56,7 @@ public class HadoopMap extends Mapper<NullWritable, VertexWritable, ObjectWritab
     @Override
     public void map(final NullWritable key, final VertexWritable value, final Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable>.Context context) throws IOException, InterruptedException {
         this.mapEmitter.setContext(context);
-        this.mapReduce.map(ComputerGraph.mapReduce(value.get(), Optional.empty()), this.mapEmitter);  // TODO: not Optional.empty()!
+        this.mapReduce.map(ComputerGraph.mapReduce(value.get()), this.mapEmitter);
     }
 
     @Override

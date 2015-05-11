@@ -55,7 +55,7 @@ public final class ComputerGraph implements Graph {
     private final Set<String> computeKeys;
     private State state;
 
-    public ComputerGraph(final State state, final Vertex starVertex, final Optional<VertexProgram> vertexProgram) {
+    private ComputerGraph(final State state, final Vertex starVertex, final Optional<VertexProgram> vertexProgram) {
         this.state = state;
         this.computeKeys = vertexProgram.isPresent() ? vertexProgram.get().getElementComputeKeys() : Collections.emptySet();
         this.starVertex = new ComputerVertex(starVertex);
@@ -65,8 +65,8 @@ public final class ComputerGraph implements Graph {
         return new ComputerGraph(State.VERTEX_PROGRAM, starVertex, Optional.of(vertexProgram)).getStarVertex();
     }
 
-    public static ComputerVertex mapReduce(final Vertex starVertex, Optional<VertexProgram> vertexProgram) {
-        return new ComputerGraph(State.MAP_REDUCE, starVertex, vertexProgram).getStarVertex();
+    public static ComputerVertex mapReduce(final Vertex starVertex) {
+        return new ComputerGraph(State.MAP_REDUCE, starVertex, Optional.empty()).getStarVertex();
     }
 
     public ComputerVertex getStarVertex() {
