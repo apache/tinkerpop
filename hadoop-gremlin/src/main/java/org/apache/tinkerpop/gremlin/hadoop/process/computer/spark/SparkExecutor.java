@@ -95,7 +95,7 @@ public final class SparkExecutor {
                         previousView.forEach(property -> property.attach(Attachable.Method.create(vertex)));  // attach the view to the vertex
                         ///
                         messenger.setVertexAndIncomingMessages(vertex, incomingMessages); // set the messenger with the incoming messages
-                        workerVertexProgram.execute(ComputerGraph.of(vertex, elementComputeKeys), messenger, memory); // execute the vertex program on this vertex for this iteration
+                        workerVertexProgram.execute(ComputerGraph.vertexProgram(vertex, workerVertexProgram), messenger, memory); // execute the vertex program on this vertex for this iteration
                         ///
                         final List<DetachedVertexProperty<Object>> nextView = elementComputeKeysArray.length == 0 ?  // not all vertex programs have compute keys
                                 Collections.emptyList() :
@@ -166,7 +166,7 @@ public final class SparkExecutor {
             workerMapReduce.workerStart(MapReduce.Stage.MAP);
             final SparkMapEmitter<K, V> mapEmitter = new SparkMapEmitter<>();
             return () -> IteratorUtils.flatMap(partitionIterator, vertexWritable -> {
-                workerMapReduce.map(vertexWritable._2().get(), mapEmitter);
+                workerMapReduce.map(ComputerGraph.mapReduce(vertexWritable._2().get(),java.util.Optional.empty()), mapEmitter);  // TODO: not Optional.empty()!
                 if (!partitionIterator.hasNext())
                     workerMapReduce.workerEnd(MapReduce.Stage.MAP);
                 return mapEmitter.getEmissions();

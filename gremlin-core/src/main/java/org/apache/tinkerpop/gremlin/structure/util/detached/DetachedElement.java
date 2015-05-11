@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.util.detached;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -46,7 +47,12 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
     }
 
     protected DetachedElement(final Element element) {
-        this(element.id(), element.label());
+        this.id = element.id();
+        try {
+            this.label = element.label();
+        } catch (IllegalStateException e) {
+            this.label = Vertex.DEFAULT_LABEL;
+        }
     }
 
     protected DetachedElement(final Object id, final String label) {

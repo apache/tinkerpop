@@ -98,29 +98,29 @@ public interface Attachable<V> {
                             Method.getVertex((Attachable<Vertex>) attachable, (Graph) hostVertexOrGraph) :
                             Method.getVertex((Attachable<Vertex>) attachable, (Vertex) hostVertexOrGraph))
                             .orElse(hostVertexOrGraph instanceof Graph ?
-                                    Method.createVertex((Attachable<Vertex>)attachable, (Graph) hostVertexOrGraph) :
+                                    Method.createVertex((Attachable<Vertex>) attachable, (Graph) hostVertexOrGraph) :
                                     Method.createVertex((Attachable<Vertex>) attachable, (Vertex) hostVertexOrGraph));
                 } else if (base instanceof Edge) {
                     return (V) (hostVertexOrGraph instanceof Graph ?
                             Method.getEdge((Attachable<Edge>) attachable, (Graph) hostVertexOrGraph) :
                             Method.getEdge((Attachable<Edge>) attachable, (Vertex) hostVertexOrGraph))
                             .orElse(hostVertexOrGraph instanceof Graph ?
-                                    Method.createEdge((Attachable<Edge>)attachable, (Graph) hostVertexOrGraph) :
-                                    Method.createEdge((Attachable<Edge>)attachable, (Vertex) hostVertexOrGraph));
+                                    Method.createEdge((Attachable<Edge>) attachable, (Graph) hostVertexOrGraph) :
+                                    Method.createEdge((Attachable<Edge>) attachable, (Vertex) hostVertexOrGraph));
                 } else if (base instanceof VertexProperty) {
                     return (V) (hostVertexOrGraph instanceof Graph ?
                             Method.getVertexProperty((Attachable<VertexProperty>) attachable, (Graph) hostVertexOrGraph) :
                             Method.getVertexProperty((Attachable<VertexProperty>) attachable, (Vertex) hostVertexOrGraph))
                             .orElse(hostVertexOrGraph instanceof Graph ?
-                                    Method.createVertexProperty((Attachable<VertexProperty>)attachable, (Graph) hostVertexOrGraph) :
+                                    Method.createVertexProperty((Attachable<VertexProperty>) attachable, (Graph) hostVertexOrGraph) :
                                     Method.createVertexProperty((Attachable<VertexProperty>) attachable, (Vertex) hostVertexOrGraph));
                 } else if (base instanceof Property) {
                     return (V) (hostVertexOrGraph instanceof Graph ?
                             Method.getProperty((Attachable<Property>) attachable, (Graph) hostVertexOrGraph) :
                             Method.getProperty((Attachable<Property>) attachable, (Vertex) hostVertexOrGraph))
                             .orElse(hostVertexOrGraph instanceof Graph ?
-                                    Method.createProperty((Attachable<Property>)attachable, (Graph) hostVertexOrGraph) :
-                                    Method.createProperty((Attachable<Property>)attachable, (Vertex) hostVertexOrGraph));
+                                    Method.createProperty((Attachable<Property>) attachable, (Graph) hostVertexOrGraph) :
+                                    Method.createProperty((Attachable<Property>) attachable, (Vertex) hostVertexOrGraph));
                 } else
                     throw Attachable.Exceptions.providedAttachableMustContainAGraphObject(attachable);
             };
@@ -170,7 +170,7 @@ public interface Attachable<V> {
 
         public static Optional<Edge> getEdge(final Attachable<Edge> attachableEdge, final Vertex hostVertex) {
             final Edge baseEdge = attachableEdge.get();
-            final Iterator<Edge> edgeIterator = hostVertex.edges(Direction.OUT);
+            final Iterator<Edge> edgeIterator = hostVertex.edges(Direction.OUT, attachableEdge.get().label());
             while (edgeIterator.hasNext()) {
                 final Edge edge = edgeIterator.next();
                 if (ElementHelper.areEqual(edge, baseEdge))

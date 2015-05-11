@@ -75,7 +75,7 @@ public class ReferenceEdgeTest extends AbstractGremlinTest {
         final ReferenceEdge referenceEdge = ReferenceFactory.detach(g.E(convertToEdgeId("marko", "knows", "vadas")).next());
         assertEquals(convertToEdgeId("marko", "knows", "vadas"), referenceEdge.id());
         assertEquals(0, IteratorUtils.count(referenceEdge.properties()));
-        assertEquals(0, IteratorUtils.count(referenceEdge.vertices(Direction.BOTH)));
+        assertEquals(2, IteratorUtils.count(referenceEdge.vertices(Direction.BOTH)));
     }
 
     @Test

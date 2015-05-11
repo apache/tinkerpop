@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.util
 
-import org.codehaus.groovy.runtime.InvokerHelper
-
 /**
  * Helper functions for working with the Groovy {@code MetaRegistry}.
  *
@@ -32,7 +30,7 @@ class MetaRegistryUtil {
      * were added to a class, then this method will clear those methods from the supplied classes.
      */
     public static void clearRegistry(final Set<Class> toClear) {
-        def metaRegistry = InvokerHelper.getMetaRegistry()
+        def metaRegistry = GroovySystem.metaClassRegistry
 
         // this call returns interfaces and removes meta clases from there.  not sure why it doesn't return
         // concrete classes that are in the registry, but such is the nature of groovy

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
 import java.util.function.Function;
 
@@ -54,7 +55,7 @@ public class B_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
     @Override
     public Traverser.Admin<T> detach() {
         super.detach();
-        this.path = DetachedFactory.detach(this.path, true);
+        this.path = ReferenceFactory.detach(this.path);
         return this;
     }
 
