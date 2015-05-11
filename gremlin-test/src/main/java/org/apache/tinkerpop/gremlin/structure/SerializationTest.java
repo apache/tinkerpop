@@ -24,16 +24,19 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.tinkerpop.gremlin.structure.util.Comparators;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -42,6 +45,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +60,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(Enclosed.class)
 public class SerializationTest {
-    public static class KryoTest extends AbstractGremlinTest {
+    public static class GryoTest extends AbstractGremlinTest {
         @Test
         @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
         public void shouldSerializeVertexAsDetached() throws Exception {
@@ -140,7 +144,7 @@ public class SerializationTest {
             final GryoWriter gryoWriter = gryoIo.writer().create();
             final GryoReader gryoReader = gryoIo.reader().create();
 
-            final VertexProperty<?> vertexProperty = graph.vertices(convertToVertexId("marko")).next().properties("location").next();
+            final VertexProperty<?> vertexProperty = IteratorUtils.filter(graph.vertices(convertToVertexId("marko")).next().properties("location"), p -> p.value().equals("brussels")).next();
             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             gryoWriter.writeObject(outputStream, vertexProperty);
 
@@ -285,7 +289,7 @@ public class SerializationTest {
         @LoadGraphWith(LoadGraphWith.GraphData.CREW)
         public void shouldSerializeVertexPropertyWithProperties() throws Exception {
             final ObjectMapper mapper = graph.io(GraphSONIo.build()).mapper().create().createMapper();
-            final VertexProperty vp = graph.vertices(convertToVertexId("marko")).next().properties("location").next();
+            final VertexProperty vp = IteratorUtils.filter(graph.vertices(convertToVertexId("marko")).next().properties("location"), p -> p.value().equals("brussels")).next();
             final String json = mapper.writeValueAsString(vp);
             final Map<String, Object> m = mapper.readValue(json, mapTypeReference);
 

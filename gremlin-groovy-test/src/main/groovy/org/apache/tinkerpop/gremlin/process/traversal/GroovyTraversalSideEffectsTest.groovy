@@ -17,19 +17,15 @@
  * under the License.
  */
 package org.apache.tinkerpop.gremlin.process.traversal
-
-import org.apache.tinkerpop.gremlin.process.UseEngine
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 abstract class GroovyTraversalSideEffectsTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends TraversalSideEffectsTest {
+    public static class Traversals extends TraversalSideEffectsTest {
         @Override
-        TraversalSideEffects get_g_V_asAdmin_getSideEffects() {
-            g.V.asAdmin().sideEffects
+        public TraversalSideEffects get_g_V_asAdmin_getSideEffects() {
+            g.V().asAdmin().getSideEffects()
         }
     }
 }

@@ -26,6 +26,10 @@ import java.util.stream.IntStream;
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public final class TimeUtil {
+
+    private TimeUtil() {
+    }
+
     public static long secondsSince(final long startNanos) {
         return timeSince(startNanos, TimeUnit.SECONDS);
     }

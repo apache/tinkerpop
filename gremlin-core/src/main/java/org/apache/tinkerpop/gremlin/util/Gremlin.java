@@ -32,6 +32,9 @@ public final class Gremlin {
         version = Manifests.read("version");
     }
 
+    private Gremlin() {
+    }
+
     public static String version() {
         return version;
     }

@@ -63,7 +63,7 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
 
     @Override
     public List<Comparator<S>> getComparators() {
-        return this.comparators.isEmpty() ? Collections.singletonList((Comparator) Order.incr) : this.comparators;
+        return this.comparators.isEmpty() ? Collections.singletonList((Comparator) Order.incr) : Collections.unmodifiableList(this.comparators);
     }
 
     @Override

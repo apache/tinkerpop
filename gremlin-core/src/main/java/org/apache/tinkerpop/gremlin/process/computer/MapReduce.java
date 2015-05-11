@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
@@ -69,9 +70,10 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
      * It is important that the state loaded from loadState() is identical to any state created from a constructor.
      * For those GraphComputers that do not need to use Configurations to migrate state between JVMs, the constructor will only be used.
      *
+     * @param graph         the graph the MapReduce job will run against
      * @param configuration the configuration to load the state of the MapReduce job from.
      */
-    public default void loadState(final Configuration configuration) {
+    public default void loadState(final Graph graph, final Configuration configuration) {
 
     }
 
@@ -208,16 +210,17 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
      * The class of the MapReduce is read from the {@link MapReduce#MAP_REDUCE} static configuration key.
      * Once the MapReduce is constructed, {@link MapReduce#loadState} method is called with the provided configuration.
      *
+     * @param graph         The graph that the MapReduce job will run against
      * @param configuration A configuration with requisite information to build a MapReduce
      * @return the newly constructed MapReduce
      */
-    public static <M extends MapReduce> M createMapReduce(final Configuration configuration) {
+    public static <M extends MapReduce> M createMapReduce(final Graph graph, final Configuration configuration) {
         try {
             final Class<M> mapReduceClass = (Class) Class.forName(configuration.getString(MAP_REDUCE));
             final Constructor<M> constructor = mapReduceClass.getDeclaredConstructor();
             constructor.setAccessible(true);
             final M mapReduce = constructor.newInstance();
-            mapReduce.loadState(configuration);
+            mapReduce.loadState(graph, configuration);
             return mapReduce;
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);

@@ -18,58 +18,25 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.LoadGraphWith
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Vertex
-import org.junit.Test
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyBranchTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends BranchTest {
+    public static class Traversals extends BranchTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-            g.V.branch(__.label.is('person').count)
-                    .option(1L, __.age)
-                    .option(0L, __.lang)
-                    .option(0L, __.name)
+            TraversalScriptHelper.compute("g.V.branch(__.label.is('person').count).option(1L, __.age).option(0L, __.lang).option(0L,__.name)", g);
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
-            g.V.branch(__.label)
-                    .option('person', __.age)
-                    .option('software', __.lang)
-                    .option('software', __.name);
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends BranchTest {
-
-        @Test
-        @LoadGraphWith(org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN)
-        @Override
-        public void g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-            super.g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX();
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_branchXlabel_eq_person__a_bX_optionXa__ageX_optionXb__langX_optionXb__nameX() {
-            ComputerTestHelper.compute("g.V.branch(__.label.is('person').count).option(1L, __.age).option(0L, __.lang).option(0L,__.name)", g);
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
-            ComputerTestHelper.compute("""
+            TraversalScriptHelper.compute("""
             g.V.branch(__.label)
                     .option('person', __.age)
                     .option('software', __.lang)

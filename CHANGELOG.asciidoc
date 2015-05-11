@@ -25,6 +25,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `TraversalScriptHelper` with static methods for dynamically creating a `Traversal` from a JSR 223 `ScriptEngine`.
+* Simplified the Gremlin-Groovy test suite where there is now no distinction between `STANDARD` and `COMPUTER` tests.
+* `VertexProgram` and `MapReduce` now add a `Graph` parameter to `loadState(Graph, Configuration)`.
 * Added `ScopingStrategy` which auto-scopes `select()` and `where()` so the language looks clean.
 * Added `Scoping` as a marker interface to state that a step desires a particular `Scope`.
 * `SelectStep`, `SelectOneStep`, and `WhereStep` support both `Scope.local` and `Scope.global` for `Map<String,Object>` or `Path` analysis, respectively.

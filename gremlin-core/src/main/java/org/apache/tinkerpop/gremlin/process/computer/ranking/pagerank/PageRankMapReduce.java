@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank;
 
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -52,7 +53,7 @@ public class PageRankMapReduce extends StaticMapReduce<Object, Double, Object, D
     }
 
     @Override
-    public void loadState(final Configuration configuration) {
+    public void loadState(final Graph graph, final Configuration configuration) {
         this.memoryKey = configuration.getString(PAGE_RANK_MEMORY_KEY, DEFAULT_MEMORY_KEY);
     }
 

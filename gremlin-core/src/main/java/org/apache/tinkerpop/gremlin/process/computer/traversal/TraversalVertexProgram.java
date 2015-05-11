@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
-import org.apache.tinkerpop.gremlin.process.computer.util.LambdaHolder;
+import org.apache.tinkerpop.gremlin.process.computer.util.ConfigurationTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
@@ -43,6 +43,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierS
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalObjectFunction;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptFunction;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -58,7 +60,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 
 /**
@@ -83,7 +85,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     private static final Set<String> ELEMENT_COMPUTE_KEYS = new HashSet<>(Arrays.asList(HALTED_TRAVERSERS, TraversalSideEffects.SIDE_EFFECTS));
     private static final Set<String> MEMORY_COMPUTE_KEYS = new HashSet<>(Collections.singletonList(VOTE_TO_HALT));
 
-    private LambdaHolder<Supplier<Traversal.Admin<?, ?>>> traversalSupplier;
+    private ConfigurationTraversal<?, ?> configurationTraversal;
     private Traversal.Admin<?, ?> traversal;
     private TraversalMatrix<?, ?> traversalMatrix;
 
@@ -93,14 +95,14 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     }
 
     /**
-     * A helper method to yield a {@link Supplier} of {@link Traversal} from the {@link Configuration}.
-     * The supplier is either a {@link Class}, {@link org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineLambda}, or a direct Java8 lambda.
+     * A helper method to yield a {@link Traversal} from the {@link Graph} and provided {@link Configuration}.
      *
-     * @param configuration The configuration containing the public static TRAVERSAL_SUPPLIER key.
-     * @return the traversal supplier in the configuration
+     * @param graph         the graph that the traversal will run against
+     * @param configuration The configuration containing the TRAVERSAL_SUPPLIER key.
+     * @return the traversal supplied by the configuration
      */
-    public static Supplier<Traversal.Admin<?, ?>> getTraversalSupplier(final Configuration configuration) {
-        return LambdaHolder.<Supplier<Traversal.Admin<?, ?>>>loadState(configuration, TraversalVertexProgram.TRAVERSAL_SUPPLIER).get();
+    public static Traversal.Admin<?, ?> getTraversal(final Graph graph, final Configuration configuration) {
+        return VertexProgram.<TraversalVertexProgram>createVertexProgram(graph, configuration).getTraversal();
     }
 
     public Traversal.Admin<?, ?> getTraversal() {
@@ -108,13 +110,12 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     }
 
     @Override
-    public void loadState(final Configuration configuration) {
-        this.traversalSupplier = LambdaHolder.loadState(configuration, TRAVERSAL_SUPPLIER);
-        if (null == this.traversalSupplier) {
-            throw new IllegalArgumentException("The configuration does not have a traversal supplier");
+    public void loadState(final Graph graph, final Configuration configuration) {
+        this.configurationTraversal = ConfigurationTraversal.loadState(graph, configuration, TRAVERSAL_SUPPLIER);
+        if (null == this.configurationTraversal) {
+            throw new IllegalArgumentException("The configuration does not have a traversal supplier:" + TRAVERSAL_SUPPLIER);
         }
-        this.traversal = this.traversalSupplier.get().get();
-        if (!this.traversal.isLocked()) this.traversal.applyStrategies();
+        this.traversal = this.configurationTraversal.get();
         ((ComputerResultStep) this.traversal.getEndStep()).byPass();
         this.traversalMatrix = new TraversalMatrix<>(this.traversal);
         for (final MapReducer<?, ?, ?, ?, ?> mapReducer : TraversalHelper.getStepsOfAssignableClassRecursively(MapReducer.class, this.traversal)) {
@@ -127,7 +128,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
     @Override
     public void storeState(final Configuration configuration) {
         VertexProgram.super.storeState(configuration);
-        this.traversalSupplier.storeState(configuration);
+        this.configurationTraversal.storeState(configuration);
     }
 
     @Override
@@ -279,25 +280,19 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             super(TraversalVertexProgram.class);
         }
 
-        public Builder traversal(final Class<? extends Graph> graphClass, final TraversalSource.Builder builder, final String scriptEngine, final String traversalScript, final Object... bindings) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SERIALIZED_OBJECT, TRAVERSAL_SUPPLIER, new TraversalScriptSupplier<>(graphClass, builder, scriptEngine, traversalScript, bindings));
+        public Builder traversal(final TraversalSource.Builder builder, final String scriptEngine, final String traversalScript, final Object... bindings) {
+            ConfigurationTraversal.storeState(new TraversalScriptFunction<>(builder, scriptEngine, traversalScript, bindings), this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 
         public Builder traversal(final Traversal.Admin<?, ?> traversal) {
-            return this.traversal(traversal, true);
-        }
-
-        public Builder traversal(final Traversal.Admin<?, ?> traversal, boolean serialize) {
-            if (serialize)
-                LambdaHolder.storeState(this.configuration, LambdaHolder.Type.SERIALIZED_OBJECT, TRAVERSAL_SUPPLIER, new TraversalSupplier<>(traversal, false));
-            else
-                LambdaHolder.storeState(this.configuration, LambdaHolder.Type.OBJECT, TRAVERSAL_SUPPLIER, new TraversalSupplier<>(traversal, true));
+            ConfigurationTraversal.storeState(new TraversalObjectFunction<>(traversal), this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 
-        public Builder traversal(final Class<Supplier<Traversal.Admin>> traversalClass) {
-            LambdaHolder.storeState(this.configuration, LambdaHolder.Type.CLASS, TRAVERSAL_SUPPLIER, traversalClass);
+
+        public Builder traversal(final Class<Function<Graph, Traversal.Admin<?, ?>>> traversalClass) {
+            ConfigurationTraversal.storeState(traversalClass, this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 

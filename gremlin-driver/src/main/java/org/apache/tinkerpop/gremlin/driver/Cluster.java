@@ -466,7 +466,7 @@ public class Cluster {
             return CompletableFuture.supplyAsync(() -> {
                 this.factory.shutdown();
                 return null;
-            });
+            }, executor());
         }
 
         @Override

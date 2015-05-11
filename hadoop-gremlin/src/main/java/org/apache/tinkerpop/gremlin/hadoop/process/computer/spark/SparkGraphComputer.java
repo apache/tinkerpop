@@ -182,6 +182,6 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     public static void main(final String[] args) throws Exception {
         final FileConfiguration configuration = new PropertiesConfiguration(args[0]);
-        new SparkGraphComputer(HadoopGraph.open(configuration)).program(VertexProgram.createVertexProgram(configuration)).submit().get();
+        new SparkGraphComputer(HadoopGraph.open(configuration)).program(VertexProgram.createVertexProgram(HadoopGraph.open(configuration),configuration)).submit().get();
     }
 }

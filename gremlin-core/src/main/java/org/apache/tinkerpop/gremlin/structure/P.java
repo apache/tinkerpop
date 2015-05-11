@@ -21,6 +21,8 @@
 
 package org.apache.tinkerpop.gremlin.structure;
 
+import org.javatuples.Pair;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -126,5 +128,14 @@ public class P<V> implements Predicate<V>, Serializable {
 
     public static P test(final BiPredicate biPredicate, final Object value) {
         return new P(biPredicate, value);
+    }
+
+    public static Pair<P, P[]> splitForAPI(final P[] pArray) {
+        if (pArray.length == 0)
+            throw new IllegalArgumentException("The P[] is not splittable cause its length is 0: " + pArray);
+        else if (pArray.length == 1)
+            return new Pair<>(pArray[0], new P[0]);
+        else
+            return new Pair<>(pArray[0], Arrays.copyOfRange(pArray, 1, pArray.length));
     }
 }

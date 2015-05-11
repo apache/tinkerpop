@@ -18,11 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -30,93 +27,46 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyGroupCountTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends GroupCountTest {
+    public static class Traversals extends GroupCountTest {
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
-            g.V.out('created').groupCount.by('name')
+            TraversalScriptHelper.compute("g.V.out('created').groupCount.by('name')", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX() {
-            g.V.out('created').groupCount('a').by('name').cap('a')
+            TraversalScriptHelper.compute("g.V.out('created').groupCount('a').by('name').cap('a')", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
-            g.V.out('created').name.groupCount
+            TraversalScriptHelper.compute("g.V.out('created').name.groupCount", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX_capXaX() {
-            g.V.out('created').name.groupCount('a').cap('a')
+            TraversalScriptHelper.compute("g.V.out('created').name.groupCount('a').cap('a')", g)
         }
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCount() {
-            g.V.has('no').groupCount;
+            TraversalScriptHelper.compute("g.V.has('no').groupCount", g)
         }
 
         @Override
         public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCountXaX_capXaX() {
-            g.V.has('no').groupCount('a').cap('a');
+            TraversalScriptHelper.compute("g.V.has('no').groupCount('a').cap('a')", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
-            g.V.repeat(__.out.groupCount('a').by('name')).times(2).cap('a')
+            TraversalScriptHelper.compute("g.V.repeat(__.out.groupCount('a').by('name')).times(2).cap('a')", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX() {
-            g.V.union(
-                    __.repeat(__.out).times(2).groupCount('m').by('lang'),
-                    __.repeat(__.in).times(2).groupCount('m').by('name')).cap('m')
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends GroupCountTest {
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCount_byXnameX() {
-            ComputerTestHelper.compute("g.V.out('created').groupCount.by('name')", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX() {
-            ComputerTestHelper.compute("g.V.out('created').groupCount('a').by('name').cap('a')", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
-            ComputerTestHelper.compute("g.V.out('created').name.groupCount", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX_capXaX() {
-            ComputerTestHelper.compute("g.V.out('created').name.groupCount('a').cap('a')", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCount() {
-            ComputerTestHelper.compute("g.V.has('no').groupCount", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<Object, Long>> get_g_V_hasXnoX_groupCountXaX_capXaX() {
-            ComputerTestHelper.compute("g.V.has('no').groupCount('a').cap('a')", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupCountXaX_byXnameXX_timesX2X_capXaX() {
-            ComputerTestHelper.compute("g.V.repeat(__.out.groupCount('a').by('name')).times(2).cap('a')", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_unionXrepeatXoutX_timesX2X_groupCountXmX_byXlangXX__repeatXinX_timesX2X_groupCountXmX_byXnameXX_capXmX() {
-            ComputerTestHelper.compute("""
+            TraversalScriptHelper.compute("""
             g.V.union(
                     __.repeat(__.out).times(2).groupCount('m').by('lang'),
                     __.repeat(__.in).times(2).groupCount('m').by('name')).cap('m')

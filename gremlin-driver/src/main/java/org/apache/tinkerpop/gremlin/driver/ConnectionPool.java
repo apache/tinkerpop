@@ -226,7 +226,7 @@ class ConnectionPool {
         final List<CompletableFuture<Void>> futures = new ArrayList<>(connections.size());
         for (Connection connection : connections) {
             final CompletableFuture<Void> future = connection.closeAsync();
-            future.thenRunAsync(open::decrementAndGet);
+            future.thenRunAsync(open::decrementAndGet, cluster.executor());
             futures.add(future);
         }
         return futures.toArray(new CompletableFuture[futures.size()]);

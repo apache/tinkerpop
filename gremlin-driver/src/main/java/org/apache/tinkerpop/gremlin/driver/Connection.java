@@ -174,7 +174,7 @@ class Connection {
                             thisConnection.returnToPool();
                             if (isClosed() && pending.isEmpty())
                                 shutdown(closeFuture.get());
-                        });
+                        }, cluster.executor());
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
                         final ResultSet resultSet = new ResultSet(handler, cluster.executor(), channel,

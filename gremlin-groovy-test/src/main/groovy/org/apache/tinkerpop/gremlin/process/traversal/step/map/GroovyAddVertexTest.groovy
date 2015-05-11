@@ -19,10 +19,8 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.structure.T
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -30,17 +28,16 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyAddVertexTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends AddVertexTest {
+    public static class Traversals extends AddVertexTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X() {
-            g.V.addV(T.label, 'animal', 'age', 0);
+            TraversalScriptHelper.compute("g.V.addV(T.label, 'animal', 'age', 0)", g)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXlabel_person_name_stephenX() {
-            g.addV(T.label, 'person', 'name', 'stephen');
+            TraversalScriptHelper.compute("g.addV(T.label, 'person', 'name', 'stephen')", g)
         }
     }
 }

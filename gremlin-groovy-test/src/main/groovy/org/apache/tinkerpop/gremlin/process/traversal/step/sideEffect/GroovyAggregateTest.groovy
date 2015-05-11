@@ -18,11 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.UseEngine
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -30,41 +28,21 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyAggregateTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends AggregateTest {
+    public static class Traversals extends AggregateTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_name_aggregateXxX_capXxX() {
-            g.V.name.aggregate('x').cap('x')
+            TraversalScriptHelper.compute("g.V.name.aggregate('x').cap('x')", g)
         }
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_aggregateXxX_byXnameX_capXxX() {
-            g.V.aggregate('x').by('name').cap('x')
+            TraversalScriptHelper.compute("g.V.aggregate('x').by('name').cap('x')", g)
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
-            g.V.out.aggregate('a').path;
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends AggregateTest {
-
-        @Override
-        public Traversal<Vertex, List<String>> get_g_V_name_aggregateXxX_capXxX() {
-            ComputerTestHelper.compute("g.V.name.aggregate('x').cap('x')", g)
-        }
-
-        @Override
-        public Traversal<Vertex, List<String>> get_g_V_aggregateXxX_byXnameX_capXxX() {
-            ComputerTestHelper.compute("g.V.aggregate('x').by('name').cap('x')", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_V_out_aggregateXaX_path() {
-            ComputerTestHelper.compute("g.V.out.aggregate('a').path", g)
+            TraversalScriptHelper.compute("g.V.out.aggregate('a').path", g)
         }
     }
 }

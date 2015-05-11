@@ -18,11 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -30,41 +27,21 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovyPropertiesTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends PropertiesTest {
+    public static class Traversals extends PropertiesTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {
-            g.V.has('age').properties('name', 'age').value
+            TraversalScriptHelper.compute("g.V.has('age').properties('name', 'age').value", g)
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXage_nameX_value() {
-            g.V.has('age').properties('age', 'name').value
+            TraversalScriptHelper.compute("g.V.has('age').properties('age', 'name').value", g)
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_hasXageX_properties_hasXid_nameIdX_value(final Object nameId) {
-            g.V.has('age').properties().has(T.id, nameId).value()
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends PropertiesTest {
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXname_ageX_value() {
-            ComputerTestHelper.compute("g.V.has('age').properties('name', 'age').value", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_hasXageX_propertiesXage_nameX_value() {
-            ComputerTestHelper.compute("g.V.has('age').properties('age', 'name').value", g)
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_hasXageX_properties_hasXid_nameIdX_value(final Object nameId) {
-            ComputerTestHelper.compute("g.V.has('age').properties().has(T.id, nameId).value()", g, "nameId", nameId)
+            TraversalScriptHelper.compute("g.V.has('age').properties().has(T.id, nameId).value()", g, "nameId", nameId)
         }
     }
 

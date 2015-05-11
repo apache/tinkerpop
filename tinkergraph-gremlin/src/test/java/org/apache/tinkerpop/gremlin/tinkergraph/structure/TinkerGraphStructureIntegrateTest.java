@@ -16,28 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.computer.traversal;
+package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-
-import java.io.Serializable;
-import java.util.function.Supplier;
+import org.apache.tinkerpop.gremlin.structure.StructureIntegrateSuite;
+import org.apache.tinkerpop.gremlin.structure.StructurePerformanceSuite;
+import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
+import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
+import org.junit.runner.RunWith;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * Executes the Gremlin Structure Performance Test Suite using TinkerGraph.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class TraversalSupplier<S, E> implements Supplier<Traversal.Admin<S, E>>, Serializable {
+@RunWith(StructureIntegrateSuite.class)
+@StructureIntegrateSuite.GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
+public class TinkerGraphStructureIntegrateTest {
 
-    private final Traversal.Admin<S, E> traversal;
-    private final boolean cloneOnGet;
-
-    public TraversalSupplier(final Traversal.Admin<S, E> traversal, final boolean cloneOnGet) {
-        this.traversal = traversal;
-        this.cloneOnGet = cloneOnGet;
-    }
-
-    @Override
-    public Traversal.Admin<S, E> get() {
-        return this.cloneOnGet ? this.traversal.clone() : this.traversal;
-    }
 }

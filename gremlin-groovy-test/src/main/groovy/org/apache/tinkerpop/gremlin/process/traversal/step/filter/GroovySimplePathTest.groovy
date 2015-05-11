@@ -18,12 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.UseEngine
-import org.apache.tinkerpop.gremlin.process.computer.ComputerTestHelper
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -31,31 +28,16 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
  */
 public abstract class GroovySimplePathTest {
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    public static class StandardTraversals extends SimplePathTest {
+    public static class Traversals extends SimplePathTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
-            g.V(v1Id).out('created').in('created').simplePath
+            TraversalScriptHelper.compute("g.V(v1Id).out('created').in('created').simplePath", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_timesX3X_path() {
-            return g.V.repeat(__.both.simplePath).times(3).path()
-        }
-    }
-
-    @UseEngine(TraversalEngine.Type.COMPUTER)
-    public static class ComputerTraversals extends SimplePathTest {
-
-        @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_outXcreatedX_inXcreatedX_simplePath(final Object v1Id) {
-            ComputerTestHelper.compute("g.V(v1Id).out('created').in('created').simplePath", g, "v1Id", v1Id);
-        }
-
-        @Override
-        public Traversal<Vertex, Path> get_g_V_repeatXboth_simplePathX_timesX3X_path() {
-            ComputerTestHelper.compute("g.V.repeat(__.both.simplePath).times(3).path()", g);
+            TraversalScriptHelper.compute("g.V.repeat(__.both.simplePath).times(3).path()", g);
         }
     }
 }
