@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -59,6 +60,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_both_dedup_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_dedup_name();
         printTraversalForm(traversal);
@@ -75,6 +77,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name();
         printTraversalForm(traversal);
@@ -86,6 +89,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_both_name_orderXa_bX_dedup() {
         final Traversal<Vertex, String> traversal = get_g_V_both_name_orderXa_bX_dedup();
         printTraversalForm(traversal);

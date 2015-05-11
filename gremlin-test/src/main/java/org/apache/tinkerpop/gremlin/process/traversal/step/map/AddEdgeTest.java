@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -52,6 +53,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX() {
         final Traversal<Vertex, Edge> traversal = get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -71,6 +73,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X() {
         final Traversal<Vertex, Edge> traversal = get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -92,6 +95,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_addOutEXexistsWith__g_V__time_nowX() {
         final Traversal<Vertex, Edge> traversal = get_g_V_addOutEXexistsWith__g_V__time_nowX();
         printTraversalForm(traversal);

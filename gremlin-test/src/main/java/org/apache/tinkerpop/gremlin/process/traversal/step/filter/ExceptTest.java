@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -132,6 +133,7 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_repeatXbothEXcreatedX_dedup_otherVX_emit_path() {
         final Traversal<Vertex, Path> traversal = get_g_VX1X_repeatXbothEXcreatedX_dedup_otherVX_emit_path(convertToVertexId("marko"));
         printTraversalForm(traversal);
