@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
@@ -265,7 +266,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("Thread.sleep(3000);'some-stuff-that-should not return'").all().join();
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
-            assertTrue(re.getCause().getCause().getMessage().startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
+            assertTrue(ExceptionUtils.getRootCause(re).getMessage().startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
         } finally {
             cluster.close();
         }
@@ -452,7 +453,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             Thread.sleep(1000);
 
             assertEquals(1, messages.get());
-
         }
     }
 

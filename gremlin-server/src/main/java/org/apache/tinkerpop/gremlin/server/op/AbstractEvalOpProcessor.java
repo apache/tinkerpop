@@ -50,6 +50,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -146,13 +147,10 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
         final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(script, language, bindings);
         evalFuture.handle((v, t) -> timerContext.stop());
-        evalFuture.exceptionally(se -> {
-            logger.warn(String.format("Exception processing a script on request [%s].", msg), se);
-            ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(se.getMessage()).create());
-            return null;
-        });
 
+        final AtomicBoolean iterationFired = new AtomicBoolean(false);
         final CompletableFuture<Void> iterationFuture = evalFuture.thenAcceptAsync(o -> {
+            iterationFired.set(true);
             final Iterator itty = IteratorUtils.asIterator(o);
 
             logger.debug("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
@@ -160,33 +158,30 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             try {
                 handleIterator(context, itty);
             } catch (Exception te) {
-                // todo: throwing here dumps to handeAsync below but no message is returned to the client!!
                 throw new RuntimeException(te);
             }
         }, executor);
 
-        iterationFuture.handleAsync((r, ex) -> {
+        iterationFuture.handleAsync((o, ex) -> {
             // iteration has completed
             if (ex != null) {
-                // an exception could have fired in the evalFuture - it interestingly bubbles up here so we have to
-                // check for the iteration exception (which is a TimeoutException).  otherwise the exception would
-                // have been dealt with from a messaging perspective as part of the "exceptionally" completion stage
-                // of the evalFuture itself.
-                if (ExceptionUtils.getRootCause(ex).getClass().equals(TimeoutException.class)) {
+                // an exception could have fired in the evalFuture - it bubbles up here so we have to
+                // check for the iteration exception or something more general.
+                final Throwable root = ExceptionUtils.getRootCause(ex);
+                if (!iterationFired.get()) {
+                    // iteration wasn't executed so this must have raised during the eval process
+                    logger.warn(String.format("Exception processing a script on request [%s].", msg), root);
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(root.getMessage()).create());
+                    return null;
+                } else if (root.getClass().equals(TimeoutException.class)) {
                     final String errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, ex.getCause().getMessage());
                     logger.warn(errorMessage);
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                } else {
+                    logger.warn(String.format("Exception processing a script on request [%s].", msg), root);
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(root.getMessage()).create());
                 }
             }
-
-            // todo: no need to terminate anymore - handled by error code
-            /*
-            else {
-                // since this is not an error we need to terminate.  termination for errors is handled in the
-                // ResponseEncoder
-                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.PARTIAL_CONTENT).create());
-            }
-            */
             return null;
         }, executor);
     }

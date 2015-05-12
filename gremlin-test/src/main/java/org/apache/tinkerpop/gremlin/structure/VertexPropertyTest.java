@@ -474,13 +474,6 @@ public class VertexPropertyTest extends AbstractGremlinTest {
     })
     public static class ExceptionConsistencyWhenVertexPropertyRemovedTest extends AbstractGremlinTest {
 
-        // todo: need to cover actual meta property assignment here as VertexTest doesn't check for that features
-        /*
-        {"v.property(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
-            v.property("k", "v");
-        })},
-        */
-
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
             return Arrays.asList(new Object[][]{
@@ -534,7 +527,6 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             tryCommit(graph, g -> {
                 assertEquals(2, IteratorUtils.count(v.properties()));
                 assertVertexEdgeCounts(1, 0);
-                // TODO: Neo4j needs a better ID system for VertexProperties
                 assertEquals(v.property("name"), v.property("name").property("acl", "public").element());
                 assertEquals(v.property("age"), v.property("age").property("acl", "private").element());
             });

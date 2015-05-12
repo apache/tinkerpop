@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -29,13 +30,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
-import static org.apache.tinkerpop.gremlin.structure.P.eq;
-import static org.apache.tinkerpop.gremlin.structure.P.neq;
+import static org.apache.tinkerpop.gremlin.structure.P.*;
 import static org.junit.Assert.*;
 
 /**
@@ -46,9 +45,9 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     /// where(local)
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eqXbXX();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neqXbXX();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXb_hasXname_markoXX();
 
@@ -56,14 +55,26 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     /// where(global)
 
-    public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neq_bX_name(final Object v1Id);
+    public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name(final Object v1Id);
 
     public abstract Traversal<Vertex, Object> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX(final Object v1Id);
 
+    // except/retain functionality
+
+    public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXeqXaXX_name(final Object v1Id);
+
+    public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_name(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXwithoutXaXX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(final Object v1Id, final Object v2Id);
+
+    public abstract Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path(final Object v1Id);
+
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX();
+    public void g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eqXbXX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eqXbXX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -80,8 +91,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_b_neqX() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX();
+    public void g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neqXbXX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neqXbXX();
         printTraversalForm(traversal);
         int counter = 0;
         while (traversal.hasNext()) {
@@ -151,18 +162,76 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neq_bX_name() {
-        final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neq_bX_name(convertToVertexId(graph, "marko"));
+    public void g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name(convertToVertexId(graph, "marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList("josh", "peter"), traversal);
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXaX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX() {
+    public void g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX() {
         final Traversal<Vertex, Object> traversal = get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX(convertToVertexId(graph, "marko"));
         printTraversalForm(traversal);
         checkResults(Arrays.asList("josh", 32), traversal);
+    }
+
+    /// except/retain functionality
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXeqXaXX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXeqXaXX_name(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        assertEquals("marko", traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_name(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("peter", "josh"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_out_aggregateXxX_out_whereXwithout_xX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_aggregateXxX_out_whereXwithoutXaXX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        assertEquals("ripple", traversal.next().<String>value("name"));
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_withSideEffectXa_g_VX2XX_VX1X_out_whereXneqXaXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(convertToVertexId("marko"), convertToVertexId("vadas"));
+        printTraversalForm(traversal);
+        int counter = 0;
+        final Set<Vertex> vertices = new HashSet<>();
+        while (traversal.hasNext()) {
+            counter++;
+            final Vertex vertex = traversal.next();
+            vertices.add(vertex);
+            assertTrue(vertex.value("name").equals("josh") || vertex.value("name").equals("lop"));
+        }
+        assertEquals(2, counter);
+        assertEquals(2, vertices.size());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void get_g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path() {
+        final Traversal<Vertex, Path> traversal = get_g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        final List<Path> paths = traversal.toList();
+        assertEquals(4, paths.size());
+        assertEquals(1, paths.stream().filter(path -> path.size() == 3).count());
+        assertEquals(2, paths.stream().filter(path -> path.size() == 5).count());
+        assertEquals(1, paths.stream().filter(path -> path.size() == 7).count());
+        assertFalse(traversal.hasNext());
     }
 
 
@@ -171,12 +240,12 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         /// where(local)
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eqXbXX() {
             return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", eq("b"));
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neqXbXX() {
             return g.V().has("age").as("a").out().in().has("age").as("b").select().where("a", neq("b"));
         }
 
@@ -193,13 +262,40 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         /// where(global)
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neq_bX_name(final Object v1Id) {
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name(final Object v1Id) {
             return g.V(v1Id).as("a").out("created").in("created").as("b").where("a", neq("b")).values("name");
         }
 
         @Override
         public Traversal<Vertex, Object> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX(final Object v1Id) {
             return g.V(v1Id).as("a").out("created").in("created").as("b").where(__.as("b").out("created").has("name", "ripple")).values("age", "name");
+        }
+
+        // except/retain functionality
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXeqXaXX_name(final Object v1Id) {
+            return g.V(v1Id).as("a").out("created").in("created").where(eq("a")).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_name(final Object v1Id) {
+            return g.V(v1Id).as("a").out("created").in("created").where(neq("a")).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXwithoutXaXX(final Object v1Id) {
+            return g.V(v1Id).out().aggregate("x").out().where(without("x"));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(final Object v1Id, final Object v2Id) {
+            return g.withSideEffect("a", () -> graph.vertices(v2Id).next()).V(v1Id).out().where(neq("a"));
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path(final Object v1Id) {
+            return g.V(v1Id).repeat(__.bothE("created").where(without("e")).aggregate("e").otherV()).emit().path();
         }
     }
 }

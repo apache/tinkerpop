@@ -21,6 +21,8 @@
 
 package org.apache.tinkerpop.gremlin.structure;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.BiPredicateTraversal;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
@@ -126,13 +128,17 @@ public class P<V> implements Predicate<V>, Serializable {
         return new P(Contains.without, value);
     }
 
+    public static <S, E> P<S> traversal(final Traversal<S, E> traversal) {
+        return new P(new BiPredicateTraversal<>(traversal.asAdmin()), null);
+    }
+
     public static P test(final BiPredicate biPredicate, final Object value) {
         return new P(biPredicate, value);
     }
 
     public static Pair<P, P[]> splitForAPI(final P[] pArray) {
         if (pArray.length == 0)
-            throw new IllegalArgumentException("The P[] is not splittable cause its length is 0: " + pArray);
+            throw new IllegalArgumentException("The P[] is not splittable because its length is 0: " + pArray);
         else if (pArray.length == 1)
             return new Pair<>(pArray[0], new P[0]);
         else
