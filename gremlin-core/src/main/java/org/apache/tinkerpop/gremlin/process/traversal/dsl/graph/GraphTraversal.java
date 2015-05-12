@@ -45,14 +45,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ExceptStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RetainStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
@@ -132,7 +130,6 @@ import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 import org.javatuples.Pair;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -445,18 +442,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupGlobalStep<>(this.asAdmin()) : new DedupLocalStep(this.asAdmin()));
     }
 
-    public default GraphTraversal<S, E> except(final String sideEffectKeyOrPathLabel) {
-        return this.asAdmin().addStep(new ExceptStep<E>(this.asAdmin(), sideEffectKeyOrPathLabel));
-    }
-
-    public default GraphTraversal<S, E> except(final E exceptObject) {
-        return this.asAdmin().addStep(new ExceptStep<>(this.asAdmin(), exceptObject));
-    }
-
-    public default GraphTraversal<S, E> except(final Collection<E> exceptCollection) {
-        return this.asAdmin().addStep(new ExceptStep<>(this.asAdmin(), exceptCollection));
-    }
-
     public default GraphTraversal<S, E> where(final Scope scope, final String startKey, final P<?> predicate) {
         return this.asAdmin().addStep(new WhereStep<>(this.asAdmin(), scope, Optional.ofNullable(startKey), predicate));
     }
@@ -573,18 +558,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> limit(final Scope scope, final long limit) {
         return this.range(scope, 0, limit);
-    }
-
-    public default GraphTraversal<S, E> retain(final String sideEffectKeyOrPathLabel) {
-        return this.asAdmin().addStep(new RetainStep<>(this.asAdmin(), sideEffectKeyOrPathLabel));
-    }
-
-    public default GraphTraversal<S, E> retain(final E retainObject) {
-        return this.asAdmin().addStep(new RetainStep<>(this.asAdmin(), retainObject));
-    }
-
-    public default GraphTraversal<S, E> retain(final Collection<E> retainCollection) {
-        return this.asAdmin().addStep(new RetainStep<>(this.asAdmin(), retainCollection));
     }
 
     public default GraphTraversal<S, E> simplePath() {

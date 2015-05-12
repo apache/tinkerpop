@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -303,18 +302,6 @@ public class __ {
         return __.<A>start().dedup(scope);
     }
 
-    public static <A> GraphTraversal<A, A> except(final String sideEffectKeyOrPathLabel) {
-        return __.<A>start().except(sideEffectKeyOrPathLabel);
-    }
-
-    public static <A> GraphTraversal<A, A> except(final Object exceptObject) {
-        return __.<A>start().except((A) exceptObject);
-    }
-
-    public static <A> GraphTraversal<A, A> except(final Collection<A> exceptCollection) {
-        return __.<A>start().except(exceptCollection);
-    }
-
     public static <A> GraphTraversal<A, A> has(final Traversal<?, ?> hasNextTraversal) {
         return __.<A>start().has(hasNextTraversal);
     }
@@ -421,18 +408,6 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> limit(final Scope scope, final long limit) {
         return __.<A>start().limit(scope, limit);
-    }
-
-    public static <A> GraphTraversal<A, A> retain(final String sideEffectKeyOrPathLabel) {
-        return __.<A>start().retain(sideEffectKeyOrPathLabel);
-    }
-
-    public static <A> GraphTraversal<A, A> retain(final Object retainObject) {
-        return __.<A>start().retain((A) retainObject);
-    }
-
-    public static <A> GraphTraversal<A, A> retain(final Collection<A> retainCollection) {
-        return __.<A>start().retain(retainCollection);
     }
 
     public static <A> GraphTraversal<A, A> simplePath() {
