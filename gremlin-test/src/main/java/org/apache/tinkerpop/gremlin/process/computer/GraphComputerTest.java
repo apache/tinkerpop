@@ -60,8 +60,8 @@ import static org.junit.Assert.*;
         "adjacentVertexLabelsCanNotBeRead",
         "adjacentVertexPropertiesCanNotBeReadOrUpdated",
         "adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated",
-        "adjacentVerticesCanNotBeQueried",
-        "resultGraphPersistCombinationNotSupported" // TODO: NOT TRUE!
+        "resultGraphPersistCombinationNotSupported",
+        "vertexPropertiesCanNotBeUpdatedInMapReduce"// TODO: NOT TRUE!
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer",
@@ -845,7 +845,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     /////////////////////////////////////////////
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldNotAllowEdgeAccessInMapReduce() throws Exception {
+    public void shouldOnlyAllowReadingVertexPropertiesInMapReduce() throws Exception {
         graph.compute(graphComputerClass.get()).mapReduce(new MapReduceC()).submit().get();
     }
 
@@ -861,21 +861,35 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             try {
                 vertex.edges(Direction.OUT);
                 fail("Edges should not be accessible in MapReduce.map()");
-            } catch (final IllegalStateException e) {
+            } catch (final UnsupportedOperationException e) {
                 assertEquals(GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce().getMessage(), e.getMessage());
             }
             try {
                 vertex.edges(Direction.IN);
                 fail("Edges should not be accessible in MapReduce.map()");
-            } catch (final IllegalStateException e) {
+            } catch (final UnsupportedOperationException e) {
                 assertEquals(GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce().getMessage(), e.getMessage());
             }
             try {
                 vertex.edges(Direction.BOTH);
                 fail("Edges should not be accessible in MapReduce.map()");
-            } catch (final IllegalStateException e) {
+            } catch (final UnsupportedOperationException e) {
                 assertEquals(GraphComputer.Exceptions.incidentAndAdjacentElementsCanNotBeAccessedInMapReduce().getMessage(), e.getMessage());
             }
+            ////
+            try {
+                vertex.property("name", "bob");
+                fail("Vertex properties should be immutable in MapReduce.map()");
+            } catch (final UnsupportedOperationException e) {
+                assertEquals(GraphComputer.Exceptions.vertexPropertiesCanNotBeUpdatedInMapReduce().getMessage(), e.getMessage());
+            }
+            try {
+                vertex.property("name").property("test", 1);
+                fail("Vertex properties should be immutable in MapReduce.map()");
+            } catch (final UnsupportedOperationException e) {
+                assertEquals(GraphComputer.Exceptions.vertexPropertiesCanNotBeUpdatedInMapReduce().getMessage(), e.getMessage());
+            }
+
         }
 
         @Override
@@ -913,7 +927,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 try {
                     vertex.vertices(Direction.OUT).forEachRemaining(Vertex::label);
                     fail("Adjacent vertex labels should not be accessible in VertexProgram.execute()");
-                } catch (IllegalStateException e) {
+                } catch (UnsupportedOperationException e) {
                     assertEquals(GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead().getMessage(), e.getMessage());
                 }
             }
@@ -921,7 +935,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 try {
                     vertex.vertices(Direction.IN).forEachRemaining(Vertex::label);
                     fail("Adjacent vertex labels should not be accessible in VertexProgram.execute()");
-                } catch (IllegalStateException e) {
+                } catch (UnsupportedOperationException e) {
                     assertEquals(GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead().getMessage(), e.getMessage());
                 }
             }
@@ -929,7 +943,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 try {
                     vertex.vertices(Direction.BOTH).forEachRemaining(Vertex::label);
                     fail("Adjacent vertex labels should not be accessible in VertexProgram.execute()");
-                } catch (IllegalStateException e) {
+                } catch (UnsupportedOperationException e) {
                     assertEquals(GraphComputer.Exceptions.adjacentVertexLabelsCanNotBeRead().getMessage(), e.getMessage());
                 }
             }
@@ -938,7 +952,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 try {
                     vertex.vertices(Direction.OUT).forEachRemaining(v -> v.property("name"));
                     fail("Adjacent vertex properties should not be accessible in VertexProgram.execute()");
-                } catch (IllegalStateException e) {
+                } catch (UnsupportedOperationException e) {
                     assertEquals(GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated().getMessage(), e.getMessage());
                 }
             }
@@ -946,7 +960,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 try {
                     vertex.vertices(Direction.IN).forEachRemaining(v -> v.property("name"));
                     fail("Adjacent vertex properties should not be accessible in VertexProgram.execute()");
-                } catch (IllegalStateException e) {
+                } catch (UnsupportedOperationException e) {
                     assertEquals(GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated().getMessage(), e.getMessage());
                 }
             }
@@ -954,10 +968,28 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 try {
                     vertex.vertices(Direction.BOTH).forEachRemaining(v -> v.property("name"));
                     fail("Adjacent vertex properties should not be accessible in VertexProgram.execute()");
-                } catch (IllegalStateException e) {
+                } catch (UnsupportedOperationException e) {
                     assertEquals(GraphComputer.Exceptions.adjacentVertexPropertiesCanNotBeReadOrUpdated().getMessage(), e.getMessage());
                 }
             }
+            ////////////////////
+            if (vertex.vertices(Direction.BOTH).hasNext()) {
+                try {
+                    vertex.vertices(Direction.BOTH).forEachRemaining(v -> v.edges(Direction.BOTH));
+                    fail("Adjacent vertex edges should not be accessible in VertexProgram.execute()");
+                } catch (UnsupportedOperationException e) {
+                    assertEquals(GraphComputer.Exceptions.adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated().getMessage(), e.getMessage());
+                }
+            }
+            if (vertex.vertices(Direction.BOTH).hasNext()) {
+                try {
+                    vertex.vertices(Direction.BOTH).forEachRemaining(v -> v.vertices(Direction.BOTH));
+                    fail("Adjacent vertex vertices should not be accessible in VertexProgram.execute()");
+                } catch (UnsupportedOperationException e) {
+                    assertEquals(GraphComputer.Exceptions.adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated().getMessage(), e.getMessage());
+                }
+            }
+
         }
 
         @Override

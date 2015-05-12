@@ -168,7 +168,7 @@ public class TinkerGraphComputer implements GraphComputer {
                             while (true) {
                                 final Vertex vertex = vertices.next();
                                 if (null == vertex) return;
-                                workerMapReduce.map(ComputerGraph.mapReduce(vertex, Optional.ofNullable(this.vertexProgram)), mapEmitter);
+                                workerMapReduce.map(ComputerGraph.mapReduce(vertex), mapEmitter);
                             }
                         });
                         workers.mapReduceWorkerEnd(MapReduce.Stage.MAP);

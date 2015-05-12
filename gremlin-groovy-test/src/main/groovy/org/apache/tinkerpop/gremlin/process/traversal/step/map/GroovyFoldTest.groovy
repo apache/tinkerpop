@@ -40,7 +40,7 @@ public abstract class GroovyFoldTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_V_age_foldX0_plusX() {
-            TraversalScriptHelper.compute("g.V.age.fold(0) { seed, age -> seed + age }", g)
+            TraversalScriptHelper.compute("g.V.age.fold(0,sum)", g)
         }
     }
 }

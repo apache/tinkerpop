@@ -50,7 +50,7 @@ public abstract class DetachedElement<E> implements Element, Serializable, Attac
         this.id = element.id();
         try {
             this.label = element.label();
-        } catch (IllegalStateException e) {
+        } catch (final UnsupportedOperationException e) {   // ghetto.
             this.label = Vertex.DEFAULT_LABEL;
         }
     }

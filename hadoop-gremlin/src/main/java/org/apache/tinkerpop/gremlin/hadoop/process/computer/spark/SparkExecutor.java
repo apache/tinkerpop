@@ -166,7 +166,7 @@ public final class SparkExecutor {
             workerMapReduce.workerStart(MapReduce.Stage.MAP);
             final SparkMapEmitter<K, V> mapEmitter = new SparkMapEmitter<>();
             return () -> IteratorUtils.flatMap(partitionIterator, vertexWritable -> {
-                workerMapReduce.map(ComputerGraph.mapReduce(vertexWritable._2().get(),java.util.Optional.empty()), mapEmitter);  // TODO: not Optional.empty()!
+                workerMapReduce.map(ComputerGraph.mapReduce(vertexWritable._2().get()), mapEmitter);
                 if (!partitionIterator.hasNext())
                     workerMapReduce.workerEnd(MapReduce.Stage.MAP);
                 return mapEmitter.getEmissions();
