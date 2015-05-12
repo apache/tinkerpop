@@ -36,29 +36,43 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
 
     @Override
     protected Statement possiblyExpectingExceptions(final FrameworkMethod method, final Object test, final Statement next) {
-        return new ExpectComputerVerificationException(next, (AbstractGremlinTest) test);
+        org.junit.Test annotation = method.getAnnotation(org.junit.Test.class);
+        return new ExpectComputerVerificationException(next, (AbstractGremlinTest) test,
+                annotation != null ? annotation.expected() : org.junit.Test.None.class);
     }
 
     class ExpectComputerVerificationException extends Statement {
 
         private Statement next;
         private AbstractGremlinTest test;
+        private final Class<? extends Throwable> expected;
 
-        public ExpectComputerVerificationException(final Statement next, final AbstractGremlinTest test) {
+        public ExpectComputerVerificationException(final Statement next, final AbstractGremlinTest test,
+                                                   final Class<? extends Throwable> expected) {
             this.next = next;
             this.test = test;
+            this.expected = expected;
         }
 
         @Override
         public void evaluate() throws Throwable {
+            boolean complete = false;
             try {
                 next.evaluate();
+                complete = true;
             } catch (ComputerVerificationException e) {
                 if (!test.isComputerTest()) throw e;
                 final boolean muted = Boolean.parseBoolean(System.getProperty("muteTestLogs", "false"));
                 if (!muted) System.out.println(String.format(
                         "The following traversal is not valid for computer execution: %s",
                         e.getTraversal()));
+            } catch (Throwable e) {
+                if (!expected.isAssignableFrom(e.getClass())) {
+                    throw e;
+                }
+            }
+            if (complete && !expected.equals(org.junit.Test.None.class)) {
+                throw new AssertionError("Expected exception: " + expected.getName());
             }
         }
     }
