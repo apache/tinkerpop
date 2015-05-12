@@ -526,7 +526,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             final Vertex v = graph.addVertex("name", "marko", "age", 34);
             tryCommit(graph, g -> {
                 assertEquals(2, IteratorUtils.count(v.properties()));
-                assertVertexEdgeCounts(1, 0)
+                assertVertexEdgeCounts(1, 0);
                 assertEquals(v.property("name"), v.property("name").property("acl", "public").element());
                 assertEquals(v.property("age"), v.property("age").property("acl", "private").element());
             });
