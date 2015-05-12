@@ -1439,7 +1439,7 @@ g.V(1).out('created').in('created').where(out('created').count().is(gt(1))).valu
 <2> Of the co-creators of marko, only keep those whose name is josh or peter. (using a sideEffect)
 <3> Which of marko's collaborators have worked on more than 1 project? (using a traversal)
 
-Please see <<using-where-with-match,`match().where()`>> and <<using-where-with-select,`select().where()`>> for how `where()` can be used in conjection with `Map<String,Object>` projecting steps.
+IMPORTANT: Please see <<using-where-with-match,`match().where()`>> and <<using-where-with-select,`select().where()`>> for how `where()` can be used in conjunction with `Map<String,Object>` projecting steps -- i.e. `Scope.local`.
 
 [[a-note-on-barrier-steps]]
 A Note on Barrier Steps
