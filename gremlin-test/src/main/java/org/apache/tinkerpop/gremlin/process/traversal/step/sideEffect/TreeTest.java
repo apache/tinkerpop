@@ -58,7 +58,6 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_out_out_tree_byXnameX() {
         final List<Traversal<Vertex, Tree>> traversals = Arrays.asList(
                 get_g_VX1X_out_out_tree_byXnameX(convertToVertexId("marko")),

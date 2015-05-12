@@ -48,4 +48,8 @@ public final class TokenTraversal<S extends Element, E> extends AbstractLambdaTr
     public String toString() {
         return this.t.toString();
     }
+
+    public T getToken() {
+        return this.t;
+    }
 }
