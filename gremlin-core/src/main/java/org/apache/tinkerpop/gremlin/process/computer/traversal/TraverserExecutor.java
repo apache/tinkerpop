@@ -30,8 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceElement;
-import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceProperty;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -69,7 +67,7 @@ public final class TraverserExecutor {
                         traverser.detach();
                         messenger.sendMessage(MessageScope.Global.of(hostingVertex), new TraverserSet<>(traverser));
                     } else {
-                        if (traverser.get() instanceof ReferenceElement || traverser.get() instanceof ReferenceProperty)   // necessary for path access to local object
+                        if (traverser.get() instanceof Attachable)   // necessary for path access to local object
                             traverser.attach(Attachable.Method.get(vertex));
                         toProcessTraversers.add(traverser);
                     }
