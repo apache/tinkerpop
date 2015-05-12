@@ -44,6 +44,19 @@ public final class TraversalUtil {
         }
     }
 
+    public static final <S, E> boolean test(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal, E end) {
+        final Traverser.Admin<S> split = traverser.split();
+        split.setSideEffects(traversal.getSideEffects());
+        split.setBulk(1l); // TODO: do we do this?
+        traversal.reset();
+        traversal.addStart(split);
+        while (traversal.hasNext()) {
+            if (traversal.next().equals(end))
+                return true;
+        }
+        return false;
+    }
+
     public static final <S, E> E applyNullable(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
         return null == traversal ? (E) traverser.get() : TraversalUtil.apply(traverser, traversal);
     }
@@ -67,6 +80,17 @@ public final class TraversalUtil {
         } catch (final NoSuchElementException e) {
             throw new IllegalArgumentException("The provided start does not map to a value: " + start + "->" + traversal);
         }
+    }
+
+    public static final <S, E> boolean test(final S start, final Traversal.Admin<S, E> traversal, final E end) {
+        traversal.reset();
+        traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
+        while (traversal.hasNext()) {
+            if (traversal.next().equals(end))
+                return true;
+        }
+        return false;
+
     }
 
     public static final <S, E> E applyNullable(final S start, final Traversal.Admin<S, E> traversal) {

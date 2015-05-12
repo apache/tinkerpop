@@ -20,9 +20,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.BiPredicateTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -32,134 +32,78 @@ import org.apache.tinkerpop.gremlin.structure.P;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class WhereStep<S> extends FilterStep<S> implements TraversalParent, Scoping {
 
-    private final String firstKey;
-    private final String secondKey;
-    private final BiPredicate biPredicate;
-    private Traversal.Admin traversalConstraint;
+    private P predicate;
+    private final String startKey;
+    private final String endKey;
     private Scope scope;
 
 
-    public WhereStep(final Traversal.Admin traversal, final Scope scope, final String firstKey, final P<?> secondKeyPredicate) {
+    public WhereStep(final Traversal.Admin traversal, final Scope scope, final Optional<String> startKey, final P<?> predicate) {
         super(traversal);
-        this.firstKey = firstKey;
-        this.secondKey = (String) secondKeyPredicate.getValue();
-        this.biPredicate = secondKeyPredicate.getBiPredicate();
-        this.traversalConstraint = null;
         this.scope = scope;
+        this.predicate = predicate;
+        this.startKey = startKey.orElse(null);
+        if (this.predicate.getBiPredicate() instanceof BiPredicateTraversal) {
+            this.integrateChild(((BiPredicateTraversal) this.predicate.getBiPredicate()).getTraversal());
+        }
+        this.endKey = (String) this.predicate.getValue();
     }
 
-    public WhereStep(final Traversal.Admin traversal, final Scope scope, final Traversal.Admin traversalConstraint) {
+    public WhereStep(final Traversal.Admin traversal, final Scope scope, final Traversal<?, ?> whereTraversal) {
         super(traversal);
-        this.biPredicate = null;
-        this.traversalConstraint = this.integrateChild(traversalConstraint);
         this.scope = scope;
-        // TODO: do we need to compile the traversal first (probably)
-        ///  get the start-step as()
-        final Step<?, ?> startStep = this.traversalConstraint.getStartStep();
-        if (startStep.getLabels().isEmpty())
-            throw new IllegalArgumentException("Where traversal must have their start step labeled with as(): " + this.traversalConstraint);
-        if (startStep.getLabels().size() > 1)
-            throw new IllegalArgumentException("Where traversal can not have multiple labels on the start step: " + this.traversalConstraint);
-        this.firstKey = startStep.getLabels().iterator().next();
-        /// get the end-step as()
-        Step<?, ?> endStep = this.traversalConstraint.getEndStep();
-        if (endStep.getLabels().size() > 1)
-            throw new IllegalArgumentException("Where traversal can not have multiple labels on the end step: " + this.traversalConstraint);
-        this.secondKey = endStep.getLabels().isEmpty() ? null : endStep.getLabels().iterator().next();
+        this.predicate = P.traversal(whereTraversal);
+        this.startKey = whereTraversal.asAdmin().getStartStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getStartStep().getLabels().iterator().next();
+        this.endKey = whereTraversal.asAdmin().getEndStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getEndStep().getLabels().iterator().next();
+        this.integrateChild(whereTraversal.asAdmin());
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
+        final Object startObject;
+        final Object endObject;
 
         if (Scope.local == this.scope) {
             final Map<String, Object> map = (Map<String, Object>) traverser.get();
-            // bi-predicate predicate
-            if (null == this.traversalConstraint) {
-                if (!map.containsKey(this.firstKey))
-                    throw new IllegalArgumentException("The provided key is not in the current map: " + this.firstKey);
-                if (!map.containsKey(this.secondKey))
-                    throw new IllegalArgumentException("The provided key is not in the current map: " + this.secondKey);
-                return this.biPredicate.test(map.get(this.firstKey), map.get(this.secondKey));
-            }
-            // traversal predicate
-            else {
-                final Object startObject = map.get(this.firstKey);
-                if (null == startObject)
-                    throw new IllegalArgumentException("The provided key is not in the current map: " + this.firstKey);
-                if (null != this.secondKey && !map.containsKey(this.secondKey))
-                    throw new IllegalArgumentException("The provided key is not in the current map: " + this.secondKey);
-                return this.testTraversalConstraint(traverser, startObject, null == this.secondKey ? null : map.get(this.secondKey));
-
-            }
+            startObject = null == this.startKey ? traverser.get() : map.get(this.startKey);
+            endObject = null == this.endKey ? null : map.get(this.endKey);
         } else {
             final Path path = traverser.path();
-            // bi-predicate predicate
-            if (null == this.traversalConstraint) {
-                if (!path.hasLabel(this.firstKey))
-                    throw new IllegalArgumentException("The provided label is not in the current path: " + this.firstKey);
-                if (!path.hasLabel(this.secondKey))
-                    throw new IllegalArgumentException("The provided label is not in the current path: " + this.secondKey);
-                return this.biPredicate.test(path.get(this.firstKey), path.get(this.secondKey));
-            }
-            // traversal predicate
-            else {
-                final Object startObject = path.get(this.firstKey);
-                if (null == startObject)
-                    throw new IllegalArgumentException("The provided label is not in the current path: " + this.firstKey);
-                if (null != this.secondKey && !path.hasLabel(this.secondKey))
-                    throw new IllegalArgumentException("The provided label is not in the current path: " + this.secondKey);
-                return this.testTraversalConstraint(traverser, startObject, null == this.secondKey ? null : path.get(this.secondKey));
-            }
+            startObject = null == this.startKey ? traverser.get() : path.hasLabel(this.startKey) ? path.get(this.startKey) : traverser.sideEffects(this.startKey);
+            endObject = null == this.endKey ? null : path.hasLabel(this.endKey) ? path.get(this.endKey) : traverser.sideEffects(this.endKey);
         }
-    }
-
-    private boolean testTraversalConstraint(final Traverser traverser, final Object start, final Object end) {
-        this.traversalConstraint.addStart(this.getTraversal().asAdmin().getTraverserGenerator().generate(start, this.traversalConstraint.getStartStep(), traverser.bulk()));
-        if (null == end) {
-            if (this.traversalConstraint.hasNext()) {
-                this.traversalConstraint.reset();
-                return true;
-            }
-        } else {
-            while (this.traversalConstraint.hasNext()) {
-                if (this.traversalConstraint.next().equals(end)) {
-                    this.traversalConstraint.reset();
-                    return true;
-                }
-            }
-        }
-        return false;
+        return this.predicate.getBiPredicate().test(startObject, endObject);
     }
 
     @Override
     public List<Traversal.Admin> getLocalChildren() {
-        return null == this.traversalConstraint ? Collections.emptyList() : Collections.singletonList(this.traversalConstraint);
+        return this.predicate.getBiPredicate() instanceof BiPredicateTraversal ? Collections.singletonList(((BiPredicateTraversal) this.predicate.getBiPredicate()).getTraversal()) : Collections.emptyList();
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.scope, this.firstKey, this.biPredicate, this.secondKey, this.traversalConstraint);
+        return TraversalHelper.makeStepString(this, this.scope, this.startKey, this.predicate);
     }
 
     @Override
     public WhereStep<S> clone() {
         final WhereStep<S> clone = (WhereStep<S>) super.clone();
-        if (null != this.traversalConstraint)
-            clone.traversalConstraint = clone.integrateChild(this.traversalConstraint.clone());
+        if (this.predicate.getBiPredicate() instanceof BiPredicateTraversal)
+            clone.predicate = P.traversal(((BiPredicateTraversal) this.predicate.getBiPredicate()).getTraversal().clone());
         return clone;
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(this.scope == Scope.local ? TraverserRequirement.OBJECT : TraverserRequirement.PATH);
+        return this.getSelfAndChildRequirements(Scope.local == this.scope ? TraverserRequirement.OBJECT : TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
     }
 
     public void setScope(final Scope scope) {
