@@ -1432,10 +1432,12 @@ The `where()`-step filters the current object based on either the object itself 
 ----
 g.V(1).as('a').out('created').in('created').where(neq('a')) <1>
 g.withSideEffect('a'){['josh','peter']}.V(1).out('created').in('created').values('name').where(within('a')) <2>
+g.V(1).out('created').in('created').where(out('created').count().is(gt(1))).values('name') <3>
 ----
 
-<1> Who are marko's collaborators, where marko can not be his own collaborator?
-<2> Of the co-creators of marko, only keep those whose name is josh or peter.
+<1> Who are marko's collaborators, where marko can not be his own collaborator? (predicate)
+<2> Of the co-creators of marko, only keep those whose name is josh or peter. (using a sideEffect)
+<3> Which of marko's collaborators have worked on more than 1 project? (using a traversal)
 
 Please see <<using-where-with-match,`match().where()`>> and <<using-where-with-select,`select().where()`>> for how `where()` can be used in conjection with `Map<String,Object>` projecting steps.
 
