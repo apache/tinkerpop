@@ -31,15 +31,18 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
+import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -169,7 +172,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         final List<Integer> expected = IntStream.range(1, 10).boxed().collect(Collectors.toList());
         IntStream.range(0, requests).forEach(r ->
-            assertTrue(expected.containsAll(((List<Result>) refs[r].get()).stream().map(resultItem -> new Integer(resultItem.getInt())).collect(Collectors.toList()))));
+                assertTrue(expected.containsAll(((List<Result>) refs[r].get()).stream().map(resultItem -> new Integer(resultItem.getInt())).collect(Collectors.toList()))));
     }
 
     @Test
@@ -407,5 +410,33 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(30, results32.all().get().get(0).getInt());
 
         cluster.close();
+    }
+
+    @Test
+    public void shouldBeThreadSafeToUseOneClient() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        final Map<Integer, Integer> results = new ConcurrentHashMap<>();
+        final List<Thread> threads = new ArrayList<>();
+        for (int ix = 0; ix < 100; ix++) {
+            final int otherNum = ix;
+            final Thread t = new Thread(()->{
+                try {
+                    results.put(otherNum, client.submit("1000+" + otherNum).all().get().get(0).getInt());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }, name.getMethodName() + "-" + ix);
+
+            t.start();
+            threads.add(t);
+        }
+
+        threads.forEach(FunctionUtils.wrapConsumer(Thread::join));
+
+        for (int ix = 0; ix < results.size(); ix++) {
+            assertEquals(1000 + ix, results.get(ix).intValue());
+        }
     }
 }
