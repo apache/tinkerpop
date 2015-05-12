@@ -66,11 +66,12 @@ class Handler {
                     pending.get(response.getRequestId()).markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage()));
                 }
 
-                // todo: should this go in finally? where is the catch?
                 // as this is a non-PARTIAL_CONTENT code - the stream is done
                 if (response.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT)
                     pending.remove(response.getRequestId()).markComplete();
             } finally {
+                // in the event of an exception above the exception is tossed and handled by whatever channelpipeline
+                // error handling is at play.
                 ReferenceCountUtil.release(response);
             }
         }
