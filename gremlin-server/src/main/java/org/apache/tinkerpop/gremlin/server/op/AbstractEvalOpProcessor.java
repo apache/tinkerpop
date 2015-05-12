@@ -178,15 +178,6 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                     ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
                 }
             }
-
-            // todo: no need to terminate anymore - handled by error code
-            /*
-            else {
-                // since this is not an error we need to terminate.  termination for errors is handled in the
-                // ResponseEncoder
-                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.PARTIAL_CONTENT).create());
-            }
-            */
             return null;
         }, executor);
     }
