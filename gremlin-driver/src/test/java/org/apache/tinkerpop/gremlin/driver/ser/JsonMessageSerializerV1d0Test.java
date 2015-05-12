@@ -240,10 +240,13 @@ public class JsonMessageSerializerV1d0Test {
         final JSONObject vertexAsJson = converted.optJSONObject(0);
         assertNotNull(vertexAsJson);
 
-        final JSONArray properties = vertexAsJson.optJSONArray(GraphSONTokens.PROPERTIES);
+        final JSONObject properties = vertexAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
+        assertEquals(1, properties.length());
 
-        final JSONObject friendsProperty = properties.getJSONObject(0);
+        final JSONArray friendProperties = properties.getJSONArray("friends");
+        assertEquals(1, friendProperties.length());
+        final JSONObject friendsProperty = friendProperties.getJSONObject(0);
         assertNotNull(friendsProperty);
         assertEquals(3, friends.size());
 
