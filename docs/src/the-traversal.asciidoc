@@ -139,8 +139,8 @@ link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process 
 ----
 g.V(1).as('a').out('created')
 g.V(1).as('a').out('created').in('created')
-g.V(1).as('a').out('created').in('created').except('a') <1>
-g.V(1).as('a').out('created').in('created').except('a').
+g.V(1).as('a').out('created').in('created').where(neq('a')) <1>
+g.V(1).as('a').out('created').in('created').where(neq('a')).
    addOutE('co-developer','a').outV().
    addInE('co-developer','a')
 g.V(1).out('co-developer').values('name')
@@ -193,7 +193,7 @@ g.V(1).out('created').aggregate('x') <2>
 g.V(1).out('created').aggregate('x').in('created') <3>
 g.V(1).out('created').aggregate('x').in('created').out('created') <4>
 g.V(1).out('created').aggregate('x').in('created').out('created').
-       except('x').values('name') <5>
+       where(without('x')).values('name') <5>
 ----
 
 <1> What has marko created?
@@ -427,20 +427,6 @@ g.V().properties('name').drop()
 g.V().valueMap()
 g.V().drop()
 g.V()
-----
-
-[[except-step]]
-Except Step
-~~~~~~~~~~~
-
-The `except()`-step (*filter*) can be used to remove objects from the traversal stream. If `except()` is provided a string, then the excepting object is located at `traverser.sideEffects(string)` or `traverser.path(string)`. If `except()` is provided a collection, then any object contained in that collection is filtered out. Please see the related <<retain-step,`retain()`>>-step.
-
-[gremlin-groovy,modern]
-----
-g.V(1).as('x').out('created').in('created')
-g.V(1).as('x').out('created').in('created').except('x') // co-developers
-g.V(1).as('x').out('created').in('created').values('name')
-g.V(1).as('x').out('created').in('created').values('name').except(['marko','stephen'])
 ----
 
 [[fold-step]]
@@ -1049,20 +1035,6 @@ g.V(1).repeat(out()).until(outE().count().is(0L)).path().by('name') <3>
 
 WARNING: The anonymous traversal of `emit()` and `until()` (not `repeat()`) process their current objects "locally." In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversals do not leave the confines of the vertex's star graph. In other words, they can not traverse to an adjacent vertex's properties or edges.
 
-[[retain-step]]
-Retain Step
-~~~~~~~~~~~
-
-The `retain()`-step (*filter*) can be used to filter objects from the traversal stream that don't match the provided criteria. If `retain()` is provided a string, the retaining object is retrieved via `traverser.sideEffect(string)` or `traverser.path(string)`. If `retain()` is provided a collection, then any object not contained in that collection is filtered out. Please see the related <<except-step,`except()`>>-step.
-
-[gremlin-groovy,modern]
-----
-g.V(1).as('x').out('created').in('created')
-g.V(1).as('x').out('created').in('created').retain('x')
-g.V(1).as('x').out('created').in('created').values('name')
-g.V(1).as('x').out('created').in('created').values('name').retain(['marko','stephen'])
-----
-
 [[sack-step]]
 Sack Step
 ~~~~~~~~~
@@ -1458,12 +1430,12 @@ The `where()`-step filters the current object based on either the object itself 
 
 [gremlin-groovy,modern]
 ----
-g.V().has('name','marko').as('a').
-  out('created').in('created').as('b').
-  where('a',neq('b')).values('name') <1>
+g.V(1).as('a').out('created').in('created').where(neq('a')) <1>
+g.withSideEffect('a'){['josh','peter']}.V(1).out('created').in('created').values('name').where(within('a')) <2>
 ----
 
-<1> Who are Marko's collaborators, where Marko can not be his own collaborator?
+<1> Who are marko's collaborators, where marko can not be his own collaborator?
+<2> Of the co-creators of marko, only keep those whose name is josh or peter.
 
 Please see <<using-where-with-match,`match().where()`>> and <<using-where-with-select,`select().where()`>> for how `where()` can be used in conjection with `Map<String,Object>` projecting steps.
 
