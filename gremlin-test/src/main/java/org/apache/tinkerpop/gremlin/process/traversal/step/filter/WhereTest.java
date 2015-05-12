@@ -160,7 +160,6 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXaX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX() {
         final Traversal<Vertex, Object> traversal = get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX(convertToVertexId(graph, "marko"));
         printTraversalForm(traversal);
