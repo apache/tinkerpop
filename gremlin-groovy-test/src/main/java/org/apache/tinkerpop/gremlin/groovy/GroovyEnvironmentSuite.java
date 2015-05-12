@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutorOverGraphTest;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineOverGraphTest;
-import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoaderTest;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoaderTest;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
