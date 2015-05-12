@@ -208,7 +208,7 @@ public abstract class Client {
          */
         @Override
         protected void initializeImplementation() {
-            cluster.getClusterInfo().allHosts().forEach(host -> {
+            cluster.allHosts().forEach(host -> {
                 try {
                     // hosts that don't initialize connection pools will come up as a dead host
                     hostConnectionPools.put(host, new ConnectionPool(host, cluster));
@@ -272,7 +272,7 @@ public abstract class Client {
         @Override
         protected void initializeImplementation() {
             // chooses an available host at random
-            final List<Host> hosts = cluster.getClusterInfo().allHosts()
+            final List<Host> hosts = cluster.allHosts()
                     .stream().filter(Host::isAvailable).collect(Collectors.toList());
             Collections.shuffle(hosts);
             final Host host = hosts.get(0);

@@ -34,9 +34,12 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
@@ -154,7 +157,7 @@ public class Cluster {
     }
 
     public List<URI> availableHosts() {
-        return Collections.unmodifiableList(getClusterInfo().allHosts().stream()
+        return Collections.unmodifiableList(allHosts().stream()
                 .filter(Host::isAvailable)
                 .map(Host::getHostUri)
                 .collect(Collectors.toList()));
@@ -180,8 +183,8 @@ public class Cluster {
         return manager.loadBalancingStrategy;
     }
 
-    ClusterInfo getClusterInfo() {
-        return manager.clusterInfo;
+    Collection<Host> allHosts() {
+        return manager.allHosts();
     }
 
     public static class Builder {
@@ -425,7 +428,7 @@ public class Cluster {
     }
 
     class Manager {
-        private ClusterInfo clusterInfo;
+        private final ConcurrentMap<InetSocketAddress, Host> hosts = new ConcurrentHashMap<>();
         private boolean initialized;
         private final List<InetSocketAddress> contactPoints;
         private final Factory factory;
@@ -439,7 +442,6 @@ public class Cluster {
                         final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings,
                         final LoadBalancingStrategy loadBalancingStrategy) {
             this.loadBalancingStrategy = loadBalancingStrategy;
-            this.clusterInfo = new ClusterInfo(Cluster.this);
             this.contactPoints = contactPoints;
             this.connectionPoolSettings = connectionPoolSettings;
             this.factory = new Factory(nioPoolSize);
@@ -455,10 +457,20 @@ public class Cluster {
             initialized = true;
 
             contactPoints.forEach(address -> {
-                final Host host = clusterInfo.add(address);
+                final Host host = add(address);
                 if (host != null)
                     host.makeAvailable();
             });
+        }
+
+        public Host add(final InetSocketAddress address) {
+            final Host newHost = new Host(address, Cluster.this);
+            final Host previous = hosts.putIfAbsent(address, newHost);
+            return previous == null ? newHost : null;
+        }
+
+        Collection<Host> allHosts() {
+            return hosts.values();
         }
 
         CompletableFuture<Void> close() {
