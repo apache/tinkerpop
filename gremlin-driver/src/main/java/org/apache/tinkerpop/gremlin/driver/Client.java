@@ -39,6 +39,8 @@ import java.util.stream.Collectors;
  * A {@code Client} is constructed from a {@link Cluster} and represents a way to send messages to Gremlin Server.
  * This class itself is a base class as there are different implementations that provide differing kinds of
  * functionality.  See the implementations for specifics on their individual usage.
+ * <p/>
+ * The {@code Client} is designed to be re-used and shared across threads.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
