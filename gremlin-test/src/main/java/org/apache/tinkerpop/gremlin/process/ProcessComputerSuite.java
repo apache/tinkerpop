@@ -29,18 +29,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.*;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
-import org.junit.internal.AssumptionViolatedException;
-import org.junit.internal.runners.model.EachTestNotifier;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runner.notification.StoppedByUserException;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
-import org.junit.runners.model.Statement;
 
 import java.util.stream.Stream;
 
@@ -100,7 +94,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             MeanTest.Traversals.class,
             MinTest.Traversals.class,
             SumTest.Traversals.class,
-            // TODO: MatchTest.ComputerTest.class,
+            MatchTest.Traversals.class,
             OrderTest.Traversals.class,
             PathTest.Traversals.class,
             PropertiesTest.Traversals.class,
@@ -110,17 +104,17 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             VertexTest.Traversals.class,
 
             // sideEffect
-            // TODO: AddEdgeTest.ComputerTest.class,
+            AddEdgeTest.Traversals.class,
             AggregateTest.Traversals.class,
             GroupTest.Traversals.class,
             GroupCountTest.Traversals.class,
-            // TODO: InjectTest.ComputerTest.class,
+            InjectTest.Traversals.class,
             ProfileTest.Traversals.class,
             SackTest.Traversals.class,
             SideEffectCapTest.Traversals.class,
-            // TODO: REMOVE? SideEffectTest.ComputerTest.class,
+            SideEffectTest.Traversals.class,
             StoreTest.Traversals.class,
-            // TODO: REMOVE? SubgraphTest.ComputerTest.class,
+            SubgraphTest.Traversals.class,
             TreeTest.Traversals.class,
 
             // algorithms

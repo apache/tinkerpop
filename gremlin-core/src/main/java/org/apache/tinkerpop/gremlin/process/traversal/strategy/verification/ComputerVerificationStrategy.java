@@ -25,6 +25,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -32,7 +35,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrier
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,6 +46,9 @@ import java.util.Optional;
 public final class ComputerVerificationStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
 
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
+    private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
+            InjectStep.class, MatchStep.class, Mutating.class, SubgraphStep.class
+    ));
 
     private ComputerVerificationStrategy() {
     }
@@ -65,8 +74,8 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                 if (traversalOptional.isPresent())
                     throw new ComputerVerificationException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get(), traversal);
             }
-            if (step instanceof Mutating)
-                throw new ComputerVerificationException("Muting steps are currently not supported by GraphComputer traversals", traversal);
+            if (UNSUPPORTED_STEPS.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())
+                throw new ComputerVerificationException("The following step is currently not supported by GraphComputer traversals: " + step, traversal);
         }
     }
 

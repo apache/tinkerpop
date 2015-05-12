@@ -81,7 +81,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyCountTest.Traversals.class,
             GroovyFoldTest.Traversals.class,
             GroovyMapTest.Traversals.class,
-            // TODO: GroovyMatchTest.Traversals.class,
+            GroovyMatchTest.Traversals.class,
             GroovyMaxTest.Traversals.class,
             GroovyMeanTest.Traversals.class,
             GroovyMinTest.Traversals.class,
@@ -95,17 +95,17 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyVertexTest.Traversals.class,
 
             // sideEffect
-            // TODO: GroovyAddEdgeTest.Traversals.class,
+            GroovyAddEdgeTest.Traversals.class,
             GroovyAggregateTest.Traversals.class,
             GroovyGroupTest.Traversals.class,
             GroovyGroupCountTest.Traversals.class,
-            // TODO: GroovyInjectTest.Traversals.class,
+            GroovyInjectTest.Traversals.class,
             GroovyProfileTest.Traversals.class,
             GroovySackTest.Traversals.class,
             GroovySideEffectCapTest.Traversals.class,
-            // TODO: REMOVE? GroovySideEffectTest.Traversals.class,
+            GroovySideEffectTest.Traversals.class,
             GroovyStoreTest.Traversals.class,
-            // TODO: REMOVE? GroovySubgraphTest.Traversals.class,
+            GroovySubgraphTest.Traversals.class,
             GroovyTreeTest.Traversals.class,
 
             // algorithms

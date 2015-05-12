@@ -113,6 +113,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class Traversals extends AddEdgeTest {
 
         @Override

@@ -104,6 +104,7 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
     }
 
     @UseEngine(TraversalEngine.Type.STANDARD)
+    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class Traversals extends SubgraphTest {
 
         @Override
