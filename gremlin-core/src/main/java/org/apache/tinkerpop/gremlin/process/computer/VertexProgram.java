@@ -20,6 +20,7 @@
 package org.apache.tinkerpop.gremlin.process.computer;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -216,6 +217,8 @@ public interface VertexProgram<M> extends Cloneable {
             final V vertexProgram = constructor.newInstance();
             vertexProgram.loadState(graph, configuration);
             return vertexProgram;
+        } catch (final ComputerVerificationException e) {
+            throw e;
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
