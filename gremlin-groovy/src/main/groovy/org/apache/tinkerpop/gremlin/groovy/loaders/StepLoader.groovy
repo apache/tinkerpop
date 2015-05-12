@@ -32,15 +32,6 @@ class StepLoader {
 
     public static void load() {
 
-        [Iterable, Iterator].each {
-            it.metaClass.mean = {
-                double counter = 0;
-                double sum = 0;
-                delegate.each { counter++; sum += it; }
-                return sum / counter;
-            }
-        }
-
         GraphTraversal.metaClass.by = { final Closure closure ->
             return ((GraphTraversal) delegate).by(1 == closure.getMaximumNumberOfParameters() ? new GFunction(closure) : new GComparator(closure));
         }
