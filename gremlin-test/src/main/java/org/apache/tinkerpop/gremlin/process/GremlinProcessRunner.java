@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process;
 
-import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationException;
+import org.junit.internal.AssumptionViolatedException;
+import org.junit.internal.runners.model.EachTestNotifier;
+import org.junit.runner.Description;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.Statement;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -35,45 +37,38 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
     }
 
     @Override
-    protected Statement possiblyExpectingExceptions(final FrameworkMethod method, final Object test, final Statement next) {
-        org.junit.Test annotation = method.getAnnotation(org.junit.Test.class);
-        return new ExpectComputerVerificationException(next, (AbstractGremlinTest) test,
-                annotation != null ? annotation.expected() : org.junit.Test.None.class);
+    public void runChild(final FrameworkMethod method, final RunNotifier notifier) {
+        final Description description = describeChild(method);
+        if (this.isIgnored(method)) {
+            notifier.fireTestIgnored(description);
+        } else {
+            EachTestNotifier eachNotifier = new EachTestNotifier(notifier, description);
+            eachNotifier.fireTestStarted();
+            boolean ignored = false;
+            try {
+                this.methodBlock(method).evaluate();
+            } catch (AssumptionViolatedException ave) {
+                eachNotifier.addFailedAssumption(ave);
+            } catch (Throwable e) {
+                if (isComputerVerificationException(e)) {
+                    eachNotifier.fireTestIgnored();
+                    ignored = true;
+                } else
+                    eachNotifier.addFailure(e);
+            } finally {
+                if (!ignored)
+                    eachNotifier.fireTestFinished();
+            }
+        }
     }
 
-    class ExpectComputerVerificationException extends Statement {
-
-        private Statement next;
-        private AbstractGremlinTest test;
-        private final Class<? extends Throwable> expected;
-
-        public ExpectComputerVerificationException(final Statement next, final AbstractGremlinTest test,
-                                                   final Class<? extends Throwable> expected) {
-            this.next = next;
-            this.test = test;
-            this.expected = expected;
+    private static boolean isComputerVerificationException(final Throwable e) {
+        Throwable ex = e;
+        while (ex != null) {
+            if (ex instanceof ComputerVerificationException)
+                return true;
+            ex = ex.getCause();
         }
-
-        @Override
-        public void evaluate() throws Throwable {
-            boolean complete = false;
-            try {
-                next.evaluate();
-                complete = true;
-            } catch (ComputerVerificationException e) {
-                if (!test.isComputerTest()) throw e;
-                final boolean muted = Boolean.parseBoolean(System.getProperty("muteTestLogs", "false"));
-                if (!muted) System.out.println(String.format(
-                        "The following traversal is not valid for computer execution: %s",
-                        e.getTraversal()));
-            } catch (Throwable e) {
-                if (!expected.isAssignableFrom(e.getClass())) {
-                    throw e;
-                }
-            }
-            if (complete && !expected.equals(org.junit.Test.None.class)) {
-                throw new AssertionError("Expected exception: " + expected.getName());
-            }
-        }
+        return false;
     }
 }

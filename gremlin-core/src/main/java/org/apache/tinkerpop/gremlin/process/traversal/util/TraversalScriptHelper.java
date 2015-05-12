@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexPr
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
@@ -49,10 +48,8 @@ public final class TraversalScriptHelper {
             } else {
                 return new TraversalScriptFunction<S, E>(builder, scriptEngineName, traversalScript, bindings).apply(graph);
             }
-        } catch (final ComputerVerificationException e) {
-            throw e;
         } catch (final Exception e) {
-            throw new IllegalArgumentException(e.getMessage());
+            throw new IllegalArgumentException(e.getMessage(), e);
         }
     }
 
