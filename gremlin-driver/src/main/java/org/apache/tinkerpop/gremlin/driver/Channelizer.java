@@ -40,7 +40,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Client-side channel initializer interface.
+ * Client-side channel initializer interface.  It is responsible for constructing the Netty {@code ChannelPipeline}
+ * used by the client to connect and send message to Gremlin Server.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

@@ -36,6 +36,10 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
+ * A {@code Client} is constructed from a {@link Cluster} and represents a way to send messages to Gremlin Server.
+ * This class itself is a base class as there are different implementations that provide differing kinds of
+ * functionality.  See the implementations for specifics on their individual usage.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class Client {
@@ -74,6 +78,11 @@ public abstract class Client {
      */
     public abstract CompletableFuture<Void> closeAsync();
 
+    /**
+     * Initializes the client which typically means that a connection is established to the server.  Depending on the
+     * implementation and configuration this blocking call may take some time.  This method will be called
+     * automatically if it is not called directly and multiple calls will not have effect.
+     */
     public synchronized Client init() {
         if (initialized)
             return this;
@@ -87,10 +96,20 @@ public abstract class Client {
         return this;
     }
 
+    /**
+     * Submits a Gremlin script to the server and returns a {@link ResultSet} once the write of the request is
+     * complete.
+     */
     public ResultSet submit(final String gremlin) {
         return submit(gremlin, null);
     }
 
+    /**
+     * Submits a Gremlin script and bound parameters to the server and returns a {@link ResultSet} once the write of
+     * the request is complete.  If a script is to be executed repeatedly with slightly different arguments, prefer
+     * this method to concatenating a Gremlin script from dynamically produced strings and sending it to
+     * {@link #submit(String)}.  Parameterized scripts will perform better.
+     */
     public ResultSet submit(final String gremlin, final Map<String, Object> parameters) {
         try {
             return submitAsync(gremlin, parameters).get();
@@ -99,10 +118,18 @@ public abstract class Client {
         }
     }
 
+    /**
+     * The asynchronous version of {@link #submit(String)} where the returned future will complete when the
+     * write of the request completes.
+     */
     public CompletableFuture<ResultSet> submitAsync(final String gremlin) {
         return submitAsync(gremlin, null);
     }
 
+    /**
+     * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
+     * write of the request completes.
+     */
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
         final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
                 .add(Tokens.ARGS_GREMLIN, gremlin)
@@ -112,6 +139,9 @@ public abstract class Client {
         return submitAsync(buildMessage(request));
     }
 
+    /**
+     * A low-level method that allows the submission of a manually constructed {@link RequestMessage}.
+     */
     public CompletableFuture<ResultSet> submitAsync(final RequestMessage msg) {
         if (!initialized)
             init();
@@ -137,13 +167,16 @@ public abstract class Client {
         }
     }
 
+    /**
+     * Closes the client by making a synchronous call to {@link #closeAsync()}.
+     */
     public void close() {
         closeAsync().join();
     }
 
     /**
      * A {@code Client} implementation that does not operate in a session.  Requests are sent to multiple servers
-     * given a {@link org.apache.tinkerpop.gremlin.driver.LoadBalancingStrategy}.  Transactions are automatically committed
+     * given a {@link LoadBalancingStrategy}.  Transactions are automatically committed
      * (or rolled-back on error) after each request.
      */
     public static class ClusteredClient extends Client {
@@ -154,6 +187,10 @@ public abstract class Client {
             super(cluster);
         }
 
+        /**
+         * Uses a {@link LoadBalancingStrategy} to choose the best {@link Host} and then selects the best connection
+         * from that host's connection pool.
+         */
         @Override
         protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
             final Iterator<Host> possibleHosts = this.cluster.loadBalancingStrategy().select(msg);
@@ -164,6 +201,9 @@ public abstract class Client {
             return pool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
         }
 
+        /**
+         * Initializes the connection pools on all hosts.
+         */
         @Override
         protected void initializeImplementation() {
             cluster.getClusterInfo().allHosts().forEach(host -> {
@@ -180,6 +220,9 @@ public abstract class Client {
             });
         }
 
+        /**
+         * Closes all the connection pools on all hosts.
+         */
         @Override
         public CompletableFuture<Void> closeAsync() {
             final CompletableFuture[] poolCloseFutures = new CompletableFuture[hostConnectionPools.size()];
@@ -203,6 +246,9 @@ public abstract class Client {
             this.sessionId = sessionId;
         }
 
+        /**
+         * Adds the {@link Tokens#ARGS_SESSION} value to every {@link RequestMessage}.
+         */
         @Override
         public RequestMessage buildMessage(final RequestMessage.Builder builder) {
             builder.processor("session");
@@ -210,11 +256,17 @@ public abstract class Client {
             return builder.create();
         }
 
+        /**
+         * Since the session is bound to a single host, simply borrow a connection from that pool.
+         */
         @Override
         protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
             return connectionPool.borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
         }
 
+        /**
+         * Randomly choose an available {@link Host} to bind the session too and initialize the {@link ConnectionPool}.
+         */
         @Override
         protected void initializeImplementation() {
             // chooses an available host at random
@@ -225,6 +277,9 @@ public abstract class Client {
             connectionPool = new ConnectionPool(host, cluster);
         }
 
+        /**
+         * Close the bound {@link ConnectionPool}.
+         */
         @Override
         public CompletableFuture<Void> closeAsync() {
             return connectionPool.closeAsync();
