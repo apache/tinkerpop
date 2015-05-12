@@ -21,6 +21,8 @@
 
 package org.apache.tinkerpop.gremlin.structure;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.BiPredicateTraversal;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
@@ -124,6 +126,10 @@ public class P<V> implements Predicate<V>, Serializable {
 
     public static <V> P<V> without(final Collection<V> value) {
         return new P(Contains.without, value);
+    }
+
+    public static <S, E> P<S> traversal(final Traversal<S, E> traversal) {
+        return new P(new BiPredicateTraversal<>(traversal.asAdmin()), null);
     }
 
     public static P test(final BiPredicate biPredicate, final Object value) {

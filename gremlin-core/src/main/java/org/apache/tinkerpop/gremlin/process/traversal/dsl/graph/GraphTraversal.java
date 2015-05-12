@@ -137,6 +137,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
@@ -456,12 +457,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ExceptStep<>(this.asAdmin(), exceptCollection));
     }
 
-    public default GraphTraversal<S, E> where(final Scope scope, final String firstKey, final P<?> predicate) {
-        return this.asAdmin().addStep(new WhereStep<>(this.asAdmin(), scope, firstKey, predicate));
+    public default GraphTraversal<S, E> where(final Scope scope, final String startKey, final P<?> predicate) {
+        return this.asAdmin().addStep(new WhereStep<>(this.asAdmin(), scope, Optional.ofNullable(startKey), predicate));
     }
 
     public default GraphTraversal<S, E> where(final Scope scope, final Traversal constraint) {
-        return this.asAdmin().addStep(new WhereStep<>(this.asAdmin(), scope, constraint.asAdmin()));
+        return this.asAdmin().addStep(new WhereStep<>(this.asAdmin(), scope, constraint));
     }
 
     public default GraphTraversal<S, E> where(final String firstKey, final P<?> predicate) {
