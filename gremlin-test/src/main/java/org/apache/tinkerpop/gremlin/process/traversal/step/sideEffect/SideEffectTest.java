@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -50,6 +50,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_sideEffectXstore_aX_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_sideEffectXstore_aX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -60,6 +61,7 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_VX1X_out_sideEffectXincr_cX_name() {
         final Traversal<Vertex, String> traversal = get_g_VX1X_out_sideEffectXincr_cX_name(convertToVertexId("marko"));
         printTraversalForm(traversal);
@@ -86,7 +88,6 @@ public abstract class SideEffectTest extends AbstractGremlinProcessTest {
         assert_g_v1_out_sideEffectXincr_cX_valueXnameX(traversal);
     }
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class Traversals extends SideEffectTest {
 
         @Override

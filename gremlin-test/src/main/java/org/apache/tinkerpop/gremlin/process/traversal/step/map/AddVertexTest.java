@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -79,7 +78,6 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     }
 
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
     public static class Traversals extends AddVertexTest {
 
         @Override

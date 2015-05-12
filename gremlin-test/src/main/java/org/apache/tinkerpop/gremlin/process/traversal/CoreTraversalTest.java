@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.*;
@@ -47,7 +46,6 @@ import static org.junit.Assert.*;
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "idArgsMustBeEitherIdOrElement"
 })
-@UseEngine(TraversalEngine.Type.STANDARD)
 public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test

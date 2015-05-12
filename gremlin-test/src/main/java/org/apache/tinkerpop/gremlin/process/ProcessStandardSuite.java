@@ -33,14 +33,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ExceptTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasNotTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RetainTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTest;
@@ -76,8 +74,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Elemen
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.EventStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategyProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runners.model.InitializationError;
@@ -113,14 +111,12 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             CyclicPathTest.Traversals.class,
             DedupTest.Traversals.class,
             DropTest.Traversals.class,
-            ExceptTest.Traversals.class,
             FilterTest.Traversals.class,
             HasNotTest.Traversals.class,
             HasTest.Traversals.class,
             IsTest.Traversals.class,
             OrTest.Traversals.class,
             RangeTest.Traversals.class,
-            RetainTest.Traversals.class,
             SampleTest.Traversals.class,
             SimplePathTest.Traversals.class,
             WhereTest.Traversals.class,
@@ -196,14 +192,12 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             CyclicPathTest.class,
             DedupTest.class,
             DropTest.class,
-            ExceptTest.class,
             FilterTest.class,
             HasNotTest.class,
             HasTest.class,
             IsTest.class,
             OrTest.class,
             RangeTest.class,
-            RetainTest.class,
             SampleTest.class,
             SimplePathTest.class,
             WhereTest.class,
@@ -259,14 +253,5 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
      */
     public ProcessStandardSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
         super(klass, builder, testsToExecute, testsToEnforce, true, TraversalEngine.Type.STANDARD);
-    }
-
-    @Override
-    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
-        final UseEngine[] useEngines = testClass.getAnnotationsByType(UseEngine.class);
-        if (null == useEngines || !Stream.of(useEngines).anyMatch(useEngine -> useEngine.value().equals(TraversalEngine.Type.STANDARD)))
-            throw new RuntimeException(String.format("The %s expects all tests to be annotated with @UseEngine(%s) - check %s",
-                    ProcessComputerSuite.class.getName(), TraversalEngine.Type.STANDARD, testClass.getName()));
-        return super.beforeTestExecution(testClass);
     }
 }

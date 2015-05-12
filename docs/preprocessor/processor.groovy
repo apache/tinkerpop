@@ -20,7 +20,7 @@
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-import org.apache.tinkerpop.gremlin.process.computer.util.ScriptEngineCache
+import org.apache.tinkerpop.gremlin.util.ScriptEngineCache
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
 
@@ -31,10 +31,7 @@ def STATEMENT_PREFIX = "gremlin> "
 def STATEMENT_CONTINUATION_PREFIX = "         "
 
 def header = """
-    import org.apache.tinkerpop.gremlin.process.graph.traversal.strategy.*
-    import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.SocialTraversal
     import org.apache.tinkerpop.gremlin.tinkergraph.structure.*
-    import static java.util.Comparator.*
 """
 
 def imports = new org.apache.tinkerpop.gremlin.console.ConsoleImportCustomizerProvider()

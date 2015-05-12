@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
-import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.PageRankVertexProgramTest;
@@ -29,20 +28,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.*;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategyProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationException;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategyProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
-import org.junit.internal.AssumptionViolatedException;
-import org.junit.internal.runners.model.EachTestNotifier;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runner.notification.StoppedByUserException;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
-import org.junit.runners.model.Statement;
-
-import java.util.stream.Stream;
 
 /**
  * The {@code ProcessComputerSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
@@ -79,14 +70,12 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             CoinTest.Traversals.class,
             CyclicPathTest.Traversals.class,
             DedupTest.Traversals.class,
-            ExceptTest.Traversals.class,
             FilterTest.Traversals.class,
             HasNotTest.Traversals.class,
             HasTest.Traversals.class,
             IsTest.Traversals.class,
             OrTest.Traversals.class,
             RangeTest.Traversals.class,
-            RetainTest.Traversals.class,
             SampleTest.Traversals.class,
             SimplePathTest.Traversals.class,
             WhereTest.Traversals.class,
@@ -100,7 +89,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             MeanTest.Traversals.class,
             MinTest.Traversals.class,
             SumTest.Traversals.class,
-            // TODO: MatchTest.ComputerTest.class,
+            MatchTest.Traversals.class,
             OrderTest.Traversals.class,
             PathTest.Traversals.class,
             PropertiesTest.Traversals.class,
@@ -110,17 +99,17 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             VertexTest.Traversals.class,
 
             // sideEffect
-            // TODO: AddEdgeTest.ComputerTest.class,
+            AddEdgeTest.Traversals.class,
             AggregateTest.Traversals.class,
             GroupTest.Traversals.class,
             GroupCountTest.Traversals.class,
-            // TODO: InjectTest.ComputerTest.class,
+            InjectTest.Traversals.class,
             ProfileTest.Traversals.class,
             SackTest.Traversals.class,
             SideEffectCapTest.Traversals.class,
-            // TODO: REMOVE? SideEffectTest.ComputerTest.class,
+            SideEffectTest.Traversals.class,
             StoreTest.Traversals.class,
-            // TODO: REMOVE? SubgraphTest.ComputerTest.class,
+            SubgraphTest.Traversals.class,
             TreeTest.Traversals.class,
 
             // algorithms
@@ -150,14 +139,12 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             CoinTest.class,
             CyclicPathTest.class,
             DedupTest.class,
-            ExceptTest.class,
             FilterTest.class,
             HasNotTest.class,
             HasTest.class,
             IsTest.class,
             OrTest.class,
             RangeTest.class,
-            RetainTest.class,
             SampleTest.class,
             SimplePathTest.class,
             WhereTest.class,
@@ -209,15 +196,5 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
      */
     public ProcessComputerSuite(final Class<?> klass, final RunnerBuilder builder, final Class<?>[] testsToExecute) throws InitializationError {
         super(klass, builder, testsToExecute, testsToEnforce, true, TraversalEngine.Type.COMPUTER);
-    }
-
-    @Override
-    public boolean beforeTestExecution(final Class<? extends AbstractGremlinTest> testClass) {
-        final UseEngine[] useEngines = testClass.getAnnotationsByType(UseEngine.class);
-        if (null == useEngines || !Stream.of(useEngines).anyMatch(useEngine -> useEngine.value().equals(TraversalEngine.Type.COMPUTER)))
-            throw new RuntimeException(String.format("The %s expects all tests to be annotated with @UseEngine(%s) - check %s",
-                    ProcessComputerSuite.class.getName(), TraversalEngine.Type.COMPUTER, testClass.getName()));
-
-        return super.beforeTestExecution(testClass);
     }
 }

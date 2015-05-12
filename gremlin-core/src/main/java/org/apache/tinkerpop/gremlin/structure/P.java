@@ -138,7 +138,7 @@ public class P<V> implements Predicate<V>, Serializable {
 
     public static Pair<P, P[]> splitForAPI(final P[] pArray) {
         if (pArray.length == 0)
-            throw new IllegalArgumentException("The P[] is not splittable cause its length is 0: " + pArray);
+            throw new IllegalArgumentException("The P[] is not splittable because its length is 0: " + pArray);
         else if (pArray.length == 1)
             return new Pair<>(pArray[0], new P[0]);
         else

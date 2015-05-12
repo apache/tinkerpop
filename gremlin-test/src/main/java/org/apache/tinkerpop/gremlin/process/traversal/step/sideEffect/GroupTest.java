@@ -139,8 +139,6 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertTrue(map.get(3l).contains("marko"));
     }
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class Traversals extends GroupTest {
 
         @Override

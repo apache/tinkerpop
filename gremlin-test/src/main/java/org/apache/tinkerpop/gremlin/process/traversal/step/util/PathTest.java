@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
@@ -40,7 +39,6 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@UseEngine(TraversalEngine.Type.STANDARD)
 public class PathTest extends AbstractGremlinProcessTest {
 
     private final static List<Supplier<Path>> PATH_SUPPLIERS =
