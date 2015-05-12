@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -151,8 +150,6 @@ public abstract class ExceptTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("peter", "josh"), traversal);
     }
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class Traversals extends ExceptTest {
 
         @Override

@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -41,7 +40,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@UseEngine(TraversalEngine.Type.STANDARD)
 public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test

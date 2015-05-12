@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.structure.Operator;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -87,8 +86,6 @@ public abstract class FoldTest extends AbstractGremlinProcessTest {
         assertEquals(Integer.valueOf(123), ageSum);
     }
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class Traversals extends FoldTest {
 
         @Override

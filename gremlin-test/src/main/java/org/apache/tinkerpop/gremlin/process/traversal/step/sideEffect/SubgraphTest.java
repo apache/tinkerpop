@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -103,8 +102,6 @@ public abstract class SubgraphTest extends AbstractGremlinProcessTest {
         graphProvider.clear(subgraph, config);
     }
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class Traversals extends SubgraphTest {
 
         @Override

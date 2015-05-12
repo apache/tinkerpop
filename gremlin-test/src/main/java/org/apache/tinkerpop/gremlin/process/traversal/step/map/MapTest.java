@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -121,8 +120,6 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class Traversals extends MapTest {
         @Override
         public Traversal<Vertex, String> get_g_VX1X_mapXnameX(final Object v1Id) {

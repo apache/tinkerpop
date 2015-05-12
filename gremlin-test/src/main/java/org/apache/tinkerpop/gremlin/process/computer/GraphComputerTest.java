@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.computer;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.UseEngine;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -68,7 +67,6 @@ import static org.junit.Assert.*;
         "onlyOneOrNoGraphComputerClass"
 })
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-@UseEngine(TraversalEngine.Type.COMPUTER)
 public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test

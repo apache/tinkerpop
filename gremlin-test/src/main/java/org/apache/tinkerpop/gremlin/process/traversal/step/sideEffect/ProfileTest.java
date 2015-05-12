@@ -277,8 +277,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     /**
      * Traversals
      */
-    @UseEngine(TraversalEngine.Type.STANDARD)
-    @UseEngine(TraversalEngine.Type.COMPUTER)
     public static class Traversals extends ProfileTest {
 
         @Override
