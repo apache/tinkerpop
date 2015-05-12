@@ -57,7 +57,6 @@ public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
     private static final Class<?>[] allTests = new Class<?>[]{
             GremlinGroovyScriptEngineOverGraphTest.class,
             GremlinExecutorOverGraphTest.class,
-            GremlinLoaderTest.class,
             SugarLoaderTest.class,
     };
 
