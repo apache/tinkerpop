@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.P;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,10 +52,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         this.scope = scope;
         this.predicate = predicate;
         this.startKey = startKey.orElse(null);
-        if (this.predicate.getBiPredicate() instanceof BiPredicateTraversal) {
-            this.integrateChild(((BiPredicateTraversal) this.predicate.getBiPredicate()).getTraversal());
-        }
-        this.endKey = (String) this.predicate.getValue();
+        this.endKey = this.predicate.getValue() instanceof Collection ? ((Collection<String>) this.predicate.getValue()).iterator().next() : (String) this.predicate.getValue();
     }
 
     public WhereStep(final Traversal.Admin traversal, final Scope scope, final Traversal<?, ?> whereTraversal) {
@@ -80,6 +78,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             startObject = null == this.startKey ? traverser.get() : path.hasLabel(this.startKey) ? path.get(this.startKey) : traverser.sideEffects(this.startKey);
             endObject = null == this.endKey ? null : path.hasLabel(this.endKey) ? path.get(this.endKey) : traverser.sideEffects(this.endKey);
         }
+
         return this.predicate.getBiPredicate().test(startObject, endObject);
     }
 

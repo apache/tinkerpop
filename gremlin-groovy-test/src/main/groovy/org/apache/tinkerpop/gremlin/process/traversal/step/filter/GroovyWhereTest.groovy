@@ -18,8 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -32,12 +33,12 @@ public abstract class GroovyWhereTest {
         /// where(local)
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eq_bX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eqXbXX() {
             TraversalScriptHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', eq('b'))", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neq_bX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_neqXbXX() {
             TraversalScriptHelper.compute("g.V.has('age').as('a').out.in.has('age').as('b').select().where('a', neq('b'))", g)
         }
 
@@ -54,7 +55,7 @@ public abstract class GroovyWhereTest {
         /// where(global)
 
         @Override
-        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neq_bX_name(
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXa_neqXbXX_name(
                 final Object v1Id) {
             TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').in('created').as('b').where('a', neq('b')).name", g, "v1Id", v1Id)
         }
@@ -63,6 +64,37 @@ public abstract class GroovyWhereTest {
         public Traversal<Vertex, Object> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX(
                 final Object v1Id) {
             TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').in('created').as('b').where(__.as('b').out('created').has('name','ripple')).values('age','name')", g, "v1Id", v1Id)
+        }
+
+        // except/retain functionality
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXeqXaXX_name(
+                final Object v1Id) {
+            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').in('created').where(eq('a')).name", g, "v1Id", v1Id)
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_name(
+                final Object v1Id) {
+            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').in('created').where(neq('a')).name", g, "v1Id", v1Id)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXwithoutXaXX(final Object v1Id) {
+            TraversalScriptHelper.compute("g.V(v1Id).out.aggregate('x').out.where(without('x'))", g, "v1Id", v1Id)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(
+                final Object v1Id, final Object v2Id) {
+            TraversalScriptHelper.compute("g.withSideEffect('a'){graph.vertices(v2Id).next()}.V(v1Id).out.where(neq('a'))", g, "graph", graph, "v1Id", v1Id, "v2Id", v2Id)
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path(
+                final Object v1Id) {
+            TraversalScriptHelper.compute("g.V(v1Id).repeat(__.bothE('created').where(without('e')).aggregate('e').otherV).emit.path", g, "v1Id", v1Id)
         }
     }
 }

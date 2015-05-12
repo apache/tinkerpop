@@ -371,20 +371,28 @@ public class __ {
         return __.<A>start().hasValue(values);
     }
 
-    public static <A> GraphTraversal<A, A> where(final Scope scope, final String firstKey, final P<?> predicate) {
-        return __.<A>start().where(scope, firstKey, predicate);
+    public static <A> GraphTraversal<A, A> where(final Scope scope, final String startKey, final P<?> predicate) {
+        return __.<A>start().where(scope, startKey, predicate);
     }
 
-    public static <A> GraphTraversal<A, A> where(final Scope scope, final Traversal constraint) {
-        return __.<A>start().where(scope, constraint);
+    public static <A> GraphTraversal<A, A> where(final Scope scope, final P<?> predicate) {
+        return __.<A>start().where(scope, predicate);
     }
 
-    public static <A> GraphTraversal<A, A> where(final String firstKey, final P<?> predicate) {
-        return __.<A>start().where(firstKey, predicate);
+    public static <A> GraphTraversal<A, A> where(final Scope scope, final Traversal whereTraversal) {
+        return __.<A>start().where(scope, whereTraversal);
     }
 
-    public static <A> GraphTraversal<A, A> where(final Traversal constraint) {
-        return __.<A>start().where(constraint);
+    public static <A> GraphTraversal<A, A> where(final String startKey, final P<?> predicate) {
+        return __.<A>start().where(startKey, predicate);
+    }
+
+    public static <A> GraphTraversal<A, A> where(final P<?> predicate) {
+        return __.<A>start().where(predicate);
+    }
+
+    public static <A> GraphTraversal<A, A> where(final Traversal whereTraversal) {
+        return __.<A>start().where(whereTraversal);
     }
 
     public static <A> GraphTraversal<A, A> is(final P<A> predicate, final P<A>... predicates) {
