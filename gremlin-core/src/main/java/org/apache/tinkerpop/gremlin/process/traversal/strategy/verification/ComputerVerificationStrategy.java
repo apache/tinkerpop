@@ -22,12 +22,14 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Computer
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
@@ -40,7 +42,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrier
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.util.Serializer;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -53,7 +57,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
     private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
-            InjectStep.class, MatchStep.class, Mutating.class, SubgraphStep.class
+            DedupGlobalStep.class, InjectStep.class, MatchStep.class, Mutating.class, SubgraphStep.class
     ));
 
     private ComputerVerificationStrategy() {
@@ -64,22 +68,32 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         if (traversal.getEngine().isStandard())
             return;
 
-        if (traversal.getParent() instanceof EmptyStep && !(traversal.getStartStep() instanceof GraphStep))
-            throw new ComputerVerificationException("GraphComputer does not support traversals starting from a non-GraphStep: " + traversal.getStartStep(), traversal);
-
         Step<?, ?> endStep = traversal.getEndStep();
         while (endStep instanceof ComputerAwareStep.EndStep || endStep instanceof ComputerResultStep) {
             endStep = endStep.getPreviousStep();
         }
 
-        if (traversal.getParent() instanceof EmptyStep && endStep instanceof CollectingBarrierStep && endStep instanceof TraversalParent) {
-            if (((TraversalParent) endStep).getLocalChildren().stream().filter(t ->
-                    !(t instanceof IdentityTraversal) && !(t instanceof TokenTraversal && ((TokenTraversal) t).getToken().equals(T.id))).findAny().isPresent())
-                throw new ComputerVerificationException("A final collecting barrier step can not process the element any more than its id: " + endStep, traversal);
+        if (traversal.getParent() instanceof EmptyStep) {
+            try {
+                Serializer.serializeObject(traversal);
+            } catch (final IOException e) {
+                throw new ComputerVerificationException("The provided traversal is not serializable and thus, can not be distributed across a cluster", traversal);
+            }
+            ////
+            if (!(traversal.getStartStep() instanceof GraphStep))
+                throw new ComputerVerificationException("GraphComputer does not support traversals starting from a non-GraphStep: " + traversal.getStartStep(), traversal);
+            ///
+            if (endStep instanceof CollectingBarrierStep && endStep instanceof TraversalParent) {
+                if (((TraversalParent) endStep).getLocalChildren().stream().filter(t ->
+                        !(t instanceof IdentityTraversal) &&
+                                !(t instanceof ConstantTraversal) &&  // for SampleStep
+                                !(t instanceof TokenTraversal && ((TokenTraversal) t).getToken().equals(T.id))).findAny().isPresent())
+                    throw new ComputerVerificationException("A final CollectingBarrierStep can not process an element beyond its id: " + endStep, traversal);
+            }
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof DedupGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
+            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
                 throw new ComputerVerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
 
             if (step instanceof TraversalParent) {

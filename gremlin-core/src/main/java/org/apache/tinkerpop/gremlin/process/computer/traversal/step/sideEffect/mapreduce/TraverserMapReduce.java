@@ -69,7 +69,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
 
     @Override
     public boolean doStage(final Stage stage) {
-        return stage.equals(Stage.MAP) || stage.equals(Stage.REDUCE) && this.collectingBarrierStep.isPresent();
+        return stage.equals(Stage.MAP) || this.collectingBarrierStep.isPresent();
     }
 
     @Override
@@ -86,18 +86,35 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
     }
 
     @Override
+    public void combine(final Comparable comparable, final Iterator<Traverser<?>> values, final ReduceEmitter<Comparable, Traverser<?>> emitter) {
+        final TraverserSet<?> traverserSet = new TraverserSet<>();
+        while (values.hasNext()) {
+            traverserSet.add((Traverser.Admin) values.next().asAdmin());
+        }
+        traverserSet.forEach(emitter::emit);
+    }
+
+    @Override
     public void reduce(final Comparable comparable, final Iterator<Traverser<?>> values, final ReduceEmitter<Comparable, Traverser<?>> emitter) {
         final TraverserSet<?> traverserSet = new TraverserSet<>();
         while (values.hasNext()) {
             traverserSet.add((Traverser.Admin) values.next().asAdmin());
         }
-        this.collectingBarrierStep.get().barrierConsumer((TraverserSet) traverserSet);
         traverserSet.forEach(emitter::emit);
     }
 
     @Override
     public Iterator<Traverser<?>> generateFinalResult(final Iterator<KeyValue<Comparable, Traverser<?>>> keyValues) {
-        return IteratorUtils.map(keyValues, KeyValue::getValue);
+        if (this.collectingBarrierStep.isPresent()) {
+            final TraverserSet<?> traverserSet = new TraverserSet<>();
+            while (keyValues.hasNext()) {
+                traverserSet.add((Traverser.Admin) keyValues.next().getValue().asAdmin());
+            }
+            this.collectingBarrierStep.get().barrierConsumer((TraverserSet) traverserSet);
+            return (Iterator) traverserSet.iterator();
+        } else {
+            return IteratorUtils.map(keyValues, KeyValue::getValue);
+        }
     }
 
 

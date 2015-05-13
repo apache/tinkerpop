@@ -41,7 +41,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SubgraphStrategyProcessTest  extends AbstractGremlinProcessTest {
+public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
@@ -130,6 +130,7 @@ public class SubgraphStrategyProcessTest  extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldFilterEdgeCriterion() throws Exception {
         final Predicate<Vertex> vertexCriterion = vertex -> true;
         final Predicate<Edge> edgeCriterion = edge -> {
@@ -311,6 +312,7 @@ public class SubgraphStrategyProcessTest  extends AbstractGremlinProcessTest {
 
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldGetExcludedVertex() throws Exception {
         final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         final Predicate<Edge> edgeCriterion = edge -> true;
@@ -323,6 +325,7 @@ public class SubgraphStrategyProcessTest  extends AbstractGremlinProcessTest {
 
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldGetExcludedEdge() throws Exception {
         final Predicate<Vertex> vertexCriterion = vertex -> true;
         final Predicate<Edge> edgeCriterion = edge -> {
