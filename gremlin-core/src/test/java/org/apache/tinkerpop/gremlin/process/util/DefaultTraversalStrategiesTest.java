@@ -34,34 +34,40 @@ import static org.junit.Assert.*;
  */
 public class DefaultTraversalStrategiesTest {
 
-    @Test
-    public void testDefaultTraversalStrategySorting() {
-        TraversalStrategy
-                a = new TraversalStrategiesTest.StrategyA(),
-                b = new TraversalStrategiesTest.StrategyB(),
-                c = new TraversalStrategiesTest.StrategyC(),
-                d = new TraversalStrategiesTest.StrategyD(),
-                e = new TraversalStrategiesTest.StrategyE(),
-                k = new TraversalStrategiesTest.StrategyK(),
-                l = new TraversalStrategiesTest.StrategyL(),
-                m = new TraversalStrategiesTest.StrategyM(),
-                n = new TraversalStrategiesTest.StrategyN(),
-                o = new TraversalStrategiesTest.StrategyO();
+    TraversalStrategy
+            a = new TraversalStrategiesTest.StrategyA(),
+            b = new TraversalStrategiesTest.StrategyB(),
+            c = new TraversalStrategiesTest.StrategyC(),
+            d = new TraversalStrategiesTest.StrategyD(),
+            e = new TraversalStrategiesTest.StrategyE(),
+            k = new TraversalStrategiesTest.StrategyK(),
+            l = new TraversalStrategiesTest.StrategyL(),
+            m = new TraversalStrategiesTest.StrategyM(),
+            n = new TraversalStrategiesTest.StrategyN(),
+            o = new TraversalStrategiesTest.StrategyO();
 
+    @Test
+    public void testWellDefinedDependency() {
         //Dependency well defined
         TraversalStrategies s = new DefaultTraversalStrategies();
         s.addStrategies(b, a);
         assertEquals(2, s.toList().size());
         assertEquals(a, s.toList().get(0));
         assertEquals(b, s.toList().get(1));
+    }
 
+    @Test
+    public void testNoDependency() {
         //No dependency
-        s = new DefaultTraversalStrategies();
+        TraversalStrategies s = new DefaultTraversalStrategies();
         s.addStrategies(c, a);
         assertEquals(2, s.toList().size());
+    }
 
+    @Test
+    public void testWellDefinedDependency2() {
         //Dependency well defined
-        s = new DefaultTraversalStrategies();
+        TraversalStrategies s = new DefaultTraversalStrategies();
         s.addStrategies(c, a, b);
         assertEquals(3, s.toList().size());
         assertEquals(a, s.toList().get(0));
@@ -72,18 +78,24 @@ public class DefaultTraversalStrategiesTest {
         assertEquals(a, s.toList().get(0));
         assertEquals(b, s.toList().get(1));
         assertEquals(c, s.toList().get(2));
+    }
 
+    @Test
+    public void testCircularDependency() {
         //Circular dependency => throws exception
-        s = new DefaultTraversalStrategies();
+        TraversalStrategies s = new DefaultTraversalStrategies();
         try {
             s.addStrategies(c, k, a, b);
             fail();
         } catch (IllegalStateException ex) {
             assertTrue(ex.getMessage().toLowerCase().contains("cyclic"));
         }
+    }
 
+    @Test
+    public void testWellDefinedDependency3() {
         //Dependency well defined
-        s = new DefaultTraversalStrategies();
+        TraversalStrategies s = new DefaultTraversalStrategies();
         s.addStrategies(d, c, a, e, b);
         assertEquals(5, s.toList().size());
         assertEquals(a, s.toList().get(0));
@@ -98,18 +110,24 @@ public class DefaultTraversalStrategiesTest {
         assertEquals(d, s.toList().get(2));
         assertEquals(c, s.toList().get(3));
         assertEquals(e, s.toList().get(4));
+    }
 
+    @Test
+    public void testCircularDependency2() {
         //Circular dependency => throws exception
-        s = new DefaultTraversalStrategies();
+        TraversalStrategies s = new DefaultTraversalStrategies();
         try {
             s.addStrategies(d, c, k, a, e, b);
             fail();
         } catch (IllegalStateException ex) {
             assertTrue(ex.getMessage().toLowerCase().contains("cyclic"));
         }
+    }
 
+    @Test
+    public void testLotsOfStrategies() {
         //Lots of strategies
-        s = new DefaultTraversalStrategies();
+        TraversalStrategies s = new DefaultTraversalStrategies();
         s = s.addStrategies(b, l, m, n, o, a);
         assertTrue(s.toList().indexOf(a) < s.toList().indexOf(b));
         s = s.clone();
@@ -136,7 +154,6 @@ public class DefaultTraversalStrategiesTest {
         assertEquals(d, s.toList().get(2));
         assertEquals(c, s.toList().get(3));
         assertEquals(e, s.toList().get(4));
-
     }
-
 }
+
