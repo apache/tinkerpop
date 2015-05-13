@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -27,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
@@ -41,11 +43,11 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
+@RunWith(GremlinProcessRunner.class)
 public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldFilterVertexCriterion() throws Exception {
         final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         final Predicate<Edge> edgeCriterion = edge -> true;
@@ -130,7 +132,6 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldFilterEdgeCriterion() throws Exception {
         final Predicate<Vertex> vertexCriterion = vertex -> true;
         final Predicate<Edge> edgeCriterion = edge -> {
@@ -226,7 +227,6 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldFilterMixedCriteria() throws Exception {
         final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         final Predicate<Edge> edgeCriterion = edge -> {
@@ -312,7 +312,6 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldGetExcludedVertex() throws Exception {
         final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         final Predicate<Edge> edgeCriterion = edge -> true;
@@ -325,7 +324,6 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test(expected = NoSuchElementException.class)
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldGetExcludedEdge() throws Exception {
         final Predicate<Vertex> vertexCriterion = vertex -> true;
         final Predicate<Edge> edgeCriterion = edge -> {
