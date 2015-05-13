@@ -21,15 +21,15 @@ package org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -40,12 +40,13 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object, Comparable, Object, Iterator<Object>> {
+public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traverser<?>, Comparable, Traverser<?>, Iterator<Traverser<?>>> {
 
     public static final String TRAVERSERS = Graph.Hidden.hide("traversers");
 
     private Traversal.Admin<?, ?> traversal;
     private Optional<Comparator<Comparable>> comparator = Optional.empty();
+    private Optional<CollectingBarrierStep<?>> collectingBarrierStep = Optional.empty();
 
     private TraverserMapReduce() {
     }
@@ -53,22 +54,26 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
     public TraverserMapReduce(final Step traversalEndStep) {
         this.traversal = traversalEndStep.getTraversal();
         this.comparator = Optional.ofNullable(traversalEndStep instanceof OrderGlobalStep ? new ChainedComparator<Comparable>(((OrderGlobalStep) traversalEndStep).getComparators()) : null);
+        if (!this.comparator.isPresent() && traversalEndStep instanceof CollectingBarrierStep)
+            this.collectingBarrierStep = Optional.of((CollectingBarrierStep<?>) traversalEndStep);
     }
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
         this.traversal = TraversalVertexProgram.getTraversal(graph, configuration);
-        final Step endStep = this.traversal.getEndStep().getPreviousStep(); // don't get the ComputerResultStep
-        this.comparator = Optional.ofNullable(endStep instanceof OrderGlobalStep ? new ChainedComparator<Comparable>(((OrderGlobalStep) endStep).getComparators()) : null);
+        final Step traversalEndStep = this.traversal.getEndStep().getPreviousStep(); // don't get the ComputerResultStep
+        this.comparator = Optional.ofNullable(traversalEndStep instanceof OrderGlobalStep ? new ChainedComparator<Comparable>(((OrderGlobalStep) traversalEndStep).getComparators()) : null);
+        if (!this.comparator.isPresent() && traversalEndStep instanceof CollectingBarrierStep)
+            this.collectingBarrierStep = Optional.of((CollectingBarrierStep<?>) traversalEndStep);
     }
 
     @Override
     public boolean doStage(final Stage stage) {
-        return stage.equals(Stage.MAP);
+        return stage.equals(Stage.MAP) || stage.equals(Stage.REDUCE) && this.collectingBarrierStep.isPresent();
     }
 
     @Override
-    public void map(final Vertex vertex, final MapEmitter<Comparable, Object> emitter) {
+    public void map(final Vertex vertex, final MapEmitter<Comparable, Traverser<?>> emitter) {
         if (this.comparator.isPresent())
             vertex.<TraverserSet<?>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> emitter.emit(traverser, traverser)));
         else
@@ -81,7 +86,17 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
     }
 
     @Override
-    public Iterator<Object> generateFinalResult(final Iterator<KeyValue<Comparable, Object>> keyValues) {
+    public void reduce(final Comparable comparable, final Iterator<Traverser<?>> values, final ReduceEmitter<Comparable, Traverser<?>> emitter) {
+        final TraverserSet<?> traverserSet = new TraverserSet<>();
+        while (values.hasNext()) {
+            traverserSet.add((Traverser.Admin) values.next().asAdmin());
+        }
+        this.collectingBarrierStep.get().barrierConsumer((TraverserSet) traverserSet);
+        traverserSet.forEach(emitter::emit);
+    }
+
+    @Override
+    public Iterator<Traverser<?>> generateFinalResult(final Iterator<KeyValue<Comparable, Traverser<?>>> keyValues) {
         return IteratorUtils.map(keyValues, KeyValue::getValue);
     }
 
@@ -89,20 +104,5 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Object
     @Override
     public String getMemoryKey() {
         return TRAVERSERS;
-    }
-
-    @Override
-    public int hashCode() {
-        return (this.getClass().getCanonicalName() + TRAVERSERS).hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-        return GraphComputerHelper.areEqual(this, object);
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.mapReduceString(this);
     }
 }

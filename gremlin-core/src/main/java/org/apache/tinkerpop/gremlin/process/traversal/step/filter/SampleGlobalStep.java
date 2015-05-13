@@ -63,7 +63,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
     }
 
     @Override
-    protected void barrierConsumer(final TraverserSet<S> traverserSet) {
+    public void barrierConsumer(final TraverserSet<S> traverserSet) {
         // return the entire traverser set if the set is smaller than the amount to sample
         if (traverserSet.bulkSize() <= this.amountToSample)
             return;

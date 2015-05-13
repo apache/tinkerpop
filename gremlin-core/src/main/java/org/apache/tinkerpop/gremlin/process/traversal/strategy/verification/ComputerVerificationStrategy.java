@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Computer
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -30,12 +32,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.T;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -66,6 +70,12 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         Step<?, ?> endStep = traversal.getEndStep();
         while (endStep instanceof ComputerAwareStep.EndStep || endStep instanceof ComputerResultStep) {
             endStep = endStep.getPreviousStep();
+        }
+
+        if (traversal.getParent() instanceof EmptyStep && endStep instanceof CollectingBarrierStep && endStep instanceof TraversalParent) {
+            if (((TraversalParent) endStep).getLocalChildren().stream().filter(t ->
+                    !(t instanceof IdentityTraversal) && !(t instanceof TokenTraversal && ((TokenTraversal) t).getToken().equals(T.id))).findAny().isPresent())
+                throw new ComputerVerificationException("A final collecting barrier step can not process the element any more than its id: " + endStep, traversal);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {

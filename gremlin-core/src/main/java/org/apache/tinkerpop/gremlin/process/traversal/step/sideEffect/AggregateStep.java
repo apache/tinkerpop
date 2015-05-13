@@ -85,7 +85,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
     }
 
     @Override
-    protected void barrierConsumer(final TraverserSet<S> traverserSet) {
+    public void barrierConsumer(final TraverserSet<S> traverserSet) {
         traverserSet.forEach(traverser ->
                 TraversalHelper.addToCollection(
                         traverser.getSideEffects().<Collection<Object>>get(this.sideEffectKey).get(),

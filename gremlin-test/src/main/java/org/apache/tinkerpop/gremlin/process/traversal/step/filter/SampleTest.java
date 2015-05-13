@@ -56,7 +56,6 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_E_sampleX1X() {
         final Traversal<Edge, Edge> traversal = get_g_E_sampleX1X();
         assertTrue(traversal.hasNext());
@@ -66,7 +65,6 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_E_sampleX2X_byXweightX() {
         final Traversal<Edge, Edge> traversal = get_g_E_sampleX2X_byXweightX();
         assertTrue(traversal.hasNext());

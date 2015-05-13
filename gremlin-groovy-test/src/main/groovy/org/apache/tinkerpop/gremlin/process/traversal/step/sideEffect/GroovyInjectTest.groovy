@@ -38,11 +38,5 @@ public abstract class GroovyInjectTest {
         public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
             TraversalScriptHelper.compute("g.V(v1Id).out().name.inject('daniel').as('a').map { it.length() }.path", g, "v1Id", v1Id);
         }
-
-        @Override
-        public Traversal<Vertex, String> get_injectXgraph_verticesX1X_graph_verticesX2XX_name(
-                final Object v1Id, final Object v2Id) {
-            TraversalScriptHelper.compute("__.inject(graph.vertices(v1Id).next(), graph.vertices(v2Id).next()).name", g, "v1Id", v1Id, "v2Id", v2Id);
-        }
     }
 }
