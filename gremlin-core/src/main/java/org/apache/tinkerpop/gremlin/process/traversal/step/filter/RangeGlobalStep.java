@@ -18,12 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collections;
 import java.util.Set;
@@ -33,11 +34,12 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Bob Briody (http://bobbriody.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging {
+public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, Bypassing {
 
     private final long low;
     private final long high;
     private AtomicLong counter = new AtomicLong(0l);
+    private boolean bypass = false;
 
     public RangeGlobalStep(final Traversal.Admin traversal, final long low, final long high) {
         super(traversal);
@@ -48,8 +50,14 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging {
         this.high = high;
     }
 
+    public void setBypass(final boolean bypass) {
+        this.bypass = bypass;
+    }
+
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
+        if (this.bypass) return true;
+
         if (this.high != -1 && this.counter.get() >= this.high) {
             throw FastNoSuchElementException.instance();
         }

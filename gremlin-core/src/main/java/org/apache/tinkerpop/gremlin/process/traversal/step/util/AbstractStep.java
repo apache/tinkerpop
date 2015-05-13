@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.Collections;
@@ -169,8 +170,10 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             clone.previousStep = EmptyStep.instance();
             clone.nextStep = EmptyStep.instance();
             clone.nextEnd = null;
+            clone.traversal = EmptyTraversal.instance();
+            clone.reset();
             return clone;
-        } catch (CloneNotSupportedException e) {
+        } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }

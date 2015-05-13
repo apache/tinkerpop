@@ -63,4 +63,8 @@ public final class TraversalScriptFunction<S, E> implements Function<Graph, Trav
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
+
+    public String toString() {
+        return this.traversalScript;
+    }
 }

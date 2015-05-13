@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
@@ -82,10 +83,13 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                                 !(t instanceof TokenTraversal && ((TokenTraversal) t).getToken().equals(T.id))).findAny().isPresent())
                     throw new ComputerVerificationException("A final CollectingBarrierStep can not process an element beyond its id: " + endStep, traversal);
             }
+            ///
+            if(endStep instanceof RangeGlobalStep)
+                ((RangeGlobalStep) endStep).setBypass(true);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
+            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep || step instanceof RangeGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
                 throw new ComputerVerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
 
             if (step instanceof TraversalParent) {
