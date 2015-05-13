@@ -37,7 +37,7 @@ public abstract class GroovyBranchTest {
         @Override
         public Traversal<Vertex, Object> get_g_V_branchXlabelX_optionXperson__ageX_optionXsoftware__langX_optionXsoftware__nameX() {
             TraversalScriptHelper.compute("""
-            g.V.branch{it.get().label() == 'person' ? 'a' : 'b'}
+            g.V.branch{it.label == 'person' ? 'a' : 'b'}
                     .option('a', __.age)
                     .option('b', __.lang)
                     .option('b', __.name)
