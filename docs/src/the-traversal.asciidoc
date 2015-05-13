@@ -1494,7 +1494,8 @@ TraversalStrategy
 image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can analyze a `Traversal` and mutate the traversal as it deems fit. This is useful in multiple situations:
 
  * There is an application-level feature that can be embedded into the traversal logic (*decoration*).
- * There is a more efficient way to express the traversal at the TinkerPop3 or graph vendor level (*optimization*).
+ * There is a more efficient way to express the traversal at the TinkerPop3 level (*optimization*).
+ * There is a more efficient way to express the traversal at the graph vendor level (*vendor optimization*).
  * There are are some final adjustments required before executing the traversal (*finalization*).
  * There are certain traversals that are not legal for the application or traversal engine (*verification*).
 
@@ -1532,7 +1533,7 @@ public Set<Class<? extends S>> applyPost();
 
 IMPORTANT: `TraversalStrategy` categories are sorted within their category and the categories are then executed in the following order: decoration, optimization, finalization, and verification. If a designed strategy does not fit cleanly into these categories, then it can implement `TraversalStrategy` and its prior and posts can reference strategies within any category.
 
-Another example `OptimizationStrategy` in action is provided below.
+An example of a `VendorOptimizationStrategy` is provided below.
 
 [source,groovy]
 g.V().has('name','marko')
@@ -1541,14 +1542,9 @@ The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<
 
 [source,java]
 ----
-public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.VendorOptimizationStrategy> implements TraversalStrategy.VendorOptimizationStrategy {
 
     private static final TinkerGraphStepStrategy INSTANCE = new TinkerGraphStepStrategy();
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>();
-
-    static {
-        PRIORS.add(IdentityRemovalStrategy.class);
-    }
 
     private TinkerGraphStepStrategy() {
     }
@@ -1578,18 +1574,13 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
         }
     }
 
-    @Override
-    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
-        return PRIORS;
-    }
-
     public static TinkerGraphStepStrategy instance() {
         return INSTANCE;
     }
 }
 ----
 
-The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied.
+The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied. Given that the strategy uses non-TinkerPop3 provided steps, it should go into the `VendorOptimizationStrategy` category to ensure the added step does not corrupt the `OptimizationStrategy` strategies.
 
 [gremlin-groovy,modern]
 ----
