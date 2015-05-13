@@ -118,11 +118,12 @@ public class IdentityRemovalStrategyTest {
         static Iterable<Object[]> generateTestParameters() {
 
             return Arrays.asList(new Traversal[][]{
-                    {__.identity().out(),__.out()},
-                    {__.identity().out().identity(),__.out()},
-                    {__.identity().as("a").out().identity(),__.identity().as("a").out()},
-                    {__.identity().as("a").out().identity().as("b"),__.identity().as("a").out().identity().as("b")},
-                    {__.identity().as("a").out().in().identity().identity().as("b").identity().out(),__.identity().as("a").out().in().identity().as("b").out()},
+                    {__.identity().out(), __.out()},
+                    {__.identity().out().identity(), __.out()},
+                    {__.identity().as("a").out().identity(), __.identity().as("a").out()},
+                    {__.identity().as("a").out().identity().as("b"), __.identity().as("a").out().as("b")},
+                    {__.identity().as("a").out().in().identity().identity().as("b").identity().out(), __.identity().as("a").out().in().as("b").out()},
+                    {__.out().identity().as("a").out().in().identity().identity().as("b").identity().out(), __.out().as("a").out().in().as("b").out()},
             });
         }
     }

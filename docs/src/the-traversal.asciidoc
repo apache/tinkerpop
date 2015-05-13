@@ -1503,7 +1503,7 @@ A simple `OptimizationStrategy` is the `IdentityRemovalStrategy`.
 
 [source,java]
 ----
-public class IdentityRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final IdentityRemovalStrategy INSTANCE = new IdentityRemovalStrategy();
 
@@ -1514,9 +1514,14 @@ public class IdentityRemovalStrategy extends AbstractTraversalStrategy<Traversal
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
             return;
-        TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream()
-                .filter(step -> !TraversalHelper.isLabeled(step))
-                .forEach(step -> traversal.removeStep(step));
+
+        TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream().forEach(identityStep -> {
+            final Step<?, ?> previousStep = identityStep.getPreviousStep();
+            if (!(previousStep instanceof EmptyStep) || identityStep.getLabels().isEmpty()) {
+                ((IdentityStep<?>) identityStep).getLabels().forEach(previousStep::addLabel);
+                traversal.removeStep(identityStep);
+            }
+        });
     }
 
     public static IdentityRemovalStrategy instance() {
@@ -1525,7 +1530,7 @@ public class IdentityRemovalStrategy extends AbstractTraversalStrategy<Traversal
 }
 ----
 
-This strategy simply removes any unlabeled `IdentityStep` steps in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. For those traversal strategies that require other strategies to execute prior or post to the strategy, then the following two methods can be defined in `TraversalStrategy` (with defaults being an empty set). If the `TraversalStrategy` is in a particular traversal category (i.e. decoration, optimization, finalization, or verification), then priors and posts are only possible within the category.
+This strategy simply removes any `IdentityStep` steps in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. For those traversal strategies that require other strategies to execute prior or post to the strategy, then the following two methods can be defined in `TraversalStrategy` (with defaults being an empty set). If the `TraversalStrategy` is in a particular traversal category (i.e. decoration, optimization, vendor-optimization, finalization, or verification), then priors and posts are only possible within the category.
 
 [source,java]
 public Set<Class<? extends S>> applyPrior();
@@ -1589,6 +1594,8 @@ t.toString()
 t.iterate(); null
 t.toString()
 ----
+
+CAUTION: The reason that `OptimizationStrategy` and `VendorOptimizationStrategy` are two different categories is that optimization strategies should only rewrite the traversal using TinkerPop3 steps. This ensures that the optimizations executed at the end of the optimization strategy round are TinkerPop3 compliant. From there, vendor optimizations can analyze the traversal and rewrite the traversal as desired using vendor specific steps (e.g. replacing `GraphStep.HasStep...HasStep` with `TinkerGraphStep`). If vendor's optimizations use vendor-specific steps and implement `OptimizationStrategy`, then other TinkerPop3 optimizations may fail to optimize the traversal or mis-understand the vendor-specific step behaviors (e.g. `VendorVertexStep extends VertexStep`) and yield incorrect semantics.
 
 A collection of useful `DecorationStrategy` strategies are provided with TinkerPop3 and are generally useful to end-users.  The following sub-sections detail these strategies:
 
