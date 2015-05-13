@@ -128,7 +128,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
     private static final String INCIDENT_TRAVERSAL_SUPPLIER = "gremlin.pageRankVertexProgram.incidentTraversalSupplier";
 
-    private LambdaHolder<Supplier<Traversal<Vertex, Edge>>> traversalSupplier;
+     private ConfigurationTraversal<Vertex, Edge> configurationTraversal;
     private double vertexCountAsDouble = 1.0d;
     private double alpha = 0.85d;
     private int totalIterations = 30;
@@ -138,12 +138,12 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
     private PageRankVertexProgram() {}
 
     @Override
-    public void loadState(final Configuration configuration) { <4>
-        this.traversalSupplier = LambdaHolder.loadState(configuration, INCIDENT_TRAVERSAL_SUPPLIER);
-        if (null != this.traversalSupplier) {
-            VertexProgramHelper.verifyReversibility(this.traversalSupplier.get().get());
-            this.incidentMessageScope = MessageScope.Local.of(this.traversalSupplier.get());
-        }
+    public void loadState(final Graph graph, final Configuration configuration) { <4>
+        if (configuration.containsKey(TRAVERSAL_SUPPLIER)) {
+                    this.configurationTraversal = ConfigurationTraversal.loadState(graph, configuration, TRAVERSAL_SUPPLIER);
+                    this.incidentMessageScope = MessageScope.Local.of(this.configurationTraversal);
+                    this.countMessageScope = MessageScope.Local.of(new MessageScope.Local.ReverseTraversalSupplier(this.incidentMessageScope));
+                }
         this.vertexCountAsDouble = configuration.getDouble(VERTEX_COUNT, 1.0d);
         this.alpha = configuration.getDouble(ALPHA, 0.85d);
         this.totalIterations = configuration.getInt(TOTAL_ITERATIONS, 30);
