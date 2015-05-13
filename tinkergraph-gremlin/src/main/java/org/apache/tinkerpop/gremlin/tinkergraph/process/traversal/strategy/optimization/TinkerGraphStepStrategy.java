@@ -24,24 +24,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect.TinkerGraphStep;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.VendorOptimizationStrategy> implements TraversalStrategy.VendorOptimizationStrategy {
 
     private static final TinkerGraphStepStrategy INSTANCE = new TinkerGraphStepStrategy();
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>();
-
-    static {
-        PRIORS.add(IdentityRemovalStrategy.class);
-    }
 
     private TinkerGraphStepStrategy() {
     }
@@ -69,11 +60,6 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
                 currentStep = currentStep.getNextStep();
             }
         }
-    }
-
-    @Override
-    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
-        return PRIORS;
     }
 
     public static TinkerGraphStepStrategy instance() {

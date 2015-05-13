@@ -29,9 +29,9 @@ import java.util.Set;
 
 /**
  * A {@link TraversalStrategy} defines a particular atomic operation for mutating a {@link Traversal} prior to its evaluation.
- * There are 4 pre-defined "traversal categories": {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link FinalizationStrategy}, and {@link VerificationStrategy}.
+ * There are 5 pre-defined "traversal categories": {@link DecorationStrategy}, {@link OptimizationStrategy}, {@link VendorOptimizationStrategy}, {@link FinalizationStrategy}, and {@link VerificationStrategy}.
  * Strategies within a category are sorted amongst themselves and then category sorts are applied in the ordered specified previous.
- * That is, decorations are applied, then optimizations, then finalizations, and finally, verifications.
+ * That is, decorations are applied, then optimizations, then vendor optimizations, then finalizations, and finally, verifications.
  * If a strategy does not fit within the specified categories, then it can simply implement {@link TraversalStrategy} and can have priors/posts that span categories.
  * <p/>
  * A traversal strategy should be a final class as various internal operations on a strategy are based on its ability to be assigned to more general classes.
@@ -96,6 +96,8 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
                 return 0;
             else if (otherTraversalCategory.equals(OptimizationStrategy.class))
                 return -1;
+            else if (otherTraversalCategory.equals(VendorOptimizationStrategy.class))
+                return -1;
             else if (otherTraversalCategory.equals(FinalizationStrategy.class))
                 return -1;
             else if (otherTraversalCategory.equals(VerificationStrategy.class))
@@ -107,7 +109,8 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
 
     /**
      * Implemented by strategies that rewrite the traversal to be more efficient, but with the same semantics
-     * (e.g. {@link RangeByIsCountStrategy}).
+     * (e.g. {@link RangeByIsCountStrategy}). During a re-write ONLY TinkerPop steps should be used.
+     * For strategies that utilize vendor specific steps, use {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy.VendorOptimizationStrategy}.
      */
     public interface OptimizationStrategy extends TraversalStrategy<OptimizationStrategy> {
 
@@ -121,6 +124,36 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
             if (otherTraversalCategory.equals(DecorationStrategy.class))
                 return 1;
             else if (otherTraversalCategory.equals(OptimizationStrategy.class))
+                return 0;
+            else if (otherTraversalCategory.equals(VendorOptimizationStrategy.class))
+                return -1;
+            else if (otherTraversalCategory.equals(FinalizationStrategy.class))
+                return -1;
+            else if (otherTraversalCategory.equals(VerificationStrategy.class))
+                return -1;
+            else
+                return 0;
+        }
+    }
+
+    /**
+     * Implemented by strategies that rewrite the traversal to be more efficient, but with the same semantics.
+     * This is for vendors that want to rewrite a traversal using vendor specific steps.
+     */
+    public interface VendorOptimizationStrategy extends TraversalStrategy<VendorOptimizationStrategy> {
+
+        @Override
+        public default Class<VendorOptimizationStrategy> getTraversalCategory() {
+            return VendorOptimizationStrategy.class;
+        }
+
+        @Override
+        public default int compareTo(final Class<? extends TraversalStrategy> otherTraversalCategory) {
+            if (otherTraversalCategory.equals(DecorationStrategy.class))
+                return 1;
+            else if (otherTraversalCategory.equals(OptimizationStrategy.class))
+                return 1;
+            else if (otherTraversalCategory.equals(VendorOptimizationStrategy.class))
                 return 0;
             else if (otherTraversalCategory.equals(FinalizationStrategy.class))
                 return -1;
@@ -148,6 +181,8 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
                 return 1;
             else if (otherTraversalCategory.equals(OptimizationStrategy.class))
                 return 1;
+            else if (otherTraversalCategory.equals(VendorOptimizationStrategy.class))
+                return 1;
             else if (otherTraversalCategory.equals(FinalizationStrategy.class))
                 return 0;
             else if (otherTraversalCategory.equals(VerificationStrategy.class))
@@ -174,6 +209,8 @@ public interface TraversalStrategy<S extends TraversalStrategy> extends Serializ
             if (otherTraversalCategory.equals(DecorationStrategy.class))
                 return 1;
             else if (otherTraversalCategory.equals(OptimizationStrategy.class))
+                return 1;
+            else if (otherTraversalCategory.equals(VendorOptimizationStrategy.class))
                 return 1;
             else if (otherTraversalCategory.equals(FinalizationStrategy.class))
                 return 1;

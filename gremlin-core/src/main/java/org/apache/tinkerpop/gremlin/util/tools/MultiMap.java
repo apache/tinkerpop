@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.util.tools;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,7 +53,7 @@ public class MultiMap {
     private static <K, V> Set<V> getMapSet(final Map<K, Set<V>> map, final K key) {
         Set<V> set = map.get(key);
         if (set == null) {
-            set = new HashSet<>();
+            set = new LinkedHashSet<>();
             map.put(key, set);
         }
         return set;

@@ -22,7 +22,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Conjun
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.EngineDependentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ScopingStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.*;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.DedupBijectionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchWhereStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.OrderGlobalRemovalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
@@ -31,7 +37,14 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.util.tools.MultiMap;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +56,7 @@ import java.util.stream.Collectors;
  */
 public interface TraversalStrategies extends Serializable, Cloneable {
 
-    static List<Class<? extends TraversalStrategy>> strategyCategories = Collections.unmodifiableList(Arrays.asList(TraversalStrategy.DecorationStrategy.class, TraversalStrategy.OptimizationStrategy.class, TraversalStrategy.FinalizationStrategy.class, TraversalStrategy.VerificationStrategy.class));
+    static List<Class<? extends TraversalStrategy>> STRATEGY_CATEGORIES = Collections.unmodifiableList(Arrays.asList(TraversalStrategy.DecorationStrategy.class, TraversalStrategy.OptimizationStrategy.class, TraversalStrategy.VendorOptimizationStrategy.class, TraversalStrategy.FinalizationStrategy.class, TraversalStrategy.VerificationStrategy.class));
 
     /**
      * Return all the {@link TraversalStrategy} singleton instances associated with this {@link TraversalStrategies}.
@@ -102,7 +115,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
      */
     public static List<TraversalStrategy<?>> sortStrategies(final List<TraversalStrategy<?>> strategies) {
         final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap = new HashMap<>();
-        final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> strategiesByCategory = new HashMap();
+        final Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> strategiesByCategory = new HashMap<>();
         final Set<Class<? extends TraversalStrategy>> strategyClasses = new HashSet<>(strategies.size());
         //Initialize data structure
         strategies.forEach(s -> {
@@ -123,10 +136,10 @@ public interface TraversalStrategies extends Serializable, Cloneable {
 
         //Add dependencies by category
         List<Class<? extends TraversalStrategy>> strategiesInPreviousCategories = new ArrayList<>();
-        for(Class<? extends TraversalStrategy> category : strategyCategories) {
+        for (Class<? extends TraversalStrategy> category : STRATEGY_CATEGORIES) {
             Set<Class<? extends TraversalStrategy>> strategiesInThisCategory = MultiMap.get(strategiesByCategory, category);
-            for(Class<? extends TraversalStrategy> strategy :  strategiesInThisCategory) {
-                for(Class<? extends TraversalStrategy> previousStrategy : strategiesInPreviousCategories) {
+            for (Class<? extends TraversalStrategy> strategy : strategiesInThisCategory) {
+                for (Class<? extends TraversalStrategy> previousStrategy : strategiesInPreviousCategories) {
                     MultiMap.put(dependencyMap, strategy, previousStrategy);
                 }
             }
@@ -134,20 +147,20 @@ public interface TraversalStrategies extends Serializable, Cloneable {
         }
 
         //Finally sort via t-sort
-        List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses = new ArrayList<>(strategies.stream().map(s->s.getClass()).collect(Collectors.toSet()));
+        List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses = new ArrayList<>(strategies.stream().map(s -> s.getClass()).collect(Collectors.toSet()));
         List<Class<? extends TraversalStrategy>> sortedStrategyClasses = new ArrayList<>();
         Set<Class<? extends TraversalStrategy>> seenStrategyClasses = new HashSet<>();
 
-        while(!unprocessedStrategyClasses.isEmpty()) {
+        while (!unprocessedStrategyClasses.isEmpty()) {
             Class<? extends TraversalStrategy> strategy = unprocessedStrategyClasses.get(0);
             visit(dependencyMap, sortedStrategyClasses, seenStrategyClasses, unprocessedStrategyClasses, strategy);
         }
 
         List<TraversalStrategy<?>> sortedStrategies = new ArrayList<>();
         //We now have a list of sorted strategy classes
-        for(Class<? extends TraversalStrategy> strategyClass : sortedStrategyClasses) {
-            for(TraversalStrategy strategy : strategies)  {
-                if(strategy.getClass().equals(strategyClass)) {
+        for (Class<? extends TraversalStrategy> strategyClass : sortedStrategyClasses) {
+            for (TraversalStrategy strategy : strategies) {
+                if (strategy.getClass().equals(strategyClass)) {
                     sortedStrategies.add(strategy);
                 }
             }
@@ -159,13 +172,13 @@ public interface TraversalStrategies extends Serializable, Cloneable {
 
 
     static void visit(Map<Class<? extends TraversalStrategy>, Set<Class<? extends TraversalStrategy>>> dependencyMap, List<Class<? extends TraversalStrategy>> sortedStrategyClasses, Set<Class<? extends TraversalStrategy>> seenStrategyClases, List<Class<? extends TraversalStrategy>> unprocessedStrategyClasses, Class<? extends TraversalStrategy> strategyClass) {
-        if(seenStrategyClases.contains(strategyClass)) {
+        if (seenStrategyClases.contains(strategyClass)) {
             throw new IllegalStateException("Cyclic dependency between traversal strategies: ["
                     + seenStrategyClases + ']');
         }
 
 
-        if(unprocessedStrategyClasses.contains(strategyClass)) {
+        if (unprocessedStrategyClasses.contains(strategyClass)) {
             seenStrategyClases.add(strategyClass);
             for (Class<? extends TraversalStrategy> dependency : MultiMap.get(dependencyMap, strategyClass)) {
                 visit(dependencyMap, sortedStrategyClasses, seenStrategyClases, unprocessedStrategyClasses, dependency);
