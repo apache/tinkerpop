@@ -54,7 +54,7 @@ public class __ {
         return new DefaultGraphTraversal<>();
     }
 
-    public static <A> GraphTraversal<A, A> __(final Object... starts) {
+    public static <A> GraphTraversal<A, A> __(final A... starts) {
         return inject(starts);
     }
 
@@ -290,7 +290,7 @@ public class __ {
         return __.<A>start().or(orTraversals);
     }
 
-    public static <A> GraphTraversal<A, A> inject(final Object... injections) {
+    public static <A> GraphTraversal<A, A> inject(final A... injections) {
         return __.<A>start().inject((A[]) injections);
     }
 

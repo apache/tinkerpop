@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
@@ -58,6 +59,9 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (traversal.getEngine().isStandard())
             return;
+
+        if (traversal.getParent() instanceof EmptyStep && !(traversal.getStartStep() instanceof GraphStep))
+            throw new ComputerVerificationException("GraphComputer does not support traversals starting from a non-GraphStep: " + traversal.getStartStep(), traversal);
 
         Step<?, ?> endStep = traversal.getEndStep();
         while (endStep instanceof ComputerAwareStep.EndStep || endStep instanceof ComputerResultStep) {

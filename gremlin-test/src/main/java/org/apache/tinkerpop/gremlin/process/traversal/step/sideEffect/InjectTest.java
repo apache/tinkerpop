@@ -23,12 +23,13 @@ import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +46,8 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_VX1X_out_injectXv2X_name(final Object v1Id, final Object v2Id);
 
     public abstract Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id);
+
+    public abstract Traversal<Vertex, String> get_injectXgraph_verticesX1X_graph_verticesX2XX_name(final Object v1Id, final Object v2Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -82,6 +85,14 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
         assertEquals(4, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void injectXgraph_verticesX1X_graph_verticesX2XX_name() {
+        final Traversal<Vertex, String> traversal = get_injectXgraph_verticesX1X_graph_verticesX2XX_name(convertToVertexId("marko"), convertToVertexId("vadas"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", "vadas"), traversal);
+    }
+
     public static class Traversals extends InjectTest {
 
         @Override
@@ -92,6 +103,11 @@ public abstract class InjectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_out_name_injectXdanielX_asXaX_mapXlengthX_path(final Object v1Id) {
             return g.V(v1Id).out().<String>values("name").inject("daniel").as("a").map(t -> t.get().length()).path();
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_injectXgraph_verticesX1X_graph_verticesX2XX_name(final Object v1Id, final Object v2Id) {
+            return __.inject(graph.vertices(v1Id).next(), graph.vertices(v2Id).next()).values("name");
         }
     }
 }
