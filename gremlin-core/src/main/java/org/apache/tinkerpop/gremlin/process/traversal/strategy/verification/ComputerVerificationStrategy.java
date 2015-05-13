@@ -77,7 +77,8 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             try {
                 Serializer.serializeObject(traversal);
             } catch (final IOException e) {
-                throw new ComputerVerificationException("The provided traversal is not serializable and thus, can not be distributed across a cluster", traversal);
+                if (e.getMessage().contains("$$Lambda")) // java8 lambda which is unserializable
+                    throw new ComputerVerificationException("The provided traversal contains a Java8 lambda which is not serializable and can not be distributed across a cluster", traversal);
             }
             ////
             if (!(traversal.getStartStep() instanceof GraphStep))
