@@ -277,31 +277,46 @@ Validating with Gremlin-Test
   <artifactId>gremlin-test</artifactId>
   <version>x.y.z</version>
 </dependency>
+<dependency>
+  <groupId>org.apache.tinkerpop</groupId>
+  <artifactId>gremlin-groovy-test</artifactId>
+  <version>x.y.z</version>
+</dependency>
 
-The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test`. Please provide the following test cases with your implementation, where `XXX` below denotes the name of your graph implementation (e.g. TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
-
-IMPORTANT: It is as important to look at "ignored" tests as it is to look at ones that fail.  The `gremlin-test` suite utilizes the `Feature` implementation exposed by the `Graph` to determine which tests to execute.  If a test utilizes features that are not supported by the graph, it will ignore them.  While that may be fine, implementers should validate that the ignored tests are appropriately bypassed and that there are no mistakes in their feature definitions.
+The operational semantics of any OLTP or OLAP implementation are validated by `gremlin-test` and functional interoperability with the Groovy environment is ensured by `gremlin-groovy-test`. To implement these tests, provide test case implementations as shown below, where `XXX` below denotes the name of the graph implementation (e.g. TinkerGraph, Neo4jGraph, HadoopGraph, etc.).
 
 [source,java]
 ----
 // Structure API tests
 @RunWith(StructureStandardSuite.class)
-@StructureStandardSuite.GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
+@GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
 public class XXXStructureStandardTest {}
-
-@RunWith(StructurePerformanceSuite.class)
-@StructurePerformanceSuite.GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
-public class XXXStructurePerformanceTest {}
 
 // Process API tests
 @RunWith(ProcessComputerSuite.class)
-@ProcessComputerSuite.GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
+@GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
 public class XXXProcessComputerTest {}
 
 @RunWith(ProcessStandardSuite.class)
-@ProcessStandardSuite.GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
+@GraphProviderClass(provider = XXXGraphProvider.class, graph = XXXGraph.class)
 public class XXXProcessStandardTest {}
+
+@RunWith(GroovyEnvironmentSuite.class)
+@GraphProviderClass(provider = XXXProvider.class, graph = TinkerGraph.class)
+public class XXXGroovyEnvironmentTest {}
+
+@RunWith(GroovyProcessStandardSuite.class)
+@GraphProviderClass(provider = XXXGraphProvider.class, graph = TinkerGraph.class)
+public class XXXGroovyProcessStandardTest {}
+
+@RunWith(GroovyProcessComputerSuite.class)
+@GraphProviderClass(provider = XXXGraphComputerProvider.class, graph = TinkerGraph.class)
+public class XXXGroovyProcessComputerTest {}
 ----
+
+The above set of tests represent the minimum test suite set to implement.  There are other "integration" and "performance" tests that should be considered optional.  Implementing those tests requires the same pattern as shown above.
+
+IMPORTANT: It is as important to look at "ignored" tests as it is to look at ones that fail.  The `gremlin-test` suite utilizes the `Feature` implementation exposed by the `Graph` to determine which tests to execute.  If a test utilizes features that are not supported by the graph, it will ignore them.  While that may be fine, implementers should validate that the ignored tests are appropriately bypassed and that there are no mistakes in their feature definitions.
 
 The only test-class that requires any code investment is the `GraphProvider` implementation class. This class is a used by the test suite to construct `Graph` configurations and instances and provides information about the vendor's implementation itself.  In most cases, it is best to simply extend `AbstractGraphProvider` as it provides many default implementations of the `GraphProvider` interface.
 
@@ -310,9 +325,11 @@ Finally, specify the test suites that will be supported by the `Graph` implement
 [source,java]
 ----
 @Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_STANDARD)
-@Graph.OptIn(Graph.OptIn.SUITE_STRUCTURE_PERFORMANCE)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_STANDARD)
 @Graph.OptIn(Graph.OptIn.SUITE_PROCESS_COMPUTER)
+@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_STANDARD)
+@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_PROCESS_COMPUTER)
+@Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 public class TinkerGraph implements Graph {
 ----
 

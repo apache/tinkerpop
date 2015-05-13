@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.groovy;
 
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.process.GroovyProcessComputerSuite;
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.TinkerGraphComputerProvider;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.runner.RunWith;
@@ -28,6 +28,6 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(GroovyProcessComputerSuite.class)
-@ProcessStandardSuite.GraphProviderClass(provider = TinkerGraphComputerProvider.class, graph = TinkerGraph.class)
+@GraphProviderClass(provider = TinkerGraphComputerProvider.class, graph = TinkerGraph.class)
 public class TinkerGraphGroovyProcessComputerTest {
 }

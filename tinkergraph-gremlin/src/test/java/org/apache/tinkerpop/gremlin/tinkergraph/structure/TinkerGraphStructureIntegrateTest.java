@@ -18,9 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.structure.StructureIntegrateSuite;
-import org.apache.tinkerpop.gremlin.structure.StructurePerformanceSuite;
-import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 import org.junit.runner.RunWith;
 
@@ -30,7 +29,7 @@ import org.junit.runner.RunWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(StructureIntegrateSuite.class)
-@StructureIntegrateSuite.GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
+@GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
 public class TinkerGraphStructureIntegrateTest {
 
 }

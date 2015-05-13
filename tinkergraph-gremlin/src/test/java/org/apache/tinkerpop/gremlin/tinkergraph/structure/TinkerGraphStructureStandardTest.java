@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
 import org.junit.runner.RunWith;
-
 
 /**
  * Executes the Standard Gremlin Structure Test Suite using TinkerGraph.
@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(StructureStandardSuite.class)
-@StructureStandardSuite.GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
+@GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
 public class TinkerGraphStructureStandardTest {
 
 }

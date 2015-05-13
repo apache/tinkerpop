@@ -47,25 +47,6 @@ import java.util.stream.Stream;
  */
 public abstract class AbstractGremlinSuite extends Suite {
     /**
-     * The GraphProvider instance that will be used to generate a Graph instance.
-     */
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.TYPE)
-    @Inherited
-    public @interface GraphProviderClass {
-        /**
-         * The class of the {@link Graph} that will be returned by the {@link GraphProvider}
-         */
-        public Class<? extends Graph> graph();
-
-        /**
-         * The class of the {@link GraphProvider} implementation to use to generate the {@link Graph} specified by
-         * {@link #graph()}
-         */
-        public Class<? extends GraphProvider> provider();
-    }
-
-    /**
      * Indicates that this suite is for testing a gremlin flavor and is therefore not responsible for validating
      * the suite against what the {@link Graph} implementation opts-in for. This setting will let Gremlin flavor
      * developers run their test cases against a {@link Graph} without the need for the {@link Graph} to supply

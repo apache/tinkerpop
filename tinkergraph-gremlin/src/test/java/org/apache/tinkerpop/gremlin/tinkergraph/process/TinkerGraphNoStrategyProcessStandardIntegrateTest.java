@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process;
 
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.runner.RunWith;
@@ -28,6 +29,6 @@ import org.junit.runner.RunWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(ProcessStandardSuite.class)
-@ProcessStandardSuite.GraphProviderClass(provider = TinkerGraphNoStrategyProvider.class, graph = TinkerGraph.class)
+@GraphProviderClass(provider = TinkerGraphNoStrategyProvider.class, graph = TinkerGraph.class)
 public class TinkerGraphNoStrategyProcessStandardIntegrateTest {
 }

@@ -18,16 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.groovy;
 
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite;
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
 import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(GroovyProcessStandardSuite.class)
-@ProcessStandardSuite.GraphProviderClass(provider = HadoopGraphProvider.class, graph = HadoopGraph.class)
+@GraphProviderClass(provider = HadoopGraphProvider.class, graph = HadoopGraph.class)
 public class HadoopGraphGroovyProcessStandardTest {
 }

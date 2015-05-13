@@ -16,20 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.structure;
+package org.apache.tinkerpop.gremlin;
 
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.structure.StructurePerformanceSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
-import org.junit.runner.RunWith;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Executes the Gremlin Structure Performance Test Suite using TinkerGraph.
+ * The GraphProvider instance that will be used to generate a Graph instance.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(StructurePerformanceSuite.class)
-@GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphStructurePerformanceTest {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Inherited
+public @interface GraphProviderClass {
+    /**
+     * The class of the {@link Graph} that will be returned by the {@link GraphProvider}
+     */
+    public Class<? extends Graph> graph();
 
+    /**
+     * The class of the {@link GraphProvider} implementation to use to generate the {@link Graph} specified by
+     * {@link #graph()}
+     */
+    public Class<? extends GraphProvider> provider();
 }
