@@ -112,6 +112,29 @@ public class TraversalStrategiesTest {
         s = TraversalStrategies.sortStrategies(s);
         assertTrue(s.indexOf(a) < s.indexOf(b));
 
+        // sort and then add more
+        s = new ArrayList<>((List)Arrays.asList(b,a,c));
+        s = TraversalStrategies.sortStrategies(s);
+        assertEquals(3, s.size());
+        assertEquals(a, s.get(0));
+        assertEquals(b, s.get(1));
+        assertEquals(c, s.get(2));
+        s.add(d);
+        s = TraversalStrategies.sortStrategies(s);
+        assertEquals(4, s.size());
+        assertEquals(a, s.get(0));
+        assertEquals(b, s.get(1));
+        assertEquals(d, s.get(2));
+        assertEquals(c, s.get(3));
+        s.add(e);
+        s = TraversalStrategies.sortStrategies(s);
+        assertEquals(5, s.size());
+        assertEquals(a, s.get(0));
+        assertEquals(b, s.get(1));
+        assertEquals(d, s.get(2));
+        assertEquals(c, s.get(3));
+        assertEquals(e, s.get(4));
+
     }
 
 
