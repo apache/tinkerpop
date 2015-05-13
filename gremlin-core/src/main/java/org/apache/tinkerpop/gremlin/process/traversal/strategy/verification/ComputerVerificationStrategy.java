@@ -42,9 +42,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrier
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.util.Serializer;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
@@ -74,13 +72,6 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         }
 
         if (traversal.getParent() instanceof EmptyStep) {
-            try {
-                Serializer.serializeObject(traversal);
-            } catch (final IOException e) {
-                if (e.getMessage().contains("$$Lambda")) // java8 lambda which is unserializable
-                    throw new ComputerVerificationException("The provided traversal contains a Java8 lambda which is not serializable and can not be distributed across a cluster", traversal);
-            }
-            ////
             if (!(traversal.getStartStep() instanceof GraphStep))
                 throw new ComputerVerificationException("GraphComputer does not support traversals starting from a non-GraphStep: " + traversal.getStartStep(), traversal);
             ///

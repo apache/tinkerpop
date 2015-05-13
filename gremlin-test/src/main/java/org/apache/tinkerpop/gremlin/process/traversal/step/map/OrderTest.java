@@ -79,6 +79,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_name_order_byXa1_b1X_byXb2_a2X() {
         final Traversal<Vertex, String> traversal = get_g_V_name_order_byXa1_b1X_byXb2_a2X();
         printTraversalForm(traversal);

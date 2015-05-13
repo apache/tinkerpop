@@ -27,6 +27,8 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
+import java.io.NotSerializableException;
+
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
@@ -50,7 +52,7 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
             } catch (AssumptionViolatedException ave) {
                 eachNotifier.addFailedAssumption(ave);
             } catch (Throwable e) {
-                if (isComputerVerificationException(e)) {
+                if (validateForGraphComputer(e)) {
                     eachNotifier.fireTestIgnored();
                     System.err.println(e.getMessage());
                     ignored = true;
@@ -63,10 +65,12 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
         }
     }
 
-    private static boolean isComputerVerificationException(final Throwable e) {
+    private static boolean validateForGraphComputer(final Throwable e) {
         Throwable ex = e;
         while (ex != null) {
             if (ex instanceof ComputerVerificationException)
+                return true;
+            else if (ex instanceof NotSerializableException)
                 return true;
             ex = ex.getCause();
         }

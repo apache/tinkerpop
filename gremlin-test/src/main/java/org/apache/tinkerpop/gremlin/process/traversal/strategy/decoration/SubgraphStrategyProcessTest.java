@@ -48,6 +48,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldFilterVertexCriterion() throws Exception {
         final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         final Predicate<Edge> edgeCriterion = edge -> true;
@@ -227,6 +228,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldFilterMixedCriteria() throws Exception {
         final Predicate<Vertex> vertexCriterion = vertex -> vertex.value("name").equals("josh") || vertex.value("name").equals("lop") || vertex.value("name").equals("ripple");
         final Predicate<Edge> edgeCriterion = edge -> {
