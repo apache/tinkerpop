@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 import java.util.List
 import java.util.Map
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.global
@@ -49,12 +50,17 @@ public abstract class GroovyTailTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tail() {
-            g.V.values('name')order.tail
+            g.V.values('name').order.tail
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X() {
             g.V.values('name').order.tail(7)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_tailX7X() {
+            g.V.repeat(both()).times(3).tail(7)
         }
 
         @Override
