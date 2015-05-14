@@ -82,7 +82,7 @@ public abstract class StoreTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_withXa_setX_both_name_storeXaX() {
+    public void g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX() {
         final Traversal<Vertex, Set<String>> traversal = get_g_V_withSideEffectXa_setX_both_name_storeXaX_capXaX();
         printTraversalForm(traversal);
         final Set<String> names = traversal.next();
