@@ -106,7 +106,6 @@ class SugarLoader {
 
     public static class ElementCategory {
         public static final Object get(final Element element, final String key) {
-            // TODO: Weird:::: return element.property(key).orElseGet{vertex."$key"()};
             final Property property = element.property(key);
             if (property.isPresent())
                 return property.value();
@@ -130,7 +129,6 @@ class SugarLoader {
 
     public static class VertexCategory {
         public static final Object get(final Vertex vertex, final String key) {
-            // TODO: Weird:::: return vertex.property(key).orElseGet{vertex."$key"()};
             final Property property = vertex.property(key);
             if (property.isPresent())
                 return property.value();
