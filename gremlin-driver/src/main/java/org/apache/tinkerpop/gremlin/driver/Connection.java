@@ -81,8 +81,6 @@ class Connection {
         connectionLabel = String.format("Connection{host=%s}", pool.host);
 
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
-
-        // todo: dynamically instantiate the channelizer from settings
         final Channelizer channelizer = new Channelizer.WebSocketChannelizer();
         channelizer.init(this);
         b.channel(NioSocketChannel.class).handler(channelizer);
