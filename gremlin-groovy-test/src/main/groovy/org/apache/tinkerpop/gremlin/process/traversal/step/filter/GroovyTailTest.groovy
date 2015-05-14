@@ -29,6 +29,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.limit;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.unfold;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.global;
@@ -44,22 +45,27 @@ public abstract class GroovyTailTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailXglobal_2X() {
-            g.V.values('name')order.tail(global, 2)
+            g.V.values('name').order.tail(global, 2)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX2X() {
-            g.V.values('name')order.tail(2)
+            g.V.values('name').order.tail(2)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tail() {
-            g.V.values('name')order.tail
+            g.V.values('name').order.tail
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X() {
-            g.V.values('name')order.tail(7)
+            g.V.values('name').order.tail(7)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_tailX7X() {
+            g.V.repeat(both()).times(3).tail(7);
         }
 
         @Override
@@ -123,6 +129,12 @@ public abstract class GroovyTailTest {
         @Override
         @Test
         @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
+        public void g_V_repeatXbothX_timesX3X_tailX7X() {
+        }
+
+        @Override
+        @Test
+        @Ignore("Traversal not supported by ComputerTraversalEngine.computer")
         public void g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_2X() {
         }
 
@@ -176,6 +188,12 @@ public abstract class GroovyTailTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X() {
+            // override with nothing until the test itself is supported
+            return null
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_tailX7X() {
             // override with nothing until the test itself is supported
             return null
         }
