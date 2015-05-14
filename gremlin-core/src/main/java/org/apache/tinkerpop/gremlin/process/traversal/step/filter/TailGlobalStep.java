@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
@@ -32,10 +33,12 @@ import java.util.Set;
 /**
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public final class TailGlobalStep<S> extends AbstractStep<S, S> {
+public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypassing {
 
     private final long limit;
     private Deque<Traverser.Admin<S>> tail;
+    private long tailBulk = 0L;
+    private boolean bypass = false;
 
     public TailGlobalStep(final Traversal.Admin traversal, final long limit) {
         super(traversal);
@@ -43,18 +46,37 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> {
         this.tail = new ArrayDeque<Traverser.Admin<S>>((int)limit);
     }
 
+    public void setBypass(final boolean bypass) {
+        this.bypass = bypass;
+    }
+
     @Override
     public Traverser<S> processNextStart() {
-        if (this.starts.hasNext()) {
-            this.starts.forEachRemaining(this::addTail);
+        if (this.bypass) {
+            // If we are bypassing this step, let everything through.
+            return this.starts.next();
+        } else {
+            // Pull everything available before we start delivering from the tail buffer.
+            if (this.starts.hasNext()) {
+                this.starts.forEachRemaining(this::addTail);
+            }
+            // Pull the oldest traverser from the tail buffer.
+            final Traverser.Admin<S> oldest = this.tail.pop();
+            // Trim any excess from the oldest traverser.
+            final long excess = this.tailBulk - this.limit;
+            if (excess > 0)
+                oldest.setBulk(oldest.bulk() - excess);
+            // Account for the loss of bulk in the tail buffer as we emit the oldest traverser.
+            this.tailBulk -= oldest.bulk();
+            return oldest;
         }
-        return this.tail.pop();
     }
 
     @Override
     public void reset() {
         super.reset();
         this.tail.clear();
+        this.tailBulk = 0L;
     }
 
     @Override
@@ -66,6 +88,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> {
     public TailGlobalStep<S> clone() {
         final TailGlobalStep<S> clone = (TailGlobalStep<S>) super.clone();
         clone.tail = new ArrayDeque<Traverser.Admin<S>>((int)this.limit);
+        clone.tailBulk = 0L;
         return clone;
     }
 
@@ -75,8 +98,17 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> {
     }
 
     private void addTail(Traverser.Admin<S> start) {
-        if (this.tail.size() >= this.limit)
+        // Calculate the tail bulk including this new start.
+        this.tailBulk += start.bulk();
+        // Evict from the tail buffer until we have enough room.
+        while (!this.tail.isEmpty()) {
+            final Traverser.Admin<S> oldest = this.tail.getFirst();
+            final long bulk = oldest.bulk();
+            if (this.tailBulk - bulk < limit)
+                break;
             this.tail.pop();
+            this.tailBulk -= bulk;
+        }
         this.tail.add(start);
     }
 }
