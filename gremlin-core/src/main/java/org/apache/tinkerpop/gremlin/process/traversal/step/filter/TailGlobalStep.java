@@ -65,7 +65,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> {
     @Override
     public TailGlobalStep<S> clone() {
         final TailGlobalStep<S> clone = (TailGlobalStep<S>) super.clone();
-        clone.tail = new ArrayDeque<Traverser.Admin<S>>(this.tail);
+        clone.tail = new ArrayDeque<Traverser.Admin<S>>((int)this.limit);
         return clone;
     }
 
