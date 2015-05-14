@@ -1032,7 +1032,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         MapReduceI.TIME_KEEPER.set(-1l);
         MapReduceI.WORKER_START.clear();
         MapReduceI.WORKER_END.clear();
-        graph.compute(graphComputerClass.get()).program(new VertexProgramJ()).mapReduce(new MapReduceI()).submit().get();
+        assertEquals(3,graph.compute(graphComputerClass.get()).program(new VertexProgramJ()).mapReduce(new MapReduceI()).submit().get().memory().<Integer>get("a").intValue());
         assertEquals(Long.MIN_VALUE, VertexProgramJ.TIME_KEEPER.get());
         if (MapReduceI.WORKER_START.size() == 2) {
             assertEquals(2, MapReduceI.WORKER_START.size());
