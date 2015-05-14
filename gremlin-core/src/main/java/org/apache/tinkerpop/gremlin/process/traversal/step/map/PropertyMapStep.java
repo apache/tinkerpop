@@ -37,7 +37,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {   // TODO: Map<Object,E> cause of T.
+public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
 
     protected final String[] propertyKeys;
     protected final PropertyType returnType;

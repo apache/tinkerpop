@@ -47,7 +47,7 @@ public class Constants {
     public static final String HADOOP_GREMLIN_LIBS = "HADOOP_GREMLIN_LIBS";
     public static final String DOT_JAR = ".jar";
     public static final String GREMLIN_HADOOP_DERIVE_MEMORY = "gremlin.hadoop.deriveMemory";
-    public static final String HIDDEN_MEMORY = Graph.Hidden.hide("memory");      // TODO: Why not gremlin.hadoop?
+    public static final String HIDDEN_MEMORY = Graph.Hidden.hide("memory");
     public static final String HIDDEN_RUNTIME = Graph.Hidden.hide("gremlin.hadoop.runtime");
     public static final String HIDDEN_ITERATION = Graph.Hidden.hide("gremlin.hadoop.iteration");
     public static final String GREMLIN_HADOOP_MEMORY_KEYS = "gremlin.hadoop.memoryKeys";

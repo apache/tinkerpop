@@ -57,8 +57,6 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
         put(Graph.GRAPH, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph"); // hard coded because TinkerGraph is not part of gremlin-core
     }};
 
-    // TODO: add support for side-effecting out an edge list.
-
     public SubgraphStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
@@ -104,7 +102,7 @@ public final class SubgraphStep extends SideEffectStep<Edge> implements SideEffe
         if (vertexIterator.hasNext()) return vertexIterator.next();
         final Vertex subgraphVertex = subgraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
         vertex.properties().forEachRemaining(vertexProperty -> {
-            final VertexProperty<?> subgraphVertexProperty = subgraphVertex.property(vertexProperty.key(), vertexProperty.value(), T.id, vertexProperty.id()); // TODO: demand vertex property id?
+            final VertexProperty<?> subgraphVertexProperty = subgraphVertex.property(vertexProperty.key(), vertexProperty.value(), T.id, vertexProperty.id());
             vertexProperty.properties().forEachRemaining(property -> subgraphVertexProperty.<Object>property(property.key(), property.value()));
         });
         return subgraphVertex;

@@ -70,16 +70,6 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX();
 
-    // TODO:
-    /*
-    gremlin> g.V(1).repeat(out()).until(outE().count().cap().filter{it.get() == 0}).path().by('name') (3)
-    ==>[marko, lop]
-    ==>[marko, vadas]
-    ==>[marko, josh, ripple]
-    ==>[marko, josh, lop]
-     */
-
-
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_repeatXoutX_timesX2X_emit_path() {

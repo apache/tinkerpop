@@ -41,7 +41,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected Traversal.Admin traversal;
     protected ExpandableStepIterator<S> starts;
     protected Traverser<E> nextEnd = null;
-    protected boolean traverserStepIdSetByChild = false; // TODO: Step.teleport(traverser, step)
+    protected boolean traverserStepIdSetByChild = false;
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();

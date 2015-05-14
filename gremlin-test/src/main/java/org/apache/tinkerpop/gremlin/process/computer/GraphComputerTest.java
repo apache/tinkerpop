@@ -60,7 +60,7 @@ import static org.junit.Assert.*;
         "adjacentVertexPropertiesCanNotBeReadOrUpdated",
         "adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated",
         "resultGraphPersistCombinationNotSupported",
-        "vertexPropertiesCanNotBeUpdatedInMapReduce"// TODO: NOT TRUE!
+        "vertexPropertiesCanNotBeUpdatedInMapReduce"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer",

@@ -174,7 +174,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
             final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
             clone.steps = new ArrayList<>();
             clone.sideEffects = this.sideEffects.clone();
-            clone.strategies = this.strategies.clone(); // TODO: does this need to be cloned?
+            clone.strategies = this.strategies.clone();
             clone.lastEnd = null;
             clone.lastEndCount = 0l;
             for (final Step<?, ?> step : this.steps) {

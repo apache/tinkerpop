@@ -45,6 +45,4 @@ public final class PropertyElementStep<E> extends MapStep<Property<E>, Element> 
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
-
-    // TODO: reverse()
 }

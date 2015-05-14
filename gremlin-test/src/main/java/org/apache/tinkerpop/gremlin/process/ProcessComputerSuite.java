@@ -156,7 +156,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             MeanTest.class,
             MinTest.class,
             SumTest.class,
-            // TODO: MatchTest.ComputerTest.class,
+            MatchTest.class,
             OrderTest.class,
             PathTest.class,
             PropertiesTest.class,
@@ -166,17 +166,17 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             VertexTest.class,
 
             // sideEffect
-            // TODO: AddEdgeTest.ComputerTest.class,
+            AddEdgeTest.class,
             AggregateTest.class,
             GroupTest.class,
             GroupCountTest.class,
-            // TODO: InjectTest.ComputerTest.class,
+            InjectTest.class,
             ProfileTest.class,
             SackTest.class,
             SideEffectCapTest.class,
-            // TODO: REMOVE? SideEffectTest.ComputerTest.class,
+            SideEffectTest.class,
             StoreTest.class,
-            // TODO: REMOVE? SubgraphTest.ComputerTest.class,
+            SubgraphTest.class,
             TreeTest.class
     };
 

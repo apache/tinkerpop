@@ -91,6 +91,5 @@ public class VertexWritableTest {
         assertEquals(2, IteratorUtils.count(vw.get().properties()));
         assertEquals("marko", vw.get().value("name"));
         assertEquals("private", vw.get().property("name").value("acl"));
-        // TODO: advance this
     }
 }

@@ -64,7 +64,7 @@ public final class MapReduceHelper {
         apacheConfiguration.setDelimiterParsingDisabled(true);
         mapReduce.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
-        if (!mapReduce.doStage(MapReduce.Stage.MAP)) { // TODO : how is this possible?
+        if (!mapReduce.doStage(MapReduce.Stage.MAP)) {
             final Path memoryPath = new Path(configuration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
             if (newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
                 mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
@@ -99,7 +99,7 @@ public final class MapReduceHelper {
             job.setInputFormatClass(vertexProgramExists ?
                     InputOutputHelper.getInputFormat((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class)) :
                     (Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class));
-            job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class)); // TODO: Make this configurable
+            job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class));
             // if there is no vertex program, then grab the graph from the input location
             final Path graphPath = vertexProgramExists ?
                     new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G) :
@@ -123,7 +123,7 @@ public final class MapReduceHelper {
                 reduceSortJob.setMapOutputValueClass(ObjectWritable.class);
                 reduceSortJob.setOutputKeyClass(ObjectWritable.class);
                 reduceSortJob.setOutputValueClass(ObjectWritable.class);
-                reduceSortJob.setInputFormatClass(SequenceFileInputFormat.class); // TODO: require this hard coded? If so, ERROR messages needed.
+                reduceSortJob.setInputFormatClass(SequenceFileInputFormat.class);
                 reduceSortJob.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class));
                 FileInputFormat.setInputPaths(reduceSortJob, memoryPath);
                 final Path sortedMemoryPath = new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());

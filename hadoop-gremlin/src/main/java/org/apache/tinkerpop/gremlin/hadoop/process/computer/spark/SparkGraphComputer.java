@@ -96,7 +96,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                                 NullWritable.class,
                                 VertexWritable.class)
                                 .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new VertexWritable(tuple._2().get())))
-                                .reduceByKey((a, b) -> a) // TODO: why is this necessary?
+                                .reduceByKey((a, b) -> a) // if this is not done, then the graph is partitioned and you can have duplicate vertices
                                 .setName("graphRDD")
                                 .cache(); // partition the graph across the cluster
                         JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;
@@ -145,7 +145,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                                 mapReduce.storeState(newApacheConfiguration);
                                 // map
                                 final JavaPairRDD mapRDD = SparkExecutor.executeMap((JavaPairRDD) mapReduceGraphRDD, mapReduce, newApacheConfiguration).setName("mapRDD");
-                                // combine TODO? is this really needed
+                                // combine TODO: is this really needed
                                 // reduce
                                 final JavaPairRDD reduceRDD = (mapReduce.doStage(MapReduce.Stage.REDUCE)) ? SparkExecutor.executeReduce(mapRDD, mapReduce, newApacheConfiguration).setName("reduceRDD") : null;
                                 // write the map reduce output back to disk (memory)
@@ -182,6 +182,6 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     public static void main(final String[] args) throws Exception {
         final FileConfiguration configuration = new PropertiesConfiguration(args[0]);
-        new SparkGraphComputer(HadoopGraph.open(configuration)).program(VertexProgram.createVertexProgram(HadoopGraph.open(configuration),configuration)).submit().get();
+        new SparkGraphComputer(HadoopGraph.open(configuration)).program(VertexProgram.createVertexProgram(HadoopGraph.open(configuration), configuration)).submit().get();
     }
 }

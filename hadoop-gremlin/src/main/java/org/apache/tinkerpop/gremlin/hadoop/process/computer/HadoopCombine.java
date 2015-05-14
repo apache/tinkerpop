@@ -35,8 +35,6 @@ import java.io.IOException;
  */
 public class HadoopCombine extends Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable> {
 
-    // TODO: extend HadoopReduce for code reuse
-
     private static final Logger LOGGER = LoggerFactory.getLogger(HadoopCombine.class);
     private MapReduce mapReduce;
     private final HadoopCombineEmitter<ObjectWritable, ObjectWritable> combineEmitter = new HadoopCombineEmitter<>();

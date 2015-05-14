@@ -26,9 +26,9 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
-import static org.hamcrest.CoreMatchers.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

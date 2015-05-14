@@ -21,8 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Order;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,11 +35,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrderLocalStep<S, M> extends MapStep<S, S> implements ComparatorHolder<M> {
+public final class OrderLocalStep<S, M> extends MapStep<S, S> implements ComparatorHolder<M>, TraversalParent {
 
     private final List<Comparator<M>> comparators = new ArrayList<>();
     private Comparator<M> chainedComparator = null;
@@ -77,7 +81,18 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Compara
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
-    // TODO: needs TraversalParent
+    @Override
+    public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
+        return Collections.unmodifiableList(this.comparators.stream()
+                .filter(comparator -> comparator instanceof TraversalComparator)
+                .map(traversalComparator -> ((TraversalComparator<S, E>) traversalComparator).getTraversal())
+                .collect(Collectors.toList()));
+    }
+
+    @Override
+    public void addLocalChild(final Traversal.Admin<?, ?> localChildTraversal) {
+        throw new UnsupportedOperationException("Use OrderLocalStep.addComparator(" + TraversalComparator.class.getSimpleName() + ") to add a local child traversal:" + this);
+    }
 
     /////////////
 
