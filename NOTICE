@@ -24,8 +24,8 @@ normalize.css
 Copyright (c) Nicolas Gallagher and Jonathan Neal
 
 ------------------------------------------------------------------------
-GraphMLWriterHelper.DelegatingXMLStreamWriter
-GraphMLWriterHelper.IndentingXMLStreamWriter
+DelegatingXMLStreamWriter.java
+IndentingXMLStreamWriter.java
 ------------------------------------------------------------------------
-Taken from Activiti - Apache 2 License - https://github.com/Activiti/Activiti
+Incorporated from Activiti - Apache 2 License - https://github.com/Activiti/Activiti
 Copyright 2010-2014 Alfresco Software, Ltd.
