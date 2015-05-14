@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 /**
+ * An internal application used to test out ranges of configuration parameters for Gremlin Driver.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ConfigurationEvaluator {

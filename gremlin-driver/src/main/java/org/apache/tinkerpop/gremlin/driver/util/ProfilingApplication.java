@@ -39,6 +39,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 /**
+ * An internal application used to test out configuration parameters for Gremlin Driver.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ProfilingApplication {
@@ -166,7 +168,7 @@ public class ProfilingApplication {
             System.out.println(String.format("avg req/sec: %s", averageRequestPerSecond));
             if (f != null) {
                 try (final PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(f, true)))) {
-                    writer.println(String.join("\t", String.valueOf(parallelism), "\t", String.valueOf(nioPoolSize), String.valueOf(minConnectionPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(minSimultaneousUsagePerConnection), String.valueOf(maxSimultaneousUsagePerConnection), String.valueOf(minInProcessPerConnection), String.valueOf(maxInProcessPerConnection), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
+                    writer.println(String.join("\t", String.valueOf(parallelism), String.valueOf(nioPoolSize), String.valueOf(minConnectionPoolSize), String.valueOf(maxConnectionPoolSize), String.valueOf(minSimultaneousUsagePerConnection), String.valueOf(maxSimultaneousUsagePerConnection), String.valueOf(minInProcessPerConnection), String.valueOf(maxInProcessPerConnection), String.valueOf(workerPoolSize), String.valueOf(averageRequestPerSecond)));
                 }
             }
 
