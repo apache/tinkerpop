@@ -406,6 +406,22 @@ public class __ {
         return __.<A>start().limit(scope, limit);
     }
 
+    public static <A> GraphTraversal<A, A> tail() {
+        return __.<A>start().tail();
+    }
+
+    public static <A> GraphTraversal<A, A> tail(final long limit) {
+        return __.<A>start().tail(limit);
+    }
+
+    public static <A> GraphTraversal<A, A> tail(final Scope scope) {
+        return __.<A>start().tail(scope);
+    }
+
+    public static <A> GraphTraversal<A, A> tail(final Scope scope, final long limit) {
+        return __.<A>start().tail(scope, limit);
+    }
+
     public static <A> GraphTraversal<A, A> simplePath() {
         return __.<A>start().simplePath();
     }
