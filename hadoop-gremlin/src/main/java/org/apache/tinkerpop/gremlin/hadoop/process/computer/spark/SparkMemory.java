@@ -106,11 +106,6 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     }
 
     @Override
-    public boolean isInitialIteration() {
-        return this.getIteration() == 0;
-    }
-
-    @Override
     public <R> R get(final String key) throws IllegalArgumentException {
         final R r = this.getValue(key);
         if (null == r)
@@ -181,6 +176,6 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     }
 
     private <R> R getValue(final String key) {
-        return this.inTask ? (R) this.broadcast.getValue().get(key) : (R) this.memory.get(key).value().object;
+        return this.inTask ? (R) this.broadcast.value().get(key) : (R) this.memory.get(key).value().object;
     }
 }
