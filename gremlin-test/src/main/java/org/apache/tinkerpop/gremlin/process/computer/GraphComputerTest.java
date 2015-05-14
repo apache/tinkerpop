@@ -1043,7 +1043,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public void workerIterationStart(final Memory memory) {
-//            assertEquals(memory.getIteration(), memory.<Integer>get("test").intValue());
+            assertEquals(memory.getIteration(), memory.<Integer>get("test").intValue());
             final long time = System.nanoTime();
             if (!memory.isInitialIteration())
                 assertNotEquals(-1l, TIMER_KEEPER.get());
