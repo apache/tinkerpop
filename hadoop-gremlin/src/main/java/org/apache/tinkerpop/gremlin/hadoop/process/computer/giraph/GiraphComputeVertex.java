@@ -33,9 +33,6 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
  */
 public final class GiraphComputeVertex extends Vertex<ObjectWritable, VertexWritable, NullWritable, ObjectWritable> {
 
-    //TODO: Dangerous that the underlying TinkerGraph Vertex can have edges written to it.
-    //TODO: LongWritable as the key is not general enough -- ObjectWritable causes problems though :|
-
     public GiraphComputeVertex() {
     }
 

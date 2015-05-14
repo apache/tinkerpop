@@ -53,6 +53,7 @@ import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 
 import java.io.File;
+import java.io.NotSerializableException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -145,8 +146,7 @@ public class GiraphGraphComputer extends AbstractHadoopGraphComputer implements 
                 this.logger.info(Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 // execute the job and wait until it completes (if it fails, throw an exception)
                 if (!job.run(true))
-                    throw new IllegalStateException("The GiraphGraphComputer job failed -- aborting all subsequent MapReduce jobs");
-
+                    throw new NotSerializableException("The GiraphGraphComputer job failed -- aborting all subsequent MapReduce jobs");  // how do I get the exception that occured?
             }
             // do map reduce jobs
             this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true));
@@ -160,7 +160,6 @@ public class GiraphGraphComputer extends AbstractHadoopGraphComputer implements 
                 if (FileSystem.get(this.giraphConfiguration).exists(outputPath))      // TODO: what about when the output is not a file output?
                     FileSystem.get(this.giraphConfiguration).delete(outputPath, true);
             }
-
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -211,6 +210,6 @@ public class GiraphGraphComputer extends AbstractHadoopGraphComputer implements 
 
     public static void main(final String[] args) throws Exception {
         final FileConfiguration configuration = new PropertiesConfiguration(args[0]);
-        new GiraphGraphComputer(HadoopGraph.open(configuration)).program(VertexProgram.createVertexProgram(HadoopGraph.open(configuration),configuration)).submit().get();
+        new GiraphGraphComputer(HadoopGraph.open(configuration)).program(VertexProgram.createVertexProgram(HadoopGraph.open(configuration), configuration)).submit().get();
     }
 }
