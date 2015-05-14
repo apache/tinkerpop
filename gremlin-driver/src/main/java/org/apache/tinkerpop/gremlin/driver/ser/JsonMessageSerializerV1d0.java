@@ -97,7 +97,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
             return mapper.writeValueAsString(responseMessage);
         } catch (Exception ex) {
             logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
-            throw new RuntimeException("Error during serialization.", ex);
+            throw new SerializationException(ex);
         }
     }
 
@@ -117,7 +117,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
             return mapper.writeValueAsString(requestMessage);
         } catch (Exception ex) {
             logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
-            throw new RuntimeException("Error during serialization.", ex);
+            throw new SerializationException(ex);
         }
     }
 }
