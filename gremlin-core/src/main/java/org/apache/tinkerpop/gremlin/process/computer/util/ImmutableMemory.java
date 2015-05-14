@@ -91,6 +91,6 @@ public final class ImmutableMemory implements Memory.Admin {
 
     @Override
     public String toString() {
-        return StringFactory.memoryString(this);
+        return StringFactory.memoryString(this.baseMemory);
     }
 }

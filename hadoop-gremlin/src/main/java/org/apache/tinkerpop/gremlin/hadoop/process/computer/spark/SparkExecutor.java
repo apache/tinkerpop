@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
+import org.apache.tinkerpop.gremlin.process.computer.util.ImmutableMemory;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
@@ -84,7 +85,7 @@ public final class SparkExecutor {
                     final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys(); // the compute keys as a set
                     final String[] elementComputeKeysArray = elementComputeKeys.size() == 0 ? EMPTY_ARRAY : elementComputeKeys.toArray(new String[elementComputeKeys.size()]); // the compute keys as an array
                     final SparkMessenger<M> messenger = new SparkMessenger<>();
-                    workerVertexProgram.workerIterationStart(memory); // start the worker
+                    workerVertexProgram.workerIterationStart(new ImmutableMemory(memory)); // start the worker
                     return () -> IteratorUtils.map(partitionIterator, vertexViewIncoming -> {
                         final Vertex vertex = vertexViewIncoming._2()._1().get(); // get the vertex from the vertex writable
                         // drop any compute properties that are cached in memory
@@ -102,7 +103,7 @@ public final class SparkExecutor {
                                 IteratorUtils.list(IteratorUtils.map(vertex.properties(elementComputeKeysArray), property -> DetachedFactory.detach(property, true)));
                         final List<Tuple2<Object, M>> outgoingMessages = messenger.getOutgoingMessages(); // get the outgoing messages
                         if (!partitionIterator.hasNext())
-                            workerVertexProgram.workerIterationEnd(memory); // if no more vertices in the partition, end the worker's iteration
+                            workerVertexProgram.workerIterationEnd(new ImmutableMemory(memory)); // if no more vertices in the partition, end the worker's iteration
                         return new Tuple2<>(vertex.id(), new ViewOutgoingPayload<>(nextView, outgoingMessages));
                     });
                 })).setName("viewOutgoingRDD");

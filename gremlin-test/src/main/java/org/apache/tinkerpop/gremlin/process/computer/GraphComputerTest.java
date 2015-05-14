@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticVertexProgram;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -42,6 +41,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
@@ -191,16 +191,20 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     public static class VertexProgramB extends StaticVertexProgram {
         @Override
         public void setup(final Memory memory) {
-
+            assertEquals(0, memory.getIteration());
+            assertTrue(memory.isInitialIteration());
         }
 
         @Override
         public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
-
+            assertEquals(0, memory.getIteration());
+            assertTrue(memory.isInitialIteration());
         }
 
         @Override
         public boolean terminate(final Memory memory) {
+            assertEquals(0, memory.getIteration());
+            assertTrue(memory.isInitialIteration());
             return true;
         }
 
@@ -329,18 +333,18 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldNotAllowSettingUndeclaredMemoryKeys() throws Exception {
-        try {
-            graph.compute(graphComputerClass.get()).program(new VertexProgramE()).submit().get();
-            fail("Setting a memory key that wasn't declared should fail");
-        } catch (Exception ex) {
-            // TODO: validateException(GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey("a"), ex.getCause());
-        }
+        graph.compute(graphComputerClass.get()).program(new VertexProgramE()).submit().get();
     }
 
     public static class VertexProgramE extends StaticVertexProgram {
         @Override
         public void setup(final Memory memory) {
-            memory.set("a", true);
+            try {
+                memory.set("a", true);
+                fail("Setting a memory key that wasn't declared should fail");
+            } catch (IllegalArgumentException e) {
+                assertEquals(GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey("a").getMessage(), e.getMessage());
+            }
         }
 
         @Override
@@ -525,19 +529,21 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     public void shouldAndOrIncrCorrectlyThroughSubStages() throws Exception {
         ComputerResult results = graph.compute(graphComputerClass.get()).program(new VertexProgramG()).submit().get();
         assertEquals(2, results.memory().getIteration());
-        assertEquals(5, results.memory().asMap().size());
-        assertEquals(5, results.memory().keys().size());
+        assertEquals(6, results.memory().asMap().size());
+        assertEquals(6, results.memory().keys().size());
         assertTrue(results.memory().keys().contains("a"));
         assertTrue(results.memory().keys().contains("b"));
         assertTrue(results.memory().keys().contains("c"));
         assertTrue(results.memory().keys().contains("d"));
         assertTrue(results.memory().keys().contains("e"));
+        assertTrue(results.memory().keys().contains("f"));
 
         assertEquals(Long.valueOf(18), results.memory().get("a"));
         assertEquals(Long.valueOf(0), results.memory().get("b"));
         assertFalse(results.memory().get("c"));
         assertTrue(results.memory().get("d"));
         assertTrue(results.memory().get("e"));
+        assertEquals(3, results.memory().<Integer>get("f").intValue());
     }
 
     public static class VertexProgramG extends StaticVertexProgram {
@@ -549,6 +555,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             memory.set("c", true);
             memory.set("d", false);
             memory.set("e", true);
+            memory.set("f", memory.getIteration());
         }
 
         @Override
@@ -564,6 +571,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 assertTrue(memory.get("d"));
             }
             assertTrue(memory.get("e"));
+            assertEquals(memory.getIteration(), memory.<Integer>get("f").intValue());
 
             // update current step values
             memory.incr("a", 1l);
@@ -571,6 +579,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             memory.and("c", false);
             memory.or("d", true);
             memory.and("e", false);
+            memory.set("f", memory.getIteration() + 1);
 
             // test current step values, should be the same as previous prior to update
             assertEquals(Long.valueOf(6 * memory.getIteration()), memory.get("a"));
@@ -583,6 +592,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 assertTrue(memory.get("d"));
             }
             assertTrue(memory.get("e"));
+            assertEquals(memory.getIteration(), memory.<Integer>get("f").intValue());
         }
 
         @Override
@@ -592,6 +602,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             assertFalse(memory.get("c"));
             assertTrue(memory.get("d"));
             assertFalse(memory.get("e"));
+            assertEquals(memory.getIteration() + 1, memory.<Integer>get("f").intValue());
             memory.set("b", 0l);
             memory.set("e", true);
             return memory.getIteration() > 1;
@@ -604,7 +615,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public Set<String> getMemoryComputeKeys() {
-            return new HashSet<>(Arrays.asList("a", "b", "c", "d", "e"));
+            return new HashSet<>(Arrays.asList("a", "b", "c", "d", "e", "f"));
         }
 
         @Override
@@ -1011,5 +1022,169 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
     }
     /////////////////////////////////////////////
+
+    /////////////////////////////////////////////
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldStartAndEndWorkersForVertexProgramAndMapReduce() throws Exception {
+        VertexProgramJ.TIMER_KEEPER.set(-1l);
+        MapReduceI.TIME_KEEPER.set(-1l);
+        graph.compute(graphComputerClass.get()).program(new VertexProgramJ()).mapReduce(new MapReduceI()).submit().get();
+    }
+
+    public static class VertexProgramJ extends StaticVertexProgram {
+
+        private static final AtomicLong TIMER_KEEPER = new AtomicLong(-1l);
+
+        @Override
+        public void setup(final Memory memory) {
+            memory.set("test", 0);
+        }
+
+        @Override
+        public void workerIterationStart(final Memory memory) {
+//            assertEquals(memory.getIteration(), memory.<Integer>get("test").intValue());
+            final long time = System.nanoTime();
+            if (!memory.isInitialIteration())
+                assertNotEquals(-1l, TIMER_KEEPER.get());
+            assertTrue(TIMER_KEEPER.get() < time);
+            TIMER_KEEPER.set(time);
+            try {
+                memory.set("test", memory.getIteration());
+                fail("Should throw an immutable memory exception");
+            } catch (IllegalStateException e) {
+                assertEquals(Memory.Exceptions.memoryIsCurrentlyImmutable().getMessage(), e.getMessage());
+            }
+        }
+
+        @Override
+        public void execute(Vertex vertex, Messenger messenger, Memory memory) {
+            assertEquals(memory.getIteration(), memory.<Integer>get("test").intValue());
+            memory.set("test", memory.getIteration() + 1);
+            sleep(10);
+            assertNotEquals(-1l, TIMER_KEEPER.get());
+            assertTrue(TIMER_KEEPER.get() < System.nanoTime());
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            return memory.getIteration() > 3;
+        }
+
+        @Override
+        public void workerIterationEnd(final Memory memory) {
+            assertEquals(memory.getIteration(), memory.<Integer>get("test").intValue());
+            assertNotEquals(-1l, TIMER_KEEPER.get());
+            assertTrue(TIMER_KEEPER.get() < System.nanoTime());
+            try {
+                memory.set("test", memory.getIteration());
+                fail("Should throw an immutable memory exception");
+            } catch (IllegalStateException e) {
+                assertEquals(Memory.Exceptions.memoryIsCurrentlyImmutable().getMessage(), e.getMessage());
+            }
+        }
+
+        @Override
+        public Set<String> getElementComputeKeys() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<String> getMemoryComputeKeys() {
+            return new HashSet<>(Arrays.asList("test"));
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(Memory memory) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.NOTHING;
+        }
+    }
+
+    private static class MapReduceI extends StaticMapReduce<MapReduce.NullObject, Integer, MapReduce.NullObject, Integer, Integer> {
+
+        private static final AtomicLong TIME_KEEPER = new AtomicLong(-1l);
+
+        @Override
+        public boolean doStage(final Stage stage) {
+            return true;
+        }
+
+        @Override
+        public void workerStart(final Stage stage) {
+            final long time = System.nanoTime();
+            assertTrue(TIME_KEEPER.get() < time);
+            if (!stage.equals(Stage.MAP)) assertNotEquals(-1l, TIME_KEEPER.get());
+            TIME_KEEPER.set(time);
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<NullObject, Integer> emitter) {
+            emitter.emit(1);
+            sleep(10);
+            assertNotEquals(-1l, TIME_KEEPER.get());
+            final long time = System.nanoTime();
+            assertTrue(TIME_KEEPER.get() < time);
+            TIME_KEEPER.set(time);
+        }
+
+        @Override
+        public void combine(final NullObject key, final Iterator<Integer> values, final ReduceEmitter<NullObject, Integer> emitter) {
+            emitter.emit(2);
+            sleep(10);
+            assertNotEquals(-1l, TIME_KEEPER.get());
+            final long time = System.nanoTime();
+            assertTrue(TIME_KEEPER.get() < time);
+            TIME_KEEPER.set(time);
+        }
+
+        @Override
+        public void reduce(final NullObject key, final Iterator<Integer> values, final ReduceEmitter<NullObject, Integer> emitter) {
+            emitter.emit(3);
+            sleep(10);
+            assertNotEquals(-1l, TIME_KEEPER.get());
+            final long time = System.nanoTime();
+            assertTrue(TIME_KEEPER.get() < time);
+            TIME_KEEPER.set(time);
+        }
+
+        @Override
+        public void workerEnd(final Stage stage) {
+            assertNotEquals(-1l, TIME_KEEPER.get());
+            final long time = System.nanoTime();
+            assertTrue(TIME_KEEPER.get() < time);
+            TIME_KEEPER.set(time);
+        }
+
+        @Override
+        public Integer generateFinalResult(final Iterator<KeyValue<NullObject, Integer>> keyValues) {
+            assertEquals(3, keyValues.next().getValue().intValue());
+            return 3;
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return "a";
+        }
+    }
+
+    /////////////////////////////////////////////////
+
+    private static void sleep(final long time) {
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
 
 }
