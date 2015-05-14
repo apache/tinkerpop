@@ -48,8 +48,6 @@ import org.junit.runners.model.RunnerBuilder;
  */
 public class ProcessComputerSuite extends AbstractGremlinSuite {
 
-    // todo: all tests are not currently passing. see specific todos in each test
-
     /**
      * This list of tests in the suite that will be executed as part of this suite.
      */

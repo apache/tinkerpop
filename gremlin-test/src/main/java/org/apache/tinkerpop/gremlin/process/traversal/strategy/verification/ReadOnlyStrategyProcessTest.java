@@ -21,15 +21,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
+import static org.hamcrest.CoreMatchers.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -100,15 +99,18 @@ public class ReadOnlyStrategyProcessTest extends AbstractGremlinProcessTest {
         return graphProvider.traversal(graph, ReadOnlyStrategy.instance());
     }
 
-    private void assertTraversal(final Traversal t, final boolean hasMutatingStep) {
+    private void assertTraversal(final Traversal t, final boolean expectMutatingStep) {
         try {
             t.asAdmin().applyStrategies();
-            if (hasMutatingStep) fail("The strategy should have found a mutating step.");
+            if (expectMutatingStep) fail("The strategy should have found a mutating step.");
         } catch (final IllegalStateException ise) {
-            if (!hasMutatingStep)
+            if (!expectMutatingStep)
                 fail("The traversal should not have failed as there is no mutating step.");
-            //else  TODO: Stephen, TraversalVerificationStrategy fails before this as mutating operations are not allowed in OLAP
-            //    assertEquals("The provided traversal has a mutating step and thus is not read only", ise.getMessage());
+            else {
+                // TraversalVerificationStrategy fails before this as mutating operations are not allowed in OLAP
+                if (!hasGraphComputerRequirement())
+                    assertThat(ise.getMessage(), startsWith("The provided traversal has a mutating step and thus is not read only"));
+            }
         }
     }
 }

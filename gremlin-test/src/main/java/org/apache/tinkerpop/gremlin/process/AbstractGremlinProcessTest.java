@@ -53,7 +53,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
     /**
      * Determines if this test suite has "computer" requirements.
      */
-    private boolean hasGraphComputerRequirement() {
+    protected boolean hasGraphComputerRequirement() {
         // do the negation of STANDARD as we expect a future type of REASONING that would infer COMPUTER support
         return !GraphManager.getTraversalEngineType().equals(TraversalEngine.Type.STANDARD);
     }
