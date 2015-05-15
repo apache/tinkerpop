@@ -43,7 +43,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
     public TailGlobalStep(final Traversal.Admin traversal, final long limit) {
         super(traversal);
         this.limit = limit;
-        this.tail = new ArrayDeque<Traverser.Admin<S>>((int)limit);
+        this.tail = new ArrayDeque<>((int)limit);
     }
 
     public void setBypass(final boolean bypass) {
@@ -87,7 +87,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
     @Override
     public TailGlobalStep<S> clone() {
         final TailGlobalStep<S> clone = (TailGlobalStep<S>) super.clone();
-        clone.tail = new ArrayDeque<Traverser.Admin<S>>((int)this.limit);
+        clone.tail = new ArrayDeque<>((int)this.limit);
         clone.tailBulk = 0L;
         return clone;
     }

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -40,57 +41,57 @@ public abstract class GroovyTailTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailXglobal_2X() {
-            g.V.values('name').order.tail(global, 2)
+            TraversalScriptHelper.compute("g.V.values('name').order.tail(global, 2)",g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX2X() {
-            g.V.values('name').order.tail(2)
+            TraversalScriptHelper.compute("g.V.values('name').order.tail(2)",g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tail() {
-            g.V.values('name').order.tail
+            TraversalScriptHelper.compute("g.V.values('name').order.tail",g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_valuesXnameX_order_tailX7X() {
-            g.V.values('name').order.tail(7)
+            TraversalScriptHelper.compute("g.V.values('name').order.tail(7)",g)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_tailX7X() {
-            g.V.repeat(both()).times(3).tail(7)
+            TraversalScriptHelper.compute("g.V.repeat(both()).times(3).tail(7)",g)
         }
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_2X() {
-            g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 2)
+            TraversalScriptHelper.compute("g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 2)",g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocal_1X() {
-            g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 1)
+            TraversalScriptHelper.compute("g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local, 1)",g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_tailXlocalX() {
-            g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local)
+            TraversalScriptHelper.compute("g.V.as('a').out.as('a').out.as('a').select('a').by(unfold().values('name').fold).tail(local)",g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXlimitXlocal_0XX_tailXlocal_1X() {
-            g.V.as('a').out.as('a').out.as('a').select('a').by(limit(local, 0)).tail(local, 1)
+            TraversalScriptHelper.compute("g.V.as('a').out.as('a').out.as('a').select('a').by(limit(local, 0)).tail(local, 1)",g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_2X() {
-            g.V.as('a').out.as('b').out.as('c').select.by(T.id).tail(local, 2)
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select.by('name').tail(local, 2)",g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_1X() {
-            g.V.as('a').out.as('b').out.as('c').select.by(T.id).tail(local, 1)
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select.by('name').tail(local, 1)",g)
         }
     }
 }

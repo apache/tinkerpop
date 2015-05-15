@@ -326,6 +326,10 @@ public class __ {
         return __.<A>start().has(label, key, predicate);
     }
 
+    public static <A> GraphTraversal<A, A> has(final String key, final Traversal propertyTraversal) {
+        return __.<A>start().has(key, propertyTraversal);
+    }
+
     public static <A> GraphTraversal<A, A> has(final String key) {
         return __.<A>start().has(key);
     }

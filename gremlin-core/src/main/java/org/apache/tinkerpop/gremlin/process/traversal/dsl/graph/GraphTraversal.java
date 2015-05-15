@@ -46,7 +46,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
@@ -467,14 +466,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.where(Scope.global, whereTraversal);
     }
 
-    public default GraphTraversal<S, E> has(final String key, final Traversal hasNextTraversal) {
-        return this.asAdmin().addStep(new HasTraversalStep(this.asAdmin(), key, hasNextTraversal.asAdmin(), false));
-    }
-
-    public default GraphTraversal<S, E> hasNot(final String key, final Traversal hasNotNextTraversal) {
-        return this.asAdmin().addStep(new HasTraversalStep(this.asAdmin(), key, hasNotNextTraversal.asAdmin(), true));
-    }
-
     public default GraphTraversal<S, E> has(final String key, final P<?> predicate) {
         return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(key, predicate)));
     }
@@ -497,6 +488,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> has(final String label, final String key, final Object value) {
         return this.has(T.label, label).has(key, value);
+    }
+
+    public default GraphTraversal<S, E> has(final String key, final Traversal propertyTraversal) {
+        return this.has(key, P.traversal(propertyTraversal));
     }
 
     public default GraphTraversal<S, E> has(final String key) {
