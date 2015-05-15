@@ -1446,12 +1446,15 @@ g.V().where(out('created')).values('name') <1>
 g.V().out('knows').where(out('created')).values('name') <2>
 g.V().where(out('created').count().is(gte(2L))).values('name') <3>
 g.V().where(out('knows').where(out('created'))).values('name') <4>
+g.V().where(not(out('created'))).where(in('knows')).values('name') <5>
 ----
 
 <1> What are the names of the people who have created a project?
 <2> What are the names of the people that are known by someone one and have created a project?
 <3> What are the names of the people how have created two or more projects?
 <4> What are the names of the people who know someone that has created a project? (This only works in OLTP -- see the `WARNING` below)
+<5> What are the names of the people who have not created anything, but are known by someone?
+
 
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
 

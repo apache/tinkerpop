@@ -29,7 +29,7 @@ import java.util.function.BiPredicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalBiPredicate<S, E> implements BiPredicate<S, E> {
+public class TraversalBiPredicate<S, E> implements BiPredicate<S, E>, Cloneable {
 
     private Traversal.Admin<S, E> traversal;
     private final boolean negate;
@@ -59,10 +59,6 @@ public class TraversalBiPredicate<S, E> implements BiPredicate<S, E> {
     @Override
     public TraversalBiPredicate<S, E> negate() {
         return new TraversalBiPredicate<>(this.traversal.clone(), !this.negate);
-    }
-
-    public boolean isNegated() {
-        return this.negate;
     }
 
     @Override

@@ -23,31 +23,30 @@ package org.apache.tinkerpop.gremlin.structure.util;
 
 import org.apache.tinkerpop.gremlin.structure.P;
 
-import java.util.List;
 import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AndP<V> extends ConjunctionP<V> {
+public final class OrP<V> extends ConjunctionP<V> {
 
-    public AndP(final P<V> predicate, final P<V>... predicates) {
+    public OrP(final P<V> predicate, final P<V>... predicates) {
         super(predicate, predicates);
     }
 
     @Override
     public boolean test(final V v) {
         for (final P<V> predicate : this.predicates) {
-            if (!predicate.test(v))
-                return false;
+            if (predicate.test(v))
+                return true;
         }
-        return true;
+        return false;
     }
 
     @Override
-    public P<V> and(final Predicate<? super V> predicate) {
+    public P<V> or(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
-            throw new IllegalArgumentException("Only P predicates can be and'd together");
+            throw new IllegalArgumentException("Only P predicates can be or'd together");
         this.predicates.add((P<V>) predicate);   // TODO: clone and add?
         return this;
     }

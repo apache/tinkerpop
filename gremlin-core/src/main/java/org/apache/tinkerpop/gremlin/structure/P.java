@@ -24,6 +24,7 @@ package org.apache.tinkerpop.gremlin.structure;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TraversalBiPredicate;
 import org.apache.tinkerpop.gremlin.structure.util.AndP;
+import org.apache.tinkerpop.gremlin.structure.util.OrP;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -34,9 +35,9 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class P<V> implements Predicate<V>, Serializable {
+public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
-    private final BiPredicate<V, V> biPredicate;
+    private BiPredicate<V, V> biPredicate;
     private final V value;
 
     public P(final BiPredicate<V, V> biPredicate, final V value) {
@@ -65,6 +66,7 @@ public class P<V> implements Predicate<V>, Serializable {
     @Override
     public boolean equals(final Object other) {
         return other instanceof P &&
+                ((P)other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
                 ((((P) other).getValue() == null && this.getValue() == null) || ((P) other).getValue().equals(this.getValue()));
     }
@@ -79,11 +81,37 @@ public class P<V> implements Predicate<V>, Serializable {
         return new P<>(this.biPredicate.negate(), this.value);
     }
 
+    /*public P<V> and(final Traversal<?,?> traversal) {
+        return this.and((Predicate)P.traversal(traversal));
+    }
+
+    public P<V> or(final Traversal<?,?> traversal) {
+        return this.or((Predicate)P.traversal(traversal));
+    }*/
+
     @Override
     public P<V> and(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be and'd together");
         return new AndP<>(this, (P<V>) predicate);
+    }
+
+    @Override
+    public P<V> or(final Predicate<? super V> predicate) {
+        if (!(predicate instanceof P))
+            throw new IllegalArgumentException("Only P predicates can be or'd together");
+        return new OrP<>(this, (P<V>) predicate);
+    }
+
+    public P<V> clone() {
+        try {
+            final P<V> clone = (P<V>) super.clone();
+            if (this.biPredicate instanceof TraversalBiPredicate)
+                clone.biPredicate = ((TraversalBiPredicate) this.biPredicate).clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     //////////////// statics
