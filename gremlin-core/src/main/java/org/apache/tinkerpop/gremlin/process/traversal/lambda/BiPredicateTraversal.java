@@ -32,16 +32,19 @@ import java.util.function.BiPredicate;
 public class BiPredicateTraversal<S, E> implements BiPredicate<S, E> {
 
     private Traversal.Admin<S, E> traversal;
+    private final boolean negate;
 
-    public BiPredicateTraversal(final Traversal.Admin<S, E> traversal) {
+    public BiPredicateTraversal(final Traversal.Admin<S, E> traversal, final boolean negate) {
         this.traversal = traversal;
+        this.negate = negate;
     }
 
     @Override
     public boolean test(final S start, final E end) {
         if (null == start)
             throw new IllegalArgumentException("The traversal must be provided a start: " + this.traversal);
-        return null == end ? TraversalUtil.test(start, this.traversal) : TraversalUtil.test(start, this.traversal, end);
+        final boolean result = null == end ? TraversalUtil.test(start, this.traversal) : TraversalUtil.test(start, this.traversal, end);
+        return this.negate ? !result : result;
     }
 
     public Traversal.Admin<S, E> getTraversal() {
@@ -51,6 +54,11 @@ public class BiPredicateTraversal<S, E> implements BiPredicate<S, E> {
     @Override
     public String toString() {
         return this.traversal.toString();
+    }
+
+    @Override
+    public BiPredicateTraversal<S, E> negate() {
+        return new BiPredicateTraversal<>(this.traversal.clone(), !this.negate);
     }
 
     @Override

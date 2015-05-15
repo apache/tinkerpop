@@ -38,7 +38,7 @@ public enum Compare implements BiPredicate<Object, Object> {
         }
 
         @Override
-        public Compare opposite() {
+        public Compare negate() {
             return neq;
         }
     }, neq {
@@ -48,7 +48,7 @@ public enum Compare implements BiPredicate<Object, Object> {
         }
 
         @Override
-        public Compare opposite() {
+        public Compare negate() {
             return eq;
         }
     }, gt {
@@ -61,7 +61,7 @@ public enum Compare implements BiPredicate<Object, Object> {
         }
 
         @Override
-        public Compare opposite() {
+        public Compare negate() {
             return lte;
         }
     }, gte {
@@ -71,7 +71,7 @@ public enum Compare implements BiPredicate<Object, Object> {
         }
 
         @Override
-        public Compare opposite() {
+        public Compare negate() {
             return lt;
         }
     }, lt {
@@ -84,7 +84,7 @@ public enum Compare implements BiPredicate<Object, Object> {
         }
 
         @Override
-        public Compare opposite() {
+        public Compare negate() {
             return gte;
         }
     }, lte {
@@ -94,7 +94,7 @@ public enum Compare implements BiPredicate<Object, Object> {
         }
 
         @Override
-        public Compare opposite() {
+        public Compare negate() {
             return gt;
         }
     };
@@ -108,5 +108,6 @@ public enum Compare implements BiPredicate<Object, Object> {
     /**
      * Produce the opposite representation of the current {@code Compare} enum.
      */
-    public abstract Compare opposite();
+    @Override
+    public abstract Compare negate();
 }
