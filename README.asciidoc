@@ -83,6 +83,9 @@ Release Process
 . `mvn clean install`
 .. `mvn verify -DskipIntegrationTests=false`
 .. `mvn verify -DskipPerformanceTests=false`
+. Perform manual tests:
+.. Execute `:remote connect conf/remote.yaml` and send some requests to a running Gremlin Server instance.
+.. Execute `:?` to display the help in the Console.
 . Update `CHANGELOG.asciidoc` with release date
 . `bin/bump.sh "version"` to update project files to reference the non-SNAPSHOT version
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
