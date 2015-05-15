@@ -25,7 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* `has(traversal)` is replaced by `where(traveral)` and `has(key,traversal)`. `HasXXX` is always with respects to an element property.
+* `has(traversal)` is replaced by `where(traversal)` and `has(key,traversal)`. `HasXXX` is always with respects to an element property.
 * Added `TraversalScriptHelper` with static methods for dynamically creating a `Traversal` from a JSR 223 `ScriptEngine`.
 * Changed `SubgraphStrategy` to take `Traversal` rather than `Predicate` for filtering.
 * Improved `SubgraphStrategy` to only modify the `Traversal` if filtering was required.
