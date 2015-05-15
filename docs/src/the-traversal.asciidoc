@@ -280,6 +280,21 @@ g.V().group().by(bothE().count()).by('name').by(count(local))  <3>
 <2> `by('name')` will process the grouped elements by their name (*element property projection*).
 <3> `by(count(local))` will count the number of elements in each group (*traversal*).
 
+[cap-step]]
+Cap Step
+~~~~~~~~
+
+The `cap()`-step (*barrier*) iterates the traversal up to itself and emits the sideEffect referenced by the provided key. If multiple keys are provided, then a `Map<String,Object>` of sideEffects is emitted.
+
+[gremlin-groovy,modern]
+----
+g.V().groupCount('a').by(label).cap('a')      <1>
+g.V().groupCount('a').by(label).groupCount('b').by(outE().count()).cap('a','b')   <2>
+----
+
+<1> Group and count verticies by their label.  Emit the side effect labeled 'a', which is the group count by label.
+<2> Same as statement 1, but also emit the side effect labeled 'b' which groups vertices by the number of out edges.
+
 [[coalesce-step]]
 Coalesce Step
 ~~~~~~~~~~~~~
