@@ -137,6 +137,10 @@ public class P<V> implements Predicate<V>, Serializable {
         return new P(new TraversalBiPredicate<>(traversal.asAdmin(), false), null);
     }
 
+    public static <S, E> P<S> not(final Traversal<S, E> traversal) {
+        return new P(new TraversalBiPredicate<>(traversal.asAdmin(), true), null);
+    }
+
     public static P test(final BiPredicate biPredicate, final Object value) {
         return new P(biPredicate, value);
     }

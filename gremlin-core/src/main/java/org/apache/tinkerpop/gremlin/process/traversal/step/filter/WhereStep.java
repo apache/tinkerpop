@@ -51,17 +51,19 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         super(traversal);
         this.scope = scope;
         this.predicate = predicate;
-        this.startKey = startKey.orElse(null);
-        this.endKey = this.predicate.getValue() instanceof Collection ? ((Collection<String>) this.predicate.getValue()).iterator().next() : (String) this.predicate.getValue();
+        if (this.predicate.getBiPredicate() instanceof TraversalBiPredicate) {
+            final Traversal<?, ?> whereTraversal = ((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal();
+            this.startKey = whereTraversal.asAdmin().getStartStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getStartStep().getLabels().iterator().next();
+            this.endKey = whereTraversal.asAdmin().getEndStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getEndStep().getLabels().iterator().next();
+            this.integrateChild(whereTraversal.asAdmin());
+        } else {
+            this.startKey = startKey.orElse(null);
+            this.endKey = this.predicate.getValue() instanceof Collection ? ((Collection<String>) this.predicate.getValue()).iterator().next() : (String) this.predicate.getValue();
+        }
     }
 
-    public WhereStep(final Traversal.Admin traversal, final Scope scope, final Traversal<?, ?> whereTraversal) {
-        super(traversal);
-        this.scope = scope;
-        this.predicate = P.traversal(whereTraversal);
-        this.startKey = whereTraversal.asAdmin().getStartStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getStartStep().getLabels().iterator().next();
-        this.endKey = whereTraversal.asAdmin().getEndStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getEndStep().getLabels().iterator().next();
-        this.integrateChild(whereTraversal.asAdmin());
+    public WhereStep(final Traversal.Admin traversal, final Scope scope, final P<?> predicate) {
+        this(traversal, scope, Optional.empty(), predicate);
     }
 
     @Override

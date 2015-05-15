@@ -22,13 +22,10 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -44,8 +41,6 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasNotXprop(final Object v1Id, final String propertyKey);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey);
-
-    //public abstract Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -68,12 +63,6 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         assertEquals(6, list.size());
     }
 
-    /*@Test
-    @LoadGraphWith(MODERN)
-    public void g_V_hasNotXoutXcreatedXX() {
-        final Traversal<Vertex, String> traversal = get_g_V_hasNotXoutXcreatedXX();
-        checkResults(Arrays.asList("vadas", "lop", "ripple"), traversal);
-    }*/
 
     public static class Traversals extends HasNotTest {
 
@@ -86,10 +75,5 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey) {
             return g.V().hasNot(propertyKey);
         }
-
-        /*@Override
-        public Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX() {
-            return g.V().where(__.out("created").cou).values("name");
-        }*/
     }
 }

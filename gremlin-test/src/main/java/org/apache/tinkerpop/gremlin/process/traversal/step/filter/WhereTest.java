@@ -71,6 +71,10 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path(final Object v1Id);
 
+    // hasNot functionality
+
+    public abstract Traversal<Vertex, String> get_g_V_whereXnotXoutXcreatedXXX_name();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXageX_asXaX_out_in_hasXageX_asXbX_select_whereXa_eqXbXX() {
@@ -235,6 +239,13 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+        @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasNotXoutXcreatedXX() {
+        final Traversal<Vertex, String> traversal = get_g_V_whereXnotXoutXcreatedXXX_name();
+        checkResults(Arrays.asList("vadas", "lop", "ripple"), traversal);
+    }
+
 
     public static class Traversals extends WhereTest {
 
@@ -297,6 +308,13 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path(final Object v1Id) {
             return g.V(v1Id).repeat(__.bothE("created").where(without("e")).aggregate("e").otherV()).emit().path();
+        }
+
+        // hasNot functionality
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_whereXnotXoutXcreatedXXX_name() {
+            return g.V().where(not(__.out("created"))).values("name");
         }
     }
 }

@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.P;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
@@ -89,7 +90,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal));
             vertexStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsVertex).collect(Collectors.toList()));
 
-            vertexStepsToInsertFilterAfter.forEach(s -> TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, vertexPredicate.asAdmin().clone()), s, traversal));
+            vertexStepsToInsertFilterAfter.forEach(s -> TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, P.traversal(vertexPredicate.asAdmin().clone())), s, traversal));
         }
 
         if (edgePredicate != null) {
@@ -99,13 +100,13 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             edgeStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsEdge).collect(Collectors.toList()));
             edgeStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStep::returnsEdge).collect(Collectors.toList()));
 
-            edgeStepsToInsertFilterAfter.forEach(s -> TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, edgePredicate.asAdmin().clone()), s, traversal));
+            edgeStepsToInsertFilterAfter.forEach(s -> TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, P.traversal(edgePredicate.asAdmin().clone())), s, traversal));
         }
 
         // explode g.V().out() to g.V().outE().inV() only if there is an edge predicate otherwise
         vertexSteps.stream().filter(VertexStep::returnsVertex).forEach(s -> {
             if (null == edgePredicate)
-                TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, vertexPredicate.asAdmin().clone()), s, traversal);
+                TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, P.traversal(vertexPredicate.asAdmin().clone())), s, traversal);
             else {
                 final VertexStep replacementVertexStep = new VertexStep(traversal, Edge.class, s.getDirection(), s.getEdgeLabels());
                 Step intermediateFilterStep = null;
@@ -116,10 +117,10 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
                 TraversalHelper.replaceStep(s, replacementVertexStep, traversal);
                 TraversalHelper.insertAfterStep(intermediateFilterStep, replacementVertexStep, traversal);
-                TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, edgePredicate.asAdmin().clone()), replacementVertexStep, traversal);
+                TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, P.traversal(edgePredicate.asAdmin().clone())), replacementVertexStep, traversal);
 
                 if (vertexPredicate != null)
-                    TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, vertexPredicate.asAdmin().clone()), intermediateFilterStep, traversal);
+                    TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, P.traversal(vertexPredicate.asAdmin().clone())), intermediateFilterStep, traversal);
             }
         });
     }
