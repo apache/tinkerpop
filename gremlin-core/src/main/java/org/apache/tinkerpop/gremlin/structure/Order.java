@@ -34,7 +34,7 @@ public enum Order implements Comparator<Object> {
         }
 
         @Override
-        public Order opposite() {
+        public Order reversed() {
             return decr;
         }
     }, decr {
@@ -44,7 +44,7 @@ public enum Order implements Comparator<Object> {
         }
 
         @Override
-        public Order opposite() {
+        public Order reversed() {
             return incr;
         }
     }, keyIncr {
@@ -54,7 +54,7 @@ public enum Order implements Comparator<Object> {
         }
 
         @Override
-        public Order opposite() {
+        public Order reversed() {
             return keyDecr;
         }
     }, valueIncr {
@@ -64,7 +64,7 @@ public enum Order implements Comparator<Object> {
         }
 
         @Override
-        public Order opposite() {
+        public Order reversed() {
             return valueDecr;
         }
     }, keyDecr {
@@ -74,7 +74,7 @@ public enum Order implements Comparator<Object> {
         }
 
         @Override
-        public Order opposite() {
+        public Order reversed() {
             return keyIncr;
         }
     }, valueDecr {
@@ -84,7 +84,7 @@ public enum Order implements Comparator<Object> {
         }
 
         @Override
-        public Order opposite() {
+        public Order reversed() {
             return valueIncr;
         }
     }, shuffle {
@@ -94,7 +94,7 @@ public enum Order implements Comparator<Object> {
         }
 
         @Override
-        public Order opposite() {
+        public Order reversed() {
             return shuffle;
         }
     };
@@ -109,5 +109,6 @@ public enum Order implements Comparator<Object> {
     /**
      * Produce the opposite representation of the current {@code Order} enum.
      */
-    public abstract Order opposite();
+    @Override
+    public abstract Order reversed();
 }

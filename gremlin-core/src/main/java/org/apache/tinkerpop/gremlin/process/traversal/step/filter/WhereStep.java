@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.BiPredicateTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.TraversalBiPredicate;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -51,17 +51,19 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         super(traversal);
         this.scope = scope;
         this.predicate = predicate;
-        this.startKey = startKey.orElse(null);
-        this.endKey = this.predicate.getValue() instanceof Collection ? ((Collection<String>) this.predicate.getValue()).iterator().next() : (String) this.predicate.getValue();
+        if (this.predicate.getBiPredicate() instanceof TraversalBiPredicate) {
+            final Traversal<?, ?> whereTraversal = ((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal();
+            this.startKey = whereTraversal.asAdmin().getStartStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getStartStep().getLabels().iterator().next();
+            this.endKey = whereTraversal.asAdmin().getEndStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getEndStep().getLabels().iterator().next();
+            this.integrateChild(whereTraversal.asAdmin());
+        } else {
+            this.startKey = startKey.orElse(null);
+            this.endKey = this.predicate.getValue() instanceof Collection ? ((Collection<String>) this.predicate.getValue()).iterator().next() : (String) this.predicate.getValue();
+        }
     }
 
-    public WhereStep(final Traversal.Admin traversal, final Scope scope, final Traversal<?, ?> whereTraversal) {
-        super(traversal);
-        this.scope = scope;
-        this.predicate = P.traversal(whereTraversal);
-        this.startKey = whereTraversal.asAdmin().getStartStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getStartStep().getLabels().iterator().next();
-        this.endKey = whereTraversal.asAdmin().getEndStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getEndStep().getLabels().iterator().next();
-        this.integrateChild(whereTraversal.asAdmin());
+    public WhereStep(final Traversal.Admin traversal, final Scope scope, final P<?> predicate) {
+        this(traversal, scope, Optional.empty(), predicate);
     }
 
     @Override
@@ -89,7 +91,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        return this.predicate.getBiPredicate() instanceof BiPredicateTraversal ? Collections.singletonList(((BiPredicateTraversal) this.predicate.getBiPredicate()).getTraversal()) : Collections.emptyList();
+        return this.predicate.getBiPredicate() instanceof TraversalBiPredicate ? Collections.singletonList(((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal()) : Collections.emptyList();
     }
 
     @Override
@@ -100,8 +102,10 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     @Override
     public WhereStep<S> clone() {
         final WhereStep<S> clone = (WhereStep<S>) super.clone();
-        if (this.predicate.getBiPredicate() instanceof BiPredicateTraversal)
-            clone.predicate = P.traversal(((BiPredicateTraversal) this.predicate.getBiPredicate()).getTraversal().clone());
+        if (this.predicate.getBiPredicate() instanceof TraversalBiPredicate)
+            clone.predicate = ((TraversalBiPredicate) this.predicate.getBiPredicate()).isNegated() ?
+                    P.not(((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal().clone()) :
+                    P.traversal(((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal().clone());
         return clone;
     }
 

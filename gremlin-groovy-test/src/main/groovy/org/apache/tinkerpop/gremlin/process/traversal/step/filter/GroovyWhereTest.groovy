@@ -96,5 +96,12 @@ public abstract class GroovyWhereTest {
                 final Object v1Id) {
             TraversalScriptHelper.compute("g.V(v1Id).repeat(__.bothE('created').where(without('e')).aggregate('e').otherV).emit.path", g, "v1Id", v1Id)
         }
+
+        // hasNot functionality
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_whereXnotXoutXcreatedXXX_name() {
+            TraversalScriptHelper.compute("g.V.where(not(out('created'))).name", g);
+        }
     }
 }

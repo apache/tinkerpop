@@ -22,7 +22,7 @@
 package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.BiPredicateTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.TraversalBiPredicate;
 import org.javatuples.Pair;
 
 import java.io.Serializable;
@@ -72,6 +72,11 @@ public class P<V> implements Predicate<V>, Serializable {
     @Override
     public String toString() {
         return this.biPredicate.toString() + "(" + this.value + ")";
+    }
+
+    @Override
+    public P<V> negate() {
+        return new P<>(this.biPredicate.negate(), this.value);
     }
 
     //////////////// statics
@@ -129,11 +134,24 @@ public class P<V> implements Predicate<V>, Serializable {
     }
 
     public static <S, E> P<S> traversal(final Traversal<S, E> traversal) {
-        return new P(new BiPredicateTraversal<>(traversal.asAdmin()), null);
+        return new P(new TraversalBiPredicate<>(traversal.asAdmin(), false), null);
+    }
+
+    public static <S, E> P<S> not(final Traversal<S, E> traversal) {
+        return new P(new TraversalBiPredicate<>(traversal.asAdmin(), true), null);
     }
 
     public static P test(final BiPredicate biPredicate, final Object value) {
         return new P(biPredicate, value);
+    }
+
+    public static <V> P<V>[] not(final P<V> predicate, final P<V>... predicates) {
+        final P[] temp = new P[predicates.length + 1];
+        temp[0] = predicate.negate();
+        for (int i = 1; i < predicates.length; i++) {
+            temp[i] = predicates[i - 1].negate();
+        }
+        return temp;
     }
 
     public static Pair<P, P[]> splitForAPI(final P[] pArray) {

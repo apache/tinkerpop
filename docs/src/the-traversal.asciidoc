@@ -234,7 +234,7 @@ An link:http://en.wikipedia.org/wiki/Infix_notation[infix notation] can be used 
 
 [gremlin-groovy,modern]
 ----
-g.V().has(outE('created').and().outE('knows')).values('name')
+g.V().where(outE('created').and().outE('knows')).values('name')
 ----
 
 [[as-step]]
@@ -279,6 +279,21 @@ g.V().group().by(bothE().count()).by('name').by(count(local))  <3>
 <1> `by(outE().count())` will group the elements by their edge count (*traversal*).
 <2> `by('name')` will process the grouped elements by their name (*element property projection*).
 <3> `by(count(local))` will count the number of elements in each group (*traversal*).
+
+[cap-step]]
+Cap Step
+~~~~~~~~
+
+The `cap()`-step (*barrier*) iterates the traversal up to itself and emits the sideEffect referenced by the provided key. If multiple keys are provided, then a `Map<String,Object>` of sideEffects is emitted.
+
+[gremlin-groovy,modern]
+----
+g.V().groupCount('a').by(label).cap('a')      <1>
+g.V().groupCount('a').by(label).groupCount('b').by(outE().count()).cap('a','b')   <2>
+----
+
+<1> Group and count verticies by their label.  Emit the side effect labeled 'a', which is the group count by label.
+<2> Same as statement 1, but also emit the side effect labeled 'b' which groups vertices by the number of out edges.
 
 [[coalesce-step]]
 Coalesce Step
@@ -525,7 +540,7 @@ It is possible to filter vertices, edges, and vertex properties based on their p
   * `hasValue(values...)`: Remove the traverser if its property does not have any of the values.
   * `has(key)`: Remove the traverser if its element has a value for the key.
   * `hasNot(key)`: Remove the traverser if its element does not have a value for the  key.
-  * `has(traversal)`: Remove the traverser if its object does not yield a result through the traversal.
+  * `has(key, traversal)`: Remove the traverser if its object does not yield a result through the traversal off the property value.
 
 [gremlin-groovy,modern]
 ----
@@ -539,23 +554,6 @@ g.V().has('age',outside(20,30)).values('age') <2>
 
 <1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
 <2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
-
-It is also possible to filter any arbitrary object based on a anonymous traversal yielding at least one result.
-
-[gremlin-groovy,modern]
-----
-g.V().has(out('created')).values('name') <1>
-g.V().out('knows').has(out('created')).values('name') <2>
-g.V().has(out('created').count().is(gte(2L))).values('name') <3>
-g.V().has(out('knows').has(out('created'))).values('name') <4>
-----
-
-<1> What are the names of the people who have created a project?
-<2> What are the names of the people that are known by someone one and have created a project?
-<3> What are the names of the people how have created two or more projects?
-<4> What are the names of the people who know someone that has created a project? (This only works in OLTP -- see the `WARNING` below)
-
-WARNING: The anonymous traversal of `has()` processes the current object "locally". In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
 
 [[inject-step]]
 Inject Step
@@ -592,9 +590,9 @@ It is possible to filter scalar values using `is()`-step (*filter*).
 g.V().values('age').is(32)
 g.V().values('age').is(lte(30))
 g.V().values('age').is(inside(30, 40))
-g.V().has(__.in('created').count().is(1l)).values('name') <1>
-g.V().has(__.in('created').count().is(gte(2l))).values('name') <2>
-g.V().has(__.in('created').values('age').
+g.V().where(__.in('created').count().is(1l)).values('name') <1>
+g.V().where(__.in('created').count().is(gte(2l))).values('name') <2>
+g.V().where(__.in('created').values('age').
                            mean().is(inside(30d, 35d))).values('name') <3>
 ----
 
@@ -829,7 +827,7 @@ An link:http://en.wikipedia.org/wiki/Infix_notation[infix notation] can be used 
 
 [gremlin-groovy,modern]
 ----
-g.V().has(outE('created').or().outE('knows')).values('name')
+g.V().where(outE('created').or().outE('knows')).values('name')
 ----
 
 [[order-step]]
@@ -1440,6 +1438,23 @@ g.V(1).out('created').in('created').where(out('created').count().is(gt(1))).valu
 <3> Which of marko's collaborators have worked on more than 1 project? (using a traversal)
 
 IMPORTANT: Please see <<using-where-with-match,`match().where()`>> and <<using-where-with-select,`select().where()`>> for how `where()` can be used in conjunction with `Map<String,Object>` projecting steps -- i.e. `Scope.local`.
+
+A few more examples of filtering an arbitrary object based on a anonymous traversal is provided below.
+
+[gremlin-groovy,modern]
+----
+g.V().where(out('created')).values('name') <1>
+g.V().out('knows').where(out('created')).values('name') <2>
+g.V().where(out('created').count().is(gte(2L))).values('name') <3>
+g.V().where(out('knows').where(out('created'))).values('name') <4>
+----
+
+<1> What are the names of the people who have created a project?
+<2> What are the names of the people that are known by someone one and have created a project?
+<3> What are the names of the people how have created two or more projects?
+<4> What are the names of the people who know someone that has created a project? (This only works in OLTP -- see the `WARNING` below)
+
+WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
 
 [[a-note-on-barrier-steps]]
 A Note on Barrier Steps

@@ -451,7 +451,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> where(final Scope scope, final Traversal whereTraversal) {
-        return this.asAdmin().addStep(new WhereStep<>(this.asAdmin(), scope, whereTraversal));
+        return this.where(scope, P.traversal(whereTraversal));
     }
 
     public default GraphTraversal<S, E> where(final String startKey, final P<?> predicate) {

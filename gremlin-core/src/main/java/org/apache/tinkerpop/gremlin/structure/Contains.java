@@ -57,7 +57,8 @@ public enum Contains implements BiPredicate<Object, Collection> {
     /**
      * Produce the opposite representation of the current {@code Contains} enum.
      */
-    public Contains opposite() {
+    @Override
+    public Contains negate() {
         return this.equals(within) ? without : within;
     }
 }
