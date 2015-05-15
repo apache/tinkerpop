@@ -53,7 +53,7 @@ public class TraversalBiPredicate<S, E> implements BiPredicate<S, E>, Cloneable 
 
     @Override
     public String toString() {
-        return this.traversal.toString();
+        return this.negate ? "!" + this.traversal.toString() : this.traversal.toString();
     }
 
     @Override
