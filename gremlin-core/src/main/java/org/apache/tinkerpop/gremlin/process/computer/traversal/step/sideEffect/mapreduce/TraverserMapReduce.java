@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -49,6 +50,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
     private Optional<Comparator<Comparable>> comparator = Optional.empty();
     private Optional<CollectingBarrierStep<?>> collectingBarrierStep = Optional.empty();
     private Optional<RangeGlobalStep<?>> rangeGlobalStep = Optional.empty();
+    private Optional<TailGlobalStep<?>> tailGlobalStep = Optional.empty();
 
     private TraverserMapReduce() {
     }
@@ -60,6 +62,8 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
             this.collectingBarrierStep = Optional.of((CollectingBarrierStep<?>) traversalEndStep);
         if (traversalEndStep instanceof RangeGlobalStep)
             this.rangeGlobalStep = Optional.of(((RangeGlobalStep) traversalEndStep).clone());
+        if (traversalEndStep instanceof TailGlobalStep)
+            this.tailGlobalStep = Optional.of(((TailGlobalStep) traversalEndStep).clone());
     }
 
     @Override
@@ -71,6 +75,8 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
             this.collectingBarrierStep = Optional.of((CollectingBarrierStep<?>) traversalEndStep);
         if (traversalEndStep instanceof RangeGlobalStep)
             this.rangeGlobalStep = Optional.of(((RangeGlobalStep) traversalEndStep).clone());
+        if (traversalEndStep instanceof TailGlobalStep)
+            this.tailGlobalStep = Optional.of(((TailGlobalStep) traversalEndStep).clone());
     }
 
     @Override
@@ -123,6 +129,11 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
             rangeGlobalStep.setBypass(false);
             rangeGlobalStep.addStarts(IteratorUtils.map(keyValues, keyValue -> (Traverser) keyValue.getValue()));
             return (Iterator) rangeGlobalStep;
+        } else if (this.tailGlobalStep.isPresent()) {
+            final TailGlobalStep<?> tailGlobalStep = this.tailGlobalStep.get();
+            tailGlobalStep.setBypass(false);
+            tailGlobalStep.addStarts(IteratorUtils.map(keyValues, keyValue -> (Traverser) keyValue.getValue()));
+            return (Iterator) tailGlobalStep;
         } else {
             return IteratorUtils.map(keyValues, KeyValue::getValue);
         }

@@ -116,6 +116,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             RangeTest.Traversals.class,
             SampleTest.Traversals.class,
             SimplePathTest.Traversals.class,
+            TailTest.Traversals.class,
             WhereTest.Traversals.class,
 
             // map
@@ -184,6 +185,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             RangeTest.class,
             SampleTest.class,
             SimplePathTest.class,
+            TailTest.class,
             WhereTest.class,
 
             // map
