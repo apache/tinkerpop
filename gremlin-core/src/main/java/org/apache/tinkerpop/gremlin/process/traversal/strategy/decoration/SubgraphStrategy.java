@@ -46,6 +46,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
+ * This {@link TraversalStrategy} provides a way to limit the view of a {@link Traversal}.  By providing
+ * {@link Traversal} representations that represent a form of filtering "predicate" for vertices and/or edges,
+ * this strategy will inject that "predicate" into the appropriate places of a traversal thus restricting what
+ * it traverses and returns.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
