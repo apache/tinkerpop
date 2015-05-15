@@ -266,6 +266,8 @@ public <I extends Io> I io(final Io.Builder<I> builder) {
 
 In this way, `Graph` implementations can pre-configure custom serializers for IO interactions and users will not need to know about those details. Following this pattern will ensure proper execution of the test suite as well as simplified usage for end-users.
 
+IMPORTANT: Proper implementation of IO is critical to successful `Graph` operations in Gremlin Server.  The Test Suite does have "serialization" tests that provide some assurance that an implementation is working properly, but those tests cannot make assertions against any specifics of a custom serializer.  It is the responsibility of the implementer to test the specifics of their custom serializers.
+
 [[validating-with-gremlin-test]]
 Validating with Gremlin-Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -374,6 +376,8 @@ The annotation above shows that the name of each parameterized test will be pref
 These annotations help provide users a level of transparency into test suite compliance (via the xref:describe-graph[describeGraph()] utility function). It also allows implementers to have a lot of flexibility in terms of how they wish to support TinkerPop.  For example, maybe there is a single test case that prevents an implementer from claiming support of a `Feature`.  The implementer could choose to either not support the `Feature` or to support it but "opt-out" of the test with a "reason" as to why so that users understand the limitation.
 
 IMPORTANT: Before using `OptOut` be sure that the reason for using it is sound and it is more of a last resort.  It is possible that a test from the suite is doesn't properly represent the expectations of a feature, is too broad or narrow for the semantics it is trying to enforce or simply contains a bug.  Please consider raising issues in the developer mailing list with such concerns before assuming `OptOut` is the only answer.
+
+IMPORTANT: There are no tests that specifically validate complete compliance with Gremlin Server.  Generally speaking, a `Graph` that passes the full Test Suite, should be compliant with Gremlin Server.  The one area where problems can occur is in serialization.  Always ensure that IO is properly implemented, that custom serializers are tested fully and ultimately integration test the `Graph` with an actual Gremlin Server instance.
 
 Accessibility via GremlinPlugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
