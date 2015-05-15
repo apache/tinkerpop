@@ -61,6 +61,10 @@ public class TraversalBiPredicate<S, E> implements BiPredicate<S, E> {
         return new TraversalBiPredicate<>(this.traversal.clone(), !this.negate);
     }
 
+    public boolean isNegated() {
+        return this.negate;
+    }
+
     @Override
     public TraversalBiPredicate<S, E> clone() {
         try {
