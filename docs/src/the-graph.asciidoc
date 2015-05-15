@@ -125,7 +125,7 @@ image::the-crew-graph.png[width=685]
 ----
 g.V().as('a').
       properties('location').as('b').
-      where(not(values('endTime'))).as('c').
+      hasNot('endTime').as('c').
       select().by('name').by(value).by('startTime') // determine the current location of each person
 g.V().has('name','gremlin').inE('uses').
       order().by('skill',incr).as('a').

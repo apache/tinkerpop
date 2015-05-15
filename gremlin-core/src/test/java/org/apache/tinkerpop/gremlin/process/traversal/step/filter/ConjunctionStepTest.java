@@ -36,7 +36,7 @@ public class ConjunctionStepTest {
 
     @Test
     public void shouldGetHasContainers() {
-        final GraphTraversal.Admin<?, ?> traversal = and(has("name"), has("age", P.gt(30)).or(has("lang", "java"))).asAdmin();
+        final GraphTraversal.Admin<?, ?> traversal = and(has("name", "marko"), has("age", P.gt(30)).or(has("lang", "java"))).asAdmin();
         assertTrue(((ConjunctionStep) traversal.getStartStep()).isConjunctionHasTree());
         final ConjunctionStep.ConjunctionTree conjunctionTree = (((ConjunctionStep<?>) traversal.getStartStep()).getConjunctionHasTree());
         final Iterator<ConjunctionStep.ConjunctionTree.Entry> iterator = conjunctionTree.iterator();
@@ -63,7 +63,7 @@ public class ConjunctionStepTest {
 
     @Test
     public void shouldNotGetHasContainers() {
-        final GraphTraversal.Admin<?, ?> traversal = and(has("name"), has("age", P.gt(30)).or(has("lang", "java"), out().has("name", "josh"))).asAdmin();
+        final GraphTraversal.Admin<?, ?> traversal = and(has("name", "marko"), has("age", P.gt(30)).or(has("lang", "java"), out().has("name", "josh"))).asAdmin();
         assertFalse(((ConjunctionStep) traversal.getStartStep()).isConjunctionHasTree());
     }
 }

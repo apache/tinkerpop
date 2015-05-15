@@ -539,6 +539,7 @@ It is possible to filter vertices, edges, and vertex properties based on their p
   * `hasKey(keys...)`: Remove the traverser if its property does not have any of the keys.
   * `hasValue(values...)`: Remove the traverser if its property does not have any of the values.
   * `has(key)`: Remove the traverser if its element does not have a value for the key.
+  * `hasNot(key)`: Remove the traverser if its element has a value for the key.
   * `has(key, traversal)`: Remove the traverser if its object does not yield a result through the traversal off the property value.
 
 [gremlin-groovy,modern]

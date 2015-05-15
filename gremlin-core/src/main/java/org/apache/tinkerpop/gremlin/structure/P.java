@@ -153,7 +153,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public static <V> P<V> within(final V... values) {
-        return new P(Contains.within, values.length == 0 ? null : Arrays.asList(values));
+        return P.within(Arrays.asList(values));
     }
 
     public static <V> P<V> within(final Collection<V> value) {
@@ -161,7 +161,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public static <V> P<V> without(final V... values) {
-        return new P(Contains.without, values.length == 0 ? null : Arrays.asList(values));
+        return P.without(Arrays.asList(values));
     }
 
     public static <V> P<V> without(final Collection<V> value) {

@@ -127,7 +127,6 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
-import org.javatuples.Pair;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -483,7 +482,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final String key, final Object value) {
-       return this.has(key, value instanceof P ? (P) value : P.eq(value));
+        return this.has(key, value instanceof P ? (P) value : P.eq(value));
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
@@ -499,7 +498,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final String key) {
-        return this.has(key, P.within());
+        return this.where(__.values(key));
+    }
+
+    public default GraphTraversal<S, E> hasNot(final String key) {
+        return this.where(P.not(__.values(key)));
     }
 
     public default GraphTraversal<S, E> hasLabel(final String... labels) {
