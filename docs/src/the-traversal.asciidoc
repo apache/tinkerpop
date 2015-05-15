@@ -1446,7 +1446,7 @@ g.V().where(out('created')).values('name') <1>
 g.V().out('knows').where(out('created')).values('name') <2>
 g.V().where(out('created').count().is(gte(2L))).values('name') <3>
 g.V().where(out('knows').where(out('created'))).values('name') <4>
-g.V().where(not(out('created'))).where(in('knows')).values('name') <5>
+g.V().where(not(out('created'))).where(__.in('knows')).values('name') <5>
 ----
 
 <1> What are the names of the people who have created a project?
