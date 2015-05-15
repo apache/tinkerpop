@@ -105,10 +105,6 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         clone.predicate = this.predicate.clone();
         if (clone.predicate.getBiPredicate() instanceof TraversalBiPredicate)
             clone.integrateChild(((TraversalBiPredicate) clone.predicate.getBiPredicate()).getTraversal());
-        /*if (this.predicate.getBiPredicate() instanceof TraversalBiPredicate)
-            clone.predicate = false ?
-                    P.not(((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal().clone()) :
-                    P.traversal(((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal().clone()); */
         return clone;
     }
 

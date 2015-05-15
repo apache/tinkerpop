@@ -66,14 +66,14 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     @Override
     public boolean equals(final Object other) {
         return other instanceof P &&
-                ((P)other).getClass().equals(this.getClass()) &&
+                ((P) other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
                 ((((P) other).getValue() == null && this.getValue() == null) || ((P) other).getValue().equals(this.getValue()));
     }
 
     @Override
     public String toString() {
-        return this.biPredicate.toString() + "(" + this.value + ")";
+        return null == this.value ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.value + ")";
     }
 
     @Override
@@ -81,12 +81,12 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return new P<>(this.biPredicate.negate(), this.value);
     }
 
-    public P<V> and(final Traversal<?,?> traversal) {
-        return this.and((Predicate)P.traversal(traversal));
+    public P<V> and(final Traversal<?, ?> traversal) {
+        return this.and((Predicate) P.traversal(traversal));
     }
 
-    public P<V> or(final Traversal<?,?> traversal) {
-        return this.or((Predicate)P.traversal(traversal));
+    public P<V> or(final Traversal<?, ?> traversal) {
+        return this.or((Predicate) P.traversal(traversal));
     }
 
     @Override

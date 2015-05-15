@@ -103,14 +103,14 @@ public final class TraversalHelper {
                 }
             } else if (step instanceof EdgeVertexStep) {
                 if (state == 'e') state = 'u';
+            } else if (step instanceof HasContainerHolder && state == 'u') {
+                if (((HasContainerHolder) step).getHasContainers().stream()
+                        .filter(c -> !c.key.equals(T.id.getAccessor())) // TODO: are labels available?
+                        .findAny().isPresent()) return false;
             } else if (step instanceof TraversalParent) {
                 final char currState = state;
                 if (((TraversalParent) step).getLocalChildren().stream()
                         .filter(t -> !isLocalStarGraph(t.asAdmin(), currState))
-                        .findAny().isPresent()) return false;
-            } else if (step instanceof HasContainerHolder && state == 'u') {
-                if (((HasContainerHolder) step).getHasContainers().stream()
-                        .filter(c -> !c.key.equals(T.id.getAccessor())) // TODO: are labels available?
                         .findAny().isPresent()) return false;
             }
         }
