@@ -21,8 +21,9 @@ package org.apache.tinkerpop.gremlin.groovy.loaders
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest
 import org.apache.tinkerpop.gremlin.LoadGraphWith
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper
-import org.apache.tinkerpop.gremlin.structure.Graph
-import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper
+import org.apache.tinkerpop.gremlin.structure.*
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory
 import org.junit.Test
 
 import static org.junit.Assert.*
@@ -94,5 +95,26 @@ class SugarLoaderTest extends AbstractGremlinTest {
             assertTrue(it[1] instanceof String)
             assertTrue(it[2] instanceof Integer)
         };
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldHaveProperToStringOfMixins() {
+        SugarLoader.load();
+        final Vertex vertex = graph.vertices().next();
+        final Edge edge = graph.edges().next();
+        final VertexProperty vertexProperty = vertex.property('name');
+        final Property property = edge.property('weight');
+
+        assertEquals(StringFactory.vertexString(vertex), vertex.toString());
+        assertEquals(StringFactory.edgeString(edge), edge.toString());
+        assertEquals(StringFactory.propertyString(vertexProperty), vertexProperty.toString());
+        assertEquals(StringFactory.propertyString(property), property.toString());
+        assertEquals(StringFactory.traversalSourceString(g), g.toString());
+        //assertEquals(StringFactory.traversalSourceString(g.withPath()), g.withPath().toString());
+        assertEquals(TraversalHelper.makeTraversalString(g.V().out().asAdmin()), g.V().out().toString());
+        assertEquals(TraversalHelper.makeTraversalString(g.V.out), g.V.out.toString());
+        assertEquals(convertToVertex(graph, "marko").toString(), g.V(convertToVertexId("marko")).next().toString())
+
     }
 }

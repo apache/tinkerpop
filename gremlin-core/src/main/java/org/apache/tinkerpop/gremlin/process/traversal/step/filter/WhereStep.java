@@ -83,7 +83,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     }
 
     @Override
-    public List<Traversal.Admin> getLocalChildren() {
+    public List<Traversal.Admin<?,?>> getLocalChildren() {
         return this.predicate.getBiPredicate() instanceof BiPredicateTraversal ? Collections.singletonList(((BiPredicateTraversal) this.predicate.getBiPredicate()).getTraversal()) : Collections.emptyList();
     }
 
@@ -102,7 +102,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(Scope.local == this.scope ? TraverserRequirement.OBJECT : TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
+        return this.getSelfAndChildRequirements(Scope.local == this.scope || !this.usesPathOrSideEffects() ?
+                TraverserRequirement.OBJECT : TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
     }
 
     public void setScope(final Scope scope) {
@@ -112,5 +113,9 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     @Override
     public Scope recommendNextScope() {
         return this.scope;
+    }
+
+    private boolean usesPathOrSideEffects() {
+        return null != this.endKey && null != this.startKey;
     }
 }

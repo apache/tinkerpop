@@ -163,9 +163,9 @@ class SugarLoader {
                 throw new UnsupportedOperationException("The provided key does not reference a known method: " + key);
         }
 
-        /*public String toString() {
-            return StringFactory.graphString(this.metaClass.owner, "");
-        }*/
+        public String toString() {
+            return StringFactory.traversalSourceString(this.metaClass.owner);
+        }
     }
 
     public static class GraphTraversalSourceStubCategory {
@@ -183,7 +183,7 @@ class SugarLoader {
         }
 
         /*public String toString() {
-            return StringFactory.graphString(this.metaClass.owner, "");
+            return StringFactory.traversalSourceString(this.metaClass.owner);
         }*/
     }
 
