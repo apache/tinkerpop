@@ -39,6 +39,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceTest;
