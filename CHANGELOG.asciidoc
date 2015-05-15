@@ -25,6 +25,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Order.opposite()` is now `reversed()` as that is a `Comparator` interface method with the same semantics.
+* `Compare/Contains/P.opposite()` are now `negate()` as that is a `BiPredicate` interface method with the same semantics.
 * `has(traversal)` is replaced by `where(traversal)` and `has(key,traversal)`. `HasXXX` is always with respects to an element property.
 * Added `TraversalScriptHelper` with static methods for dynamically creating a `Traversal` from a JSR 223 `ScriptEngine`.
 * Changed `SubgraphStrategy` to take `Traversal` rather than `Predicate` for filtering.

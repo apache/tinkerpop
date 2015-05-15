@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.BiPredicateTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.TraversalBiPredicate;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -89,7 +89,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        return this.predicate.getBiPredicate() instanceof BiPredicateTraversal ? Collections.singletonList(((BiPredicateTraversal) this.predicate.getBiPredicate()).getTraversal()) : Collections.emptyList();
+        return this.predicate.getBiPredicate() instanceof TraversalBiPredicate ? Collections.singletonList(((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal()) : Collections.emptyList();
     }
 
     @Override
@@ -100,8 +100,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     @Override
     public WhereStep<S> clone() {
         final WhereStep<S> clone = (WhereStep<S>) super.clone();
-        if (this.predicate.getBiPredicate() instanceof BiPredicateTraversal)
-            clone.predicate = P.traversal(((BiPredicateTraversal) this.predicate.getBiPredicate()).getTraversal().clone());
+        if (this.predicate.getBiPredicate() instanceof TraversalBiPredicate)
+            clone.predicate = P.traversal(((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal().clone());
         return clone;
     }
 
