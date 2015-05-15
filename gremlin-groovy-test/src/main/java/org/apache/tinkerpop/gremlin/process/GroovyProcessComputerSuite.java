@@ -112,6 +112,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyRangeTest.Traversals.class,
             GroovySampleTest.Traversals.class,
             GroovySimplePathTest.Traversals.class,
+            GroovyTailTest.Traversals.class,
             GroovyWhereTest.Traversals.class,
 
             // map

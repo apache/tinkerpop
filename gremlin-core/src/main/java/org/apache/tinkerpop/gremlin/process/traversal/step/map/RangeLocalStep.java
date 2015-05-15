@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.*;
 
@@ -45,15 +46,34 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
     @Override
     protected S map(final Traverser.Admin<S> traverser) {
         final S start = traverser.get();
+        return applyRange(start, this.low, this.high);
+    }
+
+    /**
+     * Extracts the specified range of elements from a collection.
+     * Return type depends on dynamic type of start.
+     * <ul>
+     * <li>
+     * Map becomes Map (order-preserving)
+     * </li>
+     * <li>
+     * Set becomes Set (order-preserving)
+     * </li>
+     * <li>
+     * Other Collection types become List
+     * </li>
+     * </ul>
+     */
+    static <S> S applyRange(S start, long low, long high) {
         if (start instanceof Map) {
             final Map map = (Map) start;
-            final long capacity = (this.high != -1 ? this.high : map.size()) - this.low;
+            final long capacity = (high != -1 ? high : map.size()) - low;
             final Map result = new LinkedHashMap((int) Math.min(capacity, map.size()));
             long c = 0L;
             for (final Object obj : map.entrySet()) {
                 final Map.Entry entry = (Map.Entry) obj;
-                if (c >= this.low) {
-                    if (c < this.high || this.high == -1) {
+                if (c >= low) {
+                    if (c < high || high == -1) {
                         result.put(entry.getKey(), entry.getValue());
                     } else break;
                 }
@@ -65,8 +85,8 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
             final Collection result = (collection instanceof Set) ? new LinkedHashSet() : new LinkedList();
             long c = 0L;
             for (final Object item : collection) {
-                if (c >= this.low) {
-                    if (c < this.high || this.high == -1) {
+                if (c >= low) {
+                    if (c < high || high == -1) {
                         result.add(item);
                     } else break;
                 }
@@ -75,6 +95,11 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
             return (S) result;
         }
         return start;
+    }
+
+    @Override
+    public String toString() {
+        return TraversalHelper.makeStepString(this, this.low, this.high);
     }
 
     @Override
