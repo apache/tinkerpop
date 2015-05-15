@@ -19,12 +19,17 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -32,21 +37,39 @@ import static org.junit.Assert.assertEquals;
  */
 public class SubgraphStrategyTest {
 
-    final SubgraphStrategy strategy = SubgraphStrategy.build().create();
-
     @Test
     public void shouldAddFilterAfterVertex() {
+        final SubgraphStrategy strategy = SubgraphStrategy.build().vertexPredicate(__.identity()).create();
         final Traversal t = __.inV();
         strategy.apply(t.asAdmin());
         final EdgeVertexStep edgeVertexStep = (EdgeVertexStep) t.asAdmin().getStartStep();
-        assertEquals(LambdaFilterStep.class, edgeVertexStep.getNextStep().getClass());
+        assertEquals(HasTraversalStep.class, edgeVertexStep.getNextStep().getClass());
+        final HasTraversalStep h = (HasTraversalStep) t.asAdmin().getEndStep();
+        assertEquals(1, h.getLocalChildren().size());
+        assertThat(((DefaultGraphTraversal) h.getLocalChildren().get(0)).getEndStep(), CoreMatchers.instanceOf(IdentityStep.class));
     }
 
     @Test
     public void shouldAddFilterAfterEdge() {
+        final SubgraphStrategy strategy = SubgraphStrategy.build().edgePredicate(__.identity()).create();
         final Traversal t = __.inE();
         strategy.apply(t.asAdmin());
         final VertexStep vertexStep = (VertexStep) t.asAdmin().getStartStep();
-        assertEquals(LambdaFilterStep.class, vertexStep.getNextStep().getClass());
+        assertEquals(HasTraversalStep.class, vertexStep.getNextStep().getClass());
+        final HasTraversalStep h = (HasTraversalStep) t.asAdmin().getEndStep();
+        assertEquals(1, h.getLocalChildren().size());
+        assertThat(((DefaultGraphTraversal) h.getLocalChildren().get(0)).getEndStep(), CoreMatchers.instanceOf(IdentityStep.class));
+    }
+
+    @Test
+    public void shouldAddBothFiltersAfterVertex() {
+        final SubgraphStrategy strategy = SubgraphStrategy.build().edgePredicate(__.identity()).vertexPredicate(__.identity()).create();
+        final Traversal t = __.inE();
+        strategy.apply(t.asAdmin());
+        final VertexStep vertexStep = (VertexStep) t.asAdmin().getStartStep();
+        assertEquals(HasTraversalStep.class, vertexStep.getNextStep().getClass());
+        final HasTraversalStep h = (HasTraversalStep) t.asAdmin().getEndStep();
+        assertEquals(1, h.getLocalChildren().size());
+        assertThat(((DefaultGraphTraversal) h.getLocalChildren().get(0)).getEndStep(), CoreMatchers.instanceOf(AndStep.class));
     }
 }
