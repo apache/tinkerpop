@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.AndP;
+import org.apache.tinkerpop.gremlin.structure.util.OrP;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
@@ -56,9 +57,9 @@ public final class HasContainer implements Serializable {
         if (this.key.equals(T.id.getAccessor()) && value instanceof Collection)
             valuesToStringed = IteratorUtils.set(IteratorUtils.map(((Collection<Object>) value).iterator(), Object::toString));
 
-        if (null == this.value && !(this.predicate instanceof Contains)) {
+        /*if (null == this.value && !(this.predicate instanceof Contains)) {
             throw new IllegalArgumentException("For determining the existence of a property, use the Contains predicate with null-value");
-        }
+        }*/
     }
 
     public boolean test(final Element element) {
@@ -127,6 +128,8 @@ public final class HasContainer implements Serializable {
                 hasContainers[i] = new HasContainer(key, predicates.get(i).getBiPredicate(), predicates.get(i).getValue());
             }
             return hasContainers;
+        } else if (predicate instanceof OrP) {
+            throw new IllegalArgumentException("The or'ing of HasContainers is currently not supported");
         } else {
             return new HasContainer[]{new HasContainer(key, predicate.getBiPredicate(), predicate.getValue())};
         }

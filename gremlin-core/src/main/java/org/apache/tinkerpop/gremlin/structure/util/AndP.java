@@ -51,4 +51,9 @@ public final class AndP<V> extends ConjunctionP<V> {
         this.predicates.add((P<V>) predicate);   // TODO: clone and add?
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "and(" + this.predicates + ")";
+    }
 }
