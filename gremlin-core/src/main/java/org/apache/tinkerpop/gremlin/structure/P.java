@@ -81,13 +81,13 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return new P<>(this.biPredicate.negate(), this.value);
     }
 
-    /*public P<V> and(final Traversal<?,?> traversal) {
+    public P<V> and(final Traversal<?,?> traversal) {
         return this.and((Predicate)P.traversal(traversal));
     }
 
     public P<V> or(final Traversal<?,?> traversal) {
         return this.or((Predicate)P.traversal(traversal));
-    }*/
+    }
 
     @Override
     public P<V> and(final Predicate<? super V> predicate) {
