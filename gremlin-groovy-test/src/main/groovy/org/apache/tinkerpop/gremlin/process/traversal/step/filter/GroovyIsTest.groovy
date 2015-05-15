@@ -45,13 +45,13 @@ public abstract class GroovyIsTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX() {
-            TraversalScriptHelper.compute("g.V.has(__.in('created').count.is(1)).name", g)
+        public Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX() {
+            TraversalScriptHelper.compute("g.V.where(__.in('created').count.is(1)).name", g)
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
-            TraversalScriptHelper.compute("g.V.has(__.in('created').count.is(gte(2l))).name", g)
+        public Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
+            TraversalScriptHelper.compute("g.V.where(__.in('created').count.is(gte(2l))).name", g)
         }
     }
 }

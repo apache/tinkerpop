@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.P;
@@ -118,11 +119,11 @@ public class RangeByIsCountStrategyTest {
         @Test
         public void nestedCountEqualsNullShouldLimitToOne() {
             final AtomicInteger counter = new AtomicInteger(0);
-            final Traversal traversal = __.out().has(__.outE("created").count().is(0));
+            final Traversal traversal = __.out().where(__.outE("created").count().is(0));
             applyRangeByIsCountStrategy(traversal);
 
-            final HasTraversalStep hasStep = TraversalHelper.getStepsOfClass(HasTraversalStep.class, traversal.asAdmin()).stream().findFirst().get();
-            final Traversal nestedTraversal = (Traversal) hasStep.getLocalChildren().get(0);
+            final WhereStep whereStep = TraversalHelper.getStepsOfClass(WhereStep.class, traversal.asAdmin()).stream().findFirst().get();
+            final Traversal nestedTraversal = (Traversal) whereStep.getLocalChildren().get(0);
             TraversalHelper.getStepsOfClass(RangeGlobalStep.class, nestedTraversal.asAdmin()).stream().forEach(step -> {
                 assertEquals(0, step.getLowRange());
                 assertEquals(1, step.getHighRange());

@@ -38,9 +38,9 @@ public abstract class GroovyHasNotTest {
             TraversalScriptHelper.compute("g.V.hasNot('${propertyKey}')", g);
         }
 
-        @Override
+        /*@Override
         public Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX() {
-            TraversalScriptHelper.compute("return g.V().hasNot(__.out('created')).values('name')", g);
-        }
+            TraversalScriptHelper.compute("g.V.hasNot(out('created')).name", g);
+        }*/
     }
 }

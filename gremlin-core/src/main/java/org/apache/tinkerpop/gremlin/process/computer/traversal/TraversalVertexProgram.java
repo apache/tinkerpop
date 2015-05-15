@@ -154,7 +154,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             final GraphStep<Element> graphStep = (GraphStep<Element>) this.traversal.getStartStep();
             final String future = graphStep.getNextStep().getId();
             final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
-            if (graphStep.returnsVertices()) {  // VERTICES (process the first step locally)
+            if (graphStep.returnsVertex()) {  // VERTICES (process the first step locally)
                 if (ElementHelper.idExists(vertex.id(), graphStep.getIds())) {
                     final Traverser.Admin<Element> traverser = traverserGenerator.generate(vertex, graphStep, 1l);
                     traverser.setStepId(future);

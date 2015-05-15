@@ -20,11 +20,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.Element;
 
 import java.util.Collections;
 import java.util.List;
@@ -35,13 +36,15 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class HasTraversalStep<S> extends AbstractStep<S, S> implements TraversalParent {
+public final class HasTraversalStep<S extends Element> extends AbstractStep<S, S> implements TraversalParent {
 
-    private Traversal.Admin<S, ?> hasTraversal;
+    private Traversal.Admin<?, ?> hasTraversal;
+    private final String propertyKey;
     private final boolean negate;
 
-    public HasTraversalStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> hasTraversal, final boolean negate) {
+    public HasTraversalStep(final Traversal.Admin traversal, final String propertyKey, final Traversal.Admin<?, ?> hasTraversal, final boolean negate) {
         super(traversal);
+        this.propertyKey = propertyKey;
         this.negate = negate;
         this.hasTraversal = this.integrateChild(hasTraversal);
     }
@@ -50,19 +53,19 @@ public final class HasTraversalStep<S> extends AbstractStep<S, S> implements Tra
     protected Traverser<S> processNextStart() throws NoSuchElementException {
         while (true) {
             final Traverser.Admin<S> start = this.starts.next();
-            if (TraversalUtil.test(start, this.hasTraversal) != this.negate)
+            if (TraversalUtil.test(start.get().<Object>value(this.propertyKey), (Traversal.Admin<Object,Object>)this.hasTraversal) != this.negate)
                 return start;
         }
     }
 
     @Override
     public String toString() {
-        final String stepString = TraversalHelper.makeStepString(this, this.hasTraversal);
+        final String stepString = TraversalHelper.makeStepString(this, this.propertyKey, this.hasTraversal);
         return this.negate ? stepString.replaceFirst("\\(", "(!") : stepString;
     }
 
     @Override
-    public List<Traversal<S, ?>> getLocalChildren() {
+    public List<Traversal<?, ?>> getLocalChildren() {
         return Collections.singletonList(this.hasTraversal);
     }
 

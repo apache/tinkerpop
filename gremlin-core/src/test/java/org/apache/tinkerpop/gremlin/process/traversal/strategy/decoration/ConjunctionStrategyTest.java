@@ -117,7 +117,7 @@ public class ConjunctionStrategyTest {
         static Iterable<Object[]> generateTestParameters() {
 
             return Arrays.asList(new Traversal[][]{
-                    {__.has("name", "stephen").or().has(__.out("knows").has("name", "stephen")), __.or(__.has("name", "stephen"), __.has(__.out("knows").has("name", "stephen")))},
+                    {__.has("name", "stephen").or().where(__.out("knows").has("name", "stephen")), __.or(__.has("name", "stephen"), __.where(__.out("knows").has("name", "stephen")))},
                     {__.out("a").out("b").and().out("c").or().out("d"), __.or(__.and(__.out("a").out("b"), __.out("c")), __.out("d"))}
             });
         }

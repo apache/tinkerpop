@@ -45,7 +45,7 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasNotXprop(final String propertyKey);
 
-    public abstract Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX();
+    //public abstract Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -68,12 +68,12 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
         assertEquals(6, list.size());
     }
 
-    @Test
+    /*@Test
     @LoadGraphWith(MODERN)
     public void g_V_hasNotXoutXcreatedXX() {
         final Traversal<Vertex, String> traversal = get_g_V_hasNotXoutXcreatedXX();
         checkResults(Arrays.asList("vadas", "lop", "ripple"), traversal);
-    }
+    }*/
 
     public static class Traversals extends HasNotTest {
 
@@ -87,9 +87,9 @@ public abstract class HasNotTest extends AbstractGremlinProcessTest {
             return g.V().hasNot(propertyKey);
         }
 
-        @Override
+        /*@Override
         public Traversal<Vertex, String> get_g_V_hasNotXoutXcreatedXX() {
-            return g.V().hasNot(__.out("created")).values("name");
-        }
+            return g.V().where(__.out("created").cou).values("name");
+        }*/
     }
 }

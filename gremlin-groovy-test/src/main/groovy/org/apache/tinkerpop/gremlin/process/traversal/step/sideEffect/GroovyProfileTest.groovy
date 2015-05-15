@@ -42,8 +42,8 @@ public abstract class GroovyProfileTest {
         }
 
         @Override
-        Traversal<Vertex, StandardTraversalMetrics> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
-            TraversalScriptHelper.compute("g.V().has(__.in('created').count().is(1l)).values('name').profile()", g);
+        Traversal<Vertex, StandardTraversalMetrics> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
+            TraversalScriptHelper.compute("g.V().where(__.in('created').count().is(1l)).values('name').profile()", g);
         }
 
         @Override

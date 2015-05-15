@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.P;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -46,9 +45,9 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Integer> get_g_V_valuesXageX_isXgte_29X_isXlt_34X();
 
-    public abstract Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX();
+    public abstract Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX();
 
-    public abstract Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX();
+    public abstract Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isXgte_2XX_valuesXnameX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -79,7 +78,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX() {
-        final Traversal<Vertex, String> traversal = get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX();
+        final Traversal<Vertex, String> traversal = get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals("ripple", traversal.next());
@@ -89,7 +88,7 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
-        final Traversal<Vertex, String> traversal = get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX();
+        final Traversal<Vertex, String> traversal = get_g_V_whereXinXcreatedX_count_isXgte_2XX_valuesXnameX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         assertEquals("lop", traversal.next());
@@ -113,13 +112,13 @@ public abstract class IsTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX() {
-            return g.V().has(in("created").count().is(1)).values("name");
+        public Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX() {
+            return g.V().where(in("created").count().is(1)).values("name");
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_hasXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
-            return g.V().has(in("created").count().is(P.gte(2l))).values("name");
+        public Traversal<Vertex, String> get_g_V_whereXinXcreatedX_count_isXgte_2XX_valuesXnameX() {
+            return g.V().where(in("created").count().is(P.gte(2l))).values("name");
         }
     }
 }

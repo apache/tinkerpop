@@ -21,12 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.structure.P;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.P;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -37,7 +37,6 @@ import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -47,7 +46,7 @@ import static org.junit.Assert.*;
 @RunWith(GremlinProcessRunner.class)
 public abstract class HasTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_name();
+    public abstract Traversal<Vertex, String> get_g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name();
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasXkeyX(final Object v1Id, final String key);
 
@@ -84,9 +83,9 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXknowsX_hasXoutXcreatedXX_valuesXnameX() {
-        final Traversal<Vertex, String> traversal = get_g_V_outXknowsX_hasXoutXcreatedXX_name();
+        final Traversal<Vertex, String> traversal = get_g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name();
         printTraversalForm(traversal);
-        checkResults(Arrays.asList("josh"), traversal);
+        checkResults(Arrays.asList("ripple"), traversal);
     }
 
     @Test
@@ -319,8 +318,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_name() {
-            return g.V().out("knows").has(out("created")).values("name");
+        public Traversal<Vertex, String> get_g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name() {
+            return g.V().out("created").has("name", __.<String, Integer>map(s -> s.get().length()).is(P.gt(3))).values("name");
         }
 
         @Override

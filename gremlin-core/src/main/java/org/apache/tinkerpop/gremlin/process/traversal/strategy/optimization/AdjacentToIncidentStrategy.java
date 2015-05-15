@@ -25,14 +25,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collections;
 import java.util.List;
@@ -73,7 +74,7 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
             final Step curr = steps.get(i);
             if (i == size && isOptimizable(curr)) {
                 final TraversalParent parent = curr.getTraversal().getParent();
-                if (parent instanceof HasTraversalStep || parent instanceof ConjunctionStep) {
+                if (parent instanceof WhereStep || parent instanceof HasTraversalStep || parent instanceof ConjunctionStep) {
                     optimizeStep(traversal, curr);
                 }
             } else if (isOptimizable(prev)) {
@@ -99,8 +100,8 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
      * @return <code>true</code> if the step is optimizable, otherwise <code>false</code>
      */
     private static boolean isOptimizable(final Step step) {
-        return ((step instanceof VertexStep && Vertex.class.equals(((VertexStep) step).getReturnClass())) ||
-                (step instanceof PropertiesStep && PropertyType.VALUE.equals(((PropertiesStep) step).getReturnType())));
+        return ((step instanceof VertexStep && ((VertexStep) step).returnsVertex()) ||
+                (step instanceof PropertiesStep && PropertyType.VALUE.equals(((PropertiesStep) step).getReturnType()))) && (step.getTraversal().getEndStep().getLabels().isEmpty() || step.getNextStep() instanceof CountGlobalStep);
     }
 
     /**
