@@ -466,12 +466,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.where(Scope.global, whereTraversal);
     }
 
-    public default GraphTraversal<S, E> has(final Traversal<?, ?> hasNextTraversal) {
-        return this.asAdmin().addStep(new HasTraversalStep<>(this.asAdmin(), (Traversal.Admin<E, ?>) hasNextTraversal, false));
+    public default GraphTraversal<S, E> has(final String key, final Traversal hasNextTraversal) {
+        return this.asAdmin().addStep(new HasTraversalStep(this.asAdmin(), key, hasNextTraversal.asAdmin(), false));
     }
 
-    public default GraphTraversal<S, E> hasNot(final Traversal<?, ?> hasNotNextTraversal) {
-        return this.asAdmin().addStep(new HasTraversalStep<>(this.asAdmin(), (Traversal.Admin<E, ?>) hasNotNextTraversal, true));
+    public default GraphTraversal<S, E> hasNot(final String key, final Traversal hasNotNextTraversal) {
+        return this.asAdmin().addStep(new HasTraversalStep(this.asAdmin(), key, hasNotNextTraversal.asAdmin(), true));
     }
 
     public default GraphTraversal<S, E> has(final String key, final P<?> predicate, final P<?>... predicates) {

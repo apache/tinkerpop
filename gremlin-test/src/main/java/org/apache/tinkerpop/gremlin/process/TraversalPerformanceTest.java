@@ -124,7 +124,7 @@ public class TraversalPerformanceTest extends AbstractGremlinTest {
     @BenchmarkOptions(benchmarkRounds = DEFAULT_BENCHMARK_ROUNDS, warmupRounds = DEFAULT_WARMUP_ROUNDS, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
     @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
     @Test
-    public void g_E_hasLabelXwrittenByX_hasNotXinV_inEXsungByXX_subgraphXsgX() throws Exception {
-        g.E().hasLabel("writtenBy").hasNot(__.inV().inE("sungBy")).subgraph("sg").iterate();
+    public void g_E_hasLabelXwrittenByX_whereXinV_inEXsungByX_count_isX0XX_subgraphXsgX() throws Exception {
+        g.E().hasLabel("writtenBy").where(__.inV().inE("sungBy").count().is(0)).subgraph("sg").iterate();
     }
 }

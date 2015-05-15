@@ -119,14 +119,16 @@ public class AdjacentToIncidentStrategyTest {
                     {__.both().count(), __.bothE().count()},
                     {__.out("knows").count(), __.outE("knows").count()},
                     {__.out("knows", "likes").count(), __.outE("knows", "likes").count()},
-                    {__.has(__.out()), __.has(__.outE())},
-                    {__.hasNot(__.out()), __.hasNot(__.outE())},
-                    {__.has(__.out("knows")), __.has(__.outE("knows"))},
+                    {__.where(__.out()), __.where(__.outE())},
+                    //{__.hasNot(__.out()), __.hasNot(__.outE())},
+                    {__.where(__.out("knows")), __.where(__.outE("knows"))},
                     {__.values().count(), __.properties().count()},
                     {__.values("name").count(), __.properties("name").count()},
-                    {__.has(__.values()), __.has(__.properties())},
+                    {__.where(__.values()), __.where(__.properties())},
                     {__.and(__.out(), __.in()), __.and(__.outE(), __.inE())},
-                    {__.or(__.out(), __.in()), __.or(__.outE(), __.inE())}});
+                    {__.or(__.out(), __.in()), __.or(__.outE(), __.inE())},
+                    {__.out().as("a").count(),__.outE().count()},   // TODO: is this good?
+                    {__.where(__.as("a").out("knows").as("b")), __.where(__.as("a").out("knows").as("b"))}});
         }
     }
 }

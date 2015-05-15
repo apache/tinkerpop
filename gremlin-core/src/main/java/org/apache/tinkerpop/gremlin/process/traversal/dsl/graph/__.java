@@ -302,12 +302,12 @@ public class __ {
         return __.<A>start().dedup(scope);
     }
 
-    public static <A> GraphTraversal<A, A> has(final Traversal<?, ?> hasNextTraversal) {
-        return __.<A>start().has(hasNextTraversal);
+    public static <A> GraphTraversal<A, A> has(final String key, final Traversal hasNextTraversal) {
+        return __.<A>start().has(key, hasNextTraversal);
     }
 
-    public static <A> GraphTraversal<A, A> hasNot(final Traversal<?, ?> hasNotNextTraversal) {
-        return __.<A>start().hasNot(hasNotNextTraversal);
+    public static <A> GraphTraversal<A, A> hasNot(final String key, final Traversal hasNotNextTraversal) {
+        return __.<A>start().hasNot(key, hasNotNextTraversal);
     }
 
     public static <A> GraphTraversal<A, A> has(final String key, final P<?> predicate, final P<?>... predicates) {

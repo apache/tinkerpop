@@ -60,16 +60,16 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
         return TraversalHelper.makeStepString(this, Arrays.toString(this.ids), this.returnClass.getSimpleName().toLowerCase());
     }
 
-    public boolean returnsVertices() {
-        return Vertex.class.isAssignableFrom(this.returnClass);
-    }
-
-    public boolean returnsEdges() {
-        return Edge.class.isAssignableFrom(this.returnClass);
-    }
-
     public Class<S> getReturnClass() {
         return this.returnClass;
+    }
+
+    public boolean returnsVertex() {
+        return this.returnClass.equals(Vertex.class);
+    }
+
+    public boolean returnsEdge() {
+        return this.returnClass.equals(Edge.class);
     }
 
     public void setIteratorSupplier(final Supplier<Iterator<S>> iteratorSupplier) {

@@ -69,7 +69,10 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         final Object startObject;
         final Object endObject;
 
-        if (Scope.local == this.scope) {
+        if (!this.hasStartAndEndKeys()) {
+            startObject = traverser.get();
+            endObject = null;
+        } else if (Scope.local == this.scope) {
             final Map<String, Object> map = (Map<String, Object>) traverser.get();
             startObject = null == this.startKey ? traverser.get() : map.get(this.startKey);
             endObject = null == this.endKey ? null : map.get(this.endKey);
@@ -83,7 +86,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     }
 
     @Override
-    public List<Traversal.Admin<?,?>> getLocalChildren() {
+    public List<Traversal.Admin<?, ?>> getLocalChildren() {
         return this.predicate.getBiPredicate() instanceof BiPredicateTraversal ? Collections.singletonList(((BiPredicateTraversal) this.predicate.getBiPredicate()).getTraversal()) : Collections.emptyList();
     }
 
@@ -102,7 +105,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(Scope.local == this.scope || !this.usesPathOrSideEffects() ?
+        return this.getSelfAndChildRequirements(Scope.local == this.scope || !this.hasStartAndEndKeys() ?
                 TraverserRequirement.OBJECT : TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
     }
 
@@ -115,7 +118,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         return this.scope;
     }
 
-    private boolean usesPathOrSideEffects() {
+    private boolean hasStartAndEndKeys() {
         return null != this.endKey && null != this.startKey;
     }
 }

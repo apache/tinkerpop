@@ -75,7 +75,7 @@ public abstract class GroovySelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select() {
-            TraversalScriptHelper.compute("g.V.has(values('name').is('marko')).as('a').select", g)
+            TraversalScriptHelper.compute("g.V.has('name',__.is('marko')).as('a').select", g)
         }
 
         @Override

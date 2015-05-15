@@ -57,7 +57,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile();
 
-    public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile();
+    public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -216,7 +216,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
-        final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile();
+        final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile();
         printTraversalForm(traversal);
 
         traversal.iterate();
@@ -313,8 +313,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_hasXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
-            return (Traversal) g.V().has(__.in("created").count().is(1l)).values("name").profile();
+        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
+            return (Traversal) g.V().where(__.in("created").count().is(1l)).values("name").profile();
         }
     }
 }

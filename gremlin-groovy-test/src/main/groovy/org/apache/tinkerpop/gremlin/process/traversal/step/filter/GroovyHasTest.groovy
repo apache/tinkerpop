@@ -35,8 +35,8 @@ public abstract class GroovyHasTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_outXknowsX_hasXoutXcreatedXX_name() {
-            TraversalScriptHelper.compute("g.V.out('knows').has(__.out('created')).name", g);
+        public Traversal<Vertex, String> get_g_V_outXcreatedX_hasXname__mapXlengthX_isXgtX3XXX_name() {
+            TraversalScriptHelper.compute("g.V.out('created').has('name',map{it.length()}.is(gt(3))).name", g);
         }
 
         @Override

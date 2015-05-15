@@ -55,7 +55,7 @@ public class ComputerVerificationStrategyTest {
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"__.out().union(__.out().count(),__.in().count())", __.out().union(__.out().count(), __.in().count())},
-                {"__.has(__.out().values(\"name\"))", __.has(__.out().values("name"))},
+                {"__.where(__.out().values(\"name\"))", __.where(__.out().values("name"))},
                 {"__.groupCount(\"a\").out().cap(\"a\").count()", __.groupCount("a").out().cap("a").count()},
 
         });
