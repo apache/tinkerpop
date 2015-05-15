@@ -29,8 +29,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.P;
+import org.apache.tinkerpop.gremlin.structure.util.AndP;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiPredicate;
 
 /**
@@ -71,7 +77,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                 if (next instanceof IsStep && !(prev instanceof RangeGlobalStep)) { // if a RangeStep was provided, assume that the user knows what he's doing
                     final IsStep isStep = (IsStep) next;
                     Long highRange = null;
-                    for (P p : (Iterable<P>) isStep.getPredicates()) {
+                    for (P p : isStep.getPredicate() instanceof AndP ? ((AndP<?>) isStep.getPredicate()).getPredicates() : Collections.singletonList(isStep.getPredicate())) {
                         final Object value = p.getValue();
                         final BiPredicate predicate = p.getBiPredicate();
                         if (value instanceof Number) {

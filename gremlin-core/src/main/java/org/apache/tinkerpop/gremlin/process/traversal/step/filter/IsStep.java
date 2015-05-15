@@ -24,10 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.P;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -35,29 +32,21 @@ import java.util.Set;
  */
 public final class IsStep<S> extends FilterStep<S> {
 
-    private final List<P<S>> predicates = new ArrayList<>();
-    // todo: boolean isSizeOne for optimization
+    private final P<S> predicate;
 
-    public IsStep(final Traversal.Admin traversal, final P<S> predicate, final P<S>... predicates) {
+    public IsStep(final Traversal.Admin traversal, final P<S> predicate) {
         super(traversal);
-        this.predicates.add(predicate);
-        if (predicates.length > 0)
-            this.predicates.addAll(Arrays.asList(predicates));
+        this.predicate = predicate;
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        final S s = traverser.get();
-        for (final P<S> predicate : this.predicates) {
-            if (!predicate.test(s))
-                return false;
-        }
-        return true;
+        return this.predicate.test(traverser.get());
     }
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.predicates);
+        return TraversalHelper.makeStepString(this, this.predicate);
     }
 
     @Override
@@ -65,7 +54,7 @@ public final class IsStep<S> extends FilterStep<S> {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
 
-    public List<P<S>> getPredicates() {
-        return this.predicates;
+    public P<S> getPredicate() {
+        return this.predicate;
     }
 }

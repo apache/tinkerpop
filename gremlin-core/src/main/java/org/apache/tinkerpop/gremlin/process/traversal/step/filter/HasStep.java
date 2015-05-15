@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder {   // TODO: make final when graph strategies are fixed up
+public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder {
 
     private final List<HasContainer> hasContainers;
 

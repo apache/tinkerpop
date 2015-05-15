@@ -310,12 +310,12 @@ public class __ {
         return __.<A>start().hasNot(key, hasNotNextTraversal);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String key, final P<?> predicate, final P<?>... predicates) {
-        return __.<A>start().has(key, predicate, predicates);
+    public static <A> GraphTraversal<A, A> has(final String key, final P<?> predicate) {
+        return __.<A>start().has(key, predicate);
     }
 
-    public static <A> GraphTraversal<A, A> has(final T accessor, final P<?> predicate, final P<?>... predicates) {
-        return __.<A>start().has(accessor, predicate, predicates);
+    public static <A> GraphTraversal<A, A> has(final T accessor, final P<?> predicate) {
+        return __.<A>start().has(accessor, predicate);
     }
 
     public static <A> GraphTraversal<A, A> has(final String key, final Object value) {
@@ -330,16 +330,12 @@ public class __ {
         return __.<A>start().has(label, key, value);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String label, final String key, final P<?> predicate, final P<?>... predicates) {
-        return __.<A>start().has(label, key, predicate, predicates);
+    public static <A> GraphTraversal<A, A> has(final String label, final String key, final P<?> predicate) {
+        return __.<A>start().has(label, key, predicate);
     }
 
     public static <A> GraphTraversal<A, A> has(final String key) {
         return __.<A>start().has(key);
-    }
-
-    public static <A> GraphTraversal<A, A> hasNot(final String key) {
-        return __.<A>start().hasNot(key);
     }
 
     public static <A> GraphTraversal<A, A> hasLabel(final String... labels) {
@@ -382,8 +378,8 @@ public class __ {
         return __.<A>start().where(whereTraversal);
     }
 
-    public static <A> GraphTraversal<A, A> is(final P<A> predicate, final P<A>... predicates) {
-        return __.<A>start().is(predicate, predicates);
+    public static <A> GraphTraversal<A, A> is(final P<A> predicate) {
+        return __.<A>start().is(predicate);
     }
 
     public static <A> GraphTraversal<A, A> is(final Object value) {

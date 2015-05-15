@@ -22,12 +22,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.P;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -148,12 +146,8 @@ public class RangeByIsCountStrategyTest {
 
         public void doTest(final Object predicate, final long expectedHighRange) {
             final AtomicInteger counter = new AtomicInteger(0);
-            final Traversal traversal;
-            if (predicate instanceof P[]) {
-                traversal = __.out().count().is(((P[])predicate)[0],(P[])predicate);
-            } else {
-                traversal = __.out().count().is(predicate);
-            }
+            final Traversal traversal = __.out().count().is(predicate);
+
             applyRangeByIsCountStrategy(traversal);
 
             final List<RangeGlobalStep> steps = TraversalHelper.getStepsOfClass(RangeGlobalStep.class, traversal.asAdmin());

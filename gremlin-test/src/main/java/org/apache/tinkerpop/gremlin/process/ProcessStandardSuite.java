@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
-import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffectsTest;
@@ -34,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathTest
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasNotTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrTest;
@@ -81,8 +79,6 @@ import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
-import java.util.stream.Stream;
-
 /**
  * The {@code ProcessStandardSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
  * {@link Graph} implementation.  This test suite covers traversal operations and should be implemented by vendors
@@ -112,7 +108,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             DedupTest.Traversals.class,
             DropTest.Traversals.class,
             FilterTest.Traversals.class,
-            HasNotTest.Traversals.class,
             HasTest.Traversals.class,
             IsTest.Traversals.class,
             OrTest.Traversals.class,
@@ -193,7 +188,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             DedupTest.class,
             DropTest.class,
             FilterTest.class,
-            HasNotTest.class,
             HasTest.class,
             IsTest.class,
             OrTest.class,

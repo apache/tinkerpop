@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyCyclicPa
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyDedupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyDropTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyFilterTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyHasNotTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyHasTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyIsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyOrTest;
@@ -106,7 +105,6 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyDedupTest.Traversals.class,
             GroovyDropTest.Traversals.class,
             GroovyFilterTest.Traversals.class,
-            GroovyHasNotTest.Traversals.class,
             GroovyHasTest.Traversals.class,
             GroovyIsTest.Traversals.class,
             GroovyOrTest.Traversals.class,

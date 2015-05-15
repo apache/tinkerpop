@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.AndP;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
@@ -118,14 +119,16 @@ public final class HasContainer implements Serializable {
         }
     }
 
-    public static HasContainer[] makeHasContainers(final String key, final P<?> predicate, final P<?>... predicates) {
-        final HasContainer[] hasContainers = new HasContainer[predicates.length + 1];
-        hasContainers[0] = new HasContainer(key, predicate.getBiPredicate(), predicate.getValue());
-        if (predicates.length > 0) {
-            for (int i = 1; i < predicates.length + 1; i++) {
-                hasContainers[i] = new HasContainer(key, predicates[i-1].getBiPredicate(), predicates[i-1].getValue());
+    public static HasContainer[] makeHasContainers(final String key, final P<?> predicate) {
+        if (predicate instanceof AndP) {
+            final List<P<?>> predicates = ((AndP) predicate).getPredicates();
+            final HasContainer[] hasContainers = new HasContainer[predicates.size()];
+            for (int i = 0; i < predicates.size(); i++) {
+                hasContainers[i] = new HasContainer(key, predicates.get(i).getBiPredicate(), predicates.get(i).getValue());
             }
+            return hasContainers;
+        } else {
+            return new HasContainer[]{new HasContainer(key, predicate.getBiPredicate(), predicate.getValue())};
         }
-        return hasContainers;
     }
 }

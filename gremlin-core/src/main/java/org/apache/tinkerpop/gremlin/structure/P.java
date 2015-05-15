@@ -23,7 +23,7 @@ package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TraversalBiPredicate;
-import org.javatuples.Pair;
+import org.apache.tinkerpop.gremlin.structure.util.AndP;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -79,6 +79,13 @@ public class P<V> implements Predicate<V>, Serializable {
         return new P<>(this.biPredicate.negate(), this.value);
     }
 
+    @Override
+    public P<V> and(final Predicate<? super V> predicate) {
+        if (!(predicate instanceof P))
+            throw new IllegalArgumentException("Only P predicates can be and'd together");
+        return new AndP<>(this, (P<V>) predicate);
+    }
+
     //////////////// statics
 
     public static <V> P<V> eq(final V value) {
@@ -105,16 +112,16 @@ public class P<V> implements Predicate<V>, Serializable {
         return new P(Compare.gte, value);
     }
 
-    public static <V> P<V>[] inside(final V first, final V second) {
-        return new P[]{new P(Compare.gt, first), new P(Compare.lt, second)};
+    public static <V> P<V> inside(final V first, final V second) {
+        return new AndP<>(new P(Compare.gt, first), new P(Compare.lt, second));
     }
 
-    public static <V> P<V>[] outside(final V first, final V second) {
-        return new P[]{new P(Compare.lt, first), new P(Compare.gt, second)};
+    public static <V> P<V> outside(final V first, final V second) {
+        return new AndP<>(new P(Compare.lt, first), new P(Compare.gt, second));
     }
 
-    public static <V> P<V>[] between(final V first, final V second) {
-        return new P[]{new P(Compare.gte, first), new P(Compare.lt, second)};
+    public static <V> P<V> between(final V first, final V second) {
+        return new AndP<>(new P(Compare.gte, first), new P(Compare.lt, second));
     }
 
     public static <V> P<V> within(final V... values) {
@@ -145,21 +152,7 @@ public class P<V> implements Predicate<V>, Serializable {
         return new P(biPredicate, value);
     }
 
-    public static <V> P<V>[] not(final P<V> predicate, final P<V>... predicates) {
-        final P[] temp = new P[predicates.length + 1];
-        temp[0] = predicate.negate();
-        for (int i = 1; i < predicates.length; i++) {
-            temp[i] = predicates[i - 1].negate();
-        }
-        return temp;
-    }
-
-    public static Pair<P, P[]> splitForAPI(final P[] pArray) {
-        if (pArray.length == 0)
-            throw new IllegalArgumentException("The P[] is not splittable because its length is 0: " + pArray);
-        else if (pArray.length == 1)
-            return new Pair<>(pArray[0], new P[0]);
-        else
-            return new Pair<>(pArray[0], Arrays.copyOfRange(pArray, 1, pArray.length));
+    public static <V> P<V> not(final P<V> predicate) {
+        return predicate.negate();
     }
 }
