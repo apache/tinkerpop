@@ -23,6 +23,7 @@ package org.apache.tinkerpop.gremlin.structure.util;
 
 import org.apache.tinkerpop.gremlin.structure.P;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +45,11 @@ public abstract class ConjunctionP<V> extends P<V> {
         }
     }
 
+    protected ConjunctionP(final ConjunctionP<V> other) {
+        super(null, null);
+        this.predicates = other.predicates;
+    }
+
     public List<P<V>> getPredicates() {
         return Collections.unmodifiableList(this.predicates);
     }
@@ -56,6 +62,15 @@ public abstract class ConjunctionP<V> extends P<V> {
         }
         this.predicates = negated;
         return this;
+    }
+
+    protected P<V> negate(final ConjunctionP<V> p) {
+        final List<P<V>> negated = new ArrayList<>();
+        for (final P<V> predicate : this.predicates) {
+            negated.add(predicate.negate());
+        }
+        p.predicates = negated;
+        return p;
     }
 
     @Override

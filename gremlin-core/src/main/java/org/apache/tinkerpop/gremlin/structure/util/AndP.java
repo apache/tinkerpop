@@ -35,6 +35,10 @@ public final class AndP<V> extends ConjunctionP<V> {
         super(predicate, predicates);
     }
 
+    protected AndP(final ConjunctionP<V> other) {
+        super(other);
+    }
+
     @Override
     public boolean test(final V v) {
         for (final P<V> predicate : this.predicates) {
@@ -50,6 +54,13 @@ public final class AndP<V> extends ConjunctionP<V> {
             throw new IllegalArgumentException("Only P predicates can be and'd together");
         this.predicates.add((P<V>) predicate);   // TODO: clone and add?
         return this;
+    }
+
+    @Override
+    public P<V> negate() {
+        super.negate();
+        final P[] arg2 = new P[this.predicates.size()-1];
+        return new OrP(this.predicates.get(0), this.predicates.subList(1, this.predicates.size()).toArray(arg2));
     }
 
     @Override

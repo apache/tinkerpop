@@ -23,6 +23,7 @@ package org.apache.tinkerpop.gremlin.structure.util;
 
 import org.apache.tinkerpop.gremlin.structure.P;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -49,6 +50,13 @@ public final class OrP<V> extends ConjunctionP<V> {
             throw new IllegalArgumentException("Only P predicates can be or'd together");
         this.predicates.add((P<V>) predicate);   // TODO: clone and add?
         return this;
+    }
+
+    @Override
+    public P<V> negate() {
+        super.negate();
+        final P[] arg2 = new P[this.predicates.size()-1];
+        return new AndP(this.predicates.get(0), this.predicates.subList(1, this.predicates.size()).toArray(arg2));
     }
 
     @Override
