@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
@@ -40,7 +39,7 @@ public class SubgraphStrategyTest {
 
     @Test
     public void shouldAddFilterAfterVertex() {
-        final SubgraphStrategy strategy = SubgraphStrategy.build().vertexPredicate(__.identity()).create();
+        final SubgraphStrategy strategy = SubgraphStrategy.build().vertexCriterion(__.identity()).create();
         final Traversal t = __.inV();
         strategy.apply(t.asAdmin());
         final EdgeVertexStep edgeVertexStep = (EdgeVertexStep) t.asAdmin().getStartStep();
@@ -52,7 +51,7 @@ public class SubgraphStrategyTest {
 
     @Test
     public void shouldAddFilterAfterEdge() {
-        final SubgraphStrategy strategy = SubgraphStrategy.build().edgePredicate(__.identity()).create();
+        final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(__.identity()).create();
         final Traversal t = __.inE();
         strategy.apply(t.asAdmin());
         final VertexStep vertexStep = (VertexStep) t.asAdmin().getStartStep();
@@ -64,7 +63,7 @@ public class SubgraphStrategyTest {
 
     @Test
     public void shouldAddBothFiltersAfterVertex() {
-        final SubgraphStrategy strategy = SubgraphStrategy.build().edgePredicate(__.identity()).vertexPredicate(__.identity()).create();
+        final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(__.identity()).vertexCriterion(__.identity()).create();
         final Traversal t = __.inE();
         strategy.apply(t.asAdmin());
         final VertexStep vertexStep = (VertexStep) t.asAdmin().getStartStep();

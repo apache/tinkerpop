@@ -53,7 +53,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldFilterVertexCriterion() throws Exception {
         final Traversal<Vertex,?> vertexCriterion = __.has("name", P.within("josh", "lop", "ripple"));
 
-        final SubgraphStrategy strategy = SubgraphStrategy.build().vertexPredicate(vertexCriterion).create();
+        final SubgraphStrategy strategy = SubgraphStrategy.build().vertexCriterion(vertexCriterion).create();
         final GraphTraversalSource sg = create(strategy);
 
         // three vertices are included in the subgraph
@@ -140,7 +140,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
             __.has("weight", 1.0d).hasLabel("created") // 10
         );
 
-        final SubgraphStrategy strategy = SubgraphStrategy.build().edgePredicate(edgeCriterion).create();
+        final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(edgeCriterion).create();
         final GraphTraversalSource sg = create(strategy);
 
         // all vertices are here
@@ -232,7 +232,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
                 __.has("weight", 1.0d).hasLabel("created") // 10
         );
 
-        final SubgraphStrategy strategy = SubgraphStrategy.build().edgePredicate(edgeCriterion).vertexPredicate(vertexCriterion).create();
+        final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(edgeCriterion).vertexCriterion(vertexCriterion).create();
         final GraphTraversalSource sg = create(strategy);
 
         // three vertices are included in the subgraph
@@ -307,7 +307,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldGetExcludedVertex() throws Exception {
         final Traversal<Vertex,?> vertexCriterion = __.has("name", P.within("josh", "lop", "ripple"));
 
-        final SubgraphStrategy strategy = SubgraphStrategy.build().vertexPredicate(vertexCriterion).create();
+        final SubgraphStrategy strategy = SubgraphStrategy.build().vertexCriterion(vertexCriterion).create();
         final GraphTraversalSource sg = create(strategy);
 
         sg.V(convertToVertexId("marko")).next();
@@ -322,7 +322,7 @@ public class SubgraphStrategyProcessTest extends AbstractGremlinProcessTest {
                 __.has("weight", 1.0d).hasLabel("created") // 10
         );
 
-        final SubgraphStrategy strategy = SubgraphStrategy.build().edgePredicate(edgeCriterion).create();
+        final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(edgeCriterion).create();
         final GraphTraversalSource sg = create(strategy);
 
         sg.E(sg.E(convertToEdgeId("marko", "knows", "vadas")).next()).next();

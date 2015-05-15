@@ -45,8 +45,8 @@ import java.util.stream.Collectors;
 
 /**
  * This {@link TraversalStrategy} provides a way to limit the view of a {@link Traversal}.  By providing
- * {@link Traversal} representations that represent a form of filtering "predicate" for vertices and/or edges,
- * this strategy will inject that "predicate" into the appropriate places of a traversal thus restricting what
+ * {@link Traversal} representations that represent a form of filtering criterion for vertices and/or edges,
+ * this strategy will inject that criterion into the appropriate places of a traversal thus restricting what
  * it traverses and returns.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -54,25 +54,25 @@ import java.util.stream.Collectors;
 public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
         implements TraversalStrategy.DecorationStrategy {
 
-    private final Traversal<Vertex, ?> vertexPredicate;
-    private final Traversal<Edge, ?> edgePredicate;
+    private final Traversal<Vertex, ?> vertexCriterion;
+    private final Traversal<Edge, ?> edgeCriterion;
 
-    private SubgraphStrategy(final Traversal<Vertex, ?> vertexPredicate, final Traversal<Edge, ?> edgePredicate) {
-        this.vertexPredicate = vertexPredicate;
+    private SubgraphStrategy(final Traversal<Vertex, ?> vertexCriterion, final Traversal<Edge, ?> edgeCriterion) {
+        this.vertexCriterion = vertexCriterion;
 
         // if there is no vertex predicate there is no need to test either side of the edge
-        if (null == vertexPredicate) {
-            this.edgePredicate = edgePredicate;
+        if (null == vertexCriterion) {
+            this.edgeCriterion = edgeCriterion;
         } else {
-            final Traversal<Object, Vertex> inVertexPredicate = __.inV().where(vertexPredicate);
-            final Traversal<Object, Vertex> outVertexPredicate = __.outV().where(vertexPredicate);
+            final Traversal<Object, Vertex> inVertexPredicate = __.inV().where(vertexCriterion);
+            final Traversal<Object, Vertex> outVertexPredicate = __.outV().where(vertexCriterion);
 
             // if there is a vertex predicate then there is an implied edge filter on vertices even if there is no
             // edge predicate provided by the user.
-            if (null == edgePredicate)
-                this.edgePredicate = __.and(inVertexPredicate.asAdmin(), outVertexPredicate.asAdmin());
+            if (null == edgeCriterion)
+                this.edgeCriterion = __.and(inVertexPredicate.asAdmin(), outVertexPredicate.asAdmin());
             else
-                this.edgePredicate = edgePredicate.asAdmin().addStep(new AndStep<>(edgePredicate.asAdmin(), inVertexPredicate.asAdmin(), outVertexPredicate.asAdmin()));
+                this.edgeCriterion = edgeCriterion.asAdmin().addStep(new AndStep<>(edgeCriterion.asAdmin(), inVertexPredicate.asAdmin(), outVertexPredicate.asAdmin()));
         }
     }
 
@@ -81,7 +81,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         final List<GraphStep> graphSteps = TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal);
         final List<VertexStep> vertexSteps = TraversalHelper.getStepsOfAssignableClass(VertexStep.class, traversal);
 
-        if (vertexPredicate != null) {
+        if (vertexCriterion != null) {
             final List<Step> vertexStepsToInsertFilterAfter = new ArrayList<>();
             vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeOtherVertexStep.class, traversal));
             vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeVertexStep.class, traversal));
@@ -89,23 +89,23 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             vertexStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal));
             vertexStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsVertex).collect(Collectors.toList()));
 
-            vertexStepsToInsertFilterAfter.forEach(s -> TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, vertexPredicate.asAdmin().clone()), s, traversal));
+            vertexStepsToInsertFilterAfter.forEach(s -> TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, vertexCriterion.asAdmin().clone()), s, traversal));
         }
 
-        if (edgePredicate != null) {
+        if (edgeCriterion != null) {
             final List<Step> edgeStepsToInsertFilterAfter = new ArrayList<>();
             edgeStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal));
             edgeStepsToInsertFilterAfter.addAll(TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal));
             edgeStepsToInsertFilterAfter.addAll(graphSteps.stream().filter(GraphStep::returnsEdge).collect(Collectors.toList()));
             edgeStepsToInsertFilterAfter.addAll(vertexSteps.stream().filter(VertexStep::returnsEdge).collect(Collectors.toList()));
 
-            edgeStepsToInsertFilterAfter.forEach(s -> TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, edgePredicate.asAdmin().clone()), s, traversal));
+            edgeStepsToInsertFilterAfter.forEach(s -> TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, edgeCriterion.asAdmin().clone()), s, traversal));
         }
 
         // explode g.V().out() to g.V().outE().inV() only if there is an edge predicate otherwise
         vertexSteps.stream().filter(VertexStep::returnsVertex).forEach(s -> {
-            if (null == edgePredicate)
-                TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, vertexPredicate.asAdmin().clone()), s, traversal);
+            if (null == edgeCriterion)
+                TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, vertexCriterion.asAdmin().clone()), s, traversal);
             else {
                 final VertexStep replacementVertexStep = new VertexStep(traversal, Edge.class, s.getDirection(), s.getEdgeLabels());
                 Step intermediateFilterStep = null;
@@ -116,20 +116,20 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
                 TraversalHelper.replaceStep(s, replacementVertexStep, traversal);
                 TraversalHelper.insertAfterStep(intermediateFilterStep, replacementVertexStep, traversal);
-                TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, edgePredicate.asAdmin().clone()), replacementVertexStep, traversal);
+                TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, edgeCriterion.asAdmin().clone()), replacementVertexStep, traversal);
 
-                if (vertexPredicate != null)
-                    TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, vertexPredicate.asAdmin().clone()), intermediateFilterStep, traversal);
+                if (vertexCriterion != null)
+                    TraversalHelper.insertAfterStep(new WhereStep<>(traversal, Scope.local, vertexCriterion.asAdmin().clone()), intermediateFilterStep, traversal);
             }
         });
     }
 
-    public Traversal<Vertex, ?> getVertexPredicate() {
-        return vertexPredicate;
+    public Traversal<Vertex, ?> getVertexCriterion() {
+        return vertexCriterion;
     }
 
-    public Traversal<Edge, ?> getEdgePredicate() {
-        return edgePredicate;
+    public Traversal<Edge, ?> getEdgeCriterion() {
+        return edgeCriterion;
     }
 
     public static Builder build() {
@@ -138,26 +138,26 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
 
     public static class Builder {
 
-        private Traversal<Vertex, ?> vertexPredicate = null;
-        private Traversal<Edge, ?> edgePredicate = null;
+        private Traversal<Vertex, ?> vertexCriterion = null;
+        private Traversal<Edge, ?> edgeCriterion = null;
 
         private Builder() {
         }
 
-        public Builder vertexPredicate(final Traversal<Vertex, ?> predicate) {
-            vertexPredicate = predicate;
+        public Builder vertexCriterion(final Traversal<Vertex, ?> predicate) {
+            vertexCriterion = predicate;
             return this;
         }
 
-        public Builder edgePredicate(final Traversal<Edge, ?> predicate) {
-            edgePredicate = predicate;
+        public Builder edgeCriterion(final Traversal<Edge, ?> predicate) {
+            edgeCriterion = predicate;
             return this;
         }
 
         public SubgraphStrategy create() {
-            if (null == edgePredicate && null == vertexPredicate)
-                throw new IllegalStateException("A subgraph must be filtered by an edge or vertex filter");
-            return new SubgraphStrategy(vertexPredicate, edgePredicate);
+            if (null == edgeCriterion && null == vertexCriterion)
+                throw new IllegalStateException("A subgraph must be filtered by an edge or vertex criterion");
+            return new SubgraphStrategy(vertexCriterion, edgeCriterion);
         }
     }
 }
