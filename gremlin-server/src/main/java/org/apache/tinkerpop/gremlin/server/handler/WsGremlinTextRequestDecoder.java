@@ -63,7 +63,7 @@ public class WsGremlinTextRequestDecoder extends MessageToMessageDecoder<TextWeb
         }
     }
 
-    public MessageSerializer select(final String mimeType, final MessageSerializer defaultSerializer) {
+    private MessageSerializer select(final String mimeType, final MessageSerializer defaultSerializer) {
         if (logger.isWarnEnabled() && !serializers.containsKey(mimeType))
             logger.warn("Gremlin Server is not configured with a serializer for the requested mime type [{}] - using {} by default",
                     mimeType, defaultSerializer.getClass().getName());
