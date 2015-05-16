@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
@@ -26,8 +27,11 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Decodes the contents of a {@link TextWebSocketFrame}.  Text-based frames are always assumed to be
@@ -37,18 +41,33 @@ import java.util.List;
  */
 @ChannelHandler.Sharable
 public class WsGremlinTextRequestDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
+    private static final Logger logger = LoggerFactory.getLogger(WsGremlinTextRequestDecoder.class);
+
+    private final Map<String, MessageSerializer> serializers;
+
+    public WsGremlinTextRequestDecoder(final Map<String, MessageSerializer> serializers) {
+        this.serializers = serializers;
+    }
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final TextWebSocketFrame frame, final List<Object> objects) throws Exception {
-        // the default serializer must be a MessageTextSerializer instance to be compatible with this decoder
-        final MessageTextSerializer serializer = (MessageTextSerializer) Serializers.DEFAULT_REQUEST_SERIALIZER;
-        channelHandlerContext.channel().attr(StateKey.SERIALIZER).set(serializer);
-        channelHandlerContext.channel().attr(StateKey.USE_BINARY).set(false);
-
         try {
+            // the default serializer must be a MessageTextSerializer instance to be compatible with this decoder
+            final MessageTextSerializer serializer = (MessageTextSerializer) select("application/json", Serializers.DEFAULT_REQUEST_SERIALIZER);
+
+            channelHandlerContext.channel().attr(StateKey.SERIALIZER).set(serializer);
+            channelHandlerContext.channel().attr(StateKey.USE_BINARY).set(false);
             objects.add(serializer.deserializeRequest(frame.text()));
         } catch (SerializationException se) {
             objects.add(RequestMessage.INVALID);
         }
+    }
+
+    public MessageSerializer select(final String mimeType, final MessageSerializer defaultSerializer) {
+        if (logger.isWarnEnabled() && !serializers.containsKey(mimeType))
+            logger.warn("Gremlin Server is not configured with a serializer for the requested mime type [{}] - using {} by default",
+                    mimeType, defaultSerializer.getClass().getName());
+
+        return serializers.getOrDefault(mimeType, defaultSerializer);
     }
 }

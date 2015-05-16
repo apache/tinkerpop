@@ -58,7 +58,7 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         super.init(settings, gremlinExecutor, gremlinExecutorService, graphs, scheduledExecutorService);
 
         wsGremlinResponseEncoder = new WsGremlinResponseEncoder();
-        wsGremlinTextRequestDecoder = new WsGremlinTextRequestDecoder();
+        wsGremlinTextRequestDecoder = new WsGremlinTextRequestDecoder(serializers);
         wsGremlinBinaryRequestDecoder = new WsGremlinBinaryRequestDecoder(serializers);
     }
 
