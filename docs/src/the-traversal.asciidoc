@@ -613,6 +613,17 @@ g.V().range(0, 2)
 g.V().limit(2).toString()
 ----
 
+The `limit()`-step can also be applied with `Scope.local`, in which case it operates on the incoming collection. The examples below use the <<the-crew-toy-graph,The Crew>> toy data set.
+
+[gremlin-groovy,theCrew]
+----
+g.V().valueMap().select(local,'location').limit(local,2) <1>
+g.V().valueMap().limit(local, 1) <2>
+----
+
+<1> `List<String>` for each vertex containing the first two locations.
+<2> `Map<String, Object>` for each vertex, but containing only the first property value.
+
 [[local-step]]
 Local Step
 ~~~~~~~~~~
