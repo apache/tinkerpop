@@ -152,13 +152,26 @@ public final class TestHelper {
     public static void validateVertexPropertyEquality(final VertexProperty originalVertexProperty, final VertexProperty otherVertexProperty) {
         assertEquals(originalVertexProperty, otherVertexProperty);
         assertEquals(otherVertexProperty, originalVertexProperty);
+
         if (originalVertexProperty.isPresent()) {
             assertEquals(originalVertexProperty.key(), otherVertexProperty.key());
             assertEquals(originalVertexProperty.value(), otherVertexProperty.value());
             assertEquals(originalVertexProperty.element(), otherVertexProperty.element());
-            assertEquals(originalVertexProperty.keys().size(), otherVertexProperty.keys().size());
-            for (final String key : originalVertexProperty.keys()) {
-                validatePropertyEquality(originalVertexProperty.property(key), otherVertexProperty.property(key));
+
+            final boolean originalSupportsMetaProperties = originalVertexProperty.graph().features().vertex().supportsMetaProperties();
+            final boolean otherSupportsMetaProperties = otherVertexProperty.graph().features().vertex().supportsMetaProperties();
+
+            // if one supports and the other doesn't then neither should have meta properties.
+            if (originalSupportsMetaProperties && !otherSupportsMetaProperties)
+                assertEquals(0, originalVertexProperty.keys().size());
+            else if (!originalSupportsMetaProperties && otherSupportsMetaProperties)
+                assertEquals(0, otherVertexProperty.keys().size());
+            else {
+                // both support it, so assert in full
+                assertEquals(originalVertexProperty.keys().size(), otherVertexProperty.keys().size());
+                for (final String key : originalVertexProperty.keys()) {
+                    validatePropertyEquality(originalVertexProperty.property(key), otherVertexProperty.property(key));
+                }
             }
         }
     }
