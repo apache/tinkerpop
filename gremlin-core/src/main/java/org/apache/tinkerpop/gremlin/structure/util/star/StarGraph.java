@@ -176,9 +176,12 @@ public final class StarGraph implements Graph, Serializable {
         // else convert to a star graph
         final StarGraph starGraph = new StarGraph();
         final StarVertex starVertex = (StarVertex) starGraph.addVertex(T.id, vertex.id(), T.label, vertex.label());
+
+        final boolean supportsMetaProperties = vertex.graph().features().vertex().supportsMetaProperties();
+
         vertex.properties().forEachRemaining(vp -> {
             final VertexProperty<?> starVertexProperty = starVertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value(), T.id, vp.id());
-            vp.properties().forEachRemaining(p -> starVertexProperty.property(p.key(), p.value()));
+            if (supportsMetaProperties) vp.properties().forEachRemaining(p -> starVertexProperty.property(p.key(), p.value()));
         });
         vertex.edges(Direction.IN).forEachRemaining(edge -> {
             final Edge starEdge = starVertex.addInEdge(edge.label(), starGraph.addVertex(T.id, edge.outVertex().id()), T.id, edge.id());
