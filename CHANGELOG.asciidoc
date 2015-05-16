@@ -26,6 +26,7 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Removed `HasTraversalStep` in favor of new `P.traversal` model with `HasStep`.
+* Fixed bug in `WsGremlinTextRequestDecoder` where custom serializers from graphs were not being used.
 * Added `AndP` which allows for the `and()`-ing of `P` predicates.
 * `Order.opposite()` is now `reversed()` as that is a `Comparator` interface method with the same semantics.
 * `Compare/Contains/P.opposite()` are now `negate()` as that is a `BiPredicate` interface method with the same semantics.
