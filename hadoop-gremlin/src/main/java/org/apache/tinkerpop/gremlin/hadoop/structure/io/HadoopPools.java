@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 
 /**
@@ -28,5 +30,23 @@ public final class HadoopPools {
     private HadoopPools() {
     }
 
-    public static final GryoPool GRYO_POOL = new GryoPool(256);
+    private static GryoPool GRYO_POOL;
+
+    public synchronized static void initialize(final Configuration configuration) {
+        if (null == GRYO_POOL) {
+            GRYO_POOL = new GryoPool(configuration);
+        }
+    }
+
+    public synchronized static void initialize(final org.apache.hadoop.conf.Configuration configuration) {
+        if (null == GRYO_POOL) {
+            GRYO_POOL = new GryoPool(ConfUtil.makeApacheConfiguration(configuration));
+        }
+    }
+
+    public static GryoPool getGryoPool() {
+        if (null == GRYO_POOL)
+            throw new IllegalStateException("The GryoPool has not been initialized");
+        return GRYO_POOL;
+    }
 }

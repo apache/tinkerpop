@@ -62,7 +62,7 @@ public final class VertexWritable implements Writable, Serializable {
     public void readFields(final DataInput input) throws IOException {
         try {
             this.vertex = null;
-            this.vertex = HadoopPools.GRYO_POOL.doWithReader(gryoReader -> {
+            this.vertex = HadoopPools.getGryoPool().doWithReader(gryoReader -> {
                 try {
                     final ByteArrayInputStream inputStream = new ByteArrayInputStream(WritableUtils.readCompressedByteArray(input));
                     return gryoReader.readObject(inputStream, StarGraph.class).getStarVertex(); // read the star graph
@@ -81,7 +81,7 @@ public final class VertexWritable implements Writable, Serializable {
     @Override
     public void write(final DataOutput output) throws IOException {
         try {
-            HadoopPools.GRYO_POOL.doWithWriter(gryoWriter -> {
+            HadoopPools.getGryoPool().doWithWriter(gryoWriter -> {
                 try {
                     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     gryoWriter.writeObject(outputStream, this.vertex.graph()); // write the star graph

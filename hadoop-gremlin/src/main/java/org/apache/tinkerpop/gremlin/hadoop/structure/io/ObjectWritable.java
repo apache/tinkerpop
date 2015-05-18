@@ -59,7 +59,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public void readFields(final DataInput input) throws IOException {
-        this.t = HadoopPools.GRYO_POOL.doWithReader(gryoReader -> {
+        this.t = HadoopPools.getGryoPool().doWithReader(gryoReader -> {
             try {
                 // class argument is Object because gryo doesn't really care that we don't know the specific type.
                 // the type is embedded in the stream so it can just read it from there and return it as needed.
@@ -73,7 +73,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public void write(final DataOutput output) throws IOException {
-        HadoopPools.GRYO_POOL.doWithWriter(gryoWriter -> {
+        HadoopPools.getGryoPool().doWithWriter(gryoWriter -> {
             try {
                 final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 gryoWriter.writeObject(outputStream, this.t);
