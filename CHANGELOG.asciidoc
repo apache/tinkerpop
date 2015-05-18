@@ -26,6 +26,7 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * `HasContainer` now uses `P` predicate as helper methods and tests are more thorough on `P`.
+* Changed Gremlin Server integration/performance tests to be runnable from within the `gremlin-server` directory or from the project root.
 * Moved the string methods of `TraversalHelper` to `StringFactory`.
 * Renamed JSON-related serializers for Gremlin Server to be more consistent with GraphSON naming.
 * Removed `HasTraversalStep` in favor of new `P.traversal` model with `HasStep`.
