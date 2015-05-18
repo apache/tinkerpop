@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1D0;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -86,7 +86,7 @@ class Settings {
     }
 
     public static class SerializerSettings {
-        public String className = GraphSONMessageSerializerV1D0.class.getCanonicalName();
+        public String className = GraphSONMessageSerializerV1d0.class.getCanonicalName();
         public Map<String, Object> config = null;
 
         public MessageSerializer create() throws Exception {

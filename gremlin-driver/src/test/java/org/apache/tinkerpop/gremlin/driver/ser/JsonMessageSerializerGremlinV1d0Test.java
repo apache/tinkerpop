@@ -54,7 +54,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public MessageSerializer serializer = new GraphSONMessageSerializerGremlinV1D0();
+    public MessageSerializer serializer = new GraphSONMessageSerializerGremlinV1d0();
 
     @Test
     public void serializeIterable() throws Exception {

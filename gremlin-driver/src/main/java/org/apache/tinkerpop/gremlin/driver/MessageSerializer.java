@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1D0;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import io.netty.buffer.ByteBuf;
@@ -37,7 +37,7 @@ import java.util.ServiceLoader;
  * {@link MessageSerializer} instances are instantiated to a cache via {@link ServiceLoader} and indexed based on
  * the mime types they support.  If a mime type is supported more than once, the last {@link MessageSerializer}
  * instance loaded for that mime type is assigned. If a mime type is not found the default
- * {@link GraphSONMessageSerializerV1D0} is used to return the results.
+ * {@link GraphSONMessageSerializerV1d0} is used to return the results.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

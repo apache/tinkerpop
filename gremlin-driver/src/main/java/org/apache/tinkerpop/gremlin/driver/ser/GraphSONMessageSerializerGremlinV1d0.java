@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONMessageSerializerGremlinV1D0 extends AbstractGraphSONMessageSerializerV1d0 {
+public class GraphSONMessageSerializerGremlinV1d0 extends AbstractGraphSONMessageSerializerV1d0 {
 
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V1D0;
 
@@ -40,11 +40,11 @@ public class GraphSONMessageSerializerGremlinV1D0 extends AbstractGraphSONMessag
         header = buffer.array();
     }
 
-    public GraphSONMessageSerializerGremlinV1D0() {
+    public GraphSONMessageSerializerGremlinV1d0() {
         super();
     }
 
-    public GraphSONMessageSerializerGremlinV1D0(final GraphSONMapper mapper) {
+    public GraphSONMessageSerializerGremlinV1d0(final GraphSONMapper mapper) {
         super(mapper);
     }
 
@@ -60,7 +60,7 @@ public class GraphSONMessageSerializerGremlinV1D0 extends AbstractGraphSONMessag
 
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
-        return builder.addCustomModule(new GraphSONMessageSerializerV1D0.GremlinServerModule())
+        return builder.addCustomModule(new GraphSONMessageSerializerV1d0.GremlinServerModule())
                 .embedTypes(true);
     }
 }

@@ -193,7 +193,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 }
             });
 
-            if (!latch.await(300, TimeUnit.MILLISECONDS))
+            if (!latch.await(3000, TimeUnit.MILLISECONDS))
                 fail("Request should have returned error, but instead timed out");
             assertTrue(pass.get());
         }
@@ -359,7 +359,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldFailOnDeadHost() throws Exception {
-        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.JSON_V1D0).create();
+        final Cluster cluster = Cluster.build("localhost").create();
         final Client client = cluster.connect();
 
         // ensure that connection to server is good

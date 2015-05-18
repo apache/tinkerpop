@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -52,7 +51,7 @@ import static org.junit.Assert.assertNull;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GryoMessageSerializerV1D0Test {
+public class GryoMessageSerializerV1d0Test {
     private static final Map<String, Object> config = new HashMap<String, Object>() {{
         put("serializeResultToString", true);
     }};
@@ -65,7 +64,7 @@ public class GryoMessageSerializerV1D0Test {
 
     public MessageSerializer textSerializer = new GryoMessageSerializerV1d0();
 
-    public GryoMessageSerializerV1D0Test() {
+    public GryoMessageSerializerV1d0Test() {
         textSerializer.configure(config, null);
     }
 
