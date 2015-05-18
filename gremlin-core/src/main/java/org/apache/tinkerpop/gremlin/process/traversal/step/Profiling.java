@@ -26,6 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
  *
  * @author Bob Briody (http://bobbriody.com)
  */
-public interface Profileable {
+public interface Profiling {
     public void setMetrics(final MutableMetrics metrics);
 }
