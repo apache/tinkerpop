@@ -23,6 +23,7 @@ import org.apache.giraph.conf.GiraphConstants;
 import org.apache.giraph.worker.WorkerContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
@@ -46,6 +47,7 @@ public final class GiraphWorkerContext extends WorkerContext {
 
     public void preApplication() throws InstantiationException, IllegalAccessException {
         final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(this.getContext().getConfiguration());
+        HadoopPools.initialize(apacheConfiguration);
         final VertexProgram vertexProgram = VertexProgram.createVertexProgram(HadoopGraph.open(apacheConfiguration), apacheConfiguration);
         this.vertexProgramPool = new VertexProgramPool(vertexProgram, this.getContext().getConfiguration().getInt(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 1));
         this.memory = new GiraphMemory(this, vertexProgram);

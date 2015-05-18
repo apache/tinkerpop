@@ -22,6 +22,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
@@ -49,6 +50,7 @@ public class HadoopMap extends Mapper<NullWritable, VertexWritable, ObjectWritab
     @Override
     public void setup(final Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable>.Context context) {
         final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(context.getConfiguration());
+        HadoopPools.initialize(apacheConfiguration);
         this.mapReduce = MapReduce.createMapReduce(HadoopGraph.open(apacheConfiguration), apacheConfiguration);
         this.mapReduce.workerStart(MapReduce.Stage.MAP);
     }

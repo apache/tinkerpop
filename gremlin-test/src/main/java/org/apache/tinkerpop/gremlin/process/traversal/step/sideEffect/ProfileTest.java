@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -331,23 +330,17 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
-            return (Traversal) g.V().sideEffect(new Consumer<Traverser<Vertex>>() {
-                @Override
-                public void accept(final Traverser<Vertex> vertexTraverser) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            return (Traversal) g.V().sideEffect(v -> {
+                try {
+                    Thread.sleep(10);
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
                 }
-            }).sideEffect(new Consumer<Traverser<Vertex>>() {
-                @Override
-                public void accept(final Traverser<Vertex> vertexTraverser) {
-                    try {
-                        Thread.sleep(5);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            }).sideEffect(v -> {
+                try {
+                    Thread.sleep(5);
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
                 }
             }).profile();
         }

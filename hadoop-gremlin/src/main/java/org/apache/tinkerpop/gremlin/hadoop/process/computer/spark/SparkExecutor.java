@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload.ViewIn
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload.ViewOutgoingPayload;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload.ViewPayload;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -81,6 +82,7 @@ public final class SparkExecutor {
                 graphRDD.leftOuterJoin(viewIncomingRDD))                                                   // every other iteration may have views and messages
                 // for each partition of vertices
                 .mapPartitionsToPair(partitionIterator -> {
+                    HadoopPools.initialize(apacheConfiguration);
                     final VertexProgram<M> workerVertexProgram = VertexProgram.<VertexProgram<M>>createVertexProgram(HadoopGraph.open(apacheConfiguration),apacheConfiguration); // each partition(Spark)/worker(TP3) has a local copy of the vertex program (a worker's task)
                     final Set<String> elementComputeKeys = workerVertexProgram.getElementComputeKeys(); // the compute keys as a set
                     final String[] elementComputeKeysArray = elementComputeKeys.size() == 0 ? EMPTY_ARRAY : elementComputeKeys.toArray(new String[elementComputeKeys.size()]); // the compute keys as an array
@@ -136,6 +138,7 @@ public final class SparkExecutor {
 
         newViewIncomingRDD.setName("viewIncomingRDD")
                 .foreachPartition(partitionIterator -> {
+                    HadoopPools.initialize(apacheConfiguration);
                 }); // need to complete a task so its BSP and the memory for this iteration is updated
         return newViewIncomingRDD;
     }
@@ -147,7 +150,7 @@ public final class SparkExecutor {
     public static <M> JavaPairRDD<Object, VertexWritable> prepareGraphRDDForMapReduce(final JavaPairRDD<Object, VertexWritable> graphRDD, final JavaPairRDD<Object, ViewIncomingPayload<M>> viewIncomingRDD, final String[] elementComputeKeys) {
         return (null == viewIncomingRDD) ?   // there was no vertex program
                 graphRDD.mapValues(vertexWritable -> {
-                    ((StarGraph.StarVertex) vertexWritable.get()).dropEdges();
+                    vertexWritable.get().dropEdges();
                     return vertexWritable;
                 }) :
                 graphRDD.leftOuterJoin(viewIncomingRDD)
@@ -163,6 +166,7 @@ public final class SparkExecutor {
 
     public static <K, V> JavaPairRDD<K, V> executeMap(final JavaPairRDD<Object, VertexWritable> graphRDD, final MapReduce<K, V, ?, ?, ?> mapReduce, final Configuration apacheConfiguration) {
         JavaPairRDD<K, V> mapRDD = graphRDD.mapPartitionsToPair(partitionIterator -> {
+            HadoopPools.initialize(apacheConfiguration);
             final MapReduce<K, V, ?, ?, ?> workerMapReduce = MapReduce.<MapReduce<K, V, ?, ?, ?>>createMapReduce(HadoopGraph.open(apacheConfiguration),apacheConfiguration);
             workerMapReduce.workerStart(MapReduce.Stage.MAP);
             final SparkMapEmitter<K, V> mapEmitter = new SparkMapEmitter<>();
@@ -182,6 +186,7 @@ public final class SparkExecutor {
 
     public static <K, V, OK, OV> JavaPairRDD<OK, OV> executeReduce(final JavaPairRDD<K, V> mapRDD, final MapReduce<K, V, OK, OV, ?> mapReduce, final Configuration apacheConfiguration) {
         JavaPairRDD<OK, OV> reduceRDD = mapRDD.groupByKey().mapPartitionsToPair(partitionIterator -> {
+            HadoopPools.initialize(apacheConfiguration);
             final MapReduce<K, V, OK, OV, ?> workerMapReduce = MapReduce.<MapReduce<K, V, OK, OV, ?>>createMapReduce(HadoopGraph.open(apacheConfiguration),apacheConfiguration);
             workerMapReduce.workerStart(MapReduce.Stage.REDUCE);
             final SparkReduceEmitter<OK, OV> reduceEmitter = new SparkReduceEmitter<>();
