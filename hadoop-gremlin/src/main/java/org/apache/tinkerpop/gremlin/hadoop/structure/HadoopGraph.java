@@ -116,11 +116,11 @@ import java.util.stream.Stream;
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileTest$Traversals",
-        method = "g_V_out_out_grateful_profile",
+        method = "g_V_out_out_profile_grateful",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyProfileTest$Traversals",
-        method = "g_V_out_out_grateful_profile",
+        method = "g_V_out_out_profile_grateful",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 public class HadoopGraph implements Graph {
 
