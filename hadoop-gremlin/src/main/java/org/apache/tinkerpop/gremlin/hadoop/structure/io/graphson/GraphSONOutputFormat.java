@@ -22,6 +22,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.CommonFileOutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPoolsConfigurable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphSONOutputFormat extends CommonFileOutputFormat {
+public class GraphSONOutputFormat extends CommonFileOutputFormat implements HadoopPoolsConfigurable {
 
     @Override
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {
