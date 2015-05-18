@@ -162,7 +162,8 @@ public class TinkerGraphTest {
         //g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").select().by("skill").by("name").forEachRemaining(System.out::println);
         //g.V().label().groupCount().as("x").select().forEachRemaining(System.out::println);
         //g.V().choose(__.outE().count().is(0L), __.as("x"), __.as("y")).select("x", "y").forEachRemaining(System.out::println);
-        g.V().hasLabel("person").values("age").is(P.lt(27).or(P.gt(29))).forEachRemaining(System.out::println);
+        // g.V().hasLabel("person").values("age").is(P.lt(27).or(P.gt(29))).forEachRemaining(System.out::println);
+        System.out.println(g.V().has("name","marko").where(out("knows").has(T.id,P.within(32,34,56))).out("created"));
     }
 
     @Test

@@ -82,7 +82,7 @@ public final class HasContainer implements Serializable, Cloneable, Predicate<El
     }
 
     public String toString() {
-        return '[' + this.key + ',' + this.predicate + ']';
+        return this.key + '.' + this.predicate;
     }
 
     public HasContainer clone() {
