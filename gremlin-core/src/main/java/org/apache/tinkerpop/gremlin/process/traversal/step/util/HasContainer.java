@@ -18,14 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.Serializable;
@@ -133,8 +132,6 @@ public final class HasContainer implements Serializable, Cloneable, Predicate<El
                 hasContainers[i] = new HasContainer(key, predicate);
             }
             return hasContainers;
-        } else if (predicate instanceof OrP) {
-            throw new IllegalArgumentException("The or'ing of HasContainers is currently not supported");
         } else {
             return new HasContainer[]{new HasContainer(key, predicate)};
         }
