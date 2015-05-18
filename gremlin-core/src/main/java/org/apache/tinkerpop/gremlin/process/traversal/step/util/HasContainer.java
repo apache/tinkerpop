@@ -33,11 +33,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HasContainer implements Serializable, Cloneable {
+public final class HasContainer implements Serializable, Cloneable, Predicate<Element> {
 
     private String key;
     private P predicate;
