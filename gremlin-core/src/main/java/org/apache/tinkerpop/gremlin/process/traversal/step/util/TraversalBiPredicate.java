@@ -19,7 +19,7 @@
  *
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.lambda;
+package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -29,7 +29,7 @@ import java.util.function.BiPredicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalBiPredicate<S, E> implements BiPredicate<S, E>, Cloneable {
+public final class TraversalBiPredicate<S, E> implements BiPredicate<S, E>, Cloneable {
 
     private Traversal.Admin<S, E> traversal;
     private final boolean negate;

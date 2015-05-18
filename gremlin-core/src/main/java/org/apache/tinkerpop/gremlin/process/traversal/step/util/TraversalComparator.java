@@ -54,8 +54,8 @@ public final class TraversalComparator<S, E> implements Comparator<S>, Serializa
         return clone;
     }
 
-    public Traversal.Admin<S,E> getTraversal() {
-         return this.traversal;
+    public Traversal.Admin<S, E> getTraversal() {
+        return this.traversal;
     }
 }
 

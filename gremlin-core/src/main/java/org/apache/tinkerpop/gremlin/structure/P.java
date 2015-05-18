@@ -22,7 +22,7 @@
 package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.TraversalBiPredicate;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalBiPredicate;
 import org.apache.tinkerpop.gremlin.structure.util.AndP;
 import org.apache.tinkerpop.gremlin.structure.util.OrP;
 
