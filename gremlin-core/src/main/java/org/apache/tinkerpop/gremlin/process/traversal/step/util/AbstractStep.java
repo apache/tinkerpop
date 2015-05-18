@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -158,7 +158,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected abstract Traverser<E> processNextStart() throws NoSuchElementException;
 
     public String toString() {
-        return TraversalHelper.makeStepString(this);
+        return StringFactory.stepString(this);
     }
 
     @Override

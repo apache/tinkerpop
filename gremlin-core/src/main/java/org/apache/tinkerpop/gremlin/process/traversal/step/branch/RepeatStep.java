@@ -23,9 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -100,13 +100,13 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
     @Override
     public String toString() {
         if (this.untilFirst && this.emitFirst)
-            return TraversalHelper.makeStepString(this, untilString(), emitString(), this.repeatTraversal);
+            return StringFactory.stepString(this, untilString(), emitString(), this.repeatTraversal);
         else if (this.emitFirst)
-            return TraversalHelper.makeStepString(this, emitString(), this.repeatTraversal, untilString());
+            return StringFactory.stepString(this, emitString(), this.repeatTraversal, untilString());
         else if (this.untilFirst)
-            return TraversalHelper.makeStepString(this, untilString(), this.repeatTraversal, emitString());
+            return StringFactory.stepString(this, untilString(), this.repeatTraversal, emitString());
         else
-            return TraversalHelper.makeStepString(this, this.repeatTraversal, untilString(), emitString());
+            return StringFactory.stepString(this, this.repeatTraversal, untilString(), emitString());
     }
 
     private final String untilString() {

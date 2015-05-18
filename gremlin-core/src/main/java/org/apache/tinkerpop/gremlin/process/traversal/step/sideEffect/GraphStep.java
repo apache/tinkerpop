@@ -22,19 +22,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -57,7 +54,7 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
     }
 
     public String toString() {
-        return TraversalHelper.makeStepString(this, Arrays.toString(this.ids), this.returnClass.getSimpleName().toLowerCase());
+        return StringFactory.stepString(this, Arrays.toString(this.ids), this.returnClass.getSimpleName().toLowerCase());
     }
 
     public Class<S> getReturnClass() {

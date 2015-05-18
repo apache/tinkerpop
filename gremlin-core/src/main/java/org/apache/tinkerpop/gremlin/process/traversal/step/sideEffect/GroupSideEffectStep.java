@@ -105,7 +105,7 @@ public final class GroupSideEffectStep<S, K, V, R> extends SideEffectStep<S> imp
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.keyTraversal, this.valueTraversal, this.reduceTraversal);
+        return StringFactory.stepString(this, this.sideEffectKey, this.keyTraversal, this.valueTraversal, this.reduceTraversal);
     }
 
     @Override

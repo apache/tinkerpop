@@ -34,11 +34,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -47,44 +45,6 @@ public final class TraversalHelper {
 
     private TraversalHelper() {
     }
-
-    /*public static <S, E> Step<S, E> getStepByLabel(final String label, final Traversal.Admin<?, ?> traversal) {
-        return traversal.getSteps().stream()
-                .filter(step -> step.getLabels().contains(label))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("The provided step label does not exist: " + label));
-    }
-
-    public static <S, E> Step<S, E> getStepById(final String id, final Traversal.Admin<?, ?> traversal) {
-        return traversal.getSteps().stream()
-                .filter(step -> id.equals(step.getId()))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("The provided step id does not exist: " + id));
-    }
-
-    public static boolean hasLabel(final String label, final Traversal.Admin<?, ?> traversal) {
-        return traversal.getSteps().stream()
-                .filter(step -> step.getLabels().contains(label))
-                .findAny().isPresent();
-    }
-
-    public static List<String> getLabelsUpTo(final Step<?, ?> step, final Traversal.Admin<?, ?> traversal) {
-        final List<String> labels = new ArrayList<>();
-        for (final Step<?, ?> temp : traversal.getSteps()) {
-            if (temp == step) break;
-            temp.getLabels().forEach(labels::add);
-        }
-        return labels;
-    }
-
-    public static List<Step<?, ?>> getStepsUpTo(final Step<?, ?> step, final Traversal.Admin<?, ?> traversal) {
-        final List<Step<?, ?>> steps = new ArrayList<>();
-        for (final Step temp : traversal.getSteps()) {
-            if (temp == step) break;
-            steps.add(temp);
-        }
-        return steps;
-    }*/
 
     public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
         return isLocalStarGraph(traversal, 'v');
@@ -150,39 +110,6 @@ public final class TraversalHelper {
     public static <S, E> void replaceStep(final Step<S, E> removeStep, final Step<S, E> insertStep, final Traversal.Admin<?, ?> traversal) {
         traversal.addStep(traversal.getSteps().indexOf(removeStep), insertStep);
         traversal.removeStep(removeStep);
-    }
-
-    public static String makeStepString(final Step<?, ?> step, final Object... arguments) {
-        final StringBuilder builder = new StringBuilder(step.getClass().getSimpleName());
-        final List<String> strings = Stream.of(arguments)
-                .filter(o -> null != o)
-                .filter(o -> {
-                    if (o instanceof TraversalRing) {
-                        return ((TraversalRing) o).size() > 0;
-                    } else if (o instanceof Collection) {
-                        return ((Collection) o).size() > 0;
-                    } else if (o instanceof Map) {
-                        return ((Map) o).size() > 0;
-                    } else {
-                        return o.toString().length() > 0;
-                    }
-                })
-                .map(o -> {
-                    final String string = o.toString();
-                    return string.contains("$") ? "lambda" : string;
-                }).collect(Collectors.toList());
-        if (strings.size() > 0) {
-            builder.append('(');
-            builder.append(String.join(",", strings));
-            builder.append(')');
-        }
-        if (!step.getLabels().isEmpty()) builder.append('@').append(step.getLabels());
-        //builder.append("^").append(step.getId());
-        return builder.toString();
-    }
-
-    public static String makeTraversalString(final Traversal.Admin<?, ?> traversal) {
-        return traversal.getSteps().toString();
     }
 
     public static <S> List<S> getStepsOfClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {

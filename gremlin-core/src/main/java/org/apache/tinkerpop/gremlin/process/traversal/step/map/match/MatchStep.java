@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
@@ -93,7 +93,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.traversalsByStartAs);
+        return StringFactory.stepString(this, this.traversalsByStartAs);
     }
 
     /**

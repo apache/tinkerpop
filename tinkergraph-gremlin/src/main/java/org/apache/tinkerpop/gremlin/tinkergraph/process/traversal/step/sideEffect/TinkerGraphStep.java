@@ -21,11 +21,11 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffe
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
@@ -93,8 +93,8 @@ public class TinkerGraphStep<S extends Element> extends GraphStep<S> implements 
             return super.toString();
         else
             return 0 == this.ids.length ?
-                    TraversalHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase(), this.hasContainers) :
-                    TraversalHelper.makeStepString(this, this.returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids), this.hasContainers);
+                    StringFactory.stepString(this, this.returnClass.getSimpleName().toLowerCase(), this.hasContainers) :
+                    StringFactory.stepString(this, this.returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids), this.hasContainers);
     }
 
     private final <E extends Element> Iterator<E> iteratorList(final Iterator<E> iterator) {

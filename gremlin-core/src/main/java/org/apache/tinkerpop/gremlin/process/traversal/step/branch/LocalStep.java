@@ -23,8 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +54,7 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.localTraversal);
+        return StringFactory.stepString(this, this.localTraversal);
     }
 
     @Override

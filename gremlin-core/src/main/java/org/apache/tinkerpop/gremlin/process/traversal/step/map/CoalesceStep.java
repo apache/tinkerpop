@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 import java.util.ArrayList;
@@ -81,6 +81,6 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.coalesceTraversals);
+        return StringFactory.stepString(this, this.coalesceTraversals);
     }
 }

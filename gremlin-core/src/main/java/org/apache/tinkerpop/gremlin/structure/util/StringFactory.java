@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
@@ -28,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -39,8 +42,12 @@ import org.javatuples.Pair;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -196,5 +203,38 @@ public final class StringFactory {
         sb.append("> ");
         sb.append(featureClass.getSimpleName());
         sb.append(LINE_SEPARATOR);
+    }
+
+    public static String stepString(final Step<?, ?> step, final Object... arguments) {
+        final StringBuilder builder = new StringBuilder(step.getClass().getSimpleName());
+        final List<String> strings = Stream.of(arguments)
+                .filter(o -> null != o)
+                .filter(o -> {
+                    if (o instanceof TraversalRing) {
+                        return ((TraversalRing) o).size() > 0;
+                    } else if (o instanceof Collection) {
+                        return ((Collection) o).size() > 0;
+                    } else if (o instanceof Map) {
+                        return ((Map) o).size() > 0;
+                    } else {
+                        return o.toString().length() > 0;
+                    }
+                })
+                .map(o -> {
+                    final String string = o.toString();
+                    return string.contains("$") ? "lambda" : string;
+                }).collect(Collectors.toList());
+        if (strings.size() > 0) {
+            builder.append('(');
+            builder.append(String.join(",", strings));
+            builder.append(')');
+        }
+        if (!step.getLabels().isEmpty()) builder.append('@').append(step.getLabels());
+        //builder.append("^").append(step.getId());
+        return builder.toString();
+    }
+
+    public static String traversalString(final Traversal.Admin<?, ?> traversal) {
+        return traversal.getSteps().toString();
     }
 }

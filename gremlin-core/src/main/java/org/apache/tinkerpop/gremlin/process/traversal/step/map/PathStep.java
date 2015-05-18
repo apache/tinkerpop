@@ -25,9 +25,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -86,7 +86,7 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.traversalRing);
+        return StringFactory.stepString(this, this.traversalRing);
     }
 
     @Override

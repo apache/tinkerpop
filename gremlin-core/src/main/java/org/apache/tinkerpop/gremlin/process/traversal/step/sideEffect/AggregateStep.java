@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
 import java.util.Collection;
@@ -66,7 +67,7 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.aggregateTraversal);
+        return StringFactory.stepString(this, this.sideEffectKey, this.aggregateTraversal);
     }
 
     @Override

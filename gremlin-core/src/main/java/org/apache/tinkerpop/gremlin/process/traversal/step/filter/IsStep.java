@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.P;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Set;
@@ -46,7 +46,7 @@ public final class IsStep<S> extends FilterStep<S> {
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.predicate);
+        return StringFactory.stepString(this, this.predicate);
     }
 
     @Override

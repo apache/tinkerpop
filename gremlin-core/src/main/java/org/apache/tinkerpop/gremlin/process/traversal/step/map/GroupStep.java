@@ -133,7 +133,7 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.keyTraversal, this.valueTraversal, this.reduceTraversal);
+        return StringFactory.stepString(this, this.keyTraversal, this.valueTraversal, this.reduceTraversal);
     }
 
     ///////////

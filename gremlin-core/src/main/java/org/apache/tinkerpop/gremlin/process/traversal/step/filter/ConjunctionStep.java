@@ -24,8 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,7 +93,7 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.conjunctionTraversals);
+        return StringFactory.stepString(this, this.conjunctionTraversals);
     }
 
     public boolean isConjunctionHasTree() {

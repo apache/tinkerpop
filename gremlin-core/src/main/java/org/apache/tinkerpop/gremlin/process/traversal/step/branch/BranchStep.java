@@ -22,9 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -155,7 +155,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.branchTraversal, this.traversalOptions);
+        return StringFactory.stepString(this, this.branchTraversal, this.traversalOptions);
     }
 
     @Override

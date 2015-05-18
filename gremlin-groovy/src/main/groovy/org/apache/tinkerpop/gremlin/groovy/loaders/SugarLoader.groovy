@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory
 
@@ -49,10 +48,10 @@ class SugarLoader {
         }
         // g.V.age
         GraphTraversal.metaClass.methodMissing = { final String name, final def args ->
-            if (name.toLowerCase().equals(FROM))
-                return ((GraphTraversal.Admin) args[0]).addStep(((GraphTraversal.Admin) delegate).getSteps()[0]);
-            else
-                return ((GraphTraversal) delegate).values(name);
+            //if (name.toLowerCase().equals(FROM))
+            //    return ((GraphTraversal.Admin) args[0]).addStep(((GraphTraversal.Admin) delegate).getSteps()[0]);
+            //else
+            return ((GraphTraversal) delegate).values(name);
         }
 
         GraphTraversalSource.metaClass.getProperty = { final String key ->
@@ -80,10 +79,10 @@ class SugarLoader {
         }*/
 
         // select x,y from ...
-        Object.metaClass.methodMissing = { final String name, final def args ->
+        /*Object.metaClass.methodMissing = { final String name, final def args ->
             if (name.toLowerCase().equals(SELECT)) return __.select(*args)
             throw new MissingMethodException(name, delegate.getClass(), args);
-        }
+        }*/
 
         Traverser.metaClass.mixin(TraverserCategory.class);
         GraphTraversalSource.metaClass.mixin(GraphTraversalSourceCategory.class);
@@ -173,7 +172,8 @@ class SugarLoader {
         private static final String V = "V";
         private static final String E = "E";
 
-        public static final get(final GraphTraversalSource.GraphTraversalSourceStub graphTraversalSourceStub, final String key) {
+        public static final get(
+                final GraphTraversalSource.GraphTraversalSourceStub graphTraversalSourceStub, final String key) {
             if (key.equals(V))
                 return graphTraversalSourceStub.V();
             else if (key.equals(E))
@@ -218,7 +218,7 @@ class SugarLoader {
         }
 
         public String toString() {
-            return TraversalHelper.makeTraversalString(this.metaClass.owner);
+            return StringFactory.traversalString(this.metaClass.owner);
         }
     }
 }

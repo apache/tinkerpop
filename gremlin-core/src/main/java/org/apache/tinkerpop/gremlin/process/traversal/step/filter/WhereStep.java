@@ -26,8 +26,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.TraversalBiPredicat
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.P;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -96,7 +96,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.scope, this.startKey, this.predicate);
+        return StringFactory.stepString(this, this.scope, this.startKey, this.predicate);
     }
 
     @Override

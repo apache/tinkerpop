@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Iterator;
 import java.util.function.Function;
@@ -45,6 +45,6 @@ public final class LambdaFlatMapStep<S, E> extends FlatMapStep<S, E> implements 
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.function);
+        return StringFactory.stepString(this, this.function);
     }
 }
