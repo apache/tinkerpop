@@ -28,12 +28,13 @@ import io.netty.buffer.ByteBufAllocator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
 
 /**
  * Serializes data to and from Gremlin Server.  Typically the object being serialized or deserialized will be an item
- * from an {@link java.util.Iterator} as returned from the {@code ScriptEngine} or an incoming {@link org.apache.tinkerpop.gremlin.driver.message.RequestMessage}.
+ * from an {@link Iterator} as returned from the {@code ScriptEngine} or an incoming {@link RequestMessage}.
  * {@link MessageSerializer} instances are instantiated to a cache via {@link ServiceLoader} and indexed based on
  * the mime types they support.  If a mime type is supported more than once, the last {@link MessageSerializer}
  * instance loaded for that mime type is assigned. If a mime type is not found the default
