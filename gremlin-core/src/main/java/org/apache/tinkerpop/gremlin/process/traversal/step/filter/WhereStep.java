@@ -86,8 +86,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             }
         }
 
-        this.predicate.setValue(endObject);
-        return this.predicate.test(startObject);
+        return this.predicate.getBiPredicate().test(startObject, endObject);
     }
 
     @Override

@@ -84,7 +84,7 @@ public class TraversalP<S, E> extends P<E> {
             else
                 result = null == end ?
                         TraversalUtil.test(start, traversalP.traversal) :
-                        TraversalUtil.test(start, traversalP.traversal, traversalP.value);
+                        TraversalUtil.test(start, traversalP.traversal, end);
             return traversalP.negate ? !result : result;
         }
 
