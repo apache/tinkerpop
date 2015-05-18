@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.groovy.loaders
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest
 import org.apache.tinkerpop.gremlin.LoadGraphWith
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper
 import org.apache.tinkerpop.gremlin.structure.*
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory
 import org.junit.Test
@@ -112,8 +111,8 @@ class SugarLoaderTest extends AbstractGremlinTest {
         assertEquals(StringFactory.propertyString(property), property.toString());
         assertEquals(StringFactory.traversalSourceString(g), g.toString());
         //assertEquals(StringFactory.traversalSourceString(g.withPath()), g.withPath().toString());
-        assertEquals(TraversalHelper.makeTraversalString(g.V().out().asAdmin()), g.V().out().toString());
-        assertEquals(TraversalHelper.makeTraversalString(g.V.out), g.V.out.toString());
+        assertEquals(StringFactory.traversalString(g.V().out().asAdmin()), g.V().out().toString());
+        assertEquals(StringFactory.traversalString(g.V.out), g.V.out.toString());
         assertEquals(convertToVertex(graph, "marko").toString(), g.V(convertToVertexId("marko")).next().toString())
 
     }

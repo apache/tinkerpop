@@ -23,10 +23,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -59,7 +59,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.amountToSample, this.probabilityTraversal);
+        return StringFactory.stepString(this, this.amountToSample, this.probabilityTraversal);
     }
 
     @Override

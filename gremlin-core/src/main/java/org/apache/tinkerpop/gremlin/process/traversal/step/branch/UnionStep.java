@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 
@@ -47,6 +47,6 @@ public final class UnionStep<S, E> extends BranchStep<S, E, TraversalOptionParen
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.traversalOptions.getOrDefault(Pick.any, Collections.emptyList()));
+        return StringFactory.stepString(this, this.traversalOptions.getOrDefault(Pick.any, Collections.emptyList()));
     }
 }

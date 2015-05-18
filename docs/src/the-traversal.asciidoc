@@ -1291,10 +1291,13 @@ IMPORTANT: `sum(local)` determines the sum of the current, local object (not the
 Tail Step
 ~~~~~~~~~
 
-The `tail()`-step is analogous to <<limit-step,`limit()`-step>>, except that it emits the last few objects instead of the first few.
+image::tail-step.png[width=530]
+
+The `tail()`-step is analogous to <<limit-step,`limit()`>>-step, except that it emits the last `n`-objects instead of the first `n`-objects.
 
 [gremlin-groovy,modern]
 ----
+g.V().values('name').order()
 g.V().values('name').order().tail() <1>
 g.V().values('name').order().tail(1) <2>
 g.V().values('name').order().tail(3) <3>

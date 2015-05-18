@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -71,7 +71,7 @@ public final class TailLocalStep<S> extends MapStep<S, S> {
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.limit);
+        return StringFactory.stepString(this, this.limit);
     }
 
     @Override

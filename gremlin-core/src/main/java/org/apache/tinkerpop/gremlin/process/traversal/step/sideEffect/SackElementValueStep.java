@@ -20,9 +20,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -56,7 +56,7 @@ public final class SackElementValueStep<S extends Element, V> extends SideEffect
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.operator, this.propertyKey);
+        return StringFactory.stepString(this, this.operator, this.propertyKey);
     }
 
     @Override

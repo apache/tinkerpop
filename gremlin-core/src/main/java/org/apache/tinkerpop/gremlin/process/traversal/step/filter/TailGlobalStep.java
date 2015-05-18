@@ -22,8 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayDeque;
 import java.util.Collections;
@@ -81,7 +81,7 @@ public final class TailGlobalStep<S> extends AbstractStep<S, S> implements Bypas
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.limit);
+        return StringFactory.stepString(this, this.limit);
     }
 
     @Override

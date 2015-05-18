@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Ranging;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Set;
@@ -96,7 +96,7 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.low, this.high);
+        return StringFactory.stepString(this, this.low, this.high);
     }
 
     public long getLowRange() {

@@ -23,11 +23,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
 import java.util.ArrayList;
@@ -84,7 +84,7 @@ public final class AddEdgeByPathStep extends MapStep<Vertex, Edge> implements Mu
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.direction.name(), this.edgeLabel, this.stepLabel);
+        return StringFactory.stepString(this, this.direction.name(), this.edgeLabel, this.stepLabel);
     }
 
     @Override

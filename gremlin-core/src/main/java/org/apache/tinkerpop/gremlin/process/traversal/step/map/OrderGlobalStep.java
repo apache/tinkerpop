@@ -26,8 +26,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrie
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Order;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
 
 import java.io.Serializable;
@@ -68,7 +68,7 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.comparators);
+        return StringFactory.stepString(this, this.comparators);
     }
 
     @Override

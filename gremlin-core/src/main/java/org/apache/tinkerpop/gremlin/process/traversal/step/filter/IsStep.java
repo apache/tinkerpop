@@ -20,19 +20,23 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalBiPredicate;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.P;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class IsStep<S> extends FilterStep<S> {
+public final class IsStep<S> extends FilterStep<S> implements TraversalParent {
 
-    private final P<S> predicate;
+    private P<S> predicate;
 
     public IsStep(final Traversal.Admin traversal, final P<S> predicate) {
         super(traversal);
@@ -46,15 +50,31 @@ public final class IsStep<S> extends FilterStep<S> {
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.predicate);
+        return StringFactory.stepString(this, this.predicate);
     }
 
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.OBJECT);
-    }
 
     public P<S> getPredicate() {
         return this.predicate;
     }
+
+    @Override
+    public List<Traversal.Admin<S, ?>> getLocalChildren() {
+        return this.predicate.getBiPredicate() instanceof TraversalBiPredicate ? Collections.singletonList(((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal()) : Collections.emptyList();
+    }
+
+    @Override
+    public IsStep<S> clone() {
+        final IsStep<S> clone = (IsStep<S>) super.clone();
+        clone.predicate = this.predicate.clone();
+        if (clone.predicate.getBiPredicate() instanceof TraversalBiPredicate)
+            clone.integrateChild(((TraversalBiPredicate) clone.predicate.getBiPredicate()).getTraversal());
+        return clone;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
+    }
+
 }

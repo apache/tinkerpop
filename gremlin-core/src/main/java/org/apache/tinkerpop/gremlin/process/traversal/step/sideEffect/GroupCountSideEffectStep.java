@@ -31,10 +31,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.util.Collections;
@@ -77,7 +77,7 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.sideEffectKey, this.groupTraversal);
+        return StringFactory.stepString(this, this.sideEffectKey, this.groupTraversal);
     }
 
     @Override

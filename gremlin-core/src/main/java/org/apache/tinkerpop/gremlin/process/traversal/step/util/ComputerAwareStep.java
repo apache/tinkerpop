@@ -22,10 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -82,7 +81,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
         @Override
         public String toString() {
-            return TraversalHelper.makeStepString(this);
+            return StringFactory.stepString(this);
         }
 
         @Override

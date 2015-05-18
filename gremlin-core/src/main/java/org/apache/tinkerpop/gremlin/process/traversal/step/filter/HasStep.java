@@ -20,13 +20,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.TraversalBiPredicate;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalBiPredicate;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,7 +58,7 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
 
     @Override
     public String toString() {
-        return TraversalHelper.makeStepString(this, this.hasContainers);
+        return StringFactory.stepString(this, this.hasContainers);
     }
 
     @Override
@@ -74,8 +74,16 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     }
 
     @Override
+    public void addLocalChild(final Traversal.Admin<?, ?> localChildTraversal) {
+        throw new UnsupportedOperationException("Use HasStep.addHasContainer(" + HasContainer.class.getSimpleName() + ") to add a local child traversal:" + this);
+    }
+
+    @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        return this.hasContainers.stream().filter(hasContainer -> hasContainer.predicate instanceof TraversalBiPredicate).map(hasContainer -> ((TraversalBiPredicate<?, ?>) hasContainer.predicate).getTraversal()).collect(Collectors.toList());
+        return this.hasContainers.stream()
+                .filter(hasContainer -> hasContainer.predicate instanceof TraversalBiPredicate)
+                .map(hasContainer -> ((TraversalBiPredicate<?, ?>) hasContainer.predicate).getTraversal())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -89,7 +97,7 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
         clone.hasContainers = new ArrayList<>();
         for (final HasContainer hasContainer : this.hasContainers) {  // TODO: HasContainer should implement clone()
             if (hasContainer.predicate instanceof TraversalBiPredicate) {
-                clone.hasContainers.add(new HasContainer(hasContainer.key, ((TraversalBiPredicate) hasContainer.predicate).clone(), hasContainer.value));
+                clone.addHasContainer(new HasContainer(hasContainer.key, ((TraversalBiPredicate) hasContainer.predicate).clone(), hasContainer.value));
             } else {
                 clone.hasContainers.add(hasContainer);
             }
