@@ -43,22 +43,22 @@ public class ConjunctionStepTest {
         //System.out.println(conjunctionTree);
         ConjunctionStep.ConjunctionTree.Entry entry = iterator.next();
         assertTrue(entry.isHasContainer());
-        assertEquals("name", entry.<HasContainer>getValue().key);
+        assertEquals("name", entry.<HasContainer>getValue().getKey());
         //
         entry = iterator.next();
         assertTrue(entry.isHasContainer());
-        assertEquals("age", entry.<HasContainer>getValue().key);
-        assertEquals(Compare.gt, entry.<HasContainer>getValue().predicate);
-        assertEquals(30, entry.<HasContainer>getValue().value);
+        assertEquals("age", entry.<HasContainer>getValue().getKey());
+        assertEquals(Compare.gt, entry.<HasContainer>getValue().getPredicate().getBiPredicate());
+        assertEquals(30, entry.<HasContainer>getValue().getPredicate().getValue());
         //
         entry = iterator.next();
         assertTrue(entry.isConjunctionTree());
         assertFalse(entry.<ConjunctionStep.ConjunctionTree>getValue().isAnd());
         entry = entry.<ConjunctionStep.ConjunctionTree>getValue().iterator().next();
         assertTrue(entry.isHasContainer());
-        assertEquals("lang", entry.<HasContainer>getValue().key);
-        assertEquals(Compare.eq, entry.<HasContainer>getValue().predicate);
-        assertEquals("java", entry.<HasContainer>getValue().value);
+        assertEquals("lang", entry.<HasContainer>getValue().getKey());
+        assertEquals(Compare.eq, entry.<HasContainer>getValue().getPredicate().getBiPredicate());
+        assertEquals("java", entry.<HasContainer>getValue().getPredicate().getValue());
     }
 
     @Test

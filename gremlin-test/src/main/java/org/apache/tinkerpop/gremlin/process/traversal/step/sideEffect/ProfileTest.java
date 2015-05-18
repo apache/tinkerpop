@@ -19,12 +19,15 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.process.*;
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Profileable;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Profiling;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.Metrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
@@ -38,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -55,13 +57,50 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile();
 
-    public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile();
+    public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile();
 
     public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile();
 
+    /**
+     * Many of the tests in this class are coupled to not-totally-generic vendor behavior. However, this test is intended to provide
+     * fully generic validation.
+     */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_out_out_modern_profile() {
+    public void g_V_out_out_profile_simple() {
+        final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_out_out_profile();
+        printTraversalForm(traversal);
+
+        traversal.iterate();
+
+        final TraversalMetrics traversalMetrics = traversal.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
+        traversalMetrics.toString(); // ensure no exceptions are thrown
+
+        // Every other step should be a Profile step
+        List<Step> steps = traversal.asAdmin().getSteps();
+        for (int ii = 1; ii < steps.size(); ii += 2) {
+            assertEquals("Every other Step should be a ProfileStep.", ProfileStep.class, steps.get(ii).getClass());
+        }
+
+        // Validate the last Metrics only, which must be consistent across vendors.
+        Metrics metrics = traversalMetrics.getMetrics(traversalMetrics.getMetrics().size() - 1);
+        assertEquals(2, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
+        assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
+        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) > 0);
+        assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) > 0);
+
+        // Ensure durations sum to 100
+        double totalPercentDuration = 0;
+        for (Metrics m : traversalMetrics.getMetrics()) {
+            totalPercentDuration += (Double) m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
+        }
+        assertEquals(100, totalPercentDuration, 0.000001);
+    }
+
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_out_out_profile_modern() {
         final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_out_out_profile();
         printTraversalForm(traversal);
 
@@ -98,7 +137,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(GRATEFUL)
-    public void g_V_out_out_grateful_profile() {
+    public void g_V_out_out_profile_grateful() {
         final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_out_out_profile();
         printTraversalForm(traversal);
 
@@ -134,8 +173,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
-    public void g_V_sleep_sleep_profile() {
-        final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_sleep_sleep_profile();
+    public void g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
+        final Traversal<Vertex, StandardTraversalMetrics> traversal = get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile();
         printTraversalForm(traversal);
 
         traversal.iterate();
@@ -242,7 +281,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
      */
 
     // Setup a "mock" step to test the strategy
-    static public class MockStep extends FlatMapStep<Vertex, Vertex> implements Profileable {
+    static public class MockStep extends FlatMapStep<Vertex, Vertex> implements Profiling {
         public static boolean callbackCalled = false;
 
         public MockStep(final Traversal.Admin traversal) {
@@ -290,24 +329,18 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile() {
-            return (Traversal) g.V().sideEffect(new Consumer<Traverser<Vertex>>() {
-                @Override
-                public void accept(final Traverser<Vertex> vertexTraverser) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
+            return (Traversal) g.V().sideEffect(v -> {
+                try {
+                    Thread.sleep(10);
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
                 }
-            }).sideEffect(new Consumer<Traverser<Vertex>>() {
-                @Override
-                public void accept(final Traverser<Vertex> vertexTraverser) {
-                    try {
-                        Thread.sleep(5);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            }).sideEffect(v -> {
+                try {
+                    Thread.sleep(5);
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
                 }
             }).profile();
         }

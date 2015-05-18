@@ -22,9 +22,9 @@
 package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalBiPredicate;
 import org.apache.tinkerpop.gremlin.structure.util.AndP;
 import org.apache.tinkerpop.gremlin.structure.util.OrP;
+import org.apache.tinkerpop.gremlin.structure.util.TraversalP;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -37,8 +37,8 @@ import java.util.function.Predicate;
  */
 public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
-    private BiPredicate<V, V> biPredicate;
-    private final V value;
+    protected BiPredicate<V, V> biPredicate;
+    protected V value;
 
     public P(final BiPredicate<V, V> biPredicate, final V value) {
         this.value = value;
@@ -51,6 +51,10 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     public V getValue() {
         return this.value;
+    }
+
+    public void setValue(final V value) {
+        this.value = value;
     }
 
     @Override
@@ -105,10 +109,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     public P<V> clone() {
         try {
-            final P<V> clone = (P<V>) super.clone();
-            if (this.biPredicate instanceof TraversalBiPredicate)
-                clone.biPredicate = ((TraversalBiPredicate) this.biPredicate).clone();
-            return clone;
+            return (P<V>) super.clone();
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -168,12 +169,12 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return new P(Contains.without, value);
     }
 
-    public static <S, E> P<S> traversal(final Traversal<S, E> traversal) {
-        return new P(new TraversalBiPredicate<>(traversal.asAdmin(), false), null);
+    public static <S, E> P<E> traversal(final Traversal<S, E> traversal) {
+        return new TraversalP<>(traversal.asAdmin(), false);
     }
 
-    public static <S, E> P<S> not(final Traversal<S, E> traversal) {
-        return new P(new TraversalBiPredicate<>(traversal.asAdmin(), true), null);
+    public static <S, E> P<E> not(final Traversal<S, E> traversal) {
+        return new TraversalP<>(traversal.asAdmin(), true);
     }
 
     public static P test(final BiPredicate biPredicate, final Object value) {

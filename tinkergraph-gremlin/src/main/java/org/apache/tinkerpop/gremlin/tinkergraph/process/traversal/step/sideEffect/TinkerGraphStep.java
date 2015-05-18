@@ -61,7 +61,7 @@ public class TinkerGraphStep<S extends Element> extends GraphStep<S> implements 
         else
             return null == indexedContainer ?
                     this.iteratorList(graph.edges()) :
-                    TinkerHelper.queryEdgeIndex(graph, indexedContainer.key, indexedContainer.value).stream()
+                    TinkerHelper.queryEdgeIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).stream()
                             .filter(edge -> HasContainer.testAll(edge, this.hasContainers))
                             .collect(Collectors.<Edge>toList()).iterator();
     }
@@ -75,7 +75,7 @@ public class TinkerGraphStep<S extends Element> extends GraphStep<S> implements 
         else
             return null == indexedContainer ?
                     this.iteratorList(graph.vertices()) :
-                    TinkerHelper.queryVertexIndex(graph, indexedContainer.key, indexedContainer.value).stream()
+                    TinkerHelper.queryVertexIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).stream()
                             .filter(vertex -> HasContainer.testAll(vertex, this.hasContainers))
                             .collect(Collectors.<Vertex>toList()).iterator();
     }
@@ -83,7 +83,7 @@ public class TinkerGraphStep<S extends Element> extends GraphStep<S> implements 
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
         final Set<String> indexedKeys = ((TinkerGraph) this.getTraversal().getGraph().get()).getIndexedKeys(indexedClass);
         return this.hasContainers.stream()
-                .filter(c -> indexedKeys.contains(c.key) && c.predicate.equals(Compare.eq))
+                .filter(c -> indexedKeys.contains(c.getKey()) && c.getPredicate().getBiPredicate().equals(Compare.eq))
                 .findAny()
                 .orElseGet(() -> null);
     }
