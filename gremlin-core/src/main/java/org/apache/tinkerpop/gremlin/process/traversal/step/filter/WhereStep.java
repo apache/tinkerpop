@@ -72,16 +72,16 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         final Object endObject;
 
         if (this.noStartAndEndKeys()) {
-            startObject = traverser.get();
+            startObject = getStartObject(traverser);
             endObject = null;
         } else {
             if (Scope.local == this.scope) {
                 final Map<String, Object> map = (Map<String, Object>) traverser.get();
-                startObject = null == this.startKey ? traverser.get() : map.get(this.startKey);
+                startObject = null == this.startKey ? getStartObject(traverser) : map.get(this.startKey);
                 endObject = null == this.endKey ? null : map.get(this.endKey);
             } else {
                 final Path path = traverser.path();
-                startObject = null == this.startKey ? traverser.get() : path.hasLabel(this.startKey) ? path.get(this.startKey) : traverser.sideEffects(this.startKey);
+                startObject = null == this.startKey ? getStartObject(traverser) : path.hasLabel(this.startKey) ? path.get(this.startKey) : traverser.sideEffects(this.startKey);
                 endObject = null == this.endKey ? null : path.hasLabel(this.endKey) ? path.get(this.endKey) : traverser.sideEffects(this.endKey);
             }
         }
@@ -125,5 +125,9 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     private boolean noStartAndEndKeys() {
         return null == this.endKey && null == this.startKey;
+    }
+
+    private Object getStartObject(final Traverser<S> traverser) {
+        return this.predicate.getBiPredicate() instanceof TraversalBiPredicate ? traverser : traverser.get();
     }
 }

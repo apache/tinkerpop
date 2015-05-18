@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
@@ -50,8 +51,9 @@ public final class TraversalUtil {
         split.setBulk(1l);
         traversal.reset();
         traversal.addStart(split);
+        final Step<?, E> endStep = traversal.getEndStep();
         while (traversal.hasNext()) {
-            if (traversal.next().equals(end))
+            if (endStep.next().get().equals(end))
                 return true;
         }
         return false;
@@ -85,8 +87,9 @@ public final class TraversalUtil {
     public static final <S, E> boolean test(final S start, final Traversal.Admin<S, E> traversal, final E end) {
         traversal.reset();
         traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
+        final Step<?, E> endStep = traversal.getEndStep();
         while (traversal.hasNext()) {
-            if (traversal.next().equals(end))
+            if (endStep.next().get().equals(end))
                 return true;
         }
         return false;
