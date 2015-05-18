@@ -35,7 +35,6 @@ public abstract class GroovyProfileTest {
             g.V.out.out.profile() // locked traversals
         }
 
-
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_repeat_both_profile() {
             TraversalScriptHelper.compute("g.V.repeat(__.both()).times(3).profile()", g);
@@ -47,7 +46,7 @@ public abstract class GroovyProfileTest {
         }
 
         @Override
-        Traversal<Vertex, StandardTraversalMetrics> get_g_V_sleep_sleep_profile() {
+        Traversal<Vertex, StandardTraversalMetrics> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
             TraversalScriptHelper.compute("g.V().sideEffect{Thread.sleep(10)}.sideEffect{Thread.sleep(5)}.profile()", g)
         }
     }
