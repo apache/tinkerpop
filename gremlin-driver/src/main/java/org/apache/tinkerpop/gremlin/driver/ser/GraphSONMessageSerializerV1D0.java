@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -35,8 +34,8 @@ import java.util.UUID;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0 implements MessageTextSerializer {
-    private static final Logger logger = LoggerFactory.getLogger(JsonMessageSerializerV1d0.class);
+public class GraphSONMessageSerializerV1D0 extends AbstractGraphSONMessageSerializerV1d0 implements MessageTextSerializer {
+    private static final Logger logger = LoggerFactory.getLogger(GraphSONMessageSerializerV1D0.class);
     private static final String MIME_TYPE = SerTokens.MIME_JSON;
 
     private static byte[] header;
@@ -48,11 +47,11 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
         header = buffer.array();
     }
 
-    public JsonMessageSerializerV1d0() {
+    public GraphSONMessageSerializerV1D0() {
         super();
     }
 
-    public JsonMessageSerializerV1d0(final GraphSONMapper mapper) {
+    public GraphSONMessageSerializerV1D0(final GraphSONMapper mapper) {
         super(mapper);
     }
 
@@ -86,7 +85,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
                     .responseMetaData((Map<String, Object>) result.get(SerTokens.TOKEN_META))
                     .create();
         } catch (Exception ex) {
-            logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
+            logger.warn("Response [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
         }
     }
@@ -96,7 +95,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
         try {
             return mapper.writeValueAsString(responseMessage);
         } catch (Exception ex) {
-            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
+            logger.warn("Response [{}] could not be serialized by {}.", responseMessage.toString(), AbstractGraphSONMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
         }
     }
@@ -106,7 +105,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
         try {
             return mapper.readValue(msg, RequestMessage.class);
         } catch (Exception ex) {
-            logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractJsonMessageSerializerV1d0.class.getName());
+            logger.warn("Request [{}] could not be deserialized by {}.", msg, AbstractGraphSONMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
         }
     }
@@ -116,7 +115,7 @@ public class JsonMessageSerializerV1d0 extends AbstractJsonMessageSerializerV1d0
         try {
             return mapper.writeValueAsString(requestMessage);
         } catch (Exception ex) {
-            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractJsonMessageSerializerV1d0.class.getName());
+            logger.warn("Request [{}] could not be serialized by {}.", requestMessage.toString(), AbstractGraphSONMessageSerializerV1d0.class.getName());
             throw new SerializationException(ex);
         }
     }

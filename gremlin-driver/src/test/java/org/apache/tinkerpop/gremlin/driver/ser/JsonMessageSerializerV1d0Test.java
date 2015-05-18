@@ -51,7 +51,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class JsonMessageSerializerV1d0Test {
 
-    public static final JsonMessageSerializerV1d0 SERIALIZER = new JsonMessageSerializerV1d0();
+    public static final GraphSONMessageSerializerV1D0 SERIALIZER = new GraphSONMessageSerializerV1D0();
     private static final RequestMessage msg = RequestMessage.build("op")
             .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).create();
 

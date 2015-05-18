@@ -26,6 +26,7 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Moved the string methods of `TraversalHelper` to `StringFactory`.
+* Renamed JSON-related serializers for Gremlin Server to be more consistent with GraphSON naming.
 * Removed `HasTraversalStep` in favor of new `P.traversal` model with `HasStep`.
 * Fixed bug in `WsGremlinTextRequestDecoder` where custom serializers from graphs were not being used.
 * Added `AndP` which allows for the `and()`-ing of `P` predicates.

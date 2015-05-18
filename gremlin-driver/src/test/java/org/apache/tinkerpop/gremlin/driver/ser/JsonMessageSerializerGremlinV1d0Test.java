@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -55,7 +54,7 @@ public class JsonMessageSerializerGremlinV1d0Test {
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;
 
-    public MessageSerializer serializer = new JsonMessageSerializerGremlinV1d0();
+    public MessageSerializer serializer = new GraphSONMessageSerializerGremlinV1D0();
 
     @Test
     public void serializeIterable() throws Exception {

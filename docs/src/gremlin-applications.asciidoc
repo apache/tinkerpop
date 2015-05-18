@@ -525,7 +525,7 @@ GraphSON
 The GraphSON serializer produces human readable output in JSON format and is a good configuration choice for those trying to use TinkerPop from non-JVM languages.  JSON obviously has wide support across virtually all major programming languages and can be consumed by a wide variety of tools.
 
 [source,yaml]
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0 }
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0 }
 
 The above configuration represents the default serialization under the `application/json` MIME type and produces JSON consistent with standard JSON data types.  It has the following configuration option:
 
@@ -536,7 +536,7 @@ The above configuration represents the default serialization under the `applicat
 |=========================================================
 
 [source,yaml]
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0 }
 
 When the standard JSON data types are not enough (e.g. need to identify the difference between `double` and `float` data types), the above configuration will embed types into the JSON itself.  The type embedding uses standard Java type names, so interpretation from non-JVM languages will be required.  It has the MIME type of `application/vnd.gremlin-v1.0+json` and the following configuration options:
 
@@ -552,7 +552,7 @@ Gryo
 The Gryo serializer utilizes Kryo-based serialization which produces a binary output.  This format is best consumed by JVM-based languages.
 
 [source,yaml]
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerGremlinV1d0 }
 
 It has the MIME type of `application/vnd.gremlin-v1.0+gryo` and the following configuration options:
 

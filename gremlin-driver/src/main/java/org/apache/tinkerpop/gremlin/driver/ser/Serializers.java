@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
  */
 public enum Serializers {
     JSON(SerTokens.MIME_JSON),
-    JSON_V1D0(SerTokens.MIME_JSON_V1D0),
+    JSON_V1D0(SerTokens.MIME_GRAPHSON_V1D0),
     GRYO_V1D0(SerTokens.MIME_GRYO_V1D0);
 
     private String value;
@@ -37,14 +37,14 @@ public enum Serializers {
      * {@link org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
      * websocket messages.
      */
-    public static final MessageSerializer DEFAULT_RESULT_SERIALIZER = new JsonMessageSerializerV1d0();
+    public static final MessageSerializer DEFAULT_RESULT_SERIALIZER = new GraphSONMessageSerializerV1D0();
 
     /**
      * Default serializer for requests received by Gremlin Server. This implementation must be of type
      * {@link org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer} so that it can be compatible with text-based
      * websocket messages.
      */
-    public static final MessageSerializer DEFAULT_REQUEST_SERIALIZER = new JsonMessageSerializerV1d0();
+    public static final MessageSerializer DEFAULT_REQUEST_SERIALIZER = new GraphSONMessageSerializerV1D0();
 
     private Serializers(final String mimeType) {
         this.value = mimeType;
@@ -57,9 +57,9 @@ public enum Serializers {
     public MessageSerializer simpleInstance() {
         switch (value) {
             case SerTokens.MIME_JSON:
-                return new JsonMessageSerializerV1d0();
-            case SerTokens.MIME_JSON_V1D0:
-                return new JsonMessageSerializerGremlinV1d0();
+                return new GraphSONMessageSerializerV1D0();
+            case SerTokens.MIME_GRAPHSON_V1D0:
+                return new GraphSONMessageSerializerGremlinV1D0();
             case SerTokens.MIME_GRYO_V1D0:
                 return new GryoMessageSerializerV1d0();
             default:
