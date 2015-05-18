@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -163,7 +164,7 @@ public class TinkerGraphTest {
         //g.V().label().groupCount().as("x").select().forEachRemaining(System.out::println);
         //g.V().choose(__.outE().count().is(0L), __.as("x"), __.as("y")).select("x", "y").forEachRemaining(System.out::println);
         // g.V().hasLabel("person").values("age").is(P.lt(27).or(P.gt(29))).forEachRemaining(System.out::println);
-        g.V().has("age",P.eq(27).or(P.eq(32))).values("name").forEachRemaining(System.out::println);
+        System.out.println(g.V().has("age", eq(27).or(not(eq(32)))).values("name"));
     }
 
     @Test

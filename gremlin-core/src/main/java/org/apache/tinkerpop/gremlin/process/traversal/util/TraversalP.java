@@ -21,16 +21,18 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.BiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TraversalP<S, E> extends P<E> {
+public final class TraversalP<S, E> extends P<E> implements TraversalHolderP {
 
     private Traversal.Admin<S, E> traversal;
     private final boolean negate;
@@ -46,8 +48,8 @@ public class TraversalP<S, E> extends P<E> {
         this(traversal, null, negate);
     }
 
-    public Traversal.Admin<S, E> getTraversal() {
-        return this.traversal;
+    public List<Traversal.Admin<S, E>> getTraversals() {
+        return Collections.singletonList(this.traversal);
     }
 
     @Override
@@ -61,6 +63,22 @@ public class TraversalP<S, E> extends P<E> {
         clone.traversal = this.traversal.clone();
         clone.biPredicate = (BiPredicate) new TraversalBiPredicate<>(clone);
         return clone;
+    }
+
+    public static P<?> orTraversals(final Traversal<?, ?>... orTraversals) {
+        P<?> p = traversal(orTraversals[0]);
+        for (int i = 1; i < orTraversals.length; i++) {
+            p = p.or(orTraversals[i]);
+        }
+        return p;
+    }
+
+    public static P<?> andTraversals(final Traversal<?, ?>... andTraversals) {
+        P<?> p = traversal(andTraversals[0]);
+        for (int i = 1; i < andTraversals.length; i++) {
+            p = p.and(andTraversals[i]);
+        }
+        return p;
     }
 
     private static class TraversalBiPredicate<S, E> implements BiPredicate<S, E> {

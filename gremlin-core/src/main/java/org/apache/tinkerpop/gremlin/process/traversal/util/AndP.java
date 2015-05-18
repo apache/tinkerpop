@@ -23,6 +23,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 
+import java.io.Serializable;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
@@ -32,19 +34,7 @@ public final class AndP<V> extends ConjunctionP<V> {
 
     public AndP(final P<V> predicate, final P<V>... predicates) {
         super(predicate, predicates);
-    }
-
-    protected AndP(final ConjunctionP<V> other) {
-        super(other);
-    }
-
-    @Override
-    public boolean test(final V v) {
-        for (final P<V> predicate : this.predicates) {
-            if (!predicate.test(v))
-                return false;
-        }
-        return true;
+        this.biPredicate = new AndBiPredicate(this);
     }
 
     @Override
@@ -58,12 +48,37 @@ public final class AndP<V> extends ConjunctionP<V> {
     @Override
     public P<V> negate() {
         super.negate();
-        final P[] arg2 = new P[this.predicates.size()-1];
+        final P[] arg2 = new P[this.predicates.size() - 1];
         return new OrP(this.predicates.get(0), this.predicates.subList(1, this.predicates.size()).toArray(arg2));
     }
 
     @Override
     public String toString() {
         return "and(" + this.predicates + ")";
+    }
+
+    @Override
+    public AndP<V> clone() {
+        final AndP<V> clone = (AndP<V>) super.clone();
+        clone.biPredicate = new AndBiPredicate(clone);
+        return clone;
+    }
+
+    private class AndBiPredicate implements BiPredicate<V, V>, Serializable {
+
+        private final AndP<V> andP;
+
+        private AndBiPredicate(final AndP<V> andP) {
+            this.andP = andP;
+        }
+
+        @Override
+        public boolean test(final V valueA, final V valueB) {
+            for (final P<V> predicate : this.andP.predicates) {
+                if (!predicate.getBiPredicate().test(valueA, valueB))
+                    return false;
+            }
+            return true;
+        }
     }
 }

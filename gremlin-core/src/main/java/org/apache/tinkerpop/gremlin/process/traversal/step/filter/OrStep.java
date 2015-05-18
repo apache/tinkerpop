@@ -19,21 +19,13 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrStep<S> extends ConjunctionStep<S> implements TraversalParent {
+public final class OrStep<S> extends ConjunctionStep<S> {
 
-    public OrStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?>... orTraversals) {
-        super(traversal, orTraversals);
-
-    }
-
-    public static final class OrMarker<S> extends ConjunctionMarker<S> {
-        public OrMarker(final Traversal.Admin traversal) {
-            super(traversal);
-        }
+    public OrStep(final Traversal.Admin traversal) {
+        super(traversal);
     }
 }

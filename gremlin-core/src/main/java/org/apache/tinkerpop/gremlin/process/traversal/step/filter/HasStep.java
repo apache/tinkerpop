@@ -24,9 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHolderP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,9 +46,7 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
         super(traversal);
         this.hasContainers = new ArrayList<>();
         for (final HasContainer hasContainer : hasContainers) {
-            this.hasContainers.add(hasContainer);
-            if (hasContainer.getPredicate() instanceof TraversalP)
-                this.integrateChild(((TraversalP) hasContainer.getPredicate()).getTraversal());
+            this.addHasContainer(hasContainer);
         }
     }
 
@@ -69,8 +68,8 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     @Override
     public void addHasContainer(final HasContainer hasContainer) {
         this.hasContainers.add(hasContainer);
-        if (hasContainer.getPredicate() instanceof TraversalP)
-            this.integrateChild(((TraversalP) hasContainer.getPredicate()).getTraversal());
+        if (hasContainer.getPredicate() instanceof TraversalHolderP)
+            ((TraversalHolderP) hasContainer.getPredicate()).getTraversals().forEach(this::integrateChild);
     }
 
     @Override
@@ -81,8 +80,8 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
         return this.hasContainers.stream()
-                .filter(hasContainer -> hasContainer.getPredicate() instanceof TraversalP)
-                .map(hasContainer -> ((TraversalP<?, ?>) hasContainer.getPredicate()).getTraversal())
+                .filter(hasContainer -> hasContainer.getPredicate() instanceof TraversalHolderP)
+                .flatMap(hasContainer -> ((TraversalHolderP) hasContainer.getPredicate()).getTraversals().stream())
                 .collect(Collectors.toList());
     }
 

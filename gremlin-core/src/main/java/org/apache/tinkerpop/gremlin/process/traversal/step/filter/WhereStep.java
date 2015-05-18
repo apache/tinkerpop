@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -25,9 +26,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHolderP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -51,11 +52,11 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         super(traversal);
         this.scope = scope;
         this.predicate = predicate;
-        if (this.predicate instanceof TraversalP) {
-            final Traversal<?, ?> whereTraversal = ((TraversalP) this.predicate).getTraversal();
+        if (this.predicate instanceof TraversalHolderP) {
+            final Traversal<?, ?> whereTraversal = ((TraversalHolderP) this.predicate).getTraversals().get(0);
             this.startKey = whereTraversal.asAdmin().getStartStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getStartStep().getLabels().iterator().next();
             this.endKey = whereTraversal.asAdmin().getEndStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getEndStep().getLabels().iterator().next();
-            this.integrateChild(whereTraversal.asAdmin());
+            ((TraversalHolderP) this.predicate).getTraversals().forEach(this::integrateChild);
         } else {
             this.startKey = startKey.orElse(null);
             this.endKey = this.predicate.getValue() instanceof Collection ? ((Collection<String>) this.predicate.getValue()).iterator().next() : (String) this.predicate.getValue();
@@ -91,7 +92,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        return this.predicate instanceof TraversalP ? Collections.singletonList(((TraversalP) this.predicate).getTraversal()) : Collections.emptyList();
+        return (List)(this.predicate instanceof TraversalHolderP ? ((TraversalHolderP) this.predicate).getTraversals() : Collections.emptyList());
     }
 
     @Override
@@ -103,8 +104,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     public WhereStep<S> clone() {
         final WhereStep<S> clone = (WhereStep<S>) super.clone();
         clone.predicate = this.predicate.clone();
-        if (clone.predicate instanceof TraversalP)
-            clone.integrateChild(((TraversalP) clone.predicate).getTraversal());
+        if (clone.predicate instanceof TraversalHolderP)
+            ((TraversalHolderP) clone.predicate).getTraversals().forEach(clone::integrateChild);
         return clone;
     }
 

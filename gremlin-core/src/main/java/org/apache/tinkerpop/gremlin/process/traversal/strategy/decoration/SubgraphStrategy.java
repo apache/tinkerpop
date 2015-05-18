@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
@@ -37,7 +37,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
@@ -73,7 +72,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
             if (null == edgeCriterion)
                 this.edgeCriterion = __.and(inVertexPredicate.asAdmin(), outVertexPredicate.asAdmin());
             else
-                this.edgeCriterion = edgeCriterion.asAdmin().addStep(new AndStep<>(edgeCriterion.asAdmin(), inVertexPredicate.asAdmin(), outVertexPredicate.asAdmin()));
+                this.edgeCriterion = edgeCriterion.asAdmin().addStep(new WhereStep<>(edgeCriterion.asAdmin(), Scope.global, P.traversal(inVertexPredicate.asAdmin()).and(outVertexPredicate.asAdmin())));
         }
     }
 

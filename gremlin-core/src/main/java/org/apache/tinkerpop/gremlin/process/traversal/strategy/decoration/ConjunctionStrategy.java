@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
@@ -25,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -49,18 +52,18 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy<Travers
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfAssignableClass(ConjunctionStep.ConjunctionMarker.class, traversal))
+        if (!TraversalHelper.hasStepOfAssignableClass(ConjunctionStep.class, traversal))
             return;
 
-        processConjunctionMarker(AndStep.AndMarker.class, traversal);
-        processConjunctionMarker(OrStep.OrMarker.class, traversal);
+        processConjunctionMarker(AndStep.class, traversal);
+        processConjunctionMarker(OrStep.class, traversal);
     }
 
     private static final boolean legalCurrentStep(final Step<?, ?> step) {
-        return !(step instanceof EmptyStep || step instanceof OrStep.OrMarker || step instanceof AndStep.AndMarker || step instanceof StartStep);
+        return !(step instanceof EmptyStep || step instanceof OrStep || step instanceof AndStep || step instanceof StartStep);
     }
 
-    private static final void processConjunctionMarker(final Class<? extends ConjunctionStep.ConjunctionMarker> markerClass, final Traversal.Admin<?, ?> traversal) {
+    private static final void processConjunctionMarker(final Class<? extends ConjunctionStep> markerClass, final Traversal.Admin<?, ?> traversal) {
         TraversalHelper.getStepsOfClass(markerClass, traversal).forEach(markerStep -> {
             Step<?, ?> currentStep = markerStep.getNextStep();
             final Traversal.Admin<?, ?> rightTraversal = __.start().asAdmin();
@@ -80,9 +83,9 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy<Travers
                 currentStep = previousStep;
             }
             TraversalHelper.replaceStep(markerStep,
-                    markerClass.equals(AndStep.AndMarker.class) ?
-                            new AndStep<Object>(traversal, (Traversal.Admin) leftTraversal, (Traversal.Admin) rightTraversal) :
-                            new OrStep<Object>(traversal, (Traversal.Admin) leftTraversal, (Traversal.Admin) rightTraversal),
+                    markerClass.equals(AndStep.class) ?
+                            new WhereStep<Object>(traversal, Scope.global, P.traversal(leftTraversal).and(rightTraversal)) :
+                            new WhereStep<Object>(traversal, Scope.global, P.traversal(leftTraversal).or(rightTraversal)),
                     traversal);
         });
     }

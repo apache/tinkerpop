@@ -22,16 +22,18 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ConjunctionP<V> extends P<V> {
+public abstract class ConjunctionP<V> extends P<V> implements TraversalHolderP {
 
     protected List<P<V>> predicates;
 
@@ -44,13 +46,13 @@ public abstract class ConjunctionP<V> extends P<V> {
         }
     }
 
-    protected ConjunctionP(final ConjunctionP<V> other) {
-        super(null, null);
-        this.predicates = other.predicates;
-    }
-
     public List<P<V>> getPredicates() {
         return Collections.unmodifiableList(this.predicates);
+    }
+
+    @Override
+    public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
+        return (List) this.predicates.stream().filter(p -> p instanceof TraversalHolderP).flatMap(p -> ((TraversalHolderP) p).getTraversals().stream()).collect(Collectors.toList());
     }
 
     @Override

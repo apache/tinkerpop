@@ -23,6 +23,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 
+import java.io.Serializable;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /**
@@ -32,15 +34,7 @@ public final class OrP<V> extends ConjunctionP<V> {
 
     public OrP(final P<V> predicate, final P<V>... predicates) {
         super(predicate, predicates);
-    }
-
-    @Override
-    public boolean test(final V v) {
-        for (final P<V> predicate : this.predicates) {
-            if (predicate.test(v))
-                return true;
-        }
-        return false;
+        this.biPredicate = new OrBiPredicate(this);
     }
 
     @Override
@@ -54,12 +48,37 @@ public final class OrP<V> extends ConjunctionP<V> {
     @Override
     public P<V> negate() {
         super.negate();
-        final P[] arg2 = new P[this.predicates.size()-1];
+        final P[] arg2 = new P[this.predicates.size() - 1];
         return new AndP(this.predicates.get(0), this.predicates.subList(1, this.predicates.size()).toArray(arg2));
     }
 
     @Override
     public String toString() {
         return "or(" + this.predicates + ")";
+    }
+
+    @Override
+    public OrP<V> clone() {
+        final OrP<V> clone = (OrP<V>) super.clone();
+        clone.biPredicate = new OrBiPredicate(clone);
+        return clone;
+    }
+
+    private class OrBiPredicate implements BiPredicate<V, V>, Serializable {
+
+        private final OrP<V> orP;
+
+        private OrBiPredicate(final OrP<V> orP) {
+            this.orP = orP;
+        }
+
+        @Override
+        public boolean test(final V valueA, final V valueB) {
+            for (final P<V> predicate : this.orP.predicates) {
+                if (predicate.getBiPredicate().test(valueA, valueB))
+                    return true;
+            }
+            return false;
+        }
     }
 }

@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -117,11 +119,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -420,14 +421,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
         return this.asAdmin().addStep(0 == orTraversals.length ?
-                new OrStep.OrMarker<>(this.asAdmin()) :
-                new OrStep(this.asAdmin(), Arrays.copyOf(orTraversals, orTraversals.length, Traversal.Admin[].class)));
+                new OrStep<>(this.asAdmin()) :
+                new WhereStep<>(this.asAdmin(), Scope.global, TraversalP.orTraversals(orTraversals)));
     }
 
     public default GraphTraversal<S, E> and(final Traversal<?, ?>... andTraversals) {
         return this.asAdmin().addStep(0 == andTraversals.length ?
-                new AndStep.AndMarker<>(this.asAdmin()) :
-                new AndStep(this.asAdmin(), Arrays.copyOf(andTraversals, andTraversals.length, Traversal.Admin[].class)));
+                new AndStep<>(this.asAdmin()) :
+                new WhereStep<>(this.asAdmin(), Scope.global, TraversalP.andTraversals(andTraversals)));
     }
 
     public default GraphTraversal<S, E> inject(final E... injections) {
