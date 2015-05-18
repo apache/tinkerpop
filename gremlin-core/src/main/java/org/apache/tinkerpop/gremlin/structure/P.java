@@ -72,7 +72,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return other instanceof P &&
                 ((P) other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
-                ((((P) other).getValue() == null && this.getValue() == null) || ((P) other).getValue().equals(this.getValue()));
+                ((((P) other).getValue() == null && this.value == null) || ((P) other).getValue().equals(this.value));
     }
 
     @Override
