@@ -24,13 +24,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopElement;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraphVariables;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
+import org.apache.tinkerpop.gremlin.hadoop.structure.*;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
@@ -39,13 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -91,7 +79,10 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             final List<String> scriptResources = Arrays.asList(
                     "tinkerpop-classic.txt",
                     "script-input.groovy",
-                    "script-output.groovy");
+                    "script-output.groovy",
+                    "grateful-dead.txt",
+                    "script-input-grateful-dead.groovy",
+                    "script-output-grateful-dead.groovy");
             for (final String fileName : scriptResources) {
                 PATHS.put(fileName, TestHelper.generateTempFileFromResource(ScriptResourceAccess.class, fileName, "").getAbsolutePath());
             }

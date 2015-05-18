@@ -29,8 +29,8 @@ import org.apache.hadoop.mapreduce.lib.input.LineRecordReader;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 
@@ -48,7 +48,7 @@ import java.util.Iterator;
 public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
     protected final static String SCRIPT_FILE = "gremlin.hadoop.scriptInputFormat.script";
-    protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptInputFormat.scriptEngine";
+    //protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptInputFormat.scriptEngine";
     private final static String LINE = "line";
     private final static String FACTORY = "factory";
     private final static String READ_CALL = "parse(" + LINE + "," + FACTORY + ")";

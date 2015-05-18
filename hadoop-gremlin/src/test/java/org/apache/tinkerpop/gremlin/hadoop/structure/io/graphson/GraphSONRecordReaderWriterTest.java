@@ -18,27 +18,31 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson;
 
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.TestFileReaderWriterHelper;
-import org.junit.Test;
-
-import java.io.File;
-import java.util.List;
-import java.util.Optional;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.RecordReaderWriterTest;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class GraphSONRecordReaderWriterTest {
-    @Test
-    public void shouldSplitFileAndWriteProperSplits() throws Exception {
-        for (int numberOfSplits = 1; numberOfSplits < 10; numberOfSplits++) {
-            final File testFile = new File(HadoopGraphProvider.PATHS.get("grateful-dead.json"));
-            System.out.println("Testing: " + testFile + " (splits " + numberOfSplits + ")");
-            final List<FileSplit> splits = TestFileReaderWriterHelper.generateFileSplits(testFile, numberOfSplits);
-            TestFileReaderWriterHelper.validateFileSplits(splits, GraphSONInputFormat.class, Optional.of(GraphSONOutputFormat.class));
-        }
+public class GraphSONRecordReaderWriterTest extends RecordReaderWriterTest {
+
+    @Override
+    protected String getInputFilename() {
+        return "grateful-dead.json";
+    }
+
+    @Override
+    protected Class<? extends InputFormat<NullWritable, VertexWritable>> getInputFormat() {
+        return GraphSONInputFormat.class;
+    }
+
+    @Override
+    protected Class<? extends OutputFormat<NullWritable, VertexWritable>> getOutputFormat() {
+        return GraphSONOutputFormat.class;
     }
 }
 
