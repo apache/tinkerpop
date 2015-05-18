@@ -22,6 +22,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 
 import java.util.function.BiPredicate;
@@ -43,7 +44,15 @@ public final class TraversalBiPredicate<S, E> implements BiPredicate<S, E>, Clon
     public boolean test(final S start, final E end) {
         if (null == start)
             throw new IllegalArgumentException("The traversal must be provided a start: " + this.traversal);
-        final boolean result = null == end ? TraversalUtil.test(start, this.traversal) : TraversalUtil.test(start, this.traversal, end);
+        final boolean result;
+        if (start instanceof Traverser)
+            result = null == end ?
+                    TraversalUtil.test(((Traverser<S>) start).asAdmin(), this.traversal) :
+                    TraversalUtil.test(((Traverser<S>) start).asAdmin(), this.traversal, end);
+        else
+            result = null == end ?
+                    TraversalUtil.test(start, this.traversal) :
+                    TraversalUtil.test(start, this.traversal, end);
         return this.negate ? !result : result;
     }
 
