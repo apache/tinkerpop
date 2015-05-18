@@ -514,6 +514,56 @@ The following table describes the various configuration options that Gremlin Ser
 
 NOTE: Configuration of link:http://ganglia.sourceforge.net/[Ganglia] requires an additional library that is not packaged with Gremlin Server due to its LGPL licensing that conflicts with the TinkerPop's Apache 2.0 License.  To run Gremlin Server with Ganglia monitoring, download the `org.acplt:oncrpc` jar from link:http://repo1.maven.org/maven2/org/acplt/oncrpc/1.0.7/[here] and copy it to the Gremlin Server `/lib` directory before starting the server.
 
+Serialization
+^^^^^^^^^^^^^
+
+Gremlin Server can accept requests and return results using different serialization formats.  The format of the serialization is configured by the `serializers` setting described in the table above.  Note that some serializers have additional configuration options as defined by the `serializers[X].config` setting.  The `config` setting is a `Map` where the keys and values get passed to the serializer at its initialization.  The available and/or expected keys are dependent on the serializer being used.  Gremlin Server comes packaged with two different serializers: GraphSON and Gryo.
+
+GraphSON
+++++++++
+
+The GraphSON serializer produces human readable output in JSON format and is a good configuration choice for those trying to use TinkerPop from non-JVM languages.  JSON obviously has wide support across virtually all major programming languages and can be consumed by a wide variety of tools.
+
+[source,yaml]
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.JsonMessageSerializerV1d0 }
+
+The above configuration represents the default serialization under the `application/json` MIME type and produces JSON consistent with standard JSON data types.  It has the following configuration option:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|useMapperFromGraph |Specifies the name of the `Graph` (from the `graphs` `Map` in the configuration file) from which to plugin any custom serializers that are tied to it. |_none_
+|=========================================================
+
+[source,yaml]
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
+
+When the standard JSON data types are not enough (e.g. need to identify the difference between `double` and `float` data types), the above configuration will embed types into the JSON itself.  The type embedding uses standard Java type names, so interpretation from non-JVM languages will be required.  It has the MIME type of `application/vnd.gremlin-v1.0+json` and the following configuration options:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|useMapperFromGraph |Specifies the name of the `Graph` (from the `graphs` `Map` in the configuration file) from which to plugin any custom serializers that are tied to it. |_none_
+|=========================================================
+
+Gryo
+++++
+
+The Gryo serializer utilizes Kryo-based serialization which produces a binary output.  This format is best consumed by JVM-based languages.
+
+[source,yaml]
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.JsonMessageSerializerGremlinV1d0 }
+
+It has the MIME type of `application/vnd.gremlin-v1.0+gryo` and the following configuration options:
+
+[width="100%",cols="3,10,^2",options="header"]
+|=========================================================
+|Key |Description |Default
+|serializeResultToString |When set to `true`, results are serialized by first calling `toString()` on each object in the result list resulting in an extended MIME Type of `application/vnd.gremlin-v1.0+gryo-stringd`.  When set to `false` Kryo-based serialization is applied. |_false_
+|useMapperFromGraph |Specifies the name of the `Graph` (from the `graphs` `Map` in the configuration file) from which to plugin any custom serializers that are tied to it. |_none_
+|custom |A list of classes with custom kryo `Serializer` implementations related to them in the form of `<class>;<serializer-class>`. |_none_
+|=========================================================
+
 Tuning
 ~~~~~~
 
