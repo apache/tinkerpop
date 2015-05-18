@@ -65,7 +65,7 @@ public final class TraversalHelper {
                 if (state == 'e') state = 'u';
             } else if (step instanceof HasContainerHolder && state == 'u') {
                 if (((HasContainerHolder) step).getHasContainers().stream()
-                        .filter(c -> !c.key.equals(T.id.getAccessor())) // TODO: are labels available?
+                        .filter(c -> !c.getKey().equals(T.id.getAccessor())) // TODO: are labels available?
                         .findAny().isPresent()) return false;
             } else if (step instanceof TraversalParent) {
                 final char currState = state;

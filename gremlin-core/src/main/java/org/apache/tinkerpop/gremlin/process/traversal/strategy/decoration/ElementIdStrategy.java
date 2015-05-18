@@ -32,8 +32,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Contains;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.P;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -79,8 +79,8 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         TraversalHelper.getStepsOfAssignableClass(HasStep.class, traversal).stream()
-                .filter(hasStep -> ((HasStep<?>) hasStep).getHasContainers().get(0).key.equals(T.id.getAccessor()))
-                .forEach(hasStep -> ((HasStep<?>) hasStep).getHasContainers().get(0).key = this.idPropertyKey);
+                .filter(hasStep -> ((HasStep<?>) hasStep).getHasContainers().get(0).getKey().equals(T.id.getAccessor()))
+                .forEach(hasStep -> ((HasStep<?>) hasStep).getHasContainers().get(0).setKey(this.idPropertyKey));
 
         if (traversal.getStartStep() instanceof GraphStep) {
             final GraphStep graphStep = (GraphStep) traversal.getStartStep();
@@ -91,9 +91,9 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
             // in the list.
             if (graphStep.getIds().length > 0 && !(graphStep.getIds()[0] instanceof Element)) {
                 if (graphStep instanceof HasContainerHolder) {
-                    ((HasContainerHolder) graphStep).addHasContainer(new HasContainer(this.idPropertyKey, Contains.within, Arrays.asList(graphStep.getIds())));
+                    ((HasContainerHolder) graphStep).addHasContainer(new HasContainer(this.idPropertyKey, P.within(Arrays.asList(graphStep.getIds()))));
                 } else {
-                    TraversalHelper.insertAfterStep(new HasStep(traversal, new HasContainer(this.idPropertyKey, Contains.within, Arrays.asList(graphStep.getIds()))), graphStep, traversal);
+                    TraversalHelper.insertAfterStep(new HasStep(traversal, new HasContainer(this.idPropertyKey, P.within(Arrays.asList(graphStep.getIds())))), graphStep, traversal);
                 }
                 graphStep.clearIds();
             }

@@ -24,10 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalBiPredicate;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.P;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.TraversalP;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -51,8 +51,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         super(traversal);
         this.scope = scope;
         this.predicate = predicate;
-        if (this.predicate.getBiPredicate() instanceof TraversalBiPredicate) {
-            final Traversal<?, ?> whereTraversal = ((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal();
+        if (this.predicate instanceof TraversalP) {
+            final Traversal<?, ?> whereTraversal = ((TraversalP) this.predicate).getTraversal();
             this.startKey = whereTraversal.asAdmin().getStartStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getStartStep().getLabels().iterator().next();
             this.endKey = whereTraversal.asAdmin().getEndStep().getLabels().isEmpty() ? null : whereTraversal.asAdmin().getEndStep().getLabels().iterator().next();
             this.integrateChild(whereTraversal.asAdmin());
@@ -86,12 +86,13 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             }
         }
 
-        return this.predicate.getBiPredicate().test(startObject, endObject);
+        this.predicate.setValue(endObject);
+        return this.predicate.test(startObject);
     }
 
     @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        return this.predicate.getBiPredicate() instanceof TraversalBiPredicate ? Collections.singletonList(((TraversalBiPredicate) this.predicate.getBiPredicate()).getTraversal()) : Collections.emptyList();
+        return this.predicate instanceof TraversalP ? Collections.singletonList(((TraversalP) this.predicate).getTraversal()) : Collections.emptyList();
     }
 
     @Override
@@ -103,8 +104,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     public WhereStep<S> clone() {
         final WhereStep<S> clone = (WhereStep<S>) super.clone();
         clone.predicate = this.predicate.clone();
-        if (clone.predicate.getBiPredicate() instanceof TraversalBiPredicate)
-            clone.integrateChild(((TraversalBiPredicate) clone.predicate.getBiPredicate()).getTraversal());
+        if (clone.predicate instanceof TraversalP)
+            clone.integrateChild(((TraversalP) clone.predicate).getTraversal());
         return clone;
     }
 
@@ -128,6 +129,6 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     }
 
     private Object getStartObject(final Traverser<S> traverser) {
-        return this.predicate.getBiPredicate() instanceof TraversalBiPredicate ? traverser : traverser.get();
+        return this.predicate instanceof TraversalP ? traverser : traverser.get();
     }
 }

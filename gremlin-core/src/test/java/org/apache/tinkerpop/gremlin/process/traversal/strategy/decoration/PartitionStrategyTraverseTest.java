@@ -174,9 +174,9 @@ public class PartitionStrategyTraverseTest {
         steps.forEach(s -> {
             assertEquals(1, s.getHasContainers().size());
             final HasContainer hasContainer = (HasContainer) s.getHasContainers().get(0);
-            assertEquals("p", hasContainer.key);
-            assertEquals(keySet, hasContainer.value);
-            assertEquals(Contains.within, hasContainer.predicate);
+            assertEquals("p", hasContainer.getKey());
+            assertEquals(keySet, hasContainer.getPredicate().getValue());
+            assertEquals(Contains.within, hasContainer.getPredicate().getBiPredicate());
         });
     }
 }

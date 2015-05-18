@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Contains;
+import org.apache.tinkerpop.gremlin.structure.P;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -75,7 +76,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
 
         // all steps that return a vertex need to have has(paritionKey,within,partitionValues) injected after it
         stepsToInsertHasAfter.forEach(s -> TraversalHelper.insertAfterStep(
-                new HasStep(traversal, new HasContainer(partitionKey, Contains.within, new ArrayList<>(readPartitions))), s, traversal));
+                new HasStep(traversal, new HasContainer(partitionKey, P.within(new ArrayList<>(readPartitions)))), s, traversal));
 
         // all write edge steps need to have partition keys tossed into the property key/value list after mutating steps
         TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal).forEach(s -> {

@@ -37,57 +37,81 @@ import java.util.function.BiPredicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HasContainer implements Serializable {
+public final class HasContainer implements Serializable, Cloneable {
 
-    public String key;
-    public BiPredicate predicate;
-    public Object value;
-    private Collection<String> valuesToStringed;
+    private String key;
+    private P predicate;
 
-    public HasContainer(final String key, final BiPredicate predicate, final Object value) {
+    public HasContainer(final String key, final P<?> predicate) {
         this.key = key;
         this.predicate = predicate;
-        this.value = value;
 
         // if the key being evaluated is id then the has() test can evaluate as a toString() representation of the
         // identifier.  this could be done in the test() method but it seems cheaper to do the conversion once in
         // the constructor.  to avoid losing the original value, the string version of the collection is maintained
         // separately
-        if (this.key.equals(T.id.getAccessor()) && value instanceof Collection)
-            valuesToStringed = IteratorUtils.set(IteratorUtils.map(((Collection<Object>) value).iterator(), Object::toString));
+        if (this.key.equals(T.id.getAccessor()))
+            this.predicate.setValue(this.predicate.getValue() instanceof Collection ? IteratorUtils.set(IteratorUtils.map(((Collection<Object>) this.predicate.getValue()).iterator(), Object::toString)) : this.predicate.getValue().toString());
     }
 
     public boolean test(final Element element) {
         // it is OK to evaluate equality of ids via toString() now given that the toString() the test suite
         // enforces the value of id().toString() to be a first class representation of the identifier
         if (this.key.equals(T.id.getAccessor()))
-            if (value instanceof Collection)
-                return this.predicate.test(element.id().toString(), valuesToStringed);
-            else
-                return this.predicate.test(element.id().toString(), this.value.toString());
+            return this.predicate.test(element.id().toString());
         else if (this.key.equals(T.label.getAccessor()))
-            return this.predicate.test(element.label(), this.value);
+            return this.predicate.test(element.label());
         else if (element instanceof VertexProperty && this.key.equals(T.value.getAccessor()))
-            return this.predicate.test(((VertexProperty) element).value(), this.value);
+            return this.predicate.test(((VertexProperty) element).value());
         else if (element instanceof VertexProperty && this.key.equals(T.key.getAccessor()))
-            return this.predicate.test(((VertexProperty) element).key(), this.value);
+            return this.predicate.test(((VertexProperty) element).key());
         else {
             if (element instanceof Vertex) {
                 final Iterator<? extends Property> itty = element.properties(this.key);
                 while (itty.hasNext()) {
-                    if (this.predicate.test(itty.next().value(), this.value))
+                    if (this.predicate.test(itty.next().value()))
                         return true;
                 }
                 return false;
             } else {
                 final Property property = element.property(this.key);
-                return property.isPresent() && this.predicate.test(property.value(), this.value);
+                return property.isPresent() && this.predicate.test(property.value());
             }
         }
     }
 
     public String toString() {
-        return null == this.value ? '[' + this.key + ',' + this.predicate + ']' : '[' + this.key + ',' + this.predicate + ',' + this.value + ']';
+        return '[' + this.key + ',' + this.predicate + ']';
+    }
+
+    public HasContainer clone() {
+        try {
+            final HasContainer clone = (HasContainer) super.clone();
+            clone.predicate = this.predicate.clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    public String getKey() {
+        return this.key;
+    }
+
+    public void setKey(final String key) {
+        this.key = key;
+    }
+
+    public P<?> getPredicate() {
+        return this.predicate;
+    }
+
+    public BiPredicate<?, ?> getBiPredicate() {
+        return this.predicate.getBiPredicate();
+    }
+
+    public Object getValue() {
+        return this.predicate.getValue();
     }
 
     ////////////
@@ -105,13 +129,13 @@ public final class HasContainer implements Serializable {
             final List<P<?>> predicates = ((AndP) predicate).getPredicates();
             final HasContainer[] hasContainers = new HasContainer[predicates.size()];
             for (int i = 0; i < predicates.size(); i++) {
-                hasContainers[i] = new HasContainer(key, predicates.get(i).getBiPredicate(), predicates.get(i).getValue());
+                hasContainers[i] = new HasContainer(key, predicate);
             }
             return hasContainers;
         } else if (predicate instanceof OrP) {
             throw new IllegalArgumentException("The or'ing of HasContainers is currently not supported");
         } else {
-            return new HasContainer[]{new HasContainer(key, predicate.getBiPredicate(), predicate.getValue())};
+            return new HasContainer[]{new HasContainer(key, predicate)};
         }
     }
 }
