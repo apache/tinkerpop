@@ -124,7 +124,7 @@ public class GryoMessageSerializerV1d0 implements MessageSerializer {
                 if (serializerDefinition.contains(";")) {
                     final String[] split = serializerDefinition.split(";");
                     if (split.length != 2)
-                        throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>:<serializer-class>", serializerDefinition));
+                        throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>;<serializer-class>", serializerDefinition));
 
                     className = split[0];
                     serializerName = Optional.of(split[1]);
