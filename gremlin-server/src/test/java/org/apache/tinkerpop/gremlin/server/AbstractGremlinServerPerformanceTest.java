@@ -44,6 +44,7 @@ public abstract class AbstractGremlinServerPerformanceTest {
     public static void setUp() throws Exception {
         final InputStream stream = AbstractGremlinServerPerformanceTest.class.getResourceAsStream("gremlin-server-performance.yaml");
         final Settings settings = Settings.read(stream);
+        ServerTestHelper.rewritePathsInGremlinServerSettings(settings);
         final CompletableFuture<Void> serverReadyFuture = new CompletableFuture<>();
 
         new Thread(() -> {

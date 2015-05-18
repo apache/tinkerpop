@@ -46,6 +46,8 @@ public abstract class AbstractGremlinServerIntegrationTest {
         final Settings settings = Settings.read(stream);
 
         final Settings overridenSettings = overrideSettings(settings);
+        ServerTestHelper.rewritePathsInGremlinServerSettings(overridenSettings);
+
         this.server = new GremlinServer(overridenSettings);
 
         server.start().join();
