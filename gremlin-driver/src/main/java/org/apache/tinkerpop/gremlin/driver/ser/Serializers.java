@@ -26,8 +26,8 @@ import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public enum Serializers {
-    JSON(SerTokens.MIME_JSON),
-    JSON_V1D0(SerTokens.MIME_GRAPHSON_V1D0),
+    GRAPHSON(SerTokens.MIME_JSON),
+    GRAPHSON_V1D0(SerTokens.MIME_GRAPHSON_V1D0),
     GRYO_V1D0(SerTokens.MIME_GRYO_V1D0);
 
     private String value;

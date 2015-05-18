@@ -323,7 +323,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldReceiveFailureOnBadSerialization() throws Exception {
-        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.JSON_V1D0).create();
+        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V1D0).create();
         final Client client = cluster.connect();
 
         try {
