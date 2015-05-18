@@ -23,6 +23,8 @@ import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import io.netty.util.AttributeKey;
 
 /**
+ * Keys used in the various handlers to store state in the pipeline.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StateKey {
