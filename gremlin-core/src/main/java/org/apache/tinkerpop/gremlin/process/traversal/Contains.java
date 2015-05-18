@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.process.traversal;
 
 import java.util.Collection;
 import java.util.function.BiPredicate;

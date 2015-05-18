@@ -19,12 +19,11 @@
  *
  */
 
-package org.apache.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.structure.util.AndP;
-import org.apache.tinkerpop.gremlin.structure.util.OrP;
-import org.apache.tinkerpop.gremlin.structure.util.TraversalP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 
 import java.io.Serializable;
 import java.util.Arrays;

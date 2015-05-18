@@ -36,7 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.tinkerpop.gremlin.structure.P.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

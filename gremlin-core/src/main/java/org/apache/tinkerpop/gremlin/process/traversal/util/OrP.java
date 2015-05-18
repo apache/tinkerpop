@@ -19,11 +19,10 @@
  *
  */
 
-package org.apache.tinkerpop.gremlin.structure.util;
+package org.apache.tinkerpop.gremlin.process.traversal.util;
 
-import org.apache.tinkerpop.gremlin.structure.P;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 
-import java.util.List;
 import java.util.function.Predicate;
 
 /**

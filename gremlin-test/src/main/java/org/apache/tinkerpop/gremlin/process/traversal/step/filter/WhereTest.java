@@ -38,7 +38,7 @@ import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
-import static org.apache.tinkerpop.gremlin.structure.P.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
 import static org.junit.Assert.*;
 
 /**

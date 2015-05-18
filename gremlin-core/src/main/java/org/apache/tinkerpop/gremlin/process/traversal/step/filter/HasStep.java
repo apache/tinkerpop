@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.TraversalP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure;
+package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

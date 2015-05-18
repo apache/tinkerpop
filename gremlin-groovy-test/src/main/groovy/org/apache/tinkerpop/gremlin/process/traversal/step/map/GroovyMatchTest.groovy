@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
-import static org.apache.tinkerpop.gremlin.structure.P.neq;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
