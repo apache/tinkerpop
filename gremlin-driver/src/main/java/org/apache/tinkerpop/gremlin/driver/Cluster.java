@@ -234,21 +234,37 @@ public class Cluster {
             return this;
         }
 
+        /**
+         * Set the {@link MessageSerializer} to use given its MIME type.  Note that setting this value this way
+         * will not allow specific configuration of the serializer itself.  If specific configuration is required
+         * please use {@link #serializer(MessageSerializer)}.
+         */
         public Builder serializer(final String mimeType) {
             serializer = Serializers.valueOf(mimeType).simpleInstance();
             return this;
         }
 
+        /**
+         * Set the {@link MessageSerializer} to use via the {@link Serializers} enum. If specific configuration is
+         * required please use {@link #serializer(MessageSerializer)}.
+         */
         public Builder serializer(final Serializers mimeType) {
             serializer = mimeType.simpleInstance();
             return this;
         }
 
+        /**
+         * Sets the {@link MessageSerializer} to use.
+         */
         public Builder serializer(final MessageSerializer serializer) {
             this.serializer = serializer;
             return this;
         }
 
+        /**
+         * Enables connectivity over SSL - note that the server should be configured with SSL turned on for this
+         * setting to work properly.
+         */
         public Builder enableSsl(final boolean enable) {
             this.enableSsl = enable;
             return this;
