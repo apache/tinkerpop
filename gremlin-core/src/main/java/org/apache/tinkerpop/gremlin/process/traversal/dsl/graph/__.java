@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -25,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -268,12 +268,36 @@ public class __ {
         return __.<A>start().addE(direction, edgeLabel, stepLabel, propertyKeyValues);
     }
 
-    public static <A> GraphTraversal<A, Edge> addInE(final String edgeLabel, final String setLabel, final Object... propertyKeyValues) {
-        return __.<A>start().addInE(edgeLabel, setLabel, propertyKeyValues);
+    public static <A> GraphTraversal<A, Edge> addE(final Direction direction, final String edgeLabel, final Vertex otherVertex, final Object... propertyKeyValues) {
+        return __.<A>start().addE(direction, edgeLabel, otherVertex, propertyKeyValues);
+    }
+
+    public static <A> GraphTraversal<A, Edge> addE(final Direction direction, final String edgeLabel, final Iterator<Vertex> otherVertices, final Object... propertyKeyValues) {
+        return __.<A>start().addE(direction, edgeLabel, otherVertices, propertyKeyValues);
+    }
+
+    public static <A> GraphTraversal<A, Edge> addInE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
+        return __.<A>start().addInE(edgeLabel, stepLabel, propertyKeyValues);
+    }
+
+    public static <A> GraphTraversal<A, Edge> addInE(final String edgeLabel, final Vertex otherVertex, final Object... propertyKeyValues) {
+        return __.<A>start().addInE(edgeLabel, otherVertex, propertyKeyValues);
+    }
+
+    public static <A> GraphTraversal<A, Edge> addInE(final String edgeLabel, final Iterator<Vertex> otherVertices, final Object... propertyKeyValues) {
+        return __.<A>start().addInE(edgeLabel, otherVertices, propertyKeyValues);
     }
 
     public static <A> GraphTraversal<A, Edge> addOutE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
         return __.<A>start().addOutE(edgeLabel, stepLabel, propertyKeyValues);
+    }
+
+    public static <A> GraphTraversal<A, Edge> addOutE(final String edgeLabel, final Vertex otherVertex, final Object... propertyKeyValues) {
+        return __.<A>start().addOutE(edgeLabel, otherVertex, propertyKeyValues);
+    }
+
+    public static <A> GraphTraversal<A, Edge> addOutE(final String edgeLabel, final Iterator<Vertex> otherVertices, final Object... propertyKeyValues) {
+        return __.<A>start().addOutE(edgeLabel, otherVertices, propertyKeyValues);
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -575,12 +599,5 @@ public class __ {
     public static <A> GraphTraversal<A, A> barrier() {
         return __.<A>start().barrier();
     }
-
-    ////
-
-    public static <A> GraphTraversal<A, A> iterate() {
-        return __.<A>start().iterate();
-    }
-
 
 }
