@@ -75,7 +75,7 @@ public final class OrP<V> extends ConjunctionP<V> {
         @Override
         public boolean test(final V valueA, final V valueB) {
             for (final P<V> predicate : this.orP.predicates) {
-                if (predicate.getBiPredicate().test(valueA, valueB))
+                if (predicate.test(valueA))
                     return true;
             }
             return false;

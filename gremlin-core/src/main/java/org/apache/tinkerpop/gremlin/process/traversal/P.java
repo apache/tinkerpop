@@ -151,7 +151,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     }
 
     public static <V> P<V> outside(final V first, final V second) {
-        return new AndP<>(new P(Compare.lt, first), new P(Compare.gt, second));
+        return new OrP<>(new P(Compare.lt, first), new P(Compare.gt, second));
     }
 
     public static <V> P<V> between(final V first, final V second) {

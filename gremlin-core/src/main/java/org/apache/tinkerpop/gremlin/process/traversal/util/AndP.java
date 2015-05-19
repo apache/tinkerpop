@@ -75,7 +75,7 @@ public final class AndP<V> extends ConjunctionP<V> {
         @Override
         public boolean test(final V valueA, final V valueB) {
             for (final P<V> predicate : this.andP.predicates) {
-                if (!predicate.getBiPredicate().test(valueA, valueB))
+                if (!predicate.test(valueA))
                     return false;
             }
             return true;
