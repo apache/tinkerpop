@@ -172,7 +172,7 @@ public class __ {
         return __.<A>start().path();
     }
 
-    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startLabel, final Traversal... traversals) {
+    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startLabel, final Traversal<?,?>... traversals) {
         return __.<A>start().match(startLabel, traversals);
     }
 
@@ -350,7 +350,7 @@ public class __ {
         return __.<A>start().has(label, key, predicate);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String key, final Traversal propertyTraversal) {
+    public static <A> GraphTraversal<A, A> has(final String key, final Traversal<?,?> propertyTraversal) {
         return __.<A>start().has(key, propertyTraversal);
     }
 
@@ -386,7 +386,7 @@ public class __ {
         return __.<A>start().where(scope, predicate);
     }
 
-    public static <A> GraphTraversal<A, A> where(final Scope scope, final Traversal whereTraversal) {
+    public static <A> GraphTraversal<A, A> where(final Scope scope, final Traversal<?,?> whereTraversal) {
         return __.<A>start().where(scope, whereTraversal);
     }
 
@@ -398,7 +398,7 @@ public class __ {
         return __.<A>start().where(predicate);
     }
 
-    public static <A> GraphTraversal<A, A> where(final Traversal whereTraversal) {
+    public static <A> GraphTraversal<A, A> where(final Traversal<?,?> whereTraversal) {
         return __.<A>start().where(whereTraversal);
     }
 

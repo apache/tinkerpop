@@ -284,7 +284,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PathStep<>(this.asAdmin()));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startLabel, final Traversal... traversals) {
+    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startLabel, final Traversal<?,?>... traversals) {
         return (GraphTraversal) this.asAdmin().addStep(new MatchStep<E, Map<String, E2>>(this.asAdmin(), startLabel, traversals));
     }
 
@@ -451,7 +451,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.where(scope, null, predicate);
     }
 
-    public default GraphTraversal<S, E> where(final Scope scope, final Traversal whereTraversal) {
+    public default GraphTraversal<S, E> where(final Scope scope, final Traversal<?,?> whereTraversal) {
         return this.where(scope, P.traversal(whereTraversal));
     }
 
@@ -463,7 +463,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.where(Scope.global, null, predicate);
     }
 
-    public default GraphTraversal<S, E> where(final Traversal whereTraversal) {
+    public default GraphTraversal<S, E> where(final Traversal<?,?> whereTraversal) {
         return this.where(Scope.global, whereTraversal);
     }
 
@@ -491,7 +491,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.has(T.label, label).has(key, value);
     }
 
-    public default GraphTraversal<S, E> has(final String key, final Traversal propertyTraversal) {
+    public default GraphTraversal<S, E> has(final String key, final Traversal<?,?> propertyTraversal) {
         return this.has(key, P.traversal(propertyTraversal));
     }
 
