@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -61,10 +60,8 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     @Override
     public PathStep<S> clone() {
         final PathStep<S> clone = (PathStep<S>) super.clone();
-        clone.traversalRing = new TraversalRing<>();
-        for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {
-            clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone()));
-        }
+        clone.traversalRing = this.traversalRing.clone();
+        clone.getLocalChildren().forEach(clone::integrateChild);
         return clone;
     }
 
@@ -91,6 +88,6 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return Collections.singleton(TraverserRequirement.PATH);
+        return this.getSelfAndChildRequirements(TraverserRequirement.PATH);
     }
 }

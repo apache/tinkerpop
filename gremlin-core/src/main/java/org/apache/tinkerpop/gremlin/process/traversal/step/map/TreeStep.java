@@ -82,10 +82,8 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
     @Override
     public TreeStep<S> clone() {
         final TreeStep<S> clone = (TreeStep<S>) super.clone();
-        clone.traversalRing = new TraversalRing<>();
-        for (final Traversal.Admin<Object, Object> traversal : this.traversalRing.getTraversals()) {
-            clone.traversalRing.addTraversal(clone.integrateChild(traversal.clone()));
-        }
+        clone.traversalRing = this.traversalRing.clone();
+        clone.getLocalChildren().forEach(clone::integrateChild);
         return clone;
     }
 
@@ -102,6 +100,12 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.traversalRing);
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.traversalRing.reset();
     }
 
     ///////////
