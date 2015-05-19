@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiPredicate;
@@ -81,7 +82,7 @@ public final class TraversalP<S, E> extends P<E> implements TraversalHolderP {
         return p;
     }
 
-    private static class TraversalBiPredicate<S, E> implements BiPredicate<S, E> {
+    private static class TraversalBiPredicate<S, E> implements BiPredicate<S, E>, Serializable {
 
         private final TraversalP<S, E> traversalP;
 
