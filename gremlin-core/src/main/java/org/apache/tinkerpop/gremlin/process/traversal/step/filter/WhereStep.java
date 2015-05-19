@@ -126,13 +126,11 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     }
 
     private boolean doSingleKeyFilter(final Traverser<S> traverser) {
-        final Object startObject;
-        final Object endObject;
-
         if (this.noStartAndEndKeys()) {
-            startObject = getStartObject(traverser);
-            endObject = null;
+            return this.predicate.getBiPredicate().test(getStartObject(traverser), null);
         } else {
+            final Object startObject;
+            final Object endObject;
             if (Scope.local == this.scope) {
                 final Map<String, Object> map = (Map<String, Object>) traverser.get();
                 startObject = null == this.startKey ? getStartObject(traverser) : map.get(this.startKey);
@@ -142,44 +140,40 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
                 startObject = null == this.startKey ? getStartObject(traverser) : path.hasLabel(this.startKey) ? path.get(this.startKey) : traverser.sideEffects(this.startKey);
                 endObject = null == this.endKey ? null : path.hasLabel(this.endKey) ? path.get(this.endKey) : traverser.sideEffects(this.endKey);
             }
+            return this.predicate.getBiPredicate().test(startObject, endObject);
         }
-
-        return this.predicate.getBiPredicate().test(startObject, endObject);
     }
 
     private boolean doMultiKeyFilter(final Traverser<S> traverser) {
         final List<Object> startObjects = new ArrayList<>();
         final List<Object> endObjects = new ArrayList<>();
 
-        if (this.noStartAndEndKeys()) {
-            startObjects.add(traverser.get());
-        } else {
-            if (Scope.local == this.scope) {
-                final Map<String, Object> map = (Map<String, Object>) traverser.get();
-                if (startKeys.isEmpty())
-                    startObjects.add(traverser.get());
-                else {
-                    for (final String startKey : this.startKeys) {
-                        startObjects.add(map.get(startKey));
-                    }
-                }
-                for (final String endKey : this.endKeys) {
-                    endObjects.add(map.get(endKey));
-                }
-            } else {
-                final Path path = traverser.path();
-                if (startKeys.isEmpty())
-                    startObjects.add(traverser.get());
-                else {
-                    for (final String startKey : this.startKeys) {
-                        startObjects.add(path.hasLabel(startKey) ? path.get(startKey) : traverser.sideEffects(startKey));
-                    }
-                }
-                for (final String endKey : this.endKeys) {
-                    endObjects.add(path.hasLabel(endKey) ? path.get(endKey) : traverser.sideEffects(endKey));
+        if (Scope.local == this.scope) {
+            final Map<String, Object> map = (Map<String, Object>) traverser.get();
+            if (startKeys.isEmpty())
+                startObjects.add(traverser.get());
+            else {
+                for (final String startKey : this.startKeys) {
+                    startObjects.add(map.get(startKey));
                 }
             }
+            for (final String endKey : this.endKeys) {
+                endObjects.add(map.get(endKey));
+            }
+        } else {
+            final Path path = traverser.path();
+            if (startKeys.isEmpty())
+                startObjects.add(traverser.get());
+            else {
+                for (final String startKey : this.startKeys) {
+                    startObjects.add(path.hasLabel(startKey) ? path.get(startKey) : traverser.sideEffects(startKey));
+                }
+            }
+            for (final String endKey : this.endKeys) {
+                endObjects.add(path.hasLabel(endKey) ? path.get(endKey) : traverser.sideEffects(endKey));
+            }
         }
+
         return this.predicate.getBiPredicate().test(new TraversalUtil.Multiple<>(startObjects), endObjects.isEmpty() ? null : new TraversalUtil.Multiple<>(endObjects));
     }
 }
