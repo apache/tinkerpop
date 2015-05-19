@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ConjunctionP<V> extends P<V> implements TraversalHolderP {
+public abstract class ConjunctionP<V> extends P<V> {
 
     protected List<P<V>> predicates;
 
@@ -52,7 +52,7 @@ public abstract class ConjunctionP<V> extends P<V> implements TraversalHolderP {
 
     @Override
     public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
-        return (List) this.predicates.stream().filter(p -> p instanceof TraversalHolderP).flatMap(p -> ((TraversalHolderP) p).getTraversals().stream()).collect(Collectors.toList());
+        return (List) this.predicates.stream().flatMap(p -> p.getTraversals().stream()).collect(Collectors.toList());
     }
 
     @Override

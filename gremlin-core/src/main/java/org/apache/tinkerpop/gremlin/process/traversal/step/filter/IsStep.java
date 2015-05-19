@@ -23,10 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHolderP;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -41,8 +39,7 @@ public final class IsStep<S> extends FilterStep<S> implements TraversalParent {
     public IsStep(final Traversal.Admin traversal, final P<S> predicate) {
         super(traversal);
         this.predicate = predicate;
-        if (this.predicate instanceof TraversalHolderP)
-            ((TraversalHolderP) this.predicate).getTraversals().forEach(this::integrateChild);
+        this.predicate.getTraversals().forEach(this::integrateChild);
     }
 
     @Override
@@ -62,15 +59,14 @@ public final class IsStep<S> extends FilterStep<S> implements TraversalParent {
 
     @Override
     public List<Traversal.Admin<S, ?>> getLocalChildren() {
-        return (List) (this.predicate instanceof TraversalHolderP ? ((TraversalHolderP) this.predicate).getTraversals() : Collections.emptyList());
+        return (List) this.predicate.getTraversals();
     }
 
     @Override
     public IsStep<S> clone() {
         final IsStep<S> clone = (IsStep<S>) super.clone();
         clone.predicate = this.predicate.clone();
-        if (clone.predicate instanceof TraversalHolderP)
-            ((TraversalHolderP) clone.predicate).getTraversals().forEach(clone::integrateChild);
+        clone.predicate.getTraversals().forEach(clone::integrateChild);
         return clone;
     }
 

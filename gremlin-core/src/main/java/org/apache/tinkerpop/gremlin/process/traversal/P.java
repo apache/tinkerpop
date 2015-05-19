@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -104,6 +106,10 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be or'd together");
         return new OrP<>(this, (P<V>) predicate);
+    }
+
+    public <S,E> List<Traversal.Admin<S,E>> getTraversals() {
+        return Collections.emptyList();
     }
 
     public P<V> clone() {

@@ -24,8 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHolderP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -68,8 +66,7 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     @Override
     public void addHasContainer(final HasContainer hasContainer) {
         this.hasContainers.add(hasContainer);
-        if (hasContainer.getPredicate() instanceof TraversalHolderP)
-            ((TraversalHolderP) hasContainer.getPredicate()).getTraversals().forEach(this::integrateChild);
+        hasContainer.getPredicate().getTraversals().forEach(this::integrateChild);
     }
 
     @Override
@@ -80,8 +77,7 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
         return this.hasContainers.stream()
-                .filter(hasContainer -> hasContainer.getPredicate() instanceof TraversalHolderP)
-                .flatMap(hasContainer -> ((TraversalHolderP) hasContainer.getPredicate()).getTraversals().stream())
+                .flatMap(hasContainer -> hasContainer.getPredicate().getTraversals().stream())
                 .collect(Collectors.toList());
     }
 

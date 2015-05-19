@@ -33,7 +33,7 @@ import java.util.function.BiPredicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalP<S, E> extends P<E> implements TraversalHolderP {
+public final class TraversalP<S, E> extends P<E> {
 
     private Traversal.Admin<S, E> traversal;
     private final boolean negate;
