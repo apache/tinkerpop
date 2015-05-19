@@ -147,8 +147,6 @@ import java.util.function.Predicate;
  */
 public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
-    //static P[] EMPTY_P = new P[0];
-
     public interface Admin<S, E> extends Traversal.Admin<S, E>, GraphTraversal<S, E> {
 
         @Override
@@ -351,7 +349,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default <E2 extends Number> GraphTraversal<S, E2> min(final Scope scope) {
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<E2>(this.asAdmin()) : new MinLocalStep(this.asAdmin()));
     }
-
 
     public default GraphTraversal<S, Double> mean() {
         return this.mean(Scope.global);
