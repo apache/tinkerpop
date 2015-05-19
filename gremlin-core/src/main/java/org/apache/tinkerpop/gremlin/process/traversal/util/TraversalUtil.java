@@ -48,6 +48,8 @@ public final class TraversalUtil {
     }
 
     public static final <S, E> boolean test(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal, E end) {
+        if (null == end) return TraversalUtil.test(traverser, traversal);
+
         final Traverser.Admin<S> split = traverser.split();
         split.setSideEffects(traversal.getSideEffects());
         split.setBulk(1l);
@@ -87,25 +89,35 @@ public final class TraversalUtil {
     }
 
     public static final <S, E> boolean test(final S start, final Traversal.Admin<S, E> traversal, final E end) {
+        if (null == end) return TraversalUtil.test(start, traversal);
+
         traversal.reset();
-        if (start instanceof Multiple)
-            traversal.addStarts(traversal.getTraverserGenerator().generateIterator(((Multiple) start).iterator(), traversal.getStartStep(), 1l));
-        else
-            traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
-        /////
-        final boolean isMultiple = end instanceof Multiple;
+        traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
         final Step<?, E> endStep = traversal.getEndStep();
         while (traversal.hasNext()) {
-            if (isMultiple) {
-                if (((Multiple) end).contains(endStep.next().get()))
-                    return true;
-            } else {
-                if (endStep.next().get().equals(end))
-                    return true;
-            }
+            if (endStep.next().get().equals(end))
+                return true;
         }
         return false;
+    }
 
+    public static final <S, E> boolean test(final Multiple<S> start, final Traversal.Admin<S, E> traversal, final Multiple<E> end) {
+        if (null == end) return TraversalUtil.test(start, traversal);
+
+        traversal.reset();
+        traversal.addStarts(traversal.getTraverserGenerator().generateIterator(start.iterator(), (Step) traversal.getStartStep(), 1l));
+        final Step<?, E> endStep = traversal.getEndStep();
+        while (traversal.hasNext()) {
+            if (end.contains(endStep.next().get()))
+                return true;
+        }
+        return false;
+    }
+
+    public static final <S, E> boolean test(final Multiple<S> start, final Traversal.Admin<S, E> traversal) {
+        traversal.reset();
+        traversal.addStarts(traversal.getTraverserGenerator().generateIterator(start.iterator(), (Step) traversal.getStartStep(), 1l));
+        return traversal.hasNext();
     }
 
     public static final <S, E> E applyNullable(final S start, final Traversal.Admin<S, E> traversal) {
@@ -114,10 +126,7 @@ public final class TraversalUtil {
 
     public static final <S, E> boolean test(final S start, final Traversal.Admin<S, E> traversal) {
         traversal.reset();
-        if (start instanceof Multiple)
-            traversal.addStarts(traversal.getTraverserGenerator().generateIterator(((Multiple) start).iterator(), traversal.getStartStep(), 1l));
-        else
-            traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
+        traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
         return traversal.hasNext(); // filter
     }
 

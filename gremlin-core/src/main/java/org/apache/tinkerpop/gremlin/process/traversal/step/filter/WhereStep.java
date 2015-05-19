@@ -43,13 +43,13 @@ import java.util.Set;
  */
 public final class WhereStep<S> extends FilterStep<S> implements TraversalParent, Scoping {
 
-    private P<Object> predicate;
-    private final Set<String> startKeys = new HashSet<>();
-    private final Set<String> endKeys = new HashSet<>();
-    private String startKey;
-    private String endKey;
-    private Scope scope;
-    private boolean multiKeyedTraversal;
+    protected P<Object> predicate;
+    protected final Set<String> startKeys = new HashSet<>();
+    protected final Set<String> endKeys = new HashSet<>();
+    protected String startKey;
+    protected String endKey;
+    protected Scope scope;
+    protected boolean multiKeyedTraversal;
 
 
     public WhereStep(final Traversal.Admin traversal, final Scope scope, final Optional<String> startKey, final P<?> predicate) {
@@ -57,7 +57,6 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         this.scope = scope;
         this.predicate = (P) predicate;
         if (!this.predicate.getTraversals().isEmpty()) {
-
             final Traversal.Admin<?, ?> whereTraversal = predicate.getTraversals().get(0);
             if (whereTraversal.getStartStep().getLabels().size() > 1 || whereTraversal.getEndStep().getLabels().size() > 1) {
                 this.multiKeyedTraversal = true;
@@ -92,7 +91,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.scope, this.startKeys, this.predicate);
+        return StringFactory.stepString(this, this.scope, this.multiKeyedTraversal ? this.startKeys : this.startKey, this.predicate);
     }
 
     @Override
@@ -181,6 +180,6 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
                 }
             }
         }
-        return this.predicate.getBiPredicate().test(startObjects.isEmpty() ? null : new TraversalUtil.Multiple<>(startObjects), endObjects.isEmpty() ? null : new TraversalUtil.Multiple<>(endObjects));
+        return this.predicate.getBiPredicate().test(new TraversalUtil.Multiple<>(startObjects), endObjects.isEmpty() ? null : new TraversalUtil.Multiple<>(endObjects));
     }
 }

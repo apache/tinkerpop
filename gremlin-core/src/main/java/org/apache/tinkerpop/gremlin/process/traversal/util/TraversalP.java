@@ -96,13 +96,11 @@ public final class TraversalP<S, E> extends P<E> {
                 throw new IllegalArgumentException("The traversal must be provided a start: " + traversalP.traversal);
             final boolean result;
             if (start instanceof Traverser)
-                result = null == end ?
-                        TraversalUtil.test(((Traverser<S>) start).asAdmin(), traversalP.traversal) :
-                        TraversalUtil.test(((Traverser<S>) start).asAdmin(), traversalP.traversal, end);
+                result = TraversalUtil.test(((Traverser<S>) start).asAdmin(), traversalP.traversal, end);
+            else if (start instanceof TraversalUtil.Multiple)
+                result = TraversalUtil.test((TraversalUtil.Multiple) start, traversalP.traversal, (TraversalUtil.Multiple) end);
             else
-                result = null == end ?
-                        TraversalUtil.test(start, traversalP.traversal) :
-                        TraversalUtil.test(start, traversalP.traversal, end);
+                result = TraversalUtil.test(start, traversalP.traversal, end);
             return traversalP.negate ? !result : result;
         }
 

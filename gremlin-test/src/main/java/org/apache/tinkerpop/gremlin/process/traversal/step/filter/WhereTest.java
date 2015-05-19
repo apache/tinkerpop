@@ -37,8 +37,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.junit.Assert.*;
 
 /**
@@ -78,6 +78,10 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     // hasNot functionality
 
     public abstract Traversal<Vertex, String> get_g_V_whereXnotXoutXcreatedXXX_name();
+
+    // multi-labels
+
+    public abstract Traversal<Vertex, String> get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -243,11 +247,21 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    // hasNot functionality
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_whereXnotXoutXcreatedXXX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_whereXnotXoutXcreatedXXX_name();
         checkResults(Arrays.asList("vadas", "lop", "ripple"), traversal);
+    }
+
+    // multi-labels
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name();
+        checkResults(Arrays.asList("josh"), traversal);
     }
 
 
@@ -319,6 +333,13 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_whereXnotXoutXcreatedXXX_name() {
             return g.V().where(not(__.out("created"))).values("name");
+        }
+
+        // multi-labels
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name() {
+            return g.V().as("a").out("knows").as("b").where(as("a", "b").out("created").has("name", "ripple")).values("name");
         }
     }
 }
