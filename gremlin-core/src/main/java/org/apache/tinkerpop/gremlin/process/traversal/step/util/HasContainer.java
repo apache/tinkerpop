@@ -129,7 +129,7 @@ public final class HasContainer implements Serializable, Cloneable, Predicate<El
             final List<P<?>> predicates = ((AndP) predicate).getPredicates();
             final HasContainer[] hasContainers = new HasContainer[predicates.size()];
             for (int i = 0; i < predicates.size(); i++) {
-                hasContainers[i] = new HasContainer(key, predicate);
+                hasContainers[i] = new HasContainer(key, predicates.get(i));
             }
             return hasContainers;
         } else {
