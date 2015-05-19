@@ -177,12 +177,6 @@ public class Settings {
      */
     public List<ProcessorSettings> processors = new ArrayList<>();
 
-    /**
-     * Settings must be instantiated from {@link #read(String)} or {@link #read(java.io.InputStream)} methods.
-     */
-    private Settings() {
-    }
-
     public Optional<ServerMetrics> optionalMetrics() {
         return Optional.ofNullable(metrics);
     }
