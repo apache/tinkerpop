@@ -18,14 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -127,11 +127,7 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Double> imp
 
         @Override
         public Number generateFinalResult(final Iterator<KeyValue<NullObject, Number>> keyValues) {
-            double sum = 0.0d;
-            while (keyValues.hasNext()) {
-                sum = sum + keyValues.next().getValue().doubleValue();
-            }
-            return sum;
+            return keyValues.hasNext() ? keyValues.next().getValue() : 0.0d;
         }
 
         public static final SumGlobalMapReduce instance() {
