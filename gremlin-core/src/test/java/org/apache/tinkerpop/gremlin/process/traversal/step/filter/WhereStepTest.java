@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 public class WhereStepTest {
 
     @Test
-    public void shouldHaveProperKeys() {
+    public void shouldHaveProperKeysAndState() {
         Traversal<?, ?> traversal = as("a").out().as("b").where(as("a").out());
         WhereStep<?> whereStep = (WhereStep) traversal.asAdmin().getEndStep();
         assertFalse(whereStep.multiKeyedTraversal);
@@ -42,6 +42,15 @@ public class WhereStepTest {
         assertTrue(whereStep.endKeys.isEmpty());
         assertNull(whereStep.endKey);
         assertEquals("a", whereStep.startKey);
+        assertEquals(TraversalP.class, whereStep.predicate.getClass());
+
+        traversal = as("a").out().as("b").where(as("a","b").out());
+        whereStep = (WhereStep) traversal.asAdmin().getEndStep();
+        assertTrue(whereStep.multiKeyedTraversal);
+        assertTrue(whereStep.startKeys.contains("a") && whereStep.startKeys.contains("b") && whereStep.startKeys.size() == 2);
+        assertTrue(whereStep.endKeys.isEmpty());
+        assertNull(whereStep.endKey);
+        assertNull(whereStep.startKey);
         assertEquals(TraversalP.class, whereStep.predicate.getClass());
     }
 }
