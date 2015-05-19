@@ -161,9 +161,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
 
         @Override
         public Tree generateFinalResult(final Iterator<KeyValue<NullObject, Tree>> keyValues) {
-            final Tree tree = new Tree();
-            keyValues.forEachRemaining(keyValue -> tree.addTree(keyValue.getValue()));
-            return tree;
+            return keyValues.hasNext() ? keyValues.next().getValue() : new Tree();
         }
 
         @Override

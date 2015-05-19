@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -58,6 +58,11 @@ public abstract class GroovyTreeTest {
         @Override
         public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
             TraversalScriptHelper.compute("g.V(v1Id).out.out.tree.by('name')", g, "v1Id", v1Id)
+        }
+
+        @Override
+        public Traversal<Vertex, Tree> get_g_V_out_out_out_tree() {
+            TraversalScriptHelper.compute("g.V.out.out.out.tree", g)
         }
 
     }

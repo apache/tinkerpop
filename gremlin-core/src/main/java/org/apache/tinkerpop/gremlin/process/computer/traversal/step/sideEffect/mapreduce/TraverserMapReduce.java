@@ -57,19 +57,16 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
 
     public TraverserMapReduce(final Step traversalEndStep) {
         this.traversal = traversalEndStep.getTraversal();
-        this.comparator = Optional.ofNullable(traversalEndStep instanceof OrderGlobalStep ? new ChainedComparator<Comparable>(((OrderGlobalStep) traversalEndStep).getComparators()) : null);
-        if (!this.comparator.isPresent() && traversalEndStep instanceof CollectingBarrierStep)
-            this.collectingBarrierStep = Optional.of((CollectingBarrierStep<?>) traversalEndStep);
-        if (traversalEndStep instanceof RangeGlobalStep)
-            this.rangeGlobalStep = Optional.of(((RangeGlobalStep) traversalEndStep).clone());
-        if (traversalEndStep instanceof TailGlobalStep)
-            this.tailGlobalStep = Optional.of(((TailGlobalStep) traversalEndStep).clone());
+        this.genericLoadState(traversalEndStep);
     }
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
         this.traversal = TraversalVertexProgram.getTraversal(graph, configuration);
-        final Step traversalEndStep = this.traversal.getEndStep().getPreviousStep(); // don't get the ComputerResultStep
+        this.genericLoadState(this.traversal.getEndStep().getPreviousStep()); // don't get the ComputerResultStep
+    }
+
+    private void genericLoadState(final Step<?, ?> traversalEndStep) {
         this.comparator = Optional.ofNullable(traversalEndStep instanceof OrderGlobalStep ? new ChainedComparator<Comparable>(((OrderGlobalStep) traversalEndStep).getComparators()) : null);
         if (!this.comparator.isPresent() && traversalEndStep instanceof CollectingBarrierStep)
             this.collectingBarrierStep = Optional.of((CollectingBarrierStep<?>) traversalEndStep);
@@ -81,7 +78,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
 
     @Override
     public boolean doStage(final Stage stage) {
-        return stage.equals(Stage.MAP) || this.collectingBarrierStep.isPresent();
+        return stage.equals(Stage.MAP) || this.collectingBarrierStep.isPresent() || this.rangeGlobalStep.isPresent() || this.tailGlobalStep.isPresent();
     }
 
     @Override
@@ -99,11 +96,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
 
     @Override
     public void combine(final Comparable comparable, final Iterator<Traverser<?>> values, final ReduceEmitter<Comparable, Traverser<?>> emitter) {
-        final TraverserSet<?> traverserSet = new TraverserSet<>();
-        while (values.hasNext()) {
-            traverserSet.add((Traverser.Admin) values.next().asAdmin());
-        }
-        traverserSet.forEach(emitter::emit);
+        this.reduce(comparable, values, emitter);
     }
 
     @Override

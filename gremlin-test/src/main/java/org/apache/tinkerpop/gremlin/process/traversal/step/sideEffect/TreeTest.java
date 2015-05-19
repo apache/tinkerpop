@@ -21,9 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -55,6 +53,8 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id);
 
     public abstract Traversal<Vertex, Tree> get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Tree> get_g_V_out_out_out_tree();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -109,10 +109,20 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_out_out_out_tree() {
+        final Traversal<Vertex, Tree> traversal = get_g_V_out_out_out_tree();
+        printTraversalForm(traversal);
+        final Tree tree = traversal.next();
+        assertTrue(tree.isEmpty());
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends TreeTest {
         @Override
         public Traversal<Vertex, Tree> get_g_VX1X_out_out_tree_byXnameX(final Object v1Id) {
-            return (Traversal) g.V(v1Id).out().out().tree().by("name");
+            return g.V(v1Id).out().out().tree().by("name");
         }
 
         @Override
@@ -122,22 +132,27 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_tree_byXidX() {
-            return (Traversal) g.V().out().out().tree().by(T.id);
+            return g.V().out().out().tree().by(T.id);
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_byXidX_capXaX() {
-            return (Traversal) g.V().out().out().tree("a").by(T.id).cap("a");
+            return g.V().out().out().tree("a").by(T.id).cap("a");
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_tree() {
-            return (Traversal) g.V().out().out().tree();
+            return g.V().out().out().tree();
         }
 
         @Override
         public Traversal<Vertex, Tree> get_g_V_out_out_treeXaX_capXaX() {
-            return (Traversal) g.V().out().out().tree("a").cap("a");
+            return g.V().out().out().tree("a").cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Tree> get_g_V_out_out_out_tree() {
+            return g.V().out().out().out().tree();
         }
     }
 }

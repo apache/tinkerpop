@@ -843,14 +843,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             return list;
         }
     }
-    /////////////////////////////////////////////
-
-    @Test
-    @Ignore("Because of Graph.engine()")
-    @LoadGraphWith(MODERN)
-    public void shouldSupportStringTraversalVertexProgramExecution() throws Exception {
-
-    }
 
     /////////////////////////////////////////////
     @Test
