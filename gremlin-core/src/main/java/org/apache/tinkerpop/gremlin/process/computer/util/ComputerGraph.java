@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
  */
 public final class ComputerGraph implements Graph {
 
-    private enum State {VERTEX_PROGRAM, MAP_REDUCE, NO_OP}
+    private enum State {VERTEX_PROGRAM, MAP_REDUCE}
 
     private ComputerVertex starVertex;
     private final Set<String> computeKeys;
@@ -71,10 +71,6 @@ public final class ComputerGraph implements Graph {
 
     public ComputerVertex getStarVertex() {
         return this.starVertex;
-    }
-
-    public void setState(final State state) {
-        this.state = state;
     }
 
     @Override
@@ -411,7 +407,7 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public boolean equals(final Object other) {
-            return ElementHelper.areEqual(this, other);
+            return this.property.equals(other);
         }
     }
 
@@ -462,7 +458,7 @@ public final class ComputerGraph implements Graph {
 
         @Override
         public Graph graph() {
-            return null;
+            return ComputerGraph.this;
         }
 
         @Override
