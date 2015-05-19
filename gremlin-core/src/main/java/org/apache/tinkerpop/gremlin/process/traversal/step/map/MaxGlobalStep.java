@@ -18,14 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -123,14 +123,8 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public Number generateFinalResult(final Iterator<KeyValue<NullObject, Number>> keyValues) {
-            if(!keyValues.hasNext()) return Double.NaN;
-            Number max = -Double.MAX_VALUE;
-            while (keyValues.hasNext()) {
-                final Number value = keyValues.next().getValue();
-                if (value.doubleValue() > max.doubleValue())
-                    max = value;
-            }
-            return max;
+            return keyValues.hasNext() ? keyValues.next().getValue() : Double.NaN;
+
         }
 
         public static final MaxGlobalMapReduce instance() {

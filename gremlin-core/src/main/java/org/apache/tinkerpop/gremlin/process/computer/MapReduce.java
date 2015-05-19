@@ -22,9 +22,6 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.Comparator;
@@ -274,7 +271,7 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
     /**
      * A convenience singleton when a single key is needed so that all emitted values converge to the same combiner/reducer.
      */
-    public static class NullObject implements Comparable<NullObject>, Serializable {
+    public static class NullObject implements Comparable, Serializable {
         private static final NullObject INSTANCE = new NullObject();
         private static final String NULL_OBJECT = "";
 
@@ -284,7 +281,7 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
 
         @Override
         public int hashCode() {
-            return 666666666;
+            return 0;
         }
 
         @Override
@@ -293,21 +290,16 @@ public interface MapReduce<MK, MV, RK, RV, R> extends Cloneable {
         }
 
         @Override
-        public int compareTo(final NullObject nullObject) {
-            return 0;
+        public int compareTo(final Object object) {
+            if (object instanceof NullObject)
+                return 0;
+            else
+                throw new IllegalArgumentException("The " + NullObject.class.getSimpleName() + " can not be compared with " + object.getClass().getSimpleName());
         }
 
         @Override
         public String toString() {
             return NULL_OBJECT;
-        }
-
-        private void readObject(final ObjectInputStream inputStream) throws ClassNotFoundException, IOException {
-
-        }
-
-        private void writeObject(final ObjectOutputStream outputStream) throws IOException {
-
         }
     }
 }

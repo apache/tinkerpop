@@ -24,7 +24,13 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.hadoop.structure.*;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopElement;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraphVariables;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
@@ -33,7 +39,13 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -111,6 +123,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             put(GiraphConstants.NETTY_CLIENT_USE_EXECUTION_HANDLER.getKey(), false); // this prevents so many integration tests running out of threads
             put(GiraphConstants.NUM_INPUT_THREADS.getKey(), 3);
             put(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 3);
+            put("mapred.reduce.tasks", 4);
             //put("giraph.vertexOutputFormatThreadSafe", false);
             //put("giraph.numOutputThreads", 3);
 

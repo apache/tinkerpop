@@ -667,8 +667,6 @@ WARNING: Giraph uses a large number of Hadoop counters. The default for Hadoop i
 
 WARNING: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
 
-IMPORTANT: `GiraphGraphComputer` is the default graph computer for `HadoopGraph`. If another graph computer is desired, then it can be set using `HadoopGraph.compute(...)` or via the properties file `gremlin.hadoop.defaultGraphComputer` setting.
-
 [source,text]
 gremlin> g = graph.traversal(computer()) // GiraphGraphComputer is the default graph computer when no class is specified
 ==>graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], giraphgraphcomputer]

@@ -122,11 +122,7 @@ public final class CountGlobalStep<S> extends ReducingBarrierStep<S, Long> imple
 
         @Override
         public Long generateFinalResult(final Iterator<KeyValue<NullObject, Long>> keyValues) {
-            long count = 0l;
-            while (keyValues.hasNext()) {
-                count = count + keyValues.next().getValue();
-            }
-            return count;
+            return keyValues.hasNext() ? keyValues.next().getValue() : 0L;
         }
 
         public static final CountGlobalMapReduce instance() {

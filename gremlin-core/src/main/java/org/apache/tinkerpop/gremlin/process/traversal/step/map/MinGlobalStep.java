@@ -123,14 +123,7 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public Number generateFinalResult(final Iterator<KeyValue<NullObject, Number>> keyValues) {
-            if(!keyValues.hasNext()) return Double.NaN;
-            Number min = Double.MAX_VALUE;
-            while (keyValues.hasNext()) {
-                final Number value = keyValues.next().getValue();
-                if (value.doubleValue() < min.doubleValue())
-                    min = value;
-            }
-            return min;
+            return keyValues.hasNext() ? keyValues.next().getValue() : Double.NaN;
         }
 
         public static final MinGlobalMapReduce instance() {
