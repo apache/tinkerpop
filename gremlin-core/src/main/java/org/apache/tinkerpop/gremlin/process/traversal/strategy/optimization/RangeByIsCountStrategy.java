@@ -25,6 +25,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConjunctionP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
@@ -76,21 +78,24 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                 final Step next = traversal.getSteps().get(i + 1);
                 if (next instanceof IsStep && !(prev instanceof RangeGlobalStep)) { // if a RangeStep was provided, assume that the user knows what he's doing
                     final IsStep isStep = (IsStep) next;
+                    final P isStepPredicate = isStep.getPredicate();
                     Long highRange = null;
-                    for (P p : isStep.getPredicate() instanceof AndP ? ((AndP<?>) isStep.getPredicate()).getPredicates() : Collections.singletonList(isStep.getPredicate())) {
+                    for (P p : isStepPredicate instanceof ConjunctionP ? ((ConjunctionP<?>) isStepPredicate).getPredicates() : Collections.singletonList(isStepPredicate)) {
                         final Object value = p.getValue();
                         final BiPredicate predicate = p.getBiPredicate();
                         if (value instanceof Number) {
                             final long highRangeOffset = INCREASED_OFFSET_SCALAR_PREDICATES.contains(predicate) ? 1L : 0L;
                             final Long highRangeCandidate = ((Number) value).longValue() + highRangeOffset;
-                            highRange = highRange == null || highRangeCandidate > highRange ? highRangeCandidate : highRange;
+                            final boolean update = highRange == null || highRangeCandidate > highRange;
+                            if (update) highRange = highRangeCandidate;
                         } else {
                             final Long highRangeOffset = RANGE_PREDICATES.get(predicate);
                             if (value instanceof Collection && highRangeOffset != null) {
                                 final Object high = Collections.max((Collection) value);
                                 if (high instanceof Number) {
                                     final Long highRangeCandidate = ((Number) high).longValue() + highRangeOffset;
-                                    highRange = highRange == null || highRangeCandidate > highRange ? highRangeCandidate : highRange;
+                                    final boolean update = highRange == null || highRangeCandidate > highRange;
+                                    if (update) highRange = highRangeCandidate;
                                 }
                             }
                         }
