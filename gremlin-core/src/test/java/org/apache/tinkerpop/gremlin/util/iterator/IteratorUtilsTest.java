@@ -18,15 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.util.iterator;
 
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -43,6 +50,62 @@ public class IteratorUtilsTest {
     @Test
     public void shouldIteratePairOfObjects() {
         assertIterator(IteratorUtils.of("test1", "test2"), 2);
+    }
+
+    @Test
+    public void shouldIterateToEnd() {
+        final Iterator itty = Arrays.asList(1, 2, 3).iterator();
+        IteratorUtils.iterate(itty);
+        assertThat(itty.hasNext(), is(false));
+    }
+
+    @Test
+    public void shouldNotFailToIterateIfIteratorIsEmpty() {
+        final Iterator itty = new ArrayList().iterator();
+        IteratorUtils.iterate(itty);
+        assertThat(itty.hasNext(), is(false));
+    }
+
+    @Test
+    public void shouldConvertIteratorToListAndSort() {
+        final Iterator<Integer> itty = Arrays.asList(1, 2, 3).iterator();
+        final List<Integer> list = IteratorUtils.list(itty, Comparator.<Integer>reverseOrder());
+        assertEquals(3, list.get(0).intValue());
+        assertEquals(2, list.get(1).intValue());
+        assertEquals(1, list.get(2).intValue());
+    }
+
+    @Test
+    public void shouldIterateToSet() {
+        final Iterator<Integer> itty = Arrays.asList(1, 2, 3, 3, 2, 1).iterator();
+        final Set<Integer> set = IteratorUtils.set(itty);
+        assertEquals(3, set.size());
+        assertThat(set, hasItems(1, 2, 3));
+    }
+
+    @Test(expected = FastNoSuchElementException.class)
+    public void shouldThrowOnLimitIfIteratorExceeded() {
+        final Iterator<Integer> itty = Arrays.asList(1, 2, 3).iterator();
+        final Iterator<Integer> limitedItty = IteratorUtils.limit(itty, 1);
+        limitedItty.next();
+        limitedItty.next();
+    }
+
+    @Test
+    public void shouldFlatMapIterator() {
+        final Iterator<Iterator<Integer>> itty = Arrays.asList(Arrays.asList(1, 2, 3).iterator(), new ArrayList<Integer>().iterator(), Arrays.asList(4, 5, 6).iterator()).iterator();
+        final List<Integer> list = IteratorUtils.list(IteratorUtils.flatMap(itty, x -> IteratorUtils.map(x, i -> i * 10)));
+        assertEquals(6, list.size());
+        assertThat(list, hasItems(10, 20, 30, 40, 50, 60));
+    }
+
+    @Test(expected = FastNoSuchElementException.class)
+    public void shouldThrowOnFlatMapIfIteratorExceeded() {
+        final Iterator<Iterator<Integer>> itty = Arrays.asList(Arrays.asList(1).iterator(), new ArrayList<Integer>().iterator(), Arrays.asList(4).iterator()).iterator();
+        final Iterator<Integer> limitedItty = IteratorUtils.flatMap(itty, x -> IteratorUtils.map(x, i -> i * 10));
+        limitedItty.next();
+        limitedItty.next();
+        limitedItty.next();
     }
 
     @Test

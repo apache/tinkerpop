@@ -41,9 +41,7 @@ import java.util.stream.Stream;
  */
 public final class IteratorUtils {
 
-    private IteratorUtils() {
-
-    }
+    private IteratorUtils() {}
 
     public static final <S> Iterator<S> of(final S a) {
         return new SingleIterator<>(a);
@@ -88,7 +86,7 @@ public final class IteratorUtils {
         return fill(iterator, new HashSet<>());
     }
 
-    public static <S> Iterator<S> limit(final Iterator<S> iterator, int limit) {
+    public static <S> Iterator<S> limit(final Iterator<S> iterator, final int limit) {
         return new Iterator<S>() {
             private int count = 0;
 
