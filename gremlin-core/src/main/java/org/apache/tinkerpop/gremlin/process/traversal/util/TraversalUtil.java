@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -86,11 +88,21 @@ public final class TraversalUtil {
 
     public static final <S, E> boolean test(final S start, final Traversal.Admin<S, E> traversal, final E end) {
         traversal.reset();
-        traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
+        if (start instanceof Multiple)
+            traversal.addStarts(traversal.getTraverserGenerator().generateIterator(((Multiple) start).iterator(), traversal.getStartStep(), 1l));
+        else
+            traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
+        /////
+        final boolean isMultiple = end instanceof Multiple;
         final Step<?, E> endStep = traversal.getEndStep();
         while (traversal.hasNext()) {
-            if (endStep.next().get().equals(end))
-                return true;
+            if (isMultiple) {
+                if (((Multiple) end).contains(endStep.next().get()))
+                    return true;
+            } else {
+                if (endStep.next().get().equals(end))
+                    return true;
+            }
         }
         return false;
 
@@ -102,8 +114,26 @@ public final class TraversalUtil {
 
     public static final <S, E> boolean test(final S start, final Traversal.Admin<S, E> traversal) {
         traversal.reset();
-        traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
+        if (start instanceof Multiple)
+            traversal.addStarts(traversal.getTraverserGenerator().generateIterator(((Multiple) start).iterator(), traversal.getStartStep(), 1l));
+        else
+            traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
         return traversal.hasNext(); // filter
     }
 
+    public static class Multiple<S> implements Iterable<S> {
+        private Collection<S> multiple;
+
+        public Multiple(final Collection<S> multiple) {
+            this.multiple = multiple;
+        }
+
+        public Iterator<S> iterator() {
+            return this.multiple.iterator();
+        }
+
+        public boolean contains(final S object) {
+            return this.multiple.contains(object);
+        }
+    }
 }
