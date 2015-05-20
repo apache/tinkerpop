@@ -51,4 +51,15 @@ public class ArrayIteratorTest {
         assertFalse(itty.hasNext());
         itty.next();
     }
+
+    @Test
+    public void shouldShowElementsInToString() {
+        final String[] arr = new String[3];
+        arr[0] = "test1";
+        arr[1] = "test2";
+        arr[2] = "test3";
+
+        final Iterator<String> itty = new ArrayIterator<>(arr);
+        assertEquals("[test1, test2, test3]", itty.toString());
+    }
 }
