@@ -54,6 +54,21 @@ public final class TraversalP<S, E> extends P<E> {
     }
 
     @Override
+    public int hashCode() {
+        return (this.biPredicate.hashCode() + this.traversal.hashCode()) ^ (this.negate ? 1 : 0);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other != null && other.getClass().equals(this.getClass())) {
+            final TraversalP otherTraversalP = (TraversalP) other;
+            return this.negate == otherTraversalP.negate &&
+                    this.traversal.equals(otherTraversalP.traversal);
+        }
+        return false;
+    }
+
+    @Override
     public TraversalP<S, E> negate() {
         return new TraversalP<>(this.traversal.clone(), this.value, !this.negate);
     }
