@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.util.iterator;
 
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -50,6 +52,14 @@ public class IteratorUtilsTest {
     @Test
     public void shouldIteratePairOfObjects() {
         assertIterator(IteratorUtils.of("test1", "test2"), 2);
+    }
+
+    @Test
+    public void shouldHavePrivateConstructor() throws Exception {
+        final Constructor<IteratorUtils> constructor = IteratorUtils.class.getDeclaredConstructor();
+        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 
     @Test
@@ -369,7 +379,7 @@ public class IteratorUtilsTest {
         assertEquals(1, m1.get("3").size());
         assertEquals(3, m1.size());
 
-        final Map<String,List<String>> m2 = IteratorUtils.groupBy(iterable.iterator(), i -> i.substring(0,4));
+        final Map<String,List<String>> m2 = IteratorUtils.groupBy(iterable.iterator(), i -> i.substring(0, 4));
         assertEquals("test1", m2.get("test").get(0));
         assertEquals("test2", m2.get("test").get(1));
         assertEquals("test3", m2.get("test").get(2));
@@ -397,6 +407,17 @@ public class IteratorUtilsTest {
         assertIterator(IteratorUtils.map(iterable, s -> "test" + s).iterator(), 3);
     }
 
+    @Test(expected = FastNoSuchElementException.class)
+    public void shouldThrowOnFilterIfNextedPastAvailable() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        final Iterator<String> filteredItty = IteratorUtils.filter(iterable.iterator(), s -> s.startsWith("dfaa"));
+        filteredItty.next();
+    }
+
     @Test
     public void shouldFilterAllFromIterator() {
         final List<String> iterable = new ArrayList<>();
@@ -418,6 +439,33 @@ public class IteratorUtilsTest {
     }
 
     @Test
+    public void shouldFilterNoneFromIteratorWithoutHasNextCheckFirst() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        final Iterator<String> filteredItty = IteratorUtils.filter(iterable.iterator(), s -> s.startsWith("test"));
+        assertEquals("test1",  filteredItty.next());
+        assertEquals("test2",  filteredItty.next());
+        assertEquals("test3",  filteredItty.next());
+    }
+
+    @Test
+    public void shouldFilterNoneFromIteratorWithMultipleChecksOfHasNext() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        final Iterator<String> filteredItty = IteratorUtils.filter(iterable.iterator(), s -> s.startsWith("test"));
+        assertThat(filteredItty.hasNext(), is(true));
+        assertThat(filteredItty.hasNext(), is(true));
+        assertThat(filteredItty.hasNext(), is(true));
+        assertIterator(filteredItty, 3);
+    }
+
+    @Test
     public void shouldFilterSomeFromIterator() {
         final List<String> iterable = new ArrayList<>();
         iterable.add("test1");
@@ -436,6 +484,7 @@ public class IteratorUtilsTest {
 
         assertIterator(IteratorUtils.filter(iterable, s -> s.startsWith("dfaa")).iterator(), 0);
     }
+
 
     @Test
     public void shouldFilterNoneFromIterable() {
@@ -489,7 +538,7 @@ public class IteratorUtilsTest {
         iterable.add("2");
         iterable.add("3");
 
-        assertEquals("test123", IteratorUtils.reduce(iterable, "test", (a,b) -> a + b));
+        assertEquals("test123", IteratorUtils.reduce(iterable, "test", (a, b) -> a + b));
     }
 
     @Test
@@ -537,6 +586,7 @@ public class IteratorUtilsTest {
 
     public <S> void assertIterator(final Iterator<S> itty, final int size) {
         for (int ix = 0; ix < size; ix++) {
+            assertThat(itty.hasNext(), is(true));
             assertEquals("test" + (ix + 1), itty.next());
         }
 

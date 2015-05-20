@@ -260,12 +260,7 @@ public final class IteratorUtils {
     }
 
     public static final <S> Iterable<S> filter(final Iterable<S> iterable, final Predicate<S> predicate) {
-        return new Iterable<S>() {
-            @Override
-            public Iterator<S> iterator() {
-                return IteratorUtils.filter(iterable.iterator(), predicate);
-            }
-        };
+        return () -> IteratorUtils.filter(iterable.iterator(), predicate);
     }
 
     ///////////////////
