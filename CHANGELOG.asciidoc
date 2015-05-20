@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `has(key)` and `hasNot(key)` are now aliases for `where(values(key))` and `where(not(values(key)))`, respectively.
 * TinkerGraph classes are now final to restrict user and vendor extension.
 * Added `TraversalStrategy.VendorOptimization` to ensure that all TinkerPop optimizations execute first on the known TinkerPop steps.
 * Added `TailGlobalStep` and `TailLocalStep` (`tail()`) which gets objects from the end of the traversal stream.
