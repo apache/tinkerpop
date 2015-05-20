@@ -20,9 +20,11 @@ package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -34,14 +36,19 @@ import org.junit.Rule;
 import org.junit.rules.TestName;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -228,6 +235,7 @@ public abstract class AbstractGremlinTest {
         if (!muted) System.out.println("   pre-strategy:" + traversal);
         traversal.hasNext();
         if (!muted) System.out.println("  post-strategy:" + traversal);
+        verifyUniqueStepIds(traversal.asAdmin());
     }
 
     public boolean isComputerTest() {
@@ -243,5 +251,27 @@ public abstract class AbstractGremlinTest {
 
     public static void validateException(final Throwable expected, final Throwable actual) {
         assertThat(actual, instanceOf(expected.getClass()));
+    }
+
+    public static void verifyUniqueStepIds(final Traversal.Admin<?, ?> traversal) {
+        AbstractGremlinTest.verifyUniqueStepIds(traversal, 0, new HashSet<>());
+    }
+
+    private static void verifyUniqueStepIds(final Traversal.Admin<?, ?> traversal, final int depth, final Set<String> ids) {
+        for (final Step step : traversal.asAdmin().getSteps()) {
+            /*for (int i = 0; i < depth; i++) System.out.print("\t");
+            System.out.println(step.getId() + " --> " + step);*/
+            if (!ids.add(step.getId())) {
+                fail("The following step id already exists: " + step.getId() + "---" + step);
+            }
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> globalTraversal : ((TraversalParent) step).getGlobalChildren()) {
+                    verifyUniqueStepIds(globalTraversal, depth + 1, ids);
+                }
+                for (final Traversal.Admin<?, ?> localTraversal : ((TraversalParent) step).getLocalChildren()) {
+                    verifyUniqueStepIds(localTraversal, depth + 1, ids);
+                }
+            }
+        }
     }
 }
