@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -89,6 +91,7 @@ public class MultiIteratorTest {
         itty.addIterator(EmptyIterator.instance());
         itty.addIterator(list.iterator());
 
+        assertThat(itty.hasNext(), is(true));
         assertEquals("test1", itty.next());
         assertEquals("test2", itty.next());
         assertEquals("test3", itty.next());
