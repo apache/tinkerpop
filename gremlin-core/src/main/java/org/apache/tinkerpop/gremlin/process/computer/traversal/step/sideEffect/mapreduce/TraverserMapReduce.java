@@ -55,18 +55,19 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
     private TraverserMapReduce() {
     }
 
-    public TraverserMapReduce(final Step traversalEndStep) {
-        this.traversal = traversalEndStep.getTraversal();
-        this.genericLoadState(traversalEndStep);
+    public TraverserMapReduce(final Traversal.Admin<?, ?> traversal) {
+        this.traversal = traversal;
+        this.genericLoadState();
     }
 
     @Override
     public void loadState(final Graph graph, final Configuration configuration) {
         this.traversal = TraversalVertexProgram.getTraversal(graph, configuration);
-        this.genericLoadState(this.traversal.getEndStep().getPreviousStep()); // don't get the ComputerResultStep
+        this.genericLoadState();
     }
 
-    private void genericLoadState(final Step<?, ?> traversalEndStep) {
+    private void genericLoadState() {
+        final Step<?, ?> traversalEndStep = traversal.getEndStep().getPreviousStep();  // don't get the ComputerResultStep
         this.comparator = Optional.ofNullable(traversalEndStep instanceof OrderGlobalStep ? new ChainedComparator<Comparable>(((OrderGlobalStep) traversalEndStep).getComparators()) : null);
         if (!this.comparator.isPresent() && traversalEndStep instanceof CollectingBarrierStep)
             this.collectingBarrierStep = Optional.of((CollectingBarrierStep<?>) traversalEndStep);
