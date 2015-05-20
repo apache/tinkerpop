@@ -26,6 +26,7 @@ TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * TinkerGraph classes are now final to restrict user and vendor extension.
+* Added `TraversalStrategy.VendorOptimization` to ensure that all TinkerPop optimizations execute first on the known TinkerPop steps.
 * `AndStep` and `OrStep` are now simply markers where `WhereStep(a.and(b).and(c)...and(z))` is the compilation.
 * Moved `Compare`, `Contains`, `Order`, `Operator`, and `P` to `process/traversal` from `structure/` as they are process-based objects.
 * `HasContainer` now uses `P` predicate as helper methods and tests are more thorough on `P`.
