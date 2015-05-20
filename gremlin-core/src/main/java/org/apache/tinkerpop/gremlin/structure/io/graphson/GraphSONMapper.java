@@ -18,9 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
+import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -70,8 +73,13 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         final ObjectMapper om = new ObjectMapper();
         om.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
 
-        if (embedTypes)
-            om.enableDefaultTypingAsProperty(ObjectMapper.DefaultTyping.NON_FINAL, GraphSONTokens.CLASS);
+        if (embedTypes) {
+            final TypeResolverBuilder<?> typer = new StdTypeResolverBuilder()
+                    .init(JsonTypeInfo.Id.CLASS, null)
+                    .inclusion(JsonTypeInfo.As.PROPERTY)
+                    .typeProperty(GraphSONTokens.CLASS);
+            om.setDefaultTyping(typer);
+        }
 
         if (normalize)
             om.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);

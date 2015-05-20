@@ -301,7 +301,7 @@ public class IoTest extends AbstractGremlinTest {
             assertTrue(idValue.has("cluster"));
             assertEquals("vertex", idValue.get("cluster").asText());
             assertTrue(idValue.has("elementId"));
-            assertEquals("AF4B5965-B176-4552-B3C1-FBBE2F52C305".toLowerCase(), idValue.get("elementId").asText());
+            assertEquals("AF4B5965-B176-4552-B3C1-FBBE2F52C305".toLowerCase(), idValue.get("elementId").get(1).asText());
 
             // reusing the same config used for creation of "g".
             final Configuration configuration = graphProvider.newGraphConfiguration("g2", this.getClass(), name.getMethodName(), null);
