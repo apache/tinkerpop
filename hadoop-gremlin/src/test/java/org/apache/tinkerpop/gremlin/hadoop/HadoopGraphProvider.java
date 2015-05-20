@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -123,6 +124,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             put(GiraphConstants.NETTY_CLIENT_USE_EXECUTION_HANDLER.getKey(), false); // this prevents so many integration tests running out of threads
             put(GiraphConstants.NUM_INPUT_THREADS.getKey(), 3);
             put(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 3);
+            put(GiraphConstants.MAX_MASTER_SUPERSTEP_WAIT_MSECS.getKey(), TimeUnit.MINUTES.toMillis(60L));
             put("mapred.reduce.tasks", 4);
             //put("giraph.vertexOutputFormatThreadSafe", false);
             //put("giraph.numOutputThreads", 3);
