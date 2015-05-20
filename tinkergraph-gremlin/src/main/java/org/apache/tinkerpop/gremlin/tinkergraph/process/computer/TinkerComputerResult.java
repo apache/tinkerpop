@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerComputerResult extends DefaultComputerResult {
+public final class TinkerComputerResult extends DefaultComputerResult {
 
     public TinkerComputerResult(final Graph graph, final Memory memory) {
         super(graph, memory);

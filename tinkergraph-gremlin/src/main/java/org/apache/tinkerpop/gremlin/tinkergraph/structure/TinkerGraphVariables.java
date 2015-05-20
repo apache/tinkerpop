@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphVariables implements Graph.Variables {
+public final class TinkerGraphVariables implements Graph.Variables {
 
     private final Map<String, Object> variables = new ConcurrentHashMap<>();
 

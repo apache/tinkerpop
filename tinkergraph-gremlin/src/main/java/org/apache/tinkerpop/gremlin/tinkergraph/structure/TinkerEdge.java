@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerEdge extends TinkerElement implements Edge {
+public final class TinkerEdge extends TinkerElement implements Edge {
 
     protected Map<String, Property> properties;
     protected final Vertex inVertex;

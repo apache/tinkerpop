@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerProperty<V> implements Property<V> {
+public final class TinkerProperty<V> implements Property<V> {
 
     protected final Element element;
     protected final String key;

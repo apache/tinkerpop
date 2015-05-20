@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public class TinkerGraphStep<S extends Element> extends GraphStep<S> implements HasContainerHolder {
+public final class TinkerGraphStep<S extends Element> extends GraphStep<S> implements HasContainerHolder {
 
     public final List<HasContainer> hasContainers = new ArrayList<>();
 

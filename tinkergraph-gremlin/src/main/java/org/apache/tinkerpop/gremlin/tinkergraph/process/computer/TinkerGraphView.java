@@ -40,7 +40,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerGraphView {
+public final class TinkerGraphView {
 
     protected final Set<String> computeKeys;
     protected final GraphComputer.Isolation isolation;

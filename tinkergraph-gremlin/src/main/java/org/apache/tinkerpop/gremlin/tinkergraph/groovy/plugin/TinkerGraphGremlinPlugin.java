@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
+public final class TinkerGraphGremlinPlugin extends AbstractGremlinPlugin {
 
 
     private static final Set<String> IMPORTS = new HashSet<String>() {{

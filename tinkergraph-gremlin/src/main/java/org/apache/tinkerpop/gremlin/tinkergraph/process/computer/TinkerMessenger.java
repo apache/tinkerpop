@@ -46,7 +46,7 @@ import java.util.stream.StreamSupport;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerMessenger<M> implements Messenger<M> {
+public final class TinkerMessenger<M> implements Messenger<M> {
 
     private final Vertex vertex;
     private final TinkerMessageBoard<M> messageBoard;

@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TinkerMemory implements Memory.Admin {
+public final class TinkerMemory implements Memory.Admin {
 
     public final Set<String> memoryKeys = new HashSet<>();
     public Map<String, Object> previousMap;

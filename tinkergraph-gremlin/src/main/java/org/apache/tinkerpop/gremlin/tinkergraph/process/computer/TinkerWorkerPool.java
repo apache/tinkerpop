@@ -33,7 +33,7 @@ import java.util.function.Consumer;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TinkerWorkerPool implements AutoCloseable {
+public final class TinkerWorkerPool implements AutoCloseable {
 
     private static final BasicThreadFactory threadFactoryWorker = new BasicThreadFactory.Builder().namingPattern("tinker-worker-%d").build();
 

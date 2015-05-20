@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class TinkerMessageBoard<M> {
+final class TinkerMessageBoard<M> {
 
     public Map<Vertex, Queue<M>> sendMessages = new ConcurrentHashMap<>();
     public Map<Vertex, Queue<M>> receiveMessages = new ConcurrentHashMap<>();

@@ -35,7 +35,10 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TinkerFactory {
+public final class TinkerFactory {
+
+    private TinkerFactory() {}
+
     public static TinkerGraph createClassic() {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty(TinkerGraph.CONFIG_VERTEX_ID, TinkerGraph.DefaultIdManager.INTEGER.name());
@@ -139,7 +142,7 @@ public class TinkerFactory {
         g.variables().set("comment", "this graph was created to provide examples and test coverage for tinkerpop3 api advances");
     }
 
-    public interface SocialTraversal<S, E> extends Traversal.Admin<S, E> {
+    /*public interface SocialTraversal<S, E> extends Traversal.Admin<S, E> {
 
         public SocialTraversal<S, Vertex> people(final String name);
 
@@ -172,5 +175,5 @@ public class TinkerFactory {
             }
 
         }
-    }
+    }*/
 }

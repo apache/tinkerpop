@@ -43,7 +43,7 @@ import java.util.concurrent.Future;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TinkerGraphComputer implements GraphComputer {
+public final class TinkerGraphComputer implements GraphComputer {
 
     private Isolation isolation = Isolation.BSP;
     private Optional<ResultGraph> resultGraph = Optional.empty();
