@@ -35,7 +35,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphMessenger<M> implements Messenger<M> {
+public final class GiraphMessenger<M> implements Messenger<M> {
 
     private GiraphComputeVertex giraphComputeVertex;
     private Iterator<ObjectWritable<M>> messages;

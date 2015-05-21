@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopGremlinPlugin extends AbstractGremlinPlugin {
+public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
 
     private static final Set<String> IMPORTS = new HashSet<String>() {{
         add("import org.apache.hadoop.hdfs.*");

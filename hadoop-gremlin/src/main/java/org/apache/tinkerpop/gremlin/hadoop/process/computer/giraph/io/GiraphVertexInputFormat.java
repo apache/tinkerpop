@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphVertexInputFormat extends VertexInputFormat {
+public final class GiraphVertexInputFormat extends VertexInputFormat {
 
     private InputFormat<NullWritable, VertexWritable> hadoopGraphInputFormat;
 

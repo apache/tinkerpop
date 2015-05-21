@@ -35,7 +35,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopEdgeIterator extends HadoopElementIterator<Edge> {
+public final class HadoopEdgeIterator extends HadoopElementIterator<Edge> {
 
     private Iterator<Edge> edgeIterator = Collections.emptyIterator();
 

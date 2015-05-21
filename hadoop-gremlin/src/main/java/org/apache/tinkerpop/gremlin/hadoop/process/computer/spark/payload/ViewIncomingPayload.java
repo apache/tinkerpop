@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ViewIncomingPayload<M> implements Payload {
+public final class ViewIncomingPayload<M> implements Payload {
 
     private List<DetachedVertexProperty<Object>> view = null;
     private final List<M> incomingMessages;

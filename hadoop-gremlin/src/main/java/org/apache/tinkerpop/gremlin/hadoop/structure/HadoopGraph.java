@@ -122,7 +122,7 @@ import java.util.stream.Stream;
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyProfileTest$Traversals",
         method = "g_V_out_out_profile_grateful",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
-public class HadoopGraph implements Graph {
+public final class HadoopGraph implements Graph {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);
 

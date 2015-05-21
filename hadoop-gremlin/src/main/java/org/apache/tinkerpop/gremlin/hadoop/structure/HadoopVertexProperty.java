@@ -31,7 +31,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopVertexProperty<V> implements VertexProperty<V>, WrappedVertexProperty<VertexProperty<V>> {
+public final class HadoopVertexProperty<V> implements VertexProperty<V>, WrappedVertexProperty<VertexProperty<V>> {
 
     private final VertexProperty<V> baseVertexProperty;
     private final HadoopVertex hadoopVertex;

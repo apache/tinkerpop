@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class InputOutputHelper {
+public final class InputOutputHelper {
 
     private static Map<Class<? extends InputFormat<NullWritable, VertexWritable>>, Class<? extends OutputFormat<NullWritable, VertexWritable>>> INPUT_TO_OUTPUT_CACHE = new ConcurrentHashMap<>();
     private static Map<Class<? extends OutputFormat<NullWritable, VertexWritable>>, Class<? extends InputFormat<NullWritable, VertexWritable>>> OUTPUT_TO_INPUT_CACHE = new ConcurrentHashMap<>();

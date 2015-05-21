@@ -38,7 +38,7 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class VertexWritableIterator implements Iterator<Vertex> {
+public final class VertexWritableIterator implements Iterator<Vertex> {
 
     private final VertexWritable value = new VertexWritable();
     private boolean available = false;

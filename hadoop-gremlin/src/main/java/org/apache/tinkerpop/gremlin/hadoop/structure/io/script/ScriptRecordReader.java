@@ -45,7 +45,7 @@ import java.util.Iterator;
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ScriptRecordReader extends RecordReader<NullWritable, VertexWritable> {
+public final class ScriptRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
     protected final static String SCRIPT_FILE = "gremlin.hadoop.scriptInputFormat.script";
     //protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptInputFormat.scriptEngine";

@@ -32,7 +32,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopVertexIterator extends HadoopElementIterator<Vertex> {
+public final class HadoopVertexIterator extends HadoopElementIterator<Vertex> {
 
     private HadoopVertex nextVertex = null;
 

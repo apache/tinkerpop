@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopRemoteAcceptor implements RemoteAcceptor {
+public final class HadoopRemoteAcceptor implements RemoteAcceptor {
 
     private static final String USE_SUGAR = "useSugar";
     private static final String SPACE = " ";

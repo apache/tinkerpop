@@ -31,7 +31,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopVertex extends HadoopElement implements Vertex, WrappedVertex<Vertex> {
+public final class HadoopVertex extends HadoopElement implements Vertex, WrappedVertex<Vertex> {
 
     protected HadoopVertex() {
     }

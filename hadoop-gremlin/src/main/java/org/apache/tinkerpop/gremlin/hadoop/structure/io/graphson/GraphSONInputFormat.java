@@ -34,7 +34,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphSONInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements HadoopPoolsConfigurable {
+public final class GraphSONInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements HadoopPoolsConfigurable {
 
     @Override
     public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {

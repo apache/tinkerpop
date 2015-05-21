@@ -37,7 +37,7 @@ import java.util.Optional;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopMap extends Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable> {
+public final class HadoopMap extends Mapper<NullWritable, VertexWritable, ObjectWritable, ObjectWritable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HadoopMap.class);
     private MapReduce mapReduce;

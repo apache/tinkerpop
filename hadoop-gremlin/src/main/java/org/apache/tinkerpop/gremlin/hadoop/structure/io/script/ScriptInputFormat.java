@@ -35,7 +35,7 @@ import java.io.IOException;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class ScriptInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements HadoopPoolsConfigurable {
+public final class ScriptInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements HadoopPoolsConfigurable {
 
     @Override
     public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context)

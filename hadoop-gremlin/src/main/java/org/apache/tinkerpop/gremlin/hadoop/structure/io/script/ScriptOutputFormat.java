@@ -31,7 +31,7 @@ import java.io.IOException;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class ScriptOutputFormat extends CommonFileOutputFormat implements HadoopPoolsConfigurable {
+public final class ScriptOutputFormat extends CommonFileOutputFormat implements HadoopPoolsConfigurable {
 
     @Override
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {

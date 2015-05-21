@@ -34,11 +34,10 @@ import java.util.Comparator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ObjectWritableComparator implements RawComparator<ObjectWritable>, Configurable {
+public abstract class ObjectWritableComparator implements RawComparator<ObjectWritable>, HadoopPoolsConfigurable {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(ObjectWritableComparator.class);
 
-    protected Configuration configuration;
     protected Comparator comparator;
     private final ObjectWritable objectWritable1 = new ObjectWritable();
     private final ObjectWritable objectWritable2 = new ObjectWritable();
@@ -61,15 +60,10 @@ public abstract class ObjectWritableComparator implements RawComparator<ObjectWr
         }
     }
 
-    @Override
-    public Configuration getConf() {
-        return this.configuration;
-    }
-
     public static class ObjectWritableMapComparator extends ObjectWritableComparator {
         @Override
         public void setConf(final Configuration configuration) {
-            this.configuration = configuration;
+            super.setConf(configuration);
             final org.apache.commons.configuration.Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(configuration);
             this.comparator = MapReduce.<MapReduce<?,?,?,?,?>>createMapReduce(HadoopGraph.open(apacheConfiguration),apacheConfiguration).getMapKeySort().get();
         }
@@ -78,7 +72,7 @@ public abstract class ObjectWritableComparator implements RawComparator<ObjectWr
     public static class ObjectWritableReduceComparator extends ObjectWritableComparator {
         @Override
         public void setConf(final Configuration configuration) {
-            this.configuration = configuration;
+            super.setConf(configuration);
             final org.apache.commons.configuration.Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(configuration);
             this.comparator = MapReduce.<MapReduce<?,?,?,?,?>>createMapReduce(HadoopGraph.open(apacheConfiguration),apacheConfiguration).getReduceKeySort().get();
         }

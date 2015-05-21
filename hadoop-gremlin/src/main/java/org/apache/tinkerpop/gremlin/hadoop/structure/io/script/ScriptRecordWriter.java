@@ -39,7 +39,7 @@ import java.io.UnsupportedEncodingException;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class ScriptRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
+public final class ScriptRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
 
     protected final static String SCRIPT_FILE = "gremlin.hadoop.scriptOutputFormat.script";
     protected final static String SCRIPT_ENGINE = "gremlin.hadoop.scriptOutputFormat.scriptEngine";

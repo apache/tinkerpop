@@ -36,7 +36,7 @@ import java.io.InputStream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphSONRecordReader extends RecordReader<NullWritable, VertexWritable> {
+public final class GraphSONRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
     private final GraphSONReader graphsonReader = GraphSONReader.build().create();
     private final VertexWritable vertexWritable = new VertexWritable();

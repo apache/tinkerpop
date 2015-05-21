@@ -35,7 +35,7 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ObjectWritableIterator implements Iterator<KeyValue> {
+public final class ObjectWritableIterator implements Iterator<KeyValue> {
 
     private final ObjectWritable key = new ObjectWritable();
     private final ObjectWritable value = new ObjectWritable();

@@ -27,6 +27,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
@@ -41,14 +42,14 @@ import java.io.InputStream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable> {
+public final class GryoRecordReader extends RecordReader<NullWritable, VertexWritable> {
 
     private FSDataInputStream inputStream;
 
     private static final byte[] PATTERN = GryoMapper.HEADER;
     private static final byte[] TERMINATOR = VertexTerminator.instance().terminal;
 
-    private final GryoReader gryoReader = GryoReader.build().create();
+    private GryoReader gryoReader;
     private final VertexWritable vertexWritable = new VertexWritable();
 
     private long currentLength = 0;
@@ -60,14 +61,16 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
     @Override
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
         final FileSplit split = (FileSplit) genericSplit;
-        final Configuration job = context.getConfiguration();
+        final Configuration configuration = context.getConfiguration();
+        HadoopPools.initialize(configuration);
+        this.gryoReader = HadoopPools.getGryoPool().takeReader();
         long start = split.getStart();
         final Path file = split.getPath();
-        if (null != new CompressionCodecFactory(job).getCodec(file)) {
+        if (null != new CompressionCodecFactory(configuration).getCodec(file)) {
             throw new IllegalStateException("Compression is not supported for the (binary) Gryo format");
         }
         // open the file and seek to the start of the split
-        this.inputStream = file.getFileSystem(job).open(split.getPath());
+        this.inputStream = file.getFileSystem(configuration).open(split.getPath());
         this.splitLength = split.getLength() - (seekToHeader(this.inputStream, start) - start);
     }
 
@@ -145,5 +148,9 @@ public class GryoRecordReader extends RecordReader<NullWritable, VertexWritable>
     @Override
     public synchronized void close() throws IOException {
         this.inputStream.close();
+        if (null != this.gryoReader) {
+            HadoopPools.getGryoPool().offerReader(this.gryoReader);
+            this.gryoReader = null;
+        }
     }
 }

@@ -34,7 +34,7 @@ import java.io.UnsupportedEncodingException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphSONRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
+public final class GraphSONRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
     private static final String UTF8 = "UTF-8";
     private static final byte[] NEWLINE;
     private final DataOutputStream outputStream;

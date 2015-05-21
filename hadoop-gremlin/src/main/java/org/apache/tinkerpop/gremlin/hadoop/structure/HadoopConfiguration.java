@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopConfiguration extends AbstractConfiguration implements Serializable, Iterable {
+public final class HadoopConfiguration extends AbstractConfiguration implements Serializable, Iterable {
 
     private final Map<String, Object> properties = new HashMap<>();
 

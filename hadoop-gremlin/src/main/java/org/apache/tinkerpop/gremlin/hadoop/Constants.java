@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class Constants {
+public final class Constants {
 
     private Constants() {
     }

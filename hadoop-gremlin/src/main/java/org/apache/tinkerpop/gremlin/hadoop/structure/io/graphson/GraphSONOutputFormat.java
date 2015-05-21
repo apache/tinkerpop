@@ -30,7 +30,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphSONOutputFormat extends CommonFileOutputFormat implements HadoopPoolsConfigurable {
+public final class GraphSONOutputFormat extends CommonFileOutputFormat implements HadoopPoolsConfigurable {
 
     @Override
     public RecordWriter<NullWritable, VertexWritable> getRecordWriter(final TaskAttemptContext job) throws IOException, InterruptedException {

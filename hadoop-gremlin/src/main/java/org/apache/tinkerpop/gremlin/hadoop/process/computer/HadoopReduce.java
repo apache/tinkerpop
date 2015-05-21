@@ -34,7 +34,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopReduce extends Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable> {
+public final class HadoopReduce extends Reducer<ObjectWritable, ObjectWritable, ObjectWritable, ObjectWritable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HadoopReduce.class);
     private MapReduce mapReduce;

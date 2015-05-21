@@ -35,7 +35,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphVertexOutputFormat extends VertexOutputFormat {
+public final class GiraphVertexOutputFormat extends VertexOutputFormat {
 
     private OutputFormat<NullWritable, VertexWritable> hadoopGraphOutputFormat;
 

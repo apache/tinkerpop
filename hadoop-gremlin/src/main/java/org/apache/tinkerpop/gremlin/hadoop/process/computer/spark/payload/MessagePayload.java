@@ -24,7 +24,7 @@ package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MessagePayload<M> implements Payload {
+public final class MessagePayload<M> implements Payload {
 
     private final M message;
 

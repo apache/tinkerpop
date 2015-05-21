@@ -63,7 +63,7 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphGraphComputer extends AbstractHadoopGraphComputer implements GraphComputer, Tool {
+public final class GiraphGraphComputer extends AbstractHadoopGraphComputer implements GraphComputer, Tool {
 
     protected GiraphConfiguration giraphConfiguration = new GiraphConfiguration();
     private MapMemory memory = new MapMemory();

@@ -34,7 +34,7 @@ import java.util.Queue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class TextIterator implements Iterator<String> {
+public final class TextIterator implements Iterator<String> {
 
     private String line;
     private boolean available = false;

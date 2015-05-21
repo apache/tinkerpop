@@ -37,12 +37,12 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HDFSTools {
+public final class HDFSTools {
 
     private static final String FORWARD_SLASH = "/";
     private static final String FORWARD_ASTERISK = "/*";
 
-    protected HDFSTools() {
+    private HDFSTools() {
     }
 
     public static long getFileSize(final FileSystem fs, final Path path, final PathFilter filter) throws IOException {

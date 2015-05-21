@@ -24,7 +24,7 @@ import org.apache.hadoop.fs.PathFilter;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HiddenFileFilter implements PathFilter {
+public final class HiddenFileFilter implements PathFilter {
 
     private static final HiddenFileFilter INSTANCE = new HiddenFileFilter();
 

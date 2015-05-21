@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ViewOutgoingPayload<M> implements Payload {
+public final class ViewOutgoingPayload<M> implements Payload {
 
     private final List<DetachedVertexProperty<Object>> view;
     private final List<Tuple2<Object,M>> outgoingMessages;

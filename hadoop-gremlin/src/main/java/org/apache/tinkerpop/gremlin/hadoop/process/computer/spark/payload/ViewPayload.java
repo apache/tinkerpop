@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ViewPayload implements Payload {
+public final class ViewPayload implements Payload {
 
     private final List<DetachedVertexProperty<Object>> view;
 

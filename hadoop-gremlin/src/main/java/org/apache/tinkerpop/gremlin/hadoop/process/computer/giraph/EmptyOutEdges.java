@@ -33,7 +33,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class EmptyOutEdges implements OutEdges<ObjectWritable, NullWritable> {
+public final class EmptyOutEdges implements OutEdges<ObjectWritable, NullWritable> {
 
     private static final EmptyOutEdges INSTANCE = new EmptyOutEdges();
 

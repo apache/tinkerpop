@@ -32,7 +32,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GiraphVertexWriter extends VertexWriter {
+public final class GiraphVertexWriter extends VertexWriter {
     private final OutputFormat<NullWritable, VertexWritable> outputFormat;
     private RecordWriter<NullWritable, VertexWritable> recordWriter;
 

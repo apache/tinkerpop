@@ -24,7 +24,10 @@ import org.apache.hadoop.conf.Configuration;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ConfUtil {
+public final class ConfUtil {
+
+    private ConfUtil() {
+    }
 
     public static org.apache.commons.configuration.Configuration makeApacheConfiguration(final Configuration hadoopConfiguration) {
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();

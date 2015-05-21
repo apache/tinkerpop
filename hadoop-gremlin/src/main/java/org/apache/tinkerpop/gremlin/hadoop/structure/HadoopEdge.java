@@ -30,7 +30,7 @@ import java.util.Iterator;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopEdge extends HadoopElement implements Edge, WrappedEdge<Edge> {
+public final class HadoopEdge extends HadoopElement implements Edge, WrappedEdge<Edge> {
 
     protected HadoopEdge() {
     }

@@ -31,7 +31,7 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GryoInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements HadoopPoolsConfigurable {
+public final class GryoInputFormat extends FileInputFormat<NullWritable, VertexWritable> implements HadoopPoolsConfigurable {
 
     @Override
     public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {

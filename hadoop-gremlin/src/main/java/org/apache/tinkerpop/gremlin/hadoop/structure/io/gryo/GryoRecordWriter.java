@@ -23,6 +23,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.HadoopPools;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
@@ -33,15 +34,17 @@ import java.io.IOException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GryoRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
+public final class GryoRecordWriter extends RecordWriter<NullWritable, VertexWritable> {
 
     private final DataOutputStream outputStream;
     private final boolean hasEdges;
-    private final GryoWriter gryoWriter = GryoWriter.build().create(); // TODO: configurable build
+    private GryoWriter gryoWriter;
 
     public GryoRecordWriter(final DataOutputStream outputStream, final Configuration configuration) {
         this.outputStream = outputStream;
         this.hasEdges = configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true);
+        HadoopPools.initialize(configuration);
+        this.gryoWriter = HadoopPools.getGryoPool().takeWriter();
     }
 
     @Override
@@ -57,5 +60,9 @@ public class GryoRecordWriter extends RecordWriter<NullWritable, VertexWritable>
     @Override
     public synchronized void close(final TaskAttemptContext context) throws IOException {
         this.outputStream.close();
+        if (null != this.gryoWriter) {
+            HadoopPools.getGryoPool().offerWriter(this.gryoWriter);
+            this.gryoWriter = null;
+        }
     }
 }

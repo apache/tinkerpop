@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedProperty;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopProperty<V> implements Property<V>, WrappedProperty<Property<V>> {
+public final class HadoopProperty<V> implements Property<V>, WrappedProperty<Property<V>> {
 
     private final Property<V> baseProperty;
     private final Element hadoopElement;

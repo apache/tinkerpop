@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopElement;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraphVariables;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
@@ -63,7 +62,6 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         add(HadoopEdge.class);
         add(HadoopElement.class);
         add(HadoopGraph.class);
-        add(HadoopGraphVariables.class);
         add(HadoopProperty.class);
         add(HadoopVertex.class);
         add(HadoopVertexProperty.class);
