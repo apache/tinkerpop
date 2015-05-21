@@ -17,8 +17,17 @@
  * under the License.
  */
 
-// Generates the classic graph into an "empty" TinkerGraph
-TinkerFactory.generateClassic(graph)
+// Generates the classic graph into an "empty" TinkerGraph via LifeCycleHook
+// it is important that the hook be assigned to a variable (in this case "hook").
+// the exact name of this variable is unimportant.
+hook = [
+  onStartUp: { ctx ->
+    ctx.logger.info("Loading 'classic' graph data.")
+    TinkerFactory.generateClassic(graph)
+  }
+] as LifeCycleHook
 
-// define the default TraversalSource to bind queries to.
+// Define the default TraversalSource to bind queries to. Code outside of the "hook"
+// will execute for each instantiated ScriptEngine instance. Use this part of the
+// script to initialize functions that are meant to be re-usable.
 g = graph.traversal()

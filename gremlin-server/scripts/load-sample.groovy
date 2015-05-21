@@ -17,12 +17,23 @@
  * under the License.
  */
 
-// An example of an initialization script that can be configured to run in Gremlin Server.
-// Functions defined here will go into global cache and will not be removed from there
-// unless there is a reset of the ScriptEngine.
-graph.io(GryoIo.build()).readGraph('data/sample.kryo')
+// Generates the modern graph into an "empty" TinkerGraph via LifeCycleHook
+// it is important that the hook be assigned to a variable (in this case "hook").
+// the exact name of this variable is unimportant.
+hook = [
+  onStartUp: { ctx ->
+    ctx.logger.info("Loading graph data from data/sample.kryo.")
 
-// define the default TraversalSource to bind queries to.
+    // An example of an initialization script that can be configured to run in Gremlin Server.
+    graph.io(GryoIo.build()).readGraph('data/sample.kryo')
+  }
+] as LifeCycleHook
+
+// define the default TraversalSource to bind queries to. Code outside of the "hook"
+// will execute for each instantiated ScriptEngine instance. Use this part of the
+// script to initialize functions that are meant to be re-usable.
 g = graph.traversal()
 
+// Functions defined here will go into global cache and will not be removed from there
+// unless there is a reset of the ScriptEngine.
 def addItUp(x, y) { x + y }

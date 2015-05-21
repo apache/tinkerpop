@@ -19,9 +19,12 @@
 package org.apache.tinkerpop.gremlin.server.op.session;
 
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.Graphs;
 import org.apache.tinkerpop.gremlin.server.Settings;
+import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,10 +135,17 @@ public class Session {
                 })
                 .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphs.getGraphsAsBindings())
+                .promoteBindings(kv -> kv.getValue() instanceof Graph
+                        || kv.getValue() instanceof TraversalSource)
                 .executorService(executor)
                 .scheduledExecutorService(scheduledExecutorService);
 
-        settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config));
+        settings.scriptEngines.forEach((k, v) -> {
+            // make sure that server related classes are available at init - no really necessary here because
+            // lifecycle hooks are not executed per session, but there should be some consistency .... i guess
+            v.imports.add(LifeCycleHook.class.getCanonicalName());
+            gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
+        });
 
         return gremlinExecutorBuilder;
     }

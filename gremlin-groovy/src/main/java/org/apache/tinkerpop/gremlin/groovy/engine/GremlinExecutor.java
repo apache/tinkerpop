@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
@@ -56,6 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -83,6 +82,7 @@ public class GremlinExecutor implements AutoCloseable {
     private final Map<String, EngineSettings> settings;
     private final long scriptEvaluationTimeout;
     private final Bindings globalBindings;
+    private final Predicate<Map.Entry<String,Object>> promoteBinding;
     private final List<List<String>> use;
     private final ExecutorService executorService;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -99,7 +99,8 @@ public class GremlinExecutor implements AutoCloseable {
                             final ExecutorService executorService, final ScheduledExecutorService scheduledExecutorService,
                             final Consumer<Bindings> beforeEval, final Consumer<Bindings> afterSuccess,
                             final Consumer<Bindings> afterTimeout, final BiConsumer<Bindings, Throwable> afterFailure,
-                            final Set<String> enabledPlugins, final boolean suppliedExecutor, final boolean suppliedScheduledExecutor) {
+                            final Set<String> enabledPlugins, final boolean suppliedExecutor, final boolean suppliedScheduledExecutor,
+                            final Predicate<Map.Entry<String,Object>> promoteBinding) {
         this.executorService = executorService;
         this.scheduledExecutorService = scheduledExecutorService;
         this.beforeEval = beforeEval;
@@ -110,6 +111,7 @@ public class GremlinExecutor implements AutoCloseable {
         this.settings = settings;
         this.scriptEvaluationTimeout = scriptEvaluationTimeout;
         this.globalBindings = globalBindings;
+        this.promoteBinding = promoteBinding;
         this.enabledPlugins = enabledPlugins;
         this.scriptEngines = createScriptEngines();
         this.suppliedExecutor = suppliedExecutor;
@@ -363,7 +365,7 @@ public class GremlinExecutor implements AutoCloseable {
                         // prevent assignment of non-graph implementations just in case someone tries to overwrite
                         // them in the init
                         bindings.entrySet().stream()
-                                .filter(kv -> kv.getValue() instanceof Graph || kv.getValue() instanceof TraversalSource)
+                                .filter(promoteBinding)
                                 .forEach(kv -> this.globalBindings.put(kv.getKey(), kv.getValue()));
 
                         logger.info("Initialized {} ScriptEngine with {}", language, p.getValue0());
@@ -408,6 +410,7 @@ public class GremlinExecutor implements AutoCloseable {
         };
         private List<List<String>> use = new ArrayList<>();
         private Bindings globalBindings = new SimpleBindings();
+        private Predicate<Map.Entry<String,Object>> promoteBinding = kv -> false;
 
         private Builder() {
         }
@@ -430,6 +433,15 @@ public class GremlinExecutor implements AutoCloseable {
             final Map<String, Object> m = null == config ? Collections.emptyMap() : config;
 
             settings.put(engineName, new EngineSettings(imports, staticImports, scripts, m));
+            return this;
+        }
+
+        /**
+         * A predicate applied to the binding list to determine if it should be promoted to a "global" binding
+         * that should be tied to every script.
+         */
+        public Builder promoteBindings(final Predicate<Map.Entry<String,Object>> promoteBinding) {
+            this.promoteBinding = promoteBinding;
             return this;
         }
 
@@ -551,7 +563,7 @@ public class GremlinExecutor implements AutoCloseable {
 
             return new GremlinExecutor(settings, use, scriptEvaluationTimeout, globalBindings, es,
                     ses, beforeEval, afterSuccess, afterTimeout, afterFailure, enabledPlugins,
-                    suppliedExecutor.get(), suppliedScheduledExecutor.get());
+                    suppliedExecutor.get(), suppliedScheduledExecutor.get(), promoteBinding);
         }
     }
 

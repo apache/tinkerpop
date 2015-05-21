@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import io.netty.bootstrap.ServerBootstrap;
@@ -39,7 +40,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -47,6 +50,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Start and stop Gremlin Server.
@@ -65,6 +69,7 @@ public class GremlinServer {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
     private final Settings settings;
     private Optional<Graphs> graphs = Optional.empty();
+    private List<LifeCycleHook> hooks = new ArrayList<>();
     private Channel ch;
 
     private CompletableFuture<Void> serverStopped = null;
@@ -109,7 +114,19 @@ public class GremlinServer {
             b.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, settings.writeBufferHighWaterMark);
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
+            // get the executor initialized and fire off any lifecycle scripts that were provided by the user.
+            // hooks get initialized during GremlinExecutor initialization
             final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinExecutorService, workerGroup);
+            hooks.forEach(hook -> {
+                logger.info("Executing start up {}", LifeCycleHook.class.getSimpleName());
+                try {
+                    hook.onStartUp(new LifeCycleHook.Context(logger));
+                } catch (UnsupportedOperationException uoe) {
+                    // if the user doesn't implement onStartUp the scriptengine will throw
+                    // this exception.  it can safely be ignored.
+                }
+            });
+
             final Channelizer channelizer = createChannelizer(settings);
             channelizer.init(settings, gremlinExecutor, gremlinExecutorService, graphs.get(), workerGroup);
             b.group(bossGroup, workerGroup)
@@ -173,10 +190,17 @@ public class GremlinServer {
                 .afterTimeout(b -> graphs.get().rollbackAll())
                 .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphs.get().getGraphsAsBindings())
+                .promoteBindings(kv -> kv.getValue() instanceof Graph
+                                    || kv.getValue() instanceof TraversalSource
+                                    || kv.getValue() instanceof LifeCycleHook)
                 .executorService(gremlinExecutorService)
                 .scheduledExecutorService(scheduledExecutorService);
 
-        settings.scriptEngines.forEach((k, v) -> gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config));
+        settings.scriptEngines.forEach((k, v) -> {
+            // make sure that server related classes are available at init
+            v.imports.add(LifeCycleHook.class.getCanonicalName());
+            gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
+        });
         final GremlinExecutor gremlinExecutor = gremlinExecutorBuilder.create();
 
         logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
@@ -194,6 +218,13 @@ public class GremlinServer {
                     logger.info("A {} is now bound to [{}] with {}", kv.getValue().getClass().getSimpleName(), kv.getKey(), kv.getValue());
                     graphs.get().getTraversalSources().put(kv.getKey(), (TraversalSource) kv.getValue());
                 });
+
+        // determine if the initialization scripts introduced LifeCycleHook objects - if so we need to gather them
+        // up for execution
+        hooks = gremlinExecutor.getGlobalBindings().entrySet().stream()
+                .filter(kv -> kv.getValue() instanceof LifeCycleHook)
+                .map(kv -> (LifeCycleHook) kv.getValue())
+                .collect(Collectors.toList());
 
         return gremlinExecutor;
     }
@@ -234,6 +265,16 @@ public class GremlinServer {
 
         // channel is shutdown as are the thread pools - time to kill graphs as nothing else should be acting on them
         new Thread(() -> {
+            hooks.forEach(hook -> {
+                logger.info("Executing shutdown {}", LifeCycleHook.class.getSimpleName());
+                try {
+                    hook.onShutDown(new LifeCycleHook.Context(logger));
+                } catch (UnsupportedOperationException uoe) {
+                    // if the user doesn't implement onShutDown the scriptengine will throw
+                    // this exception.  it can safely be ignored.
+                }
+            });
+
             try {
                 gremlinExecutorService.awaitTermination(30000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ie) {

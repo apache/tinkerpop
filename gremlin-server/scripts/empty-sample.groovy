@@ -17,6 +17,18 @@
  * under the License.
  */
 
+// defines a sample LifeCycleHook that prints some output to the Gremlin Server console.
+// it is important that the hook be assigned to a variable (in this case "hook").
+// the exact name of this variable is unimportant.
+hook = [
+  onStartUp: { ctx ->
+    ctx.logger.info("Executed once at startup of Gremlin Server.")
+  },
+  onShutDown: { ctx ->
+    ctx.logger.info("Executed once at shutdown of Gremlin Server.")
+  }
+] as LifeCycleHook
+
 // define the default TraversalSource to bind queries to.
 g = graph.traversal()
 
