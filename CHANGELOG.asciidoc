@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added a Gremlin Server `LifeCycleHook` to ensure that certain scripts execute once at startup and once at shutdown.
 * TinkerGraph classes are now final to restrict user and vendor extension.
 * Added `TraversalStrategy.VendorOptimization` to ensure that all TinkerPop optimizations execute first on the known TinkerPop steps.
 * Added `TailGlobalStep` and `TailLocalStep` (`tail()`) which gets objects from the end of the traversal stream.
