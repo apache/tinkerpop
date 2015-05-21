@@ -59,13 +59,6 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     }
 
     @Override
-    public GraphComputer isolation(final Isolation isolation) {
-        if (!isolation.equals(Isolation.BSP))
-            throw GraphComputer.Exceptions.isolationNotSupported(isolation);
-        return this;
-    }
-
-    @Override
     public GraphComputer result(final ResultGraph resultGraph) {
         this.resultGraph = Optional.of(resultGraph);
         return this;
@@ -148,10 +141,6 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
 
             public boolean supportsEdgePropertyRemoval() {
                 return false;
-            }
-
-            public boolean supportsIsolation(final Isolation isolation) {
-                return isolation.equals(Isolation.BSP);
             }
 
             public boolean supportsResultGraphPersistCombination(final ResultGraph resultGraph, final Persist persist) {

@@ -998,10 +998,6 @@ public interface Graph extends AutoCloseable, Host {
                     new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph") :
                     new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
         }
-
-        public static IllegalArgumentException onlyOneOrNoGraphComputerClass() {
-            return new IllegalArgumentException("Provide either one or no graph computer class");
-        }
     }
 
     /**

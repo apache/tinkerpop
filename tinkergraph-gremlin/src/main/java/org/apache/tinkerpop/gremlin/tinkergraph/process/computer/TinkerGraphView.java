@@ -43,11 +43,9 @@ import java.util.stream.Stream;
 public final class TinkerGraphView {
 
     protected final Set<String> computeKeys;
-    protected final GraphComputer.Isolation isolation;
     private Map<Element, Map<String, List<VertexProperty>>> computeProperties;
 
-    public TinkerGraphView(final GraphComputer.Isolation isolation, final Set<String> computeKeys) {
-        this.isolation = isolation;
+    public TinkerGraphView(final Set<String> computeKeys) {
         this.computeKeys = computeKeys;
         this.computeProperties = new ConcurrentHashMap<>();
     }

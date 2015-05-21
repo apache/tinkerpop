@@ -45,7 +45,6 @@ import java.util.concurrent.Future;
  */
 public final class TinkerGraphComputer implements GraphComputer {
 
-    private Isolation isolation = Isolation.BSP;
     private Optional<ResultGraph> resultGraph = Optional.empty();
     private Optional<Persist> persist = Optional.empty();
 
@@ -63,12 +62,6 @@ public final class TinkerGraphComputer implements GraphComputer {
 
     public static TraversalEngine engine() {
         return null;
-    }
-
-    @Override
-    public GraphComputer isolation(final Isolation isolation) {
-        this.isolation = isolation;
-        return this;
     }
 
     @Override
@@ -124,7 +117,7 @@ public final class TinkerGraphComputer implements GraphComputer {
             final long time = System.currentTimeMillis();
             try (final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors())) {
                 if (null != this.vertexProgram) {
-                    TinkerHelper.createGraphView(this.graph, this.isolation, this.vertexProgram.getElementComputeKeys());
+                    TinkerHelper.createGraphView(this.graph, this.vertexProgram.getElementComputeKeys());
                     // execute the vertex program
                     this.vertexProgram.setup(this.memory);
                     this.memory.completeSubRound();
@@ -223,5 +216,47 @@ public final class TinkerGraphComputer implements GraphComputer {
         public synchronized V next() {
             return this.iterator.hasNext() ? this.iterator.next() : null;
         }
+    }
+
+    @Override
+    public Features features() {
+        return new Features() {
+
+            public boolean supportsVertexAddition() {
+                return false;
+            }
+
+            public boolean supportsVertexRemoval() {
+                return false;
+            }
+
+            public boolean supportsVertexPropertyRemoval() {
+                return false;
+            }
+
+            public boolean supportsEdgeAddition() {
+                return false;
+            }
+
+            public boolean supportsEdgeRemoval() {
+                return false;
+            }
+
+            public boolean supportsEdgePropertyAddition() {
+                return false;
+            }
+
+            public boolean supportsEdgePropertyRemoval() {
+                return false;
+            }
+
+            public boolean supportsResultGraphPersistCombination(final ResultGraph resultGraph, final Persist persist) {
+                return persist == Persist.NOTHING || resultGraph != ResultGraph.ORIGINAL;
+            }
+
+            public boolean supportsDirectObjects() {
+                return true;
+            }
+        };
     }
 }

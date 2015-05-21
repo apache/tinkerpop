@@ -55,7 +55,6 @@ import static org.junit.Assert.*;
         "computerHasNoVertexProgramNorMapReducers",
         "computerHasAlreadyBeenSubmittedAVertexProgram",
         "providedKeyIsNotAnElementComputeKey",
-        "isolationNotSupported",
         "incidentAndAdjacentElementsCanNotBeAccessedInMapReduce",
         "adjacentVertexLabelsCanNotBeRead",
         "adjacentVertexPropertiesCanNotBeReadOrUpdated",
@@ -64,8 +63,7 @@ import static org.junit.Assert.*;
         "vertexPropertiesCanNotBeUpdatedInMapReduce"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
-        "graphDoesNotSupportProvidedGraphComputer",
-        "onlyOneOrNoGraphComputerClass"
+        "graphDoesNotSupportProvidedGraphComputer"
 })
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class GraphComputerTest extends AbstractGremlinProcessTest {
@@ -88,30 +86,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
     }
 
-    @Test
-    @LoadGraphWith(MODERN)
-    public void shouldFailIfIsolationIsNotSupported() {
-        final GraphComputer computer = graph.compute(graphComputerClass.get());
-        ;
-        if (!computer.features().supportsIsolation(GraphComputer.Isolation.BSP)) {
-            try {
-                computer.isolation(GraphComputer.Isolation.BSP);
-                fail("GraphComputer.isolation() should throw an exception if the isolation is not supported");
-            } catch (Exception ex) {
-                validateException(GraphComputer.Exceptions.isolationNotSupported(GraphComputer.Isolation.BSP), ex);
-            }
-        }
-        if (!computer.features().supportsIsolation(GraphComputer.Isolation.DIRTY_BSP)) {
-            try {
-                computer.isolation(GraphComputer.Isolation.DIRTY_BSP);
-                fail("GraphComputer.isolation() should throw an exception if the isolation is not supported");
-            } catch (Exception ex) {
-                validateException(GraphComputer.Exceptions.isolationNotSupported(GraphComputer.Isolation.DIRTY_BSP), ex);
-            }
-        }
-        assertEquals(StringFactory.graphComputerString(computer), computer.toString());
-    }
-
     /////////////////////////////////////////////
     @Test
     @LoadGraphWith(MODERN)
@@ -125,10 +99,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     }
 
     public static class BadGraphComputer implements GraphComputer {
-        @Override
-        public GraphComputer isolation(final Isolation isolation) {
-            return null;
-        }
 
         @Override
         public GraphComputer result(final ResultGraph resultGraph) {

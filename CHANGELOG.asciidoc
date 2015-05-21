@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.M9 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Removed `GraphComputer.isolation()` as all implementations use standard BSP.
 * Added a Gremlin Server `LifeCycleHook` to ensure that certain scripts execute once at startup and once at shutdown.
 * `has(key)` and `hasNot(key)` are now aliases for `where(values(key))` and `where(not(values(key)))`, respectively.
 * TinkerGraph classes are now final to restrict user and vendor extension.

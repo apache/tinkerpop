@@ -31,19 +31,6 @@ import java.util.concurrent.Future;
  */
 public interface GraphComputer {
 
-    public enum Isolation {
-        /**
-         * Computations are carried out in a bulk synchronous manner.
-         * The results of a vertex property update are only visible after the round is complete.
-         */
-        BSP,
-        /**
-         * Computations are carried out in an bulk asynchronous manner.
-         * The results of a vertex property update are visible before the end of the round.
-         */
-        DIRTY_BSP
-    }
-
     public enum ResultGraph {
         /**
          * When the computation is complete, the {@link org.apache.tinkerpop.gremlin.structure.Graph} in {@link ComputerResult} is the original graph that spawned the graph computer.
@@ -69,14 +56,6 @@ public interface GraphComputer {
          */
         EDGES
     }
-
-    /**
-     * Set the {@link Isolation} of the computation.
-     *
-     * @param isolation the isolation of the computation
-     * @return the updated GraphComputer with newly set isolation
-     */
-    public GraphComputer isolation(final Isolation isolation);
 
     /**
      * Set the {@link ResultGraph} of the computation.
@@ -174,10 +153,6 @@ public interface GraphComputer {
             return true;
         }
 
-        public default boolean supportsIsolation(final Isolation isolation) {
-            return true;
-        }
-
         /**
          * Supports {@link VertexProgram} and {@link MapReduce} parameters to be direct referenced Java objects (no serialization required).
          * This is typically true for single machine graph computer engines. For cluster oriented graph computers, this is typically false.
@@ -210,10 +185,6 @@ public interface GraphComputer {
 
         public static IllegalArgumentException providedKeyIsNotAMemoryComputeKey(final String key) {
             return new IllegalArgumentException("The provided key is not a memory compute key: " + key);
-        }
-
-        public static IllegalArgumentException isolationNotSupported(final Isolation isolation) {
-            return new IllegalArgumentException("The provided isolation is not supported by this graph computer: " + isolation);
         }
 
         public static IllegalArgumentException resultGraphPersistCombinationNotSupported(final ResultGraph resultGraph, final Persist persist) {

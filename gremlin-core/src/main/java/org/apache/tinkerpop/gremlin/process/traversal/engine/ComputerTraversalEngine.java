@@ -68,7 +68,6 @@ public final class ComputerTraversalEngine implements TraversalEngine {
     public static class Builder implements TraversalEngine.Builder {
 
         private Class<? extends GraphComputer> graphComputerClass;
-        private GraphComputer.Isolation isolation = GraphComputer.Isolation.BSP;
         private static final List<TraversalStrategy> WITH_STRATEGIES = Collections.singletonList(ComputerResultStrategy.instance());
 
         @Override
@@ -81,15 +80,11 @@ public final class ComputerTraversalEngine implements TraversalEngine {
             return this;
         }
 
-        public Builder isolation(final GraphComputer.Isolation isolation) {
-            this.isolation = isolation;
-            return this;
-        }
 
         public ComputerTraversalEngine create(final Graph graph) {
             return null == this.graphComputerClass ?
-                    new ComputerTraversalEngine(graph.compute().isolation(this.isolation)) :
-                    new ComputerTraversalEngine(graph.compute(this.graphComputerClass).isolation(this.isolation));
+                    new ComputerTraversalEngine(graph.compute()) :
+                    new ComputerTraversalEngine(graph.compute(this.graphComputerClass));
         }
     }
 
