@@ -18,22 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.util.function;
 
-/**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
- */
-
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
 
 import java.io.Serializable;
 import java.util.function.Supplier;
 
+/**
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
+ */
 public final class MeanNumberSupplier implements Supplier<MeanGlobalStep.MeanNumber>, Serializable {
 
     private static final MeanNumberSupplier INSTANCE = new MeanNumberSupplier();
 
-    private MeanNumberSupplier() {
-
-    }
+    private MeanNumberSupplier() {}
 
     @Override
     public MeanGlobalStep.MeanNumber get() {
