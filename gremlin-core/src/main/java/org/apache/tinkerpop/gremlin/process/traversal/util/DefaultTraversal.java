@@ -60,9 +60,9 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(EmptyGraph.class));
     }
 
-
     public DefaultTraversal(final Graph graph) {
         this.graph = graph;
+        this.setStrategies(TraversalStrategies.GlobalCache.getStrategies(this.graph.getClass()));
     }
 
     @Override

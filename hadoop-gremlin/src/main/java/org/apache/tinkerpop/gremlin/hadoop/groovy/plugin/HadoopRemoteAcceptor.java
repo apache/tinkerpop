@@ -46,7 +46,7 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
     private static final String USE_SUGAR = "useSugar";
     private static final String SPACE = " ";
 
-    private HadoopGraph hadoopGraph;
+    protected HadoopGraph hadoopGraph;
     private Groovysh shell;
     private boolean useSugarPlugin = false;
 
@@ -104,10 +104,11 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
             final ComputerResult computerResult = this.hadoopGraph.compute().program(program).submit().get();
             this.shell.getInterp().getContext().setProperty(RESULT, computerResult);
 
+
             final GraphTraversal.Admin<?, ?> traversal = new DefaultGraphTraversal<>(computerResult.graph());
             traversal.addStep(new ComputerResultStep<>(traversal, computerResult, false));
             return traversal;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RemoteException(e);
         }
     }
