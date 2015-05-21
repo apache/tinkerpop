@@ -233,7 +233,9 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
 [INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
 [INFO] GremlinServer - Initialized GremlinExecutor and configured ScriptEngines.
-[INFO] GremlinServer - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+[INFO] GremlinServer - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
+[INFO] GremlinServer - Executing start up LifeCycleHook
+[INFO] Logger$info - Loading 'modern' graph data.
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo-stringd with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
 [INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
@@ -256,7 +258,9 @@ The log messages that printed above show a number of things, but most importantl
 include::{basedir}/gremlin-server/scripts/generate-modern.groovy[]
 ----
 
-This script loads the "modern" graph into the empty TinkerGraph instance, preparing it for use and then creates a `TraversalSource` variable `g` from `graph`. This variable `g` will be made available on future remote script executions. Note that `Graph` and `TraversalSource` objects that are created or modified in the initialization script will become globally bound to the server. It is not possible to bind variables of other types. With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
+There are two important aspects to the above script.  First, it defines a `LifeCycleHook` for Gremlin Server.  The "hook" provides a way to tie script code into the Gremlin Server startup and shutdown sequences.  The `LifeCycleHook` has two methods that can be implemented `onStartUp` and `onShutDown`.  These events are called once at Gremlin Server start and once at Gremlin Server stop.  Code outside of the "hook" is executed for each `ScriptEngine` creation (multiple may be created when "sessions" are enabled). In this case, the startup hook loads the "modern" graph into the empty TinkerGraph instance, preparing it for use.  Outside of the "hook", the script then creates a `TraversalSource` variable `g` from `graph`. This variable `g` will be made available on future remote script executions. Note that `Graph` and `TraversalSource` objects that are created or modified in the initialization script will become globally bound to the server. It is not possible to bind variables of other types. Any functions that are defined will be cached for future use.
+
+With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
 
 [source,text]
 ----
@@ -347,8 +351,6 @@ Connecting via Java
 ----
 
 image:gremlin-java.png[width=175,float=left] TinkerPop3 comes equipped with a reference client for Java-based applications.  It is referred to as Gremlin Driver, which enables applications to send requests to Gremlin Server and get back results.
-
-CAUTION: Gremlin Driver is currently under heavy development.  The API and configuration options are subject to drastic and breaking change.
 
 Gremlin code is sent to the server from a `Client` instance.  A `Client` is created as follows:
 
@@ -500,7 +502,7 @@ The following table describes the various configuration options that Gremlin Ser
 |scriptEngines |A `Map` of `ScriptEngine` implementations to expose through Gremlin Server, where the key is the name given by the `ScriptEngine` implementation.  The key must match the name exactly for the `ScriptEngine` to be constructed.  The value paired with this key is itself a `Map` of configuration for that `ScriptEngine`.  |_none_
 |scriptEngines.<name>.imports |A comma separated list of classes/packages to make available to the `ScriptEngine`. |_none_
 |scriptEngines.<name>.staticImports |A comma separated list of "static" imports to make available to the `ScriptEngine`. |_none_
-|scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. `Graph` and `TraversalSource` instance references produced from scripts will be stored globally in Gremlin Server, therefore it is possible to use initialization scripts to add Traversal Strategies or create entirely new `Graph` instances all together. |_none_
+|scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. `Graph` and `TraversalSource` instance references produced from scripts will be stored globally in Gremlin Server, therefore it is possible to use initialization scripts to add Traversal Strategies or create entirely new `Graph` instances all together. Instantiating a `LifeCycleHook` in a script provides a way to execute scripts when Gremlin Server starts and stops.|_none_
 |scriptEngines.<name>.config |A `Map` of configuration settings for the `ScriptEngine`.  These settings are dependent on the `ScriptEngine` implementation being used. |_none_
 |scriptEvaluationTimeout |The amount of time in milliseconds before a script evaluation times out. The notion of "script evaluation" refers to the time it takes for the `ScriptEngine` to do its work and *not* any additional time it takes for the result of the evaluation to be iterated and serialized. |30000
 |serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. |_none_
