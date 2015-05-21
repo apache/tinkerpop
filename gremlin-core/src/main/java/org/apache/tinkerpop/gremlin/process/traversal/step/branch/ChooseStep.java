@@ -19,7 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.HasNextTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.HasNextStep;
 
 /**
  * A step which offers a choice of two or more Traversals to take.
@@ -35,7 +35,7 @@ public final class ChooseStep<S, E, M> extends BranchStep<S, E, M> {
     }
 
     public ChooseStep(final Traversal.Admin traversal, final Traversal.Admin<S, ?> predicateTraversal, final Traversal.Admin<S, E> trueChoice, final Traversal.Admin<S, E> falseChoice) {
-        this(traversal, new HasNextTraversal(predicateTraversal));
+        this(traversal, (Traversal.Admin<S, M>) predicateTraversal.addStep(new HasNextStep<>(predicateTraversal)));
         this.addGlobalChildOption((M) Boolean.TRUE, trueChoice);
         this.addGlobalChildOption((M) Boolean.FALSE, falseChoice);
     }

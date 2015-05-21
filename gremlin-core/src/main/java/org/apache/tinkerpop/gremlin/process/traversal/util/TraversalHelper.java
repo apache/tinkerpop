@@ -253,16 +253,17 @@ public final class TraversalHelper {
             if (null == stepPosition.parentId && !(parent instanceof EmptyStep))
                 stepPosition.parentId = parent.asStep().getId();
             if (-1 == stepPosition.z) {
-                for (int i = 0; i < parent.getGlobalChildren().size(); i++) {
+                final int globalChildrenSize = parent.getGlobalChildren().size();
+                for (int i = 0; i < globalChildrenSize; i++) {
                     if (parent.getGlobalChildren().get(i) == current) {
                         stepPosition.z = i;
                     }
                 }
-                /*for (int i = 0; i < parent.getLocalChildren().size(); i++) {
+                for (int i = 0; i < parent.getLocalChildren().size(); i++) {
                     if (parent.getLocalChildren().get(i) == current) {
-                        stepPosition.z = i + parent.getGlobalChildren().size();
+                        stepPosition.z = i + globalChildrenSize;
                     }
-                }*/
+                }
             }
             current = parent.asStep().getTraversal();
         }
