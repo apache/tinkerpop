@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.FileConfiguration;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
@@ -33,7 +30,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -55,30 +51,10 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public Object connect(final List<String> args) throws RemoteException {
-        if (args.size() == 0) {
-            this.hadoopGraph = HadoopGraph.open(new BaseConfiguration());
-            this.shell.getInterp().getContext().setProperty("graph", this.hadoopGraph);
+        if (args.size() != 1) {
+            throw new IllegalArgumentException("The variable name of the graph object must be provided");
         }
-        if (args.size() == 1) {
-            try {
-                final FileConfiguration configuration = new PropertiesConfiguration();
-                configuration.load(new File(args.get(0)));
-                this.hadoopGraph = HadoopGraph.open(configuration);
-                this.shell.getInterp().getContext().setProperty("graph", this.hadoopGraph);
-            } catch (final Exception e) {
-                throw new RemoteException(e.getMessage(), e);
-            }
-        } else if (args.size() == 2) {
-            try {
-                final FileConfiguration configuration = new PropertiesConfiguration();
-                configuration.load(new File(args.get(0)));
-                this.hadoopGraph = HadoopGraph.open(configuration);
-                this.shell.getInterp().getContext().setProperty(args.get(1), this.hadoopGraph);
-            } catch (final Exception e) {
-                throw new RemoteException(e.getMessage(), e);
-            }
-        }
-
+        this.hadoopGraph = (HadoopGraph) this.shell.getInterp().getContext().getVariable(args.get(0));
         return this.hadoopGraph;
     }
 
@@ -88,7 +64,7 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
             if (args.get(i).equals(USE_SUGAR))
                 this.useSugarPlugin = Boolean.valueOf(args.get(i + 1));
             else
-                this.hadoopGraph.configuration().setProperty(args.get(i), args.get(i + 1));
+                throw new IllegalArgumentException("The provided configuration is unknown: " + args);
         }
         return this.hadoopGraph;
     }
@@ -101,7 +77,7 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
                 script = SugarLoader.class.getCanonicalName() + ".load()\n" + script;
             final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(GraphTraversalSource.computer(), "gremlin-groovy", script).create(this.hadoopGraph);
             final ComputerResult computerResult = this.hadoopGraph.compute().program(program).submit().get();
-            this.shell.getInterp().getContext().setProperty(RESULT, computerResult);
+            this.shell.getInterp().getContext().setVariable(RESULT, computerResult);
 
 
             final Traversal.Admin<?, ?> traversal = new DefaultTraversal<>(computerResult.graph());

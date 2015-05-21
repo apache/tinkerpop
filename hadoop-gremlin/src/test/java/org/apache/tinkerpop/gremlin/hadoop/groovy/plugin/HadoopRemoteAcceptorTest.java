@@ -23,7 +23,7 @@ package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -32,8 +32,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -63,15 +62,19 @@ public class HadoopRemoteAcceptorTest extends AbstractGremlinProcessTest {
 
     ///////////////////
 
+    private Groovysh shell = new Groovysh();
+
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldReturnResultIterator() throws Exception {
         if (!ignore) {
-            final HadoopRemoteAcceptor remoteAcceptor = new HadoopRemoteAcceptor(new Groovysh());
-            remoteAcceptor.hadoopGraph = (HadoopGraph) graph;
+            final HadoopRemoteAcceptor remoteAcceptor = new HadoopRemoteAcceptor(this.shell);
+            this.shell.getInterp().getContext().setVariable("graph", graph);
+            remoteAcceptor.connect(Arrays.asList("graph"));
             Traversal<?, ?> traversal = (Traversal<?, ?>) remoteAcceptor.submit(Arrays.asList("g.V().count()"));
             assertEquals(6L, traversal.next());
             assertFalse(traversal.hasNext());
+            assertNotNull(this.shell.getInterp().getContext().getVariable(RemoteAcceptor.RESULT));
         }
     }
 
@@ -79,12 +82,14 @@ public class HadoopRemoteAcceptorTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportSugar() throws Exception {
         if (!ignore) {
-            final HadoopRemoteAcceptor remoteAcceptor = new HadoopRemoteAcceptor(new Groovysh());
-            remoteAcceptor.hadoopGraph = (HadoopGraph) graph;
-            remoteAcceptor.configure(Arrays.asList("useSugar","true"));
+            final HadoopRemoteAcceptor remoteAcceptor = new HadoopRemoteAcceptor(this.shell);
+            this.shell.getInterp().getContext().setVariable("graph", graph);
+            remoteAcceptor.connect(Arrays.asList("graph"));
+            remoteAcceptor.configure(Arrays.asList("useSugar", "true"));
             Traversal<?, ?> traversal = (Traversal<?, ?>) remoteAcceptor.submit(Arrays.asList("g.V.name.map{it.length()}.sum"));
             assertEquals(28.0d, traversal.next());
             assertFalse(traversal.hasNext());
+            assertNotNull(this.shell.getInterp().getContext().getVariable(RemoteAcceptor.RESULT));
         }
     }
 
