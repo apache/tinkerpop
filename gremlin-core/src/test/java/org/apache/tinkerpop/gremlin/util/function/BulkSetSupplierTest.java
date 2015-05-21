@@ -21,9 +21,6 @@ package org.apache.tinkerpop.gremlin.util.function;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -34,18 +31,18 @@ import static org.junit.Assert.assertNotSame;
  */
 public class BulkSetSupplierTest {
     @Test
-    public void shouldSupplyEmptyList() {
+    public void shouldSupplyBulkSet() {
         assertEquals(0, BulkSetSupplier.instance().get().size());
     }
 
     @Test
-    public void shouldSupplyAnArrayListInstance() {
+    public void shouldSupplyBulkSetInstance() {
         assertEquals(0, BulkSetSupplier.instance().get().size());
-        assertThat(ArrayListSupplier.instance().get(), instanceOf(BulkSet.class));
+        assertThat(BulkSetSupplier.instance().get(), instanceOf(BulkSet.class));
     }
 
     @Test
-    public void shouldSupplyNewListOnEachInvocation() {
+    public void shouldSupplyNewBulkSetOnEachInvocation() {
         final BulkSet<Object> l1 = BulkSetSupplier.instance().get();
         final BulkSet<Object> l2 = BulkSetSupplier.instance().get();
         final BulkSet<Object> l3 = BulkSetSupplier.instance().get();
