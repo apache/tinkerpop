@@ -75,4 +75,17 @@ public class HadoopRemoteAcceptorTest extends AbstractGremlinProcessTest {
         }
     }
 
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldSupportSugar() throws Exception {
+        if (!ignore) {
+            final HadoopRemoteAcceptor remoteAcceptor = new HadoopRemoteAcceptor(new Groovysh());
+            remoteAcceptor.hadoopGraph = (HadoopGraph) graph;
+            remoteAcceptor.configure(Arrays.asList("useSugar","true"));
+            Traversal<?, ?> traversal = (Traversal<?, ?>) remoteAcceptor.submit(Arrays.asList("g.V.name.map{it.length()}.sum"));
+            assertEquals(28.0d, traversal.next());
+            assertFalse(traversal.hasNext());
+        }
+    }
+
 }

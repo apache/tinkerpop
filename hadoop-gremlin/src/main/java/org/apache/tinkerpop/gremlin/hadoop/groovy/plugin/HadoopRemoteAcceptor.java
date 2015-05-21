@@ -28,10 +28,9 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.ComputerResultStep;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
 import java.io.File;
@@ -99,13 +98,13 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
         try {
             String script = RemoteAcceptor.getScript(String.join(SPACE, args), this.shell);
             if (this.useSugarPlugin)
-                script = SugarLoader.class.getPackage() + ".SugarLoader.load()\n" + script;
+                script = SugarLoader.class.getCanonicalName() + ".load()\n" + script;
             final TraversalVertexProgram program = TraversalVertexProgram.build().traversal(GraphTraversalSource.computer(), "gremlin-groovy", script).create(this.hadoopGraph);
             final ComputerResult computerResult = this.hadoopGraph.compute().program(program).submit().get();
             this.shell.getInterp().getContext().setProperty(RESULT, computerResult);
 
 
-            final GraphTraversal.Admin<?, ?> traversal = new DefaultGraphTraversal<>(computerResult.graph());
+            final Traversal.Admin<?, ?> traversal = new DefaultTraversal<>(computerResult.graph());
             traversal.addStep(new ComputerResultStep<>(traversal, computerResult, false));
             return traversal;
         } catch (final Exception e) {
