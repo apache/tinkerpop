@@ -19,68 +19,69 @@
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
 import org.apache.giraph.aggregators.Aggregator;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class MemoryAggregator implements Aggregator<RuleWritable> {
+public final class MemoryAggregator implements Aggregator<Rule> {
 
-    private Object value;
-    private RuleWritable.Rule lastRule = null;
+    private Object currentObject;
+    private Rule.Operation lastOperation = null;
 
     public MemoryAggregator() {
-        this.value = null;
+        this.currentObject = null;
     }
 
     @Override
-    public RuleWritable getAggregatedValue() {
-        if (null == this.value)
+    public Rule getAggregatedValue() {
+        if (null == this.currentObject)
             return createInitialValue();
-        else if (this.value instanceof Long)
-            return new RuleWritable(RuleWritable.Rule.INCR, this.value);
+        else if (this.currentObject instanceof Long)
+            return new Rule(Rule.Operation.INCR, this.currentObject);
         else
-            return new RuleWritable(null == this.lastRule ? RuleWritable.Rule.NO_OP : this.lastRule, this.value);
+            return new Rule(null == this.lastOperation ? Rule.Operation.NO_OP : this.lastOperation, this.currentObject);
     }
 
     @Override
-    public void setAggregatedValue(final RuleWritable rule) {
-        this.value = rule.getObject();
+    public void setAggregatedValue(final Rule rule) {
+        this.currentObject = rule.getObject();
     }
 
     @Override
     public void reset() {
-        this.value = null;
+        this.currentObject = null;
     }
 
     @Override
-    public RuleWritable createInitialValue() {
-        return new RuleWritable(RuleWritable.Rule.NO_OP, null);
+    public Rule createInitialValue() {
+        return new Rule(Rule.Operation.NO_OP, null);
     }
 
     @Override
-    public void aggregate(RuleWritable ruleWritable) {
-        final RuleWritable.Rule rule = ruleWritable.getRule();
+    public void aggregate(final Rule ruleWritable) {
+        final Rule.Operation rule = ruleWritable.getOperation();
         final Object object = ruleWritable.getObject();
-        if (rule != RuleWritable.Rule.NO_OP)
-            this.lastRule = rule;
+        if (rule != Rule.Operation.NO_OP)
+            this.lastOperation = rule;
 
-        if (null == this.value || rule.equals(RuleWritable.Rule.SET)) {
-            this.value = object;
+        if (null == this.currentObject || rule.equals(Rule.Operation.SET)) {
+            this.currentObject = object;
         } else {
-            if (rule.equals(RuleWritable.Rule.INCR)) {
-                this.value = (Long) this.value + (Long) object;
-            } else if (rule.equals(RuleWritable.Rule.AND)) {
-                this.value = (Boolean) this.value && (Boolean) object;
-            } else if (rule.equals(RuleWritable.Rule.OR)) {
-                this.value = (Boolean) this.value || (Boolean) object;
-            } else if (rule.equals(RuleWritable.Rule.NO_OP)) {
+            if (rule.equals(Rule.Operation.INCR)) {
+                this.currentObject = (Long) this.currentObject + (Long) object;
+            } else if (rule.equals(Rule.Operation.AND)) {
+                this.currentObject = (Boolean) this.currentObject && (Boolean) object;
+            } else if (rule.equals(Rule.Operation.OR)) {
+                this.currentObject = (Boolean) this.currentObject || (Boolean) object;
+            } else if (rule.equals(Rule.Operation.NO_OP)) {
                 if (object instanceof Boolean) { // only happens when NO_OP booleans are being propagated will this occur
-                    if (null == this.lastRule) {
+                    if (null == this.lastOperation) {
                         // do nothing ... why?
-                    } else if (this.lastRule.equals(RuleWritable.Rule.AND)) {
-                        this.value = (Boolean) this.value && (Boolean) object;
-                    } else if (this.lastRule.equals(RuleWritable.Rule.OR)) {
-                        this.value = (Boolean) this.value || (Boolean) object;
+                    } else if (this.lastOperation.equals(Rule.Operation.AND)) {
+                        this.currentObject = (Boolean) this.currentObject && (Boolean) object;
+                    } else if (this.lastOperation.equals(Rule.Operation.OR)) {
+                        this.currentObject = (Boolean) this.currentObject || (Boolean) object;
                     } else {
                         throw new IllegalStateException("This state should not have occurred: " + ruleWritable);
                     }

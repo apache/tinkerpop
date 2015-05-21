@@ -73,7 +73,7 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         else {
             final Set<String> trueKeys = new HashSet<>();
             this.memory.forEach((key, value) -> {
-                if (value.value().object != null)
+                if (value.value().getObject() != null)
                     trueKeys.add(key);
             });
             return Collections.unmodifiableSet(trueKeys);
@@ -163,8 +163,8 @@ public final class SparkMemory implements Memory.Admin, Serializable {
         this.broadcast.destroy(true); // do we need to block?
         final Map<String, Object> toBroadcast = new HashMap<>();
         this.memory.forEach((key, rule) -> {
-            if (null != rule.value().object)
-                toBroadcast.put(key, rule.value().object);
+            if (null != rule.value().getObject())
+                toBroadcast.put(key, rule.value().getObject());
         });
         this.broadcast = sparkContext.broadcast(toBroadcast);
     }
@@ -176,6 +176,6 @@ public final class SparkMemory implements Memory.Admin, Serializable {
     }
 
     private <R> R getValue(final String key) {
-        return this.inTask ? (R) this.broadcast.value().get(key) : (R) this.memory.get(key).value().object;
+        return this.inTask ? (R) this.broadcast.value().get(key) : (R) this.memory.get(key).value().getObject();
     }
 }

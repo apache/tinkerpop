@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.master.MasterCompute;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
@@ -77,7 +78,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
                 }
                 this.registerPersistentAggregator(Constants.GREMLIN_HADOOP_HALT, MemoryAggregator.class);
                 this.registerPersistentAggregator(Constants.HIDDEN_RUNTIME, MemoryAggregator.class);
-                this.setAggregatedValue(Constants.GREMLIN_HADOOP_HALT, new RuleWritable(RuleWritable.Rule.SET, false));
+                this.setAggregatedValue(Constants.GREMLIN_HADOOP_HALT, new Rule(Rule.Operation.SET, Boolean.FALSE));
                 this.set(Constants.HIDDEN_RUNTIME, System.currentTimeMillis());
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
@@ -90,7 +91,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
                 if (!this.getConf().getBoolean(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, false)) // no need for the extra BSP round if memory is not required
                     this.haltComputation();
                 else
-                    this.setAggregatedValue(Constants.GREMLIN_HADOOP_HALT, new RuleWritable(RuleWritable.Rule.SET, true));
+                    this.setAggregatedValue(Constants.GREMLIN_HADOOP_HALT, new Rule(Rule.Operation.SET, Boolean.TRUE));
             }
         }
     }
@@ -117,14 +118,14 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public boolean exists(final String key) {
-        final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
+        final Rule rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
         return null != rule.getObject();
     }
 
     @Override
     public <R> R get(final String key) throws IllegalArgumentException {
         //this.checkKey(key);
-        final RuleWritable rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
+        final Rule rule = this.isMasterCompute ? this.getAggregatedValue(key) : this.worker.getAggregatedValue(key);
         if (null == rule.getObject())
             throw Memory.Exceptions.memoryDoesNotExist(key);
         else
@@ -135,20 +136,20 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     public void set(final String key, Object value) {
         this.checkKeyValue(key, value);
         if (this.isMasterCompute)
-            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.SET, value));
+            this.setAggregatedValue(key, new Rule(Rule.Operation.SET, value));
         else
-            this.worker.aggregate(key, new RuleWritable(RuleWritable.Rule.SET, value));
+            this.worker.aggregate(key, new Rule(Rule.Operation.SET, value));
     }
 
     @Override
     public void and(final String key, final boolean bool) {
         this.checkKeyValue(key, bool);
         if (this.isMasterCompute) {  // only called on setup() and terminate()
-            Boolean value = this.<RuleWritable>getAggregatedValue(key).<Boolean>getObject();
+            Boolean value = this.<Rule>getAggregatedValue(key).<Boolean>getObject();
             value = null == value ? bool : bool && value;
-            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.AND, value));
+            this.setAggregatedValue(key, new Rule(Rule.Operation.AND, value));
         } else {
-            this.worker.aggregate(key, new RuleWritable(RuleWritable.Rule.AND, bool));
+            this.worker.aggregate(key, new Rule(Rule.Operation.AND, bool));
         }
     }
 
@@ -156,11 +157,11 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     public void or(final String key, final boolean bool) {
         this.checkKeyValue(key, bool);
         if (this.isMasterCompute) {   // only called on setup() and terminate()
-            Boolean value = this.<RuleWritable>getAggregatedValue(key).<Boolean>getObject();
+            Boolean value = this.<Rule>getAggregatedValue(key).<Boolean>getObject();
             value = null == value ? bool : bool || value;
-            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.OR, value));
+            this.setAggregatedValue(key, new Rule(Rule.Operation.OR, value));
         } else {
-            this.worker.aggregate(key, new RuleWritable(RuleWritable.Rule.OR, bool));
+            this.worker.aggregate(key, new Rule(Rule.Operation.OR, bool));
         }
     }
 
@@ -168,11 +169,11 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     public void incr(final String key, final long delta) {
         this.checkKeyValue(key, delta);
         if (this.isMasterCompute) {   // only called on setup() and terminate()
-            Number value = this.<RuleWritable>getAggregatedValue(key).<Number>getObject();
+            Number value = this.<Rule>getAggregatedValue(key).<Number>getObject();
             value = null == value ? delta : value.longValue() + delta;
-            this.setAggregatedValue(key, new RuleWritable(RuleWritable.Rule.INCR, value));
+            this.setAggregatedValue(key, new Rule(Rule.Operation.INCR, value));
         } else {
-            this.worker.aggregate(key, new RuleWritable(RuleWritable.Rule.INCR, delta));
+            this.worker.aggregate(key, new Rule(Rule.Operation.INCR, delta));
         }
     }
 
