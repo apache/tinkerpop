@@ -119,6 +119,13 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         try {
             // it is possible to run graph computer without a vertex program (and thus, only map reduce jobs if they exist)
             if (null != this.vertexProgram) {
+                // a way to verify in Giraph whether the traversal will go over the wire or not
+                try {
+                    VertexProgram.createVertexProgram(this.hadoopGraph, ConfUtil.makeApacheConfiguration(this.giraphConfiguration));
+                } catch (IllegalStateException e) {
+                    if (e.getCause() instanceof NumberFormatException)
+                        throw new NotSerializableException("The provided traversal is not serializable and thus, can not be distributed across the cluster");
+                }
                 // calculate main vertex program memory if desired (costs one mapreduce job)
                 if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, false)) {
                     final Set<String> memoryKeys = new HashSet<>(this.vertexProgram.getMemoryComputeKeys());
@@ -146,7 +153,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 this.logger.info(Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 // execute the job and wait until it completes (if it fails, throw an exception)
                 if (!job.run(true))
-                    throw new NotSerializableException("The GiraphGraphComputer job failed -- aborting all subsequent MapReduce jobs");  // how do I get the exception that occured?
+                    throw new IllegalStateException("The GiraphGraphComputer job failed -- aborting all subsequent MapReduce jobs");  // how do I get the exception that occured?
             }
             // do map reduce jobs
             this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true));
