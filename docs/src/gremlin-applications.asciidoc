@@ -205,7 +205,7 @@ image:gremlin-server.png[width=400,float=right] Gremlin Server provides a way to
 * Allows any Gremlin Structure-enabled graph to exist as a standalone server, which in turn enables the ability for multiple clients to communicate with the same graph database.
 * Enables execution of ad-hoc queries through remotely submitted Gremlin scripts.
 * Allows for the hosting of Gremlin-based DSLs (Domain Specific Language) that expand the Gremlin language to match the language of the application domain, which will help support common graph use cases such as searching, ranking, and recommendation.
-* Provides a method for Non-JVM languages (e.g. Python, .NET, etc.) to communicate with the TinkerPop stack.
+* Provides a method for Non-JVM languages (e.g. Python, Javascript, etc.) to communicate with the TinkerPop stack.
 * Exposes numerous methods for extension and customization to include serialization options, remote commands, etc.
 
 NOTE: Gremlin Server is the replacement for link:http://rexster.tinkerpop.com[Rexster].
@@ -566,8 +566,13 @@ It has the MIME type of `application/vnd.gremlin-v1.0+gryo` and the following co
 |custom |A list of classes with custom kryo `Serializer` implementations related to them in the form of `<class>;<serializer-class>`. |_none_
 |=========================================================
 
+Best Practices
+~~~~~~~~~~~~~~
+
+The following sections define best practices for working with Gremlin Server.
+
 Tuning
-~~~~~~
+^^^^^^
 
 image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
 
@@ -579,7 +584,42 @@ image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a p
 ** To limit the impact of this problem consider properly setting the `scriptEvaluationTimeout` and the `serializedResponseTimeout` to something "sane".
 ** Test the traversals being sent to Gremlin Server and determine the maximum time they take to evaluate and iterate over results, then set these configurations accordingly.
 ** Note that `scriptEvaluationTimeout` does not interrupt the evaluation on timeout.  It merely allows Gremlin Server to "ignore" the result of that evaluation, which means the thread in the `gremlinPool` will still be consumed after the timeout.
-** The more powerful setting is the `serializedResponseTimeout`, which will actually kill the result iteration process and prevent additional processing.  In most situations, the iteration and serialization process is the more costly step in this process as an errant script that retuns a million or more results could send Gremlin Server into a long streaming cycle.  Script evaluation on the other hand is usually very fast, occurring on the order of milliseconds, but that is entirely dependent on the contents of the script itself.
+** The `serializedResponseTimeout` will kill the result iteration process and prevent additional processing.  In most situations, the iteration and serialization process is the more costly step in this process as an errant script that retuns a million or more results could send Gremlin Server into a long streaming cycle.  Script evaluation on the other hand is usually very fast, occurring on the order of milliseconds, but that is entirely dependent on the contents of the script itself.
+
+[[parameterized-scripts]]
+Parameterized Scripts
+^^^^^^^^^^^^^^^^^^^^^
+
+Use script parameterization.  Period.  Gremlin Server caches all scripts that are passed to it.  The cache is keyed based on the a hash of the script.  Therefore `g.V(1)` and `g.V(2)` will be recognized as two separate scripts in the cache.  If that script is parameterized to `g.V(x)` where `x` is passed as a parameter from the client, there will be no additional compilation cost for future requests on that script.  Compilation of a script should be considered "expensive" and avoided when possible.
+
+Cache Management
+^^^^^^^^^^^^^^^^
+
+If Gremlin Server processes a large number of unique scripts, the cache will grow beyond the memory available to Gremlin Server and an `OutOfMemoryException` will loom.  Script parameterization goes a long way to solving this problem and running out of memory should not be an issue for those cases.  If it is a problem or if there is no script parameterization due to a given use case (perhaps using with use of <<sessions,sessions>>), it is possible to better control the nature of the script cache from the client side, by issuing scripts with a parameter to help define how the garbage collector should treat the references.
+
+The parameter is called `#jsr223.groovy.engine.keep.globals` and has four options:
+
+* `hard` - available in the cache for the life of the JVM (default when not specified).
+* `soft` - retained until memory is "low" and should be reclaimed before an `OutOfMemoryException` is thrown.
+* `weak` - garbage collected even when memory is abundant.
+* `phantom` - removed immediately after being evaluated by the `ScriptEngine`.
+
+By specifying an option other than `hard`, an `OutOfMemoryException` in Gremlin Server should be avoided.
+
+[[sessions]]
+Considering Sessions
+^^^^^^^^^^^^^^^^^^^^
+
+The preferred approach for issuing requests to Gremlin Server is to do so in a sessionless manner.  The concept of "sessionless" refers to a request that is completely encapsulated within a single transaction, such that the script in the request starts with a new transaction and ends with closed transaction. Sessionless requests have automatic transaction management handled by Gremlin Server, thus automatically opening and closing transactions as previously described.  The downside to the sessionless approach is that the entire script to be executed must be known at the time of submission so that it can all be executed at once.  This requirement makes it difficult for some use cases where more control over the transaction is desired.
+
+For such use cases, Gremlin Server supports sessions.  With sessions, the user is in complete control of the start and end of the transaction. This feature comes with some additional expense to consider:
+
+* Initialization scripts will be executed for each session created so any expense related to them will be established each time a session is constructed.
+* There will be one script cache per session, which obviously increases memory requirements.  The cache is not shared, so as to ensure that a session has isolation from other session environments. As a result, if the same script is executed in each session the same compilation cost will be paid for each session it is executed in.
+* Each session will require its own thread pool with a single thread in it - this ensures that transactional boundaries are managed properly from one request to the next.
+* If there are multiple Gremlin Server instances, communication from the client to the server must be bound to the server that the session was initialized in.  Gremlin Server does not share session state as the transactional context of a `Graph` is bound to the thread it was initialized in.
+
+A session is a "heavier" approach to the simple "request/response" approach of sessionless requests, but is sometimes necessary for a given use case.
 
 Developing a Driver
 ~~~~~~~~~~~~~~~~~~~
