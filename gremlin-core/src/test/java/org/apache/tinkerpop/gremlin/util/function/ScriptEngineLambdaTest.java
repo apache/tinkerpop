@@ -35,10 +35,20 @@ public class ScriptEngineLambdaTest {
         assertEquals(11.0, lambda.apply(10));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowOnBadScriptAsFunction() {
+        new ScriptEngineLambda("nashorn", "1432423)a").apply("a");
+    }
+
     @Test
     public void shouldCallAsSupplier() {
         final ScriptEngineLambda lambda = new ScriptEngineLambda("nashorn", "11");
         assertEquals(11, lambda.get());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowOnBadScriptAsSupplier() {
+        new ScriptEngineLambda("nashorn", "1432423)a").get();
     }
 
     @Test
@@ -47,12 +57,22 @@ public class ScriptEngineLambdaTest {
         assertThat(lambda.test(100), is(true));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowOnBadScriptAsPredicate() {
+        new ScriptEngineLambda("nashorn", "1432423)a").test(1);
+    }
+
     @Test
     public void shouldCallAsConsumer() {
         final ScriptEngineLambda lambda = new ScriptEngineLambda("nashorn", "a.setData('test')");
         final Junk junk = new Junk();
         lambda.accept(junk);
         assertEquals("test", junk.getData());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowOnBadScriptAsConsumer() {
+        new ScriptEngineLambda("nashorn", "1432423)a").accept("1");
     }
 
     @Test
@@ -66,6 +86,11 @@ public class ScriptEngineLambdaTest {
         assertEquals("testb", junkB.getData());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowOnBadScriptAsBiConsumer() {
+        new ScriptEngineLambda("nashorn", "1432423)a").accept("1", "2");
+    }
+
     @Test
     public void shouldCallAsTriConsumer() {
         final ScriptEngineLambda lambda = new ScriptEngineLambda("nashorn", "a.setData('testa');b.setData('testb');c.setData('testc')");
@@ -77,6 +102,11 @@ public class ScriptEngineLambdaTest {
         assertEquals("testa", junkA.getData());
         assertEquals("testb", junkB.getData());
         assertEquals("testc", junkC.getData());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowOnBadScriptAsTriConsumer() {
+        new ScriptEngineLambda("nashorn", "1432423)a").accept("1", "2", "3");
     }
 
     public static class Junk {
