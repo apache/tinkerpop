@@ -21,9 +21,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
@@ -34,10 +35,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent {
+public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Bypassing {
 
     private Traversal.Admin<S, Object> dedupTraversal = new IdentityTraversal<>();
     private Set<Object> duplicateSet = new HashSet<>();
+    private boolean bypass = false;
 
     public DedupGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -45,6 +47,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
+        if (this.bypass) return true;
         traverser.setBulk(1);
         return this.duplicateSet.add(TraversalUtil.apply(traverser, this.dedupTraversal));
     }
@@ -82,5 +85,10 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.BULK);
+    }
+
+    @Override
+    public void setBypass(final boolean bypass) {
+        this.bypass = bypass;
     }
 }

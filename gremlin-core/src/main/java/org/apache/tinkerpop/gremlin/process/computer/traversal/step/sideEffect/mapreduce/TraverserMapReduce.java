@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
@@ -51,6 +52,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
     private Optional<CollectingBarrierStep<?>> collectingBarrierStep = Optional.empty();
     private Optional<RangeGlobalStep<?>> rangeGlobalStep = Optional.empty();
     private Optional<TailGlobalStep<?>> tailGlobalStep = Optional.empty();
+    private boolean dedupGlobal = false;
 
     private TraverserMapReduce() {
     }
@@ -75,11 +77,14 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
             this.rangeGlobalStep = Optional.of(((RangeGlobalStep) traversalEndStep).clone());
         if (traversalEndStep instanceof TailGlobalStep)
             this.tailGlobalStep = Optional.of(((TailGlobalStep) traversalEndStep).clone());
+        if (traversalEndStep instanceof DedupGlobalStep)
+            this.dedupGlobal = true;
+
     }
 
     @Override
     public boolean doStage(final Stage stage) {
-        return stage.equals(Stage.MAP) || this.collectingBarrierStep.isPresent() || this.rangeGlobalStep.isPresent() || this.tailGlobalStep.isPresent();
+        return stage.equals(Stage.MAP) || this.collectingBarrierStep.isPresent() || this.rangeGlobalStep.isPresent() || this.tailGlobalStep.isPresent() || this.dedupGlobal;
     }
 
     @Override
@@ -128,11 +133,15 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
             tailGlobalStep.setBypass(false);
             tailGlobalStep.addStarts(IteratorUtils.map(keyValues, keyValue -> (Traverser) keyValue.getValue()));
             return (Iterator) tailGlobalStep;
+        } else if (this.dedupGlobal) {
+            return IteratorUtils.map(keyValues, keyValue -> {
+                keyValue.getValue().asAdmin().setBulk(1l);
+                return keyValue.getValue();
+            });
         } else {
             return IteratorUtils.map(keyValues, KeyValue::getValue);
         }
     }
-
 
     @Override
     public String getMemoryKey() {

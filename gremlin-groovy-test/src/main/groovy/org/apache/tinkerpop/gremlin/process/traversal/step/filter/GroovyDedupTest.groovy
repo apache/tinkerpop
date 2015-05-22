@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -29,23 +29,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyDedupTest {
 
     public static class Traversals extends DedupTest {
-        /*@Override
-        @Test
-        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_both_dedup_name() {
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
-        }
-
-        @Override
-        @Test
-        @org.junit.Ignore("Traversal not supported by ComputerTraversalEngine.computer")
-        public void g_V_both_name_orderXa_bX_dedup() {
-        }*/
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_dedup_name() {
@@ -57,7 +40,6 @@ public abstract class GroovyDedupTest {
             TraversalScriptHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(dedup(Scope.local))", g);
         }
 
-
         @Override
         public Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name() {
             TraversalScriptHelper.compute("g.V.both.has(T.label, 'software').dedup.by('lang').name", g);
@@ -65,7 +47,17 @@ public abstract class GroovyDedupTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup() {
-            return TraversalScriptHelper.compute("g.V().both().properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value", g);
+            TraversalScriptHelper.compute("g.V().both().properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value", g);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_both_both_dedup() {
+            TraversalScriptHelper.compute("g.V.both.both.dedup", g)
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_both_both_name_dedup() {
+            TraversalScriptHelper.compute("g.V.both.both.name.dedup", g);
         }
     }
 }

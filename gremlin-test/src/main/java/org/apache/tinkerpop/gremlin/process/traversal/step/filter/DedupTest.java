@@ -22,9 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +52,10 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name();
 
     public abstract Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup();
+
+    public abstract Traversal<Vertex, String> get_g_V_both_both_name_dedup();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_both_both_dedup();
 
     public abstract Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX();
 
@@ -101,6 +104,28 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_V_both_both_name_dedup() {
+        final Traversal<Vertex, String> traversal = get_g_V_both_both_name_dedup();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", "vadas", "josh", "peter", "lop", "ripple"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_both_both_dedup() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_both_both_dedup();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(
+                convertToVertex(graph, "marko"),
+                convertToVertex(graph, "vadas"),
+                convertToVertex(graph, "josh"),
+                convertToVertex(graph, "peter"),
+                convertToVertex(graph, "lop"),
+                convertToVertex(graph, "ripple")), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
         final Traversal<Vertex, Map<String, Set<Double>>> traversal =
                 get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX();
@@ -130,6 +155,16 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup() {
             return g.V().both().<String>properties("name").order().by((a, b) -> a.value().compareTo(b.value())).dedup().value();
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_both_both_name_dedup() {
+            return g.V().both().both().<String>values("name").dedup();
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_both_both_dedup() {
+            return g.V().both().both().dedup();
         }
 
         @Override

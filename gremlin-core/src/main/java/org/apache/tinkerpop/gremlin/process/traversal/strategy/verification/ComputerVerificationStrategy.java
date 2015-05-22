@@ -58,7 +58,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
     private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
-            DedupGlobalStep.class, InjectStep.class, MatchStep.class, Mutating.class, SubgraphStep.class
+            InjectStep.class, MatchStep.class, Mutating.class, SubgraphStep.class
     ));
 
     private ComputerVerificationStrategy() {
@@ -86,12 +86,12 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                     throw new ComputerVerificationException("A final CollectingBarrierStep can not process an element beyond its id: " + endStep, traversal);
             }
             ///
-            if(endStep instanceof RangeGlobalStep || endStep instanceof TailGlobalStep)
+            if (endStep instanceof RangeGlobalStep || endStep instanceof TailGlobalStep || endStep instanceof DedupGlobalStep)
                 ((Bypassing) endStep).setBypass(true);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
-            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep || step instanceof RangeGlobalStep || step instanceof TailGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
+            if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep || step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof DedupGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
                 throw new ComputerVerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
 
             if (step instanceof TraversalParent) {
