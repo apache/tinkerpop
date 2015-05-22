@@ -51,26 +51,6 @@ public class YamlConfiguration extends AbstractHierarchicalFileConfiguration {
         initialize();
     }
 
-    public YamlConfiguration(final HierarchicalConfiguration c) {
-        super(c);
-        initialize();
-    }
-
-    public YamlConfiguration(final String fileName) throws ConfigurationException {
-        super(fileName);
-        initialize();
-    }
-
-    public YamlConfiguration(final File file) throws ConfigurationException {
-        super(file);
-        initialize();
-    }
-
-    public YamlConfiguration(final URL url) throws ConfigurationException {
-        super(url);
-        initialize();
-    }
-
     private void initialize() {
         yamlOptions.setIndent(DEFAULT_IDENT);
         yamlOptions.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);

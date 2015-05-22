@@ -116,7 +116,9 @@ public class GraphFactory {
             switch (fileExtension) {
                 case "yml":
                 case "yaml":
-                    return new YamlConfiguration(configurationFile);
+                    final YamlConfiguration config = new YamlConfiguration();
+                    config.load(configurationFile);
+                    return config;
                 case "xml":
                     return new XMLConfiguration(configurationFile);
                 default:

@@ -18,12 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.util.config;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.junit.Test;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,6 +41,18 @@ import static org.junit.Assert.assertEquals;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class YamlConfigurationTest {
+
+    @Test(expected = ConfigurationException.class)
+    public void shouldThrowConfigurationExceptionIfLoadFails() throws Exception {
+        final YamlConfiguration config = new YamlConfiguration();
+        config.load((Reader) null);
+    }
+
+    @Test(expected = ConfigurationException.class)
+    public void shouldThrowConfigurationExceptionIfSaveFails() throws Exception {
+        final YamlConfiguration config = new YamlConfiguration();
+        config.save((Writer) null);
+    }
 
     @Test
     public void shouldLoadSaveConfiguration() throws Exception {
