@@ -21,6 +21,7 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.util.TestableConsolePluginAcceptor;
@@ -40,12 +41,11 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 
-public class HadoopGremlinPluginTest extends AbstractGremlinProcessTest {
+public class HadoopGremlinPluginTest extends AbstractGremlinTest {
 
     @Before
     public void setupTest() {
         try {
-            super.setupTest();
             this.console = new TestableConsolePluginAcceptor();
             final HadoopGremlinPlugin plugin = new HadoopGremlinPlugin();
             plugin.pluginTo(this.console);
