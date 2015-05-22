@@ -49,7 +49,7 @@ import java.util.Set;
  */
 public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
 
-    private static final Set<String> IMPORTS = new HashSet<String>() {{
+    protected static final Set<String> IMPORTS = new HashSet<String>() {{
         add("import org.apache.hadoop.hdfs.*");
         add("import org.apache.hadoop.conf.*");
         add("import org.apache.hadoop.fs.*");
@@ -72,6 +72,10 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + SparkGraphComputer.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + MapReduceGraphComputer.class.getPackage().getName() + DOT_STAR);
     }};
+
+    public HadoopGremlinPlugin() {
+        super(true);
+    }
 
     @Override
     public String getName() {

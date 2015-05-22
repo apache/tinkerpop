@@ -31,7 +31,7 @@ import org.junit.runners.model.RunnerBuilder;
 public class HadoopPluginSuite extends ProcessStandardSuite {
 
     public HadoopPluginSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, new Class<?>[]{HadoopRemoteAcceptorTest.class});
+        super(klass, builder, new Class<?>[]{HadoopGremlinPluginTest.class});
     }
 
 }

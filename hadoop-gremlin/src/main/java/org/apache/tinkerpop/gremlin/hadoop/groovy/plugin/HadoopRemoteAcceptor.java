@@ -41,7 +41,7 @@ public final class HadoopRemoteAcceptor implements RemoteAcceptor {
     private static final String USE_SUGAR = "useSugar";
     private static final String SPACE = " ";
 
-    protected HadoopGraph hadoopGraph;
+    private HadoopGraph hadoopGraph;
     private Groovysh shell;
     private boolean useSugarPlugin = false;
 
