@@ -30,11 +30,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -328,5 +331,12 @@ public final class IteratorUtils {
 
     public static List asList(final Object o) {
         return list(asIterator(o));
+    }
+
+    /**
+     * Construct a {@link Stream} from an {@link Iterator}.
+     */
+    public static <T> Stream<T> stream(final Iterator<T> iterator) {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.IMMUTABLE | Spliterator.SIZED), false);
     }
 }

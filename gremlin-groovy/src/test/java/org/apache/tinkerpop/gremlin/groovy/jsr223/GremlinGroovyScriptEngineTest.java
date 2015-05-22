@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import org.kohsuke.groovy.sandbox.GroovyValueFilter;
@@ -101,15 +101,15 @@ public class GremlinGroovyScriptEngineTest {
         assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
 
         try {
-            engine.eval("StreamFactory.class.getName()");
+            engine.eval("IteratorUtils.class.getName()");
             fail("Should have thrown an exception because no imports were supplied");
         } catch (Exception se) {
             assertTrue(se instanceof ScriptException);
         }
 
-        engine.addImports(new HashSet<>(Arrays.asList("import " + StreamFactory.class.getCanonicalName())));
+        engine.addImports(new HashSet<>(Arrays.asList("import " + IteratorUtils.class.getCanonicalName())));
         assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
-        assertEquals(StreamFactory.class.getName(), engine.eval("StreamFactory.class.getName()"));
+        assertEquals(IteratorUtils.class.getName(), engine.eval("IteratorUtils.class.getName()"));
     }
 
     @Test

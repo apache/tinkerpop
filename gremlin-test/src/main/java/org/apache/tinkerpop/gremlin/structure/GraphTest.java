@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
@@ -654,7 +653,7 @@ public class GraphTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex("test", "A", "test", "B", "test", "C");
         tryCommit(graph, graph -> {
             assertEquals(1, IteratorUtils.count(v.properties("test")));
-            assertTrue(StreamFactory.stream(v.values("test")).anyMatch(t -> t.equals("C")));
+            assertTrue(IteratorUtils.stream(v.values("test")).anyMatch(t -> t.equals("C")));
         });
     }
 
@@ -665,9 +664,9 @@ public class GraphTest extends AbstractGremlinTest {
         final Vertex v = graph.addVertex("test", "A", "test", "B", "test", "C");
         tryCommit(graph, graph -> {
             assertEquals(3, IteratorUtils.count(v.properties("test")));
-            assertTrue(StreamFactory.stream(v.values("test")).anyMatch(t -> t.equals("A")));
-            assertTrue(StreamFactory.stream(v.values("test")).anyMatch(t -> t.equals("B")));
-            assertTrue(StreamFactory.stream(v.values("test")).anyMatch(t -> t.equals("C")));
+            assertTrue(IteratorUtils.stream(v.values("test")).anyMatch(t -> t.equals("A")));
+            assertTrue(IteratorUtils.stream(v.values("test")).anyMatch(t -> t.equals("B")));
+            assertTrue(IteratorUtils.stream(v.values("test")).anyMatch(t -> t.equals("C")));
         });
     }
 

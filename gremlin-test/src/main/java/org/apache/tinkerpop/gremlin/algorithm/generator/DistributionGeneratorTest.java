@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -172,7 +171,7 @@ public class DistributionGeneratorTest {
             tryCommit(graph, g -> {
                 assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(g.edges())));
                 assertTrue(IteratorUtils.count(g.vertices()) > 0);
-                assertTrue(StreamFactory.stream(g.edges()).allMatch(e -> e.value("data").equals("test")));
+                assertTrue(IteratorUtils.stream(g.edges()).allMatch(e -> e.value("data").equals("test")));
             });
         }
 

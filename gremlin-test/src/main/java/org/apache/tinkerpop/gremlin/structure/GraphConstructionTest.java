@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;

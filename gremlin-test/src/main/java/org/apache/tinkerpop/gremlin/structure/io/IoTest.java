@@ -61,7 +61,6 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.VertexByteArrayInputStream;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -1112,7 +1111,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals("a", detachedVertex.property("propsSquared").value("x"));
                     assertEquals("b", detachedVertex.property("propsSquared").value("y"));
                     assertEquals(2, IteratorUtils.count(detachedVertex.properties("name")));
-                    assertTrue(StreamFactory.stream(detachedVertex.properties("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
+                    assertTrue(IteratorUtils.stream(detachedVertex.properties("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
                     assertEquals(v1.value("acl"), detachedVertex.value("acl").toString());
                     called.set(true);
                     return mock(Vertex.class);
@@ -1253,7 +1252,7 @@ public class IoTest extends AbstractGremlinTest {
                     assertEquals("a", detachedVertex.property("propsSquared").value("x"));
                     assertEquals("b", detachedVertex.property("propsSquared").value("y"));
                     assertEquals(2, IteratorUtils.count(detachedVertex.properties("name")));
-                    assertTrue(StreamFactory.stream(detachedVertex.properties("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
+                    assertTrue(IteratorUtils.stream(detachedVertex.properties("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
                     assertEquals(v1.value("acl"), detachedVertex.value("acl").toString());
                     called.set(true);
                     return mock(Vertex.class);

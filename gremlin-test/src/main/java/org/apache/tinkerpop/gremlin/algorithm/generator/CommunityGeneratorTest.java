@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.util.StreamFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -211,8 +210,8 @@ public class CommunityGeneratorTest {
             tryCommit(graph, graph -> {
                 assertEquals(new Long(edgesGenerated), new Long(IteratorUtils.count(graph.edges())));
                 assertTrue(IteratorUtils.count(graph.vertices()) > 0);
-                assertTrue(StreamFactory.stream(graph.edges()).allMatch(e -> e.value("data").equals("test")));
-                assertTrue(StreamFactory.stream(graph.vertices()).allMatch(
+                assertTrue(IteratorUtils.stream(graph.edges()).allMatch(e -> e.value("data").equals("test")));
+                assertTrue(IteratorUtils.stream(graph.vertices()).allMatch(
                         v -> v.value("test").equals("data") && v.property("communityIndex").isPresent()
                 ));
             });
