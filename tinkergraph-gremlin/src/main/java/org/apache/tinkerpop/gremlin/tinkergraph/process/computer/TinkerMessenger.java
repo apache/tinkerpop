@@ -60,14 +60,14 @@ public final class TinkerMessenger<M> implements Messenger<M> {
         final MultiIterator<M> multiIterator = new MultiIterator<>();
         for (final MessageScope messageScope : this.messageBoard.previousMessageScopes) {
             if (messageScope instanceof MessageScope.Local) {
-                final MessageScope.Local<M> localMessageScope = (MessageScope.Local) messageScope;
+                final MessageScope.Local<M> localMessageScope = (MessageScope.Local<M>) messageScope;
                 final Traversal.Admin<Vertex, Edge> incidentTraversal = TinkerMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get().asAdmin(), this.vertex);
                 final Direction direction = TinkerMessenger.getDirection(incidentTraversal);
                 final Edge[] edge = new Edge[1]; // simulates storage side-effects available in Gremlin, but not Java8 streams
                 multiIterator.addIterator(StreamSupport.stream(Spliterators.spliteratorUnknownSize(VertexProgramHelper.reverse(incidentTraversal.asAdmin()), Spliterator.IMMUTABLE | Spliterator.SIZED), false)
                         .map(e -> this.messageBoard.receiveMessages.get((edge[0] = e).vertices(direction).next()))
                         .filter(q -> null != q)
-                        .flatMap(q -> q.stream())
+                        .flatMap(Queue::stream)
                         .map(message -> localMessageScope.getEdgeFunction().apply(message, edge[0]))
                         .iterator());
 
@@ -75,7 +75,7 @@ public final class TinkerMessenger<M> implements Messenger<M> {
                 multiIterator.addIterator(Stream.of(this.vertex)
                         .map(this.messageBoard.receiveMessages::get)
                         .filter(q -> null != q)
-                        .flatMap(q -> q.stream())
+                        .flatMap(Queue::stream)
                         .iterator());
             }
         }
@@ -92,19 +92,16 @@ public final class TinkerMessenger<M> implements Messenger<M> {
         }
     }
 
-    private final void addMessage(final Vertex vertex, final M message) {
+    private void addMessage(final Vertex vertex, final M message) {
         final Queue<M> queue = this.messageBoard.sendMessages.computeIfAbsent(vertex, v -> new ConcurrentLinkedQueue<>());
-        synchronized (queue) {
-            queue.add(null != this.combiner && !queue.isEmpty() ? this.combiner.combine(queue.remove(), message) : message);
-        }
+        queue.add(null != this.combiner && !queue.isEmpty() ? this.combiner.combine(queue.remove(), message) : message);
     }
 
     ///////////
 
     private static <T extends Traversal.Admin<Vertex, Edge>> T setVertexStart(final Traversal.Admin<Vertex, Edge> incidentTraversal, final Vertex vertex) {
-        final Traversal.Admin<Vertex, Edge> traversal = incidentTraversal;
-        traversal.addStep(0, new StartStep<>(traversal, vertex));
-        return (T) traversal;
+        incidentTraversal.addStep(0, new StartStep<>(incidentTraversal, vertex));
+        return (T) incidentTraversal;
     }
 
     private static Direction getDirection(final Traversal.Admin<Vertex, Edge> incidentTraversal) {
