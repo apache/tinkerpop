@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.util.iterator;
 
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.junit.Test;
 
@@ -55,11 +56,8 @@ public class IteratorUtilsTest {
     }
 
     @Test
-    public void shouldHavePrivateConstructor() throws Exception {
-        final Constructor<IteratorUtils> constructor = IteratorUtils.class.getDeclaredConstructor();
-        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
-        constructor.setAccessible(true);
-        constructor.newInstance();
+    public void shouldBeUtilityClass() throws Exception {
+        TestHelper.assertIsUtilityClass(IteratorUtils.class);
     }
 
     @Test

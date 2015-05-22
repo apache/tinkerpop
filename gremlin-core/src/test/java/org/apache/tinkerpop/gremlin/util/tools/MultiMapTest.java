@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.util.tools;
 
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -34,6 +36,12 @@ import static org.junit.Assert.assertEquals;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class MultiMapTest {
+
+    @Test
+    public void shouldBeUtilityClass() throws Exception {
+        TestHelper.assertIsUtilityClass(MultiMap.class);
+    }
+
     @Test
     public void shouldPutValueInNewSet() {
         final Map<String,Set<Object>> multi = new HashMap<>();
