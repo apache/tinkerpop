@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -114,6 +115,20 @@ public class IteratorUtilsTest {
         limitedItty.next();
         limitedItty.next();
         limitedItty.next();
+    }
+
+    @Test
+    public void shouldConvertIteratorToStream() {
+        final List<String> iterable = new ArrayList<>();
+        iterable.add("test1");
+        iterable.add("test2");
+        iterable.add("test3");
+
+        assertEquals(3, IteratorUtils.stream(iterable.iterator()).count());
+        final Object[] o = IteratorUtils.stream(iterable.iterator()).toArray();
+        assertEquals("test1", o[0]);
+        assertEquals("test2", o[1]);
+        assertEquals("test3", o[2]);
     }
 
     @Test
