@@ -590,7 +590,7 @@ image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a p
 Parameterized Scripts
 ^^^^^^^^^^^^^^^^^^^^^
 
-Use script parameterization.  Period.  Gremlin Server caches all scripts that are passed to it.  The cache is keyed based on the a hash of the script.  Therefore `g.V(1)` and `g.V(2)` will be recognized as two separate scripts in the cache.  If that script is parameterized to `g.V(x)` where `x` is passed as a parameter from the client, there will be no additional compilation cost for future requests on that script.  Compilation of a script should be considered "expensive" and avoided when possible.
+image:gremlin-parameterized.png[width=150,float=left] Use script parameterization.  Period.  Gremlin Server caches all scripts that are passed to it.  The cache is keyed based on the a hash of the script.  Therefore `g.V(1)` and `g.V(2)` will be recognized as two separate scripts in the cache.  If that script is parameterized to `g.V(x)` where `x` is passed as a parameter from the client, there will be no additional compilation cost for future requests on that script.  Compilation of a script should be considered "expensive" and avoided when possible.
 
 Cache Management
 ^^^^^^^^^^^^^^^^
