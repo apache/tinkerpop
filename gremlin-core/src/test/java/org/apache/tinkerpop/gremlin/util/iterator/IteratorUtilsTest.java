@@ -22,9 +22,6 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.junit.Test;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -33,7 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
@@ -46,6 +42,12 @@ import static org.junit.Assert.assertFalse;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class IteratorUtilsTest {
+
+    @Test
+    public void shouldBeUtilityClass() throws Exception {
+        TestHelper.assertIsUtilityClass(IteratorUtils.class);
+    }
+
     @Test
     public void shouldIterateSingleObject() {
         assertIterator(IteratorUtils.of("test1"), 1);
@@ -54,11 +56,6 @@ public class IteratorUtilsTest {
     @Test
     public void shouldIteratePairOfObjects() {
         assertIterator(IteratorUtils.of("test1", "test2"), 2);
-    }
-
-    @Test
-    public void shouldBeUtilityClass() throws Exception {
-        TestHelper.assertIsUtilityClass(IteratorUtils.class);
     }
 
     @Test

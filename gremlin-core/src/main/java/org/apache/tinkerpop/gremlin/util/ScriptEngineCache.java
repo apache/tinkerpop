@@ -28,6 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class ScriptEngineCache {
 
+    private ScriptEngineCache() {}
+
     public final static String DEFAULT_SCRIPT_ENGINE = "gremlin-groovy";
 
     private final static ScriptEngineManager SCRIPT_ENGINE_MANAGER = new ScriptEngineManager();
