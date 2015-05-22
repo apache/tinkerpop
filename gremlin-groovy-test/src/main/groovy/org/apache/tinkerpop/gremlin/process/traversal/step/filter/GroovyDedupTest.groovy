@@ -56,6 +56,11 @@ public abstract class GroovyDedupTest {
         }
 
         @Override
+        public Traversal<Vertex, Vertex> get_g_V_both_both_dedup_byXlabelX() {
+            TraversalScriptHelper.compute("g.V.both.both.dedup.by(label)", g)
+        }
+
+        @Override
         public Traversal<Vertex, String> get_g_V_both_both_name_dedup() {
             TraversalScriptHelper.compute("g.V.both.both.name.dedup", g);
         }

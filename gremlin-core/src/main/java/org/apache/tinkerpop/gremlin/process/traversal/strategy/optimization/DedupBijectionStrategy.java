@@ -67,7 +67,7 @@ public final class DedupBijectionStrategy extends AbstractTraversalStrategy<Trav
             done = true;
             for (int i = 0; i < traversal.getSteps().size(); i++) {
                 final Step step1 = traversal.getSteps().get(i);
-                if (step1 instanceof DedupGlobalStep && (((DedupGlobalStep) step1).getLocalChildren().get(0) instanceof IdentityTraversal)) {
+                if (step1 instanceof DedupGlobalStep && (((DedupGlobalStep) step1).getLocalChildren().isEmpty())) {
                     for (int j = i; j >= 0; j--) {
                         final Step step2 = traversal.getSteps().get(j);
                         if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findAny().isPresent()) {

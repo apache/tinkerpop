@@ -52,7 +52,7 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
     private Optional<CollectingBarrierStep<?>> collectingBarrierStep = Optional.empty();
     private Optional<RangeGlobalStep<?>> rangeGlobalStep = Optional.empty();
     private Optional<TailGlobalStep<?>> tailGlobalStep = Optional.empty();
-    private boolean dedupGlobal = false;
+    private Optional<DedupGlobalStep<?>> dedupGlobalStep = Optional.empty();
 
     private TraverserMapReduce() {
     }
@@ -78,13 +78,13 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
         if (traversalEndStep instanceof TailGlobalStep)
             this.tailGlobalStep = Optional.of(((TailGlobalStep) traversalEndStep).clone());
         if (traversalEndStep instanceof DedupGlobalStep)
-            this.dedupGlobal = true;
+            this.dedupGlobalStep = Optional.of(((DedupGlobalStep) traversalEndStep).clone());
 
     }
 
     @Override
     public boolean doStage(final Stage stage) {
-        return stage.equals(Stage.MAP) || this.collectingBarrierStep.isPresent() || this.rangeGlobalStep.isPresent() || this.tailGlobalStep.isPresent() || this.dedupGlobal;
+        return stage.equals(Stage.MAP) || this.collectingBarrierStep.isPresent() || this.rangeGlobalStep.isPresent() || this.tailGlobalStep.isPresent() || this.dedupGlobalStep.isPresent();
     }
 
     @Override
@@ -133,11 +133,11 @@ public final class TraverserMapReduce extends StaticMapReduce<Comparable, Traver
             tailGlobalStep.setBypass(false);
             tailGlobalStep.addStarts(IteratorUtils.map(keyValues, keyValue -> (Traverser) keyValue.getValue()));
             return (Iterator) tailGlobalStep;
-        } else if (this.dedupGlobal) {
-            return IteratorUtils.map(keyValues, keyValue -> {
-                keyValue.getValue().asAdmin().setBulk(1l);
-                return keyValue.getValue();
-            });
+        } else if (this.dedupGlobalStep.isPresent()) {
+            final DedupGlobalStep<?> dedupGlobalStep = this.dedupGlobalStep.get();
+            dedupGlobalStep.setBypass(false);
+            dedupGlobalStep.addStarts(IteratorUtils.map(keyValues, keyValue -> (Traverser) keyValue.getValue()));
+            return (Iterator) dedupGlobalStep;
         } else {
             return IteratorUtils.map(keyValues, KeyValue::getValue);
         }

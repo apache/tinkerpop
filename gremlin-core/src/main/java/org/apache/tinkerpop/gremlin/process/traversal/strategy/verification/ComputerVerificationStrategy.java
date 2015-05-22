@@ -94,6 +94,9 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep || step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof DedupGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
                 throw new ComputerVerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
 
+            if(step instanceof DedupGlobalStep && !((DedupGlobalStep) step).getLocalChildren().isEmpty())
+                throw new ComputerVerificationException("Global traversals on GraphComputer may not contain by()-projecting de-duplication steps: " + step, traversal);
+
             if (step instanceof TraversalParent) {
                 final Optional<Traversal.Admin<Object, Object>> traversalOptional = ((TraversalParent) step).getLocalChildren().stream()
                         .filter(t -> !TraversalHelper.isLocalStarGraph(t.asAdmin()))

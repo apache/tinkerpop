@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -37,7 +36,7 @@ import java.util.Set;
  */
 public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Bypassing {
 
-    private Traversal.Admin<S, Object> dedupTraversal = new IdentityTraversal<>();
+    private Traversal.Admin<S, Object> dedupTraversal = null;
     private Set<Object> duplicateSet = new HashSet<>();
     private boolean bypass = false;
 
@@ -49,13 +48,13 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     protected boolean filter(final Traverser.Admin<S> traverser) {
         if (this.bypass) return true;
         traverser.setBulk(1);
-        return this.duplicateSet.add(TraversalUtil.apply(traverser, this.dedupTraversal));
+        return this.duplicateSet.add(null == this.dedupTraversal ? traverser.get() : TraversalUtil.apply(traverser, this.dedupTraversal));
     }
 
 
     @Override
     public List<Traversal<S, Object>> getLocalChildren() {
-        return Collections.singletonList(this.dedupTraversal);
+        return null == this.dedupTraversal ? Collections.emptyList() : Collections.singletonList(this.dedupTraversal);
     }
 
     @Override
@@ -67,7 +66,8 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     public DedupGlobalStep<S> clone() {
         final DedupGlobalStep<S> clone = (DedupGlobalStep<S>) super.clone();
         clone.duplicateSet = new HashSet<>();
-        clone.dedupTraversal = clone.integrateChild(this.dedupTraversal.clone());
+        if (null != this.dedupTraversal)
+            clone.dedupTraversal = clone.integrateChild(this.dedupTraversal.clone());
         return clone;
     }
 
