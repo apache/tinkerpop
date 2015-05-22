@@ -72,7 +72,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         }
     }
 
-    public <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
+    public static <T> void checkResults(final List<T> expectedResults, final Traversal<?, T> traversal) {
         final List<T> results = traversal.toList();
         assertFalse(traversal.hasNext());
         assertEquals("Checking result size", expectedResults.size(), results.size());
@@ -92,7 +92,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
     }
 
-    public <T> void checkResults(final Map<T, Long> expectedResults, final Traversal<?, T> traversal) {
+    public static <T> void checkResults(final Map<T, Long> expectedResults, final Traversal<?, T> traversal) {
         final List<T> list = new ArrayList<>();
         expectedResults.forEach((k, v) -> {
             for (int i = 0; i < v; i++) {
