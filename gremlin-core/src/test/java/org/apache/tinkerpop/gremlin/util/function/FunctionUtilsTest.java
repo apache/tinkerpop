@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.util.function;
 
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -29,6 +31,12 @@ import static org.junit.Assert.assertSame;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class FunctionUtilsTest {
+
+    @Test
+    public void shouldBeUtilityClass() throws Exception {
+        TestHelper.assertIsUtilityClass(FunctionUtils.class);
+    }
+
     @Test
     public void shouldWrapInRuntimeIfFunctionThrows() {
         final Exception t = new Exception();
