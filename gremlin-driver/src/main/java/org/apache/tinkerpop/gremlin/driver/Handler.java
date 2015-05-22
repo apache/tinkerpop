@@ -50,8 +50,8 @@ class Handler {
         @Override
         protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
             try {
-                if (response.getStatus().getCode() == ResponseStatusCode.SUCCESS ||
-                        response.getStatus().getCode() == ResponseStatusCode.PARTIAL_CONTENT) {
+                final ResponseStatusCode statusCode = response.getStatus().getCode();
+                if (statusCode == ResponseStatusCode.SUCCESS || statusCode == ResponseStatusCode.PARTIAL_CONTENT) {
                     final Object data = response.getResult().getData();
                     if (data instanceof List) {
                         // unrolls the collection into individual results to be handled by the queue.
@@ -63,7 +63,9 @@ class Handler {
                         pending.get(response.getRequestId()).add(new Result(response.getResult().getData()));
                     }
                 } else {
-                    pending.get(response.getRequestId()).markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage()));
+                    // this is a "success" but represents no results otherwise it is an error
+                    if (statusCode != ResponseStatusCode.NO_CONTENT)
+                        pending.get(response.getRequestId()).markError(new ResponseException(response.getStatus().getCode(), response.getStatus().getMessage()));
                 }
 
                 // as this is a non-PARTIAL_CONTENT code - the stream is done
