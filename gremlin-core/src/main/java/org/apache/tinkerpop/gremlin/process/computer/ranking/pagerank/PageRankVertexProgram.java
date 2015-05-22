@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageCombiner;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
 import org.apache.tinkerpop.gremlin.process.computer.Messenger;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalClassFunction;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalObjectFunction;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptFunction;
 import org.apache.tinkerpop.gremlin.process.computer.util.AbstractVertexProgramBuilder;
@@ -44,6 +45,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -188,8 +190,8 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         }
 
 
-        public Builder traversal(final Class<Function<Graph, Traversal.Admin<Vertex, Edge>>> traversalClass) {
-            ConfigurationTraversal.storeState(traversalClass, this.configuration, TRAVERSAL_SUPPLIER);
+        public Builder traversal(final Class<? extends Supplier<Traversal.Admin<?, ?>>> traversalClass) {
+            ConfigurationTraversal.storeState(new TraversalClassFunction(traversalClass), this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 

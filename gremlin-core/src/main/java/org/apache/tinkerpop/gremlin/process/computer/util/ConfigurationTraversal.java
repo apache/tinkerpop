@@ -31,13 +31,12 @@ import java.util.function.Supplier;
  */
 public final class ConfigurationTraversal<S, E> implements Supplier<Traversal.Admin<S, E>> {
 
-    private Function<Graph, Traversal.Admin<S, E>> functionTraversal;
-    private Object configTraversal;
+    private Function<Graph, Traversal.Admin<S, E>> traversalFunction;
     private String configKey;
     private Graph graph;
 
     public Traversal.Admin<S, E> get() {
-        return this.functionTraversal.apply(this.graph);
+        return this.traversalFunction.apply(this.graph);
     }
 
     private ConfigurationTraversal() {
@@ -46,16 +45,16 @@ public final class ConfigurationTraversal<S, E> implements Supplier<Traversal.Ad
 
     public void storeState(final Configuration configuration) {
         try {
-            VertexProgramHelper.serialize(this.configTraversal, configuration, this.configKey);   // the traversal can not be serialized (probably because of lambdas). As such, try direct reference.
+            VertexProgramHelper.serialize(this.traversalFunction, configuration, this.configKey);   // the traversal can not be serialized (probably because of lambdas). As such, try direct reference.
         } catch (final IllegalArgumentException e) {
-            configuration.setProperty(this.configKey, this.configTraversal);
+            configuration.setProperty(this.configKey, this.traversalFunction);
         }
     }
 
-    public static <S, E> ConfigurationTraversal<S, E> storeState(final Object traversalConfigObject, final Configuration configuration, final String configKey) {
+    public static <S, E> ConfigurationTraversal<S, E> storeState(final Function<Graph, Traversal.Admin<S, E>> traversalFunction, final Configuration configuration, final String configKey) {
         final ConfigurationTraversal<S, E> configurationTraversal = new ConfigurationTraversal<>();
         configurationTraversal.configKey = configKey;
-        configurationTraversal.configTraversal = traversalConfigObject;
+        configurationTraversal.traversalFunction = traversalFunction;
         configurationTraversal.storeState(configuration);
         return configurationTraversal;
     }
@@ -65,16 +64,7 @@ public final class ConfigurationTraversal<S, E> implements Supplier<Traversal.Ad
         configurationTraversal.graph = graph;
         configurationTraversal.configKey = configKey;
         final Object configValue = configuration.getProperty(configKey);
-        configurationTraversal.configTraversal = configValue instanceof String ? VertexProgramHelper.deserialize(configuration, configKey) : (Function<Graph, Traversal.Admin<S, E>>) configValue;
-        if (configurationTraversal.configTraversal instanceof Class) {
-            try {
-                configurationTraversal.functionTraversal = ((Class<Function<Graph, Traversal.Admin<S, E>>>) configurationTraversal.configTraversal).newInstance();
-            } catch (final Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        } else {
-            configurationTraversal.functionTraversal = (Function<Graph, Traversal.Admin<S, E>>) configurationTraversal.configTraversal;
-        }
+        configurationTraversal.traversalFunction = configValue instanceof String ? VertexProgramHelper.deserialize(configuration, configKey) : (Function<Graph, Traversal.Admin<S, E>>) configValue;
         return configurationTraversal;
     }
 }
