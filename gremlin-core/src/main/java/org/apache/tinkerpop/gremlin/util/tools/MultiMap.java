@@ -30,7 +30,9 @@ import java.util.Set;
  *
  * @author Matthias Broecheler (me@matthiasb.com)
  */
-public class MultiMap {
+public final class MultiMap {
+
+    private MultiMap() {}
 
     public static <K, V> boolean putAll(final Map<K, Set<V>> map, final K key, final Collection<V> values) {
         return getMapSet(map, key).addAll(values);
