@@ -103,6 +103,11 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ Long.hashCode(this.high) ^ Long.hashCode(this.low);
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }

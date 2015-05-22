@@ -58,6 +58,11 @@ public final class CoinStep<S> extends FilterStep<S> {
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ Double.hashCode(this.probability);
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.BULK);
     }

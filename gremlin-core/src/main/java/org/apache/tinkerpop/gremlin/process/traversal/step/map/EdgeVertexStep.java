@@ -52,6 +52,11 @@ public final class EdgeVertexStep extends FlatMapStep<Edge, Vertex> {
         return StringFactory.stepString(this, this.direction);
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.direction.hashCode();
+    }
+
     public Direction getDirection() {
         return this.direction;
     }

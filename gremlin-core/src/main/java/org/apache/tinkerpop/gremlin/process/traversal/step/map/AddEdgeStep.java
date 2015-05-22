@@ -27,15 +27,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -120,5 +116,17 @@ public final class AddEdgeStep extends FlatMapStep<Vertex, Edge> implements Muta
     @Override
     public List<EventCallback<Event.EdgeAddedEvent>> getCallbacks() {
         return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode() ^ this.direction.hashCode() ^ this.edgeLabel.hashCode();
+        for (final Vertex vertex : this.vertices) {
+            result ^= ElementHelper.hashCode(vertex);
+        }
+        for (final Object item : this.keyValues) {
+            result ^= item.hashCode();
+        }
+        return result;
     }
 }

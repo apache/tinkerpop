@@ -38,11 +38,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -103,6 +99,11 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
         if (null != this.storeTraversal)
             clone.storeTraversal = clone.integrateChild(this.storeTraversal.clone());
         return clone;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.sideEffectKey.hashCode();
     }
 
     ///////////////

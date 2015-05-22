@@ -25,12 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -82,5 +77,14 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.coalesceTraversals);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        for (final Traversal.Admin<S, E> traversal : this.coalesceTraversals) {
+            result ^= traversal.hashCode();
+        }
+        return result;
     }
 }

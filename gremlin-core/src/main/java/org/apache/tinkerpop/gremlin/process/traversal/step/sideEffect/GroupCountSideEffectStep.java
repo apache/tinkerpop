@@ -37,12 +37,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -101,6 +96,13 @@ public final class GroupCountSideEffectStep<S, E> extends SideEffectStep<S> impl
         if (null != this.groupTraversal)
             clone.groupTraversal = clone.integrateChild(this.groupTraversal.clone());
         return clone;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode() ^ this.sideEffectKey.hashCode();
+        if (this.groupTraversal != null) result ^= this.groupTraversal.hashCode();
+        return result;
     }
 
     ///////

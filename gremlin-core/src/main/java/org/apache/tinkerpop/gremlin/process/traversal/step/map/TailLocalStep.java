@@ -49,9 +49,9 @@ public final class TailLocalStep<S> extends MapStep<S, S> {
         // collection in reverse, so we use the range algorithm with dynamically computed boundaries.
         final S start = traverser.get();
         final long high =
-            start instanceof Map ? ((Map)start).size() :
-            start instanceof Collection ? ((Collection)start).size() :
-            this.limit;
+                start instanceof Map ? ((Map) start).size() :
+                        start instanceof Collection ? ((Collection) start).size() :
+                                this.limit;
         final long low = high - this.limit;
         final S result = RangeLocalStep.applyRange(start, low, high);
 
@@ -72,6 +72,11 @@ public final class TailLocalStep<S> extends MapStep<S, S> {
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.limit);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ Long.hashCode(this.limit);
     }
 
     @Override

@@ -71,6 +71,11 @@ public final class IsStep<S> extends FilterStep<S> implements TraversalParent {
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.predicate.hashCode();
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
     }

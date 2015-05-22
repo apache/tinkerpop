@@ -30,11 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -90,6 +86,15 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         clone.traversalRing = this.traversalRing.clone();
         clone.getLocalChildren().forEach(clone::integrateChild);
         return clone;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode() ^ this.scope.hashCode() ^ this.traversalRing.hashCode();
+        for (final String selectLabel : this.selectLabels) {
+            result ^= selectLabel.hashCode();
+        }
+        return result;
     }
 
     @Override

@@ -39,11 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.BulkSetSupplier;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -105,6 +101,11 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
         if (null != this.aggregateTraversal)
             clone.aggregateTraversal = clone.integrateChild(this.aggregateTraversal.clone());
         return clone;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.sideEffectKey.hashCode();
     }
 
     ////////

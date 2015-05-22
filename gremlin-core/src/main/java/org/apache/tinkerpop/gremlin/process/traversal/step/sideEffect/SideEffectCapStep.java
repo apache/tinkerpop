@@ -23,12 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrier
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -49,6 +44,15 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.sideEffectKeys);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        for (final String sideEffectKey : this.sideEffectKeys) {
+            result ^= sideEffectKey.hashCode();
+        }
+        return result;
     }
 
     public List<String> getSideEffectKeys() {

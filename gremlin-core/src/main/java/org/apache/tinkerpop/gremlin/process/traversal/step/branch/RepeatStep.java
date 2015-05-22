@@ -23,17 +23,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -128,6 +123,18 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         if (null != this.emitTraversal)
             clone.emitTraversal = clone.integrateChild(this.emitTraversal.clone());
         return clone;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode() ^ this.repeatTraversal.hashCode();
+        result ^= Boolean.hashCode(this.untilFirst);
+        result ^= Boolean.hashCode(this.emitFirst) << 1;
+        if (this.untilTraversal != null)
+            result ^= this.untilTraversal.hashCode();
+        if (this.emitTraversal != null)
+            result ^= this.emitTraversal.hashCode();
+        return result;
     }
 
     @Override

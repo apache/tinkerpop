@@ -85,6 +85,15 @@ public class VertexStep<E extends Element> extends FlatMapStep<Vertex, E> {
     }
 
     @Override
+    public int hashCode() {
+        int result = super.hashCode() ^ this.direction.hashCode() ^ this.returnClass.hashCode();
+        for (final String edgeLabel : this.edgeLabels) {
+            result ^= edgeLabel.hashCode();
+        }
+        return result;
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }

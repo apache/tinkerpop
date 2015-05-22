@@ -80,12 +80,21 @@ public final class TraversalRing<A, B> implements Serializable, Cloneable {
         try {
             final TraversalRing<A, B> clone = (TraversalRing<A, B>) super.clone();
             clone.traversals = new ArrayList<>();
-            for(final Traversal.Admin<A,B> traversal : this.traversals) {
+            for (final Traversal.Admin<A, B> traversal : this.traversals) {
                 clone.addTraversal(traversal.clone());
             }
             return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        int result = this.getClass().hashCode();
+        for (final Traversal.Admin<A, B> traversal : this.traversals) {
+            result ^= traversal.hashCode();
+        }
+        return result;
     }
 }

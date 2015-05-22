@@ -49,6 +49,11 @@ public final class SackObjectStep<S, V> extends SideEffectStep<S> {
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.operator.hashCode();
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
     }

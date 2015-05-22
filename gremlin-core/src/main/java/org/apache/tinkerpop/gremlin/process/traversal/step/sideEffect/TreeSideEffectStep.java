@@ -100,6 +100,11 @@ public final class TreeSideEffectStep<S> extends SideEffectStep<S> implements Si
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.sideEffectKey.hashCode() ^ this.traversalRing.hashCode();
+    }
+
+    @Override
     public List<Traversal.Admin<Object, Object>> getLocalChildren() {
         return this.traversalRing.getTraversals();
     }

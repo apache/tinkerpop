@@ -30,11 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -85,6 +81,15 @@ public final class AddEdgeByPathStep extends MapStep<Vertex, Edge> implements Mu
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.direction.name(), this.edgeLabel, this.stepLabel);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode() ^ this.direction.hashCode() ^ this.edgeLabel.hashCode() ^ this.stepLabel.hashCode();
+        for (final Object item : this.keyValues) {
+            result ^= item.hashCode();
+        }
+        return result;
     }
 
     @Override

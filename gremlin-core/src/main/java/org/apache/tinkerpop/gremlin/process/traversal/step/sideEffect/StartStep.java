@@ -22,8 +22,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -71,5 +74,23 @@ public class StartStep<S> extends AbstractStep<S, S> {
         clone.first = true;
         clone.start = null;
         return clone;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        if (this.start instanceof Iterator) {
+            final Iterator iterator = (Iterator) this.start;
+            final List list = new ArrayList();
+            while (iterator.hasNext()) {
+                final Object item = iterator.next();
+                if (item != null) result ^= item.hashCode();
+                list.add(item);
+            }
+            this.start = list.iterator();
+        } else {
+            result ^= this.start.hashCode();
+        }
+        return result;
     }
 }

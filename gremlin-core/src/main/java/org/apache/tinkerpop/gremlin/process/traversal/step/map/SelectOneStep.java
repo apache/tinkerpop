@@ -67,6 +67,11 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.scope.hashCode() ^ this.selectLabel.hashCode() ^ this.selectTraversal.hashCode();
+    }
+
+    @Override
     public List<Traversal.Admin<Object, Object>> getLocalChildren() {
         return Collections.singletonList(this.selectTraversal);
     }

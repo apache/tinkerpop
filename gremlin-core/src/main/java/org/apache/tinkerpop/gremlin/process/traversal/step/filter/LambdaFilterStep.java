@@ -50,4 +50,9 @@ public final class LambdaFilterStep<S> extends FilterStep<S> implements LambdaHo
     public String toString() {
         return StringFactory.stepString(this, this.predicate);
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.predicate.hashCode();
+    }
 }

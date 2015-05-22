@@ -65,6 +65,15 @@ public class PropertiesStep<E> extends FlatMapStep<Element, E> {
     }
 
     @Override
+    public int hashCode() {
+        int result = super.hashCode() ^ this.returnType.hashCode();
+        for (final String propertyKey : this.propertyKeys) {
+            result ^= propertyKey.hashCode();
+        }
+        return result;
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }

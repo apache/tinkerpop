@@ -24,18 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -115,5 +107,14 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
     @Override
     public List<EventCallback<Event.ElementPropertyChangedEvent>> getCallbacks() {
         return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode() ^ this.cardinality.hashCode() ^ this.key.hashCode() ^ this.value.hashCode();
+        for (final Object item : this.vertexPropertyKeyValues) {
+            result ^= item.hashCode();
+        }
+        return result;
     }
 }

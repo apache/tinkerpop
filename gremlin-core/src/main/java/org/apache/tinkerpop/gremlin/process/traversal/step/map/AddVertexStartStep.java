@@ -18,13 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
@@ -85,5 +85,14 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
     @Override
     public List<EventCallback<Event.VertexAddedEvent>> getCallbacks() {
         return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        for (final Object item : this.keyValues) {
+            result ^= item.hashCode();
+        }
+        return result;
     }
 }

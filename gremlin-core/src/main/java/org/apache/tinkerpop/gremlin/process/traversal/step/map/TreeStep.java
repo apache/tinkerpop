@@ -88,6 +88,11 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.traversalRing.hashCode();
+    }
+
+    @Override
     public Traverser<Tree> processNextStart() {
         if (this.byPass) {
             final Traverser.Admin<S> traverser = this.starts.next();

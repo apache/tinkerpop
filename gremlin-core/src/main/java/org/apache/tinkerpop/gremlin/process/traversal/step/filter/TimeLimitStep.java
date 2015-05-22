@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,5 +76,10 @@ public final class TimeLimitStep<S> extends FilterStep<S> {
         clone.timedOut = new AtomicBoolean(this.timedOut.get());
         clone.startTime = new AtomicLong(this.startTime.get());
         return clone;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ Long.hashCode(this.timeLimit);
     }
 }

@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch;
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
@@ -83,5 +83,10 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
                 throw FastNoSuchElementException.instance();
             }
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.localTraversal.hashCode();
     }
 }

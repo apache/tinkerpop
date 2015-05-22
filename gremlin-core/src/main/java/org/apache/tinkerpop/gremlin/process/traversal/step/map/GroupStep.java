@@ -39,13 +39,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -113,6 +107,15 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
         if (null != this.reduceTraversal)
             clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone());
         return clone;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        for (final Traversal.Admin traversal : this.getLocalChildren()) {
+            result ^= traversal.hashCode();
+        }
+        return result;
     }
 
     @Override

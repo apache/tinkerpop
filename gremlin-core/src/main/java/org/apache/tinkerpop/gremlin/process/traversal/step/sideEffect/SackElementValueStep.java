@@ -60,6 +60,11 @@ public final class SackElementValueStep<S extends Element, V> extends SideEffect
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.operator.hashCode() ^ this.propertyKey.hashCode();
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return REQUIREMENTS;
     }

@@ -22,8 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.*;
@@ -151,6 +151,16 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
         clone.branchTraversal = this.branchTraversal.clone();
         clone.integrateChild(clone.branchTraversal);
         return clone;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        if (this.traversalOptions != null)
+            result ^= this.traversalOptions.hashCode();
+        if (this.branchTraversal != null)
+            result ^= this.branchTraversal.hashCode();
+        return result;
     }
 
     @Override

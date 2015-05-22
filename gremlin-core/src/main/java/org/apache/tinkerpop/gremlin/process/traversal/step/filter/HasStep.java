@@ -95,4 +95,13 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
         }
         return clone;
     }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        for (final HasContainer hasContainer : this.hasContainers) {
+            result ^= hasContainer.hashCode();
+        }
+        return result;
+    }
 }

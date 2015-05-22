@@ -82,4 +82,13 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutati
     public List<EventCallback<Event.VertexAddedEvent>> getCallbacks() {
         return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
     }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        for (final Object item : this.keyValues) {
+            result ^= item.hashCode();
+        }
+        return result;
+    }
 }

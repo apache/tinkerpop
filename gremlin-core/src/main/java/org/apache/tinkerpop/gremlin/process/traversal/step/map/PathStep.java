@@ -66,6 +66,11 @@ public final class PathStep<S> extends MapStep<S, Path> implements TraversalPare
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.traversalRing.hashCode();
+    }
+
+    @Override
     public void reset() {
         super.reset();
         this.traversalRing.reset();

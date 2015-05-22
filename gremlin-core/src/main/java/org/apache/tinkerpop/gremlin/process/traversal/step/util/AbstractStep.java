@@ -24,12 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -176,6 +171,16 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other != null && other.getClass().equals(this.getClass()) && this.hashCode() == other.hashCode();
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getClass().hashCode();
     }
 
     private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {

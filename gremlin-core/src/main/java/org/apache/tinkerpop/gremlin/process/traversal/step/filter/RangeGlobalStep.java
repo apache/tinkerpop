@@ -115,6 +115,11 @@ public final class RangeGlobalStep<S> extends FilterStep<S> implements Ranging, 
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ Long.hashCode(this.low) ^ Long.hashCode(this.high) ^ Boolean.hashCode(this.bypass);
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.BULK);
     }

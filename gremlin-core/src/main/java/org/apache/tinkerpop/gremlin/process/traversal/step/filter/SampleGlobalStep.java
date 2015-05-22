@@ -114,4 +114,9 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
         clone.probabilityTraversal = clone.integrateChild(this.probabilityTraversal.clone());
         return clone;
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.amountToSample ^ this.probabilityTraversal.hashCode();
+    }
 }

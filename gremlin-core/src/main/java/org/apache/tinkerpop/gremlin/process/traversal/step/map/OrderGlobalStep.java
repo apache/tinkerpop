@@ -72,6 +72,15 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
     }
 
     @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        for (final Comparator<S> comparator : this.comparators) {
+            result ^= comparator.hashCode();
+        }
+        return result;
+    }
+
+    @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.OBJECT);
     }
