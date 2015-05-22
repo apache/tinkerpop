@@ -19,11 +19,11 @@
  *
  */
 
-package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.groovy;
+package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.groovy;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.hadoop.groovy.plugin.HadoopPluginSuite;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.HadoopGiraphGraphProvider;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.HadoopSparkGraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.junit.runner.RunWith;
 
@@ -31,6 +31,6 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(HadoopPluginSuite.class)
-@GraphProviderClass(provider = HadoopGiraphGraphProvider.class, graph = HadoopGraph.class)
-public class GiraphGraphComputerGroovyPluginIntegrateTest {
+@GraphProviderClass(provider = HadoopSparkGraphProvider.class, graph = HadoopGraph.class)
+public class SparkHadoopGremlinPluginTest {
 }

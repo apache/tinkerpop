@@ -49,6 +49,8 @@ import java.util.Set;
  */
 public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
 
+    protected static String NAME = "tinkerpop.hadoop";
+
     protected static final Set<String> IMPORTS = new HashSet<String>() {{
         add("import org.apache.hadoop.hdfs.*");
         add("import org.apache.hadoop.conf.*");
@@ -79,7 +81,7 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
 
     @Override
     public String getName() {
-        return "tinkerpop.hadoop";
+        return NAME;
     }
 
     @Override

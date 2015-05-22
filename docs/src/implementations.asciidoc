@@ -661,7 +661,7 @@ GiraphGraphComputer
 
 image:giraph-logo.png[width=100,float=left] link:http://giraph.apache.org[Giraph] is an Apache Software Foundation project focused on OLAP-based graph processing. Giraph makes use of the distributed graph computing paradigm made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs communicate with one another in a bulk synchronous parallel (BSP) manner. This model aligns with TinkerPop3's `GraphComputer` API. TinkerPop3 provides an implementation of `GraphComputer` that works for Giraph called `GiraphGraphComputer`. Moreover, with TinkerPop3's <<mapreduce,MapReduce>>-framework, the standard Giraph/Pregel model is extended to support an arbitrary number of MapReduce phases to aggregate and yield results from the graph. Below are examples using `GiraphGraphComputer` from the <<gremlin-console,Gremlin-Console>>.
 
-IMPORTANT: Be sure that the link:http://www.slf4j.org/[SLF4J] of Hadoop matches that of Giraph or else there will be conflicts. Simply copy the following jars to the `lib/` of the machines in the Hadoop cluster: `slf4j-api-a.b.c.jar` and `slf4j-log4j12-a.b.c.jar`.
+WARNING: Be sure that the link:http://www.slf4j.org/[SLF4J] of Hadoop matches that of Giraph or else there will be conflicts. Simply copy the following jars to the `lib/` of the machines in the Hadoop cluster: `slf4j-api-a.b.c.jar` and `slf4j-log4j12-a.b.c.jar`.
 
 WARNING: Giraph uses a large number of Hadoop counters. The default for Hadoop is 120. In `mapred-site.xml` it is possible to increase the limit it via the `mapreduce.job.counters.limit` property. A good value to use is 1000. This is a cluster-wide property so be sure to restart the cluster after updating.
 
@@ -698,7 +698,8 @@ IMPORTANT: The examples above do not use lambdas (i.e. closures in Gremlin-Groov
 gremlin> graph = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-gryo.properties')
 ==>hadoopgraph[gryoinputformat->gryooutputformat]
 gremlin> :remote connect tinkerpop.hadoop graph
-==>hadoopgraph[gryoinputformat->gryooutputformat]
+==>useTraversalSource=graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], giraphgraphcomputer]
+==>useSugar=false
 gremlin> :> g.V().group().by{it.value('name')[1]}.by('name')
 INFO  org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[GraphStep(vertex), GroupStep(lambda,value(name)), ComputerResultStep]
 INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0039
@@ -736,7 +737,18 @@ gremlin> g.V().out().out().values('name')
 ==>lop
 ==>ripple
 
-CAUTION: The HadoopRemoteAcceptor (`:remote`) currently does not support `SparkGraphComputer`. As such, submitting lambda containing traversals to the Spark cluster is not possible via the Gremlin Console.
+For using lambdas in Gremlin-Groovy, simply provide `:remote connect` a `TraversalSource` which leverages SparkGraphComputer.
+
+[source,test]
+gremlin> graph = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-gryo.properties')
+==>hadoopgraph[gryoinputformat->gryooutputformat]
+gremlin> g = graph.traversal(computer(SparkGraphComputer))
+==>graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], sparkgraphcomputer]
+gremlin> :remote connect tinkerpop.hadoop graph g
+==>useTraversalSource=graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], sparkgraphcomputer]
+==>useSugar=false
+gremlin> :> g.V().group().by{it.value('name')[1]}.by('name')
+==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
 
 The `SparkGraphComputer` algorithm leverages Spark's caching abilities to reduce the amount of data shuffled across the wire on each iteration of the <<vertexprogram,`VertexProgram`>>. When the graph is loaded as a Spark RDD (Resilient Distributed Dataset) it is immediately cached as `graphRDD`. The `graphRDD` is a distributed adjacency list which encodes the vertex, its properties, and all its incident edges. On the first iteration, each vertex (in parallel) is passed through `VertexProgram.execute()`. This yields an output of the vertex's mutated state (i.e. updated compute keys -- `propertyX`) and its outgoing messages. This `viewOutgoingRDD` is then reduced to `viewIncomingRDD` where the outgoing messages are sent to their respective vertices. If a `MessageCombiner` exists for the vertex program, then messages are aggregated locally and globally to ultimately yield one incoming message for the vertex. This reduce sequence is the "message pass." If the vertex program does not terminate on this iteration, then the `viewIncomingRDD` is joined with the cached `graphRDD` and the process continues. When there are no more iterations, there is a final join and the resultant RDD is stripped of its edges and messages. This `mapReduceRDD` is cached and is processed by each <<mapreduce,`MapReduce`>> job in the <<graphcomputer,`GraphComputer`>> computation.
 

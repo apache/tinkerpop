@@ -21,7 +21,6 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
-import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.util.TestableConsolePluginAcceptor;
@@ -43,32 +42,16 @@ import static org.junit.Assert.*;
 
 public class HadoopGremlinPluginTest extends AbstractGremlinProcessTest {
 
-    private boolean ignore = false;
-
-    @Before
-    public void setup() throws Exception {
-        if (GraphManager.getGraphProvider() != null) {
-            super.setup();
-        } else {
-            this.ignore = true;
-        }
-    }
-
     @Before
     public void setupTest() {
-        if (GraphManager.getGraphProvider() != null) {
-            try {
-                super.setupTest();
-                this.console = new TestableConsolePluginAcceptor();
-                final HadoopGremlinPlugin plugin = new HadoopGremlinPlugin();
-                plugin.pluginTo(this.console);
-                this.remote = (HadoopRemoteAcceptor) plugin.remoteAcceptor().get();
-            } catch (final Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-
-        } else {
-            this.ignore = true;
+        try {
+            super.setupTest();
+            this.console = new TestableConsolePluginAcceptor();
+            final HadoopGremlinPlugin plugin = new HadoopGremlinPlugin();
+            plugin.pluginTo(this.console);
+            this.remote = (HadoopRemoteAcceptor) plugin.remoteAcceptor().get();
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
@@ -80,66 +63,65 @@ public class HadoopGremlinPluginTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldReturnResultIterator() throws Exception {
-        if (!ignore) {
-            this.console.addBinding("graph", this.graph);
-            this.remote.connect(Arrays.asList("graph"));
-            //
-            Traversal<?, ?> traversal = (Traversal<?, ?>) this.remote.submit(Arrays.asList("g.V().count()"));
-            assertEquals(6L, traversal.next());
-            assertFalse(traversal.hasNext());
-            assertNotNull(this.console.getBindings().get(RemoteAcceptor.RESULT));
-        }
+        this.console.addBinding("graph", this.graph);
+        this.console.addBinding("g", this.g);
+        this.remote.connect(Arrays.asList("graph", "g"));
+        //
+        Traversal<?, ?> traversal = (Traversal<?, ?>) this.remote.submit(Arrays.asList("g.V().count()"));
+        assertEquals(6L, traversal.next());
+        assertFalse(traversal.hasNext());
+        assertNotNull(this.console.getBindings().get(RemoteAcceptor.RESULT));
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportSugar() throws Exception {
-        if (!ignore) {
-            this.console.addBinding("graph", this.graph);
-            this.remote.connect(Arrays.asList("graph"));
-            //
-            this.remote.configure(Arrays.asList("useSugar", "true"));
-            Traversal<?, ?> traversal = (Traversal<?, ?>) this.remote.submit(Arrays.asList("g.V.name.map{it.length()}.sum"));
-            assertEquals(28.0d, traversal.next());
-            assertFalse(traversal.hasNext());
-            assertNotNull(this.console.getBindings().get(RemoteAcceptor.RESULT));
-        }
+        this.console.addBinding("graph", this.graph);
+        this.console.addBinding("g", this.g);
+        this.remote.connect(Arrays.asList("graph"));
+        //
+        this.remote.configure(Arrays.asList("useSugar", "true"));
+        this.remote.connect(Arrays.asList("graph", "g"));
+        Traversal<?, ?> traversal = (Traversal<?, ?>) this.remote.submit(Arrays.asList("g.V.name.map{it.length()}.sum"));
+        assertEquals(28.0d, traversal.next());
+        assertFalse(traversal.hasNext());
+        assertNotNull(this.console.getBindings().get(RemoteAcceptor.RESULT));
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportHDFSMethods() throws Exception {
-        if (!ignore) {
-            List<String> ls = (List<String>) this.console.eval("hdfs.ls()");
-            for (final String line : ls) {
-                assertTrue(line.startsWith("-") || line.startsWith("r") || line.startsWith("w") || line.startsWith("x"));
-                assertEquals(" ", line.substring(9, 10));
-            }
-            ls = (List<String>) this.console.eval("local.ls()");
-            for (final String line : ls) {
-                assertTrue(line.startsWith("-") || line.startsWith("r") || line.startsWith("w") || line.startsWith("x"));
-                assertEquals(" ", line.substring(9, 10));
-            }
-            ////
-            this.console.eval("hdfs.copyFromLocal('" + HadoopGraphProvider.PATHS.get("tinkerpop-classic.txt") + "', 'target/tinkerpop-classic.txt')");
-            assertTrue((Boolean) this.console.eval("hdfs.exists('target/tinkerpop-classic.txt')"));
-            ////
-            List<String> head = IteratorUtils.asList(this.console.eval("hdfs.head('target/tinkerpop-classic.txt')"));
-            assertEquals(6, head.size());
-            for (final String line : head) {
-                assertEquals(":", line.substring(1, 2));
-                assertTrue(Integer.valueOf(line.substring(0, 1)) <= 6);
-            }
-            head = IteratorUtils.asList(this.console.eval("hdfs.head('target/tinkerpop-classic.txt',3)"));
-            assertEquals(3, head.size());
-            for (final String line : head) {
-                assertEquals(":", line.substring(1, 2));
-                assertTrue(Integer.valueOf(line.substring(0, 1)) <= 3);
-            }
-            ////
-            this.console.eval("hdfs.rm('target/tinkerpop-classic.txt')");
-            assertFalse((Boolean) this.console.eval("hdfs.exists('target/tinkerpop-classic.txt')"));
+
+        List<String> ls = (List<String>) this.console.eval("hdfs.ls()");
+        for (final String line : ls) {
+            assertTrue(line.startsWith("-") || line.startsWith("r") || line.startsWith("w") || line.startsWith("x"));
+            assertEquals(" ", line.substring(9, 10));
         }
+        ls = (List<String>) this.console.eval("local.ls()");
+        for (final String line : ls) {
+            assertTrue(line.startsWith("-") || line.startsWith("r") || line.startsWith("w") || line.startsWith("x"));
+            assertEquals(" ", line.substring(9, 10));
+        }
+        ////
+        this.console.eval("hdfs.copyFromLocal('" + HadoopGraphProvider.PATHS.get("tinkerpop-classic.txt") + "', 'target/tinkerpop-classic.txt')");
+        assertTrue((Boolean) this.console.eval("hdfs.exists('target/tinkerpop-classic.txt')"));
+        ////
+        List<String> head = IteratorUtils.asList(this.console.eval("hdfs.head('target/tinkerpop-classic.txt')"));
+        assertEquals(6, head.size());
+        for (final String line : head) {
+            assertEquals(":", line.substring(1, 2));
+            assertTrue(Integer.valueOf(line.substring(0, 1)) <= 6);
+        }
+        head = IteratorUtils.asList(this.console.eval("hdfs.head('target/tinkerpop-classic.txt',3)"));
+        assertEquals(3, head.size());
+        for (final String line : head) {
+            assertEquals(":", line.substring(1, 2));
+            assertTrue(Integer.valueOf(line.substring(0, 1)) <= 3);
+        }
+        ////
+        this.console.eval("hdfs.rm('target/tinkerpop-classic.txt')");
+        assertFalse((Boolean) this.console.eval("hdfs.exists('target/tinkerpop-classic.txt')"));
+
     }
 
 }
