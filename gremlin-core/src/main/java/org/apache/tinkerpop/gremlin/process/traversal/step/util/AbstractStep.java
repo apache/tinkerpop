@@ -180,7 +180,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     @Override
     public int hashCode() {
-        return this.getClass().hashCode();
+        int result = this.getClass().hashCode();
+        for (final String label : this.getLabels()) {
+            result ^= label.hashCode();
+        }
+        return result;
     }
 
     private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {

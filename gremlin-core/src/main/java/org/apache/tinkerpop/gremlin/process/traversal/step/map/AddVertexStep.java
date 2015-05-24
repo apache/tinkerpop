@@ -85,9 +85,9 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutati
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
+        int result = super.hashCode(), i = 0;
         for (final Object item : this.keyValues) {
-            result ^= item.hashCode();
+            result ^= Integer.rotateLeft(item.hashCode(), i += 16);
         }
         return result;
     }

@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -88,7 +87,7 @@ public class StartStep<S> extends AbstractStep<S, S> {
                 list.add(item);
             }
             this.start = list.iterator();
-        } else {
+        } else if (this.start != null) {
             result ^= this.start.hashCode();
         }
         return result;

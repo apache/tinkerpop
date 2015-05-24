@@ -46,4 +46,9 @@ public final class LambdaMapStep<S, E> extends MapStep<S, E> implements LambdaHo
     public String toString() {
         return StringFactory.stepString(this, this.function);
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.function.hashCode();
+    }
 }

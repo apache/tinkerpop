@@ -47,4 +47,9 @@ public final class LambdaFlatMapStep<S, E> extends FlatMapStep<S, E> implements 
     public String toString() {
         return StringFactory.stepString(this, this.function);
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.function.hashCode();
+    }
 }

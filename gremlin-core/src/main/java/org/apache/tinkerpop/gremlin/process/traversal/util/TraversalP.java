@@ -55,7 +55,7 @@ public final class TraversalP<S, E> extends P<E> {
 
     @Override
     public int hashCode() {
-        return (this.biPredicate.hashCode() + this.traversal.hashCode()) ^ Boolean.hashCode(this.negate);
+        return this.traversal.hashCode() ^ Boolean.hashCode(this.negate);
     }
 
     @Override

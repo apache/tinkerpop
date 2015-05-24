@@ -22,16 +22,22 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class WhereStepTest {
+public class WhereStepTest extends StepTest {
 
     @Test
     public void shouldHaveProperKeysAndState() {
@@ -44,7 +50,7 @@ public class WhereStepTest {
         assertEquals("a", whereStep.startKey);
         assertEquals(TraversalP.class, whereStep.predicate.getClass());
 
-        traversal = as("a").out().as("b").where(as("a","b").out());
+        traversal = as("a").out().as("b").where(as("a", "b").out());
         whereStep = (WhereStep) traversal.asAdmin().getEndStep();
         assertTrue(whereStep.multiKeyedTraversal);
         assertTrue(whereStep.startKeys.contains("a") && whereStep.startKeys.contains("b") && whereStep.startKeys.size() == 2);
@@ -52,5 +58,13 @@ public class WhereStepTest {
         assertNull(whereStep.endKey);
         assertNull(whereStep.startKey);
         assertEquals(TraversalP.class, whereStep.predicate.getClass());
+    }
+
+    @Override
+    public List<Traversal> getTraversals() {
+        return Arrays.asList(
+                as("a").out().as("b").where(as("a").out()),
+                as("a").out().as("b").where(as("a", "b").out())
+        );
     }
 }

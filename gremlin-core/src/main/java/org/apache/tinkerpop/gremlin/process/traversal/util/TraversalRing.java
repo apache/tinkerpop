@@ -91,9 +91,9 @@ public final class TraversalRing<A, B> implements Serializable, Cloneable {
 
     @Override
     public int hashCode() {
-        int result = this.getClass().hashCode();
+        int result = this.getClass().hashCode(), i = 0;
         for (final Traversal.Admin<A, B> traversal : this.traversals) {
-            result ^= traversal.hashCode();
+            result ^= Integer.rotateLeft(traversal.hashCode(), i++);
         }
         return result;
     }

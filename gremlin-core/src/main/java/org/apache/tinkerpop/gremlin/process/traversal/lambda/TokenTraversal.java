@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.lambda;
 
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.T;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -51,5 +51,10 @@ public final class TokenTraversal<S extends Element, E> extends AbstractLambdaTr
 
     public T getToken() {
         return this.t;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getClass().hashCode() ^ this.t.hashCode();
     }
 }

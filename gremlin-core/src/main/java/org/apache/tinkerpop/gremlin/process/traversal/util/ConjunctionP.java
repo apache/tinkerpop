@@ -76,9 +76,9 @@ public abstract class ConjunctionP<V> extends P<V> {
 
     @Override
     public int hashCode() {
-        int result = 0;
+        int result = 0, i = 0;
         for (final P p : this.predicates) {
-            result ^= p.hashCode();
+            result ^= Integer.rotateLeft(p.hashCode(), i++);
         }
         return result;
     }
@@ -86,7 +86,7 @@ public abstract class ConjunctionP<V> extends P<V> {
     @Override
     public boolean equals(final Object other) {
         if (other != null && other.getClass().equals(this.getClass())) {
-            final List<P> otherPredicates = ((ConjunctionP)other).predicates;
+            final List<P> otherPredicates = ((ConjunctionP) other).predicates;
             if (predicates.size() == otherPredicates.size()) {
                 for (int i = 0; i < predicates.size(); i++) {
                     if (!predicates.get(i).equals(otherPredicates.get(i))) {

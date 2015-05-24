@@ -103,7 +103,10 @@ public final class StoreStep<S> extends SideEffectStep<S> implements SideEffectC
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.sideEffectKey.hashCode();
+        int result = super.hashCode() ^ this.sideEffectKey.hashCode();
+        if (this.storeTraversal != null)
+            result ^= this.storeTraversal.hashCode();
+        return result;
     }
 
     ///////////////

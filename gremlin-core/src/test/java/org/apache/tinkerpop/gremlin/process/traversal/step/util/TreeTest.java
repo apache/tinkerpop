@@ -18,18 +18,23 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Test;
 
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class TreeTest {
+public class TreeTest extends StepTest {
 
     @Test
     public void shouldProvideValidDepths() {
@@ -92,5 +97,14 @@ public class TreeTest {
 
     private static <T> Map.Entry<T, Tree<T>> createTree(T key, Tree<T> tree) {
         return new AbstractMap.SimpleEntry<>(key, tree);
+    }
+
+    @Override
+    protected List<Traversal> getTraversals() {
+        return Arrays.asList(
+                __.tree(),
+                __.tree().by("name").by("age"),
+                __.tree().by("age").by("name")
+        );
     }
 }

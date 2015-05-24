@@ -105,7 +105,10 @@ public final class AggregateStep<S> extends CollectingBarrierStep<S> implements 
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.sideEffectKey.hashCode();
+        int result = super.hashCode() ^ this.sideEffectKey.hashCode();
+        if (this.aggregateTraversal != null)
+            result ^= this.aggregateTraversal.hashCode();
+        return result;
     }
 
     ////////

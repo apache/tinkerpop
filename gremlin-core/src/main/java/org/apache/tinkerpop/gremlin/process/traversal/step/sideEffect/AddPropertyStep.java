@@ -111,7 +111,7 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.cardinality.hashCode() ^ this.key.hashCode() ^ this.value.hashCode();
+        int result = super.hashCode() ^ this.cardinality.hashCode() ^ this.key.hashCode() ^ Integer.rotateLeft(this.value.hashCode(), 16);
         for (final Object item : this.vertexPropertyKeyValues) {
             result ^= item.hashCode();
         }

@@ -43,4 +43,9 @@ public final class IdentityTraversal<S, E> extends AbstractLambdaTraversal<S, E>
     public String toString() {
         return IDENTITY;
     }
+
+    @Override
+    public int hashCode() {
+        return this.getClass().hashCode();
+    }
 }

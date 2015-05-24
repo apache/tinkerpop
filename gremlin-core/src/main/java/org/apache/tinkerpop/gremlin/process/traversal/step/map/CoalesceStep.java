@@ -81,9 +81,9 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
+        int result = super.hashCode(), i = 0;
         for (final Traversal.Admin<S, E> traversal : this.coalesceTraversals) {
-            result ^= traversal.hashCode();
+            result ^= Integer.rotateLeft(traversal.hashCode(), i++);
         }
         return result;
     }

@@ -46,4 +46,9 @@ public final class LambdaSideEffectStep<S> extends SideEffectStep<S> implements 
     public String toString() {
         return StringFactory.stepString(this, this.consumer);
     }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.consumer.hashCode();
+    }
 }

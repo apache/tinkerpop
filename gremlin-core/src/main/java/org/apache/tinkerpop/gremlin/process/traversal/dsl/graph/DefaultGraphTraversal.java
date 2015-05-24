@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -47,6 +48,15 @@ public class DefaultGraphTraversal<S, E> extends DefaultTraversal<S, E> implemen
     @Override
     public boolean equals(final Object other) {
         return other != null && other.getClass().equals(this.getClass()) && this.asAdmin().equals(((DefaultGraphTraversal) other).asAdmin());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = this.getClass().hashCode();
+        for (final Step step : this.asAdmin().getSteps()) {
+            result ^= step.hashCode();
+        }
+        return result;
     }
 
     @Override

@@ -72,6 +72,14 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     }
 
     @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        if (this.dedupTraversal != null)
+            result ^= this.dedupTraversal.hashCode();
+        return result;
+    }
+
+    @Override
     public void reset() {
         super.reset();
         this.duplicateSet.clear();
