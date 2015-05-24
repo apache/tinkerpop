@@ -41,6 +41,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalClassFunction;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalObjectFunction;
@@ -61,6 +62,7 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 
 /**
@@ -290,9 +292,8 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             return this;
         }
 
-
-        public Builder traversal(final Class<Function<Graph, Traversal.Admin<?, ?>>> traversalClass) {
-            ConfigurationTraversal.storeState(traversalClass, this.configuration, TRAVERSAL_SUPPLIER);
+        public Builder traversal(final Class<? extends Supplier<Traversal.Admin<?, ?>>> traversalClass) {
+            ConfigurationTraversal.storeState(new TraversalClassFunction(traversalClass), this.configuration, TRAVERSAL_SUPPLIER);
             return this;
         }
 
