@@ -154,4 +154,15 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
     public default Set<TraverserRequirement> getRequirements() {
         return Collections.emptySet();
     }
+
+    /**
+     * Compare the current step with another step.
+     *
+     * @param other      the other step
+     * @param compareIds whether to compare step IDs or not
+     * @return true if the steps are equal, otherwise false
+     */
+    public default boolean equals(final Step other, final boolean compareIds) {
+        return (!compareIds || (other != null && this.getId().equals(other.getId()))) && this.equals(other);
+    }
 }

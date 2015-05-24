@@ -30,12 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -95,20 +90,30 @@ public final class TraversalHelper {
         }
     }
 
+    public static <S, E> int stepIndex(final Step<S, E> step, final Traversal.Admin<?, ?> traversal) {
+        int i = 0;
+        for (final Step s : traversal.getSteps()) {
+            if (s.equals(step, true))
+                return i;
+            i++;
+        }
+        return -1;
+    }
+
     public static <S, E> Step<?, E> insertTraversal(final Step<?, S> previousStep, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {
-        return TraversalHelper.insertTraversal(traversal.getSteps().indexOf(previousStep), insertTraversal, traversal);
+        return TraversalHelper.insertTraversal(stepIndex(previousStep, traversal), insertTraversal, traversal);
     }
 
     public static <S, E> void insertBeforeStep(final Step<S, E> insertStep, final Step<E, ?> afterStep, final Traversal.Admin<?, ?> traversal) {
-        traversal.addStep(traversal.getSteps().indexOf(afterStep), insertStep);
+        traversal.addStep(stepIndex(afterStep, traversal), insertStep);
     }
 
     public static <S, E> void insertAfterStep(final Step<S, E> insertStep, final Step<?, S> beforeStep, final Traversal.Admin<?, ?> traversal) {
-        traversal.addStep(traversal.getSteps().indexOf(beforeStep) + 1, insertStep);
+        traversal.addStep(stepIndex(beforeStep, traversal) + 1, insertStep);
     }
 
     public static <S, E> void replaceStep(final Step<S, E> removeStep, final Step<S, E> insertStep, final Traversal.Admin<?, ?> traversal) {
-        traversal.addStep(traversal.getSteps().indexOf(removeStep), insertStep);
+        traversal.addStep(stepIndex(removeStep, traversal), insertStep);
         traversal.removeStep(removeStep);
     }
 
