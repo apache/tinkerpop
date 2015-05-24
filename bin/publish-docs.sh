@@ -42,7 +42,7 @@ ${SVN_CMD} rm "javadocs/${VERSION}"
 ${SVN_CMD} commit . -m "Docs for TinkerPop ${VERSION} are being replaced."
 popd
 
-docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc
+bin/process-docs.sh
 mvn process-resources -Djavadoc
 
 mkdir -p "target/svn/docs/${VERSION}"
