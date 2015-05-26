@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* SparkGraphComputer now supports `InputRDD` to allow vendors/users to use a `SparkContext` to generate the adjacency list representation.
 * Added `Scope.getScopeValueByKey()` static method so all "selecting" steps use the same pattern for map, path, and sideEffect data retrieval.
 
 TinkerPop 3.0.0.M9 (May 26, 2015)
