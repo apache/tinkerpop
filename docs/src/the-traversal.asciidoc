@@ -590,8 +590,8 @@ It is possible to filter scalar values using `is()`-step (*filter*).
 g.V().values('age').is(32)
 g.V().values('age').is(lte(30))
 g.V().values('age').is(inside(30, 40))
-g.V().where(__.in('created').count().is(1l)).values('name') <1>
-g.V().where(__.in('created').count().is(gte(2l))).values('name') <2>
+g.V().where(__.in('created').count().is(1)).values('name') <1>
+g.V().where(__.in('created').count().is(gte(2))).values('name') <2>
 g.V().where(__.in('created').values('age').
                            mean().is(inside(30d, 35d))).values('name') <3>
 ----
@@ -828,7 +828,7 @@ The `or()`-step ensures that at least one of the provided traversals yield a res
 ----
 g.V().or(
    __.outE('created'),
-   __.inE('created').count().is(gt(1l))).
+   __.inE('created').count().is(gt(1))).
      values('name')
 ----
 
@@ -1049,7 +1049,7 @@ Finally, note that both `emit()` and `until()` can take a traversal and in such,
 ----
 g.V(1).repeat(out()).until(hasLabel('software')).path().by('name') <1>
 g.V(1).emit(hasLabel('person')).repeat(out()).path().by('name') <2>
-g.V(1).repeat(out()).until(outE().count().is(0L)).path().by('name') <3>
+g.V(1).repeat(out()).until(outE().count().is(0)).path().by('name') <3>
 ----
 
 <1> Starting from vertex 1, keep taking outgoing edges until a software vertex is reached.
@@ -1387,7 +1387,7 @@ Note that `unfold()` does not recursively unroll iterators. Instead, `repeat()` 
 ----
 inject(1,[2,3,[4,5,[6]]])
 inject(1,[2,3,[4,5,[6]]]).unfold()
-inject(1,[2,3,[4,5,[6]]]).repeat(unfold()).until(count(local).is(1l)).unfold()
+inject(1,[2,3,[4,5,[6]]]).repeat(unfold()).until(count(local).is(1)).unfold()
 ----
 
 [[union-step]]
@@ -1505,7 +1505,7 @@ A few more examples of filtering an arbitrary object based on a anonymous traver
 ----
 g.V().where(out('created')).values('name') <1>
 g.V().out('knows').where(out('created')).values('name') <2>
-g.V().where(out('created').count().is(gte(2L))).values('name') <3>
+g.V().where(out('created').count().is(gte(2))).values('name') <3>
 g.V().where(out('knows').where(out('created'))).values('name') <4>
 g.V().where(not(out('created'))).where(__.in('knows')).values('name') <5>
 ----
