@@ -77,6 +77,22 @@ $ bin/gremlin.sh
 gremlin>
 ----
 
+Issue Tracker Conventions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TinkerPop3 uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TINKERPOP3[issue tracker].  JIRA is a very robust piece of software with many options and configurations.  To simplify usage and ensure consistency across issues, the following conventions should be adhered to:
+
+* An issue's "status" should generally be in one of two states: `open` or `closed` (`reopened` is equivalent to `open` for our purposes).
+** An `open` issue is newly created, under consideration or otherwise in progress.
+** A `closed` issue is completed for purposes of release (i.e. code, testing, and documentation complete).
+** Issues in a `resolved` state should immediately be evaluated for movement to `closed` - issue become `resolved` by those who don't have the permissions to `close`.
+* An issue's "type" should be one of two options: `bug` or `improvement`.
+** A `bug` has a very specific meaning, referring to an error that prevents usage of TinkerPop AND does not have a reasonable workaround.  Given that definition, a `bug` should generally have very high priority for a fix.
+** Everything else is an `improvement` in the sense that any other work is an enhancement to the current codebase.
+* The "component" should be representative of the primary area of code that it applies to and all issues should have this property set.
+* Issues are not assigned "labels".
+* Until there is an official release "affected version" should be left empty.
+
 Release Process
 ~~~~~~~~~~~~~~~
 
@@ -101,7 +117,7 @@ Release Process
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/x.y.z/tinkerpop-x.y.z-source-release.zip* /tmp/tinkerpop/x.y.z`
 .. `cd /tmp/tinkerpop/x.y.z` and `for f in *.zip*; do  mv "$f" "apache-$f"; done`
 .. `svn ci -m "TinkerPop x.y.z release"
-. Submit for `[VOTE]` at `general@incubator.apache.org`
+. Submit for `[VOTE]` at `general@incubator.apache.org` (see email template below).
 . *Wait for vote acceptance* (72 hours).
 . `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
 . Review and close the staging repository (Apache Nexus)
@@ -109,18 +125,38 @@ Release Process
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`.
 
-Issue Tracker Conventions
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Example `[VOTE]` email:
 
-TinkerPop3 uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TINKERPOP3[issue tracker].  JIRA is a very robust piece of software with many options and configurations.  To simplify usage and ensure consistency across issues, the following conventions should be adhered to:
+```
+[VOTE] TinkerPop x.y.z Release
 
-* An issue's "status" should generally be in one of two states: `open` or `closed` (`reopened` is equivalent to `open` for our purposes).
-** An `open` issue is newly created, under consideration or otherwise in progress.
-** A `closed` issue is completed for purposes of release (i.e. code, testing, and documentation complete).
-** Issues in a `resolved` state should immediately be evaluated for movement to `closed` - issue become `resolved` by those who don't have the permissions to `close`.
-* An issue's "type" should be one of two options: `bug` or `improvement`.
-** A `bug` has a very specific meaning, referring to an error that prevents usage of TinkerPop AND does not have a reasonable workaround.  Given that definition, a `bug` should generally have very high priority for a fix.
-** Everything else is an `improvement` in the sense that any other work is an enhancement to the current codebase.
-* The "component" should be representative of the primary area of code that it applies to and all issues should have this property set.
-* Issues are not assigned "labels".
-* Until there is an official release "affected version" should be left empty.
+Hello,
+
+The release artifacts can be found at this location:
+	https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/x.y.z/
+
+The source distribution is provided by:
+	apache-tinkerpop-x.y.z-source-release.zip
+
+Two binary distributions are provided for user convenience:
+	apache-gremlin-console-x.y.z-distribution.zip
+	apache-gremlin-server-x.y.z-distribution.zip
+
+The online docs can be found here:
+	http://tinkerpop.incubator.apache.org/docs/x.y.z/ (user docs)
+	http://tinkerpop.incubator.apache.org/javadocs/x.y.z/core/ (core javadoc)
+	http://tinkerpop.incubator.apache.org/javadocs/x.y.z/full/ (full javadoc)
+
+The tag in Apache Git can be found here:
+	https://git-wip-us.apache.org/repos/asf?p=incubator-tinkerpop.git;...
+
+The release notes are available here:
+	https://github.com/apache/incubator-tinkerpop/blob/master/CHANGELOG.asciidoc#...
+
+The [VOTE] will be open for the next 72 hours --- closing <DayOfTheWeek> (<Month> <Day> <Year>) at <Time> <TimeZone>.
+
+My vote is +1.
+
+Thank you very much,
+<TinkerPop Committer Name>
+```
