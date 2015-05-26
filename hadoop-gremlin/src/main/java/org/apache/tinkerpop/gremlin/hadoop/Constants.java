@@ -57,6 +57,9 @@ public final class Constants {
 
     public static final String MAPRED_INPUT_DIR = "mapred.input.dir";
 
+    // spark based constants
+    public static final String GREMLIN_HADOOP_INPUT_RDD = "gremlin.hadoop.inputRDD";
+
     public static final String SEQUENCE_WARNING = "The " + Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT
             + " is not " + SequenceFileOutputFormat.class.getCanonicalName()
             + " and thus, graph computer memory can not be converted to Java objects";

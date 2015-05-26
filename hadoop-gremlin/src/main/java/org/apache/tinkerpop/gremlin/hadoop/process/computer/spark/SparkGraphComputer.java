@@ -22,7 +22,6 @@ import org.apache.commons.configuration.ConfigurationUtils;
 import org.apache.commons.configuration.FileConfiguration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.spark.SparkConf;
@@ -30,6 +29,8 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.io.InputFormatRDD;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.io.InputRDD;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.payload.ViewIncomingPayload;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -42,7 +43,6 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
-import scala.Tuple2;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
@@ -65,6 +65,12 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
         final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.hadoopGraph.configuration());
         apacheConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.get().equals(Persist.EDGES));
         final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(apacheConfiguration);
+        if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class))) {
+            final String inputLocation = SparkExecutor.getInputLocation(hadoopConfiguration);
+            apacheConfiguration.setProperty(Constants.MAPRED_INPUT_DIR, inputLocation);
+            hadoopConfiguration.set(Constants.MAPRED_INPUT_DIR, inputLocation);
+        }
+
         // create the completable future
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
                     final long startTime = System.currentTimeMillis();
@@ -84,21 +90,21 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     sparkConfiguration.registerKryoClasses(classes.toArray(new Class[classes.size()]));*/ // TODO: fix for user submitted jars in Spark 1.3.0
 
                     hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
-                    if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class)))
-                        hadoopConfiguration.set(Constants.MAPRED_INPUT_DIR, SparkExecutor.getInputLocation(hadoopConfiguration)); // necessary for Spark and newAPIHadoopRDD
                     // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
                     try (final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration)) {
                         // add the project jars to the cluster
                         this.loadJars(sparkContext, hadoopConfiguration);
                         // create a message-passing friendly rdd from the hadoop input format
-                        final JavaPairRDD<Object, VertexWritable> graphRDD = sparkContext.newAPIHadoopRDD(hadoopConfiguration,
-                                (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
-                                NullWritable.class,
-                                VertexWritable.class)
-                                .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new VertexWritable(tuple._2().get())))
-                                .reduceByKey((a, b) -> a) // if this is not done, then the graph is partitioned and you can have duplicate vertices
-                                .setName("graphRDD")
-                                .cache(); // partition the graph across the cluster
+                        final JavaPairRDD<Object, VertexWritable> graphRDD;
+                        try {
+                            graphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
+                                    .newInstance()
+                                    .readGraphRDD(apacheConfiguration, sparkContext)
+                                    .setName("graphRDD")
+                                    .cache();
+                        } catch (final Exception e) {
+                            throw new IllegalStateException(e.getMessage(), e);
+                        }
                         JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;
 
                         ////////////////////////////////
