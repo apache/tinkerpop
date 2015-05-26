@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -269,7 +270,7 @@ public class GremlinServer {
                 logger.info("Executing shutdown {}", LifeCycleHook.class.getSimpleName());
                 try {
                     hook.onShutDown(new LifeCycleHook.Context(logger));
-                } catch (UnsupportedOperationException uoe) {
+                } catch (UnsupportedOperationException | UndeclaredThrowableException  uoe) {
                     // if the user doesn't implement onShutDown the scriptengine will throw
                     // this exception.  it can safely be ignored.
                 }
