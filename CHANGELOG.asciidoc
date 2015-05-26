@@ -28,8 +28,8 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 * SparkGraphComputer now supports `InputRDD` to allow vendors/users to use a `SparkContext` to generate the adjacency list representation.
 * Added `Scope.getScopeValueByKey()` static method so all "selecting" steps use the same pattern for map, path, and sideEffect data retrieval.
 
-TinkerPop 3.0.0.M9 (May 26, 2015)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.0.0.M9 (Release Date: May 26, 2015)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Removed `GraphComputer.isolation()` as all implementations use standard BSP.
 * Added a Gremlin Server `LifeCycleHook` to ensure that certain scripts execute once at startup and once at shutdown.
