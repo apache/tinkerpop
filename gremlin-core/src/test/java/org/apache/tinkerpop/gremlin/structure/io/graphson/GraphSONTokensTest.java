@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.util.Serializer;
 import org.junit.Test;
 
 /**
