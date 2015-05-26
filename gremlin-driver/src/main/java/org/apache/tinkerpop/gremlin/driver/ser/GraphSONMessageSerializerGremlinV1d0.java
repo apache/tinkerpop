@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver.ser;
 
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONVersion;
 
 import java.nio.ByteBuffer;
 
@@ -60,7 +61,8 @@ public class GraphSONMessageSerializerGremlinV1d0 extends AbstractGraphSONMessag
 
     @Override
     GraphSONMapper.Builder configureBuilder(final GraphSONMapper.Builder builder) {
-        return builder.addCustomModule(new GraphSONMessageSerializerV1d0.GremlinServerModule())
+        return builder.version(GraphSONVersion.V1_0)
+                .addCustomModule(new GraphSONMessageSerializerV1d0.GremlinServerModule())
                 .embedTypes(true);
     }
 }
