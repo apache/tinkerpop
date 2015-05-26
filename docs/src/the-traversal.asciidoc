@@ -1163,15 +1163,15 @@ The second use case is best understood in terms of <<match-step,`match()`>>-step
 
 [gremlin-groovy,modern]
 ----
-g.V().range(0, 2).as('a').map {[b:1,c:2]} <1>
-g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(local) <2>
-g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(local,'a','c') <3>
-g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(local,'c') <4>
+g.V().range(0, 2).map {[b:1,c:2]} <1>
+g.V().range(0, 2).map {[b:1,c:2]}.select(local) <2>
+g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(global) <3>
+g.V().range(0, 2).map {[b:1,c:2]}.select(local,'c') <4>
 ----
 
 <1> A contrived example to create a `Map<String,Object>` flow as a foundation for the examples to follow.
-<2> Select will grab both labeled steps and `Map<String,Object>` entries.
-<3> The same `List<String>` selectivity can be used as demonstrated in the previous example.
+<2> Will select from the `Map<String,Object>` traverser object.
+<3> Will select from the `Path` (or sideEffects) of the traversal.
 <4> If a single selection is used, then the object is emitted not wrapped in a map. Useful for continuing the traversal process without having to do a map projection.
 
 NOTE: When executing a traversal with `select()` on a standard traversal engine (i.e. OLTP), `select()` will do its best to avoid calculating the path history and instead, will rely on a global data structure for storing the currently selected object. As such, if only a subset of the path walked is required, `select()` should be used over the more resource intensive <<path-step,`path()`>>-step.
