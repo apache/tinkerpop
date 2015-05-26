@@ -52,7 +52,10 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GraphSONSerializers {
+final class GraphSONSerializers {
+
+    private GraphSONSerializers() {}
+
     static class VertexPropertyJacksonSerializer extends StdSerializer<VertexProperty> {
 
         private final boolean normalize;
