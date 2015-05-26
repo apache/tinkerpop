@@ -22,6 +22,9 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class GraphSONTokens {
+
+    private GraphSONTokens() {}
+
     public static final String CLASS = "@class";
     public static final String ID = "id";
     public static final String TYPE = "type";
