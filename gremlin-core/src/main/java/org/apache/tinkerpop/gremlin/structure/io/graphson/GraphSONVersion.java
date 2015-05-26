@@ -24,15 +24,21 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public enum GraphSONVersion {
-    V1_0(GraphSONModule.GraphSONModuleV1d0.build());
+    V1_0(GraphSONModule.GraphSONModuleV1d0.build(), "1.0");
 
     private final GraphSONModule.GraphSONModuleBuilder builder;
+    private final String versionNumber;
 
-    private GraphSONVersion(final GraphSONModule.GraphSONModuleBuilder builder) {
+    private GraphSONVersion(final GraphSONModule.GraphSONModuleBuilder builder, final String versionNumber) {
         this.builder = builder;
+        this.versionNumber = versionNumber;
     }
 
     public GraphSONModule.GraphSONModuleBuilder getBuilder() {
         return builder;
+    }
+
+    public String getVersion() {
+        return versionNumber;
     }
 }
