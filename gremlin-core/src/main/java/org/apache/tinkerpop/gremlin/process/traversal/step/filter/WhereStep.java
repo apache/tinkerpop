@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.tinkerpop.gremlin.process.traversal.*;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -26,7 +29,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -126,18 +134,9 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         if (this.noStartAndEndKeys()) {
             return this.predicate.getBiPredicate().test(getStartObject(traverser), null);
         } else {
-            final Object startObject;
-            final Object endObject;
-            if (Scope.local == this.scope) {
-                final Map<String, Object> map = (Map<String, Object>) traverser.get();
-                startObject = null == this.startKey ? getStartObject(traverser) : map.get(this.startKey);
-                endObject = null == this.endKey ? null : map.get(this.endKey);
-            } else {
-                final Path path = traverser.path();
-                startObject = null == this.startKey ? getStartObject(traverser) : path.hasLabel(this.startKey) ? path.get(this.startKey) : traverser.sideEffects(this.startKey);
-                endObject = null == this.endKey ? null : path.hasLabel(this.endKey) ? path.get(this.endKey) : traverser.sideEffects(this.endKey);
-            }
-            return this.predicate.getBiPredicate().test(startObject, endObject);
+            return this.predicate.getBiPredicate().test(
+                    null == this.startKey ? getStartObject(traverser) : Scope.getScopeValueByKey(this.scope, this.startKey, traverser),
+                    null == this.endKey ? null : Scope.getScopeValueByKey(this.scope, this.endKey, traverser));
         }
     }
 
@@ -145,30 +144,15 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         final List<Object> startObjects = new ArrayList<>();
         final List<Object> endObjects = new ArrayList<>();
 
-        if (Scope.local == this.scope) {
-            final Map<String, Object> map = (Map<String, Object>) traverser.get();
-            if (startKeys.isEmpty())
-                startObjects.add(traverser.get());
-            else {
-                for (final String startKey : this.startKeys) {
-                    startObjects.add(map.get(startKey));
-                }
+        if (this.startKeys.isEmpty())
+            startObjects.add(traverser.get());
+        else {
+            for (final String startKey : this.startKeys) {
+                startObjects.add(Scope.getScopeValueByKey(this.scope, startKey, traverser));
             }
-            for (final String endKey : this.endKeys) {
-                endObjects.add(map.get(endKey));
-            }
-        } else {
-            final Path path = traverser.path();
-            if (startKeys.isEmpty())
-                startObjects.add(traverser.get());
-            else {
-                for (final String startKey : this.startKeys) {
-                    startObjects.add(path.hasLabel(startKey) ? path.get(startKey) : traverser.sideEffects(startKey));
-                }
-            }
-            for (final String endKey : this.endKeys) {
-                endObjects.add(path.hasLabel(endKey) ? path.get(endKey) : traverser.sideEffects(endKey));
-            }
+        }
+        for (final String endKey : this.endKeys) {
+            endObjects.add(Scope.getScopeValueByKey(this.scope, endKey, traverser));
         }
 
         return this.predicate.getBiPredicate().test(new TraversalUtil.Multiple<>(startObjects), endObjects.isEmpty() ? null : new TraversalUtil.Multiple<>(endObjects));
