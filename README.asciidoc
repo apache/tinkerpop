@@ -92,12 +92,18 @@ Release Process
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
 . `bin/publish-docs.sh <username>`
-. Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop`
-.. `svn co https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/`
-.. `mkdir tinkerpop/x.y.z`
+. `mvn install -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`
+. Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
+.. `svn co https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/ /tmp` and `mkdir /tmp/tinkerpop/x.y.z`
+.. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/x.y.z/gremlin-console-x.y.z-distribution.zip* /tmp/tinkerpop/x.y.z`
+.. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/x.y.z/gremlin-server-x.y.z-distribution.zip* /tmp/tinkerpop/x.y.z`
+.. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/x.y.z/tinkerpop-x.y.z-source-release.zip* /tmp/tinkerpop/x.y.z`
+.. `cd /tmp/tinkerpop/x.y.z` and `for f in *.zip*; do  mv "$f" "apache-$f"; done`
+.. `svn ci -m "TinkerPop x.y.z release"
 . Submit for `[VOTE]` at `general@incubator.apache.org`
+. *Wait for vote acceptance* (72 hours).
 . `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
-. Review and close the staging repository
+. Review and close the staging repository (Apache Nexus)
 . Upload artifacts to `https://dist.apache.org/repos/dist/release/incubator/tinkerpop` (rename to `-bin` and `-src`)
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`.
