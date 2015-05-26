@@ -34,7 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSeriali
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONModule extends SimpleModule {
+class GraphSONModule extends SimpleModule {
 
     /**
      * Constructs a new object.
