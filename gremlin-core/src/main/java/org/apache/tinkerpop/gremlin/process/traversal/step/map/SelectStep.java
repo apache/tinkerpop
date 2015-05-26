@@ -30,7 +30,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -52,18 +56,15 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         final S start = traverser.get();
         final Map<String, E> bindings = new LinkedHashMap<>();
 
-        if (Scope.local == this.scope) {
-            if (this.selectLabels.isEmpty())
+        if (this.selectLabels.isEmpty()) {
+            if (Scope.local == this.scope)
                 ((Map<String, Object>) start).forEach((key, value) -> bindings.put(key, (E) TraversalUtil.apply(value, this.traversalRing.next())));
-            else
-                this.selectLabels.forEach(label -> bindings.put(label, (E) TraversalUtil.apply(((Map) start).get(label), this.traversalRing.next())));
-        } else {
-            final Path path = traverser.path();
-            if (this.selectLabels.isEmpty())
+            else  {
+                final Path path = traverser.path();
                 path.labels().stream().flatMap(Set::stream).distinct().forEach(label -> bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next())));
-            else
-                this.selectLabels.forEach(label -> bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next())));
-        }
+            }
+        } else
+            this.selectLabels.forEach(label -> bindings.put(label, (E) TraversalUtil.apply((Object) Scope.getScopeValueByKey(this.scope, label, traverser), this.traversalRing.next())));
 
         this.traversalRing.reset();
         return bindings;
