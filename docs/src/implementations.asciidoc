@@ -756,6 +756,8 @@ The `SparkGraphComputer` algorithm leverages Spark's caching abilities to reduce
 
 image::spark-algorithm.png[width=775]
 
+IMPORTANT: If the vendor/user wishes to bypass using Hadoop `InputFormats` for pulling data from their graph system, they can use Spark's RDD constructs directly. There is a `gremlin.hadoop.inputRDD` configuration that references a `Class<? extends InputRDD>`. `InputRDD` has one method that must be implemented: `JavaPairRDD<Object, VertexWritable> readGraphRDD(Configuration configuration, JavaSparkContext sparkContext)`. Thus, the Spark context is provided to the `InputRDD` and the means by which data is pulled from the graph system is in terms of RDD manipulation, not Hadoop `InputFormat` to RDD. Note that `InputFormatRDD` is a type of `InputRDD` that simply uses Hadoop's `InputFormat` to generate the `graphRDD`.
+
 [[mapreducegraphcomputer]]
 MapReduceGraphComputer
 ^^^^^^^^^^^^^^^^^^^^^^

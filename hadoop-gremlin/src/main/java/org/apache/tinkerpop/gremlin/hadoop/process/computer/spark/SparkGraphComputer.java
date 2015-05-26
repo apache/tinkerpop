@@ -102,7 +102,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                                     .readGraphRDD(apacheConfiguration, sparkContext)
                                     .setName("graphRDD")
                                     .cache();
-                        } catch (final Exception e) {
+                        } catch (final InstantiationException | IllegalAccessException e) {
                             throw new IllegalStateException(e.getMessage(), e);
                         }
                         JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;

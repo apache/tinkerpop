@@ -27,9 +27,18 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 /**
+ * An InputRDD is used to read data from the underlying graph system and yield the respective adjacency list.
+ * Note that {@link InputFormatRDD} is a type of InputRDD that simply uses the specified {@link org.apache.hadoop.mapreduce.InputFormat} to generate the respective graphRDD.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface InputRDD {
 
+    /**
+     * Read the graphRDD from the underlying graph system.
+     * @param configuration the configuration for the {@link org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkGraphComputer}.
+     * @param sparkContext the Spark context with the requisite methods for generating a {@link JavaPairRDD}.
+     * @return an adjacency list representation of the underlying graph system.
+     */
     public JavaPairRDD<Object, VertexWritable> readGraphRDD(final Configuration configuration, final JavaSparkContext sparkContext);
 }
