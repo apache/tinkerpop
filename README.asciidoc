@@ -91,6 +91,7 @@ Release Process
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
+. `mvn clean install -Dmaven.test.skip=true`
 . `bin/publish-docs.sh <username>`
 . `mvn install -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`
 . Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
