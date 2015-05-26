@@ -40,11 +40,11 @@ public final class ExampleInputRDD implements InputRDD {
 
     @Override
     public JavaPairRDD<Object, VertexWritable> readGraphRDD(final Configuration configuration, final JavaSparkContext sparkContext) {
-        final List<Tuple2<Object, Vertex>> list = new ArrayList<>();
-        list.add(new Tuple2<>(1, StarGraph.open().addVertex(T.id, 1, "age", 1)));
-        list.add(new Tuple2<>(2, StarGraph.open().addVertex(T.id, 2, "age", 2)));
-        list.add(new Tuple2<>(3, StarGraph.open().addVertex(T.id, 3, "age", 3)));
-        list.add(new Tuple2<>(4, StarGraph.open().addVertex(T.id, 4, "age", 4)));
-        return sparkContext.parallelizePairs(list).mapToPair(tuple -> new Tuple2<>(tuple._1(), new VertexWritable(tuple._2())));
+        final List<Vertex> list = new ArrayList<>();
+        list.add(StarGraph.open().addVertex(T.id, 1, "age", 1));
+        list.add(StarGraph.open().addVertex(T.id, 2, "age", 2));
+        list.add(StarGraph.open().addVertex(T.id, 3, "age", 3));
+        list.add(StarGraph.open().addVertex(T.id, 4, "age", 4));
+        return sparkContext.parallelize(list).mapToPair(vertex -> new Tuple2<>(vertex.id(), new VertexWritable(vertex)));
     }
 }
