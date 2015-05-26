@@ -59,13 +59,15 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
     private final boolean loadCustomSerializers;
     private final boolean normalize;
     private final boolean embedTypes;
+    private final GraphSONVersion version;
 
     private GraphSONMapper(final List<SimpleModule> customModules, final boolean loadCustomSerializers,
-                           final boolean normalize, final boolean embedTypes) {
+                           final boolean normalize, final boolean embedTypes, final GraphSONVersion version) {
         this.customModules = customModules;
         this.loadCustomSerializers = loadCustomSerializers;
         this.normalize = normalize;
         this.embedTypes = embedTypes;
+        this.version = version;
     }
 
     @Override
@@ -89,7 +91,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         provider.setDefaultKeySerializer(new GraphSONSerializers.GraphSONKeySerializer());
         om.setSerializerProvider(provider);
 
-        om.registerModule(new GraphSONModule(normalize));
+        om.registerModule(version.getBuilder().create(normalize));
         customModules.forEach(om::registerModule);
 
         // plugin external serialization modules
@@ -102,6 +104,10 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         return om;
     }
 
+    public GraphSONVersion getVersion() {
+        return this.version;
+    }
+
     public static Builder build() {
         return new Builder();
     }
@@ -112,13 +118,33 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private boolean normalize = false;
         private boolean embedTypes = false;
         private IoRegistry registry = null;
+        private GraphSONVersion version = GraphSONVersion.V1_0;
 
         private Builder() {
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public Builder addRegistry(final IoRegistry registry) {
             this.registry = registry;
+            return this;
+        }
+
+        /**
+         * Set the version of GraphSON to use.
+         */
+        public Builder version(final GraphSONVersion version) {
+            this.version = version;
+            return this;
+        }
+
+        /**
+         * Set the version of GraphSON to use.
+         */
+        public Builder version(final String version) {
+            this.version = GraphSONVersion.valueOf(version);
             return this;
         }
 
@@ -161,7 +187,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
                 simpleModules.stream().map(Pair::getValue1).forEach(this.customModules::add);
             }
 
-            return new GraphSONMapper(customModules, loadCustomModules, normalize, embedTypes);
+            return new GraphSONMapper(customModules, loadCustomModules, normalize, embedTypes, version);
         }
     }
 }

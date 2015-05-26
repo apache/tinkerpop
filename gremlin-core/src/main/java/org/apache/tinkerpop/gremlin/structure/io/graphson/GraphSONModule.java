@@ -31,25 +31,64 @@ import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSeriali
  * The set of serializers that handle the core graph interfaces.  These serializers support normalization which
  * ensures that generated GraphSON will be compatible with line-based versioning tools. This setting comes with
  * some overhead, with respect to key sorting and other in-memory operations.
+ * <p/>
+ * This is a base class for grouping these core serializers.  Concrete extensions of this class represent a "version"
+ * that should be registered with the {@link GraphSONVersion} enum.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GraphSONModule extends SimpleModule {
+abstract class GraphSONModule extends SimpleModule {
+
+    GraphSONModule(final String name) {
+        super(name);
+    }
 
     /**
-     * Constructs a new object.
-     *
-     * @param normalize when set to true, keys and objects are ordered to ensure that they are the occur in
-     *                  the same order
+     * Version 1.0 of GraphSON.
      */
-    public GraphSONModule(final boolean normalize) {
-        super("graphson");
-        addSerializer(Edge.class, new GraphSONSerializers.EdgeJacksonSerializer(normalize));
-        addSerializer(Vertex.class, new GraphSONSerializers.VertexJacksonSerializer(normalize));
-        addSerializer(VertexProperty.class, new GraphSONSerializers.VertexPropertyJacksonSerializer(normalize));
-        addSerializer(Property.class, new GraphSONSerializers.PropertyJacksonSerializer());
-        addSerializer(TraversalMetrics.class, new GraphSONSerializers.TraversalMetricsJacksonSerializer());
-        addSerializer(Path.class, new GraphSONSerializers.PathJacksonSerializer());
-        addSerializer(StarGraphGraphSONSerializer.DirectionalStarGraph.class, new StarGraphGraphSONSerializer(normalize));
+    static final class GraphSONModuleV1d0 extends GraphSONModule {
+
+        /**
+         * Constructs a new object.
+         */
+        GraphSONModuleV1d0(final boolean normalize) {
+            super("graphson-1.0");
+            addSerializer(Edge.class, new GraphSONSerializers.EdgeJacksonSerializer(normalize));
+            addSerializer(Vertex.class, new GraphSONSerializers.VertexJacksonSerializer(normalize));
+            addSerializer(VertexProperty.class, new GraphSONSerializers.VertexPropertyJacksonSerializer(normalize));
+            addSerializer(Property.class, new GraphSONSerializers.PropertyJacksonSerializer());
+            addSerializer(TraversalMetrics.class, new GraphSONSerializers.TraversalMetricsJacksonSerializer());
+            addSerializer(Path.class, new GraphSONSerializers.PathJacksonSerializer());
+            addSerializer(StarGraphGraphSONSerializer.DirectionalStarGraph.class, new StarGraphGraphSONSerializer(normalize));
+        }
+
+        public static Builder build() {
+            return new Builder();
+        }
+
+        static final class Builder implements GraphSONModuleBuilder {
+
+            private Builder() {}
+
+            @Override
+            public GraphSONModule create(final boolean normalize) {
+                return new GraphSONModuleV1d0(normalize);
+            }
+        }
+    }
+
+    /**
+     * A "builder" used to create {@link GraphSONModule} instances.  Each "version" should have an associated
+     * {@code GraphSONModuleBuilder} so that it can be registered with the {@link GraphSONVersion} enum.
+     */
+    static interface GraphSONModuleBuilder {
+
+        /**
+         * Creates a new {@link GraphSONModule} object.
+         *
+         * @param normalize when set to true, keys and objects are ordered to ensure that they are the occur in
+         *                  the same order.
+         */
+        GraphSONModule create(final boolean normalize);
     }
 }
