@@ -31,6 +31,9 @@ import java.io.IOException;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class GraphSONUtil {
+
+    private GraphSONUtil() {}
+
     public static void writeWithType(final String key, final Object object, final JsonGenerator jsonGenerator,
                                      final SerializerProvider serializerProvider,
                                      final TypeSerializer typeSerializer) throws IOException {
