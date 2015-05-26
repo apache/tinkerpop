@@ -93,6 +93,8 @@ Release Process
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
 . `bin/publish-docs.sh <username>`
 . Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop`
+.. `svn co https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/`
+.. `mkdir tinkerpop/x.y.z`
 . Submit for `[VOTE]` at `general@incubator.apache.org`
 . `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
 . Review and close the staging repository
