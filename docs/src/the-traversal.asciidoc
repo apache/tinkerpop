@@ -1387,7 +1387,7 @@ Note that `unfold()` does not recursively unroll iterators. Instead, `repeat()` 
 ----
 inject(1,[2,3,[4,5,[6]]])
 inject(1,[2,3,[4,5,[6]]]).unfold()
-inject(1,[2,3,[4,5,[6]]]).repeat(unfold()).until(unfold().count().is(1l)).unfold()
+inject(1,[2,3,[4,5,[6]]]).repeat(unfold()).until(count(local).is(1l)).unfold()
 ----
 
 [[union-step]]
