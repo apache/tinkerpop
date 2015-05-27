@@ -90,10 +90,10 @@ public final class SparkExecutor {
                     final SparkMessenger<M> messenger = new SparkMessenger<>();
                     workerVertexProgram.workerIterationStart(memory.asImmutable()); // start the worker
                     return () -> IteratorUtils.map(partitionIterator, vertexViewIncoming -> {
-                        final Vertex vertex = vertexViewIncoming._2()._1().get(); // get the vertex from the vertex writable
+                        final StarGraph.StarVertex vertex = vertexViewIncoming._2()._1().get(); // get the vertex from the vertex writable
                         // drop any compute properties that are cached in memory
                         if (elementComputeKeysArray.length > 0)
-                            ((StarGraph.StarVertex) vertex).dropVertexProperties(elementComputeKeysArray);
+                            vertex.dropVertexProperties(elementComputeKeysArray);
                         final boolean hasViewAndMessages = vertexViewIncoming._2()._2().isPresent(); // if this is the first iteration, then there are no views or messages
                         final List<DetachedVertexProperty<Object>> previousView = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getView() : Collections.emptyList();
                         final List<M> incomingMessages = hasViewAndMessages ? vertexViewIncoming._2()._2().get().getIncomingMessages() : Collections.emptyList();
@@ -157,9 +157,9 @@ public final class SparkExecutor {
                 }) :
                 graphRDD.leftOuterJoin(viewIncomingRDD)
                         .mapValues(tuple -> {
-                            final Vertex vertex = tuple._1().get();
-                            ((StarGraph.StarVertex) vertex).dropEdges();
-                            ((StarGraph.StarVertex) vertex).dropVertexProperties(elementComputeKeys);
+                            final StarGraph.StarVertex vertex = tuple._1().get();
+                            vertex.dropEdges();
+                            vertex.dropVertexProperties(elementComputeKeys);
                             final List<DetachedVertexProperty<Object>> view = tuple._2().isPresent() ? tuple._2().get().getView() : Collections.emptyList();
                             view.forEach(property -> property.attach(Attachable.Method.create(vertex)));
                             return tuple._1();
