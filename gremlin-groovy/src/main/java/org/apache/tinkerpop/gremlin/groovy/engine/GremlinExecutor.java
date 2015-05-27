@@ -143,33 +143,94 @@ public class GremlinExecutor implements AutoCloseable {
         }
     }
 
+    /**
+     * Evaluate a script with empty bindings.
+     */
     public CompletableFuture<Object> eval(final String script) {
         return eval(script, null, new SimpleBindings());
     }
 
+    /**
+     * Evaluate a script with specified bindings.
+     */
     public CompletableFuture<Object> eval(final String script, final Bindings boundVars) {
         return eval(script, null, boundVars);
     }
 
+    /**
+     * Evaluate a script with a {@link Map} of bindings.
+     */
     public CompletableFuture<Object> eval(final String script, final Map<String, Object> boundVars) {
         return eval(script, null, new SimpleBindings(boundVars));
     }
 
+    /**
+     * Evaluate a script.
+     *
+     * @param script the script to evaluate
+     * @param language the language to evaluate it in
+     * @param boundVars the bindings as a {@link Map} to evaluate in the context of the script
+     */
     public CompletableFuture<Object> eval(final String script, final String language, final Map<String, Object> boundVars) {
         return eval(script, language, new SimpleBindings(boundVars));
     }
 
+    /**
+     * Evaluate a script.
+     *
+     * @param script the script to evaluate
+     * @param language the language to evaluate it in
+     * @param boundVars the bindings to evaluate in the context of the script
+     */
     public CompletableFuture<Object> eval(final String script, final String language, final Bindings boundVars) {
-        return eval(script, language, boundVars, null);
+        return eval(script, language, boundVars, null, null);
     }
 
+    /**
+     * Evaluate a script and allow for the submission of a transform {@link Function} that will transform the
+     * result after script evaluates but before transaction commit and before the returned {@link CompletableFuture}
+     * is completed.
+     *
+     * @param script the script to evaluate
+     * @param language the language to evaluate it in
+     * @param boundVars the bindings to evaluate in the context of the script
+     * @param transformResult a {@link Function} that transforms the result - can be {@code null}
+     */
     public CompletableFuture<Object> eval(final String script, final String language, final Map<String, Object> boundVars,
                                           final Function<Object, Object> transformResult) {
-        return eval(script, language, new SimpleBindings(boundVars), transformResult);
+        return eval(script, language, new SimpleBindings(boundVars), transformResult, null);
     }
 
+    /**
+     * Evaluate a script and allow for the submission of a {@link Consumer} that will take the result for additional
+     * processing after the script evaluates and after the {@link CompletableFuture} is completed, but before the
+     * transaction is committed.
+     *
+     * @param script the script to evaluate
+     * @param language the language to evaluate it in
+     * @param boundVars the bindings to evaluate in the context of the script
+     * @param withResult a {@link Consumer} that accepts the result - can be {@code null}
+     */
+    public CompletableFuture<Object> eval(final String script, final String language, final Map<String, Object> boundVars,
+                                          final Consumer<Object> withResult) {
+        return eval(script, language, new SimpleBindings(boundVars), null, withResult);
+    }
+
+    /**
+     * Evaluate a script and allow for the submission of both a transform {@link Function} and {@link Consumer}.
+     * The {@link Function} will transform the result after script evaluates but before transaction commit and before
+     * the returned {@link CompletableFuture} is completed. The {@link Consumer} will take the result for additional
+     * processing after the script evaluates and after the {@link CompletableFuture} is completed, but before the
+     * transaction is committed.
+     *
+     * @param script the script to evaluate
+     * @param language the language to evaluate it in
+     * @param boundVars the bindings to evaluate in the context of the script
+     * @param transformResult a {@link Function} that transforms the result - can be {@code null}
+     * @param withResult a {@link Consumer} that accepts the result - can be {@code null}
+     */
     public CompletableFuture<Object> eval(final String script, final String language, final Bindings boundVars,
-                                          final Function<Object, Object> transformResult) {
+                                          final Function<Object, Object> transformResult, final Consumer<Object> withResult) {
         final String lang = Optional.ofNullable(language).orElse("gremlin-groovy");
 
         logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
@@ -189,7 +250,13 @@ public class GremlinExecutor implements AutoCloseable {
                 // apply a transformation before sending back the result - useful when trying to force serialization
                 // in the same thread that the eval took place given ThreadLocal nature of graphs as well as some
                 // transactional constraints
-                evaluationFuture.complete(null == transformResult ? o : transformResult.apply(o));
+                final Object result = null == transformResult ? o : transformResult.apply(o);
+                evaluationFuture.complete(result);
+
+                // a mechanism for taking the final result and doing something with it in the same thread, but
+                // AFTER the eval and transform are done and that future completed.  this provides a final means
+                // for working with the result in the same thread as it was eval'd
+                if (withResult != null) withResult.accept(result);
 
                 afterSuccess.accept(bindings);
             } catch (Exception ex) {

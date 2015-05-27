@@ -19,11 +19,9 @@
 package org.apache.tinkerpop.gremlin.server.op;
 
 import com.codahale.metrics.Timer;
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
-import org.apache.tinkerpop.gremlin.driver.message.ResponseStatus;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -47,10 +45,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -137,7 +133,6 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final GremlinExecutor gremlinExecutor = gremlinExecutorSupplier.get();
-        final ExecutorService executor = gremlinExecutor.getExecutorService();
 
         final Map<String, Object> args = msg.getArgs();
 
@@ -145,45 +140,39 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final String language = args.containsKey(Tokens.ARGS_LANGUAGE) ? (String) args.get(Tokens.ARGS_LANGUAGE) : null;
         final Bindings bindings = bindingsSupplier.get();
 
-        final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(script, language, bindings);
-        evalFuture.handle((v, t) -> timerContext.stop());
-
-        final AtomicBoolean iterationFired = new AtomicBoolean(false);
-        final CompletableFuture<Void> iterationFuture = evalFuture.thenAcceptAsync(o -> {
-            iterationFired.set(true);
+        final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(script, language, bindings, null, o -> {
             final Iterator itty = IteratorUtils.asIterator(o);
 
             logger.debug("Preparing to iterate results from - {} - in thread [{}]", msg, Thread.currentThread().getName());
 
             try {
                 handleIterator(context, itty);
-            } catch (Exception te) {
-                throw new RuntimeException(te);
+            } catch (TimeoutException ex) {
+                final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg, ex.getMessage());
+                logger.warn(errorMessage);
+                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+            } catch (Exception ex) {
+                logger.warn(String.format("Exception processing a script on request [%s].", msg), ex);
+                ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
             }
-        }, executor);
+        });
 
-        iterationFuture.handleAsync((o, ex) -> {
-            // iteration has completed
-            if (ex != null) {
-                // an exception could have fired in the evalFuture - it bubbles up here so we have to
-                // check for the iteration exception or something more general.
-                final Throwable root = ExceptionUtils.getRootCause(ex);
-                if (!iterationFired.get()) {
-                    // iteration wasn't executed so this must have raised during the eval process
-                    logger.warn(String.format("Exception processing a script on request [%s].", msg), root);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(root.getMessage()).create());
-                    return null;
-                } else if (root.getClass().equals(TimeoutException.class)) {
-                    final String errorMessage = String.format("Response iteration and serialization exceeded the configured threshold for request [%s] - %s", msg, ex.getCause().getMessage());
+        evalFuture.handle((v, t) -> {
+            timerContext.stop();
+
+            if (t != null) {
+                if (t instanceof TimeoutException) {
+                    final String errorMessage = String.format("Response evaluation exceeded the configured threshold for request [%s] - %s", msg, t.getMessage());
                     logger.warn(errorMessage);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(t.getMessage()).create());
                 } else {
-                    logger.warn(String.format("Exception processing a script on request [%s].", msg), root);
-                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(root.getMessage()).create());
+                    logger.warn(String.format("Exception processing a script on request [%s].", msg), t);
+                    ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION).statusMessage(t.getMessage()).create());
                 }
             }
+
             return null;
-        }, executor);
+        });
     }
 
     /**
