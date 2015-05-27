@@ -1208,7 +1208,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldWriteNewGraphResultWithNothing() throws Exception {
+    public void shouldProcessResultGraphNewWithPersistNothing() throws Exception {
         final GraphComputer computer = graph.compute(graphComputerClass.get());
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.NOTHING)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.NEW).persist(GraphComputer.Persist.NOTHING).submit().get();
@@ -1228,7 +1228,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldWriteNewGraphResultWithVertexProperties() throws Exception {
+    public void shouldProcessResultGraphNewWithPersistVertexProperties() throws Exception {
         final GraphComputer computer = graph.compute(graphComputerClass.get());
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.VERTEX_PROPERTIES)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.NEW).persist(GraphComputer.Persist.VERTEX_PROPERTIES).submit().get();
@@ -1248,7 +1248,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldWriteNewGraphResultWithEdges() throws Exception {
+    public void shouldProcessResultGraphNewWithPersistEdges() throws Exception {
         final GraphComputer computer = graph.compute(graphComputerClass.get());
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.EDGES)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.NEW).persist(GraphComputer.Persist.EDGES).submit().get();
@@ -1268,7 +1268,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldWriteOriginalGraphResultWithNothing() throws Exception {
+    public void shouldProcessResultGraphOriginalWithPersistNothing() throws Exception {
         final GraphComputer computer = graph.compute(graphComputerClass.get());
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.ORIGINAL, GraphComputer.Persist.NOTHING)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.ORIGINAL).persist(GraphComputer.Persist.NOTHING).submit().get();
@@ -1288,7 +1288,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldWriteOriginalGraphResultWithVertexProperties() throws Exception {
+    public void shouldProcessResultGraphOriginalPersistVertexProperties() throws Exception {
         final GraphComputer computer = graph.compute(graphComputerClass.get());
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.ORIGINAL, GraphComputer.Persist.VERTEX_PROPERTIES)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.ORIGINAL).persist(GraphComputer.Persist.VERTEX_PROPERTIES).submit().get();
@@ -1308,7 +1308,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldWriteOriginalGraphResultWithEdges() throws Exception {
+    public void shouldProcessResultGraphOriginalWithPersistEdges() throws Exception {
         final GraphComputer computer = graph.compute(graphComputerClass.get());
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.ORIGINAL, GraphComputer.Persist.EDGES)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.ORIGINAL).persist(GraphComputer.Persist.EDGES).submit().get();
