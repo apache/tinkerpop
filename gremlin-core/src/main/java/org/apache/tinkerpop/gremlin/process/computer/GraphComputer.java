@@ -23,8 +23,7 @@ import java.util.concurrent.Future;
 /**
  * The {@link GraphComputer} is responsible for the execution of a {@link VertexProgram} and then a set of {@link MapReduce} jobs
  * over the vertices in the {@link org.apache.tinkerpop.gremlin.structure.Graph}. It is up to the {@link GraphComputer} implementation to determine the
- * appropriate memory structures given the computing substrate. {@link GraphComputer} implementations also
- * maintains levels of memory {@link Isolation}: Bulk Synchronous and Dirty Bulk Synchronous.
+ * appropriate memory structures given the computing substrate.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Matthias Broecheler (me@matthiasb.com)
