@@ -63,7 +63,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
 
         if (TinkerHelper.inComputerMode(this.graph)) {
-            final List<VertexProperty> list = (List) this.graph.graphView.getProperty(this, key);
+            final List<VertexProperty> list = (List) this.graph.graphComputerView.getProperty(this, key);
             if (list.size() == 0)
                 return VertexProperty.<V>empty();
             else if (list.size() == 1)
@@ -97,7 +97,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
         if (optionalVertexProperty.isPresent()) return optionalVertexProperty.get();
 
         if (TinkerHelper.inComputerMode(this.graph)) {
-            final VertexProperty<V> vertexProperty = (VertexProperty<V>) this.graph.graphView.addProperty(this, key, value);
+            final VertexProperty<V> vertexProperty = (VertexProperty<V>) this.graph.graphComputerView.addProperty(this, key, value);
             ElementHelper.attachProperties(vertexProperty, keyValues);
             return vertexProperty;
         } else {
@@ -151,18 +151,18 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
-        return TinkerHelper.inComputerMode(this.graph) && TinkerHelper.getGraphView(this.graph).getHideEdges() ? Collections.emptyIterator() : (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
+        return (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
     }
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
-        return TinkerHelper.inComputerMode(this.graph) && TinkerHelper.getGraphView(this.graph).getHideEdges() ? Collections.emptyIterator() : (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
+        return (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
         if (TinkerHelper.inComputerMode((TinkerGraph) graph()))
-            return (Iterator) ((TinkerGraph) graph()).graphView.getProperties(TinkerVertex.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
+            return (Iterator) ((TinkerGraph) graph()).graphComputerView.getProperties(TinkerVertex.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
         else {
             if (null == this.properties) return Collections.emptyIterator();
             if (propertyKeys.length == 1) {

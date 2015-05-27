@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,19 +97,19 @@ public final class TinkerHelper {
     }
 
     public static boolean inComputerMode(final TinkerGraph graph) {
-        return null != graph.graphView;
+        return null != graph.graphComputerView;
     }
 
-    public static TinkerGraphView createGraphView(final TinkerGraph graph, final Set<String> computeKeys) {
-        return graph.graphView = new TinkerGraphView(graph, computeKeys);
+    public static TinkerGraphComputerView createGraphComputerView(final TinkerGraph graph, final Set<String> computeKeys) {
+        return graph.graphComputerView = new TinkerGraphComputerView(graph, computeKeys);
     }
 
-    public static TinkerGraphView getGraphView(final TinkerGraph graph) {
-        return graph.graphView;
+    public static TinkerGraphComputerView getGraphComputerView(final TinkerGraph graph) {
+        return graph.graphComputerView;
     }
 
-    public static void dropGraphView(final TinkerGraph graph) {
-        graph.graphView = null;
+    public static void dropGraphComputerView(final TinkerGraph graph) {
+        graph.graphComputerView = null;
     }
 
     public static Map<String, List<VertexProperty>> getProperties(final TinkerVertex vertex) {

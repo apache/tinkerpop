@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
@@ -82,11 +82,9 @@ public final class TinkerGraph implements Graph {
     protected Map<Object, Edge> edges = new ConcurrentHashMap<>();
 
     protected TinkerGraphVariables variables = null;
-    protected TinkerGraphView graphView = null;
+    protected TinkerGraphComputerView graphComputerView = null;
     protected TinkerIndex<TinkerVertex> vertexIndex = null;
     protected TinkerIndex<TinkerEdge> edgeIndex = null;
-
-    private final static TinkerGraph EMPTY_GRAPH = new TinkerGraph(EMPTY_CONFIGURATION);
 
     protected final IdManager<?> vertexIdManager;
     protected final IdManager<?> edgeIdManager;
@@ -186,12 +184,11 @@ public final class TinkerGraph implements Graph {
         this.currentId.set(-1l);
         this.vertexIndex = null;
         this.edgeIndex = null;
-        this.graphView = null;
+        this.graphComputerView = null;
     }
 
     @Override
     public void close() {
-        this.graphView = null;
     }
 
     @Override
@@ -289,9 +286,11 @@ public final class TinkerGraph implements Graph {
         }
 
     }
+
     public static class TinkerGraphVertexFeatures implements Features.VertexFeatures {
 
         static final TinkerGraphVertexFeatures INSTANCE = new TinkerGraphVertexFeatures();
+
         private TinkerGraphVertexFeatures() {
         }
 
@@ -301,9 +300,11 @@ public final class TinkerGraph implements Graph {
         }
 
     }
+
     public static class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
 
         static final TinkerGraphEdgeFeatures INSTANCE = new TinkerGraphEdgeFeatures();
+
         private TinkerGraphEdgeFeatures() {
         }
 
@@ -313,9 +314,11 @@ public final class TinkerGraph implements Graph {
         }
 
     }
+
     public static class TinkerGraphGraphFeatures implements Features.GraphFeatures {
 
         static final TinkerGraphGraphFeatures INSTANCE = new TinkerGraphGraphFeatures();
+
         private TinkerGraphGraphFeatures() {
         }
 

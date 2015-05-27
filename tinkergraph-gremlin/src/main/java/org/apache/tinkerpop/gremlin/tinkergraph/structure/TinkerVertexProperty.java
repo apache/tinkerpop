@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphView;
+import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
@@ -49,7 +49,7 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
     /**
      * This constructor will not validate the ID type against the {@link Graph}.  It will always just use a
      * {@code Long} for its identifier.  This is useful for constructing a {@link VertexProperty} for usage
-     * with {@link TinkerGraphView}.
+     * with {@link TinkerGraphComputerView}.
      */
     public TinkerVertexProperty(final TinkerVertex vertex, final String key, final V value, final Object... propertyKeyValues) {
         super(((TinkerGraph) vertex.graph()).vertexPropertyIdManager.getNextId((TinkerGraph) vertex.graph()), key);

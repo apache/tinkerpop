@@ -23,12 +23,11 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
+import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
@@ -57,13 +56,8 @@ public final class TinkerGraphComputer implements GraphComputer {
     private boolean executed = false;
     private final Set<MapReduce> mapReducers = new HashSet<>();
 
-
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
-    }
-
-    public static TraversalEngine engine() {
-        return null;
     }
 
     @Override
@@ -117,7 +111,7 @@ public final class TinkerGraphComputer implements GraphComputer {
             final long time = System.currentTimeMillis();
             try (final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors())) {
                 if (null != this.vertexProgram) {
-                    TinkerHelper.createGraphView(this.graph, this.vertexProgram.getElementComputeKeys());
+                    TinkerHelper.createGraphComputerView(this.graph, this.vertexProgram.getElementComputeKeys());
                     // execute the vertex program
                     this.vertexProgram.setup(this.memory);
                     this.memory.completeSubRound();
@@ -192,34 +186,11 @@ public final class TinkerGraphComputer implements GraphComputer {
                 // update runtime and return the newly computed graph
                 this.memory.setRuntime(System.currentTimeMillis() - time);
                 this.memory.complete();
-
                 // determine the resultant graph based on the result graph/persist state
-                final Graph resultGraph;
-                if (Persist.NOTHING == this.persist) {
-                    if (ResultGraph.ORIGINAL == this.resultGraph) {
-                        resultGraph = this.graph;
-                        TinkerHelper.dropGraphView(this.graph);
-                    } else {
-                        resultGraph = EmptyGraph.instance();
-                        TinkerHelper.dropGraphView(this.graph);
-                    }
-                } else if (Persist.VERTEX_PROPERTIES == this.persist) {
-                    if (ResultGraph.ORIGINAL == this.resultGraph) {
-                        TinkerHelper.getGraphView(this.graph).addPropertiesToOriginalGraph();
-                        resultGraph = this.graph;
-                    } else {
-                        TinkerHelper.getGraphView(this.graph).setHideEdges(true);
-                        resultGraph = this.graph;
-                    }
-                } else {  // Persist.EDGES
-                    if (ResultGraph.ORIGINAL == this.resultGraph) {
-                        TinkerHelper.getGraphView(this.graph).addPropertiesToOriginalGraph();
-                        resultGraph = this.graph;
-                    } else {
-                        resultGraph = this.graph;
-                    }
-                }
-                return new TinkerComputerResult(resultGraph, this.memory.asImmutable());
+                final TinkerGraphComputerView view = TinkerHelper.getGraphComputerView(this.graph);
+                final Graph resultGraph = null == view ? this.graph : view.processResultGraphPersist(this.resultGraph, this.persist);
+                TinkerHelper.dropGraphComputerView(this.graph);
+                return new DefaultComputerResult(resultGraph, this.memory.asImmutable());
 
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
@@ -275,14 +246,6 @@ public final class TinkerGraphComputer implements GraphComputer {
 
             public boolean supportsEdgePropertyRemoval() {
                 return false;
-            }
-
-            public boolean supportsResultGraphPersistCombination(final ResultGraph resultGraph, final Persist persist) {
-                return persist == Persist.NOTHING || (persist != Persist.EDGES && (persist != Persist.VERTEX_PROPERTIES && resultGraph == ResultGraph.NEW));
-            }
-
-            public boolean supportsDirectObjects() {
-                return true;
             }
         };
     }
