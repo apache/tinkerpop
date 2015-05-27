@@ -50,6 +50,6 @@ public final class Constants {
     public static final String MAPRED_INPUT_DIR = "mapred.input.dir";
 
     // spark based constants
-    public static final String GREMLIN_HADOOP_INPUT_RDD = "gremlin.hadoop.inputRDD";
-    public static final String GREMLIN_HADOOP_OUTPUT_RDD = "gremlin.hadoop.outputRDD";
+    public static final String GREMLIN_HADOOP_GRAPH_INPUT_RDD = "gremlin.hadoop.graphInputRDD";
+    public static final String GREMLIN_HADOOP_GRAPH_OUTPUT_RDD = "gremlin.hadoop.graphOutputRDD";
 }
