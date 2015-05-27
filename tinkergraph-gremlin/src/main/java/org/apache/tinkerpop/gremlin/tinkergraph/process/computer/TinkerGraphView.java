@@ -46,6 +46,7 @@ public final class TinkerGraphView {
     private final TinkerGraph graph;
     protected final Set<String> computeKeys;
     private Map<Element, Map<String, List<VertexProperty>>> computeProperties;
+    private boolean hideEdges = false;
 
     public TinkerGraphView(final TinkerGraph graph, final Set<String> computeKeys) {
         this.graph = graph;
@@ -135,5 +136,13 @@ public final class TinkerGraphView {
             });
         });
         this.computeProperties.clear();
+    }
+
+    public boolean getHideEdges() {
+        return this.hideEdges;
+    }
+
+    public void setHideEdges(final boolean hideEdges) {
+        this.hideEdges = hideEdges;
     }
 }

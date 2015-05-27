@@ -426,7 +426,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         } catch (IllegalArgumentException e) {
             assertEquals(Memory.Exceptions.memoryDoesNotExist("BAD").getMessage(), e.getMessage());
         }
-        assertEquals(Long.valueOf(6), results.graph().traversal().V().count().next());
+        assertEquals(Long.valueOf(0), results.graph().traversal().V().count().next()); // persist new/nothing.
 
         results.graph().traversal().V().forEachRemaining(v -> {
             assertTrue(v.property("nameLengthCounter").isPresent());
@@ -1187,14 +1187,42 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     /////////////////////////////////////////////
     @Test
+    @LoadGraphWith
+    public void shouldSupportPersistResultGraphPairsStatedInFeatures() throws Exception {
+        for (final GraphComputer.ResultGraph resultGraph : GraphComputer.ResultGraph.values()) {
+            for (final GraphComputer.Persist persist : GraphComputer.Persist.values()) {
+                final GraphComputer computer = graph.compute(graphComputerClass.get());
+                if (computer.features().supportsResultGraphPersistCombination(resultGraph, persist)) {
+                    computer.program(new VertexProgramK()).result(resultGraph).persist(persist).submit().get();
+                } else {
+                    try {
+                        computer.program(new VertexProgramK()).result(resultGraph).persist(persist).submit().get();
+                        fail("The GraphComputer " + computer + " states that it does support the following resultGraph/persist pair: " + resultGraph + ":" + persist);
+                    } catch (final IllegalArgumentException e) {
+                        assertEquals(GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(resultGraph, persist).getMessage(), e.getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
     @LoadGraphWith(MODERN)
-    public void shouldWriteNewGraphResultWithEdges() throws Exception {
+    public void shouldWriteNewGraphResultWithNothing() throws Exception {
         final GraphComputer computer = graph.compute(graphComputerClass.get());
-        if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.EDGES)) {
-            final ComputerResult result = computer.program(new VertexProgramK()).submit().get();
-            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
-            assertEquals(Long.valueOf(6l), result.graph().traversal().E().count().next());
-            assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
+        if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.NOTHING)) {
+            final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.NEW).persist(GraphComputer.Persist.NOTHING).submit().get();
+            assertEquals(Long.valueOf(0l), result.graph().traversal().V().count().next());
+            assertEquals(Long.valueOf(0l), result.graph().traversal().E().count().next());
+            assertEquals(Long.valueOf(0l), result.graph().traversal().V().values().count().next());
+            assertEquals(Long.valueOf(0l), result.graph().traversal().E().values().count().next());
+            assertEquals(Double.valueOf(0.0d), result.graph().traversal().V().values("money").sum().next());
+            ///
+            assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
+            assertEquals(Long.valueOf(12l), graph.traversal().V().values().count().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
+            assertEquals(Double.valueOf(0.0d), graph.traversal().V().values("money").sum().next());
         }
     }
 
@@ -1204,9 +1232,57 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         final GraphComputer computer = graph.compute(graphComputerClass.get());
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.VERTEX_PROPERTIES)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.NEW).persist(GraphComputer.Persist.VERTEX_PROPERTIES).submit().get();
-            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            assertEquals(Long.valueOf(6l), result.graph().traversal().V().count().next());
             assertEquals(Long.valueOf(0l), result.graph().traversal().E().count().next());
             assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
+            assertEquals(Long.valueOf(0l), result.graph().traversal().E().values().count().next());
+            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            ///
+            assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
+            assertEquals(Long.valueOf(12l), graph.traversal().V().values().count().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
+            assertEquals(Double.valueOf(0.0d), graph.traversal().V().values("money").sum().next());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldWriteNewGraphResultWithEdges() throws Exception {
+        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.EDGES)) {
+            final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.NEW).persist(GraphComputer.Persist.EDGES).submit().get();
+            assertEquals(Long.valueOf(6l), result.graph().traversal().V().count().next());
+            assertEquals(Long.valueOf(6l), result.graph().traversal().E().count().next());
+            assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
+            assertEquals(Long.valueOf(6l), result.graph().traversal().E().values().count().next());
+            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            ///
+            assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
+            assertEquals(Long.valueOf(12l), graph.traversal().V().values().count().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
+            assertEquals(Double.valueOf(0.0d), graph.traversal().V().values("money").sum().next());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldWriteOriginalGraphResultWithNothing() throws Exception {
+        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.ORIGINAL, GraphComputer.Persist.NOTHING)) {
+            final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.ORIGINAL).persist(GraphComputer.Persist.NOTHING).submit().get();
+            assertEquals(Long.valueOf(6l), result.graph().traversal().V().count().next());
+            assertEquals(Long.valueOf(6l), result.graph().traversal().E().count().next());
+            assertEquals(Long.valueOf(12l), result.graph().traversal().V().values().count().next());
+            assertEquals(Long.valueOf(6l), result.graph().traversal().E().values().count().next());
+            assertEquals(Double.valueOf(0.0d), result.graph().traversal().V().values("money").sum().next());
+            ///
+            assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
+            assertEquals(Long.valueOf(12l), graph.traversal().V().values().count().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
+            assertEquals(Double.valueOf(0.0d), graph.traversal().V().values("money").sum().next());
         }
     }
 
@@ -1216,14 +1292,37 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         final GraphComputer computer = graph.compute(graphComputerClass.get());
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.ORIGINAL, GraphComputer.Persist.VERTEX_PROPERTIES)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.ORIGINAL).persist(GraphComputer.Persist.VERTEX_PROPERTIES).submit().get();
-            assertEquals(Double.valueOf(28.0d), graph.traversal().V().values("money").sum().next());
+            assertEquals(Long.valueOf(6l), result.graph().traversal().V().count().next());
+            assertEquals(Long.valueOf(6l), result.graph().traversal().E().count().next());
+            assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
+            assertEquals(Long.valueOf(6l), result.graph().traversal().E().values().count().next());
+            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            ///
+            assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
             assertEquals(Long.valueOf(18l), graph.traversal().V().values().count().next());
-            ///
-            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
+            assertEquals(Double.valueOf(28.0d), graph.traversal().V().values("money").sum().next());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldWriteOriginalGraphResultWithEdges() throws Exception {
+        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.ORIGINAL, GraphComputer.Persist.EDGES)) {
+            final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.ORIGINAL).persist(GraphComputer.Persist.EDGES).submit().get();
+            assertEquals(Long.valueOf(6l), result.graph().traversal().V().count().next());
             assertEquals(Long.valueOf(6l), result.graph().traversal().E().count().next());
-            result.graph().traversal().V().valueMap().forEachRemaining(System.out::println);
             assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
+            assertEquals(Long.valueOf(6l), result.graph().traversal().E().values().count().next());
+            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            ///
+            assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
+            assertEquals(Long.valueOf(18l), graph.traversal().V().values().count().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
+            assertEquals(Double.valueOf(28.0d), graph.traversal().V().values("money").sum().next());
         }
     }
 

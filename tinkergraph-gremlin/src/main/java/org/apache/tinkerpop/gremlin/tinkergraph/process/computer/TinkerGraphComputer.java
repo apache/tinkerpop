@@ -25,8 +25,10 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
 import org.apache.tinkerpop.gremlin.process.computer.util.GraphComputerHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
@@ -45,8 +47,8 @@ import java.util.concurrent.Future;
  */
 public final class TinkerGraphComputer implements GraphComputer {
 
-    private Optional<ResultGraph> resultGraph = Optional.empty();
-    private Optional<Persist> persist = Optional.empty();
+    private ResultGraph resultGraph = null;
+    private Persist persist = null;
 
     private VertexProgram<?> vertexProgram;
     private final TinkerGraph graph;
@@ -66,13 +68,13 @@ public final class TinkerGraphComputer implements GraphComputer {
 
     @Override
     public GraphComputer result(final ResultGraph resultGraph) {
-        this.resultGraph = Optional.of(resultGraph);
+        this.resultGraph = resultGraph;
         return this;
     }
 
     @Override
     public GraphComputer persist(final Persist persist) {
-        this.persist = Optional.of(persist);
+        this.persist = persist;
         return this;
     }
 
@@ -90,11 +92,11 @@ public final class TinkerGraphComputer implements GraphComputer {
 
     @Override
     public Future<ComputerResult> submit() {
+        // a graph computer can only be executed once
         if (this.executed)
             throw Exceptions.computerHasAlreadyBeenSubmittedAVertexProgram();
         else
             this.executed = true;
-
         // it is not possible execute a computer if it has no vertex program nor mapreducers
         if (null == this.vertexProgram && this.mapReducers.isEmpty())
             throw GraphComputer.Exceptions.computerHasNoVertexProgramNorMapReducers();
@@ -103,14 +105,13 @@ public final class TinkerGraphComputer implements GraphComputer {
             GraphComputerHelper.validateProgramOnComputer(this, this.vertexProgram);
             this.mapReducers.addAll(this.vertexProgram.getMapReducers());
         }
+        // get the result graph and persist state to use for the computation
+        this.resultGraph = GraphComputerHelper.getResultGraphState(Optional.ofNullable(this.vertexProgram), Optional.ofNullable(this.resultGraph));
+        this.persist = GraphComputerHelper.getPersistState(Optional.ofNullable(this.vertexProgram), Optional.ofNullable(this.persist));
+        if (!this.features().supportsResultGraphPersistCombination(this.resultGraph, this.persist))
+            throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph, this.persist);
 
-        if (!this.persist.isPresent())
-            this.persist = Optional.of(null == this.vertexProgram ? Persist.NOTHING : this.vertexProgram.getPreferredPersist());
-        if (!this.resultGraph.isPresent())
-            this.resultGraph = Optional.of(null == this.vertexProgram ? ResultGraph.ORIGINAL : this.vertexProgram.getPreferredResultGraph());
-        if (!this.features().supportsResultGraphPersistCombination(this.resultGraph.get(), this.persist.get()))
-            throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph.get(), this.persist.get());
-
+        // initialize the memory
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
@@ -191,10 +192,34 @@ public final class TinkerGraphComputer implements GraphComputer {
                 // update runtime and return the newly computed graph
                 this.memory.setRuntime(System.currentTimeMillis() - time);
                 this.memory.complete();
-                if (Persist.NOTHING != this.persist.get() && ResultGraph.ORIGINAL == this.resultGraph.get()) {
-                    TinkerHelper.getGraphView(this.graph).addPropertiesToOriginalGraph();
+
+                // determine the resultant graph based on the result graph/persist state
+                final Graph resultGraph;
+                if (Persist.NOTHING == this.persist) {
+                    if (ResultGraph.ORIGINAL == this.resultGraph) {
+                        resultGraph = this.graph;
+                        TinkerHelper.dropGraphView(this.graph);
+                    } else {
+                        resultGraph = EmptyGraph.instance();
+                        TinkerHelper.dropGraphView(this.graph);
+                    }
+                } else if (Persist.VERTEX_PROPERTIES == this.persist) {
+                    if (ResultGraph.ORIGINAL == this.resultGraph) {
+                        TinkerHelper.getGraphView(this.graph).addPropertiesToOriginalGraph();
+                        resultGraph = this.graph;
+                    } else {
+                        TinkerHelper.getGraphView(this.graph).setHideEdges(true);
+                        resultGraph = this.graph;
+                    }
+                } else {  // Persist.EDGES
+                    if (ResultGraph.ORIGINAL == this.resultGraph) {
+                        TinkerHelper.getGraphView(this.graph).addPropertiesToOriginalGraph();
+                        resultGraph = this.graph;
+                    } else {
+                        resultGraph = this.graph;
+                    }
                 }
-                return new TinkerComputerResult(this.graph, this.memory.asImmutable());
+                return new TinkerComputerResult(resultGraph, this.memory.asImmutable());
 
             } catch (Exception ex) {
                 throw new RuntimeException(ex);

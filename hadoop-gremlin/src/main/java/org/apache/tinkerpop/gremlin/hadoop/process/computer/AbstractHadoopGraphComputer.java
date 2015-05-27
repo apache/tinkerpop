@@ -50,8 +50,8 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     protected final Set<MapReduce> mapReducers = new HashSet<>();
     protected VertexProgram<Object> vertexProgram;
 
-    protected Optional<ResultGraph> resultGraph = Optional.empty();
-    protected Optional<Persist> persist = Optional.empty();
+    protected ResultGraph resultGraph = null;
+    protected Persist persist = null;
 
     public AbstractHadoopGraphComputer(final HadoopGraph hadoopGraph) {
         this.hadoopGraph = hadoopGraph;
@@ -60,13 +60,13 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
 
     @Override
     public GraphComputer result(final ResultGraph resultGraph) {
-        this.resultGraph = Optional.of(resultGraph);
+        this.resultGraph = resultGraph;
         return this;
     }
 
     @Override
     public GraphComputer persist(final Persist persist) {
-        this.persist = Optional.of(persist);
+        this.persist = persist;
         return this;
     }
 
@@ -102,13 +102,11 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
             this.mapReducers.addAll(this.vertexProgram.getMapReducers());
         }
         // if the user didn't set desired persistence/resultgraph, then get from vertex program or else, no persistence
-        if (!this.persist.isPresent())
-            this.persist = Optional.of(null == this.vertexProgram ? Persist.NOTHING : this.vertexProgram.getPreferredPersist());
-        if (!this.resultGraph.isPresent())
-            this.resultGraph = Optional.of(null == this.vertexProgram ? ResultGraph.ORIGINAL : this.vertexProgram.getPreferredResultGraph());
+        this.persist = GraphComputerHelper.getPersistState(Optional.ofNullable(this.vertexProgram), Optional.ofNullable(this.persist));
+        this.resultGraph = GraphComputerHelper.getResultGraphState(Optional.ofNullable(this.vertexProgram), Optional.ofNullable(this.resultGraph));
         // determine persistence and result graph options
-        if (!this.features().supportsResultGraphPersistCombination(this.resultGraph.get(), this.persist.get()))
-            throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph.get(), this.persist.get());
+        if (!this.features().supportsResultGraphPersistCombination(this.resultGraph, this.persist))
+            throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph, this.persist);
     }
 
     @Override

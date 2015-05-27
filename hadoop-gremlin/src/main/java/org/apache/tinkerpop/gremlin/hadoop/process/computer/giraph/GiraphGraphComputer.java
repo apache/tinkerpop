@@ -107,13 +107,13 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
             }
 
             this.memory.setRuntime(System.currentTimeMillis() - startTime);
-            return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, this.resultGraph.get(), this.persist.get()), this.memory.asImmutable());
+            return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, this.resultGraph, this.persist), this.memory.asImmutable());
         });
     }
 
     @Override
     public int run(final String[] args) {
-        this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.get().equals(Persist.EDGES));
+        this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.equals(Persist.EDGES));
         try {
             // it is possible to run graph computer without a vertex program (and thus, only map reduce jobs if they exist)
             if (null != this.vertexProgram) {
@@ -162,7 +162,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
             }
 
             // if no persistence, delete the map reduce output
-            if (this.persist.get().equals(Persist.NOTHING)) {
+            if (this.persist.equals(Persist.NOTHING)) {
                 final Path outputPath = new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G);
                 if (FileSystem.get(this.giraphConfiguration).exists(outputPath))      // TODO: what about when the output is not a file output?
                     FileSystem.get(this.giraphConfiguration).delete(outputPath, true);

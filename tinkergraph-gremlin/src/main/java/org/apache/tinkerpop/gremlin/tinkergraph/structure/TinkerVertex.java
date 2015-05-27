@@ -84,7 +84,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
-        return this.property(VertexProperty.Cardinality.single,key,value,keyValues);
+        return this.property(VertexProperty.Cardinality.single, key, value, keyValues);
     }
 
     @Override
@@ -151,12 +151,12 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
-        return (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
+        return TinkerHelper.inComputerMode(this.graph) && TinkerHelper.getGraphView(this.graph).getHideEdges() ? Collections.emptyIterator() : (Iterator) TinkerHelper.getEdges(this, direction, edgeLabels);
     }
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
-        return (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
+        return TinkerHelper.inComputerMode(this.graph) && TinkerHelper.getGraphView(this.graph).getHideEdges() ? Collections.emptyIterator() : (Iterator) TinkerHelper.getVertices(this, direction, edgeLabels);
     }
 
     @Override
