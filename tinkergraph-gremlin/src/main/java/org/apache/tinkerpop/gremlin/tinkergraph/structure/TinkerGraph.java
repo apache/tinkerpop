@@ -104,10 +104,6 @@ public final class TinkerGraph implements Graph {
         vertexPropertyIdManager = selectIdManager(configuration, CONFIG_VERTEX_PROPERTY_ID, VertexProperty.class);
     }
 
-    public static TinkerGraph empty() {
-        return EMPTY_GRAPH;
-    }
-
     /**
      * Open a new {@link TinkerGraph} instance.
      * <p/>
@@ -190,6 +186,7 @@ public final class TinkerGraph implements Graph {
         this.currentId.set(-1l);
         this.vertexIndex = null;
         this.edgeIndex = null;
+        this.graphView = null;
     }
 
     @Override

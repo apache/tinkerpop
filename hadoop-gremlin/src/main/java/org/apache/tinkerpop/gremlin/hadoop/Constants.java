@@ -59,6 +59,7 @@ public final class Constants {
 
     // spark based constants
     public static final String GREMLIN_HADOOP_INPUT_RDD = "gremlin.hadoop.inputRDD";
+    public static final String GREMLIN_HADOOP_OUTPUT_RDD = "gremlin.hadoop.outputRDD";
 
     public static final String SEQUENCE_WARNING = "The " + Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT
             + " is not " + SequenceFileOutputFormat.class.getCanonicalName()

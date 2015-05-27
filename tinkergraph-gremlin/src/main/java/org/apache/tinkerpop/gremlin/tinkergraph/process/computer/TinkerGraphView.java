@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
@@ -42,10 +43,12 @@ import java.util.stream.Stream;
  */
 public final class TinkerGraphView {
 
+    private final TinkerGraph graph;
     protected final Set<String> computeKeys;
     private Map<Element, Map<String, List<VertexProperty>>> computeProperties;
 
-    public TinkerGraphView(final Set<String> computeKeys) {
+    public TinkerGraphView(final TinkerGraph graph, final Set<String> computeKeys) {
+        this.graph = graph;
         this.computeKeys = computeKeys;
         this.computeProperties = new ConcurrentHashMap<>();
     }
@@ -120,5 +123,17 @@ public final class TinkerGraphView {
 
     public boolean isComputeKey(final String key) {
         return this.computeKeys.contains(key);
+    }
+
+    public void addPropertiesToOriginalGraph() {
+        TinkerHelper.dropGraphView(this.graph);
+        this.computeProperties.forEach((element, properties) -> {
+            properties.forEach((key, vertexProperties) -> {
+                vertexProperties.forEach(vertexProperty -> {
+                    element.property(vertexProperty.key(), vertexProperty.value()); // TODO: meta properties and ids
+                });
+            });
+        });
+        this.computeProperties.clear();
     }
 }

@@ -108,9 +108,8 @@ public final class TinkerGraphComputer implements GraphComputer {
             this.persist = Optional.of(null == this.vertexProgram ? Persist.NOTHING : this.vertexProgram.getPreferredPersist());
         if (!this.resultGraph.isPresent())
             this.resultGraph = Optional.of(null == this.vertexProgram ? ResultGraph.ORIGINAL : this.vertexProgram.getPreferredResultGraph());
-        if (this.resultGraph.get().equals(ResultGraph.ORIGINAL))
-            if (!this.persist.get().equals(Persist.NOTHING))
-                throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph.get(), this.persist.get());
+        if (!this.features().supportsResultGraphPersistCombination(this.resultGraph.get(), this.persist.get()))
+            throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph.get(), this.persist.get());
 
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
@@ -192,6 +191,9 @@ public final class TinkerGraphComputer implements GraphComputer {
                 // update runtime and return the newly computed graph
                 this.memory.setRuntime(System.currentTimeMillis() - time);
                 this.memory.complete();
+                if (Persist.NOTHING != this.persist.get() && ResultGraph.ORIGINAL == this.resultGraph.get()) {
+                    TinkerHelper.getGraphView(this.graph).addPropertiesToOriginalGraph();
+                }
                 return new TinkerComputerResult(this.graph, this.memory.asImmutable());
 
             } catch (Exception ex) {
@@ -251,7 +253,7 @@ public final class TinkerGraphComputer implements GraphComputer {
             }
 
             public boolean supportsResultGraphPersistCombination(final ResultGraph resultGraph, final Persist persist) {
-                return persist == Persist.NOTHING || resultGraph != ResultGraph.ORIGINAL;
+                return persist == Persist.NOTHING || (persist != Persist.EDGES && (persist != Persist.VERTEX_PROPERTIES && resultGraph == ResultGraph.NEW));
             }
 
             public boolean supportsDirectObjects() {

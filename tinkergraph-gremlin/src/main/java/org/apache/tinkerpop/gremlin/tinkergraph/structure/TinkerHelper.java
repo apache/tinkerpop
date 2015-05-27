@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -102,7 +101,15 @@ public final class TinkerHelper {
     }
 
     public static TinkerGraphView createGraphView(final TinkerGraph graph, final Set<String> computeKeys) {
-        return graph.graphView = new TinkerGraphView(computeKeys);
+        return graph.graphView = new TinkerGraphView(graph, computeKeys);
+    }
+
+    public static TinkerGraphView getGraphView(final TinkerGraph graph) {
+        return graph.graphView;
+    }
+
+    public static void dropGraphView(final TinkerGraph graph) {
+        graph.graphView = null;
     }
 
     public static Map<String, List<VertexProperty>> getProperties(final TinkerVertex vertex) {

@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -489,7 +488,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public GraphComputer.Persist getPreferredPersist() {
-            return GraphComputer.Persist.EDGES;
+            return GraphComputer.Persist.NOTHING;
         }
     }
     /////////////////////////////////////////////
@@ -994,7 +993,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         MapReduceI.TIME_KEEPER.set(-1l);
         MapReduceI.WORKER_START.clear();
         MapReduceI.WORKER_END.clear();
-        assertEquals(3,graph.compute(graphComputerClass.get()).program(new VertexProgramJ()).mapReduce(new MapReduceI()).submit().get().memory().<Integer>get("a").intValue());
+        assertEquals(3, graph.compute(graphComputerClass.get()).program(new VertexProgramJ()).mapReduce(new MapReduceI()).submit().get().memory().<Integer>get("a").intValue());
         assertEquals(Long.MIN_VALUE, VertexProgramJ.TIME_KEEPER.get());
         if (MapReduceI.WORKER_START.size() == 2) {
             assertEquals(2, MapReduceI.WORKER_START.size());
@@ -1063,11 +1062,6 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
                 assertEquals(Memory.Exceptions.memoryIsCurrentlyImmutable().getMessage(), e.getMessage());
             }
             TIME_KEEPER.set(Long.MIN_VALUE);
-        }
-
-        @Override
-        public Set<String> getElementComputeKeys() {
-            return Collections.emptySet();
         }
 
         @Override
@@ -1188,5 +1182,90 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
+
+    /////////////////////////////////////////////
+
+    /////////////////////////////////////////////
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldWriteNewGraphResultWithEdges() throws Exception {
+        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.EDGES)) {
+            final ComputerResult result = computer.program(new VertexProgramK()).submit().get();
+            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            assertEquals(Long.valueOf(6l), result.graph().traversal().E().count().next());
+            assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldWriteNewGraphResultWithVertexProperties() throws Exception {
+        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.NEW, GraphComputer.Persist.VERTEX_PROPERTIES)) {
+            final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.NEW).persist(GraphComputer.Persist.VERTEX_PROPERTIES).submit().get();
+            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            assertEquals(Long.valueOf(0l), result.graph().traversal().E().count().next());
+            assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldWriteOriginalGraphResultWithVertexProperties() throws Exception {
+        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.ORIGINAL, GraphComputer.Persist.VERTEX_PROPERTIES)) {
+            final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.ORIGINAL).persist(GraphComputer.Persist.VERTEX_PROPERTIES).submit().get();
+            assertEquals(Double.valueOf(28.0d), graph.traversal().V().values("money").sum().next());
+            assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
+            assertEquals(Long.valueOf(18l), graph.traversal().V().values().count().next());
+            ///
+            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            assertEquals(Long.valueOf(6l), result.graph().traversal().E().count().next());
+            result.graph().traversal().V().valueMap().forEachRemaining(System.out::println);
+            assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
+        }
+    }
+
+    public static class VertexProgramK extends StaticVertexProgram {
+
+
+        @Override
+        public void setup(final Memory memory) {
+
+        }
+
+        @Override
+        public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
+            vertex.property("money", vertex.<String>value("name").length());
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            return true;
+        }
+
+        @Override
+        public Set<String> getElementComputeKeys() {
+            return Collections.singleton("money");
+        }
+
+        @Override
+        public Set<MessageScope> getMessageScopes(Memory memory) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.EDGES;
+        }
+    }
+
+    /////////////////////////////////////////////
 
 }
