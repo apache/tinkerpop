@@ -66,10 +66,7 @@ public final class MapReduceHelper {
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
         if (!mapReduce.doStage(MapReduce.Stage.MAP)) {
             final Path memoryPath = new Path(configuration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
-            if (newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
-                mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
-            else
-                HadoopGraph.LOGGER.warn(Constants.SEQUENCE_WARNING);
+            mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
         } else {
             final Optional<Comparator<?>> mapSort = mapReduce.getMapKeySort();
             final Optional<Comparator<?>> reduceSort = mapReduce.getReduceKeySort();
@@ -99,7 +96,7 @@ public final class MapReduceHelper {
             job.setInputFormatClass(vertexProgramExists ?
                     InputOutputHelper.getInputFormat((Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class)) :
                     (Class) newConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class));
-            job.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class));
+            job.setOutputFormatClass(SequenceFileOutputFormat.class);
             // if there is no vertex program, then grab the graph from the input location
             final Path graphPath = vertexProgramExists ?
                     new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G) :
@@ -112,7 +109,6 @@ public final class MapReduceHelper {
             FileOutputFormat.setOutputPath(job, memoryPath);
             job.waitForCompletion(true);
 
-
             // if there is a reduce sort, we need to run another identity MapReduce job
             if (reduceSort.isPresent()) {
                 final Job reduceSortJob = new Job(newConfiguration, "ReduceKeySort");
@@ -124,7 +120,7 @@ public final class MapReduceHelper {
                 reduceSortJob.setOutputKeyClass(ObjectWritable.class);
                 reduceSortJob.setOutputValueClass(ObjectWritable.class);
                 reduceSortJob.setInputFormatClass(SequenceFileInputFormat.class);
-                reduceSortJob.setOutputFormatClass(newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class));
+                reduceSortJob.setOutputFormatClass(SequenceFileOutputFormat.class);
                 FileInputFormat.setInputPaths(reduceSortJob, memoryPath);
                 final Path sortedMemoryPath = new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
                 FileOutputFormat.setOutputPath(reduceSortJob, sortedMemoryPath);
@@ -132,13 +128,7 @@ public final class MapReduceHelper {
                 FileSystem.get(newConfiguration).delete(memoryPath, true); // delete the temporary memory path
                 memoryPath = sortedMemoryPath;
             }
-
-            // if its not a SequenceFile there is no certain way to convert to necessary Java objects.
-            // to get results you have to look through HDFS directory structure. Oh the horror.
-            if (newConfiguration.getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class).equals(SequenceFileOutputFormat.class))
-                mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
-            else
-                HadoopGraph.LOGGER.warn(Constants.SEQUENCE_WARNING);
+            mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
         }
     }
 }

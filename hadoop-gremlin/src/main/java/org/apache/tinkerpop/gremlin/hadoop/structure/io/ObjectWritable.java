@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,6 +35,8 @@ import java.io.Serializable;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ObjectWritable<T> implements WritableComparable<ObjectWritable>, Serializable {
+
+    private static final ObjectWritable<MapReduce.NullObject> NULL_OBJECT_WRITABLE = new ObjectWritable<>(MapReduce.NullObject.instance());
 
     T t;
 
@@ -118,5 +121,9 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
     @Override
     public int hashCode() {
         return this.isEmpty() ? 0 : this.t.hashCode();
+    }
+
+    public static ObjectWritable<MapReduce.NullObject> getNullObjectWritable() {
+        return NULL_OBJECT_WRITABLE;
     }
 }

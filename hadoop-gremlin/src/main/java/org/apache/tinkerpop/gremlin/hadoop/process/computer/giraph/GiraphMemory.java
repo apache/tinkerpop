@@ -23,15 +23,12 @@ import org.apache.giraph.master.MasterCompute;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.mapreduce.OutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
@@ -53,6 +50,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     private GiraphWorkerContext worker;
     private Set<String> memoryKeys;
     private boolean isMasterCompute = true;
+    private long startTime = System.currentTimeMillis();
 
     public GiraphMemory() {
         // Giraph ReflectionUtils requires this to be public at minimum
@@ -97,26 +95,20 @@ public final class GiraphMemory extends MasterCompute implements Memory {
                 final String outputLocation = this.getConf().get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
                 if (null != outputLocation) {
                     try {
-                        final Class<? extends OutputFormat> memoryOutputFormat = this.getConf().getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class);
-                        if (!memoryOutputFormat.equals(SequenceFileOutputFormat.class))
-                            HadoopGraph.LOGGER.warn(Constants.SEQUENCE_WARNING);
-                        else {
-                            for (final String key : this.keys()) {
-                                final SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(this.getConf()), this.getConf(), new Path(outputLocation + "/" + key), ObjectWritable.class, ObjectWritable.class);
-                                writer.append(new ObjectWritable<>(MapReduce.NullObject.instance()), new ObjectWritable<>(memory.get(key)));
-                                writer.close();
-                            }
-                            final SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(this.getConf()), this.getConf(), new Path(outputLocation + "/" + Constants.HIDDEN_ITERATION), ObjectWritable.class, ObjectWritable.class);
-                            writer.append(new ObjectWritable<>(MapReduce.NullObject.instance()), new ObjectWritable<>(memory.getIteration()));
+                        for (final String key : this.keys()) {
+                            final SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(this.getConf()), this.getConf(), new Path(outputLocation + "/" + key), ObjectWritable.class, ObjectWritable.class);
+                            writer.append(ObjectWritable.getNullObjectWritable(), new ObjectWritable<>(memory.get(key)));
                             writer.close();
                         }
+                        final SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(this.getConf()), this.getConf(), new Path(outputLocation + "/" + Constants.HIDDEN_ITERATION), ObjectWritable.class, ObjectWritable.class);
+                        writer.append(ObjectWritable.getNullObjectWritable(), new ObjectWritable<>(memory.getIteration()));
+                        writer.close();
                     } catch (final Exception e) {
                         throw new IllegalStateException(e.getMessage(), e);
                     }
                 }
                 this.haltComputation();
             }
-
         }
     }
 
@@ -132,18 +124,12 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public long getRuntime() {
-        return System.currentTimeMillis(); // TODO: this should be stored in the configuration
+        return System.currentTimeMillis() - this.startTime;
     }
 
     @Override
     public Set<String> keys() {
-        final Set<String> keys = new HashSet<>();
-        for(final String key : this.memoryKeys) {
-            if(this.exists(key))
-                keys.add(key);
-        }
-        return keys;
-        // return this.memoryKeys.stream().filter(this::exists).collect(Collectors.toSet());
+        return this.memoryKeys.stream().filter(this::exists).collect(Collectors.toSet());
     }
 
     @Override

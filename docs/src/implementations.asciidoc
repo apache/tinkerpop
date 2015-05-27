@@ -570,7 +570,6 @@ Properties Files
 gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
 gremlin.hadoop.graphInputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
 gremlin.hadoop.graphOutputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat
-gremlin.hadoop.memoryOutputFormat=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
 gremlin.hadoop.jarsInDistributedCache=true
 gremlin.hadoop.inputLocation=tinkerpop-modern-vertices.kryo
 gremlin.hadoop.outputLocation=output
@@ -603,7 +602,6 @@ A review of the Hadoop-Gremlin specific properties are provided in the table bel
 |gremlin.hadoop.graphInputFormat |The format that the graph input file(s) are represented in.
 |gremlin.hadoop.outputLocation |The location to write the computed HadoopGraph to.
 |gremlin.hadoop.graphOutputFormat |The format that the output file(s) should be represented in.
-|gremlin.hadoop.memoryOutputFormat |The format of any resultant GraphComputer Memory (best to always have this be `SequenceFileOutputFormat`).
 |gremlin.hadoop.jarsInDistributedCache |Whether to upload the Hadoop-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
 |=========================================================
 
