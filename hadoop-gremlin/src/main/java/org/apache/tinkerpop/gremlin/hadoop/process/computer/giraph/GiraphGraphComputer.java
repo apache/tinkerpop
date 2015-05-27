@@ -31,7 +31,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
@@ -39,9 +38,9 @@ import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphC
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.io.GiraphVertexInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.io.GiraphVertexOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.MemoryMapReduce;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritableIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.HadoopHelper;
@@ -54,8 +53,6 @@ import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 
 import java.io.File;
 import java.io.NotSerializableException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
@@ -108,6 +105,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 //e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
+
             this.memory.setRuntime(System.currentTimeMillis() - startTime);
             return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, this.resultGraph.get(), this.persist.get()), this.memory.asImmutable());
         });
@@ -126,14 +124,6 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                     if (e.getCause() instanceof NumberFormatException)
                         throw new NotSerializableException("The provided traversal is not serializable and thus, can not be distributed across the cluster");
                 }
-                // calculate main vertex program memory if desired (costs one mapreduce job)
-                if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, false)) {
-                    final Set<String> memoryKeys = new HashSet<>(this.vertexProgram.getMemoryComputeKeys());
-                    memoryKeys.add(Constants.HIDDEN_ITERATION);
-                    this.giraphConfiguration.setStrings(Constants.GREMLIN_HADOOP_MEMORY_KEYS, (String[]) memoryKeys.toArray(new String[memoryKeys.size()]));
-                    this.mapReducers.add(new MemoryMapReduce(memoryKeys));
-                }
-
                 // prepare the giraph vertex-centric computing job
                 final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 // handle input paths (if any)
@@ -145,15 +135,24 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 }
                 // handle output paths
                 final Path outputPath = new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G);
-                if (this.persist.get().equals(Persist.NOTHING) && this.mapReducers.isEmpty()) // do not write the graph back if it is not needed in MapReduce
-                    job.getInternalJob().setOutputFormatClass(NullOutputFormat.class);
-                else
-                    FileOutputFormat.setOutputPath(job.getInternalJob(), outputPath);
+                FileOutputFormat.setOutputPath(job.getInternalJob(), outputPath);
                 job.getInternalJob().setJarByClass(GiraphGraphComputer.class);
                 this.logger.info(Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 // execute the job and wait until it completes (if it fails, throw an exception)
                 if (!job.run(true))
                     throw new IllegalStateException("The GiraphGraphComputer job failed -- aborting all subsequent MapReduce jobs");  // how do I get the exception that occured?
+                // add vertex program memory values to the return memory
+                for (final String key : this.vertexProgram.getMemoryComputeKeys()) {
+                    final Path path = new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + key);
+                    final ObjectWritableIterator iterator = new ObjectWritableIterator(this.giraphConfiguration, path);
+                    if (iterator.hasNext()) {
+                        this.memory.set(key, iterator.next().getValue());
+                    }
+                    FileSystem.get(this.giraphConfiguration).delete(path, true);
+                }
+                final Path path = new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_ITERATION);
+                this.memory.setIteration((Integer) new ObjectWritableIterator(this.giraphConfiguration, path).next().getValue());
+                FileSystem.get(this.giraphConfiguration).delete(path, true);
             }
             // do map reduce jobs
             this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true));
@@ -161,6 +160,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 this.memory.addMapReduceMemoryKey(mapReduce);
                 MapReduceHelper.executeMapReduceJob(mapReduce, this.memory, this.giraphConfiguration);
             }
+
             // if no persistence, delete the map reduce output
             if (this.persist.get().equals(Persist.NOTHING)) {
                 final Path outputPath = new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G);

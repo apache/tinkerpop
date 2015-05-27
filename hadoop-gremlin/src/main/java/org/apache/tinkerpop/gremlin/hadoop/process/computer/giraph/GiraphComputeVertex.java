@@ -20,14 +20,10 @@ package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
-import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -48,17 +44,7 @@ public final class GiraphComputeVertex extends Vertex<ObjectWritable, VertexWrit
     public void compute(final Iterable<ObjectWritable> messages) {
         final GiraphWorkerContext workerContext = (GiraphWorkerContext) this.getWorkerContext();
         final VertexProgram<?> vertexProgram = workerContext.getVertexProgramPool().take();
-        final GiraphMemory memory = workerContext.getMemory();
-        final GiraphMessenger messenger = workerContext.getMessenger(this, messages.iterator());
-        ///////////
-        if (!(Boolean) ((Rule) this.getAggregatedValue(Constants.GREMLIN_HADOOP_HALT)).getObject()) {
-            vertexProgram.execute(ComputerGraph.vertexProgram(this.getValue().get(), vertexProgram), messenger, memory);
-        } else if (workerContext.deriveMemory()) {
-            final MapMemory mapMemory = new MapMemory();
-            memory.asMap().forEach(mapMemory::set);
-            mapMemory.setIteration(memory.getIteration() - 1);
-            this.getValue().get().property(VertexProperty.Cardinality.single, Constants.GREMLIN_HADOOP_MAP_MEMORY, mapMemory); // not a compute key cause no ComputerGraph is used
-        }
+        vertexProgram.execute(ComputerGraph.vertexProgram(this.getValue().get(), vertexProgram), workerContext.getMessenger(this, messages.iterator()), workerContext.getMemory());
         workerContext.getVertexProgramPool().offer(vertexProgram);
     }
 }

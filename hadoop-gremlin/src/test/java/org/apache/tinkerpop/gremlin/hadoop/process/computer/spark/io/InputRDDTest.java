@@ -50,7 +50,7 @@ public class InputRDDTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "hadoop-gremlin/target/test-output");
-        configuration.setProperty(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, true);
+      //  configuration.setProperty(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, true);
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         ////////
         Graph graph = GraphFactory.open(configuration);

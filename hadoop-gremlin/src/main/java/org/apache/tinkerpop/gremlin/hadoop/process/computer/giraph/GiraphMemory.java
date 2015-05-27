@@ -20,21 +20,29 @@ package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.master.MasterCompute;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 import org.apache.tinkerpop.gremlin.process.computer.util.MemoryHelper;
-import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -76,23 +84,39 @@ public final class GiraphMemory extends MasterCompute implements Memory {
                     MemoryHelper.validateKey(key);
                     this.registerPersistentAggregator(key, MemoryAggregator.class);
                 }
-                this.registerPersistentAggregator(Constants.GREMLIN_HADOOP_HALT, MemoryAggregator.class);
-                this.registerPersistentAggregator(Constants.HIDDEN_RUNTIME, MemoryAggregator.class);
-                this.setAggregatedValue(Constants.GREMLIN_HADOOP_HALT, new Rule(Rule.Operation.SET, Boolean.FALSE));
-                this.set(Constants.HIDDEN_RUNTIME, System.currentTimeMillis());
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
             this.vertexProgram.setup(this);
         } else {
-            if (this.get(Constants.GREMLIN_HADOOP_HALT)) {
+            if (this.vertexProgram.terminate(this)) { // terminate
+                // write the memory to HDFS
+                final MapMemory memory = new MapMemory(this);
+                // a hack to get the last iteration memory values to stick
+                this.vertexProgram.terminate(memory);
+                final String outputLocation = this.getConf().get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
+                if (null != outputLocation) {
+                    try {
+                        final Class<? extends OutputFormat> memoryOutputFormat = this.getConf().getClass(Constants.GREMLIN_HADOOP_MEMORY_OUTPUT_FORMAT, SequenceFileOutputFormat.class, OutputFormat.class);
+                        if (!memoryOutputFormat.equals(SequenceFileOutputFormat.class))
+                            HadoopGraph.LOGGER.warn(Constants.SEQUENCE_WARNING);
+                        else {
+                            for (final String key : this.keys()) {
+                                final SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(this.getConf()), this.getConf(), new Path(outputLocation + "/" + key), ObjectWritable.class, ObjectWritable.class);
+                                writer.append(new ObjectWritable<>(MapReduce.NullObject.instance()), new ObjectWritable<>(memory.get(key)));
+                                writer.close();
+                            }
+                            final SequenceFile.Writer writer = SequenceFile.createWriter(FileSystem.get(this.getConf()), this.getConf(), new Path(outputLocation + "/" + Constants.HIDDEN_ITERATION), ObjectWritable.class, ObjectWritable.class);
+                            writer.append(new ObjectWritable<>(MapReduce.NullObject.instance()), new ObjectWritable<>(memory.getIteration()));
+                            writer.close();
+                        }
+                    } catch (final Exception e) {
+                        throw new IllegalStateException(e.getMessage(), e);
+                    }
+                }
                 this.haltComputation();
-            } else if (this.vertexProgram.terminate(this)) { // terminate
-                if (!this.getConf().getBoolean(Constants.GREMLIN_HADOOP_DERIVE_MEMORY, false)) // no need for the extra BSP round if memory is not required
-                    this.haltComputation();
-                else
-                    this.setAggregatedValue(Constants.GREMLIN_HADOOP_HALT, new Rule(Rule.Operation.SET, Boolean.TRUE));
             }
+
         }
     }
 
@@ -108,12 +132,18 @@ public final class GiraphMemory extends MasterCompute implements Memory {
 
     @Override
     public long getRuntime() {
-        return System.currentTimeMillis() - this.<Long>get(Constants.HIDDEN_RUNTIME);
+        return System.currentTimeMillis(); // TODO: this should be stored in the configuration
     }
 
     @Override
     public Set<String> keys() {
-        return this.memoryKeys;
+        final Set<String> keys = new HashSet<>();
+        for(final String key : this.memoryKeys) {
+            if(this.exists(key))
+                keys.add(key);
+        }
+        return keys;
+        // return this.memoryKeys.stream().filter(this::exists).collect(Collectors.toSet());
     }
 
     @Override
@@ -195,7 +225,7 @@ public final class GiraphMemory extends MasterCompute implements Memory {
     }
 
     private void checkKeyValue(final String key, final Object value) {
-        if (!key.equals(Constants.HIDDEN_RUNTIME) && !this.memoryKeys.contains(key))
+        if (!this.memoryKeys.contains(key))
             throw GraphComputer.Exceptions.providedKeyIsNotAMemoryComputeKey(key);
         MemoryHelper.validateValue(value);
     }
