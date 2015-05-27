@@ -1288,7 +1288,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void shouldProcessResultGraphOriginalPersistVertexProperties() throws Exception {
+    public void shouldProcessResultGraphOriginalWithPersistVertexProperties() throws Exception {
         final GraphComputer computer = graph.compute(graphComputerClass.get());
         if (computer.features().supportsResultGraphPersistCombination(GraphComputer.ResultGraph.ORIGINAL, GraphComputer.Persist.VERTEX_PROPERTIES)) {
             final ComputerResult result = computer.program(new VertexProgramK()).result(GraphComputer.ResultGraph.ORIGINAL).persist(GraphComputer.Persist.VERTEX_PROPERTIES).submit().get();
