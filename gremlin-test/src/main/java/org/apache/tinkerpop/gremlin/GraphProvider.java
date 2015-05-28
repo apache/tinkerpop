@@ -157,25 +157,6 @@ public interface GraphProvider {
      * utilize an Element identifier will pass it to this method before usage.  This method should be sure to
      * be consistent in the return value such that calling it with "x" should always return the same transformed
      * value.
-     * <p/>
-     * For {@link Graph} implementations that return {@code true} for
-     * {@link Graph.Features.ElementFeatures#supportsUserSuppliedIds()} this method requires some additional thought.
-     * That feature has some interesting ramifications when it comes to certain parts of the test suite.  If that
-     * feature is supported and {@link Graph.Features.ElementFeatures#supportsNumericIds()} is not supported (in
-     * favor of some other data type), then test cases supported in the suite will be reduced.  In such a case,
-     * there are two options to consider.
-     * <ol>
-     *     <li>Make it so that your graph can work with
-     *         {@link Graph.Features.ElementFeatures#supportsUserSuppliedIds()} returning {@link false}. Have it be a
-     *         configuration. Then, create one set of tests to run the suite with that configuration and a different
-     *         set of tests that run the suite in the other configuration.</li>
-     *     <li>Make it so that {@link Graph.Features.ElementFeatures#supportsNumericIds()}  is possible. Convert
-     *         the {@link Number} to {@link String} inside {@link Graph#addVertex(Object...)}.</li>
-     * </ol>
-     * If considering the second option, then this method should be implemented such that it not only returns
-     * consistent values as described above, but that it also apply "meaning" during conversion.  In other words,
-     * if {@code convertId(1, Vertex.class)} is called then this method should ensure that {@code 1} be converted to
-     * the exact same value that it would be converted to if one had called {@code graph.addVertex(T.id, 1)}.
      */
     default public Object convertId(final Object id, final Class<? extends Element> c) {
         return id;
