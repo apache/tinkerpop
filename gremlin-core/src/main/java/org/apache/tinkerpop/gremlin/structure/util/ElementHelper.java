@@ -266,6 +266,25 @@ public final class ElementHelper {
     }
 
     /**
+     * Assign key/value pairs as properties to an {@link org.apache.tinkerpop.gremlin.structure.Vertex}.  If the value of {@link T#id} or
+     * {@link T#label} is in the set of pairs, then they are ignored. The {@link org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality} of the key is determined from the {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures}.
+     *
+     * @param vertex           the graph vertex to assign the {@code propertyKeyValues}
+     * @param propertyKeyValues the key/value pairs to assign to the {@code element}
+     * @throws ClassCastException       if the value of the key is not a {@link String}
+     * @throws IllegalArgumentException if the value of {@code element} is null
+     */
+    public static void attachProperties(final Vertex vertex, final Object... propertyKeyValues) {
+        if (null == vertex)
+            throw Graph.Exceptions.argumentCanNotBeNull("vertex");
+
+        for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
+            if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
+                vertex.property(vertex.graph().features().vertex().getCardinality((String) propertyKeyValues[i]),  (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
+        }
+    }
+
+    /**
      * Assign key/value pairs as properties to a {@link org.apache.tinkerpop.gremlin.structure.Vertex}.  If the value of {@link T#id} or
      * {@link T#label} is in the set of pairs, then they are ignored.
      *

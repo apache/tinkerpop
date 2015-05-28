@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.neo4j.process;
 
-import org.apache.tinkerpop.gremlin.neo4j.BaseNeo4jGraphTest;
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.neo4j.AbstractNeo4jGremlinTest;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -36,28 +38,32 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jCypherStartTest extends BaseNeo4jGraphTest {
+public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
+
     @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldExecuteCypher() throws Exception {
         this.graph.addVertex("name", "marko");
         this.graph.tx().commit();
-        final Iterator<Map<String, Object>> result = graph.cypher("MATCH (a {name:\"marko\"}) RETURN a", Collections.emptyMap());
+        final Iterator<Map<String, Object>> result = this.getGraph().cypher("MATCH (a {name:\"marko\"}) RETURN a", Collections.emptyMap());
         assertNotNull(result);
         assertTrue(result.hasNext());
     }
 
     @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldExecuteCypherWithArgs() throws Exception {
         this.graph.addVertex("name", "marko");
         this.graph.tx().commit();
         final Map<String, Object> bindings = new HashMap<>();
         bindings.put("n", "marko");
-        final Iterator<Map<String, Object>> result = graph.cypher("MATCH (a {name:{n}}) RETURN a", bindings);
+        final Iterator<Map<String, Object>> result = this.getGraph().cypher("MATCH (a {name:{n}}) RETURN a", bindings);
         assertNotNull(result);
         assertTrue(result.hasNext());
     }
 
     @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldExecuteCypherWithArgsUsingVertexIdList() throws Exception {
         final Vertex v = this.graph.addVertex("name", "marko");
         final List<Object> idList = Arrays.asList(v.id());
@@ -65,32 +71,34 @@ public class Neo4jCypherStartTest extends BaseNeo4jGraphTest {
 
         final Map<String, Object> bindings = new HashMap<>();
         bindings.put("ids", idList);
-        final Iterator<String> result = graph.cypher("START n=node({ids}) RETURN n", bindings).select("n").values("name");
+        final Iterator<String> result = this.getGraph().cypher("START n=node({ids}) RETURN n", bindings).select(Scope.local, "n").values("name");
         assertNotNull(result);
         assertTrue(result.hasNext());
         assertEquals("marko", result.next());
     }
 
     @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldExecuteCypherAndBackToGremlin() throws Exception {
         this.graph.addVertex("name", "marko", "age", 29, "color", "red");
         this.graph.addVertex("name", "marko", "age", 30, "color", "yellow");
 
         this.graph.tx().commit();
-        final Traversal result = graph.cypher("MATCH (a {name:\"marko\"}) RETURN a").select("a").has("age", 29).values("color");
+        final Traversal result = this.getGraph().cypher("MATCH (a {name:\"marko\"}) RETURN a").select(Scope.local, "a").has("age", 29).values("color");
         assertNotNull(result);
         assertTrue(result.hasNext());
         assertEquals("red", result.next().toString());
     }
 
     @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldExecuteMultiIdWhereCypher() throws Exception {
         this.graph.addVertex("name", "marko", "age", 29, "color", "red");
         this.graph.addVertex("name", "marko", "age", 30, "color", "yellow");
         this.graph.addVertex("name", "marko", "age", 30, "color", "orange");
         this.graph.tx().commit();
 
-        final List<Object> result = graph.cypher("MATCH n WHERE id(n) IN [1,2] RETURN n").select("n").id().toList();
+        final List<Object> result = this.getGraph().cypher("MATCH n WHERE id(n) IN [1,2] RETURN n").select(Scope.local, "n").id().toList();
         assertNotNull(result);
         assertEquals(2, result.size());
         assertTrue(result.contains(1l));
@@ -98,6 +106,7 @@ public class Neo4jCypherStartTest extends BaseNeo4jGraphTest {
     }
 
     @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldExecuteMultiIdWhereWithParamCypher() throws Exception {
         final Vertex v1 = this.graph.addVertex("name", "marko", "age", 29, "color", "red");
         final Vertex v2 = this.graph.addVertex("name", "marko", "age", 30, "color", "yellow");
@@ -107,7 +116,7 @@ public class Neo4jCypherStartTest extends BaseNeo4jGraphTest {
         final List<Object> ids = Arrays.asList(v1.id(), v2.id());
         final Map<String, Object> m = new HashMap<>();
         m.put("ids", ids);
-        final List<Object> result = graph.cypher("MATCH n WHERE id(n) IN {ids} RETURN n", m).select("n").id().toList();
+        final List<Object> result = this.getGraph().cypher("MATCH n WHERE id(n) IN {ids} RETURN n", m).select(Scope.local, "n").id().toList();
         assertNotNull(result);
         assertEquals(2, result.size());
         assertTrue(result.contains(v1.id()));
