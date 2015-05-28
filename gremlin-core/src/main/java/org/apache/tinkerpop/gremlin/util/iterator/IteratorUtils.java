@@ -44,7 +44,8 @@ import java.util.stream.StreamSupport;
  */
 public final class IteratorUtils {
 
-    private IteratorUtils() {}
+    private IteratorUtils() {
+    }
 
     public static final <S> Iterator<S> of(final S a) {
         return new SingleIterator<>(a);
@@ -64,7 +65,7 @@ public final class IteratorUtils {
     }
 
     public static void iterate(final Iterator iterator) {
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             iterator.next();
         }
     }
@@ -338,5 +339,9 @@ public final class IteratorUtils {
      */
     public static <T> Stream<T> stream(final Iterator<T> iterator) {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.IMMUTABLE | Spliterator.SIZED), false);
+    }
+
+    public static <T> Stream<T> stream(final Iterable<T> iterable) {
+        return IteratorUtils.stream(iterable.iterator());
     }
 }
