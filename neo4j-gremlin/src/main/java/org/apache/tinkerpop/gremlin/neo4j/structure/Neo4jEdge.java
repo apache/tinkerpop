@@ -33,10 +33,33 @@ import java.util.Iterator;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Neo4jRelationship> {
+public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Neo4jRelationship> {
 
     public Neo4jEdge(final Neo4jRelationship relationship, final Neo4jGraph graph) {
         super(relationship, graph);
+    }
+
+    @Override
+    public Vertex outVertex() {
+        return this.graph.createVertex(this.getBaseEdge().start());
+    }
+
+    @Override
+    public Vertex inVertex() {
+        return this.graph.createVertex(this.getBaseEdge().end());
+    }
+
+    @Override
+    public Iterator<Vertex> vertices(final Direction direction) {
+        this.graph.tx().readWrite();
+        switch (direction) {
+            case OUT:
+                return IteratorUtils.of(this.graph.createVertex(this.getBaseEdge().start()));
+            case IN:
+                return IteratorUtils.of(this.graph.createVertex(this.getBaseEdge().end()));
+            default:
+                return IteratorUtils.of(this.graph.createVertex(this.getBaseEdge().start()), this.graph.createVertex(this.getBaseEdge().end()));
+        }
     }
 
     @Override
@@ -45,7 +68,7 @@ public final class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<N
         this.removed = true;
         this.graph.tx().readWrite();
         try {
-            ((Neo4jRelationship) this.baseElement).delete();
+            this.baseElement.delete();
         } catch (IllegalStateException ignored) {
             // NotFoundException happens if the edge is committed
             // IllegalStateException happens if the edge is still chilling in the tx
@@ -74,18 +97,5 @@ public final class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<N
     @Override
     public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
         return (Iterator) super.properties(propertyKeys);
-    }
-
-    @Override
-    public Iterator<Vertex> vertices(final Direction direction) {
-        this.graph.tx().readWrite();
-        switch (direction) {
-            case OUT:
-                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().start(), this.graph));
-            case IN:
-                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().end(), this.graph));
-            default:
-                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().start(), this.graph), new Neo4jVertex(this.getBaseEdge().end(), this.graph));
-        }
     }
 }

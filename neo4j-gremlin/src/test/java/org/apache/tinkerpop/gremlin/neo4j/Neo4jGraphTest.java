@@ -23,7 +23,7 @@ package org.apache.tinkerpop.gremlin.neo4j;
 
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
+import org.apache.tinkerpop.gremlin.neo4j.structure.full.FullNeo4jVertexProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -32,11 +32,14 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
-import org.neo4j.tinkerpop.api.*;
+import org.neo4j.tinkerpop.api.Neo4jDirection;
+import org.neo4j.tinkerpop.api.Neo4jGraphAPI;
+import org.neo4j.tinkerpop.api.Neo4jNode;
+import org.neo4j.tinkerpop.api.Neo4jRelationship;
+import org.neo4j.tinkerpop.api.Neo4jTx;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -148,7 +151,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldReturnResultsUsingLegacyIndexOnVertex() {
         graph.tx().readWrite();
-        this.graph.getBaseGraph().autoIndexProperties(true,"name");
+        this.graph.getBaseGraph().autoIndexProperties(true, "name");
         this.graph.tx().commit();
 
         this.graph.addVertex(T.label, "Person", "name", "marko");
@@ -176,7 +179,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     @Test
     public void shouldEnforceUniqueConstraint() {
         this.graph.tx().readWrite();
-        this.graph.getBaseGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.name is unique",null);
+        this.graph.getBaseGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.name is unique", null);
         this.graph.tx().commit();
         this.graph.tx().commit();
         this.graph.addVertex(T.label, "Person", "name", "marko");
@@ -242,7 +245,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
 
         this.graph.tx().readWrite();
         this.graph.getBaseGraph().execute("DROP CONSTRAINT ON (p:Person) assert p.name is unique", null);
-        this.graph.getBaseGraph().execute("DROP CONSTRAINT ON (p:Person) assert p.surname is unique",null);
+        this.graph.getBaseGraph().execute("DROP CONSTRAINT ON (p:Person) assert p.surname is unique", null);
 
         this.graph.tx().commit();
         assertEquals(1, this.g.V().has(T.label, "Person").has("name", "marko").count().next(), 0);
@@ -363,8 +366,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             this.graph.tx().commit();
 
             final Vertex a = graph.addVertex(T.label, "person", "name", "marko", "age", 34);
-            a.property(VertexProperty.Cardinality.list,"name", "okram");
-            a.property(VertexProperty.Cardinality.list,"name", "marko a. rodriguez");
+            a.property(VertexProperty.Cardinality.list, "name", "okram");
+            a.property(VertexProperty.Cardinality.list, "name", "marko a. rodriguez");
             final Vertex b = graph.addVertex(T.label, "person", "name", "stephen");
             final Vertex c = graph.addVertex("name", "matthias", "name", "mbroecheler");
 
@@ -372,7 +375,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 assertEquals(a.id(), graph.traversal().V().has("person", "name", "okram").id().next());
                 assertEquals(1, graph.traversal().V().has("person", "name", "okram").count().next().intValue());
                 assertEquals(34, ((Neo4jVertex) graph.traversal().V().has("person", "name", "okram").next()).getBaseVertex().getProperty("age"));
-                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) graph.traversal().V().has("person", "name", "okram").next()).getBaseVertex().getProperty("name"));
+                assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) graph.traversal().V().has("person", "name", "okram").next()).getBaseVertex().getProperty("name"));
                 ///
                 assertEquals(b.id(), graph.traversal().V().has("person", "name", "stephen").id().next());
                 assertEquals(1, graph.traversal().V().has("person", "name", "stephen").count().next().intValue());
@@ -391,19 +394,19 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 assertEquals(d.id(), graph.traversal().V().has("person", "name", "kuppitz").id().next());
                 assertEquals("kuppitz", ((Neo4jVertex) graph.traversal().V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
             });
-            d.property(VertexProperty.Cardinality.list,"name", "daniel", "acl", "private");
+            d.property(VertexProperty.Cardinality.list, "name", "daniel", "acl", "private");
             tryCommit(graph, graph -> {
                 assertEquals(d.id(), graph.traversal().V().has("person", "name", P.within("daniel", "kuppitz")).id().next());
                 assertEquals(d.id(), graph.traversal().V().has("person", "name", "kuppitz").id().next());
                 assertEquals(d.id(), graph.traversal().V().has("person", "name", "daniel").id().next());
-                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) graph.traversal().V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
+                assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) graph.traversal().V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
             });
-            d.property(VertexProperty.Cardinality.list,"name", "marko", "acl", "private");
+            d.property(VertexProperty.Cardinality.list, "name", "marko", "acl", "private");
             tryCommit(graph, g -> {
                 assertEquals(2, g.traversal().V().has("person", "name", "marko").count().next().intValue());
                 assertEquals(1, g.traversal().V().has("person", "name", "marko").properties("name").has(T.value, "marko").has("acl", "private").count().next().intValue());
                 g.traversal().V().has("person", "name", "marko").forEachRemaining(v -> {
-                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) v).getBaseVertex().getProperty("name"));
+                    assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) v).getBaseVertex().getProperty("name"));
                 });
 
             });
@@ -414,9 +417,9 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
     public void shouldDoLabelsNamespaceBehavior() {
         graph.tx().readWrite();
 
-        this.graph.getBaseGraph().execute("CREATE INDEX ON :Person(name)",null);
-        this.graph.getBaseGraph().execute("CREATE INDEX ON :Product(name)",null);
-        this.graph.getBaseGraph().execute("CREATE INDEX ON :Corporate(name)",null);
+        this.graph.getBaseGraph().execute("CREATE INDEX ON :Person(name)", null);
+        this.graph.getBaseGraph().execute("CREATE INDEX ON :Product(name)", null);
+        this.graph.getBaseGraph().execute("CREATE INDEX ON :Corporate(name)", null);
 
         this.graph.tx().commit();
         this.graph.addVertex(T.label, "Person", "name", "marko");
@@ -456,10 +459,10 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         tryCommit(graph, g -> validateCounts(g, 0, 0, 0, 0));
         Vertex vertex = graph.addVertex(T.label, "person");
         tryCommit(graph, g -> validateCounts(g, 1, 0, 1, 0));
-        vertex.property(VertexProperty.Cardinality.list,"name", "marko");
+        vertex.property(VertexProperty.Cardinality.list, "name", "marko");
         assertEquals("marko", vertex.value("name"));
         tryCommit(graph, g -> validateCounts(g, 1, 0, 1, 0));
-        vertex.property(VertexProperty.Cardinality.list,"name", "okram");
+        vertex.property(VertexProperty.Cardinality.list, "name", "okram");
         tryCommit(graph, g -> {
             validateCounts(g, 1, 0, 1, 0);
             assertEquals("okram", vertex.value("name"));
@@ -484,7 +487,7 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
         tryCommit(graph, g -> validateCounts(g, 0, 0, 0, 0));
         Vertex vertex = graph.addVertex(T.label, "person");
         tryCommit(graph, g -> validateCounts(g, 1, 0, 1, 0));
-        vertex.property(VertexProperty.Cardinality.list,"name", "marko");
+        vertex.property(VertexProperty.Cardinality.list, "name", "marko");
         assertEquals("marko", vertex.value("name"));
         tryCommit(graph, g -> validateCounts(g, 1, 0, 1, 0));
         vertex.property(VertexProperty.Cardinality.single, "name", "okram");
@@ -525,16 +528,16 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 // assertEquals(1, b.properties("location").count().next().intValue());
                 // assertEquals(0, g.E().count().next().intValue());
 
-                assertEquals(4l, graph.execute("MATCH n RETURN COUNT(n)",null).next().get("COUNT(n)"));
-                assertEquals(2l, graph.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)",null).next().get("COUNT(r)"));
-                assertEquals(2l, graph.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)",null).next().get("COUNT(r)"));
+                assertEquals(4l, graph.execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
+                assertEquals(2l, graph.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
+                assertEquals(2l, graph.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
                 final AtomicInteger counter = new AtomicInteger(0);
                 a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
-                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
+                    assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
                     counter.incrementAndGet();
                 });
                 assertEquals(2, counter.getAndSet(0));
-                graph.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)",null).forEachRemaining(results -> {
+                graph.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)", null).forEachRemaining(results -> {
                     assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
                     counter.incrementAndGet();
                 });
@@ -543,9 +546,9 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                     assertEquals(2, IteratorUtils.count(node.getKeys()));
                     assertEquals("name", node.getProperty(T.key.getAccessor()));
                     assertTrue("marko".equals(node.getProperty(T.value.getAccessor())) || "okram".equals(node.getProperty(T.value.getAccessor())));
-                    assertEquals(0, node.degree(Neo4jDirection.OUTGOING,null));
-                    assertEquals(1, node.degree(Neo4jDirection.INCOMING,null));
-                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
+                    assertEquals(0, node.degree(Neo4jDirection.OUTGOING, null));
+                    assertEquals(1, node.degree(Neo4jDirection.INCOMING, null));
+                    assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
                     counter.incrementAndGet();
                 });
                 assertEquals(2, counter.getAndSet(0));
@@ -558,13 +561,13 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
             a.property("name", "the marko");
             tryCommit(graph, g -> {
                 assertEquals(2, g.traversal().V().count().next().intValue());
-                //assertEquals(1, a.properties().count().next().intValue());
+                //assertEquals(1, a.prope rties().count().next().intValue());
                 //  assertEquals(1, b.properties("name").count().next().intValue());
                 // assertEquals(1, b.properties("location").count().next().intValue());
                 //  assertEquals(0, g.E().count().next().intValue());
 
-                assertEquals(2l, graph.execute("MATCH n RETURN COUNT(n)",null).next().get("COUNT(n)"));
-                assertEquals(0l, graph.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)",null).next().get("COUNT(r)"));
+                assertEquals(2l, graph.execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
+                assertEquals(0l, graph.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
 
                 assertEquals(1, IteratorUtils.count(a.getBaseVertex().getKeys()));
                 assertEquals("the marko", a.getBaseVertex().getProperty("name"));
@@ -579,8 +582,8 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 //    assertEquals(0, a.properties().count().next().intValue());
                 //   assertEquals(2, b.properties().count().next().intValue());
                 //     assertEquals(0, g.E().count().next().intValue());
-                assertEquals(2l, graph.execute("MATCH n RETURN COUNT(n)",null).next().get("COUNT(n)"));
-                assertEquals(0l, graph.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)",null).next().get("COUNT(r)"));
+                assertEquals(2l, graph.execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
+                assertEquals(0l, graph.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
                 assertEquals(0, IteratorUtils.count(a.getBaseVertex().getKeys()));
                 assertEquals(2, IteratorUtils.count(b.getBaseVertex().getKeys()));
             });
@@ -594,16 +597,16 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 // assertEquals(1, b.properties("location").count().next().intValue());
                 //  assertEquals(0, g.E().count().next().intValue());
 
-                assertEquals(3l, graph.execute("MATCH n RETURN COUNT(n)",null).next().get("COUNT(n)"));
-                assertEquals(1l, graph.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)",null).next().get("COUNT(r)"));
-                assertEquals(1l, graph.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)",null).next().get("COUNT(r)"));
+                assertEquals(3l, graph.execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
+                assertEquals(1l, graph.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
+                assertEquals(1l, graph.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
                 final AtomicInteger counter = new AtomicInteger(0);
                 a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
-                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
+                    assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
                     counter.incrementAndGet();
                 });
                 assertEquals(1, counter.getAndSet(0));
-                graph.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)",null).forEachRemaining(results -> {
+                graph.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)", null).forEachRemaining(results -> {
                     assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
                     counter.incrementAndGet();
                 });
@@ -613,23 +616,23 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                     assertEquals("name", node.getProperty(T.key.getAccessor()));
                     assertEquals("the marko", node.getProperty(T.value.getAccessor()));
                     assertEquals("private", node.getProperty("acl"));
-                    assertEquals(0, node.degree(Neo4jDirection.OUTGOING,null));
-                    assertEquals(1, node.degree(Neo4jDirection.INCOMING,null));
-                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
+                    assertEquals(0, node.degree(Neo4jDirection.OUTGOING, null));
+                    assertEquals(1, node.degree(Neo4jDirection.INCOMING, null));
+                    assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
                     counter.incrementAndGet();
                 });
                 assertEquals(1, counter.getAndSet(0));
 
                 assertEquals(1, IteratorUtils.count(a.getBaseVertex().getKeys()));
                 assertTrue(a.getBaseVertex().hasProperty("name"));
-                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
+                assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
                 assertEquals(2, IteratorUtils.count(b.getBaseVertex().getKeys()));
                 assertEquals("stephen", b.getBaseVertex().getProperty("name"));
                 assertEquals("virginia", b.getBaseVertex().getProperty("location"));
             });
 
-            a.property(VertexProperty.Cardinality.list,"name", "marko", "acl", "private");
-            a.property(VertexProperty.Cardinality.list,"name", "okram", "acl", "public");
+            a.property(VertexProperty.Cardinality.list, "name", "marko", "acl", "private");
+            a.property(VertexProperty.Cardinality.list, "name", "okram", "acl", "public");
             graph.tx().commit();  // TODO tx.commit() THIS IS REQUIRED: ?! Why does Neo4j not delete vertices correctly?
             a.property(VertexProperty.Cardinality.single, "name", "the marko", "acl", "private");
             tryCommit(graph, g -> {
@@ -639,16 +642,16 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                 // assertEquals(1, b.properties("location").count().next().intValue());
                 // assertEquals(0, g.E().count().next().intValue());
 
-                assertEquals(3l, graph.execute("MATCH n RETURN COUNT(n)",null).next().get("COUNT(n)"));
-                assertEquals(1l, graph.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)",null).next().get("COUNT(r)"));
-                assertEquals(1l, graph.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)",null).next().get("COUNT(r)"));
+                assertEquals(3l, graph.execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
+                assertEquals(1l, graph.execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
+                assertEquals(1l, graph.execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
                 final AtomicInteger counter = new AtomicInteger(0);
                 a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
-                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
+                    assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
                     counter.incrementAndGet();
                 });
                 assertEquals(1, counter.getAndSet(0));
-                graph.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)",null).forEachRemaining(results -> {
+                graph.execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)", null).forEachRemaining(results -> {
                     assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
                     counter.incrementAndGet();
                 });
@@ -658,16 +661,16 @@ public class Neo4jGraphTest extends BaseNeo4jGraphTest {
                     assertEquals("name", node.getProperty(T.key.getAccessor()));
                     assertEquals("the marko", node.getProperty(T.value.getAccessor()));
                     assertEquals("private", node.getProperty("acl"));
-                    assertEquals(0, node.degree(Neo4jDirection.OUTGOING,null));
-                    assertEquals(1, node.degree(Neo4jDirection.INCOMING,null));
-                    assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
+                    assertEquals(0, node.degree(Neo4jDirection.OUTGOING, null));
+                    assertEquals(1, node.degree(Neo4jDirection.INCOMING, null));
+                    assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
                     counter.incrementAndGet();
                 });
                 assertEquals(1, counter.getAndSet(0));
 
                 assertEquals(1, IteratorUtils.count(a.getBaseVertex().getKeys()));
                 assertTrue(a.getBaseVertex().hasProperty("name"));
-                assertEquals(Neo4jVertexProperty.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
+                assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
                 assertEquals(2, IteratorUtils.count(b.getBaseVertex().getKeys()));
                 assertEquals("stephen", b.getBaseVertex().getProperty("name"));
                 assertEquals("virginia", b.getBaseVertex().getProperty("location"));

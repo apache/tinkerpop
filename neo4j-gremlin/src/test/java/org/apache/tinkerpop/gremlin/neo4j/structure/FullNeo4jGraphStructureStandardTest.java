@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.neo4j.process;
+package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.neo4j.DefaultNeo4jGraphProvider;
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
+import org.apache.tinkerpop.gremlin.neo4j.FullNeo4jGraphProvider;
+import org.apache.tinkerpop.gremlin.neo4j.structure.full.FullNeo4jGraph;
+import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runner.RunWith;
 
 
@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = DefaultNeo4jGraphProvider.class, graph = Neo4jGraph.class)
-public class Neo4jGraphProcessStandardTest {
+@RunWith(StructureStandardSuite.class)
+@GraphProviderClass(provider = FullNeo4jGraphProvider.class, graph = FullNeo4jGraph.class)
+public class FullNeo4jGraphStructureStandardTest {
 }

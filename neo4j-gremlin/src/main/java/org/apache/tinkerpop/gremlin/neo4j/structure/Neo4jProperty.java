@@ -20,21 +20,19 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.neo4j.tinkerpop.api.Neo4jEntity;
-import org.neo4j.tinkerpop.api.Neo4jNode;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class Neo4jProperty<V> implements Property<V> {
+public class Neo4jProperty<V> implements Property<V> {
 
-    private final Element element;
-    private final String key;
-    private final Neo4jGraph graph;
-    private V value;
+    protected final Element element;
+    protected final String key;
+    protected final Neo4jGraph graph;
+    protected V value;
 
     public Neo4jProperty(final Element element, final String key, final V value) {
         this.element = element;
@@ -48,6 +46,15 @@ public final class Neo4jProperty<V> implements Property<V> {
     @Override
     public Element element() {
         return this.element;
+    }
+
+    @Override
+    public void remove() {
+        this.graph.tx().readWrite();
+        final Neo4jEntity entity = ((Neo4jElement) this.element).getBaseElement();
+        if (entity.hasProperty(this.key)) {
+            entity.removeProperty(this.key);
+        }
     }
 
     @Override
@@ -79,21 +86,4 @@ public final class Neo4jProperty<V> implements Property<V> {
     public int hashCode() {
         return ElementHelper.hashCode(this);
     }
-
-    @Override
-    public void remove() {
-        this.graph.tx().readWrite();
-        if (this.element instanceof VertexProperty) {
-            final Neo4jNode node = ((Neo4jVertexProperty) this.element).getBaseVertex();
-            if (null != node && node.hasProperty(this.key)) {
-                node.removeProperty(this.key);
-            }
-        } else {
-            final Neo4jEntity entity = ((Neo4jElement) this.element).getBaseElement();
-            if (entity.hasProperty(this.key)) {
-                entity.removeProperty(this.key);
-            }
-        }
-    }
-
 }

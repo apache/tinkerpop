@@ -40,7 +40,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class BaseNeo4jGraphTest {
     protected Configuration conf;
-    protected final DefaultNeo4jGraphProvider graphProvider = new DefaultNeo4jGraphProvider();
+    protected final FullNeo4jGraphProvider graphProvider = new FullNeo4jGraphProvider();
     protected Neo4jGraph graph;
     protected GraphTraversalSource g;
 
