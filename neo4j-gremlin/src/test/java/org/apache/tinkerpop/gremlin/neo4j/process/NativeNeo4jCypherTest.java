@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.neo4j.process;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.neo4j.AbstractNeo4jGremlinTest;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -71,7 +70,7 @@ public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
 
         final Map<String, Object> bindings = new HashMap<>();
         bindings.put("ids", idList);
-        final Iterator<String> result = this.getGraph().cypher("START n=node({ids}) RETURN n", bindings).select(Scope.local, "n").values("name");
+        final Iterator<String> result = this.getGraph().cypher("START n=node({ids}) RETURN n", bindings).select("n").values("name");
         assertNotNull(result);
         assertTrue(result.hasNext());
         assertEquals("marko", result.next());
@@ -84,7 +83,7 @@ public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
         this.graph.addVertex("name", "marko", "age", 30, "color", "yellow");
 
         this.graph.tx().commit();
-        final Traversal result = this.getGraph().cypher("MATCH (a {name:\"marko\"}) RETURN a").select(Scope.local, "a").has("age", 29).values("color");
+        final Traversal result = this.getGraph().cypher("MATCH (a {name:\"marko\"}) RETURN a").select("a").has("age", 29).values("color");
         assertNotNull(result);
         assertTrue(result.hasNext());
         assertEquals("red", result.next().toString());
@@ -98,7 +97,7 @@ public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
         this.graph.addVertex("name", "marko", "age", 30, "color", "orange");
         this.graph.tx().commit();
 
-        final List<Object> result = this.getGraph().cypher("MATCH n WHERE id(n) IN [1,2] RETURN n").select(Scope.local, "n").id().toList();
+        final List<Object> result = this.getGraph().cypher("MATCH n WHERE id(n) IN [1,2] RETURN n").select("n").id().toList();
         assertNotNull(result);
         assertEquals(2, result.size());
         assertTrue(result.contains(1l));
@@ -116,7 +115,7 @@ public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
         final List<Object> ids = Arrays.asList(v1.id(), v2.id());
         final Map<String, Object> m = new HashMap<>();
         m.put("ids", ids);
-        final List<Object> result = this.getGraph().cypher("MATCH n WHERE id(n) IN {ids} RETURN n", m).select(Scope.local, "n").id().toList();
+        final List<Object> result = this.getGraph().cypher("MATCH n WHERE id(n) IN {ids} RETURN n", m).select("n").id().toList();
         assertNotNull(result);
         assertEquals(2, result.size());
         assertTrue(result.contains(v1.id()));

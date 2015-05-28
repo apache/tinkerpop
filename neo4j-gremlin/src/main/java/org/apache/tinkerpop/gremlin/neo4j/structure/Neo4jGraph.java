@@ -21,13 +21,13 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.sideEffect.CypherStartStep;
 import org.apache.tinkerpop.gremlin.neo4j.process.util.Neo4jCypherIterator;
 import org.apache.tinkerpop.gremlin.neo4j.structure.full.FullNeo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.simple.SimpleNeo4jGraph;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -265,7 +265,7 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         this.tx().readWrite();
         final GraphTraversal.Admin<S, E> traversal = new DefaultGraphTraversal<>(this);
         Iterator result = this.baseGraph.execute(query, parameters);
-        traversal.addStep(new StartStep(traversal, new Neo4jCypherIterator<S>(result, this)));
+        traversal.addStep(new CypherStartStep(traversal, query, new Neo4jCypherIterator<S>(result, this)));
         return traversal;
     }
 
