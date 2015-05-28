@@ -260,11 +260,11 @@ public class GremlinExecutor implements AutoCloseable {
 
                 afterSuccess.accept(bindings);
             } catch (Exception ex) {
-                final Throwable root = ExceptionUtils.getRootCause(ex);
+                final Throwable root = null == ex.getCause() ? ex : ExceptionUtils.getRootCause(ex);
 
                 // thread interruptions will typically come as the result of a timeout, so in those cases,
                 // check for that situation and convert to TimeoutException
-                if (root.getClass().equals(InterruptedException.class))
+                if (root instanceof InterruptedException)
                     evaluationFuture.completeExceptionally(new TimeoutException(
                             String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]: %s", scriptEvaluationTimeout, script, root.getMessage())));
                 else {
