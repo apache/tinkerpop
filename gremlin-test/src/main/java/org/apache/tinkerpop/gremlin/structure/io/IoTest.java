@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
+import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -2357,8 +2358,12 @@ public class IoTest extends AbstractGremlinTest {
         if (g.features().edge().supportsUserSuppliedIds()) {
             if (lossyForId)
                 assertEquals(expected.toString(), e.id().toString());
-            else
-                assertEquals(expected, e.id());
+            else {
+                // we convert the "expected" id via GraphProvider because it is possible that a Graph
+                // (e.g. elastic-gremlin) can supportUserSuppliedIds but internally represent them as a
+                // value other than Numeric (which is what's in all of the test/toy data).
+                assertEquals(GraphManager.getGraphProvider().convertId(expected, Edge.class), e.id());
+            }
         }
     }
 
