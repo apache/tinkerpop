@@ -89,10 +89,7 @@ public final class ElementHelper {
         if (ids.length > 1) {
             final boolean element = clazz.isAssignableFrom(ids[0].getClass());
             for (int i = 1; i < ids.length; i++) {
-                final boolean assignable = clazz.isAssignableFrom(ids[i].getClass());
-                if (assignable && !element)
-                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
-                else if (!assignable && element)
+                if (clazz.isAssignableFrom(ids[i].getClass()) != element)
                     throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
             }
         }
