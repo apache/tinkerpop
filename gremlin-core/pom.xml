@@ -96,6 +96,13 @@ limitations under the License.
             <version>1.3</version>
             <scope>test</scope>
         </dependency>
+        <!-- needed to test GraphFactory and xml based config via optional dependency in apache configurations -->
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>

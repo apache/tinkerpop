@@ -18,21 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.junit.Test;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class GraphVariableHelper {
-
-    private GraphVariableHelper() { }
-
-    public static void validateVariable(final String variable, final Object value) throws IllegalArgumentException {
-        if (null == value)
-            throw Graph.Variables.Exceptions.variableValueCanNotBeNull();
-        if (null == variable)
-            throw Graph.Variables.Exceptions.variableKeyCanNotBeNull();
-        if (variable.isEmpty())
-            throw Graph.Variables.Exceptions.variableKeyCanNotBeEmpty();
+public class StringFactoryTest {
+    @Test
+    public void shouldBeUtilityClass() throws Exception {
+        TestHelper.assertIsUtilityClass(StringFactory.class);
     }
 }

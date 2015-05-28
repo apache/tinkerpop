@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.gremlin;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -74,5 +76,23 @@ public final class TestHelper {
         final URL url = clazz.getClassLoader().getResource(clsUri);
         final String clsPath = url.getPath();
         return clsPath.substring(0, clsPath.length() - clsUri.length());
+    }
+
+    /**
+     * See {@code TestHelper} in gremlin-test for the official version.
+     */
+    public static File generateTempFileFromResource(final Class resourceClass, final String resourceName, final String extension) throws IOException {
+        final File temp = makeTestDataPath(resourceClass, "resources");
+        if (!temp.exists()) temp.mkdirs();
+        final File tempFile = new File(temp, resourceName + extension);
+        final FileOutputStream outputStream = new FileOutputStream(tempFile);
+        int data;
+        final InputStream inputStream = resourceClass.getResourceAsStream(resourceName);
+        while ((data = inputStream.read()) != -1) {
+            outputStream.write(data);
+        }
+        outputStream.close();
+        inputStream.close();
+        return tempFile;
     }
 }
