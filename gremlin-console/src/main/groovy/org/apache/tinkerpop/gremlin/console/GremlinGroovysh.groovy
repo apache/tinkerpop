@@ -22,6 +22,8 @@ import org.codehaus.groovy.tools.shell.Command
 import org.codehaus.groovy.tools.shell.Groovysh
 
 /**
+ * Overrides the posix style parsing of Groovysh allowing for commands to parse prior to Groovy 2.4.x.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class GremlinGroovysh extends Groovysh {
