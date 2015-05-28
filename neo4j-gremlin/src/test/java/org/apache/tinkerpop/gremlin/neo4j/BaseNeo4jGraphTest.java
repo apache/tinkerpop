@@ -47,7 +47,7 @@ public class BaseNeo4jGraphTest {
     @Rule
     public TestName name = new TestName();
 
-    /*@Before
+    @Before
     public void before() throws Exception {
         // tests that involve legacy indices need legacy indices turned on at startup of the graph.
         final Map<String, Object> neo4jSettings = new HashMap<>();
@@ -61,14 +61,14 @@ public class BaseNeo4jGraphTest {
         }
 
         this.conf = neo4jSettings.size() == 0 ?
-                this.graphProvider.newGraphConfiguration("standard", this.getClass(), name.getMethodName()) :
-                this.graphProvider.newGraphConfiguration("standard", this.getClass(), name.getMethodName(), neo4jSettings);
+                this.graphProvider.newGraphConfiguration("standard", this.getClass(), name.getMethodName(), null) :
+                this.graphProvider.newGraphConfiguration("standard", this.getClass(), name.getMethodName(), null);
 
         this.graphProvider.clear(this.conf);
         this.graph = Neo4jGraph.open(this.conf);
         this.g = this.graph.traversal();
 
-    }*/
+    }
 
     @After
     public void after() throws Exception {
@@ -83,18 +83,10 @@ public class BaseNeo4jGraphTest {
         }
     }
 
-    protected static int countIterable(final Iterable iterable) {
-        int count = 0;
-        for (Object object : iterable) {
-            count++;
-        }
-        return count;
-    }
-
     protected static void validateCounts(final Neo4jGraph graph, int gV, int gE, int gN, int gR) {
         assertEquals(gV, IteratorUtils.count(graph.vertices()));
         assertEquals(gE, IteratorUtils.count(graph.edges()));
-        assertEquals(gN, countIterable(graph.getBaseGraph().allNodes()));
-        assertEquals(gR, countIterable(graph.getBaseGraph().allRelationships()));
+        assertEquals(gN, IteratorUtils.count(graph.getBaseGraph().allNodes()));
+        assertEquals(gR, IteratorUtils.count(graph.getBaseGraph().allRelationships()));
     }
 }

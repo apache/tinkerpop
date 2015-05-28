@@ -42,6 +42,15 @@ limitations under the License.
             <version>0.1</version>
         </dependency>
         <!-- TESTING -->
+        <!-- *** WARNING *** -->
+        <!-- THIS IS NOT APACHE2 : THIS IS WHERE WE NEED SOME MVN MAGIC TO ADD THIS STUB VIA A PROFILE COMMAND -->
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>tinkerpop-api-impl</artifactId>
+            <version>0.1-2.2</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- *** WARNING *** -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>

@@ -76,6 +76,10 @@ public final class IteratorUtils {
         return ix;
     }
 
+    public static final long count(final Iterable iterable) {
+        return IteratorUtils.count(iterable.iterator());
+    }
+
     public static <S> List<S> list(final Iterator<S> iterator) {
         return fill(iterator, new ArrayList<>());
     }
