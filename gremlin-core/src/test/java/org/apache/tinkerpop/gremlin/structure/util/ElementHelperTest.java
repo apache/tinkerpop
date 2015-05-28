@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
 import org.junit.Test;
@@ -177,7 +177,7 @@ public class ElementHelperTest {
             ElementHelper.attachProperties(null, "test", 123, 321, "test");
             fail("Should throw exception since the element argument is null");
         } catch (IllegalArgumentException iae) {
-            assertEquals(Graph.Exceptions.argumentCanNotBeNull("element").getMessage(), iae.getMessage());
+            assertTrue(Graph.Exceptions.argumentCanNotBeNull("vertex").getMessage().equals(iae.getMessage()) || Graph.Exceptions.argumentCanNotBeNull("element").getMessage().equals(iae.getMessage()));
         }
     }
 
