@@ -63,26 +63,6 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE)
-/*@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.structure.VertexTest$ExceptionConsistencyWhenVertexRemovedTest",
-        method = "shouldThrowExceptionIfVertexWasRemovedWhenCallingProperty",
-        specific = "property(single,k,v)",
-        reason = "Neo4j throws a NodeNotFoundException instead of the desired IllegalStateException.")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexTest$Traversals",
-        method = "g_V_addVXlabel_animal_age_0X",
-        reason = "Neo4j global graph operators stream created vertices created after the access to the global iterator."
-)
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyAddVertexTest$StandardTraversals",
-        method = "g_V_addVXlabel_animal_age_0X",
-        reason = "Neo4j global graph operators stream created vertices created after the access to the global iterator."
-)
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.structure.GraphTest",
-        method = "shouldRemoveEdgesWithoutConcurrentModificationException",
-        reason = "Neo4j global graph operators stream removes edges after access to the global iterator."
-)*/
 public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
 
     protected Features features = new Neo4jGraphFeatures();
@@ -146,7 +126,6 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         } else {
             return new SimpleNeo4jGraph(configuration);
         }
-
     }
 
     /**
@@ -171,11 +150,8 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         if (ElementHelper.getIdValue(keyValues).isPresent())
             throw Vertex.Exceptions.userSuppliedIdsNotSupported();
-
-        final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
-
         this.tx().readWrite();
-        final Neo4jVertex vertex = this.createVertex(this.baseGraph.createNode(label.split(Neo4jVertex.LABEL_DELIMINATOR)));
+        final Neo4jVertex vertex = this.createVertex(this.baseGraph.createNode(ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL).split(Neo4jVertex.LABEL_DELIMINATOR)));
         ElementHelper.attachProperties(vertex, keyValues);
         return vertex;
     }
