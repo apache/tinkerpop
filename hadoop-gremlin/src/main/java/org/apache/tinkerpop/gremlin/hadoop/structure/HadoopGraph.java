@@ -441,6 +441,11 @@ public final class HadoopGraph implements Graph {
                         public boolean supportsRemoveProperty() {
                             return false;
                         }
+
+                        @Override
+                        public boolean supportsCustomIds() {
+                            return false;
+                        }
                     };
                 }
             };

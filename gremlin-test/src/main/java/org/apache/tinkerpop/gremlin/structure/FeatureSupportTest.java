@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
-import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgeFeatures;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures;
@@ -182,11 +181,17 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssignedToVertex() throws Exception {
             try {
-                graph.addVertex(T.id, GraphManager.getGraphProvider().convertId(99999943835l, Vertex.class));
+                graph.addVertex(T.id, graphProvider.convertId(99999943835l, Vertex.class));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception e) {
                 validateException(Vertex.Exceptions.userSuppliedIdsNotSupported(), e);
             }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        public void shouldNotAllowAnyIdsIfUserSuppliedIdsIsFalse() throws Exception {
+            assertFalse(graph.features().vertex().willAllowId(graphProvider.convertId(99999943835l, Vertex.class)));
         }
 
         @Test
@@ -357,11 +362,17 @@ public class FeatureSupportTest {
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssignedToEdge() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.addEdge("friend", v, T.id, GraphManager.getGraphProvider().convertId(99999943835l, Edge.class));
+                v.addEdge("friend", v, T.id, graphProvider.convertId(99999943835l, Edge.class));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception e) {
                 validateException(Edge.Exceptions.userSuppliedIdsNotSupported(), e);
             }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = EdgeFeatures.class, feature = EdgeFeatures.FEATURE_USER_SUPPLIED_IDS, supported = false)
+        public void shouldNotAllowAnyIdsIfUserSuppliedIdsIsFalse() throws Exception {
+            assertFalse(graph.features().edge().willAllowId(graphProvider.convertId(99999943835l, Edge.class)));
         }
 
         @Test
@@ -562,7 +573,7 @@ public class FeatureSupportTest {
         private Edge createEdgeForPropertyFeatureTests() {
             final Vertex vertexA = graph.addVertex();
             final Vertex vertexB = graph.addVertex();
-            return vertexA.addEdge(GraphManager.getGraphProvider().convertLabel("knows"), vertexB);
+            return vertexA.addEdge(graphProvider.convertLabel("knows"), vertexB);
         }
     }
 
@@ -623,11 +634,17 @@ public class FeatureSupportTest {
         public void shouldSupportUserSuppliedIdsIfAnIdCanBeAssigned() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "name", "me", T.id, GraphManager.getGraphProvider().convertId(99999943835l, VertexProperty.class));
+                v.property(VertexProperty.Cardinality.single, "name", "me", T.id, graphProvider.convertId(99999943835l, VertexProperty.class));
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsNotSupported(), ex);
             }
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS, supported = false)
+        public void shouldNotAllowAnyIdsIfUserSuppliedIdsIsFalse() throws Exception {
+            assertFalse(graph.features().vertex().properties().willAllowId(graphProvider.convertId(99999943835l, VertexProperty.class)));
         }
 
         @Test
