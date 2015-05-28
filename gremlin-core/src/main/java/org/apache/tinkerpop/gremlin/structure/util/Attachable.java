@@ -49,10 +49,25 @@ public interface Attachable<V> {
      */
     public V get();
 
+    /**
+     * Provide a way to attach an {@link Attachable} implementation to a host.  Note that the context of the host
+     * is not defined by way of the attachment method itself that is supplied as an argument.  It is up to the
+     * implementer to supply that context.
+     *
+     * @param method a {@link Function} that takes an {@link Attachable} and returns the "re-attached" object
+     * @return the return value of the {@code method}
+     * @throws IllegalStateException if the {@link Attachable} is not a "graph" object (i.e. host or
+     * attachable don't work together)
+     */
     public default V attach(final Function<Attachable<V>, V> method) throws IllegalStateException {
         return method.apply(this);
     }
 
+    /**
+     * A collection of general methods of attachment. Note that more efficient methods of attachment might exist
+     * if the user knows the source data being attached and the features of the graph that the data is being
+     * attached to.
+     */
     public static class Method {
         public static <V> Function<Attachable<V>, V> get(final Host hostVertexOrGraph) {
             return (Attachable<V> attachable) -> {
@@ -272,12 +287,11 @@ public interface Attachable<V> {
 
         public static Vertex createVertex(final Attachable<Vertex> attachableVertex, final Graph hostGraph) {
             final Vertex baseVertex = attachableVertex.get();
-            final Vertex vertex = hostGraph.features().vertex().supportsUserSuppliedIds() ?
+            final Vertex vertex = hostGraph.features().vertex().willAllowId(baseVertex.id()) ?
                     hostGraph.addVertex(T.id, baseVertex.id(), T.label, baseVertex.label()) :
                     hostGraph.addVertex(T.label, baseVertex.label());
-            final boolean supportsUserSuppliedIds = hostGraph.features().vertex().properties().supportsUserSuppliedIds();
             baseVertex.properties().forEachRemaining(vp -> {
-                final VertexProperty vertexProperty = supportsUserSuppliedIds ?
+                final VertexProperty vertexProperty = hostGraph.features().vertex().properties().willAllowId(vp.id()) ?
                         vertex.property(hostGraph.features().vertex().getCardinality(vp.key()), vp.key(), vp.value(), T.id, vp.id()) :
                         vertex.property(hostGraph.features().vertex().getCardinality(vp.key()), vp.key(), vp.value());
                 vp.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
@@ -290,12 +304,11 @@ public interface Attachable<V> {
         }
 
         public static Edge createEdge(final Attachable<Edge> attachableEdge, final Graph hostGraph) {
-            final boolean supportsUserSuppliedIds = hostGraph.features().vertex().supportsUserSuppliedIds();
             final Edge baseEdge = attachableEdge.get();
             Iterator<Vertex> vertices = hostGraph.vertices(baseEdge.outVertex().id());
-            final Vertex outV = vertices.hasNext() ? vertices.next() : supportsUserSuppliedIds ? hostGraph.addVertex(T.id, baseEdge.outVertex().id()) : hostGraph.addVertex();
+            final Vertex outV = vertices.hasNext() ? vertices.next() : hostGraph.features().vertex().willAllowId(baseEdge.outVertex().id()) ? hostGraph.addVertex(T.id, baseEdge.outVertex().id()) : hostGraph.addVertex();
             vertices = hostGraph.vertices(baseEdge.inVertex().id());
-            final Vertex inV = vertices.hasNext() ? vertices.next() : supportsUserSuppliedIds ? hostGraph.addVertex(T.id, baseEdge.inVertex().id()) : hostGraph.addVertex();
+            final Vertex inV = vertices.hasNext() ? vertices.next() : hostGraph.features().vertex().willAllowId(baseEdge.inVertex().id()) ? hostGraph.addVertex(T.id, baseEdge.inVertex().id()) : hostGraph.addVertex();
             if (ElementHelper.areEqual(outV, inV)) {
                 final Iterator<Edge> itty = outV.edges(Direction.OUT, baseEdge.label());
                 while (itty.hasNext()) {
@@ -304,7 +317,7 @@ public interface Attachable<V> {
                         return e;
                 }
             }
-            final Edge e = hostGraph.features().edge().supportsUserSuppliedIds() ? outV.addEdge(baseEdge.label(), inV, T.id, baseEdge.id()) : outV.addEdge(baseEdge.label(), inV);
+            final Edge e = hostGraph.features().edge().willAllowId(baseEdge.id()) ? outV.addEdge(baseEdge.label(), inV, T.id, baseEdge.id()) : outV.addEdge(baseEdge.label(), inV);
             baseEdge.properties().forEachRemaining(p -> e.property(p.key(), p.value()));
             return e;
         }
@@ -317,7 +330,7 @@ public interface Attachable<V> {
             final VertexProperty<Object> baseVertexProperty = attachableVertexProperty.get();
             final Iterator<Vertex> vertexIterator = hostGraph.vertices(baseVertexProperty.element().id());
             if (vertexIterator.hasNext()) {
-                final VertexProperty vertexProperty = hostGraph.features().vertex().properties().supportsUserSuppliedIds() ?
+                final VertexProperty vertexProperty = hostGraph.features().vertex().properties().willAllowId(baseVertexProperty.id()) ?
                         vertexIterator.next().property(hostGraph.features().vertex().getCardinality(baseVertexProperty.key()), baseVertexProperty.key(), baseVertexProperty.value(), T.id, baseVertexProperty.id()) :
                         vertexIterator.next().property(hostGraph.features().vertex().getCardinality(baseVertexProperty.key()), baseVertexProperty.key(), baseVertexProperty.value());
                 baseVertexProperty.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));
@@ -328,7 +341,7 @@ public interface Attachable<V> {
 
         public static VertexProperty createVertexProperty(final Attachable<VertexProperty> attachableVertexProperty, final Vertex hostVertex) {
             final VertexProperty<Object> baseVertexProperty = attachableVertexProperty.get();
-            final VertexProperty vertexProperty = hostVertex.graph().features().vertex().properties().supportsUserSuppliedIds() ?
+            final VertexProperty vertexProperty = hostVertex.graph().features().vertex().properties().willAllowId(baseVertexProperty.id()) ?
                     hostVertex.property(hostVertex.graph().features().vertex().getCardinality(baseVertexProperty.key()), baseVertexProperty.key(), baseVertexProperty.value(), T.id, baseVertexProperty.id()) :
                     hostVertex.property(hostVertex.graph().features().vertex().getCardinality(baseVertexProperty.key()), baseVertexProperty.key(), baseVertexProperty.value());
             baseVertexProperty.properties().forEachRemaining(p -> vertexProperty.property(p.key(), p.value()));

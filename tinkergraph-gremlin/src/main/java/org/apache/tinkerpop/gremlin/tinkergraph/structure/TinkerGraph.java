@@ -77,6 +77,8 @@ public final class TinkerGraph implements Graph {
     public static final String CONFIG_EDGE_ID = "gremlin.tinkergraph.edgeIdManager";
     public static final String CONFIG_VERTEX_PROPERTY_ID = "gremlin.tinkergraph.vertexPropertyIdManager";
 
+    private final TinkerGraphFeatures features = new TinkerGraphFeatures();
+
     protected AtomicLong currentId = new AtomicLong(-1l);
     protected Map<Object, Vertex> vertices = new ConcurrentHashMap<>();
     protected Map<Object, Edge> edges = new ConcurrentHashMap<>();
@@ -255,43 +257,48 @@ public final class TinkerGraph implements Graph {
      */
     @Override
     public Features features() {
-        return TinkerGraphFeatures.INSTANCE;
+        return features;
     }
 
-    public static class TinkerGraphFeatures implements Features {
+    public class TinkerGraphFeatures implements Features {
 
-        static final TinkerGraphFeatures INSTANCE = new TinkerGraphFeatures();
+        private final TinkerGraphGraphFeatures graphFeatures = new TinkerGraphGraphFeatures();
+        private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures();
+        private final TinkerGraphVertexFeatures vertexFeatures = new TinkerGraphVertexFeatures();
 
         private TinkerGraphFeatures() {
         }
 
         @Override
         public GraphFeatures graph() {
-            return TinkerGraphGraphFeatures.INSTANCE;
+            return graphFeatures;
         }
 
         @Override
         public EdgeFeatures edge() {
-            return TinkerGraphEdgeFeatures.INSTANCE;
+            return edgeFeatures;
         }
 
         @Override
         public VertexFeatures vertex() {
-            return TinkerGraphVertexFeatures.INSTANCE;
+            return vertexFeatures;
         }
 
         @Override
         public String toString() {
             return StringFactory.featureString(this);
         }
-
     }
 
-    public static class TinkerGraphVertexFeatures implements Features.VertexFeatures {
-
-        static final TinkerGraphVertexFeatures INSTANCE = new TinkerGraphVertexFeatures();
+    public class TinkerGraphVertexFeatures implements Features.VertexFeatures {
+        private final TinkerGraphVertexPropertyFeatures vertexPropertyFeatures = new TinkerGraphVertexPropertyFeatures();
 
         private TinkerGraphVertexFeatures() {
+        }
+
+        @Override
+        public Features.VertexPropertyFeatures properties() {
+            return vertexPropertyFeatures;
         }
 
         @Override
@@ -299,11 +306,13 @@ public final class TinkerGraph implements Graph {
             return false;
         }
 
+        @Override
+        public boolean willAllowId(final Object id) {
+            return vertexIdManager.allow(id);
+        }
     }
 
-    public static class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
-
-        static final TinkerGraphEdgeFeatures INSTANCE = new TinkerGraphEdgeFeatures();
+    public class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
 
         private TinkerGraphEdgeFeatures() {
         }
@@ -313,11 +322,13 @@ public final class TinkerGraph implements Graph {
             return false;
         }
 
+        @Override
+        public boolean willAllowId(final Object id) {
+            return edgeIdManager.allow(id);
+        }
     }
 
-    public static class TinkerGraphGraphFeatures implements Features.GraphFeatures {
-
-        static final TinkerGraphGraphFeatures INSTANCE = new TinkerGraphGraphFeatures();
+    public class TinkerGraphGraphFeatures implements Features.GraphFeatures {
 
         private TinkerGraphGraphFeatures() {
         }
@@ -337,6 +348,22 @@ public final class TinkerGraph implements Graph {
             return false;
         }
 
+    }
+
+    public class TinkerGraphVertexPropertyFeatures implements Features.VertexPropertyFeatures {
+
+        private TinkerGraphVertexPropertyFeatures() {
+        }
+
+        @Override
+        public boolean supportsCustomIds() {
+            return false;
+        }
+
+        @Override
+        public boolean willAllowId(final Object id) {
+            return vertexIdManager.allow(id);
+        }
     }
 
     ///////////// GRAPH SPECIFIC INDEXING METHODS ///////////////
@@ -431,6 +458,11 @@ public final class TinkerGraph implements Graph {
          * Convert an identifier to the type required by the manager.
          */
         T convert(final Object id);
+
+        /**
+         * Determine if an identifier is allowed by this manager given its type.
+         */
+        boolean allow(final Object id);
     }
 
     /**
@@ -460,6 +492,11 @@ public final class TinkerGraph implements Graph {
                 else
                     throw new IllegalArgumentException(String.format("Expected an id that is convertible to Long but received %s", id.getClass()));
             }
+
+            @Override
+            public boolean allow(final Object id) {
+                return id instanceof Number || id instanceof String;
+            }
         },
 
         /**
@@ -485,6 +522,11 @@ public final class TinkerGraph implements Graph {
                 else
                     throw new IllegalArgumentException(String.format("Expected an id that is convertible to Integer but received %s", id.getClass()));
             }
+
+            @Override
+            public boolean allow(final Object id) {
+                return id instanceof Number || id instanceof String;
+            }
         },
 
         /**
@@ -508,6 +550,11 @@ public final class TinkerGraph implements Graph {
                 else
                     throw new IllegalArgumentException(String.format("Expected an id that is convertible to UUID but received %s", id.getClass()));
             }
+
+            @Override
+            public boolean allow(final Object id) {
+                return id instanceof UUID || id instanceof String;
+            }
         },
 
         /**
@@ -525,6 +572,11 @@ public final class TinkerGraph implements Graph {
             @Override
             public Object convert(final Object id) {
                 return id;
+            }
+
+            @Override
+            public boolean allow(final Object id) {
+                return true;
             }
         }
     }

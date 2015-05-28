@@ -84,7 +84,7 @@ public class GryoReader implements GraphReader {
         final Map<StarGraph.StarVertex,Vertex> cache = new HashMap<>();
         final AtomicLong counter = new AtomicLong(0);
 
-        final boolean supportsUserSuppliedIdsOnEdge = graphToWriteTo.features().edge().supportsUserSuppliedIds();
+        final Graph.Features.EdgeFeatures edgeFeatures = graphToWriteTo.features().edge();
         final boolean supportsTx = graphToWriteTo.features().graph().supportsTransactions();
 
         IteratorUtils.iterate(new VertexInputIterator(new Input(inputStream), attachable -> {
@@ -99,7 +99,7 @@ public class GryoReader implements GraphReader {
             // StarAdjacentVertex whose equality should match StarVertex.
             final Vertex cachedOutV = cache.get(e.outVertex());
             final Vertex cachedInV = cache.get(e.inVertex());
-            final Edge newEdge = supportsUserSuppliedIdsOnEdge ? cachedOutV.addEdge(e.label(), cachedInV, T.id, e.id()) : cachedOutV.addEdge(e.label(), cachedInV);
+            final Edge newEdge = edgeFeatures.willAllowId(e.id()) ? cachedOutV.addEdge(e.label(), cachedInV, T.id, e.id()) : cachedOutV.addEdge(e.label(), cachedInV);
             e.properties().forEachRemaining(p -> newEdge.property(p.key(), p.value()));
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
                 graphToWriteTo.tx().commit();

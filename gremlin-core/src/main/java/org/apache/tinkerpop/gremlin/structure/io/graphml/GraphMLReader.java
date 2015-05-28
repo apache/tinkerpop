@@ -74,8 +74,8 @@ public class GraphMLReader implements GraphReader {
         final Map<Object,Vertex> cache = new HashMap<>();
         final AtomicLong counter = new AtomicLong(0);
         final boolean supportsTx = graphToWriteTo.features().graph().supportsTransactions();
-        final boolean supportsEdgeIds = graphToWriteTo.features().edge().supportsUserSuppliedIds();
-        final boolean supportsVertexIds = graphToWriteTo.features().vertex().supportsUserSuppliedIds();
+        final Graph.Features.EdgeFeatures edgeFeatures = graphToWriteTo.features().edge();
+        final Graph.Features.VertexFeatures vertexFeatures = graphToWriteTo.features().vertex();
 
         try {
             final XMLStreamReader reader = inputFactory.createXMLStreamReader(graphInputStream);
@@ -123,8 +123,8 @@ public class GraphMLReader implements GraphReader {
                             // graphml allows edges and vertices to be mixed in terms of how they are positioned
                             // in the xml therefore it is possible that an edge is created prior to its definition
                             // as a vertex.
-                            edgeOutVertex = findOrCreate(vertexIdOut, graphToWriteTo, supportsVertexIds, cache, false);
-                            edgeInVertex = findOrCreate(vertexIdIn, graphToWriteTo, supportsVertexIds, cache, false);
+                            edgeOutVertex = findOrCreate(vertexIdOut, graphToWriteTo, vertexFeatures, cache, false);
+                            edgeInVertex = findOrCreate(vertexIdIn, graphToWriteTo, vertexFeatures, cache, false);
 
                             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
                                 graphToWriteTo.tx().commit();
@@ -163,7 +163,8 @@ public class GraphMLReader implements GraphReader {
                         final String currentVertexLabel = Optional.ofNullable(vertexLabel).orElse(Vertex.DEFAULT_LABEL);
                         final Object[] propsAsArray = vertexProps.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
 
-                        findOrCreate(currentVertexId, graphToWriteTo, supportsVertexIds, cache, true, ElementHelper.upsert(propsAsArray, T.label, currentVertexLabel));
+                        findOrCreate(currentVertexId, graphToWriteTo, vertexFeatures, cache,
+                                true, ElementHelper.upsert(propsAsArray, T.label, currentVertexLabel));
 
                         if (supportsTx && counter.incrementAndGet() % batchSize == 0)
                             graphToWriteTo.tx().commit();
@@ -174,7 +175,7 @@ public class GraphMLReader implements GraphReader {
                         isInVertex = false;
                     } else if (elementName.equals(GraphMLTokens.EDGE)) {
                         final Object[] propsAsArray = edgeProps.entrySet().stream().flatMap(e -> Stream.of(e.getKey(), e.getValue())).toArray();
-                        final Object[] propsReady = supportsEdgeIds ? ElementHelper.upsert(propsAsArray, T.id, edgeId) : propsAsArray;
+                        final Object[] propsReady = edgeFeatures.willAllowId(edgeId) ? ElementHelper.upsert(propsAsArray, T.id, edgeId) : propsAsArray;
                         edgeOutVertex.addEdge(edgeLabel, edgeInVertex, propsReady);
 
                         if (supportsTx && counter.incrementAndGet() % batchSize == 0)
@@ -277,7 +278,8 @@ public class GraphMLReader implements GraphReader {
         throw Io.Exceptions.readerFormatIsForFullGraphSerializationOnly(this.getClass());
     }
 
-    private static Vertex findOrCreate(final Object id, final Graph graphToWriteTo, final boolean supportsIds,
+    private static Vertex findOrCreate(final Object id, final Graph graphToWriteTo,
+                                       final Graph.Features.VertexFeatures features,
                                        final Map<Object,Vertex> cache, final boolean asVertex, final Object... args) {
         if (cache.containsKey(id)) {
             // if the request to findOrCreate come from a vertex then AND the vertex was already created, that means
@@ -292,7 +294,7 @@ public class GraphMLReader implements GraphReader {
                 return cache.get(id);
             }
         } else {
-            final Object [] argsReady = supportsIds ? ElementHelper.upsert(args, T.id, id) : args;
+            final Object [] argsReady = features.willAllowId(id) ? ElementHelper.upsert(args, T.id, id) : args;
             final Vertex v = graphToWriteTo.addVertex(argsReady);
             cache.put(id, v);
             return v;
