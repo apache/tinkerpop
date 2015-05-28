@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.neo4j.structure;
 
+import org.apache.tinkerpop.gremlin.neo4j.structure.full.FullNeo4jVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -26,12 +28,15 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedVertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.neo4j.tinkerpop.api.Neo4jNode;
+import org.neo4j.tinkerpop.api.Neo4jRelationship;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -85,6 +90,46 @@ public abstract class Neo4jVertex extends Neo4jElement implements Vertex, Wrappe
     public String label() {
         this.graph.tx().readWrite();
         return String.join(LABEL_DELIMINATOR, this.labels());
+    }
+
+    @Override
+    public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
+        this.graph.tx().readWrite();
+        return new Iterator<Vertex>() {
+            final Iterator<Neo4jRelationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
+                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
+                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.getRelationshipPredicate());
+
+            @Override
+            public boolean hasNext() {
+                return this.relationshipIterator.hasNext();
+            }
+
+            @Override
+            public Neo4jVertex next() {
+                return graph.createVertex(this.relationshipIterator.next().other(getBaseVertex()));
+            }
+        };
+    }
+
+    @Override
+    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
+        this.graph.tx().readWrite();
+        return new Iterator<Edge>() {
+            final Iterator<Neo4jRelationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
+                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
+                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.getRelationshipPredicate());
+
+            @Override
+            public boolean hasNext() {
+                return this.relationshipIterator.hasNext();
+            }
+
+            @Override
+            public Neo4jEdge next() {
+                return graph.createEdge(this.relationshipIterator.next());
+            }
+        };
     }
 
     /////////////// Neo4jVertex Specific Methods for Multi-Label Support ///////////////

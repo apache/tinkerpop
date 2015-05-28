@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.javatuples.Pair;
@@ -83,6 +83,19 @@ public final class ElementHelper {
     public static Vertex getOrAddVertex(final Graph graph, final Object id, final String label) {
         final Iterator<Vertex> iterator = graph.vertices(id);
         return iterator.hasNext() ? iterator.next() : graph.addVertex(T.id, id, T.label, label);
+    }
+
+    public static void validateMixedElementIds(final Class<? extends Element> clazz, final Object... ids) {
+        if (ids.length > 1) {
+            final boolean element = clazz.isAssignableFrom(ids[0].getClass());
+            for (int i = 1; i < ids.length; i++) {
+                final boolean assignable = clazz.isAssignableFrom(ids[i].getClass());
+                if (assignable && !element)
+                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+                else if (!assignable && element)
+                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+            }
+        }
     }
 
     /**
@@ -269,7 +282,7 @@ public final class ElementHelper {
      * Assign key/value pairs as properties to an {@link org.apache.tinkerpop.gremlin.structure.Vertex}.  If the value of {@link T#id} or
      * {@link T#label} is in the set of pairs, then they are ignored. The {@link org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality} of the key is determined from the {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures}.
      *
-     * @param vertex           the graph vertex to assign the {@code propertyKeyValues}
+     * @param vertex            the graph vertex to assign the {@code propertyKeyValues}
      * @param propertyKeyValues the key/value pairs to assign to the {@code element}
      * @throws ClassCastException       if the value of the key is not a {@link String}
      * @throws IllegalArgumentException if the value of {@code element} is null
@@ -280,7 +293,7 @@ public final class ElementHelper {
 
         for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
             if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
-                vertex.property(vertex.graph().features().vertex().getCardinality((String) propertyKeyValues[i]),  (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
+                vertex.property(vertex.graph().features().vertex().getCardinality((String) propertyKeyValues[i]), (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
         }
     }
 

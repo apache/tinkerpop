@@ -21,14 +21,10 @@
 
 package org.apache.tinkerpop.gremlin.neo4j.structure.simple;
 
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -47,22 +43,6 @@ final class SimpleNeo4jVertex extends Neo4jVertex {
 
     public SimpleNeo4jVertex(final Neo4jNode node, final Neo4jGraph neo4jGraph) {
         super(node, neo4jGraph);
-    }
-
-    @Override
-    public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
-        if (null == inVertex) throw Graph.Exceptions.argumentCanNotBeNull("inVertex");
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.getBaseVertex().getId());
-        ElementHelper.validateLabel(label);
-        ElementHelper.legalPropertyKeyValueArray(keyValues);
-        if (ElementHelper.getIdValue(keyValues).isPresent())
-            throw Edge.Exceptions.userSuppliedIdsNotSupported();
-
-        this.graph.tx().readWrite();
-        final Neo4jNode node = (Neo4jNode) this.baseElement;
-        final Neo4jEdge edge = this.graph.createEdge(node.connectTo(((Neo4jVertex) inVertex).getBaseVertex(), label));
-        ElementHelper.attachProperties(edge, keyValues);
-        return edge;
     }
 
     @Override
@@ -90,46 +70,6 @@ final class SimpleNeo4jVertex extends Neo4jVertex {
         } catch (final IllegalArgumentException iae) {
             throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
         }
-    }
-
-    @Override
-    public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
-        this.graph.tx().readWrite();
-        return new Iterator<Vertex>() {
-            final Iterator<Neo4jRelationship> relationshipIterator = 0 == edgeLabels.length ?
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator();
-
-            @Override
-            public boolean hasNext() {
-                return this.relationshipIterator.hasNext();
-            }
-
-            @Override
-            public Neo4jVertex next() {
-                return graph.createVertex(this.relationshipIterator.next().other(getBaseVertex()));
-            }
-        };
-    }
-
-    @Override
-    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
-        this.graph.tx().readWrite();
-        return new Iterator<Edge>() {
-            final Iterator<Neo4jRelationship> relationshipIterator = 0 == edgeLabels.length ?
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator();
-
-            @Override
-            public boolean hasNext() {
-                return this.relationshipIterator.hasNext();
-            }
-
-            @Override
-            public Neo4jEdge next() {
-                return graph.createEdge(this.relationshipIterator.next());
-            }
-        };
     }
 
     @Override

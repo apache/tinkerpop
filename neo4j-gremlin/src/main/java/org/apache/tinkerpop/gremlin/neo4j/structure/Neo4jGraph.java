@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.neo4j.structure.simple.SimpleNeo4jGraph;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -35,6 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.neo4j.tinkerpop.api.Neo4jFactory;
 import org.neo4j.tinkerpop.api.Neo4jGraphAPI;
 import org.neo4j.tinkerpop.api.Neo4jNode;
@@ -44,6 +46,8 @@ import org.neo4j.tinkerpop.api.Neo4jTx;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -158,6 +162,10 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
 
     public abstract Neo4jEdge createEdge(final Neo4jRelationship relationship);
 
+    public abstract Predicate<Neo4jNode> getNodePredicate();
+
+    public abstract Predicate<Neo4jRelationship> getRelationshipPredicate();
+
     @Override
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
@@ -170,6 +178,72 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         final Neo4jVertex vertex = this.createVertex(this.baseGraph.createNode(label.split(Neo4jVertex.LABEL_DELIMINATOR)));
         ElementHelper.attachProperties(vertex, keyValues);
         return vertex;
+    }
+
+    @Override
+    public Iterator<Vertex> vertices(final Object... vertexIds) {
+        this.tx().readWrite();
+        if (0 == vertexIds.length) {
+            final Predicate<Neo4jNode> nodePredicate = this.getNodePredicate();
+            return IteratorUtils.stream(this.getBaseGraph().allNodes())
+                    .filter(node -> !this.checkElementsInTransaction || !Neo4jHelper.isDeleted(node))
+                    .filter(nodePredicate)
+                    .map(node -> (Vertex) this.createVertex(node)).iterator();
+        } else {
+            ElementHelper.validateMixedElementIds(Vertex.class, vertexIds);
+            return Stream.of(vertexIds)
+                    .map(id -> {
+                        if (id instanceof Number)
+                            return ((Number) id).longValue();
+                        else if (id instanceof String)
+                            return Long.valueOf(id.toString());
+                        else if (id instanceof Neo4jVertex) {
+                            return (Long) ((Neo4jVertex) id).id();
+                        } else
+                            throw new IllegalArgumentException("Unknown vertex id type: " + id);
+                    })
+                    .flatMap(id -> {
+                        try {
+                            return Stream.of((Vertex) this.createVertex(this.getBaseGraph().getNodeById(id)));
+                        } catch (final RuntimeException e) {
+                            if (Neo4jHelper.isNotFound(e)) return Stream.empty();
+                            throw e;
+                        }
+                    }).iterator();
+        }
+    }
+
+    @Override
+    public Iterator<Edge> edges(final Object... edgeIds) {
+        this.tx().readWrite();
+        if (0 == edgeIds.length) {
+            final Predicate<Neo4jRelationship> relationshipPredicate = this.getRelationshipPredicate();
+            return IteratorUtils.stream(this.getBaseGraph().allRelationships())
+                    .filter(relationship -> !this.checkElementsInTransaction || !Neo4jHelper.isDeleted(relationship))
+                    .filter(relationshipPredicate)
+                    .map(relationship -> (Edge) this.createEdge(relationship)).iterator();
+        } else {
+            ElementHelper.validateMixedElementIds(Edge.class, edgeIds);
+            return Stream.of(edgeIds)
+                    .map(id -> {
+                        if (id instanceof Number)
+                            return ((Number) id).longValue();
+                        else if (id instanceof String)
+                            return Long.valueOf(id.toString());
+                        else if (id instanceof Neo4jEdge) {
+                            return (Long) ((Neo4jEdge) id).id();
+                        } else
+                            throw new IllegalArgumentException("Unknown vertex id type: " + id);
+                    })
+                    .flatMap(id -> {
+                        try {
+                            return Stream.of((Edge) this.createEdge(this.getBaseGraph().getRelationshipById(id)));
+                        } catch (final RuntimeException e) {
+                            if (Neo4jHelper.isNotFound(e)) return Stream.empty();
+                            throw e;
+                        }
+                    }).iterator();
+        }
     }
 
 
@@ -467,6 +541,11 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
 
             @Override
             public boolean supportsUserSuppliedIds() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsAnyIds() {
                 return false;
             }
         }

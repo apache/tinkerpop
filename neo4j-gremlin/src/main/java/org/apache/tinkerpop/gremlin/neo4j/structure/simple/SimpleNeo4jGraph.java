@@ -39,6 +39,7 @@ import org.neo4j.tinkerpop.api.Neo4jNode;
 import org.neo4j.tinkerpop.api.Neo4jRelationship;
 
 import java.util.Iterator;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -77,45 +78,13 @@ public final class SimpleNeo4jGraph extends Neo4jGraph {
     }
 
     @Override
-    public Iterator<Vertex> vertices(final Object... vertexIds) {
-        this.tx().readWrite();
-        if (0 == vertexIds.length) {
-            return IteratorUtils.stream(this.getBaseGraph().allNodes())
-                    .filter(node -> !this.checkElementsInTransaction || !Neo4jHelper.isDeleted(node))
-                    .map(node -> (Vertex) new SimpleNeo4jVertex(node, this)).iterator();
-        } else {
-            return Stream.of(vertexIds)
-                    .filter(id -> id instanceof Number)
-                    .flatMap(id -> {
-                        try {
-                            return Stream.of((Vertex) new SimpleNeo4jVertex(this.getBaseGraph().getNodeById(((Number) id).longValue()), this));
-                        } catch (final RuntimeException e) {
-                            if (Neo4jHelper.isNotFound(e)) return Stream.empty();
-                            throw e;
-                        }
-                    }).iterator();
-        }
+    public Predicate<Neo4jNode> getNodePredicate() {
+        return node -> true;
     }
 
     @Override
-    public Iterator<Edge> edges(final Object... edgeIds) {
-        this.tx().readWrite();
-        if (0 == edgeIds.length) {
-            return IteratorUtils.stream(this.getBaseGraph().allRelationships())
-                    .filter(relationship -> !this.checkElementsInTransaction || !Neo4jHelper.isDeleted(relationship))
-                    .map(relationship -> (Edge) this.createEdge(relationship)).iterator();
-        } else {
-            return Stream.of(edgeIds)
-                    .filter(id -> id instanceof Number)
-                    .flatMap(id -> {
-                        try {
-                            return Stream.of((Edge) this.createEdge(this.getBaseGraph().getRelationshipById(((Number) id).longValue())));
-                        } catch (final RuntimeException e) {
-                            if (Neo4jHelper.isNotFound(e)) return Stream.empty();
-                            throw e;
-                        }
-                    }).iterator();
-        }
+    public Predicate<Neo4jRelationship> getRelationshipPredicate() {
+        return relationship -> true;
     }
 
     ////////////////////////

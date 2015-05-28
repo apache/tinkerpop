@@ -123,46 +123,6 @@ final class FullNeo4jVertex extends Neo4jVertex {
     }
 
     @Override
-    public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels) {
-        this.graph.tx().readWrite();
-        return new Iterator<Vertex>() {
-            final Iterator<Neo4jRelationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), r -> !r.type().startsWith(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX));
-
-            @Override
-            public boolean hasNext() {
-                return this.relationshipIterator.hasNext();
-            }
-
-            @Override
-            public Neo4jVertex next() {
-                return graph.createVertex(this.relationshipIterator.next().other(getBaseVertex()));
-            }
-        };
-    }
-
-    @Override
-    public Iterator<Edge> edges(final Direction direction, final String... edgeLabels) {
-        this.graph.tx().readWrite();
-        return new Iterator<Edge>() {
-            final Iterator<Neo4jRelationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), r -> !r.type().startsWith(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX));
-
-            @Override
-            public boolean hasNext() {
-                return this.relationshipIterator.hasNext();
-            }
-
-            @Override
-            public Neo4jEdge next() {
-                return graph.createEdge(this.relationshipIterator.next());
-            }
-        };
-    }
-
-    @Override
     public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
         this.graph.tx().readWrite();
         return IteratorUtils.stream(getBaseVertex().getKeys())
