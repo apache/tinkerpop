@@ -25,12 +25,14 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `GraphTraversal.choose(predicate,trueTraversal,falseTraversal)`.
+* Removed `MapTraversal`, `MapTraverserTraversal`, `FilterTraversal`, and `FilterTraverserTraversal` as these are simply `__.map(function)` and `__.filter(predicate)`.
 * Include `hadoop-gremlin` Hadoop configuration sample files in Gremlin Console distribution.
 * Iteration of results in Gremlin Server occur in the same thread as evaluation and prior to transaction close.
 * TinkerGraphComputer now supports every `ResultGraph`/`Persist` combination.
 * `GraphComputerTest` extended with validation of the semantics of all `ResultGraph`/`Persist` combinations.
 * GiraphGraphComputer no longer requires an extra iteration and MapReduce job to derive the full `Memory` result.
-* SparkGraphComputer now supports `InputRDD` to allow vendors/users to use a `SparkContext` to generate the adjacency list representation.
+* SparkGraphComputer now supports `InputRDD` and `OutputRDD` to allow vendors/users to use a `SparkContext` to read/write the graph adjacency list.
 * Added `Scope.getScopeValueByKey()` static method so all "selecting" steps use the same pattern for map, path, and sideEffect data retrieval.
 
 TinkerPop 3.0.0.M9 (Release Date: May 26, 2015)
