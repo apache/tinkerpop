@@ -2355,15 +2355,18 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     private static void assertId(final Graph g, final boolean lossyForId, final Element e, final Object expected) {
-        if (g.features().edge().supportsUserSuppliedIds()) {
+        // it is possible that a Graph (e.g. elastic-gremlin) can supportUserSuppliedIds but internally
+        // represent them as a value other than Numeric (which is what's in all of the test/toy data).
+        // as we feature check for userSuppliedIds when asserting the identifier, we also ensure that
+        // the id can be properly asserted for that Element before attempting to do so.  By asserting
+        // at this level in this way, graphs can enjoy greater test coverage in IO.
+        if ((e instanceof Vertex && g.features().vertex().supportsUserSuppliedIds() && g.features().vertex().supportsNumericIds())
+                || (e instanceof Edge && g.features().edge().supportsUserSuppliedIds() && g.features().edge().supportsNumericIds())
+                || (e instanceof VertexProperty && g.features().vertex().properties().supportsUserSuppliedIds()) && g.features().vertex().properties().supportsNumericIds()) {
             if (lossyForId)
                 assertEquals(expected.toString(), e.id().toString());
-            else {
-                // we convert the "expected" id via GraphProvider because it is possible that a Graph
-                // (e.g. elastic-gremlin) can supportUserSuppliedIds but internally represent them as a
-                // value other than Numeric (which is what's in all of the test/toy data).
-                assertEquals(GraphManager.getGraphProvider().convertId(expected, Edge.class), e.id());
-            }
+            else
+                assertEquals(expected, e.id());
         }
     }
 
