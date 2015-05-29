@@ -65,6 +65,8 @@ This section refers specifically to setup within Intellij.  TinkerPop has a modu
 
 Note that it maybe be necessary to re-execute these steps if the `gremlin-shaded` `pom.xml` is ever updated.
 
+Developers working on the `neo4j-gremlin` module should enabled the `include-neo4j` Maven profile in Intellij.  This will ensure that tests will properly execute within the IDE.
+
 Get Started
 ~~~~~~~~~~~
 
