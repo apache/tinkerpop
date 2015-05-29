@@ -1798,7 +1798,9 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteVertexPropertyWithMetaPropertiesGraphSON() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = graph.io(graphson).writer().create();
-            final VertexProperty p = g.V(convertToVertexId("marko")).next().properties("location").next();
+
+            // select any vertexproperty that has both start/end time
+            final VertexProperty p = (VertexProperty) g.V(convertToVertexId("marko")).properties("location").as("p").has("endTime").select("p").next();
             writer.writeVertexProperty(os, p);
 
             final AtomicBoolean called = new AtomicBoolean(false);
@@ -1871,7 +1873,9 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteVertexPropertyWithMetaPropertiesGryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GryoWriter writer = graph.io(gryo).writer().create();
-            final VertexProperty p = g.V(convertToVertexId("marko")).next().properties("location").next();
+
+            // select any vertexproperty that has both start/end time
+            final VertexProperty p = (VertexProperty) g.V(convertToVertexId("marko")).properties("location").as("p").has("endTime").select("p").next();
             writer.writeVertexProperty(os, p);
 
             final AtomicBoolean called = new AtomicBoolean(false);
