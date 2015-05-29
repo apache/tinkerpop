@@ -96,5 +96,7 @@ if [ -n "$SCRIPT_DEBUG" ]; then
     set -x
 fi
 
+# include the following in $JAVA_OPTIONS "-Divy.message.logger.level=4 -Dgroovy.grape.report.downloads=true" to debug :install
+
 # Start the JVM, execute the application, and return its exit code
 exec $JAVA $JAVA_OPTIONS $MAIN_CLASS "$@"
