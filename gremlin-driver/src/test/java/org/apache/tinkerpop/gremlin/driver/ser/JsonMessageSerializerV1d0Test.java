@@ -106,7 +106,7 @@ public class JsonMessageSerializerV1d0Test {
     @Test
     public void serializeToJsonIteratorNullElement() throws Exception {
 
-        ArrayList<FunObject> funList = new ArrayList<>();
+        final ArrayList<FunObject> funList = new ArrayList<>();
         funList.add(new FunObject("x"));
         funList.add(null);
         funList.add(new FunObject("y"));

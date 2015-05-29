@@ -27,13 +27,35 @@ import java.util.Comparator;
 import java.util.Map;
 
 /**
+ * A collection of commonly used {@link Comparator} instances.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Comparators {
+
+    private Comparators() {}
+
+    /**
+     * Sorts {@link Element} objects  by the {@code toString()} value of {@link Element#id()} using
+     * {@link String#CASE_INSENSITIVE_ORDER}.
+     */
     public static final Comparator<Element> ELEMENT_COMPARATOR = Comparator.comparing(e -> e.id().toString(), String.CASE_INSENSITIVE_ORDER);
+
+    /**
+     * Sorts {@link Vertex} objects  by the {@code toString()} value of {@link Vertex#id()} using
+     * {@link String#CASE_INSENSITIVE_ORDER}.
+     */
     public static final Comparator<Vertex> VERTEX_COMPARATOR = Comparator.comparing(e -> e.id().toString(), String.CASE_INSENSITIVE_ORDER);
+
+    /**
+     * Sorts {@link Edge} objects  by the {@code toString()} value of {@link Edge#id()} using
+     * {@link String#CASE_INSENSITIVE_ORDER}.
+     */
     public static final Comparator<Edge> EDGE_COMPARATOR = Comparator.comparing(e -> e.id().toString(), String.CASE_INSENSITIVE_ORDER);
+
+    /**
+     * Sorts {@link Property} objects  by the value of {@link Property#key()} using
+     * {@link String#CASE_INSENSITIVE_ORDER}.
+     */
     public static final Comparator<Property> PROPERTY_COMPARATOR = Comparator.comparing(Property::key, String.CASE_INSENSITIVE_ORDER);
-    public static final Comparator<Map.Entry<String, Property>> PROPERTY_ENTRY_COMPARATOR = Comparator.comparing(Map.Entry::getKey, String.CASE_INSENSITIVE_ORDER);
-    public static final Comparator<Map.Entry<String, Object>> OBJECT_ENTRY_COMPARATOR = Comparator.comparing(Map.Entry::getKey, String.CASE_INSENSITIVE_ORDER);
 }
