@@ -159,8 +159,8 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
     @Test
     public void shouldEnforceMultipleUniqueConstraint() {
         this.graph.tx().readWrite();
-        this.getGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.name is unique", null);
-        this.getGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.surname is unique", null);
+        this.getBaseGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.name is unique", null);
+        this.getBaseGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.surname is unique", null);
         this.graph.tx().commit();
         this.graph.addVertex(T.label, "Person", "name", "marko");
         this.graph.addVertex(T.label, "Person", "surname", "aaaa");
@@ -189,8 +189,8 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
     @Test
     public void shouldDropMultipleUniqueConstraint() {
         this.graph.tx().readWrite();
-        this.getGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.name is unique", null);
-        this.getGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.surname is unique", null);
+        this.getBaseGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.name is unique", null);
+        this.getBaseGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.surname is unique", null);
         this.graph.tx().commit();
 
         this.graph.addVertex(T.label, "Person", "name", "marko");
@@ -213,8 +213,8 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
         this.graph.tx().commit();
 
         this.graph.tx().readWrite();
-        this.getGraph().execute("DROP CONSTRAINT ON (p:Person) assert p.name is unique", null);
-        this.getGraph().execute("DROP CONSTRAINT ON (p:Person) assert p.surname is unique", null);
+        this.getBaseGraph().execute("DROP CONSTRAINT ON (p:Person) assert p.name is unique", null);
+        this.getBaseGraph().execute("DROP CONSTRAINT ON (p:Person) assert p.surname is unique", null);
 
         this.graph.tx().commit();
         assertEquals(1, this.g.V().has(T.label, "Person").has("name", "marko").count().next(), 0);
@@ -229,7 +229,7 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
     @Test(expected = RuntimeException.class)
     public void shouldFailUniqueConstraint() {
         this.graph.tx().readWrite();
-        this.getGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.name is unique", null);
+        this.getBaseGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.name is unique", null);
         this.graph.tx().commit();
         this.graph.addVertex(T.label, "Person", "name", "marko");
         this.graph.tx().commit();
@@ -311,7 +311,7 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
     public void shouldSupportVertexPropertyToVertexMappingOnIndexCalls() {
         graph.tx().readWrite();
-        this.getGraph().execute("CREATE INDEX ON :person(name)", null);
+        this.getBaseGraph().execute("CREATE INDEX ON :person(name)", null);
 //            this.graph.getBaseGraph().execute("CREATE INDEX ON :name(" + T.value.getAccessor() + ")", null);
         this.graph.tx().commit();
 
@@ -366,9 +366,9 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
     public void shouldDoLabelsNamespaceBehavior() {
         graph.tx().readWrite();
 
-        this.getGraph().execute("CREATE INDEX ON :Person(name)", null);
-        this.getGraph().execute("CREATE INDEX ON :Product(name)", null);
-        this.getGraph().execute("CREATE INDEX ON :Corporate(name)", null);
+        this.getBaseGraph().execute("CREATE INDEX ON :Person(name)", null);
+        this.getBaseGraph().execute("CREATE INDEX ON :Product(name)", null);
+        this.getBaseGraph().execute("CREATE INDEX ON :Corporate(name)", null);
 
         this.graph.tx().commit();
         this.graph.addVertex(T.label, "Person", "name", "marko");
@@ -447,16 +447,16 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             // assertEquals(1, b.properties("location").count().next().intValue());
             assertEquals(0, g.E().count().next().intValue());
 
-            assertEquals(4l, this.getGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
-            assertEquals(2l, this.getGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
-            assertEquals(2l, this.getGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
+            assertEquals(4l, this.getBaseGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
+            assertEquals(2l, this.getBaseGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
+            assertEquals(2l, this.getBaseGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
             a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
                 assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
                 counter.incrementAndGet();
             });
             assertEquals(2, counter.getAndSet(0));
-            this.getGraph().execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)", null).forEachRemaining(results -> {
+            this.getBaseGraph().execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)", null).forEachRemaining(results -> {
                 assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
                 counter.incrementAndGet();
             });
@@ -484,8 +484,8 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             //  assertEquals(1, b.properties("name").count().next().intValue());
             // assertEquals(1, b.properties("location").count().next().intValue());
             assertEquals(0, g.E().count().next().intValue());
-            assertEquals(2l, this.getGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
-            assertEquals(0l, this.getGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
+            assertEquals(2l, this.getBaseGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
+            assertEquals(0l, this.getBaseGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
 
             assertEquals(1, IteratorUtils.count(a.getBaseVertex().getKeys()));
             assertEquals("the marko", a.getBaseVertex().getProperty("name"));
@@ -500,8 +500,8 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             //    assertEquals(0, a.properties().count().next().intValue());
             //   assertEquals(2, b.properties().count().next().intValue());
             assertEquals(0, g.E().count().next().intValue());
-            assertEquals(2l, this.getGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
-            assertEquals(0l, this.getGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
+            assertEquals(2l, this.getBaseGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
+            assertEquals(0l, this.getBaseGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
             assertEquals(0, IteratorUtils.count(a.getBaseVertex().getKeys()));
             assertEquals(2, IteratorUtils.count(b.getBaseVertex().getKeys()));
         });
@@ -515,16 +515,16 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             // assertEquals(1, b.properties("location").count().next().intValue());
             assertEquals(0, g.E().count().next().intValue());
 
-            assertEquals(3l, this.getGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
-            assertEquals(1l, this.getGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
-            assertEquals(1l, this.getGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
+            assertEquals(3l, this.getBaseGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
+            assertEquals(1l, this.getBaseGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
+            assertEquals(1l, this.getBaseGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
             a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
                 assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
                 counter.incrementAndGet();
             });
             assertEquals(1, counter.getAndSet(0));
-            this.getGraph().execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)", null).forEachRemaining(results -> {
+            this.getBaseGraph().execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)", null).forEachRemaining(results -> {
                 assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
                 counter.incrementAndGet();
             });
@@ -559,16 +559,16 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
              //assertEquals(1, b.properties("location").count().next().intValue());
              assertEquals(0, g.E().count().next().intValue());
 
-            assertEquals(3l, this.getGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
-            assertEquals(1l, this.getGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
-            assertEquals(1l, this.getGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
+            assertEquals(3l, this.getBaseGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
+            assertEquals(1l, this.getBaseGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
+            assertEquals(1l, this.getBaseGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
             a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
                 assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
                 counter.incrementAndGet();
             });
             assertEquals(1, counter.getAndSet(0));
-            this.getGraph().execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)", null).forEachRemaining(results -> {
+            this.getBaseGraph().execute("MATCH (a)-[]->(m) WHERE id(a) = " + a.id() + " RETURN labels(m)", null).forEachRemaining(results -> {
                 assertEquals(VertexProperty.DEFAULT_LABEL, ((List<String>) results.get("labels(m)")).get(0));
                 counter.incrementAndGet();
             });

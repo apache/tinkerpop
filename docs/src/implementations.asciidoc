@@ -545,10 +545,12 @@ CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licen
 [source,groovy]
 ----
 gremlin> :install org.apache.tinkerpop neo4j-gremlin x.y.z
-==>loaded: [org.apache.tinkerpop, neo4j-gremlin, x.y.z]
+==>Loaded: [org.apache.tinkerpop, neo4j-gremlin, x.y.z] - restart the console to use [tinkerpop.neo4j]
+gremlin> :q
+...
 gremlin> :plugin use tinkerpop.neo4j
 ==>tinkerpop.neo4j activated
-gremlin> g = Neo4jGraph.open('/tmp/neo4j')
+gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
 
@@ -573,13 +575,8 @@ The Gremlin-Console session below demonstrates Neo4j indices. For more informati
 [source,groovy]
 gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> graph.tx().open() // direct Neo4j access requires explicit transaction creation
-==>null
-gremlin> import org.neo4j.graphdb.*
-...
-gremlin> graph.getBaseGraph().schema().indexFor(DynamicLabel.label('person')).on('name').create()
-==>IndexDefinition[label:person, on:name]
-gremlin> graph.tx().commit()
+gremlin> graph.cypher("CREATE INDEX ON :person(name)")
+gremlin> graph.tx().commit() // schema mutations must happen in a different tx than graph mutations
 ==>null
 gremlin> graph.addVertex(label,'person','name','marko')
 ==>v[0]
@@ -595,15 +592,10 @@ Below demonstrates the runtime benefits of indices and demonstrates how if there
 [source,groovy]
 gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> graph.tx().open()
-==>null
-gremlin> import org.neo4j.graphdb.*
-...
-gremlin> graph.getBaseGraph().schema().indexFor(DynamicLabel.label('artist')).on('name').create() <1>
-==>IndexDefinition[label:artist, on:name]
+gremlin> graph.cypher("CREATE INDEX ON :artist(name)") <1>
 gremlin> graph.tx().commit()
 ==>null
-gremlin> graph.io().readGraphML('data/grateful-dead.xml')
+gremlin> graph.io(graphml()).readGraph('data/grateful-dead.xml')
 ==>null
 gremlin> g = graph.traversal(standard())
 ==>graphtraversalsource[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]], standard]
@@ -611,8 +603,7 @@ gremlin> clock(1000){g.V().hasLabel('artist').has('name','Garcia').next()}  <2>
 ==>0.0585639999999997
 gremlin> clock(1000){g.V().has('name','Garcia').next()} <3>
 ==>0.6039889999999992
-gremlin> g.getBaseGraph().schema().getIndexes(DynamicLabel.label('artist')).iterator().next().drop() <4>
-==>null
+gremlin> graph.cypher("DROP INDEX ON :artist(name)") <4>
 gremlin> g.tx().commit()
 ==>null
 gremlin> clock(1000){g.V().hasLabel('artist').has('name','Garcia').next()} <5>
@@ -620,10 +611,10 @@ gremlin> clock(1000){g.V().hasLabel('artist').has('name','Garcia').next()} <5>
 gremlin> clock(1000){g.V().has('name','Garcia').next()} <6>
 ==>0.6293959999999993
 
-<1> Create a schema index for all artist vertices on their name property.
+<1> Create an index for all artist vertices on their name property.
 <2> Find all artists whose name is Garcia which uses the pre-defined schema index.
 <3> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
-<4> Drop the created index schema.
+<4> Drop the created index.
 <5> Find all artists whose name is Garcia which does a linear scan of the artist vertex-label partition.
 <6> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
 
@@ -637,7 +628,7 @@ NeoTechnology are the creators of the graph pattern-match query language link:ht
 [source,groovy]
 gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> graph.io().readGryo('data/tinkerpop-modern.kryo')
+gremlin> graph.io(gryo()).readGraph('data/tinkerpop-modern.kryo')
 ==>null
 gremlin> graph.cypher('MATCH (a {name:"marko"}) RETURN a')
 ==>[a:v[0]]

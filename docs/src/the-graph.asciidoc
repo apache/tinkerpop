@@ -276,9 +276,9 @@ The following code shows how to write a `Graph` instance to file called `tinkerp
 [source,java]
 ----
 final Graph graph = TinkerFactory.createModern();
-graph.io(CoreIo.graphml()).writeGraph("tinkerpop-modern.xml");
+graph.io(IoCore.graphml()).writeGraph("tinkerpop-modern.xml");
 final Graph newGraph = TinkerGraph.open();
-newGraph.io(CoreIo.graphml()).readGraph("tinkerpop-modern.xml");
+newGraph.io(IoCore.graphml()).readGraph("tinkerpop-modern.xml");
 ----
 
 If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
@@ -287,12 +287,12 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 ----
 final Graph graph = TinkerFactory.createModern();
 try (final OutputStream os = new FileOutputStream("tinkerpop-modern.xml")) {
-    graph.io(CoreIo.graphml()).writer().normalize(true).create().writeGraph(os, graph);
+    graph.io(IoCore.graphml()).writer().normalize(true).create().writeGraph(os, graph);
 }
 
 final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-modern.xml")) {
-    newGraph.io(CoreIo.graphml()).reader().vertexIdKey("name").create().readGraph(stream, newGraph);
+    newGraph.io(IoCore.graphml()).reader().vertexIdKey("name").create().readGraph(stream, newGraph);
 }
 ----
 
@@ -310,10 +310,10 @@ GraphSON supports all of the `GraphReader` and `GraphWriter` interface methods a
 [source,java]
 ----
 final Graph graph = TinkerFactory.createModern();
-graph.io(CoreIo.graphson()).writeGraph("tinkerpop-modern.json");
+graph.io(IoCore.graphson()).writeGraph("tinkerpop-modern.json");
 
 final Graph newGraph = TinkerGraph.open();
-newGraph.io(CoreIo.graphson()).readGraph("tinkerpop-modern.json");
+newGraph.io(IoCore.graphson()).readGraph("tinkerpop-modern.json");
 ----
 
 If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
@@ -322,13 +322,13 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 ----
 final Graph graph = TinkerFactory.createModern();
 try (final OutputStream os = new FileOutputStream("tinkerpop-modern.json")) {
-    final GraphSONMapper mapper = graph.io(CoreIo.graphson()).mapper().normalize(true).create()
-    graph.io(CoreIo.graphson()).writer().mapper(mapper).create().writeGraph(os, graph)
+    final GraphSONMapper mapper = graph.io(IoCore.graphson()).mapper().normalize(true).create()
+    graph.io(IoCore.graphson()).writer().mapper(mapper).create().writeGraph(os, graph)
 }
 
 final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-modern.json")) {
-    newGraph.io(CoreIo.graphson()).reader().vertexIdKey("name").create().readGraph(stream, newGraph);
+    newGraph.io(IoCore.graphson()).reader().vertexIdKey("name").create().readGraph(stream, newGraph);
 }
 ----
 
@@ -507,10 +507,10 @@ Kryo supports all of the `GraphReader` and `GraphWriter` interface methods and c
 [source,java]
 ----
 final Graph graph = TinkerFactory.createModern();
-graph.io(CoreIo.gryo()).writeGraph("tinkerpop-modern.kryo");
+graph.io(IoCore.gryo()).writeGraph("tinkerpop-modern.kryo");
 
 final Graph newGraph = TinkerGraph.open();
-newGraph.io(CoreIo.gryo()).readGraph("tinkerpop-modern.kryo")'
+newGraph.io(IoCore.gryo()).readGraph("tinkerpop-modern.kryo")'
 ----
 
 If a custom configuration is required, then have the `Graph` generate a `GraphReader` or `GraphWriter` "builder" instance:
@@ -519,12 +519,12 @@ If a custom configuration is required, then have the `Graph` generate a `GraphRe
 ----
 final Graph graph = TinkerFactory.createModern();
 try (final OutputStream os = new FileOutputStream("tinkerpop-modern.kryo")) {
-    graph.io(CoreIo.gryo()).writer().create().writeGraph(os, graph);
+    graph.io(IoCore.gryo()).writer().create().writeGraph(os, graph);
 }
 
 final Graph newGraph = TinkerGraph.open();
 try (final InputStream stream = new FileInputStream("tinkerpop-modern.kryo")) {
-    newGraph.io(CoreIo.gryo()).reader().vertexIdKey("name").create().readGraph(stream, newGraph);
+    newGraph.io(IoCore.gryo()).reader().vertexIdKey("name").create().readGraph(stream, newGraph);
 }
 ----
 

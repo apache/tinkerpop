@@ -307,10 +307,6 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         return traversal;
     }
 
-    public Iterator<Map<String, Object>> execute(String query, Map<String, Object> params) {
-        return new Neo4jCypherIterator(baseGraph.execute(query, params), this);
-    }
-
     class Neo4jTransaction extends AbstractTransaction {
 
         protected final ThreadLocal<Neo4jTx> threadLocalTx = ThreadLocal.withInitial(() -> null);
