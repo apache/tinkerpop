@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jProperty;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -216,19 +217,19 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
 
     @Override
     public <V> Property<V> getProperty(final Neo4jVertexProperty vertexProperty, final String key) {
-        //try {
-        final Neo4jNode vertexPropertyNode = Neo4jHelper.getVertexPropertyNode(vertexProperty);
-        if (null != vertexPropertyNode && vertexPropertyNode.hasProperty(key))
-            return new Neo4jProperty<>(vertexProperty, key, (V) vertexPropertyNode.getProperty(key));
-        else
-            return Property.empty();
-        /*} catch (IllegalStateException ex) {
-            throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id());
+        try {
+            final Neo4jNode vertexPropertyNode = Neo4jHelper.getVertexPropertyNode(vertexProperty);
+            if (null != vertexPropertyNode && vertexPropertyNode.hasProperty(key))
+                return new Neo4jProperty<>(vertexProperty, key, (V) vertexPropertyNode.getProperty(key));
+            else
+                return Property.empty();
+        } catch (IllegalStateException ex) {
+            throw Element.Exceptions.elementAlreadyRemoved(vertexProperty.getClass(), vertexProperty.id());
         } catch (RuntimeException ex) {
             if (Neo4jHelper.isNotFound(ex))
-                throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id());
+                throw Element.Exceptions.elementAlreadyRemoved(vertexProperty.getClass(), vertexProperty.id());
             throw ex;
-        }*/
+        }
     }
 
     @Override
