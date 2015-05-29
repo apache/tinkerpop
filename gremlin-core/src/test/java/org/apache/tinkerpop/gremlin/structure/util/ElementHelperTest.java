@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -40,6 +41,10 @@ import static org.mockito.Mockito.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ElementHelperTest {
+    @Test
+    public void shouldBeUtilityClass() throws Exception {
+        TestHelper.assertIsUtilityClass(ElementHelper.class);
+    }
 
     @Test
     public void shouldValidatePropertyAndNotAllowNullValue() {
