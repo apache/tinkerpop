@@ -48,8 +48,7 @@ import java.util.stream.Stream;
  */
 public final class ElementHelper {
 
-    private ElementHelper() {
-    }
+    private ElementHelper() {}
 
     /**
      * Determine whether the Element label can be legally set. This is typically used as a pre-condition check.
@@ -64,25 +63,6 @@ public final class ElementHelper {
             throw Element.Exceptions.labelCanNotBeEmpty();
         if (Graph.Hidden.isHidden(label))
             throw Element.Exceptions.labelCanNotBeAHiddenKey(label);
-    }
-
-    /*public static void validateLabels(final String... labels) throws IllegalArgumentException {
-        for (final String label : labels) {
-            validateLabel(label);
-        }
-    }*/
-
-    /**
-     * Check if the vertex, by ID, exists. If it does return it, else create it and return it.
-     *
-     * @param graph the graph to check for the existence of the vertex
-     * @param id    the id of the vertex to look for
-     * @param label the label of the vertex to set if the vertex does not exist
-     * @return a pre-existing vertex or a newly created vertex
-     */
-    public static Vertex getOrAddVertex(final Graph graph, final Object id, final String label) {
-        final Iterator<Vertex> iterator = graph.vertices(id);
-        return iterator.hasNext() ? iterator.next() : graph.addVertex(T.id, id, T.label, label);
     }
 
     /**
