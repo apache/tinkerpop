@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedEdge;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -96,6 +97,11 @@ public final class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<N
 
     @Override
     public <V> Iterator<Property<V>> properties(final String... propertyKeys) {
-        return (Iterator) super.properties(propertyKeys);
+        this.graph.tx().readWrite();
+        Iterable<String> keys = this.baseElement.getKeys();
+        Iterator<String> filter = IteratorUtils.filter(keys.iterator(),
+                key -> ElementHelper.keyExists(key, propertyKeys));
+        return IteratorUtils.map(filter,
+                key -> new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key)));
     }
 }

@@ -79,6 +79,9 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
     @Override
     public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
         if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
+        ElementHelper.validateProperty(key, value);
+        if (ElementHelper.getIdValue(keyValues).isPresent())
+            throw Vertex.Exceptions.userSuppliedIdsNotSupported();
         this.graph.tx().readWrite();
         return this.graph.trait.setVertexProperty(this, cardinality, key, value, keyValues);
     }

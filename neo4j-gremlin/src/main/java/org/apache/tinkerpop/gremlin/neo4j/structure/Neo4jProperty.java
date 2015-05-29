@@ -33,6 +33,7 @@ public final class Neo4jProperty<V> implements Property<V> {
     protected final String key;
     protected final Neo4jGraph graph;
     protected V value;
+    protected boolean removed = false;
 
     public Neo4jProperty(final Element element, final String key, final V value) {
         this.element = element;
@@ -50,8 +51,12 @@ public final class Neo4jProperty<V> implements Property<V> {
 
     @Override
     public void remove() {
+        if (this.removed) return;
+        this.removed = true;
         this.graph.tx().readWrite();
-        final Neo4jEntity entity = ((Neo4jElement) this.element).getBaseElement();
+        final Neo4jEntity entity = this.element instanceof Neo4jVertexProperty ?
+                ((Neo4jVertexProperty) this.element).vertexPropertyNode :
+                ((Neo4jElement) this.element).getBaseElement();
         if (entity.hasProperty(this.key)) {
             entity.removeProperty(this.key);
         }

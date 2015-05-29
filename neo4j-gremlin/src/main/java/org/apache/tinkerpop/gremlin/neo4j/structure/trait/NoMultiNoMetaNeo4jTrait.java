@@ -40,14 +40,16 @@ import java.util.function.Predicate;
  */
 public class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
 
+    private final static Predicate TRUE_PREDICATE = x -> true;
+
     @Override
     public Predicate<Neo4jNode> getNodePredicate() {
-        return node -> true;
+        return TRUE_PREDICATE;
     }
 
     @Override
     public Predicate<Neo4jRelationship> getRelationshipPredicate() {
-        return relationship -> true;
+        return TRUE_PREDICATE;
     }
 
     @Override
@@ -68,10 +70,7 @@ public class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
 
     @Override
     public <V> VertexProperty<V> getVertexProperty(final Neo4jVertex vertex, final String key) {
-        if (Neo4jHelper.keyExistsInNeo4j(vertex.getBaseVertex(), key)) {
-            return new Neo4jVertexProperty<>(vertex, key, (V) vertex.getBaseVertex().getProperty(key));
-        } else
-            return VertexProperty.<V>empty();
+        return vertex.getBaseVertex().hasProperty(key) ? new Neo4jVertexProperty<>(vertex, key, (V) vertex.getBaseVertex().getProperty(key)) : VertexProperty.<V>empty();
     }
 
     @Override
@@ -87,7 +86,6 @@ public class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
             throw VertexProperty.Exceptions.multiPropertiesNotSupported();
         if (keyValues.length > 0)
             throw VertexProperty.Exceptions.metaPropertiesNotSupported();
-        ElementHelper.validateProperty(key, value);
         try {
             vertex.getBaseVertex().setProperty(key, value);
             return new Neo4jVertexProperty<>(vertex, key, value);
@@ -113,7 +111,7 @@ public class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
 
     @Override
     public void removeVertexProperty(final Neo4jVertexProperty vertexProperty) {
-        if (Neo4jHelper.keyExistsInNeo4j(((Neo4jVertex) vertexProperty.element()).getBaseVertex(), vertexProperty.key()))
+        if ((((Neo4jVertex) vertexProperty.element()).getBaseVertex().hasProperty(vertexProperty.key())))
             ((Neo4jVertex) vertexProperty.element()).getBaseVertex().removeProperty(vertexProperty.key());
     }
 

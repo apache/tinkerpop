@@ -50,20 +50,20 @@ public final class Neo4jHelper {
         }
     }
 
-    public static boolean isDeleted(final Neo4jRelationship relationship) {
+    /*public static boolean isDeleted(final Neo4jRelationship relationship) {
         try {
             relationship.type();
             return false;
         } catch (final IllegalStateException e) {
             return true;
         }
-    }
+    }*/
 
     public static boolean isNotFound(RuntimeException ex) {
         return ex.getClass().getSimpleName().equals("NotFoundException");
     }
 
-    public static boolean keyExistsInNeo4j(final Neo4jNode node, final String key) {
+    /*public static boolean keyExistsInNeo4j(final Neo4jNode node, final String key) {
         try {
             return node.hasProperty(key);
         } catch (IllegalStateException ex) {
@@ -75,7 +75,7 @@ public final class Neo4jHelper {
                 throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, node.getId());
             throw ex;
         }
-    }
+    }*/
 
     public static Neo4jNode getVertexPropertyNode(final Neo4jVertexProperty vertexProperty) {
         return vertexProperty.vertexPropertyNode;

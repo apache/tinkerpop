@@ -23,6 +23,7 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
+import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.neo4j.AbstractNeo4jGremlinTest;
 import org.apache.tinkerpop.gremlin.neo4j.structure.trait.MultiMetaNeo4jTrait;
@@ -490,7 +491,7 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             // assertEquals(2, a.properties("name").count().next().intValue());
             // assertEquals(1, b.properties("name").count().next().intValue());
             // assertEquals(1, b.properties("location").count().next().intValue());
-            // assertEquals(0, g.E().count().next().intValue());
+            assertEquals(0, g.E().count().next().intValue());
 
             assertEquals(4l, this.getGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
             assertEquals(2l, this.getGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
@@ -523,13 +524,12 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
         });
 
         a.property("name", "the marko");
-        tryCommit(graph, g -> {
-            assertEquals(2, g.traversal().V().count().next().intValue());
+        tryCommit(graph, graph -> {
+            assertEquals(2, g.V().count().next().intValue());
             //assertEquals(1, a.prope rties().count().next().intValue());
             //  assertEquals(1, b.properties("name").count().next().intValue());
             // assertEquals(1, b.properties("location").count().next().intValue());
-            //  assertEquals(0, g.E().count().next().intValue());
-
+            assertEquals(0, g.E().count().next().intValue());
             assertEquals(2l, this.getGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
             assertEquals(0l, this.getGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
 
@@ -541,11 +541,11 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
         });
 
         a.property("name").remove();
-        tryCommit(graph, g -> {
-            assertEquals(2, g.traversal().V().count().next().intValue());
+        tryCommit(graph, graph -> {
+            assertEquals(2, g.V().count().next().intValue());
             //    assertEquals(0, a.properties().count().next().intValue());
             //   assertEquals(2, b.properties().count().next().intValue());
-            //     assertEquals(0, g.E().count().next().intValue());
+            assertEquals(0, g.E().count().next().intValue());
             assertEquals(2l, this.getGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
             assertEquals(0l, this.getGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
             assertEquals(0, IteratorUtils.count(a.getBaseVertex().getKeys()));
@@ -554,12 +554,12 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
 
         graph.tx().commit();
         a.property("name", "the marko", "acl", "private");
-        tryCommit(graph, g -> {
-            assertEquals(2, g.traversal().V().count().next().intValue());
+        tryCommit(graph, graph -> {
+            assertEquals(2, g.V().count().next().intValue());
             // assertEquals(1, a.properties("name").count().next().intValue());
             // assertEquals(1, b.properties("name").count().next().intValue());
             // assertEquals(1, b.properties("location").count().next().intValue());
-            //  assertEquals(0, g.E().count().next().intValue());
+            assertEquals(0, g.E().count().next().intValue());
 
             assertEquals(3l, this.getGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
             assertEquals(1l, this.getGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));
@@ -597,14 +597,13 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
 
         a.property(VertexProperty.Cardinality.list, "name", "marko", "acl", "private");
         a.property(VertexProperty.Cardinality.list, "name", "okram", "acl", "public");
-        graph.tx().commit();  // TODO tx.commit() THIS IS REQUIRED: ?! Why does Neo4j not delete vertices correctly?
         a.property(VertexProperty.Cardinality.single, "name", "the marko", "acl", "private");
-        tryCommit(graph, g -> {
-            assertEquals(2, g.traversal().V().count().next().intValue());
-            // assertEquals(1, a.properties("name").count().next().intValue());
-            // assertEquals(1, b.properties("name").count().next().intValue());
-            // assertEquals(1, b.properties("location").count().next().intValue());
-            // assertEquals(0, g.E().count().next().intValue());
+        tryCommit(graph, graph -> {
+            assertEquals(2, g.V().count().next().intValue());
+             //assertEquals(1, a.properties("name").count().next().intValue());
+             //assertEquals(1, b.properties("name").count().next().intValue());
+             //assertEquals(1, b.properties("location").count().next().intValue());
+             assertEquals(0, g.E().count().next().intValue());
 
             assertEquals(3l, this.getGraph().execute("MATCH n RETURN COUNT(n)", null).next().get("COUNT(n)"));
             assertEquals(1l, this.getGraph().execute("MATCH (n)-[r]->(m) RETURN COUNT(r)", null).next().get("COUNT(r)"));

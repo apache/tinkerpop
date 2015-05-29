@@ -76,19 +76,15 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
     public static final String CONFIG_CONF = "gremlin.neo4j.conf";
     public static final String CONFIG_META_PROPERTIES = "gremlin.neo4j.metaProperties";
     public static final String CONFIG_MULTI_PROPERTIES = "gremlin.neo4j.multiProperties";
-    public static final String CONFIG_CHECK_ELEMENTS_IN_TRANSACTION = "gremlin.neo4j.checkElementsInTransaction";
 
     private final Neo4jTransaction neo4jTransaction = new Neo4jTransaction();
     private Neo4jGraphVariables neo4jGraphVariables;
-
-    protected boolean checkElementsInTransaction = false;
 
     protected Neo4jTrait trait;
 
     private void initialize(final Neo4jGraphAPI baseGraph, final Configuration configuration) {
         this.configuration.copy(configuration);
         this.baseGraph = baseGraph;
-        this.checkElementsInTransaction = this.configuration.getBoolean(CONFIG_CHECK_ELEMENTS_IN_TRANSACTION, false);
         boolean supportsMetaProperties = this.configuration.getBoolean(CONFIG_META_PROPERTIES, false);
         boolean supportsMultiProperties = this.configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false);
         if (supportsMultiProperties != supportsMetaProperties)
@@ -151,7 +147,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         if (0 == vertexIds.length) {
             final Predicate<Neo4jNode> nodePredicate = this.trait.getNodePredicate();
             return IteratorUtils.stream(this.getBaseGraph().allNodes())
-                    .filter(node -> !this.checkElementsInTransaction || !Neo4jHelper.isDeleted(node))
+                    //.filter(node -> !Neo4jHelper.isDeleted(node))
                     .filter(nodePredicate)
                     .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator();
         } else {
@@ -184,7 +180,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         if (0 == edgeIds.length) {
             final Predicate<Neo4jRelationship> relationshipPredicate = this.trait.getRelationshipPredicate();
             return IteratorUtils.stream(this.getBaseGraph().allRelationships())
-                    .filter(relationship -> !this.checkElementsInTransaction || !Neo4jHelper.isDeleted(relationship))
+                    //.filter(relationship -> !Neo4jHelper.isDeleted(relationship))
                     .filter(relationshipPredicate)
                     .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator();
         } else {
@@ -266,21 +262,6 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
     @Override
     public Neo4jGraphAPI getBaseGraph() {
         return this.baseGraph;
-    }
-
-    /**
-     * Neo4j's transactions are not consistent between the graph and the graph
-     * indices. Moreover, global graph operations are not consistent. For
-     * example, if a vertex is removed and then an index is queried in the same
-     * transaction, the removed vertex can be returned. This method allows the
-     * developer to turn on/off a Neo4jGraph 'hack' that ensures transactional
-     * consistency. The default behavior for Neo4jGraph is {@code true}.
-     *
-     * @param checkElementsInTransaction check whether an element is in the transaction between
-     *                                   returning it
-     */
-    public void checkElementsInTransaction(final boolean checkElementsInTransaction) {
-        this.checkElementsInTransaction = checkElementsInTransaction;
     }
 
     /**
