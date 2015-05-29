@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.neo4j;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
@@ -28,10 +29,11 @@ import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jProperty;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.commons.configuration.Configuration;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -73,57 +75,52 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
         super.loadGraphData(graph, loadGraphWith, testClass, testName);
     }
 
-    private void createIndices(final Neo4jGraph g, final LoadGraphWith.GraphData graphData) {
+    private void createIndices(final Neo4jGraph graph, final LoadGraphWith.GraphData graphData) {
         final Random random = new Random();
-        final int pick = random.nextInt(2);
+        final boolean pick = random.nextBoolean();
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
-            if (pick == 1) {
-                g.tx().readWrite();
+            if (pick) {
+                graph.tx().readWrite();
                 if (random.nextBoolean())
-                    createIndex(g, "CREATE INDEX ON :artist(name)");
+                    graph.cypher("CREATE INDEX ON :artist(name)").iterate();
                 if (random.nextBoolean())
-                    createIndex(g, "CREATE INDEX ON :song(name)");
+                    graph.cypher("CREATE INDEX ON :song(name)").iterate();
                 if (random.nextBoolean())
-                    createIndex(g, "CREATE INDEX ON :song(songType)");
+                    graph.cypher("CREATE INDEX ON :song(songType)").iterate();
                 if (random.nextBoolean())
-                    createIndex(g, "CREATE INDEX ON :song(performances)");
-                g.tx().commit();
+                    graph.cypher("CREATE INDEX ON :song(performances)").iterate();
+                graph.tx().commit();
             } // else no indices
         } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
-            if (pick == 1) {
-                g.tx().readWrite();
+            if (pick) {
+                graph.tx().readWrite();
                 if (random.nextBoolean())
-                    createIndex(g, "CREATE INDEX ON :person(name)");
+                    graph.cypher("CREATE INDEX ON :person(name)").iterate();
                 if (random.nextBoolean())
-                    createIndex(g, "CREATE INDEX ON :person(age)");
+                    graph.cypher("CREATE INDEX ON :person(age)").iterate();
                 if (random.nextBoolean())
-                    createIndex(g, "CREATE INDEX ON :software(name)");
+                    graph.cypher("CREATE INDEX ON :software(name)").iterate();
                 if (random.nextBoolean()) {
-                    createIndex(g, "CREATE INDEX ON :software(lang)");
+                    graph.cypher("CREATE INDEX ON :software(lang)").iterate();
                 }
-                g.tx().commit();
+                graph.tx().commit();
             } // else no indices
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
-            if (pick == 1) {
-                g.tx().readWrite();
+            if (pick) {
+                graph.tx().readWrite();
                 if (random.nextBoolean())
-                    createIndex(g, "CREATE INDEX ON :vertex(name)");
+                    graph.cypher("CREATE INDEX ON :vertex(name)").iterate();
                 if (random.nextBoolean())
-                    createIndex(g, "CREATE INDEX ON :vertex(age)");
+                    graph.cypher("CREATE INDEX ON :vertex(age)").iterate();
                 if (random.nextBoolean())
-                    createIndex(g, "CREATE INDEX ON :vertex(lang)");
-                g.tx().commit();
+                    graph.cypher("CREATE INDEX ON :vertex(lang)").iterate();
+                graph.tx().commit();
             } // else no indices
         } else {
             // TODO: add CREW work here.
             // TODO: add meta_property indices when meta_property graph is provided
             //throw new RuntimeException("Could not load graph with " + graphData);
         }
-    }
-
-    private void createIndex(Neo4jGraph g, String indexQuery) {
-        Iterator<Map<String, Object>> it = g.getBaseGraph().execute(indexQuery, null);
-        while (it.hasNext()) it.next();
     }
 
     @Override
