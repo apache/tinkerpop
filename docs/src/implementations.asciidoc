@@ -571,7 +571,7 @@ gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
 gremlin.hadoop.graphInputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
 gremlin.hadoop.graphOutputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat
 gremlin.hadoop.jarsInDistributedCache=true
-gremlin.hadoop.inputLocation=tinkerpop-modern-vertices.kryo
+gremlin.hadoop.inputLocation=tinkerpop-modern.kryo
 gremlin.hadoop.outputLocation=output
 #####################################
 # GiraphGraphComputer Configuration #
@@ -636,6 +636,17 @@ gremlin> g.V().group().by{it.value('name')[1]}.by('name').next()
 ==>i={ripple=1}
 ==>o={lop=1, josh=1}
 
+[gremlin-groovy]
+----
+hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
+hdfs.ls()
+graph = GraphFactory.open('conf/hadoop-gryo.properties')
+g = graph.traversal(standard())
+g.V().count()
+g.V().out().out().values('name')
+g.V().group().by{it.value('name')[1]}.by('name').next()
+----
+
 OLAP Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~
 
@@ -691,6 +702,14 @@ INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
 ==>ripple
 ==>lop
 
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop-gryo.properties')
+g = graph.traversal(computer())
+g.V().count()
+g.V().out().out().values('name')
+----
+
 IMPORTANT: The examples above do not use lambdas (i.e. closures in Gremlin-Groovy). This makes the traversal serializable and thus, able to be distributed to all machines in the Hadoop cluster. If a lambda is required in a traversal, then the traversal must be sent as a `String` and compiled locally at each machine in the cluster. The following example demonstrates the `:remote` command which allows for submitting Gremlin traversals as a `String`.
 
 [source,text]
@@ -735,6 +754,14 @@ gremlin> g.V().count()
 gremlin> g.V().out().out().values('name')
 ==>lop
 ==>ripple
+
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop-gryo.properties')
+g = graph.traversal(computer(SparkGraphComputer))
+g.V().count()
+g.V().out().out().values('name')
+----
 
 For using lambdas in Gremlin-Groovy, simply provide `:remote connect` a `TraversalSource` which leverages SparkGraphComputer.
 
