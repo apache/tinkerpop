@@ -146,34 +146,6 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
     }
 
     @Test
-    public void shouldReturnResultsUsingLegacyIndexOnVertex() {
-        graph.tx().readWrite();
-        this.getBaseGraph().autoIndexProperties(true, "name");
-        this.graph.tx().commit();
-
-        this.graph.addVertex(T.label, "Person", "name", "marko");
-        this.graph.addVertex(T.label, "Person", "name", "marko");
-        this.graph.tx().commit();
-        assertEquals(2, this.g.V().has("Person", "name", "marko").count().next(), 0);
-        assertEquals(2, this.g.V().has("name", "marko").count().next(), 0);
-    }
-
-    @Test
-    public void shouldUseLegacyIndexOnEdge() {
-        graph.tx().readWrite();
-        this.getBaseGraph().autoIndexProperties(true, "weight");
-        this.graph.tx().commit();
-
-        Vertex marko = this.graph.addVertex(T.label, "Person", "name", "marko");
-        Vertex john = this.graph.addVertex(T.label, "Person", "name", "john");
-        Vertex pete = this.graph.addVertex(T.label, "Person", "name", "pete");
-        marko.addEdge("friend", john, "weight", "a");
-        marko.addEdge("friend", pete, "weight", "a");
-        this.graph.tx().commit();
-        assertEquals(2, this.g.E().has("weight", "a").count().next(), 0);
-    }
-
-    @Test
     public void shouldEnforceUniqueConstraint() {
         this.graph.tx().readWrite();
         this.getBaseGraph().execute("CREATE CONSTRAINT ON (p:Person) assert p.name is unique", null);
@@ -333,24 +305,6 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
         assertEquals(1, this.g.V().has("Person", "name", "marko").count().next(), 0);
         assertEquals(3, this.g.V().has(T.label, "Person").count().next(), 0);
         assertEquals(1, this.g.V().has(T.label, "Person").has("name", "marko").count().next(), 0);
-    }
-
-    @Test
-    public void shouldDoLabelAndLegacyIndexSearch() {
-        graph.tx().readWrite();
-
-        this.getBaseGraph().execute("CREATE INDEX ON :Person(name)", null);
-        this.getBaseGraph().autoIndexProperties(true, "name");
-
-        this.graph.tx().commit();
-        this.graph.addVertex(T.label, "Person", "name", "marko");
-        this.graph.addVertex(T.label, "Person", "name", "john");
-        this.graph.addVertex(T.label, "Person", "name", "pete");
-        this.graph.tx().commit();
-        assertEquals(1, this.g.V().has(T.label, "Person").has("name", "marko").count().next(), 0);
-        assertEquals(3, this.g.V().has(T.label, "Person").count().next(), 0);
-        assertEquals(1, this.g.V().has("name", "john").count().next(), 0);
-
     }
 
     @Test

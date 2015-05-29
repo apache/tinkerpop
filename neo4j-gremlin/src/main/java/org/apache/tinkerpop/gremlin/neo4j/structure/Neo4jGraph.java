@@ -228,6 +228,10 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         }
     }
 
+    public Neo4jTrait getTrait() {
+        return this.trait;
+    }
+
     @Override
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
         throw Graph.Exceptions.graphComputerNotSupported();

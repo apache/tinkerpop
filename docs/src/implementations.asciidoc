@@ -561,17 +561,14 @@ TIP: To host Neo4j in Gremlin Server, the dependencies must first be "installed"
 Indices
 ~~~~~~~
 
-Neo4j 2.x supports two types of indices: link:http://docs.neo4j.org/chunked/stable/query-schema-index.html[schema indices] and link:http://docs.neo4j.org/chunked/stable/auto-indexing.html[automatic indices]. Automatic indices have been around since Neo4j 1.x and automatically index an element based on a pre-defined property keys. Schema indices are new to Neo4j 2.x and leverage vertex labels to partition the index space. TinkerPop3 does not provide method interfaces for defining schemas/indices for the underlying graph system. Thus, in order to create indices, the Neo4j API is leveraged.
+Neo4j 2.x indices leverage vertex labels to partition the index space. TinkerPop3 does not provide method interfaces for defining schemas/indices for the underlying graph system. Thus, in order to create indices, it is important to call the Neo4j API directly.
 
-NOTE: `Neo4jGraph` will attempt to discern which indices to use when executing a traversal of the form `g.V().has()`. The general order of checking is: schema indices, automatic indices, label grouping linear-scan iteration, full linear-scan iteration.
+NOTE: `Neo4jGraphStep` will attempt to discern which indices to use when executing a traversal of the form `g.V().has()`. The general order of checking is: indices, label grouping linear-scan iteration, full linear-scan iteration.
 
-Using Schema Indices
-^^^^^^^^^^^^^^^^^^^^
+The Gremlin-Console session below demonstrates Neo4j indices. For more information, please refer to the Neo4j documentation:
 
-The Gremlin-Console session below demonstrates schema indices. For more information, please refer to the Neo4j documentation:
-
-* Manipulating schema indices with link:http://docs.neo4j.org/chunked/stable/query-schema-index.html[Cypher].
-* Manipulating schema indices with the Neo4j link:http://docs.neo4j.org/chunked/stable/tutorials-java-embedded-new-index.html[Java API].
+* Manipulating indices with link:http://docs.neo4j.org/chunked/stable/query-schema-index.html[Cypher].
+* Manipulating indices with the Neo4j link:http://docs.neo4j.org/chunked/stable/tutorials-java-embedded-new-index.html[Java API].
 
 [source,groovy]
 gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
@@ -593,7 +590,7 @@ gremlin> g = graph.traversal(standard())
 gremlin> g.V().hasLabel('person').has('name','marko').values('name')
 ==>marko
 
-Below demonstrates the runtime benefits of indices and demonstrates how if there is no defined schema index (only vertex labels), a linear scan of the vertex-label partition is still faster than a linear scan of all vertices.
+Below demonstrates the runtime benefits of indices and demonstrates how if there is no defined index (only vertex labels), a linear scan of the vertex-label partition is still faster than a linear scan of all vertices.
 
 [source,groovy]
 gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
@@ -629,32 +626,6 @@ gremlin> clock(1000){g.V().has('name','Garcia').next()} <6>
 <4> Drop the created index schema.
 <5> Find all artists whose name is Garcia which does a linear scan of the artist vertex-label partition.
 <6> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
-
-
-Using Automatic Indices
-^^^^^^^^^^^^^^^^^^^^^^^
-
-The Gremlin-Console session below demonstrates automatic indices. For more information, please refer to the Neo4j documentation:
-
-* Manipulating automatic indices with the Neo4j link:http://docs.neo4j.org/chunked/stable/auto-indexing.html[Java API].
-
-[source,groovy]
-gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
-==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> graph.getBaseGraph().index().getNodeAutoIndexer().startAutoIndexingProperty('name')
-==>null
-gremlin> graph.getBaseGraph().index().getNodeAutoIndexer().setEnabled(true)
-==>null
-gremlin> graph.addVertex(label,'person','name','marko')
-==>v[0]
-gremlin> graph.addVertex(label,'dog','name','puppy')
-==>v[1]
-gremlin> g = graph.traversal(standard())
-==>graphtraversalsource[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]], standard]
-gremlin> g.V().hasLabel('person').has('name','marko').values('name')
-==>marko
-
-WARNING: The preferred method for dealing with automatic indices in Neo4j is via `Neo4jGraph.open()` configuration as opposed to runtime updating as demonstrated above. This is because with runtime updating, index information is not propagated across Neo4j connections.
 
 Cypher
 ~~~~~~

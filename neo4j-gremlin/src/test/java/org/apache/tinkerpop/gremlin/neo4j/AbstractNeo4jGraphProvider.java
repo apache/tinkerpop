@@ -75,8 +75,7 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
 
     private void createIndices(final Neo4jGraph g, final LoadGraphWith.GraphData graphData) {
         final Random random = new Random();
-        final int pick = random.nextInt(3);
-        //final int pick = 2;
+        final int pick = random.nextInt(2);
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
             if (pick == 1) {
                 g.tx().readWrite();
@@ -89,16 +88,7 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
                 if (random.nextBoolean())
                     createIndex(g, "CREATE INDEX ON :song(performances)");
                 g.tx().commit();
-            } else if (pick == 2) {
-                g.tx().readWrite();
-                if (random.nextBoolean())
-                    g.getBaseGraph().autoIndexProperties(true, "name");
-                if (random.nextBoolean())
-                    g.getBaseGraph().autoIndexProperties(true, "songType");
-                if (random.nextBoolean())
-                    g.getBaseGraph().autoIndexProperties(true, "performances");
-                g.tx().commit();
-            }
+            } // else no indices
         } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
             if (pick == 1) {
                 g.tx().readWrite();
@@ -112,16 +102,7 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
                     createIndex(g, "CREATE INDEX ON :software(lang)");
                 }
                 g.tx().commit();
-            } else if (pick == 2) {
-                g.tx().readWrite();
-                if (random.nextBoolean())
-                    g.getBaseGraph().autoIndexProperties(true, "name");
-                if (random.nextBoolean())
-                    g.getBaseGraph().autoIndexProperties(true, "age");
-                if (random.nextBoolean())
-                    g.getBaseGraph().autoIndexProperties(true, "lang");
-                g.tx().commit();
-            }
+            } // else no indices
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
             if (pick == 1) {
                 g.tx().readWrite();
@@ -132,16 +113,7 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
                 if (random.nextBoolean())
                     createIndex(g, "CREATE INDEX ON :vertex(lang)");
                 g.tx().commit();
-            } else if (pick == 2) {
-                g.tx().readWrite();
-                if (random.nextBoolean())
-                    g.getBaseGraph().autoIndexProperties(true, "name");
-                if (random.nextBoolean())
-                    g.getBaseGraph().autoIndexProperties(true, "age");
-                if (random.nextBoolean())
-                    g.getBaseGraph().autoIndexProperties(true, "lang");
-                g.tx().commit();
-            }
+            } // else no indices
         } else {
             // TODO: add CREW work here.
             // TODO: add meta_property indices when meta_property graph is provided
