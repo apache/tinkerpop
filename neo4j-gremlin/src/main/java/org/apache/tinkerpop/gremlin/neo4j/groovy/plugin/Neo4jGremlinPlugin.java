@@ -50,4 +50,9 @@ public final class Neo4jGremlinPlugin extends AbstractGremlinPlugin {
     public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
 
     }
+
+    @Override
+    public boolean requireRestart() {
+        return true;
+    }
 }
