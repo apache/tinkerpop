@@ -170,7 +170,6 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         if (0 == vertexIds.length) {
             final Predicate<Neo4jNode> nodePredicate = this.trait.getNodePredicate();
             return IteratorUtils.stream(this.getBaseGraph().allNodes())
-                    //.filter(node -> !Neo4jHelper.isDeleted(node))
                     .filter(nodePredicate)
                     .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator();
         } else {
@@ -203,7 +202,6 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         if (0 == edgeIds.length) {
             final Predicate<Neo4jRelationship> relationshipPredicate = this.trait.getRelationshipPredicate();
             return IteratorUtils.stream(this.getBaseGraph().allRelationships())
-                    //.filter(relationship -> !Neo4jHelper.isDeleted(relationship))
                     .filter(relationshipPredicate)
                     .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator();
         } else {
@@ -217,7 +215,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                         else if (id instanceof Neo4jEdge) {
                             return (Long) ((Neo4jEdge) id).id();
                         } else
-                            throw new IllegalArgumentException("Unknown vertex id type: " + id);
+                            throw new IllegalArgumentException("Unknown edge id type: " + id);
                     })
                     .flatMap(id -> {
                         try {

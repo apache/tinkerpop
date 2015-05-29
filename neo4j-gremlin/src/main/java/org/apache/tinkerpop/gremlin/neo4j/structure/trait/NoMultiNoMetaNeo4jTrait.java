@@ -111,8 +111,9 @@ public class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
 
     @Override
     public void removeVertexProperty(final Neo4jVertexProperty vertexProperty) {
-        if ((((Neo4jVertex) vertexProperty.element()).getBaseVertex().hasProperty(vertexProperty.key())))
-            ((Neo4jVertex) vertexProperty.element()).getBaseVertex().removeProperty(vertexProperty.key());
+        final Neo4jNode node = ((Neo4jVertex) vertexProperty.element()).getBaseVertex();
+        if (node.hasProperty(vertexProperty.key()))
+            node.removeProperty(vertexProperty.key());
     }
 
     @Override

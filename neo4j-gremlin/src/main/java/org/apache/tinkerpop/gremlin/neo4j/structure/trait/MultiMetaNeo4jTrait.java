@@ -72,10 +72,10 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
     public void removeVertex(final Neo4jVertex vertex) {
         try {
             final Neo4jNode node = vertex.getBaseVertex();
-            for (final Neo4jRelationship relationship : node.relationships(Neo4jDirection.BOTH)) {
+            for (final Neo4jRelationship relationship : node.relationships(Neo4jDirection.OUTGOING)) {
                 final Neo4jNode otherNode = relationship.other(node);
                 if (otherNode.hasLabel(VERTEX_PROPERTY_LABEL)) {
-                    otherNode.relationships(null).forEach(Neo4jRelationship::delete);
+                    otherNode.relationships(Neo4jDirection.BOTH).forEach(Neo4jRelationship::delete);
                     otherNode.delete(); // meta property node
                 } else
                     relationship.delete();

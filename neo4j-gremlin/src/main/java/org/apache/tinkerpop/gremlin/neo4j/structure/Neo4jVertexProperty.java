@@ -40,7 +40,6 @@ public final class Neo4jVertexProperty<V> implements VertexProperty<V> {
     protected Neo4jNode vertexPropertyNode;
     protected boolean removed = false;
 
-
     public Neo4jVertexProperty(final Neo4jVertex vertex, final String key, final V value) {
         this.vertex = vertex;
         this.key = key;
