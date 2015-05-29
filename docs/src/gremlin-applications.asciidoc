@@ -54,6 +54,8 @@ Additionally, the Graph configuration can also be modified to include the local 
 [source,xml]
 <ibiblio name="local" root="file:${user.home}/.m2/repository/" m2compatible="true"/>
 
+This configuration is useful during development (i.e. if one is working with locally built artifacts) of TinkerPop Plugins.  Consider adding the "local" reference first in the set of `<ibilio>` resolvers, as putting it after "apache-snapshots" will likely resolve dependencies from that repository before looking locally.  If it does that, then it's possible that the artifact from the newer local build will not be used.
+
 CAUTION: If building TinkerPop from source, be sure to clear TinkerPop-related jars from the `~/.groovy/grapes` directory as they can become stale on some systems and not re-import properly from the local `.m2` after fresh rebuilds.
 
 [[gremlin-console]]
