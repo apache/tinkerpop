@@ -42,15 +42,6 @@ limitations under the License.
             <version>0.1</version>
         </dependency>
         <!-- TESTING -->
-        <!-- *** WARNING *** -->
-        <!-- THIS IS NOT APACHE2 : THIS IS WHERE WE NEED SOME MVN MAGIC TO ADD THIS STUB VIA A PROFILE COMMAND -->
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>tinkerpop-api-impl</artifactId>
-            <version>0.1-2.2</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- *** WARNING *** -->
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>
@@ -77,10 +68,16 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
@@ -120,27 +117,50 @@ limitations under the License.
     </build>
     <profiles>
         <profile>
-            <id>lucky</id>
+            <!--
+              Use this profile if you want the Neo4j test suite to run.  The project should compile/install
+              Neo4j without this profile.  Note that if you "deploy" with this profile, neo4j-gremlin artifacts
+              will be skipped.
+            -->
+            <id>include-neo4j</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <property>
-                    <name>feelingLucky</name>
+                    <name>includeNeo4j</name>
                 </property>
             </activation>
+            <dependencies>
+                <!-- TESTING -->
+                <!-- *** WARNING *** -->
+                <dependency>
+                    <groupId>org.neo4j</groupId>
+                    <artifactId>neo4j-tinkerpop-api-impl</artifactId>
+                    <version>0.1-2.2</version>
+                    <scope>test</scope>
+                </dependency>
+                <!-- *** WARNING *** -->
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <skipTests>true</skipTests>
+                            <skipTests>false</skipTests>
                         </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
-                            <skipTests>true</skipTests>
+                            <skipTests>false</skipTests>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
                         </configuration>
                     </plugin>
                 </plugins>
