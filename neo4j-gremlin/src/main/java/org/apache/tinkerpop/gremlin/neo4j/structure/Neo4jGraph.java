@@ -22,11 +22,13 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.sideEffect.CypherStartStep;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.strategy.optimization.Neo4jGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.neo4j.process.util.Neo4jCypherIterator;
 import org.apache.tinkerpop.gremlin.neo4j.structure.trait.MultiMetaNeo4jTrait;
 import org.apache.tinkerpop.gremlin.neo4j.structure.trait.Neo4jTrait;
 import org.apache.tinkerpop.gremlin.neo4j.structure.trait.NoMultiNoMetaNeo4jTrait;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -66,6 +68,14 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE)
 public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
+
+    static {
+        TraversalStrategies.GlobalCache.registerStrategies(Neo4jGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(Neo4jGraphStepStrategy.instance()));
+    }
+
+    private static final Configuration EMPTY_CONFIGURATION = new BaseConfiguration() {{
+        this.setProperty(Graph.GRAPH, Neo4jGraph.class.getName());
+    }};
 
     protected Features features = new Neo4jGraphFeatures();
 

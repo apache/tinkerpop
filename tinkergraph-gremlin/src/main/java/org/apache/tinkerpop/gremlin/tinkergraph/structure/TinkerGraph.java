@@ -76,6 +76,7 @@ public final class TinkerGraph implements Graph {
     public static final String CONFIG_VERTEX_ID = "gremlin.tinkergraph.vertexIdManager";
     public static final String CONFIG_EDGE_ID = "gremlin.tinkergraph.edgeIdManager";
     public static final String CONFIG_VERTEX_PROPERTY_ID = "gremlin.tinkergraph.vertexPropertyIdManager";
+    public static final String CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
 
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
@@ -91,6 +92,7 @@ public final class TinkerGraph implements Graph {
     protected final IdManager<?> vertexIdManager;
     protected final IdManager<?> edgeIdManager;
     protected final IdManager<?> vertexPropertyIdManager;
+    //protected final VertexProperty.Cardinality defaultVertexPropertyCardinality;
 
     private final Configuration configuration;
 
@@ -99,9 +101,10 @@ public final class TinkerGraph implements Graph {
      */
     private TinkerGraph(final Configuration configuration) {
         this.configuration = configuration;
-        vertexIdManager = selectIdManager(configuration, CONFIG_VERTEX_ID, Vertex.class);
-        edgeIdManager = selectIdManager(configuration, CONFIG_EDGE_ID, Edge.class);
-        vertexPropertyIdManager = selectIdManager(configuration, CONFIG_VERTEX_PROPERTY_ID, VertexProperty.class);
+        this.vertexIdManager = selectIdManager(configuration, CONFIG_VERTEX_ID, Vertex.class);
+        this.edgeIdManager = selectIdManager(configuration, CONFIG_EDGE_ID, Edge.class);
+        this.vertexPropertyIdManager = selectIdManager(configuration, CONFIG_VERTEX_PROPERTY_ID, VertexProperty.class);
+        //this.defaultVertexPropertyCardinality = VertexProperty.Cardinality.valueOf(configuration.getString(CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY, "single"));
     }
 
     /**
@@ -310,6 +313,12 @@ public final class TinkerGraph implements Graph {
         public boolean willAllowId(final Object id) {
             return vertexIdManager.allow(id);
         }
+
+        /*@Override
+        public VertexProperty.Cardinality getCardinality(final String key) {
+            return VertexProperty.Cardinality.single;
+            //return defaultVertexPropertyCardinality;
+        }*/
     }
 
     public class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
