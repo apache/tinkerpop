@@ -81,8 +81,7 @@ fi
 cp ${TP_HOME}/hadoop-gremlin/conf/* "${CONSOLE_HOME}/conf/"
 
 # process *.asciidoc files
-#find "${TP_HOME}/docs/src/" -name "*.asciidoc" | xargs -n1 -P0 "${TP_HOME}/docs/preprocessor/preprocess-file.sh"
-find "${TP_HOME}/docs/src/" -name "implementations.asciidoc" | xargs -n1 -P0 "${TP_HOME}/docs/preprocessor/preprocess-file.sh"
+find "${TP_HOME}/docs/src/" -name "*.asciidoc" | xargs -n1 -P0 "${TP_HOME}/docs/preprocessor/preprocess-file.sh"
 
 cleanup
 
