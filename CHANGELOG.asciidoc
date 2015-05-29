@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added back neo4j-gremlin as the licensing of the Neo4j API is now Apache2.
 * Added `willAllowId` method to features related to vertices, edges and vertex properties to test if an identifier can be use when `supportsUserSuppliedIds` is `true`.
 * Fixed a bug in `GraphTraversal.choose(predicate,trueTraversal,falseTraversal)`.
 * Removed `MapTraversal`, `MapTraverserTraversal`, `FilterTraversal`, and `FilterTraverserTraversal` as these are simply `__.map(function)` and `__.filter(predicate)`.
