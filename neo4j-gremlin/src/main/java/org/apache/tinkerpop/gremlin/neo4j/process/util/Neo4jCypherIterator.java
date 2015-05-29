@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.neo4j.process.util;
 
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.neo4j.tinkerpop.api.Neo4jNode;
 import org.neo4j.tinkerpop.api.Neo4jRelationship;
 
@@ -51,9 +53,9 @@ public final class Neo4jCypherIterator<T> implements Iterator<Map<String, T>> {
                 entry -> {
                     final T val = entry.getValue();
                     if (Neo4jNode.class.isAssignableFrom(val.getClass())) {
-                        return (T) this.graph.createVertex((Neo4jNode) val);
+                        return (T) new Neo4jVertex((Neo4jNode) val, this.graph);
                     } else if (Neo4jRelationship.class.isAssignableFrom(val.getClass())) {
-                        return (T) this.graph.createEdge((Neo4jRelationship) val);
+                        return (T) new Neo4jEdge((Neo4jRelationship) val, this.graph);
                     } else {
                         return val;
                     }

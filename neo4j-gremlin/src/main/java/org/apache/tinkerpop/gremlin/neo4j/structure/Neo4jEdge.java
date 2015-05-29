@@ -33,7 +33,7 @@ import java.util.Iterator;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Neo4jRelationship> {
+public final class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Neo4jRelationship> {
 
     public Neo4jEdge(final Neo4jRelationship relationship, final Neo4jGraph graph) {
         super(relationship, graph);
@@ -41,12 +41,12 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Neo4jRe
 
     @Override
     public Vertex outVertex() {
-        return this.graph.createVertex(this.getBaseEdge().start());
+        return new Neo4jVertex(this.getBaseEdge().start(), this.graph);
     }
 
     @Override
     public Vertex inVertex() {
-        return this.graph.createVertex(this.getBaseEdge().end());
+        return new Neo4jVertex(this.getBaseEdge().end(), this.graph);
     }
 
     @Override
@@ -54,11 +54,11 @@ public class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<Neo4jRe
         this.graph.tx().readWrite();
         switch (direction) {
             case OUT:
-                return IteratorUtils.of(this.graph.createVertex(this.getBaseEdge().start()));
+                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().start(), this.graph));
             case IN:
-                return IteratorUtils.of(this.graph.createVertex(this.getBaseEdge().end()));
+                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().end(), this.graph));
             default:
-                return IteratorUtils.of(this.graph.createVertex(this.getBaseEdge().start()), this.graph.createVertex(this.getBaseEdge().end()));
+                return IteratorUtils.of(new Neo4jVertex(this.getBaseEdge().start(), this.graph), new Neo4jVertex(this.getBaseEdge().end(), this.graph));
         }
     }
 

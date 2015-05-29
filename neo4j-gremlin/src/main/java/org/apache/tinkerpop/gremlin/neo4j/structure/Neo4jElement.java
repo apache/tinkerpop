@@ -76,7 +76,6 @@ public abstract class Neo4jElement implements Element, WrappedElement<Neo4jEntit
     public <V> Property<V> property(final String key, final V value) {
         ElementHelper.validateProperty(key, value);
         this.graph.tx().readWrite();
-
         try {
             this.baseElement.setProperty(key, value);
             return new Neo4jProperty<>(this, key, value);

@@ -19,18 +19,17 @@
  *
  */
 
-package org.apache.tinkerpop.gremlin.neo4j.process;
+package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.neo4j.SimpleNeo4jGraphProvider;
-import org.apache.tinkerpop.gremlin.neo4j.structure.simple.SimpleNeo4jGraph;
-import org.apache.tinkerpop.gremlin.process.ProcessStandardSuite;
+import org.apache.tinkerpop.gremlin.neo4j.MultiMetaNeo4jGraphProvider;
+import org.apache.tinkerpop.gremlin.neo4j.NativeNeo4jSuite;
 import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessStandardSuite.class)
-@GraphProviderClass(provider = SimpleNeo4jGraphProvider.class, graph = SimpleNeo4jGraph.class)
-public class SimpleNeo4jGraphProcessStandardTest {
+@RunWith(NativeNeo4jSuite.class)
+@GraphProviderClass(provider = MultiMetaNeo4jGraphProvider.class, graph = Neo4jGraph.class)
+public class MultiMetaNeo4jGraphNativeNeo4jTest {
 }

@@ -23,8 +23,9 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.sideEffect.CypherStartStep;
 import org.apache.tinkerpop.gremlin.neo4j.process.util.Neo4jCypherIterator;
-import org.apache.tinkerpop.gremlin.neo4j.structure.full.FullNeo4jGraph;
-import org.apache.tinkerpop.gremlin.neo4j.structure.simple.SimpleNeo4jGraph;
+import org.apache.tinkerpop.gremlin.neo4j.structure.trait.MultiMetaNeo4jTrait;
+import org.apache.tinkerpop.gremlin.neo4j.structure.trait.Neo4jTrait;
+import org.apache.tinkerpop.gremlin.neo4j.structure.trait.NoMultiNoMetaNeo4jTrait;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -32,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -63,7 +65,7 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE)
-public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
+public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
 
     protected Features features = new Neo4jGraphFeatures();
 
@@ -80,18 +82,22 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
     private Neo4jGraphVariables neo4jGraphVariables;
 
     protected boolean checkElementsInTransaction = false;
-    protected boolean supportsMetaProperties = false;
-    protected boolean supportsMultiProperties = false;
+
+    protected Neo4jTrait trait;
 
     private void initialize(final Neo4jGraphAPI baseGraph, final Configuration configuration) {
         this.configuration.copy(configuration);
         this.baseGraph = baseGraph;
         this.checkElementsInTransaction = this.configuration.getBoolean(CONFIG_CHECK_ELEMENTS_IN_TRANSACTION, false);
-        this.supportsMetaProperties = this.configuration.getBoolean(CONFIG_META_PROPERTIES, false);
-        this.supportsMultiProperties = this.configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false);
-        if (this.supportsMultiProperties != this.supportsMetaProperties)
+        boolean supportsMetaProperties = this.configuration.getBoolean(CONFIG_META_PROPERTIES, false);
+        boolean supportsMultiProperties = this.configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false);
+        if (supportsMultiProperties != supportsMetaProperties)
             throw new IllegalArgumentException(this.getClass().getSimpleName() + " currently supports either both meta-properties and multi-properties or neither");
         this.neo4jGraphVariables = new Neo4jGraphVariables(this);
+        if (supportsMultiProperties)
+            this.trait = new MultiMetaNeo4jTrait();
+        else
+            this.trait = new NoMultiNoMetaNeo4jTrait();
     }
 
     protected Neo4jGraph(final Neo4jGraphAPI baseGraph, final Configuration configuration) {
@@ -116,16 +122,7 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         if (null == configuration) throw Graph.Exceptions.argumentCanNotBeNull("configuration");
         if (!configuration.containsKey(CONFIG_DIRECTORY))
             throw new IllegalArgumentException(String.format("Neo4j configuration requires that the %s be set", CONFIG_DIRECTORY));
-
-        final boolean supportsMetaProperties = configuration.getBoolean(CONFIG_META_PROPERTIES, false);
-        final boolean supportsMultiProperties = configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false);
-        if (supportsMultiProperties != supportsMetaProperties)
-            throw new IllegalArgumentException(Neo4jGraph.class.getSimpleName() + " currently supports either both meta-properties and multi-properties or neither");
-        if (supportsMetaProperties) {
-            return new FullNeo4jGraph(configuration);
-        } else {
-            return new SimpleNeo4jGraph(configuration);
-        }
+        return new Neo4jGraph(configuration);
     }
 
     /**
@@ -137,21 +134,13 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         return open(config);
     }
 
-    public abstract Neo4jVertex createVertex(final Neo4jNode node);
-
-    public abstract Neo4jEdge createEdge(final Neo4jRelationship relationship);
-
-    public abstract Predicate<Neo4jNode> getNodePredicate();
-
-    public abstract Predicate<Neo4jRelationship> getRelationshipPredicate();
-
     @Override
     public Vertex addVertex(final Object... keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         if (ElementHelper.getIdValue(keyValues).isPresent())
             throw Vertex.Exceptions.userSuppliedIdsNotSupported();
         this.tx().readWrite();
-        final Neo4jVertex vertex = this.createVertex(this.baseGraph.createNode(ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL).split(Neo4jVertex.LABEL_DELIMINATOR)));
+        final Neo4jVertex vertex = new Neo4jVertex(this.baseGraph.createNode(ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL).split(Neo4jVertex.LABEL_DELIMINATOR)), this);
         ElementHelper.attachProperties(vertex, keyValues);
         return vertex;
     }
@@ -160,11 +149,11 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
     public Iterator<Vertex> vertices(final Object... vertexIds) {
         this.tx().readWrite();
         if (0 == vertexIds.length) {
-            final Predicate<Neo4jNode> nodePredicate = this.getNodePredicate();
+            final Predicate<Neo4jNode> nodePredicate = this.trait.getNodePredicate();
             return IteratorUtils.stream(this.getBaseGraph().allNodes())
                     .filter(node -> !this.checkElementsInTransaction || !Neo4jHelper.isDeleted(node))
                     .filter(nodePredicate)
-                    .map(node -> (Vertex) this.createVertex(node)).iterator();
+                    .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator();
         } else {
             ElementHelper.validateMixedElementIds(Vertex.class, vertexIds);
             return Stream.of(vertexIds)
@@ -180,7 +169,7 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                     })
                     .flatMap(id -> {
                         try {
-                            return Stream.of((Vertex) this.createVertex(this.getBaseGraph().getNodeById(id)));
+                            return Stream.of((Vertex) new Neo4jVertex(this.baseGraph.getNodeById(id), this));
                         } catch (final RuntimeException e) {
                             if (Neo4jHelper.isNotFound(e)) return Stream.empty();
                             throw e;
@@ -193,11 +182,11 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
     public Iterator<Edge> edges(final Object... edgeIds) {
         this.tx().readWrite();
         if (0 == edgeIds.length) {
-            final Predicate<Neo4jRelationship> relationshipPredicate = this.getRelationshipPredicate();
+            final Predicate<Neo4jRelationship> relationshipPredicate = this.trait.getRelationshipPredicate();
             return IteratorUtils.stream(this.getBaseGraph().allRelationships())
                     .filter(relationship -> !this.checkElementsInTransaction || !Neo4jHelper.isDeleted(relationship))
                     .filter(relationshipPredicate)
-                    .map(relationship -> (Edge) this.createEdge(relationship)).iterator();
+                    .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator();
         } else {
             ElementHelper.validateMixedElementIds(Edge.class, edgeIds);
             return Stream.of(edgeIds)
@@ -213,7 +202,7 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                     })
                     .flatMap(id -> {
                         try {
-                            return Stream.of((Edge) this.createEdge(this.getBaseGraph().getRelationshipById(id)));
+                            return Stream.of((Edge) new Neo4jEdge(this.baseGraph.getRelationshipById(id), this));
                         } catch (final RuntimeException e) {
                             if (Neo4jHelper.isNotFound(e)) return Stream.empty();
                             throw e;
@@ -432,17 +421,22 @@ public abstract class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
 
             @Override
             public boolean supportsMetaProperties() {
-                return Neo4jGraph.this.supportsMetaProperties;
+                return trait.supportsMetaProperties();
             }
 
             @Override
             public boolean supportsMultiProperties() {
-                return Neo4jGraph.this.supportsMultiProperties;
+                return trait.supportsMultiProperties();
             }
 
             @Override
             public boolean supportsUserSuppliedIds() {
                 return false;
+            }
+
+            @Override
+            public VertexProperty.Cardinality getCardinality(final String key) {
+                return trait.getCardinality(key);
             }
         }
 

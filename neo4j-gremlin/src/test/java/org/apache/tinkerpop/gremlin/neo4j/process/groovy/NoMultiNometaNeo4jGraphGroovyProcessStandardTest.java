@@ -22,8 +22,8 @@
 package org.apache.tinkerpop.gremlin.neo4j.process.groovy;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.neo4j.SimpleNeo4jGraphProvider;
-import org.apache.tinkerpop.gremlin.neo4j.structure.simple.SimpleNeo4jGraph;
+import org.apache.tinkerpop.gremlin.neo4j.NoMultiNoMetaNeo4jGraphProvider;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite;
 import org.junit.runner.RunWith;
 
@@ -31,6 +31,6 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(GroovyProcessStandardSuite.class)
-@GraphProviderClass(provider = SimpleNeo4jGraphProvider.class, graph = SimpleNeo4jGraph.class)
-public class SimpleNeo4jGraphGroovyProcessStandardTest {
+@GraphProviderClass(provider = NoMultiNoMetaNeo4jGraphProvider.class, graph = Neo4jGraph.class)
+public class NoMultiNoMetaNeo4jGraphGroovyProcessStandardTest {
 }

@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SimpleNeo4jGraphProvider extends AbstractNeo4jGraphProvider {
+public class NoMultiNoMetaNeo4jGraphProvider extends AbstractNeo4jGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData graphData) {
         return new HashMap<String, Object>() {{

@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.neo4j.structure;
 
-import org.apache.tinkerpop.gremlin.neo4j.structure.full.FullNeo4jVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -36,12 +35,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Predicate;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<Neo4jNode> {
+public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVertex<Neo4jNode> {
 
     public static final String LABEL_DELIMINATOR = "::";
 
@@ -52,7 +50,7 @@ public abstract class Neo4jVertex extends Neo4jElement implements Vertex, Wrappe
     @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         if (null == inVertex) throw Graph.Exceptions.argumentCanNotBeNull("inVertex");
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.getBaseVertex().getId());
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
         ElementHelper.validateLabel(label);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         if (ElementHelper.getIdValue(keyValues).isPresent())
@@ -60,7 +58,7 @@ public abstract class Neo4jVertex extends Neo4jElement implements Vertex, Wrappe
 
         this.graph.tx().readWrite();
         final Neo4jNode node = (Neo4jNode) this.baseElement;
-        final Neo4jEdge edge = this.graph.createEdge(node.connectTo(((Neo4jVertex) inVertex).getBaseVertex(), label));
+        final Neo4jEdge edge = new Neo4jEdge(node.connectTo(((Neo4jVertex) inVertex).getBaseVertex(), label), this.graph);
         ElementHelper.attachProperties(edge, keyValues);
         return edge;
     }
@@ -71,15 +69,33 @@ public abstract class Neo4jVertex extends Neo4jElement implements Vertex, Wrappe
     }
 
     @Override
-    public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
-        return this.property(this.graph.features().vertex().getCardinality(key), key, value, keyValues);
+    public void remove() {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
+        this.removed = true;
+        this.graph.tx().readWrite();
+        this.graph.trait.removeVertex(this);
     }
 
     @Override
-    public abstract <V> VertexProperty<V> property(final String key);
+    public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
+        this.graph.tx().readWrite();
+        return this.graph.trait.setVertexProperty(this, cardinality, key, value, keyValues);
+    }
 
     @Override
-    public abstract <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys);
+    public <V> VertexProperty<V> property(final String key) {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
+        this.graph.tx().readWrite();
+        return this.graph.trait.getVertexProperty(this, key);
+    }
+
+    @Override
+    public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
+        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
+        this.graph.tx().readWrite();
+        return this.graph.trait.getVertexProperties(this, propertyKeys);
+    }
 
     @Override
     public Neo4jNode getBaseVertex() {
@@ -98,7 +114,7 @@ public abstract class Neo4jVertex extends Neo4jElement implements Vertex, Wrappe
         return new Iterator<Vertex>() {
             final Iterator<Neo4jRelationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
                     getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.getRelationshipPredicate());
+                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.trait.getRelationshipPredicate());
 
             @Override
             public boolean hasNext() {
@@ -107,7 +123,7 @@ public abstract class Neo4jVertex extends Neo4jElement implements Vertex, Wrappe
 
             @Override
             public Neo4jVertex next() {
-                return graph.createVertex(this.relationshipIterator.next().other(getBaseVertex()));
+                return new Neo4jVertex(this.relationshipIterator.next().other(getBaseVertex()), graph);
             }
         };
     }
@@ -118,7 +134,7 @@ public abstract class Neo4jVertex extends Neo4jElement implements Vertex, Wrappe
         return new Iterator<Edge>() {
             final Iterator<Neo4jRelationship> relationshipIterator = IteratorUtils.filter(0 == edgeLabels.length ?
                     getBaseVertex().relationships(Neo4jHelper.mapDirection(direction)).iterator() :
-                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.getRelationshipPredicate());
+                    getBaseVertex().relationships(Neo4jHelper.mapDirection(direction), (edgeLabels)).iterator(), graph.trait.getRelationshipPredicate());
 
             @Override
             public boolean hasNext() {
@@ -127,7 +143,7 @@ public abstract class Neo4jVertex extends Neo4jElement implements Vertex, Wrappe
 
             @Override
             public Neo4jEdge next() {
-                return graph.createEdge(this.relationshipIterator.next());
+                return new Neo4jEdge(this.relationshipIterator.next(), graph);
             }
         };
     }
@@ -155,17 +171,4 @@ public abstract class Neo4jVertex extends Neo4jElement implements Vertex, Wrappe
         return StringFactory.vertexString(this);
     }
 
-    protected boolean existsInNeo4j(final String key) {
-        try {
-            return this.getBaseVertex().hasProperty(key);
-        } catch (IllegalStateException ex) {
-            // if vertex is removed before/after transaction close
-            throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
-        } catch (RuntimeException ex) {
-            // if vertex is removed before/after transaction close
-            if (Neo4jHelper.isNotFound(ex))
-                throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
-            throw ex;
-        }
-    }
 }

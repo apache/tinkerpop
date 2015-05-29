@@ -21,8 +21,7 @@ package org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jEdge;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
-import org.apache.tinkerpop.gremlin.neo4j.structure.full.FullNeo4jVertexProperty;
+import org.apache.tinkerpop.gremlin.neo4j.structure.trait.MultiMetaNeo4jTrait;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
@@ -107,12 +106,12 @@ public final class Neo4jGraphStep<S extends Element> extends GraphStep<S> {
         final Iterable<Neo4jNode> iterator2 = graph.getBaseGraph().findNodes(hasContainer.getKey(), T.value.getAccessor(), hasContainer.getValue());
         final Stream<Neo4jVertex> stream1 = IteratorUtils.stream(iterator1)
                 .filter(node -> ElementHelper.idExists(node.getId(), this.ids))
-                .map(node -> graph.createVertex(node));
+                .map(node -> new Neo4jVertex(node,graph));
         final Stream<Neo4jVertex> stream2 = IteratorUtils.stream(iterator2)
                 .filter(node -> ElementHelper.idExists(node.getId(), this.ids))
                 .filter(node -> node.getProperty(T.key.getAccessor()).equals(hasContainer.getKey()))
                 .map(node -> node.relationships(Neo4jDirection.INCOMING).iterator().next().start())
-                .map(node -> graph.createVertex(node));
+                .map(node -> new Neo4jVertex(node,graph));
         return Stream.concat(stream1, stream2);
     }
 
@@ -120,30 +119,30 @@ public final class Neo4jGraphStep<S extends Element> extends GraphStep<S> {
         //System.out.println("labels: " + labels);
         final Neo4jGraph graph = (Neo4jGraph) this.getTraversal().getGraph().get();
         return labels.stream()
-                .filter(label -> !label.equals(FullNeo4jVertexProperty.VERTEX_PROPERTY_LABEL))
+                .filter(label -> !label.equals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_LABEL))      // TODO: use predicates
                 .flatMap(label -> IteratorUtils.stream(graph.getBaseGraph().findNodes(label)))
-                .filter(node -> !node.hasLabel(FullNeo4jVertexProperty.VERTEX_PROPERTY_LABEL))
+                .filter(node -> !node.hasLabel(MultiMetaNeo4jTrait.VERTEX_PROPERTY_LABEL))
                 .filter(node -> ElementHelper.idExists(node.getId(), this.ids))
-                .map(node -> graph.createVertex(node));
+                .map(node -> new Neo4jVertex(node,graph));
     }
 
     private Stream<Neo4jVertex> getVerticesUsingAutomaticIndex(final HasContainer hasContainer) {
         //System.out.println("automatic index: " + hasContainer);
         final Neo4jGraph graph = (Neo4jGraph) this.getTraversal().getGraph().get();
         return IteratorUtils.stream(graph.getBaseGraph().findNodes(hasContainer.getKey(), hasContainer.getValue()).iterator())
-                .map(node -> node.hasLabel(FullNeo4jVertexProperty.VERTEX_PROPERTY_LABEL) ?
+                .map(node -> node.hasLabel(MultiMetaNeo4jTrait.VERTEX_PROPERTY_LABEL) ?
                         node.relationships(Neo4jDirection.INCOMING).iterator().next().start() :
                         node)
                 .filter(node -> ElementHelper.idExists(node.getId(), this.ids))
-                .map(node -> graph.createVertex(node));
+                .map(node -> new Neo4jVertex(node,graph));
     }
 
     private Stream<Neo4jEdge> getEdgesUsingAutomaticIndex(final HasContainer hasContainer) {
         final Neo4jGraph graph = (Neo4jGraph) this.getTraversal().getGraph().get();
         return IteratorUtils.stream(graph.getBaseGraph().findRelationships(hasContainer.getKey(), hasContainer.getValue()).iterator())
                 .filter(relationship -> ElementHelper.idExists(relationship.getId(), this.ids))
-                .filter(relationship -> !relationship.type().startsWith(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX))
-                .map(relationship -> graph.createEdge(relationship));
+                .filter(relationship -> !relationship.type().startsWith(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX))
+                .map(relationship -> new Neo4jEdge(relationship,graph));
     }
 
     private Pair<String, HasContainer> getHasContainerForLabelIndex() {

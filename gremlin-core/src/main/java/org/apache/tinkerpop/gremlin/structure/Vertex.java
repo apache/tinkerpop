@@ -94,7 +94,7 @@ public interface Vertex extends Element, Host {
     /**
      * Set the provided key to the provided value using default {@link VertexProperty.Cardinality} for that key.
      * The default cardinality can be vendor defined and is usually tied to the graph schema.
-     * If the vendor does not have a preference, then the default cardinality should be {@link VertexProperty.Cardinality#single}.
+     * The default implementation of this method determines the cardinality {@code graph().features().vertex().getCardinality(key)}.
      * The provided key/values are the properties of the newly created {@link VertexProperty}.
      * These key/values must be provided in an even number where the odd numbered arguments are {@link String}.
      *
@@ -104,7 +104,9 @@ public interface Vertex extends Element, Host {
      * @param <V>       the type of the value of the vertex property
      * @return the newly created vertex property
      */
-    public <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues);
+    public default <V> VertexProperty<V> property(final String key, final V value, final Object... keyValues) {
+        return this.property(graph().features().vertex().getCardinality(key), key, value, keyValues);
+    }
 
     /**
      * Create a new vertex property.

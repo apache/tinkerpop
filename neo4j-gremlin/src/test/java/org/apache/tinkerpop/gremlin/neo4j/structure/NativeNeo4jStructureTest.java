@@ -25,7 +25,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.neo4j.AbstractNeo4jGremlinTest;
-import org.apache.tinkerpop.gremlin.neo4j.structure.full.FullNeo4jVertexProperty;
+import org.apache.tinkerpop.gremlin.neo4j.structure.trait.MultiMetaNeo4jTrait;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -370,7 +370,7 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             assertEquals(a.id(), g.V().has("person", "name", "okram").id().next());
             assertEquals(1, g.V().has("person", "name", "okram").count().next().intValue());
             assertEquals(34, ((Neo4jVertex) g.V().has("person", "name", "okram").next()).getBaseVertex().getProperty("age"));
-            assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "okram").next()).getBaseVertex().getProperty("name"));
+            assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "okram").next()).getBaseVertex().getProperty("name"));
             ///
             assertEquals(b.id(), g.V().has("person", "name", "stephen").id().next());
             assertEquals(1, g.V().has("person", "name", "stephen").count().next().intValue());
@@ -394,14 +394,14 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             assertEquals(d.id(), g.V().has("person", "name", P.within("daniel", "kuppitz")).id().next());
             assertEquals(d.id(), g.V().has("person", "name", "kuppitz").id().next());
             assertEquals(d.id(), g.V().has("person", "name", "daniel").id().next());
-            assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
+            assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) g.V().has("person", "name", "kuppitz").next()).getBaseVertex().getProperty("name"));
         });
         d.property(VertexProperty.Cardinality.list, "name", "marko", "acl", "private");
         tryCommit(graph, graph -> {
             assertEquals(2, g.V().has("person", "name", "marko").count().next().intValue());
             assertEquals(1, g.V().has("person", "name", "marko").properties("name").has(T.value, "marko").has("acl", "private").count().next().intValue());
             g.V().has("person", "name", "marko").forEachRemaining(v -> {
-                assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) v).getBaseVertex().getProperty("name"));
+                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_TOKEN, ((Neo4jVertex) v).getBaseVertex().getProperty("name"));
             });
 
         });
@@ -497,7 +497,7 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             assertEquals(2l, this.getGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
             a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
-                assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
+                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
                 counter.incrementAndGet();
             });
             assertEquals(2, counter.getAndSet(0));
@@ -512,7 +512,7 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
                 assertTrue("marko".equals(node.getProperty(T.value.getAccessor())) || "okram".equals(node.getProperty(T.value.getAccessor())));
                 assertEquals(0, node.degree(Neo4jDirection.OUTGOING, null));
                 assertEquals(1, node.degree(Neo4jDirection.INCOMING, null));
-                assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
+                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
                 counter.incrementAndGet();
             });
             assertEquals(2, counter.getAndSet(0));
@@ -566,7 +566,7 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             assertEquals(1l, this.getGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
             a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
-                assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
+                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
                 counter.incrementAndGet();
             });
             assertEquals(1, counter.getAndSet(0));
@@ -582,14 +582,14 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
                 assertEquals("private", node.getProperty("acl"));
                 assertEquals(0, node.degree(Neo4jDirection.OUTGOING, null));
                 assertEquals(1, node.degree(Neo4jDirection.INCOMING, null));
-                assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
+                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
                 counter.incrementAndGet();
             });
             assertEquals(1, counter.getAndSet(0));
 
             assertEquals(1, IteratorUtils.count(a.getBaseVertex().getKeys()));
             assertTrue(a.getBaseVertex().hasProperty("name"));
-            assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
+            assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
             assertEquals(2, IteratorUtils.count(b.getBaseVertex().getKeys()));
             assertEquals("stephen", b.getBaseVertex().getProperty("name"));
             assertEquals("virginia", b.getBaseVertex().getProperty("location"));
@@ -611,7 +611,7 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             assertEquals(1l, this.getGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
             a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
-                assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
+                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
                 counter.incrementAndGet();
             });
             assertEquals(1, counter.getAndSet(0));
@@ -627,14 +627,14 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
                 assertEquals("private", node.getProperty("acl"));
                 assertEquals(0, node.degree(Neo4jDirection.OUTGOING, null));
                 assertEquals(1, node.degree(Neo4jDirection.INCOMING, null));
-                assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
+                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
                 counter.incrementAndGet();
             });
             assertEquals(1, counter.getAndSet(0));
 
             assertEquals(1, IteratorUtils.count(a.getBaseVertex().getKeys()));
             assertTrue(a.getBaseVertex().hasProperty("name"));
-            assertEquals(FullNeo4jVertexProperty.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
+            assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_TOKEN, a.getBaseVertex().getProperty("name"));
             assertEquals(2, IteratorUtils.count(b.getBaseVertex().getKeys()));
             assertEquals("stephen", b.getBaseVertex().getProperty("name"));
             assertEquals("virginia", b.getBaseVertex().getProperty("location"));

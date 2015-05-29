@@ -22,8 +22,7 @@
 package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.neo4j.SimpleNeo4jGraphProvider;
-import org.apache.tinkerpop.gremlin.neo4j.structure.simple.SimpleNeo4jGraph;
+import org.apache.tinkerpop.gremlin.neo4j.NoMultiNoMetaNeo4jGraphProvider;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runner.RunWith;
 
@@ -31,6 +30,6 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(StructureStandardSuite.class)
-@GraphProviderClass(provider = SimpleNeo4jGraphProvider.class, graph = SimpleNeo4jGraph.class)
-public class SimpleNeo4jGraphStructureStandardTest {
+@GraphProviderClass(provider = NoMultiNoMetaNeo4jGraphProvider.class, graph = Neo4jGraph.class)
+public class NoMultiNoMetaNeo4jGraphStructureStandardTest {
 }

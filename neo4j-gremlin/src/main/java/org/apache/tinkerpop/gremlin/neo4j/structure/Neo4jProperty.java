@@ -27,7 +27,7 @@ import org.neo4j.tinkerpop.api.Neo4jEntity;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Neo4jProperty<V> implements Property<V> {
+public final class Neo4jProperty<V> implements Property<V> {
 
     protected final Element element;
     protected final String key;
