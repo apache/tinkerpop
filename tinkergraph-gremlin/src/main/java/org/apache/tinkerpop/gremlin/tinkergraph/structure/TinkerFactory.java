@@ -87,7 +87,9 @@ public final class TinkerFactory {
     }
 
     public static TinkerGraph createTheCrew() {
-        final TinkerGraph g = TinkerGraph.open();
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
+        final TinkerGraph g = TinkerGraph.open(conf);
         generateTheCrew(g);
         return g;
     }
