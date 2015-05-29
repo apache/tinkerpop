@@ -64,7 +64,7 @@ function cleanup() {
   find "${TP_HOME}/docs/src/" -name "*.asciidoc.groovy" | xargs rm -f
 }
 
-if [ ! -z "${hadoopPluginName}" -a ! -d "${hadoopPluginDirectory}" -a ${match} -eq 0 ]; then
+if [ ! -z "${hadoopPluginName}" ] && [ ! -d "${hadoopPluginDirectory}" ] && [ ${match} -eq 0 ]; then
   rmHadoopPlugin=1
   echo -e "\n${hadoopPluginClass}" >> "${PLUGIN_DIR}/plugins.txt"
   mkdir -p "${PLUGIN_DIR}/${hadoopPluginName}/"{lib,plugin}
