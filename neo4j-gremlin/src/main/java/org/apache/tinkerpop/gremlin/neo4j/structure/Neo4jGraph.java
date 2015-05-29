@@ -50,6 +50,7 @@ import org.neo4j.tinkerpop.api.Neo4jTx;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -95,15 +96,20 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
     private void initialize(final Neo4jGraphAPI baseGraph, final Configuration configuration) {
         this.configuration.copy(configuration);
         this.baseGraph = baseGraph;
-        boolean supportsMetaProperties = this.configuration.getBoolean(CONFIG_META_PROPERTIES, false);
-        boolean supportsMultiProperties = this.configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false);
+        this.neo4jGraphVariables = new Neo4jGraphVariables(this);
+        this.tx().readWrite();
+        final Optional<Boolean> hasMultiProperties = this.neo4jGraphVariables.get(Graph.Hidden.hide(CONFIG_MULTI_PROPERTIES));
+        final Optional<Boolean> hasMetaProperties = this.neo4jGraphVariables.get(Graph.Hidden.hide(CONFIG_META_PROPERTIES));
+        boolean supportsMetaProperties = hasMetaProperties.orElse(this.configuration.getBoolean(CONFIG_META_PROPERTIES, false));
+        boolean supportsMultiProperties = hasMultiProperties.orElse(this.configuration.getBoolean(CONFIG_MULTI_PROPERTIES, false));
         if (supportsMultiProperties != supportsMetaProperties)
             throw new IllegalArgumentException(this.getClass().getSimpleName() + " currently supports either both meta-properties and multi-properties or neither");
-        this.neo4jGraphVariables = new Neo4jGraphVariables(this);
-        if (supportsMultiProperties)
-            this.trait = new MultiMetaNeo4jTrait();
-        else
-            this.trait = new NoMultiNoMetaNeo4jTrait();
+        if (!hasMultiProperties.isPresent())
+            this.neo4jGraphVariables.set(Graph.Hidden.hide(CONFIG_MULTI_PROPERTIES), supportsMultiProperties);
+        if (!hasMetaProperties.isPresent())
+            this.neo4jGraphVariables.set(Graph.Hidden.hide(CONFIG_META_PROPERTIES), supportsMetaProperties);
+        this.trait = supportsMultiProperties ? new MultiMetaNeo4jTrait() : new NoMultiNoMetaNeo4jTrait();
+        this.tx().commit();
     }
 
     protected Neo4jGraph(final Neo4jGraphAPI baseGraph, final Configuration configuration) {
@@ -138,6 +144,13 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         final Configuration config = new BaseConfiguration();
         config.setProperty(CONFIG_DIRECTORY, directory);
         return open(config);
+    }
+
+    /**
+     * Construct a Neo4jGraph instance using an existing Neo4j raw instance.
+     */
+    public static Neo4jGraph open(final Neo4jGraphAPI baseGraph) {
+        return new Neo4jGraph(baseGraph, EMPTY_CONFIGURATION);
     }
 
     @Override
@@ -217,13 +230,6 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         }
     }
 
-
-    /**
-     * Construct a Neo4jGraph instance using an existing Neo4j raw instance.
-     */
-    /*public static Neo4jGraph open(final Neo4jGraphAPI baseGraph) {
-        return new Neo4jGraph(Optional.ofNullable(baseGraph).orElseThrow(() -> Graph.Exceptions.argumentCanNotBeNull("baseGraph")));
-    }*/
     @Override
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
         throw Graph.Exceptions.graphComputerNotSupported();
