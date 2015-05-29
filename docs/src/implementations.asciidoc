@@ -504,9 +504,26 @@ TinkerGraph has several settings that can be provided on creation via `Configura
 |gremlin.tinkergraph.vertexIdManager |The `IdManager` implementation to use for vertices.
 |gremlin.tinkergraph.edgeIdManager |The `IdManager` implementation to use for edges.
 |gremlin.tinkergraph.vertexPropertyIdManager |The `IdManager` implementation to use for vertex properties.
+|gremlin.tinkergraph.defaultVertexPropertyCardinality |The default `VertexProperty.Cardinality` to use when `Vertex.property(k,v)` is called.
 |=========================================================
 
 The `IdManager` settings above refer to how TinkerGraph will control identifiers for vertices, edges and vertex properties.  There are several options for each of these settings: `ANY`, `LONG`, `INTEGER`, `UUID`, or the fully qualified class name of an `IdManager` implementation on the classpath.  When not specified, the default values for all settings is `ANY`, meaning that the graph will work with any object on the JVM as the identifier and will generate new identifiers from `Long` when the identifier is not user supplied.  TinkerGraph will also expect the user to understand the types used for identifiers when querying, meaning that `g.V(1)` and `g.V(1L)` could return two different vertices.  `LONG`, `INTEGER` and `UUID` settings will try to coerce identifier values to the expected type as well as generate new identifiers with that specified type.
+
+It is important to consider the data being imported to TinkerGraph with respect to `defaultVertexPropertyCardinality` setting.  For example, if a `.gryo` file is known to contain multi-property data, be sure to set the default cardinality to `list` or else the data will import as `single`.  Consider the following:
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+graph.io(gryo()).readGraph("data/tinkerpop-crew.kryo")
+g = graph.traversal()
+g.V().properties()
+conf = new BaseConfiguration()
+conf.setProperty("gremlin.tinkergraph.defaultVertexPropertyCardinality","list")
+graph = TinkerGraph.open(conf)
+graph.io(gryo()).readGraph("data/tinkerpop-crew.kryo")
+g = graph.traversal()
+g.V().properties()
+----
 
 [[neo4j-gremlin]]
 Neo4j-Gremlin
