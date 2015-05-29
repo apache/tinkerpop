@@ -82,7 +82,8 @@ limitations under the License.
         <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
         <module>hadoop-gremlin</module>
-        <module>neo4j-gremlin</module>
+        <!-- UNCOMMENT WHEN ARTIFACTS ARE PUSHED TO CENTRAL REPO -->
+        <!-- <module>neo4j-gremlin</module> -->
         <module>gremlin-driver</module>
         <module>gremlin-console</module>
         <module>gremlin-server</module>
@@ -761,27 +762,53 @@ limitations under the License.
                                     <quiet>true</quiet>
                                     <sourceFileIncludes>
                                         <!-- structure -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/*.java</sourceFileInclude>
-                                          <!-- io -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/*.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/graphml/GraphMLReader.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/graphml/GraphMLWriter.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONReader.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONWrtier.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/gryo/GryoReader.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/gryo/GryoWrtier.java</sourceFileInclude>
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/*.java
+                                        </sourceFileInclude>
+                                        <!-- io -->
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/*.java
+                                        </sourceFileInclude>
+                                        <sourceFileInclude>
+                                            org/apache/tinkerpop/gremlin/structure/io/graphml/GraphMLReader.java
+                                        </sourceFileInclude>
+                                        <sourceFileInclude>
+                                            org/apache/tinkerpop/gremlin/structure/io/graphml/GraphMLWriter.java
+                                        </sourceFileInclude>
+                                        <sourceFileInclude>
+                                            org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONReader.java
+                                        </sourceFileInclude>
+                                        <sourceFileInclude>
+                                            org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONWrtier.java
+                                        </sourceFileInclude>
+                                        <sourceFileInclude>
+                                            org/apache/tinkerpop/gremlin/structure/io/gryo/GryoReader.java
+                                        </sourceFileInclude>
+                                        <sourceFileInclude>
+                                            org/apache/tinkerpop/gremlin/structure/io/gryo/GryoWrtier.java
+                                        </sourceFileInclude>
                                         <!-- process -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/*.java</sourceFileInclude>
-                                          <!-- computer -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/computer/*.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/computer/clustering/peerpressure/PeerPressureVertexProgram.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/computer/ranking/pagerank/PageRankVertexProgram.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/computer/traversal/TraversalVertexProgram.java</sourceFileInclude>
-                                          <!-- traversal -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/traversal/*.java</sourceFileInclude>
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.java</sourceFileInclude>
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/*.java
+                                        </sourceFileInclude>
+                                        <!-- computer -->
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/computer/*.java
+                                        </sourceFileInclude>
+                                        <sourceFileInclude>
+                                            org/apache/tinkerpop/gremlin/process/computer/clustering/peerpressure/PeerPressureVertexProgram.java
+                                        </sourceFileInclude>
+                                        <sourceFileInclude>
+                                            org/apache/tinkerpop/gremlin/process/computer/ranking/pagerank/PageRankVertexProgram.java
+                                        </sourceFileInclude>
+                                        <sourceFileInclude>
+                                            org/apache/tinkerpop/gremlin/process/computer/traversal/TraversalVertexProgram.java
+                                        </sourceFileInclude>
+                                        <!-- traversal -->
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/traversal/*.java
+                                        </sourceFileInclude>
+                                        <sourceFileInclude>
+                                            org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.java
+                                        </sourceFileInclude>
                                         <!-- driver -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/driver/*.java</sourceFileInclude>
+                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/driver/*.java
+                                        </sourceFileInclude>
                                     </sourceFileIncludes>
                                     <additionalDependencies>
                                         <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
