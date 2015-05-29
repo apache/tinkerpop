@@ -27,13 +27,21 @@ if [ ! -f bin/gremlin.sh ]; then
   exit 1
 fi
 
+function directory {
+  d1=`pwd`
+  cd $1
+  d2=`pwd`
+  cd $d1
+  echo "$d2"
+}
+
 mkdir -p target/postprocess-asciidoc
 rm -rf target/postprocess-asciidoc/*
 mkdir target/postprocess-asciidoc/tmp
 cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
 
 TP_HOME=`pwd`
-CONSOLE_HOME=`readlink -f ${TP_HOME}/gremlin-console/target/apache-gremlin-console-*-standalone`
+CONSOLE_HOME=`directory "${TP_HOME}/gremlin-console/target/apache-gremlin-console-*-standalone"`
 PLUGIN_DIR="${CONSOLE_HOME}/ext"
 TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -Po '(?<=<version>).*(?=</version>)')
 
@@ -62,7 +70,7 @@ if [ ! -z "${hadoopPluginName}" -a ! -d "${hadoopPluginDirectory}" -a ${match} -
   mkdir -p "${PLUGIN_DIR}/${hadoopPluginName}/"{lib,plugin}
   #cp ${hadoopPluginName}/target/*${TP_VERSION}.jar "${PLUGIN_DIR}/${hadoopPluginName}/lib"
   cp ${hadoopPluginName}/target/*${TP_VERSION}.jar "${PLUGIN_DIR}/${hadoopPluginName}/plugin"
-  libdir=`readlink -f ${hadoopPluginName}/target/*-standalone/lib/`
+  libdir=`directory "${hadoopPluginName}/target/*-standalone/lib/"`
   if [ -d "${libdir}" ]; then
     #cp ${libdir}/*.jar "${PLUGIN_DIR}/${hadoopPluginName}/lib"
     cp ${libdir}/*.jar "${PLUGIN_DIR}/${hadoopPluginName}/plugin"
@@ -81,7 +89,7 @@ fi
 cp ${TP_HOME}/hadoop-gremlin/conf/* "${CONSOLE_HOME}/conf/"
 
 # process *.asciidoc files
-find "${TP_HOME}/docs/src/" -name "*.asciidoc" | xargs -n1 -P0 "${TP_HOME}/docs/preprocessor/preprocess-file.sh"
+find "${TP_HOME}/docs/src/" -name "*.asciidoc" | xargs -n1 -P0 "${TP_HOME}/docs/preprocessor/preprocess-file.sh" "${CONSOLE_HOME}"
 
 cleanup
 

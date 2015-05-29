@@ -20,9 +20,9 @@
 #
 
 TP_HOME=`pwd`
-CONSOLE_HOME=`readlink -f ${TP_HOME}/gremlin-console/target/apache-gremlin-console-*-standalone`
+CONSOLE_HOME=$1
 
-input=$1
+input=$2
 name=`basename ${input}`
 output="${TP_HOME}/target/postprocess-asciidoc/${name}"
 
