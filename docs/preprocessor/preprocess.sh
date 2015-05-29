@@ -43,12 +43,12 @@ cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
 TP_HOME=`pwd`
 CONSOLE_HOME=`directory "${TP_HOME}/gremlin-console/target/apache-gremlin-console-*-standalone"`
 PLUGIN_DIR="${CONSOLE_HOME}/ext"
-TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -Po '(?<=<version>).*(?=</version>)')
+TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -o 'version>[^<]*' | grep -o '>.*' | grep -o '[^>]*')
 
 # install Hadoop plugin
 hadoopPlugin=$(find . -name "HadoopGremlinPlugin.java")
 hadoopPluginName=`echo ${hadoopPlugin} | cut -d '/' -f2`
-hadoopPluginClass=`echo ${hadoopPlugin} | grep -Po '(?<=src/main/java/).*(?=\.java)' | tr '/' '.'`
+hadoopPluginClass=`echo ${hadoopPlugin} | sed -e 's@.*src/main/java/@@' -e 's/\.java$//' | tr '/' '.'`
 hadoopPluginDirectory="${PLUGIN_DIR}/${hadoopPluginName}"
 match=`grep -c "$hadoopPluginClass" ${PLUGIN_DIR}/plugins.txt`
 
@@ -68,18 +68,15 @@ if [ ! -z "${hadoopPluginName}" ] && [ ! -d "${hadoopPluginDirectory}" ] && [ ${
   rmHadoopPlugin=1
   echo -e "\n${hadoopPluginClass}" >> "${PLUGIN_DIR}/plugins.txt"
   mkdir -p "${PLUGIN_DIR}/${hadoopPluginName}/"{lib,plugin}
-  #cp ${hadoopPluginName}/target/*${TP_VERSION}.jar "${PLUGIN_DIR}/${hadoopPluginName}/lib"
   cp ${hadoopPluginName}/target/*${TP_VERSION}.jar "${PLUGIN_DIR}/${hadoopPluginName}/plugin"
   libdir=`directory "${hadoopPluginName}/target/*-standalone/lib/"`
   if [ -d "${libdir}" ]; then
-    #cp ${libdir}/*.jar "${PLUGIN_DIR}/${hadoopPluginName}/lib"
     cp ${libdir}/*.jar "${PLUGIN_DIR}/${hadoopPluginName}/plugin"
   fi
   cp */target/*${TP_VERSION}.jar "${PLUGIN_DIR}/${hadoopPluginName}/lib"
   for libdir in $(find . -name lib | grep -v ext); do
     cp ${libdir}/*.jar "${PLUGIN_DIR}/${hadoopPluginName}/lib"
   done
-  #rm -f "${PLUGIN_DIR}/hadoop-gremlin"/*/slf4j-*.jar
   rm -f "${PLUGIN_DIR}/hadoop-gremlin"/plugin/slf4j-*.jar
   echo "System.exit(0)" > "${PLUGIN_DIR}/${hadoopPluginName}/init.groovy"
   ${CONSOLE_HOME}/bin/gremlin.sh "${PLUGIN_DIR}/${hadoopPluginName}/init.groovy" > /dev/null 2> /dev/null
