@@ -92,7 +92,7 @@ public final class TinkerGraph implements Graph {
     protected final IdManager<?> vertexIdManager;
     protected final IdManager<?> edgeIdManager;
     protected final IdManager<?> vertexPropertyIdManager;
-    //protected final VertexProperty.Cardinality defaultVertexPropertyCardinality;
+    protected final VertexProperty.Cardinality defaultVertexPropertyCardinality;
 
     private final Configuration configuration;
 
@@ -104,7 +104,8 @@ public final class TinkerGraph implements Graph {
         this.vertexIdManager = selectIdManager(configuration, CONFIG_VERTEX_ID, Vertex.class);
         this.edgeIdManager = selectIdManager(configuration, CONFIG_EDGE_ID, Edge.class);
         this.vertexPropertyIdManager = selectIdManager(configuration, CONFIG_VERTEX_PROPERTY_ID, VertexProperty.class);
-        //this.defaultVertexPropertyCardinality = VertexProperty.Cardinality.valueOf(configuration.getString(CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY, "single"));
+        this.defaultVertexPropertyCardinality = VertexProperty.Cardinality.valueOf(
+                configuration.getString(CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.single.name()));
     }
 
     /**
@@ -314,11 +315,11 @@ public final class TinkerGraph implements Graph {
             return vertexIdManager.allow(id);
         }
 
-        /*@Override
+        @Override
         public VertexProperty.Cardinality getCardinality(final String key) {
-            return VertexProperty.Cardinality.single;
-            //return defaultVertexPropertyCardinality;
-        }*/
+            //return VertexProperty.Cardinality.single;
+            return defaultVertexPropertyCardinality;
+        }
     }
 
     public class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {

@@ -23,7 +23,10 @@ import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.GraphTest;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedGraphTest;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphTest;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerElement;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
@@ -62,6 +65,8 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
             put(TinkerGraph.CONFIG_VERTEX_ID, idMaker);
             put(TinkerGraph.CONFIG_EDGE_ID, idMaker);
             put(TinkerGraph.CONFIG_VERTEX_PROPERTY_ID, idMaker);
+            if (requiresListCardinalityAsDefault(loadGraphWith, test, testMethodName))
+                put(TinkerGraph.CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
         }};
     }
 
@@ -74,6 +79,16 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
     @Override
     public Set<Class> getImplementations() {
         return IMPLEMENTATION;
+    }
+
+    /**
+     * Determines if a test requires a different cardinality as the default or not.
+     */
+    private static boolean requiresListCardinalityAsDefault(final LoadGraphWith.GraphData loadGraphWith,
+                                                            final Class<?> test, final String testMethodName) {
+        return loadGraphWith == LoadGraphWith.GraphData.CREW
+                || (test == StarGraphTest.class && testMethodName.equals("shouldAttachWithCreateMethod"))
+                || (test == DetachedGraphTest.class && testMethodName.equals("testAttachableCreateMethod"));
     }
 
     /**
