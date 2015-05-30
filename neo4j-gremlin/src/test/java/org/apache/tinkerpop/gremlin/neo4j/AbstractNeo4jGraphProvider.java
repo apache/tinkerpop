@@ -75,6 +75,34 @@ public abstract class AbstractNeo4jGraphProvider extends AbstractGraphProvider {
         super.loadGraphData(graph, loadGraphWith, testClass, testName);
     }
 
+    public static void dropIndices(final Neo4jGraph graph, final LoadGraphWith.GraphData graphData) {
+        if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
+            graph.tx().readWrite();
+            graph.cypher("DROP INDEX ON :artist(name)").iterate();
+            graph.cypher("DROP INDEX ON :song(name)").iterate();
+            graph.cypher("DROP INDEX ON :song(songType)").iterate();
+            graph.cypher("DROP INDEX ON :song(performances)").iterate();
+            graph.tx().commit();
+        } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
+            graph.tx().readWrite();
+            graph.cypher("DROP INDEX ON :person(name)").iterate();
+            graph.cypher("DROP INDEX ON :person(age)").iterate();
+            graph.cypher("DROP INDEX ON :software(name)").iterate();
+            graph.cypher("DROP INDEX ON :software(lang)").iterate();
+            graph.tx().commit();
+        } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
+            graph.tx().readWrite();
+            graph.cypher("DROP INDEX ON :vertex(name)").iterate();
+            graph.cypher("DROP INDEX ON :vertex(age)").iterate();
+            graph.cypher("DROP INDEX ON :vertex(lang)").iterate();
+            graph.tx().commit();
+        } else {
+            // TODO: add CREW work here.
+            // TODO: add meta_property indices when meta_property graph is provided
+            //throw new RuntimeException("Could not load graph with " + graphData);
+        }
+    }
+
     private void createIndices(final Neo4jGraph graph, final LoadGraphWith.GraphData graphData) {
         final Random random = new Random();
         final boolean pick = random.nextBoolean();
