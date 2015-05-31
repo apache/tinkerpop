@@ -26,7 +26,6 @@ package org.apache.tinkerpop.gremlin.console.groovy.DisplayDocs;
 import java.util.TreeMap;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 public class DocStructure {
 
 	private String className;
@@ -39,7 +38,10 @@ public class DocStructure {
 		classPath = path;
                 loadMethodsInfo(path);
 	}
-
+        /**
+         * This method loads the documentation of class's all methods. 
+         * @param path 
+         */   
 	protected void loadMethodsInfo (String path) {
                 methodList = new TreeMap<String, MethodStructure>();
 		boolean find, finishReading = false;
@@ -115,15 +117,24 @@ public class DocStructure {
                 }
 
 	}
-        
+        /**
+         * 
+         * @return the name of the class
+         */
         public String getClassName() {
             return(className);
         }
-        
+        /**
+         * 
+         * @return the path to the class
+         */
         public String getClassPath() {
             return(classPath);
         }
-        
+        /**
+         * 
+         * @return the Map of the class methods
+         */
         public TreeMap<String, MethodStructure> getMethodList() {
             return(methodList);
         }

@@ -19,7 +19,6 @@
 
 package org.apache.tinkerpop.gremlin.console.groovy.DisplayDocs;
 
-//import java.util.*;
 import java.io.*;
 
 /**
@@ -35,11 +34,11 @@ public class ImportJavadocs {
             System.out.println(currentDoc.getMethodList().size());
 	}*/
 
-	/*
-	 * This function findes the target fill to the javadocs of the Class that is specifies
-	 * by the className.
-	 */
-        
+	/**
+         * This method find the target fill to the javadocs of the Class that is specifies by the className.
+         * @param className The name of a class whom javadocs we want to import.
+         * @return true if this class exists and false if not.
+         */
 	public static boolean findClass (String className) {
 		try {
 			currentDoc = new DocStructure(findPath2TheJavadoc(className), className);
@@ -50,10 +49,11 @@ public class ImportJavadocs {
 		return(true);
 	}
         
-	/*
-	 * Clean up the line keeping only the path.
-	 */
-        
+        /**
+         *  Clean up the line keeping only the path.
+         * @param className
+         * @return 
+         */
 	protected static String findPath2TheJavadoc (String className) {
 		String path[] = findPath2CorrectLine(className);
                 path[1] = path[1].split("href=\"")[1];
@@ -61,10 +61,11 @@ public class ImportJavadocs {
 		return(path[0] + "/" + path[1]);
 	}
 
-	/*
-	 * Τhis method search all directories for the correct line of html.
-	 */
-        
+        /**
+         * Τhis method search all directories for the correct line of html.
+         * @param className
+         * @return correct line html free.
+         */
 	protected static String[] findPath2CorrectLine (String className) {
 		boolean find = false;
 		String line = "";
