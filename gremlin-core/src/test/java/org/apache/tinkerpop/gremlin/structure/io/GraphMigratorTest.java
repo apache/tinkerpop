@@ -16,28 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.structure.io.gryo;
+package org.apache.tinkerpop.gremlin.structure.io;
 
-import org.apache.tinkerpop.shaded.kryo.Kryo;
-import org.apache.tinkerpop.shaded.kryo.Serializer;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
-
-import java.util.AbstractMap;
-import java.util.Map;
+import org.apache.tinkerpop.gremlin.TestHelper;
+import org.junit.Test;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-final class EntrySerializer extends Serializer<Map.Entry> {
-    @Override
-    public void write(final Kryo kryo, final Output output, final Map.Entry entry) {
-        kryo.writeClassAndObject(output, entry.getKey());
-        kryo.writeClassAndObject(output, entry.getValue());
-    }
-
-    @Override
-    public Map.Entry read(final Kryo kryo, final Input input, final Class<Map.Entry> entryClass) {
-        return new AbstractMap.SimpleEntry(kryo.readClassAndObject(input), kryo.readClassAndObject(input));
+public class GraphMigratorTest {
+    @Test
+    public void shouldBeUtilityClass() throws Exception {
+        TestHelper.assertIsUtilityClass(GraphMigrator.class);
     }
 }

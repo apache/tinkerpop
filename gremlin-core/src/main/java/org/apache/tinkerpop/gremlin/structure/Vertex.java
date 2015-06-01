@@ -57,8 +57,9 @@ public interface Vertex extends Element, Host {
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues);
 
     /**
-     * Get the {@link VertexProperty} for the provided key. If the property does not exist, return {@link VertexProperty#empty}.
-     * If there are more than one verte properties for the provided key, then throw {@link Vertex.Exceptions#multiplePropertiesExistForProvidedKey}.
+     * Get the {@link VertexProperty} for the provided key. If the property does not exist, return
+     * {@link VertexProperty#empty}. If there are more than one vertex properties for the provided
+     * key, then throw {@link Vertex.Exceptions#multiplePropertiesExistForProvidedKey}.
      *
      * @param key the key of the vertex property to get
      * @param <V> the expected type of the vertex property value
@@ -94,9 +95,10 @@ public interface Vertex extends Element, Host {
     /**
      * Set the provided key to the provided value using default {@link VertexProperty.Cardinality} for that key.
      * The default cardinality can be vendor defined and is usually tied to the graph schema.
-     * The default implementation of this method determines the cardinality {@code graph().features().vertex().getCardinality(key)}.
-     * The provided key/values are the properties of the newly created {@link VertexProperty}.
-     * These key/values must be provided in an even number where the odd numbered arguments are {@link String}.
+     * The default implementation of this method determines the cardinality
+     * {@code graph().features().vertex().getCardinality(key)}. The provided key/values are the properties of the
+     * newly created {@link VertexProperty}. These key/values must be provided in an even number where the odd
+     * numbered arguments are {@link String}.
      *
      * @param key       the key of the vertex property
      * @param value     The value of the vertex property
@@ -109,11 +111,11 @@ public interface Vertex extends Element, Host {
     }
 
     /**
-     * Create a new vertex property.
-     * If the cardinality is {@link VertexProperty.Cardinality#single}, then set the key to the value.
-     * If the cardinality is {@link VertexProperty.Cardinality#list}, then add a new value to the key.
-     * If the cardinality is {@link VertexProperty.Cardinality#set}, then only add a new value if that value doesn't already exist for the key.
-     * If the value already exists for the key, add the provided key value vertex property properties to it.
+     * Create a new vertex property. If the cardinality is {@link VertexProperty.Cardinality#single}, then set the key
+     * to the value. If the cardinality is {@link VertexProperty.Cardinality#list}, then add a new value to the key.
+     * If the cardinality is {@link VertexProperty.Cardinality#set}, then only add a new value if that value doesn't
+     * already exist for the key. If the value already exists for the key, add the provided key value vertex property
+     * properties to it.
      *
      * @param cardinality the desired cardinality of the property key
      * @param key         the key of the vertex property
@@ -137,7 +139,8 @@ public interface Vertex extends Element, Host {
      * Gets an {@link Iterator} of adjacent vertices.
      *
      * @param direction  The adjacency direction of the vertices to retrieve off this vertex
-     * @param edgeLabels The labels of the edges associated with the vertices to retrieve. If no labels are provided, then get all edges.
+     * @param edgeLabels The labels of the edges associated with the vertices to retrieve. If no labels are provided,
+     *                   then get all edges.
      * @return An iterator of vertices meeting the provided specification
      */
     public Iterator<Vertex> vertices(final Direction direction, final String... edgeLabels);

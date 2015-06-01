@@ -18,29 +18,36 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
+import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
- * Constructs the core {@link Io.Builder} implementations enabling a bit of shorthand syntax by importing these
- * methods statically.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class IoCore {
-
-    private IoCore() {}
-
-    public static Io.Builder<GraphMLIo> graphml() {
-        return GraphMLIo.build();
+public class IoCoreTest {
+    @Test
+    public void shouldBeUtilityClass() throws Exception {
+        TestHelper.assertIsUtilityClass(IoCore.class);
     }
 
-    public static Io.Builder<GraphSONIo> graphson() {
-        return GraphSONIo.build();
+    @Test
+    public void shouldCreateAnIoBuilderforGraphML() {
+        assertThat(IoCore.graphml(), instanceOf(GraphMLIo.Builder.class));
     }
 
-    public static Io.Builder<GryoIo> gryo() {
-        return GryoIo.build();
+    @Test
+    public void shouldCreateAnIoBuilderforGraphSON() {
+        assertThat(IoCore.graphson(), instanceOf(GraphSONIo.Builder.class));
+    }
+
+    @Test
+    public void shouldCreateAnIoBuilderforGryo() {
+        assertThat(IoCore.gryo(), instanceOf(GryoIo.Builder.class));
     }
 }

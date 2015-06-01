@@ -91,7 +91,7 @@ public class PageRankMapReduce extends StaticMapReduce<Object, Double, Object, D
         return new Builder();
     }
 
-    public static class Builder {
+    public final static class Builder {
 
         private String memoryKey = DEFAULT_MEMORY_KEY;
 

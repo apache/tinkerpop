@@ -198,7 +198,7 @@ public class PeerPressureVertexProgram extends StaticVertexProgram<Pair<Serializ
         return new Builder();
     }
 
-    public static class Builder extends AbstractVertexProgramBuilder<Builder> {
+    public static final class Builder extends AbstractVertexProgramBuilder<Builder> {
 
 
         private Builder() {

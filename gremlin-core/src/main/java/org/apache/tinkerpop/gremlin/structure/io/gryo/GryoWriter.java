@@ -44,7 +44,7 @@ import java.util.Iterator;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GryoWriter implements GraphWriter {
+public final class GryoWriter implements GraphWriter {
     private Kryo kryo;
 
     private GryoWriter(final GryoMapper gryoMapper) {
@@ -158,7 +158,7 @@ public class GryoWriter implements GraphWriter {
         return new Builder();
     }
 
-    public static class Builder implements WriterBuilder<GryoWriter> {
+    public final static class Builder implements WriterBuilder<GryoWriter> {
         /**
          * Always creates the most current version available.
          */

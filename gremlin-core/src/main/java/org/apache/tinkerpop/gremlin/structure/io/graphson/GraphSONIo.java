@@ -34,11 +34,11 @@ import java.io.OutputStream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWriter.Builder, GraphSONMapper.Builder> {
+public final class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWriter.Builder, GraphSONMapper.Builder> {
     private final IoRegistry registry;
     private final Graph graph;
 
-    public GraphSONIo(final IoRegistry registry, final Graph graph) {
+    private GraphSONIo(final IoRegistry registry, final Graph graph) {
         this.registry = registry;
         this.graph = graph;
     }
@@ -91,7 +91,7 @@ public class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWriter.Bui
         return new Builder();
     }
 
-    public static class Builder implements Io.Builder<GraphSONIo> {
+    public final static class Builder implements Io.Builder<GraphSONIo> {
 
         private IoRegistry registry = null;
         private Graph graph;

@@ -276,9 +276,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
         return new Builder();
     }
 
-    public static class Builder extends AbstractVertexProgramBuilder<Builder> {
+    public final static class Builder extends AbstractVertexProgramBuilder<Builder> {
 
-        public Builder() {
+        private Builder() {
             super(TraversalVertexProgram.class);
         }
 

@@ -34,7 +34,7 @@ import java.util.List;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class VertexByteArrayInputStream extends FilterInputStream {
+public final class VertexByteArrayInputStream extends FilterInputStream {
 
     private static final byte[] vertexTerminatorClass = new byte[]{15, 1, 1, 9};
     private static final byte[] pattern = ByteBuffer.allocate(vertexTerminatorClass.length + 8).put(vertexTerminatorClass).putLong(4185403236219066774L).array();

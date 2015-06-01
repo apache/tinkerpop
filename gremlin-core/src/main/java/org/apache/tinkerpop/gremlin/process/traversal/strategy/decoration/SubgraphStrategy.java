@@ -136,7 +136,7 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         return new Builder();
     }
 
-    public static class Builder {
+    public final static class Builder {
 
         private Traversal<Vertex, ?> vertexCriterion = null;
         private Traversal<Edge, ?> edgeCriterion = null;

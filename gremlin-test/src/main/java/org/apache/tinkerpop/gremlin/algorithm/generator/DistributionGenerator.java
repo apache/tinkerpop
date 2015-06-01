@@ -106,7 +106,7 @@ public class DistributionGenerator extends AbstractGenerator {
         return new Builder(g);
     }
 
-    public static class Builder extends AbstractGeneratorBuilder<Builder> {
+    public final static class Builder extends AbstractGeneratorBuilder<Builder> {
         private final Graph g;
         private Distribution outDistribution;
         private Distribution inDistribution;

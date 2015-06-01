@@ -56,7 +56,7 @@ import java.util.Optional;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphMLWriter implements GraphWriter {
+public final class GraphMLWriter implements GraphWriter {
     private final XMLOutputFactory inputFactory = XMLOutputFactory.newInstance();
     private boolean normalize = false;
 

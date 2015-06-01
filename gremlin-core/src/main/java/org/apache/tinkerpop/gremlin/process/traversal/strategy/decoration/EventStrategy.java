@@ -80,7 +80,7 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
         }
     }
 
-    public static class Builder {
+    public final static class Builder {
         private final List<MutationListener> listeners = new ArrayList<>();
 
         Builder() {}

@@ -34,12 +34,12 @@ import java.io.OutputStream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, GryoMapper.Builder> {
+public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, GryoMapper.Builder> {
 
     private final IoRegistry registry;
     private final Graph graph;
 
-    public GryoIo(final IoRegistry registry, final Graph graph) {
+    private GryoIo(final IoRegistry registry, final Graph graph) {
         this.registry = registry;
         this.graph = graph;
     }
@@ -91,7 +91,7 @@ public class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, GryoMa
         return new Builder();
     }
 
-    public static class Builder implements Io.Builder<GryoIo> {
+    public final static class Builder implements Io.Builder<GryoIo> {
 
         private IoRegistry registry = null;
         private Graph graph;

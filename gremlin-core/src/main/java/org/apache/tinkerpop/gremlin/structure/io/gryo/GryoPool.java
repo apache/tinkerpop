@@ -35,7 +35,7 @@ import java.util.function.Function;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GryoPool {
+public final class GryoPool {
     public static final String CONFIG_IO_REGISTRY = "gremlin.io.registry";
     public static final String CONFIG_IO_GRYO_POOL_SIZE = "gremlin.io.gryo.poolSize";
 

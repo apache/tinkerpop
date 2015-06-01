@@ -42,7 +42,7 @@ import java.util.Iterator;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONWriter implements GraphWriter {
+public final class GraphSONWriter implements GraphWriter {
     private final ObjectMapper mapper;
 
     private GraphSONWriter(final GraphSONMapper mapper) {
