@@ -450,7 +450,7 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             assertEquals(2l, this.getBaseGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
             a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
-                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
+                assertEquals(Graph.Hidden.hide("name"), relationship.type());
                 counter.incrementAndGet();
             });
             assertEquals(2, counter.getAndSet(0));
@@ -460,12 +460,12 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             });
             assertEquals(2, counter.getAndSet(0));
             IteratorUtils.stream(a.getBaseVertex().relationships(Neo4jDirection.OUTGOING)).map(Neo4jRelationship::end).forEach(node -> {
-                assertEquals(2, IteratorUtils.count(node.getKeys()));
+                assertEquals(3, IteratorUtils.count(node.getKeys()));  // T.key, T.value, key
                 assertEquals("name", node.getProperty(T.key.getAccessor()));
                 assertTrue("marko".equals(node.getProperty(T.value.getAccessor())) || "okram".equals(node.getProperty(T.value.getAccessor())));
                 assertEquals(0, node.degree(Neo4jDirection.OUTGOING, null));
                 assertEquals(1, node.degree(Neo4jDirection.INCOMING, null));
-                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
+                assertEquals(Graph.Hidden.hide("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
                 counter.incrementAndGet();
             });
             assertEquals(2, counter.getAndSet(0));
@@ -518,7 +518,7 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             assertEquals(1l, this.getBaseGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
             a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
-                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
+                assertEquals(Graph.Hidden.hide("name"), relationship.type());
                 counter.incrementAndGet();
             });
             assertEquals(1, counter.getAndSet(0));
@@ -528,13 +528,13 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             });
             assertEquals(1, counter.getAndSet(0));
             IteratorUtils.stream(a.getBaseVertex().relationships(Neo4jDirection.OUTGOING)).map(Neo4jRelationship::end).forEach(node -> {
-                assertEquals(3, IteratorUtils.count(node.getKeys()));
+                assertEquals(4, IteratorUtils.count(node.getKeys()));
                 assertEquals("name", node.getProperty(T.key.getAccessor()));
                 assertEquals("the marko", node.getProperty(T.value.getAccessor()));
                 assertEquals("private", node.getProperty("acl"));
                 assertEquals(0, node.degree(Neo4jDirection.OUTGOING, null));
                 assertEquals(1, node.degree(Neo4jDirection.INCOMING, null));
-                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
+                assertEquals(Graph.Hidden.hide("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
                 counter.incrementAndGet();
             });
             assertEquals(1, counter.getAndSet(0));
@@ -562,7 +562,7 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             assertEquals(1l, this.getBaseGraph().execute("MATCH (a)-[r]->() WHERE id(a) = " + a.id() + " RETURN COUNT(r)", null).next().get("COUNT(r)"));
             final AtomicInteger counter = new AtomicInteger(0);
             a.getBaseVertex().relationships(Neo4jDirection.OUTGOING).forEach(relationship -> {
-                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), relationship.type());
+                assertEquals(Graph.Hidden.hide("name"), relationship.type());
                 counter.incrementAndGet();
             });
             assertEquals(1, counter.getAndSet(0));
@@ -572,13 +572,13 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
             });
             assertEquals(1, counter.getAndSet(0));
             IteratorUtils.stream(a.getBaseVertex().relationships(Neo4jDirection.OUTGOING)).map(Neo4jRelationship::end).forEach(node -> {
-                assertEquals(3, IteratorUtils.count(node.getKeys()));
+                assertEquals(4, IteratorUtils.count(node.getKeys()));
                 assertEquals("name", node.getProperty(T.key.getAccessor()));
                 assertEquals("the marko", node.getProperty(T.value.getAccessor()));
                 assertEquals("private", node.getProperty("acl"));
                 assertEquals(0, node.degree(Neo4jDirection.OUTGOING, null));
                 assertEquals(1, node.degree(Neo4jDirection.INCOMING, null));
-                assertEquals(MultiMetaNeo4jTrait.VERTEX_PROPERTY_PREFIX.concat("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
+                assertEquals(Graph.Hidden.hide("name"), node.relationships(Neo4jDirection.INCOMING).iterator().next().type());
                 counter.incrementAndGet();
             });
             assertEquals(1, counter.getAndSet(0));

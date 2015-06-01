@@ -175,7 +175,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                     .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator();
         } else {
             ElementHelper.validateMixedElementIds(Vertex.class, vertexIds);
-            return (Iterator) Stream.of(vertexIds)
+            return Stream.of(vertexIds)
                     .map(id -> {
                         if (id instanceof Number)
                             return ((Number) id).longValue();
@@ -195,7 +195,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                         }
                     })
                     .filter(nodePredicate)
-                    .map(node -> new Neo4jVertex(node, this)).iterator();
+                    .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator();
         }
     }
 
@@ -209,7 +209,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                     .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator();
         } else {
             ElementHelper.validateMixedElementIds(Edge.class, edgeIds);
-            return (Iterator) Stream.of(edgeIds)
+            return Stream.of(edgeIds)
                     .map(id -> {
                         if (id instanceof Number)
                             return ((Number) id).longValue();
@@ -229,7 +229,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                         }
                     })
                     .filter(relationshipPredicate)
-                    .map(relationship -> new Neo4jEdge(relationship, this)).iterator();
+                    .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator();
         }
     }
 

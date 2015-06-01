@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -51,6 +52,13 @@ public final class Neo4jVertexProperty<V> implements VertexProperty<V> {
         this.vertex = vertex;
         this.key = key;
         this.value = value;
+        this.vertexPropertyNode = vertexPropertyNode;
+    }
+
+    public Neo4jVertexProperty(final Neo4jVertex vertex, final Neo4jNode vertexPropertyNode) {
+        this.vertex = vertex;
+        this.key = (String) vertexPropertyNode.getProperty(T.key.getAccessor());
+        this.value = (V) vertexPropertyNode.getProperty(T.value.getAccessor());
         this.vertexPropertyNode = vertexPropertyNode;
     }
 
