@@ -28,7 +28,9 @@ import org.apache.tinkerpop.gremlin.structure.io.Mapper;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphMLMapper implements Mapper<Object> {
+public final class GraphMLMapper implements Mapper<Object> {
+    private GraphMLMapper() {}
+
     @Override
     public Object createMapper() {
         throw new UnsupportedOperationException("GraphML does not have an object mapper - it is a format for full Graph serialization");
@@ -38,7 +40,7 @@ public class GraphMLMapper implements Mapper<Object> {
         return new Builder();
     }
 
-    public static class Builder implements Mapper.Builder<Builder> {
+    public final static class Builder implements Mapper.Builder<Builder> {
         @Override
         public Builder addRegistry(final IoRegistry registry) {
             throw new UnsupportedOperationException("GraphML does not accept custom serializers - it is a format for full Graph serialization");

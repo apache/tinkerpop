@@ -24,9 +24,12 @@ import javax.xml.stream.XMLStreamWriter;
 import java.util.Stack;
 
 /**
- * A wrapper for the IndentingXMLStreamWriter class by Kohsuke Kawaguchi
+ * A wrapper for the different {@code XMLStreamWriter} implementations.
  */
-class GraphMLWriterHelper {
+final class GraphMLWriterHelper {
+
+    private GraphMLWriterHelper() {}
+
     /**
      * @author Tijs Rademakers
      */
