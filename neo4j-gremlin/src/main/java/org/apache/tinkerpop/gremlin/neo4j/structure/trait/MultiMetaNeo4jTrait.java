@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jProperty;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -42,6 +43,7 @@ import org.neo4j.tinkerpop.api.Neo4jRelationship;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -51,12 +53,22 @@ import java.util.stream.Stream;
  */
 public class MultiMetaNeo4jTrait implements Neo4jTrait {
 
+    private static final MultiMetaNeo4jTrait INSTANCE = new MultiMetaNeo4jTrait();
+
     public static final String VERTEX_PROPERTY_LABEL = "vertexProperty";
     public static final String VERTEX_PROPERTY_PREFIX = Graph.Hidden.hide("");
     public static final String VERTEX_PROPERTY_TOKEN = Graph.Hidden.hide("vertexProperty");
 
     private static final Predicate<Neo4jNode> NODE_PREDICATE = node -> !node.hasLabel(VERTEX_PROPERTY_LABEL);
     private static final Predicate<Neo4jRelationship> RELATIONSHIP_PREDICATE = relationship -> !relationship.type().startsWith(VERTEX_PROPERTY_PREFIX);
+
+    private MultiMetaNeo4jTrait() {
+
+    }
+
+    public static MultiMetaNeo4jTrait instance() {
+        return INSTANCE;
+    }
 
     @Override
     public Predicate<Neo4jNode> getNodePredicate() {
@@ -72,13 +84,12 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
     public void removeVertex(final Neo4jVertex vertex) {
         try {
             final Neo4jNode node = vertex.getBaseVertex();
-            for (final Neo4jRelationship relationship : node.relationships(Neo4jDirection.OUTGOING)) {
+            for (final Neo4jRelationship relationship : node.relationships(Neo4jDirection.BOTH)) {
                 final Neo4jNode otherNode = relationship.other(node);
                 if (otherNode.hasLabel(VERTEX_PROPERTY_LABEL)) {
-                    otherNode.relationships(Neo4jDirection.BOTH).forEach(Neo4jRelationship::delete);
                     otherNode.delete(); // meta property node
-                } else
-                    relationship.delete();
+                }
+                relationship.delete();
             }
             node.delete();
         } catch (final IllegalStateException ignored) {
@@ -245,6 +256,11 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
             return IteratorUtils.map(IteratorUtils
                             .filter(vertexPropertyNode.getKeys().iterator(), key -> !key.equals(T.key.getAccessor()) && !key.equals(T.value.getAccessor()) && ElementHelper.keyExists(key, keys)),
                     key -> (Property<V>) new Neo4jProperty<>(vertexProperty, key, (V) vertexPropertyNode.getProperty(key)));
+    }
+
+    @Override
+    public Iterator<Vertex> lookupVertices(final Neo4jGraph graph, final List<HasContainer> hasContainers, final Object... ids) {
+        return NoMultiNoMetaNeo4jTrait.instance().lookupVertices(graph, hasContainers, ids);
     }
 
     /*

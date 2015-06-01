@@ -19,13 +19,10 @@
 package org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
-import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -34,7 +31,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -59,54 +55,8 @@ public final class Neo4jGraphStep<S extends Element> extends GraphStep<S> {
 
     private Iterator<? extends Vertex> vertices() {
         final Neo4jGraph graph = (Neo4jGraph) this.getTraversal().getGraph().get();
-        // ids are present, filter on them first
-        if (this.ids != null && this.ids.length > 0)
-            return IteratorUtils.filter(graph.vertices(this.ids), vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers));
-        ////// do index lookups //////
-        graph.tx().readWrite();
-        // get a label being search on
-        final Optional<String> label = this.hasContainers.stream()
-                .filter(hasContainer -> hasContainer.getKey().equals(T.label.getAccessor()))
-                .filter(hasContainer -> hasContainer.getPredicate().equals(Compare.eq))
-                .map(hasContainer -> (String) hasContainer.getValue())
-                .findAny();
-        if (label.isPresent()) {
-            // find a vertex by label and key/value
-            for (final HasContainer hasContainer : this.hasContainers) {
-                if (hasContainer.getPredicate().equals(Compare.eq)) {
-                    return IteratorUtils.filter(
-                            IteratorUtils.map(
-                                    graph.getBaseGraph().findNodes(label.get(), hasContainer.getKey(), hasContainer.getValue()).iterator(),
-                                    node -> new Neo4jVertex(node, graph)),
-                            vertex -> HasContainer.testAll(vertex, this.hasContainers));
-                }
-            }
-        } else {
-            // find a vertex by key/value
-            for (final HasContainer hasContainer : this.hasContainers) {
-                if (hasContainer.getPredicate().equals(Compare.eq)) {
-                    return IteratorUtils.filter(
-                            IteratorUtils.map(
-                                    graph.getBaseGraph().findNodes(hasContainer.getKey(), hasContainer.getValue()).iterator(),
-                                    node -> new Neo4jVertex(node, graph)),
-                            vertex -> HasContainer.testAll(vertex, this.hasContainers));
-                }
-            }
-        }
-        if (label.isPresent()) {
-            // find a vertex by label
-            return IteratorUtils.filter(
-                    IteratorUtils.map(
-                            graph.getBaseGraph().findNodes(label.get()).iterator(),
-                            node -> new Neo4jVertex(node, graph)),
-                    vertex -> HasContainer.testAll(vertex, this.hasContainers));
-        } else {
-            // linear scan
-            return IteratorUtils.filter(graph.vertices(), vertex -> HasContainer.testAll((Vertex) vertex, this.hasContainers));
-        }
+        return graph.getTrait().lookupVertices(graph, this.hasContainers, this.ids);
     }
-
-    // TODO: move all this to the traits!
 
     public String toString() {
         if (this.hasContainers.isEmpty())

@@ -109,7 +109,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
             this.neo4jGraphVariables.set(Graph.Hidden.hide(CONFIG_MULTI_PROPERTIES), supportsMultiProperties);
         if (!hasMetaProperties.isPresent())
             this.neo4jGraphVariables.set(Graph.Hidden.hide(CONFIG_META_PROPERTIES), supportsMetaProperties);
-        this.trait = supportsMultiProperties ? new MultiMetaNeo4jTrait() : new NoMultiNoMetaNeo4jTrait();
+        this.trait = supportsMultiProperties ? MultiMetaNeo4jTrait.instance() : NoMultiNoMetaNeo4jTrait.instance();
         this.tx().commit();
     }
 
@@ -168,14 +168,14 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
     @Override
     public Iterator<Vertex> vertices(final Object... vertexIds) {
         this.tx().readWrite();
+        final Predicate<Neo4jNode> nodePredicate = this.trait.getNodePredicate();
         if (0 == vertexIds.length) {
-            final Predicate<Neo4jNode> nodePredicate = this.trait.getNodePredicate();
             return IteratorUtils.stream(this.getBaseGraph().allNodes())
                     .filter(nodePredicate)
                     .map(node -> (Vertex) new Neo4jVertex(node, this)).iterator();
         } else {
             ElementHelper.validateMixedElementIds(Vertex.class, vertexIds);
-            return Stream.of(vertexIds)
+            return (Iterator) Stream.of(vertexIds)
                     .map(id -> {
                         if (id instanceof Number)
                             return ((Number) id).longValue();
@@ -188,26 +188,28 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                     })
                     .flatMap(id -> {
                         try {
-                            return Stream.of((Vertex) new Neo4jVertex(this.baseGraph.getNodeById(id), this));
+                            return Stream.of(this.baseGraph.getNodeById(id));
                         } catch (final RuntimeException e) {
                             if (Neo4jHelper.isNotFound(e)) return Stream.empty();
                             throw e;
                         }
-                    }).iterator();
+                    })
+                    .filter(nodePredicate)
+                    .map(node -> new Neo4jVertex(node, this)).iterator();
         }
     }
 
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
         this.tx().readWrite();
+        final Predicate<Neo4jRelationship> relationshipPredicate = this.trait.getRelationshipPredicate();
         if (0 == edgeIds.length) {
-            final Predicate<Neo4jRelationship> relationshipPredicate = this.trait.getRelationshipPredicate();
             return IteratorUtils.stream(this.getBaseGraph().allRelationships())
                     .filter(relationshipPredicate)
                     .map(relationship -> (Edge) new Neo4jEdge(relationship, this)).iterator();
         } else {
             ElementHelper.validateMixedElementIds(Edge.class, edgeIds);
-            return Stream.of(edgeIds)
+            return (Iterator) Stream.of(edgeIds)
                     .map(id -> {
                         if (id instanceof Number)
                             return ((Number) id).longValue();
@@ -220,12 +222,14 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                     })
                     .flatMap(id -> {
                         try {
-                            return Stream.of((Edge) new Neo4jEdge(this.baseGraph.getRelationshipById(id), this));
+                            return Stream.of(this.baseGraph.getRelationshipById(id));
                         } catch (final RuntimeException e) {
                             if (Neo4jHelper.isNotFound(e)) return Stream.empty();
                             throw e;
                         }
-                    }).iterator();
+                    })
+                    .filter(relationshipPredicate)
+                    .map(relationship -> new Neo4jEdge(relationship, this)).iterator();
         }
     }
 

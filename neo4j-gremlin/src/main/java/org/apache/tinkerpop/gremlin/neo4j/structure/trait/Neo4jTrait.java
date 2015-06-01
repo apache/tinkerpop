@@ -21,14 +21,18 @@
 
 package org.apache.tinkerpop.gremlin.neo4j.structure.trait;
 
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.neo4j.tinkerpop.api.Neo4jNode;
 import org.neo4j.tinkerpop.api.Neo4jRelationship;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -63,5 +67,9 @@ public interface Neo4jTrait {
     public <V> Property<V> getProperty(final Neo4jVertexProperty vertexProperty, final String key);
 
     public <V> Iterator<Property<V>> getProperties(final Neo4jVertexProperty vertexProperty, final String... keys);
+
+    ////
+
+    public Iterator<Vertex> lookupVertices(final Neo4jGraph graph, final List<HasContainer> hasContainers, final Object... ids);
 
 }
