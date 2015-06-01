@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -27,8 +28,11 @@ import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.neo4j.tinkerpop.api.Neo4jNode;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -110,6 +114,17 @@ public final class Neo4jVertexProperty<V> implements VertexProperty<V> {
         this.vertex.graph.tx().readWrite();
         this.vertex.graph.trait.removeVertexProperty(this);
         this.vertexPropertyNode= null;
+    }
+
+    @Override
+    public Set<String> keys() {
+        if(null == this.vertexPropertyNode) return Collections.emptySet();
+        final Set<String> keys = new HashSet<>();
+        for (final String key : this.vertexPropertyNode.getKeys()) {
+            if (!Graph.Hidden.isHidden(key) && !key.equals(this.key))
+                keys.add(key);
+        }
+        return Collections.unmodifiableSet(keys);
     }
 
     @Override

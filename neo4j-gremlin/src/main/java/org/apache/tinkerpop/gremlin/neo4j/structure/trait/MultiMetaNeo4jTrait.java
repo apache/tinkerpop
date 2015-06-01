@@ -119,7 +119,8 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
 
     @Override
     public <V> Iterator<VertexProperty<V>> getVertexProperties(final Neo4jVertex vertex, final String... keys) {
-        if (Neo4jHelper.isDeleted(vertex.getBaseVertex())) return Collections.emptyIterator(); // TODO: I believe its because the vertex property is deleted, but then seen again in the iterator. ?
+        if (Neo4jHelper.isDeleted(vertex.getBaseVertex()))
+            return Collections.emptyIterator(); // TODO: I believe its because the vertex property is deleted, but then seen again in the iterator. ?
         return IteratorUtils.stream(vertex.getBaseVertex().getKeys())
                 .filter(key -> ElementHelper.keyExists(key, keys))
                 .flatMap(key -> {
@@ -292,18 +293,6 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
                     }
                 }
             }
-        }/* else {
-            // find a vertex by key/value
-            for (final HasContainer hasContainer : hasContainers) {
-                if (Compare.eq == hasContainer.getBiPredicate()) {
-                    return IteratorUtils.stream(graph.getBaseGraph().findNodes(hasContainer.getKey(), hasContainer.getValue()))
-                            .map(node -> node.hasLabel(VERTEX_PROPERTY_LABEL) ? node.relationships(Neo4jDirection.INCOMING).iterator().next().start() : node) // if a vertex property node, get the node
-                            .map(node -> (Vertex) new Neo4jVertex(node, graph))
-                            .filter(vertex -> HasContainer.testAll(vertex, hasContainers)).iterator();
-                }
-            }
-        }*/
-        if (label.isPresent()) {
             // find a vertex by label
             return IteratorUtils.stream(graph.getBaseGraph().findNodes(label.get()))
                     .filter(getNodePredicate())
@@ -314,21 +303,4 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
             return IteratorUtils.filter(graph.vertices(), vertex -> HasContainer.testAll(vertex, hasContainers));
         }
     }
-
-    /*
-     @Override
-    public Set<String> keys() {
-        if (isNode()) {
-            this.vertex.graph().tx().readWrite();
-            final Set<String> keys = new HashSet<>();
-            for (final String key : this.node.getKeys()) {
-                if (!Graph.Hidden.isHidden(key))
-                    keys.add(key);
-            }
-            return keys;
-        } else {
-            return Collections.emptySet();
-        }
-    }
-     */
 }

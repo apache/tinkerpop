@@ -620,6 +620,8 @@ gremlin> clock(1000){g.V().has('name','Garcia').next()} <6>
 <5> Find all artists whose name is Garcia which does a linear scan of the artist vertex-label partition.
 <6> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
 
+IMPORTANT: When using a multi-property enabled `Neo4jGraph`, vertices may represent their properties on "hidden nodes" adjacent to the vertex. If a vertex property key/value is required for indexing, then two indices are required -- e.g. `CREATE INDEX ON :person(name)` and `CREATE INDEX ON :vertexProperty(name)`.
+
 Cypher
 ~~~~~~
 

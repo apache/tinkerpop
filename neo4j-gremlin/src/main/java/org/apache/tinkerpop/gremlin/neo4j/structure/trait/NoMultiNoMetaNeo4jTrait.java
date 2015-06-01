@@ -172,17 +172,6 @@ public class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
                     }
                 }
             }
-        } /*else {
-            // find a vertex by key/value
-            for (final HasContainer hasContainer : hasContainers) {
-                if (Compare.eq == hasContainer.getBiPredicate() && !hasContainer.getKey().equals(T.label.getAccessor())) {
-                    return IteratorUtils.stream(graph.getBaseGraph().findNodes(hasContainer.getKey(), hasContainer.getValue()))
-                            .map(node -> (Vertex) new Neo4jVertex(node, graph))
-                            .filter(vertex -> HasContainer.testAll(vertex, hasContainers)).iterator();
-                }
-            }
-        }*/
-        if (label.isPresent()) {
             // find a vertex by label
             return IteratorUtils.stream(graph.getBaseGraph().findNodes(label.get()))
                     .map(node -> (Vertex) new Neo4jVertex(node, graph))
