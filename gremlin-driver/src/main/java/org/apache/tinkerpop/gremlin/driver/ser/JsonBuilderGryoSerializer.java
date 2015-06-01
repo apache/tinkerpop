@@ -28,7 +28,7 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class JsonBuilderGryoSerializer extends Serializer<JsonBuilder> {
+public final class JsonBuilderGryoSerializer extends Serializer<JsonBuilder> {
 
     final JsonSlurper slurper = new JsonSlurper();
 

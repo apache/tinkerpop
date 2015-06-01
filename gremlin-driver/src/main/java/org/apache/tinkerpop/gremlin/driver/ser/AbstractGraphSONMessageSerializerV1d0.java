@@ -170,7 +170,7 @@ public abstract class AbstractGraphSONMessageSerializerV1d0 implements MessageSe
         }
     }
 
-    public static class GremlinServerModule extends SimpleModule {
+    public final static class GremlinServerModule extends SimpleModule {
         public GremlinServerModule() {
             super("graphson-gremlin-server");
             addSerializer(JsonBuilder.class, new JsonBuilderJacksonSerializer());
@@ -178,7 +178,7 @@ public abstract class AbstractGraphSONMessageSerializerV1d0 implements MessageSe
         }
     }
 
-    public static class JsonBuilderJacksonSerializer extends StdSerializer<JsonBuilder> {
+    public final static class JsonBuilderJacksonSerializer extends StdSerializer<JsonBuilder> {
         public JsonBuilderJacksonSerializer() {
             super(JsonBuilder.class);
         }
@@ -194,7 +194,7 @@ public abstract class AbstractGraphSONMessageSerializerV1d0 implements MessageSe
         }
     }
 
-    public static class ResponseMessageSerializer extends StdSerializer<ResponseMessage> {
+    public final static class ResponseMessageSerializer extends StdSerializer<ResponseMessage> {
         public ResponseMessageSerializer() {
             super(ResponseMessage.class);
         }

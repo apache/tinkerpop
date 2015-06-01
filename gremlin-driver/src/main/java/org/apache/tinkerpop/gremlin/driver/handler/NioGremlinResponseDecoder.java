@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class NioGremlinResponseDecoder extends ByteToMessageDecoder {
+public final class NioGremlinResponseDecoder extends ByteToMessageDecoder {
     private final MessageSerializer serializer;
 
     public NioGremlinResponseDecoder(final MessageSerializer serializer) {

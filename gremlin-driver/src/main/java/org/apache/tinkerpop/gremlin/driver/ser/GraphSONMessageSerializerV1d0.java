@@ -35,7 +35,7 @@ import java.util.UUID;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONMessageSerializerV1d0 extends AbstractGraphSONMessageSerializerV1d0 implements MessageTextSerializer {
+public final class GraphSONMessageSerializerV1d0 extends AbstractGraphSONMessageSerializerV1d0 implements MessageTextSerializer {
     private static final Logger logger = LoggerFactory.getLogger(GraphSONMessageSerializerV1d0.class);
     private static final String MIME_TYPE = SerTokens.MIME_JSON;
 
