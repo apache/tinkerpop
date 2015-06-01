@@ -51,7 +51,7 @@ format = { def codeLine ->
 }
 
 stringify = { def string ->
-    "\"\1" + string.replaceAll("\\\\", "\\\\\\\\").replaceAll(/"/, "\\\\\"").replaceAll(/\$/, "\\\\\\\$") + "\""
+    "\"¶" + string.replaceAll("\\\\", "\\\\\\\\").replaceAll(/"/, "\\\\\"").replaceAll(/\$/, "\\\\\\\$") + "\""
 }
 
 //println "try {"

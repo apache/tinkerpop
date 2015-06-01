@@ -33,7 +33,7 @@ if [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
   bin/gremlin.sh -e ${TP_HOME}/docs/preprocessor/processor.groovy ${input} > ${input}.groovy
   ec=${PIPESTATUS[0]}
   if [ ${ec} -eq 0 ]; then
-    HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/hadoop-gremlin/lib" bin/gremlin.sh ${input}.groovy | awk 'BEGIN {b=1} /\1IGNORE/ {b=!b} !/\1IGNORE/ {if(a&&b)print} /\1START/ {a=1}' | grep -v '^WARN ' | sed 's/^==>\x01//' > ${output}
+    HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/hadoop-gremlin/lib" bin/gremlin.sh ${input}.groovy | awk 'BEGIN {b=1} /¶IGNORE/ {b=!b} !/¶IGNORE/ {if(a&&b)print} /¶START/ {a=1}' | grep -v '^WARN ' | sed 's/^==>¶//' > ${output}
     ec=${PIPESTATUS[0]}
     rm -f ${input}.groovy
   fi
