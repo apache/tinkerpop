@@ -42,12 +42,12 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-class GryoSerializers {
+final class GryoSerializers {
 
     /**
      * Serializes any {@link Edge} implementation encountered to a {@link DetachedEdge}.
      */
-    static class EdgeSerializer extends Serializer<Edge> {
+    final static class EdgeSerializer extends Serializer<Edge> {
         @Override
         public void write(final Kryo kryo, final Output output, final Edge edge) {
             kryo.writeClassAndObject(output, DetachedFactory.detach(edge, true));
@@ -63,7 +63,7 @@ class GryoSerializers {
     /**
      * Serializes any {@link Vertex} implementation encountered to an {@link DetachedVertex}.
      */
-    static class VertexSerializer extends Serializer<Vertex> {
+    final static class VertexSerializer extends Serializer<Vertex> {
         public VertexSerializer() {
         }
 
@@ -81,7 +81,7 @@ class GryoSerializers {
     /**
      * Serializes any {@link Property} implementation encountered to an {@link DetachedProperty}.
      */
-    static class PropertySerializer extends Serializer<Property> {
+    final static class PropertySerializer extends Serializer<Property> {
         public PropertySerializer() {
         }
 
@@ -99,7 +99,7 @@ class GryoSerializers {
     /**
      * Serializes any {@link VertexProperty} implementation encountered to an {@link DetachedVertexProperty}.
      */
-    static class VertexPropertySerializer extends Serializer<VertexProperty> {
+    final static class VertexPropertySerializer extends Serializer<VertexProperty> {
         public VertexPropertySerializer() {
         }
 
@@ -117,7 +117,7 @@ class GryoSerializers {
     /**
      * Serializes any {@link Path} implementation encountered to an {@link DetachedPath}.
      */
-    static class PathSerializer extends Serializer<Path> {
+    final static class PathSerializer extends Serializer<Path> {
         public PathSerializer() {
         }
 

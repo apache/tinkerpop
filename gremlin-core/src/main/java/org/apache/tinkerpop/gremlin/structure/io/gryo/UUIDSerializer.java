@@ -28,7 +28,7 @@ import java.util.UUID;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class UUIDSerializer extends Serializer<UUID> {
+final class UUIDSerializer extends Serializer<UUID> {
     public UUIDSerializer() {
         setImmutable(true);
     }
