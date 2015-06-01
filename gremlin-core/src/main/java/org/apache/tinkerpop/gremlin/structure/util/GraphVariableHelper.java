@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphVariableHelper {
+public final class GraphVariableHelper {
+
+    private GraphVariableHelper() { }
 
     public static void validateVariable(final String variable, final Object value) throws IllegalArgumentException {
         if (null == value)

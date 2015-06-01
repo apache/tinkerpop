@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class JsonMessageSerializerGremlinV1d0Test {
+public class GraphSONMessageSerializerGremlinV1d0Test {
     private UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
     private ResponseMessage.Builder responseMessageBuilder = ResponseMessage.build(requestId);
     private static ByteBufAllocator allocator = UnpooledByteBufAllocator.DEFAULT;

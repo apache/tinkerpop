@@ -35,7 +35,9 @@ import java.util.Map;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphFactory {
+public final class GraphFactory {
+
+    private GraphFactory() {}
 
     /**
      * Open a graph.  See each {@link org.apache.tinkerpop.gremlin.structure.Graph} instance for its configuration options.
@@ -76,9 +78,13 @@ public class GraphFactory {
     }
 
     /**
-     * Open a graph.  See each {@link org.apache.tinkerpop.gremlin.structure.Graph} instance for its configuration options. This file may be XML, YAML,
+     * Open a graph.  See each {@link Graph} instance for its configuration options. This file may be XML, YAML,
      * or a standard properties file. How the configuration is used (and which kind is required) is dependent on
      * the implementation.
+     * <p/>
+     * If using XML, ensure that the appropriate version of Apache {@code commons-collections} is available on the
+     * classpath as it is an optional dependency of Apache {@code commons-configuration}, the library that
+     * {@code GraphFactory} depends on.
      *
      * @param configurationFile The location of a configuration file that specifies the minimally required properties
      *                          for a {@link org.apache.tinkerpop.gremlin.structure.Graph} instance. This minimum is determined by the {@link org.apache.tinkerpop.gremlin.structure.Graph} instance
@@ -99,13 +105,11 @@ public class GraphFactory {
      * @return A Graph instance.
      */
     public static Graph open(final Map configuration) {
+        if (null == configuration) throw Graph.Exceptions.argumentCanNotBeNull("configuration");
         return open(new MapConfiguration(configuration));
     }
 
     private static Configuration getConfiguration(final File configurationFile) {
-        if (null == configurationFile)
-            throw Graph.Exceptions.argumentCanNotBeNull("configurationFile");
-
         if (!configurationFile.isFile())
             throw new IllegalArgumentException(String.format("The location configuration must resolve to a file and [%s] does not", configurationFile));
 

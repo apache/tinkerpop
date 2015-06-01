@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
+import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -1797,7 +1798,9 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteVertexPropertyWithMetaPropertiesGraphSON() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GraphSONWriter writer = graph.io(graphson).writer().create();
-            final VertexProperty p = g.V(convertToVertexId("marko")).next().properties("location").next();
+
+            // select any vertexproperty that has both start/end time
+            final VertexProperty p = (VertexProperty) g.V(convertToVertexId("marko")).properties("location").as("p").has("endTime").select("p").next();
             writer.writeVertexProperty(os, p);
 
             final AtomicBoolean called = new AtomicBoolean(false);
@@ -1870,7 +1873,9 @@ public class IoTest extends AbstractGremlinTest {
     public void shouldReadWriteVertexPropertyWithMetaPropertiesGryo() throws Exception {
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             final GryoWriter writer = graph.io(gryo).writer().create();
-            final VertexProperty p = g.V(convertToVertexId("marko")).next().properties("location").next();
+
+            // select any vertexproperty that has both start/end time
+            final VertexProperty p = (VertexProperty) g.V(convertToVertexId("marko")).properties("location").as("p").has("endTime").select("p").next();
             writer.writeVertexProperty(os, p);
 
             final AtomicBoolean called = new AtomicBoolean(false);
@@ -2354,7 +2359,14 @@ public class IoTest extends AbstractGremlinTest {
     }
 
     private static void assertId(final Graph g, final boolean lossyForId, final Element e, final Object expected) {
-        if (g.features().edge().supportsUserSuppliedIds()) {
+        // it is possible that a Graph (e.g. elastic-gremlin) can supportUserSuppliedIds but internally
+        // represent them as a value other than Numeric (which is what's in all of the test/toy data).
+        // as we feature check for userSuppliedIds when asserting the identifier, we also ensure that
+        // the id can be properly asserted for that Element before attempting to do so.  By asserting
+        // at this level in this way, graphs can enjoy greater test coverage in IO.
+        if ((e instanceof Vertex && g.features().vertex().supportsUserSuppliedIds() && g.features().vertex().supportsNumericIds())
+                || (e instanceof Edge && g.features().edge().supportsUserSuppliedIds() && g.features().edge().supportsNumericIds())
+                || (e instanceof VertexProperty && g.features().vertex().properties().supportsUserSuppliedIds()) && g.features().vertex().properties().supportsNumericIds()) {
             if (lossyForId)
                 assertEquals(expected.toString(), e.id().toString());
             else

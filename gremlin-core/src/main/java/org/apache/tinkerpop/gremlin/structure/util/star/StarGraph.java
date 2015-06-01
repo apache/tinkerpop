@@ -158,6 +158,11 @@ public final class StarGraph implements Graph, Serializable {
     }
 
     @Override
+    public Features features() {
+        return StarGraphFeatures.INSTANCE;
+    }
+
+    @Override
     public void close() throws Exception {
 
     }
@@ -713,4 +718,110 @@ public final class StarGraph implements Graph, Serializable {
             return this;
         }
     }
+
+    public static class StarGraphFeatures implements Features {
+        public static final StarGraphFeatures INSTANCE = new StarGraphFeatures();
+
+        private StarGraphFeatures() {
+        }
+
+        @Override
+        public GraphFeatures graph() {
+            return StarGraphGraphFeatures.INSTANCE;
+        }
+
+        @Override
+        public EdgeFeatures edge() {
+            return StarGraphEdgeFeatures.INSTANCE;
+        }
+
+        @Override
+        public VertexFeatures vertex() {
+            return StarGraphVertexFeatures.INSTANCE;
+        }
+
+        @Override
+        public String toString() {
+            return StringFactory.featureString(this);
+        }
+    }
+
+    static class StarGraphVertexFeatures implements Features.VertexFeatures {
+        public static final StarGraphVertexFeatures INSTANCE = new StarGraphVertexFeatures();
+
+        private StarGraphVertexFeatures() {
+        }
+
+        @Override
+        public Features.VertexPropertyFeatures properties() {
+            return StarGraphVertexPropertyFeatures.INSTANCE;
+        }
+
+        @Override
+        public boolean supportsCustomIds() {
+            return false;
+        }
+
+        @Override
+        public boolean willAllowId(final Object id) {
+            return true;
+        }
+    }
+
+    static class StarGraphEdgeFeatures implements Features.EdgeFeatures {
+        public static final StarGraphEdgeFeatures INSTANCE = new StarGraphEdgeFeatures();
+
+        private StarGraphEdgeFeatures() {
+        }
+
+        @Override
+        public boolean supportsCustomIds() {
+            return false;
+        }
+
+        @Override
+        public boolean willAllowId(final Object id) {
+            return true;
+        }
+    }
+
+    static class StarGraphGraphFeatures implements Features.GraphFeatures {
+        public static final StarGraphGraphFeatures INSTANCE = new StarGraphGraphFeatures();
+
+        private StarGraphGraphFeatures() {
+        }
+
+        @Override
+        public boolean supportsTransactions() {
+            return false;
+        }
+
+        @Override
+        public boolean supportsPersistence() {
+            return false;
+        }
+
+        @Override
+        public boolean supportsThreadedTransactions() {
+            return false;
+        }
+    }
+
+    static class StarGraphVertexPropertyFeatures implements Features.VertexPropertyFeatures {
+        public static final StarGraphVertexPropertyFeatures INSTANCE = new StarGraphVertexPropertyFeatures();
+
+        private StarGraphVertexPropertyFeatures() {
+        }
+
+        @Override
+        public boolean supportsCustomIds() {
+            return false;
+        }
+
+        @Override
+        public boolean willAllowId(final Object id) {
+            return true;
+        }
+    }
+
 }

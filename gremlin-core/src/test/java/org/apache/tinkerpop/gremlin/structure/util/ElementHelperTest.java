@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
-import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.javatuples.Pair;
 import org.junit.Test;
 
@@ -40,6 +42,10 @@ import static org.mockito.Mockito.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ElementHelperTest {
+    @Test
+    public void shouldBeUtilityClass() throws Exception {
+        TestHelper.assertIsUtilityClass(ElementHelper.class);
+    }
 
     @Test
     public void shouldValidatePropertyAndNotAllowNullValue() {
@@ -68,6 +74,17 @@ public class ElementHelperTest {
             fail("Should fail as property key cannot be empty");
         } catch (IllegalArgumentException iae) {
             assertEquals(Property.Exceptions.propertyKeyCanNotBeEmpty().getMessage(), iae.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldValidatePropertyAndNotAllowHiddenKey() {
+        final String key = Graph.Hidden.hide("key");
+        try {
+            ElementHelper.validateProperty(key, "test");
+            fail("Should fail as property key cannot be hidden");
+        } catch (IllegalArgumentException iae) {
+            assertEquals(Property.Exceptions.propertyKeyCanNotBeAHiddenKey(key).getMessage(), iae.getMessage());
         }
     }
 
@@ -157,7 +174,7 @@ public class ElementHelperTest {
     }
 
     @Test
-    public void shouldAttachKeyValuesButNotLabelsOrId() {
+    public void shouldAttachPropertiesButNotLabelsOrId() {
         final Element mockElement = mock(Element.class);
         ElementHelper.attachProperties(mockElement, "test", 123, T.id, 321, T.label, "friends");
         verify(mockElement, times(1)).property("test", 123);
@@ -166,41 +183,45 @@ public class ElementHelperTest {
     }
 
     @Test(expected = ClassCastException.class)
-    public void shouldFailTryingToAttachNonStringKey() {
+    public void shouldFailTryingToAttachPropertiesNonStringKey() {
         final Element mockElement = mock(Element.class);
         ElementHelper.attachProperties(mockElement, "test", 123, 321, "test");
     }
 
     @Test
-    public void shouldFailTryingToAttachKeysToNullElement() {
+    public void shouldFailTryingToAttachPropertiesToNullElement() {
         try {
             ElementHelper.attachProperties(null, "test", 123, 321, "test");
             fail("Should throw exception since the element argument is null");
         } catch (IllegalArgumentException iae) {
-            assertEquals(Graph.Exceptions.argumentCanNotBeNull("element").getMessage(), iae.getMessage());
-        }
-    }
-
-    /*@Test
-    public void shouldFailElementAreEqualTestBecauseFirstArgumentIsNull() {
-        try {
-            ElementHelper.areEqual((Element) null, "some object");
-            fail("Should throw exception since the first argument is null");
-        } catch (IllegalArgumentException iae) {
-            assertEquals(Graph.Exceptions.argumentCanNotBeNull("a").getMessage(), iae.getMessage());
+            assertTrue(Graph.Exceptions.argumentCanNotBeNull("vertex").getMessage().equals(iae.getMessage()) || Graph.Exceptions.argumentCanNotBeNull("element").getMessage().equals(iae.getMessage()));
         }
     }
 
     @Test
-    public void shouldFailElementAreEqualTestBecauseSecondArgumentIsNull() {
-        final Element mockElement = mock(Element.class);
+    public void shouldAttachPropertiesWithCardinalityButNotLabelsOrId() {
+        final Vertex mockElement = mock(Vertex.class);
+        ElementHelper.attachProperties(mockElement, VertexProperty.Cardinality.single, "test", 123, T.id, 321, T.label, "friends");
+        verify(mockElement, times(1)).property(VertexProperty.Cardinality.single, "test", 123);
+        verify(mockElement, times(0)).property(VertexProperty.Cardinality.single, T.id.getAccessor(), 321);
+        verify(mockElement, times(0)).property(VertexProperty.Cardinality.single, T.label.getAccessor(), "friends");
+    }
+
+    @Test(expected = ClassCastException.class)
+    public void shouldFailTryingToAttachPropertiesWithCardinalityNonStringKey() {
+        final Element mockElement = mock(Vertex.class);
+        ElementHelper.attachProperties(mockElement, VertexProperty.Cardinality.single, "test", 123, 321, "test");
+    }
+
+    @Test
+    public void shouldFailTryingToAttachPropertiesWithCardinalityToNullElement() {
         try {
-            ElementHelper.areEqual(mockElement, null);
-            fail("Should throw exception since the second argument is null");
+            ElementHelper.attachProperties((Vertex) null, VertexProperty.Cardinality.single, "test", 123, 321, "test");
+            fail("Should throw exception since the element argument is null");
         } catch (IllegalArgumentException iae) {
-            assertEquals(Graph.Exceptions.argumentCanNotBeNull("b").getMessage(), iae.getMessage());
+            assertEquals(Graph.Exceptions.argumentCanNotBeNull("vertex").getMessage(), iae.getMessage());
         }
-    }*/
+    }
 
     @Test
     public void shouldDetermineElementsAreEqualAsTheyAreSameObject() {
@@ -432,6 +453,19 @@ public class ElementHelperTest {
     }
 
     @Test
+    public void shouldRemoveAccessor() {
+        final Optional<Object[]> kvs = ElementHelper.remove(T.id, "1", "this", T.id, 6l, "3", "other", "4", 1);
+        assertEquals(6, kvs.get().length);
+        assertTrue(Stream.of(kvs.get()).noneMatch(kv -> kv.equals("2") || kv.equals(6l)));
+    }
+
+    @Test
+    public void shouldRemoveAccessorAndReturnEmpty() {
+        final Optional<Object[]> kvs = ElementHelper.remove(T.id, T.id, "this");
+        assertEquals(Optional.empty(), kvs);
+    }
+
+    @Test
     public void shouldUpsertKeyValueByAddingIt() {
         final Object[] oldKvs = new Object[]{"k", "v"};
         final Object[] newKvs = ElementHelper.upsert(oldKvs, "k1", "v1");
@@ -446,5 +480,16 @@ public class ElementHelperTest {
         final Object[] newKvs = ElementHelper.upsert(oldKvs, "k1", "v1");
         assertEquals(4, newKvs.length);
         assertEquals("v1", newKvs[3]);
+    }
+
+    @Test
+    public void shouldReplaceKey() {
+        final Object[] oldKvs = new Object[]{"k", "v", "k1", "v0"};
+        final Object[] newKvs = ElementHelper.replaceKey(oldKvs, "k", "k2");
+        assertEquals(4, newKvs.length);
+        assertEquals("k2", newKvs[0]);
+        assertEquals("v", newKvs[1]);
+        assertEquals("k1", newKvs[2]);
+        assertEquals("v0", newKvs[3]);
     }
 }

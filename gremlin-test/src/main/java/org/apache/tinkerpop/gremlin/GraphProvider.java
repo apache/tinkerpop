@@ -153,9 +153,9 @@ public interface GraphProvider {
     public void clear(final Graph graph, final Configuration configuration) throws Exception;
 
     /**
-     * Converts an identifier from a test to an identifier accepted by the Graph instance.  Test that try to
+     * Converts an identifier from a test to an identifier accepted by the {@link Graph} instance.  Test that try to
      * utilize an Element identifier will pass it to this method before usage.  This method should be sure to
-     * consistent in the return value such that calling it with "x" should always return the same transformed
+     * be consistent in the return value such that calling it with "x" should always return the same transformed
      * value.
      */
     default public Object convertId(final Object id, final Class<? extends Element> c) {

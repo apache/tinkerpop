@@ -94,25 +94,21 @@ public class GremlinExecutor implements AutoCloseable {
     private final boolean suppliedExecutor;
     private final boolean suppliedScheduledExecutor;
 
-    private GremlinExecutor(final Map<String, EngineSettings> settings, final List<List<String>> use,
-                            final long scriptEvaluationTimeout, final Bindings globalBindings,
-                            final ExecutorService executorService, final ScheduledExecutorService scheduledExecutorService,
-                            final Consumer<Bindings> beforeEval, final Consumer<Bindings> afterSuccess,
-                            final Consumer<Bindings> afterTimeout, final BiConsumer<Bindings, Throwable> afterFailure,
-                            final Set<String> enabledPlugins, final boolean suppliedExecutor, final boolean suppliedScheduledExecutor,
-                            final Predicate<Map.Entry<String,Object>> promoteBinding) {
-        this.executorService = executorService;
-        this.scheduledExecutorService = scheduledExecutorService;
-        this.beforeEval = beforeEval;
-        this.afterSuccess = afterSuccess;
-        this.afterTimeout = afterTimeout;
-        this.afterFailure = afterFailure;
-        this.use = use;
-        this.settings = settings;
-        this.scriptEvaluationTimeout = scriptEvaluationTimeout;
-        this.globalBindings = globalBindings;
-        this.promoteBinding = promoteBinding;
-        this.enabledPlugins = enabledPlugins;
+    private GremlinExecutor(final Builder builder, final boolean suppliedExecutor,
+                            final boolean suppliedScheduledExecutor) {
+
+        this.executorService = builder.executorService;
+        this.scheduledExecutorService = builder.scheduledExecutorService;
+        this.beforeEval = builder.beforeEval;
+        this.afterSuccess = builder.afterSuccess;
+        this.afterTimeout = builder.afterTimeout;
+        this.afterFailure = builder.afterFailure;
+        this.use = builder.use;
+        this.settings = builder.settings;
+        this.scriptEvaluationTimeout = builder.scriptEvaluationTimeout;
+        this.globalBindings = builder.globalBindings;
+        this.promoteBinding = builder.promoteBinding;
+        this.enabledPlugins = builder.enabledPlugins;
         this.scriptEngines = createScriptEngines();
         this.suppliedExecutor = suppliedExecutor;
         this.suppliedScheduledExecutor = suppliedScheduledExecutor;
@@ -260,11 +256,11 @@ public class GremlinExecutor implements AutoCloseable {
 
                 afterSuccess.accept(bindings);
             } catch (Exception ex) {
-                final Throwable root = ExceptionUtils.getRootCause(ex);
+                final Throwable root = null == ex.getCause() ? ex : ExceptionUtils.getRootCause(ex);
 
                 // thread interruptions will typically come as the result of a timeout, so in those cases,
                 // check for that situation and convert to TimeoutException
-                if (root.getClass().equals(InterruptedException.class))
+                if (root instanceof InterruptedException)
                     evaluationFuture.completeExceptionally(new TimeoutException(
                             String.format("Script evaluation exceeded the configured threshold of %s ms for request [%s]: %s", scriptEvaluationTimeout, script, root.getMessage())));
                 else {
@@ -619,6 +615,7 @@ public class GremlinExecutor implements AutoCloseable {
                 suppliedExecutor.set(false);
                 return Executors.newScheduledThreadPool(4, threadFactory);
             });
+            executorService = es;
 
             final ScheduledExecutorService ses = Optional.ofNullable(scheduledExecutorService).orElseGet(() -> {
                 // if the pool is created by the builder and we need another just re-use it, otherwise create
@@ -627,10 +624,9 @@ public class GremlinExecutor implements AutoCloseable {
                 return (poolCreatedByBuilder.get()) ?
                         (ScheduledExecutorService) es : Executors.newScheduledThreadPool(4, threadFactory);
             });
+            scheduledExecutorService = ses;
 
-            return new GremlinExecutor(settings, use, scriptEvaluationTimeout, globalBindings, es,
-                    ses, beforeEval, afterSuccess, afterTimeout, afterFailure, enabledPlugins,
-                    suppliedExecutor.get(), suppliedScheduledExecutor.get(), promoteBinding);
+            return new GremlinExecutor(this, suppliedExecutor.get(), suppliedScheduledExecutor.get());
         }
     }
 

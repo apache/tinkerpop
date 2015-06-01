@@ -18,6 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.NullNode;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -31,8 +35,6 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -49,20 +51,21 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class JsonMessageSerializerV1d0Test {
+public class GraphSONMessageSerializerV1d0Test {
 
     public static final GraphSONMessageSerializerV1d0 SERIALIZER = new GraphSONMessageSerializerV1d0();
     private static final RequestMessage msg = RequestMessage.build("op")
             .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).create();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     public void serializeToJsonNullResultReturnsNull() throws Exception {
         final ResponseMessage message = ResponseMessage.build(msg).create();
         final String results = SERIALIZER.serializeResponseAsString(message);
-        final JSONObject json = new JSONObject(results);
+        final JsonNode json = mapper.readTree(results);
         assertNotNull(json);
-        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        assertEquals(JSONObject.NULL, json.getJSONObject(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA));
+        assertEquals(msg.getRequestId().toString(), json.path(SerTokens.TOKEN_REQUEST).asText());
+        assertEquals(NullNode.getInstance(), json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA));
     }
 
     @Test
@@ -72,16 +75,16 @@ public class JsonMessageSerializerV1d0Test {
         funList.add(new FunObject("y"));
 
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList).create());
-        final JSONObject json = new JSONObject(results);
+        final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
-        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
+        assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
+        final JsonNode converted = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
 
-        assertEquals(2, converted.length());
+        assertEquals(2, converted.size());
 
-        assertEquals("x", converted.get(0));
-        assertEquals("y", converted.get(1));
+        assertEquals("x", converted.get(0).asText());
+        assertEquals("y", converted.get(1).asText());
     }
 
     @Test
@@ -91,38 +94,38 @@ public class JsonMessageSerializerV1d0Test {
         funList.add(new FunObject("y"));
 
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList.iterator()).create());
-        final JSONObject json = new JSONObject(results);
+        final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
-        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
+        assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
+        final JsonNode converted = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
 
-        assertEquals(2, converted.length());
+        assertEquals(2, converted.size());
 
-        assertEquals("x", converted.get(0));
-        assertEquals("y", converted.get(1));
+        assertEquals("x", converted.get(0).asText());
+        assertEquals("y", converted.get(1).asText());
     }
 
     @Test
     public void serializeToJsonIteratorNullElement() throws Exception {
 
-        ArrayList<FunObject> funList = new ArrayList<>();
+        final ArrayList<FunObject> funList = new ArrayList<>();
         funList.add(new FunObject("x"));
         funList.add(null);
         funList.add(new FunObject("y"));
 
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(funList.iterator()).create());
-        final JSONObject json = new JSONObject(results);
+        final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
-        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
+        assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
+        final JsonNode converted = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
 
-        assertEquals(3, converted.length());
+        assertEquals(3, converted.size());
 
-        assertEquals("x", converted.get(0));
-        assertEquals(JSONObject.NULL, converted.opt(1));
-        assertEquals("y", converted.get(2));
+        assertEquals("x", converted.get(0).asText());
+        assertEquals(NullNode.getInstance(), converted.get(1));
+        assertEquals("y", converted.get(2).asText());
     }
 
     @Test
@@ -136,19 +139,19 @@ public class JsonMessageSerializerV1d0Test {
         map.put("z", innerMap);
 
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(map).create());
-        final JSONObject json = new JSONObject(results);
+        final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
-        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONObject jsonObject = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONObject(SerTokens.TOKEN_DATA);
+        assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
+        final JsonNode jsonObject = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
 
         assertNotNull(jsonObject);
-        assertEquals("some", jsonObject.optString("y"));
-        assertEquals("x", jsonObject.optString("x"));
+        assertEquals("some", jsonObject.get("y").asText());
+        assertEquals("x", jsonObject.get("x").asText());
 
-        final JSONObject innerJsonObject = jsonObject.optJSONObject("z");
+        final JsonNode innerJsonObject = jsonObject.get("z");
         assertNotNull(innerJsonObject);
-        assertEquals("b", innerJsonObject.optString("a"));
+        assertEquals("b", innerJsonObject.get("a").asText());
     }
 
     @Test
@@ -162,27 +165,27 @@ public class JsonMessageSerializerV1d0Test {
         final Iterable<Edge> iterable = IteratorUtils.list(g.edges());
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
 
-        final JSONObject json = new JSONObject(results);
+        final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
-        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
+        assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
+        final JsonNode converted = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
 
         assertNotNull(converted);
-        assertEquals(1, converted.length());
+        assertEquals(1, converted.size());
 
-        final JSONObject edgeAsJson = converted.optJSONObject(0);
+        final JsonNode edgeAsJson = converted.get(0);
         assertNotNull(edgeAsJson);
 
-        assertEquals(((Long) e.id()).intValue(), edgeAsJson.get(GraphSONTokens.ID));  // lossy
-        assertEquals(((Long) v1.id()).intValue(), edgeAsJson.get(GraphSONTokens.OUT));// lossy
-        assertEquals(((Long) v2.id()).intValue(), edgeAsJson.get(GraphSONTokens.IN)); // lossy
-        assertEquals(e.label(), edgeAsJson.get(GraphSONTokens.LABEL));
-        assertEquals(GraphSONTokens.EDGE, edgeAsJson.get(GraphSONTokens.TYPE));
+        assertEquals(((Long) e.id()).intValue(), edgeAsJson.get(GraphSONTokens.ID).asLong());  // lossy
+        assertEquals(((Long) v1.id()).intValue(), edgeAsJson.get(GraphSONTokens.OUT).asLong());// lossy
+        assertEquals(((Long) v2.id()).intValue(), edgeAsJson.get(GraphSONTokens.IN).asLong()); // lossy
+        assertEquals(e.label(), edgeAsJson.get(GraphSONTokens.LABEL).asText());
+        assertEquals(GraphSONTokens.EDGE, edgeAsJson.get(GraphSONTokens.TYPE).asText());
 
-        final JSONObject properties = edgeAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
+        final JsonNode properties = edgeAsJson.get(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
-        assertEquals(123, properties.getInt("abc"));
+        assertEquals(123, properties.get("abc").asInt());
     }
 
     @Test
@@ -196,19 +199,19 @@ public class JsonMessageSerializerV1d0Test {
         final Iterable<Property<Object>> iterable = IteratorUtils.list(e.properties("abc"));
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
 
-        final JSONObject json = new JSONObject(results);
+        final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
-        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
+        assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
+        final JsonNode converted = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
 
         assertNotNull(converted);
-        assertEquals(1, converted.length());
+        assertEquals(1, converted.size());
 
-        final JSONObject propertyAsJson = converted.optJSONObject(0);
+        final JsonNode propertyAsJson = converted.get(0);
         assertNotNull(propertyAsJson);
 
-        assertEquals(123, propertyAsJson.getInt("value"));
+        assertEquals(123, propertyAsJson.get("value").asInt());
     }
 
     @Test
@@ -228,37 +231,37 @@ public class JsonMessageSerializerV1d0Test {
 
         final Iterable iterable = IteratorUtils.list(g.vertices());
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(iterable).create());
-        final JSONObject json = new JSONObject(results);
+        final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
-        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONArray converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONArray(SerTokens.TOKEN_DATA);
+        assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
+        final JsonNode converted = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
 
         assertNotNull(converted);
-        assertEquals(1, converted.length());
+        assertEquals(1, converted.size());
 
-        final JSONObject vertexAsJson = converted.optJSONObject(0);
+        final JsonNode vertexAsJson = converted.get(0);
         assertNotNull(vertexAsJson);
 
-        final JSONObject properties = vertexAsJson.optJSONObject(GraphSONTokens.PROPERTIES);
+        final JsonNode properties = vertexAsJson.get(GraphSONTokens.PROPERTIES);
         assertNotNull(properties);
-        assertEquals(1, properties.length());
+        assertEquals(1, properties.size());
 
-        final JSONArray friendProperties = properties.getJSONArray("friends");
-        assertEquals(1, friendProperties.length());
-        final JSONObject friendsProperty = friendProperties.getJSONObject(0);
+        final JsonNode friendProperties = properties.get("friends");
+        assertEquals(1, friendProperties.size());
+        final JsonNode friendsProperty = friendProperties.get(0);
         assertNotNull(friendsProperty);
         assertEquals(3, friends.size());
 
-        final String object1 = friendsProperty.getJSONArray(GraphSONTokens.VALUE).getString(0);
+        final String object1 = friendsProperty.get(GraphSONTokens.VALUE).get(0).asText();
         assertEquals("x", object1);
 
-        final int object2 = friendsProperty.getJSONArray(GraphSONTokens.VALUE).getInt(1);
+        final int object2 = friendsProperty.get(GraphSONTokens.VALUE).get(1).asInt();
         assertEquals(5, object2);
 
-        final JSONObject object3 = friendsProperty.getJSONArray(GraphSONTokens.VALUE).getJSONObject(2);
-        assertEquals(500, object3.getInt("x"));
-        assertEquals("some", object3.getString("y"));
+        final JsonNode object3 = friendsProperty.get(GraphSONTokens.VALUE).get(2);
+        assertEquals(500, object3.get("x").asInt());
+        assertEquals("some", object3.get("y").asText());
     }
 
     @Test
@@ -269,17 +272,17 @@ public class JsonMessageSerializerV1d0Test {
         map.put(g.V().has("name", "marko").next(), 1000);
 
         final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(map).create());
-        final JSONObject json = new JSONObject(results);
+        final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
-        assertEquals(msg.getRequestId().toString(), json.getString(SerTokens.TOKEN_REQUEST));
-        final JSONObject converted = json.getJSONObject(SerTokens.TOKEN_RESULT).getJSONObject(SerTokens.TOKEN_DATA);
+        assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
+        final JsonNode converted = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
 
         assertNotNull(converted);
 
         // with no embedded types the key (which is a vertex) simply serializes out to an id
         // {"result":{"1":1000},"code":200,"requestId":"2d62161b-9544-4f39-af44-62ec49f9a595","type":0}
-        assertEquals(1000, converted.optInt("1"));
+        assertEquals(1000, converted.get("1").asInt());
     }
 
     @Test

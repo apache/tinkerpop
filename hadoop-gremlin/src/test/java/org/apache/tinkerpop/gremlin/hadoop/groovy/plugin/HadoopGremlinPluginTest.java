@@ -23,6 +23,7 @@ package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.util.TestableConsolePluginAcceptor;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
@@ -65,7 +66,7 @@ public class HadoopGremlinPluginTest extends AbstractGremlinTest {
     private HadoopRemoteAcceptor remote;
     private TestableConsolePluginAcceptor console;
 
-    /*@Test
+    @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportRemoteTraversal() throws Exception {
         this.console.addBinding("graph", this.graph);
@@ -91,7 +92,7 @@ public class HadoopGremlinPluginTest extends AbstractGremlinTest {
         assertEquals(28.0d, traversal.next());
         assertFalse(traversal.hasNext());
         assertNotNull(this.console.getBindings().get(RemoteAcceptor.RESULT));
-    }*/
+    }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)

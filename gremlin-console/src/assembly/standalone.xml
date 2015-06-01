@@ -32,6 +32,10 @@ limitations under the License.
             <outputDirectory>/conf</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>../hadoop-gremlin/conf</directory>
+            <outputDirectory>/conf/hadoop</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>src/main/ext</directory>
             <outputDirectory>/ext</outputDirectory>
         </fileSet>

@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util;
 
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.javatuples.Pair;
@@ -48,8 +48,7 @@ import java.util.stream.Stream;
  */
 public final class ElementHelper {
 
-    private ElementHelper() {
-    }
+    private ElementHelper() {}
 
     /**
      * Determine whether the Element label can be legally set. This is typically used as a pre-condition check.
@@ -66,23 +65,14 @@ public final class ElementHelper {
             throw Element.Exceptions.labelCanNotBeAHiddenKey(label);
     }
 
-    /*public static void validateLabels(final String... labels) throws IllegalArgumentException {
-        for (final String label : labels) {
-            validateLabel(label);
+    public static void validateMixedElementIds(final Class<? extends Element> clazz, final Object... ids) {
+        if (ids.length > 1) {
+            final boolean element = clazz.isAssignableFrom(ids[0].getClass());
+            for (int i = 1; i < ids.length; i++) {
+                if (clazz.isAssignableFrom(ids[i].getClass()) != element)
+                    throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
+            }
         }
-    }*/
-
-    /**
-     * Check if the vertex, by ID, exists. If it does return it, else create it and return it.
-     *
-     * @param graph the graph to check for the existence of the vertex
-     * @param id    the id of the vertex to look for
-     * @param label the label of the vertex to set if the vertex does not exist
-     * @return a pre-existing vertex or a newly created vertex
-     */
-    public static Vertex getOrAddVertex(final Graph graph, final Object id, final String label) {
-        final Iterator<Vertex> iterator = graph.vertices(id);
-        return iterator.hasNext() ? iterator.next() : graph.addVertex(T.id, id, T.label, label);
     }
 
     /**
@@ -137,18 +127,30 @@ public final class ElementHelper {
     }
 
     /**
-     * Remove a key from the set of key value pairs. Assumes that validations have already taken place to
+     * Remove a key from the set of key/value pairs. Assumes that validations have already taken place to
      * assure that key positions contain strings and that there are an even number of elements. If after removal
      * there are no values left, the key value list is returned as empty.
+     *
+     * @param keyToRemove the key to remove
+     * @param keyValues the list to remove the accessor from
+     * @return the key/values without the specified accessor or an empty array if no values remain after removal
      */
     public static Optional<Object[]> remove(final String keyToRemove, final Object... keyValues) {
         return ElementHelper.remove((Object) keyToRemove, keyValues);
     }
 
+    /**
+     * Removes an accessor from the set of key/value pairs. Assumes that validations have already taken place to
+     * assure that key positions contain strings and that there are an even number of elements. If after removal
+     * there are no values left, the key value list is returned as empty.
+     *
+     * @param accessor to remove
+     * @param keyValues the list to remove the accessor from
+     * @return the key/values without the specified accessor or an empty array if no values remain after removal
+     */
     public static Optional<Object[]> remove(final T accessor, final Object... keyValues) {
         return ElementHelper.remove((Object) accessor, keyValues);
     }
-
 
     private static Optional<Object[]> remove(final Object keyToRemove, final Object... keyValues) {
         final List list = Arrays.asList(keyValues);
@@ -182,6 +184,13 @@ public final class ElementHelper {
         }
     }
 
+    /**
+     * Replaces one key with a different key.
+     *
+     * @param keyValues the list of key/values to alter
+     * @param oldKey the key to replace
+     * @param newKey the new key
+     */
     public static Object[] replaceKey(final Object[] keyValues, final Object oldKey, final Object newKey) {
         final Object[] kvs = new Object[keyValues.length];
         for (int i = 0; i < keyValues.length; i = i + 2) {
@@ -266,8 +275,28 @@ public final class ElementHelper {
     }
 
     /**
-     * Assign key/value pairs as properties to a {@link org.apache.tinkerpop.gremlin.structure.Vertex}.  If the value of {@link T#id} or
+     * Assign key/value pairs as properties to an {@link org.apache.tinkerpop.gremlin.structure.Vertex}.  If the value of {@link T#id} or
      * {@link T#label} is in the set of pairs, then they are ignored.
+     * The {@link org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality} of the key is determined from the {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures}.
+     *
+     * @param vertex            the graph vertex to assign the {@code propertyKeyValues}
+     * @param propertyKeyValues the key/value pairs to assign to the {@code element}
+     * @throws ClassCastException       if the value of the key is not a {@link String}
+     * @throws IllegalArgumentException if the value of {@code element} is null
+     */
+    public static void attachProperties(final Vertex vertex, final Object... propertyKeyValues) {
+        if (null == vertex)
+            throw Graph.Exceptions.argumentCanNotBeNull("vertex");
+
+        for (int i = 0; i < propertyKeyValues.length; i = i + 2) {
+            if (!propertyKeyValues[i].equals(T.id) && !propertyKeyValues[i].equals(T.label))
+                vertex.property(vertex.graph().features().vertex().getCardinality((String) propertyKeyValues[i]), (String) propertyKeyValues[i], propertyKeyValues[i + 1]);
+        }
+    }
+
+    /**
+     * Assign key/value pairs as properties to a {@link org.apache.tinkerpop.gremlin.structure.Vertex}.
+     * If the value of {@link T#id} or {@link T#label} is in the set of pairs, then they are ignored.
      *
      * @param vertex            the vertex to attach the properties to
      * @param cardinality       the cardinality of the key value pair settings
@@ -351,7 +380,6 @@ public final class ElementHelper {
      * @param a The first {@link org.apache.tinkerpop.gremlin.structure.Element}
      * @param b The second {@link org.apache.tinkerpop.gremlin.structure.Element} (as an {@link Object})
      * @return true if elements and equal and false otherwise
-     * @throws IllegalArgumentException if either argument is null
      */
     public static boolean areEqual(final Element a, final Object b) {
         if (null == b || null == a)

@@ -44,8 +44,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -104,11 +108,69 @@ public class GremlinExecutorTest {
     }
 
     @Test
+    public void shouldEvalScriptWithMapBindings() throws Exception {
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
+        final Map<String,Object> b = new HashMap<>();
+        b.put("x", 1);
+        assertEquals(2, gremlinExecutor.eval("1+x", b).get());
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldEvalScriptWithMapBindingsAndLanguage() throws Exception {
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .addEngineSettings("nashorn", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
+        final Map<String,Object> b = new HashMap<>();
+        b.put("x", 1);
+        assertEquals(2.0, gremlinExecutor.eval("1+x", "nashorn", b).get());
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldEvalScriptWithMapBindingsAndLanguageThenTransform() throws Exception {
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .addEngineSettings("nashorn", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
+        final Map<String,Object> b = new HashMap<>();
+        b.put("x", 1);
+        assertEquals(4, gremlinExecutor.eval("1+x", "nashorn", b, r -> ((Double) r).intValue() * 2).get());
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldEvalScriptWithMapBindingsAndLanguageThenConsume() throws Exception {
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .addEngineSettings("nashorn", Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), Collections.emptyMap()).create();
+        final Map<String,Object> b = new HashMap<>();
+        b.put("x", 1);
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicInteger result = new AtomicInteger(0);
+        assertEquals(2.0, gremlinExecutor.eval("1+x", "nashorn", b, r -> {
+            result.set(((Double) r).intValue() * 2);
+            latch.countDown();
+        }).get());
+
+        latch.await();
+        assertEquals(4, result.get());
+        gremlinExecutor.close();
+    }
+
+    @Test
     public void shouldEvalScriptWithGlobalBindings() throws Exception {
         final Bindings b = new SimpleBindings();
         b.put("x", 1);
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build().globalBindings(b).create();
         assertEquals(2, gremlinExecutor.eval("1+x").get());
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldGetGlobalBindings() throws Exception {
+        final Bindings b = new SimpleBindings();
+        final Object bound = new Object();
+        b.put("x", bound);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().globalBindings(b).create();
+        assertEquals(bound, gremlinExecutor.getGlobalBindings().get("x"));
         gremlinExecutor.close();
     }
 
@@ -173,9 +235,7 @@ public class GremlinExecutorTest {
         try {
             gremlinExecutor.eval("10/0").get();
             fail();
-        } catch (Exception ex) {
-
-        }
+        } catch (Exception ignored) { }
 
         // need to wait long enough for the script to complete
         Thread.sleep(750);
@@ -297,8 +357,7 @@ public class GremlinExecutorTest {
         );
 
         final Thread t2 = new Thread(() -> {
-            while (failures.get() < 500) {
-            }
+            while (failures.get() < 500) {   }
             gremlinExecutor.getScriptEngines().addImports(imports);
         });
 
@@ -325,6 +384,28 @@ public class GremlinExecutorTest {
                 .create();
 
         assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
+
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldInitializeWithScriptAndPromoteBinding() throws Exception {
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .addEngineSettings("gremlin-groovy",
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
+                        Collections.emptyMap())
+                .promoteBindings(kv -> kv.getValue() instanceof Set)
+                .create();
+
+        assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
+        assertThat(gremlinExecutor.getGlobalBindings().keySet(), contains("someSet"));
+        assertThat(gremlinExecutor.getGlobalBindings().keySet(), not(contains("someMap")));
+
+        final Set<String> s = (Set<String>) gremlinExecutor.getGlobalBindings().get("someSet");
+        assertThat(s, contains("test"));
+        assertEquals(1, s.size());
 
         gremlinExecutor.close();
     }
@@ -410,5 +491,27 @@ public class GremlinExecutorTest {
         assertFalse(service.isShutdown());
         service.shutdown();
         service.awaitTermination(30000, TimeUnit.MILLISECONDS);
+    }
+
+    @Test
+    public void shouldGetExecutorService() throws Exception {
+        final ScheduledExecutorService service = Executors.newScheduledThreadPool(4, testingThreadFactory);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .executorService(service)
+                .scheduledExecutorService(service).create();
+
+        assertSame(service, gremlinExecutor.getExecutorService());
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldGetScheduledExecutorService() throws Exception {
+        final ScheduledExecutorService service = Executors.newScheduledThreadPool(4, testingThreadFactory);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .executorService(service)
+                .scheduledExecutorService(service).create();
+
+        assertSame(service, gremlinExecutor.getScheduledExecutorService());
+        gremlinExecutor.close();
     }
 }

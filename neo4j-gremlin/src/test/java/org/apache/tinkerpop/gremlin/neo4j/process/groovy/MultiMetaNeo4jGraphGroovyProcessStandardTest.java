@@ -16,37 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.lambda;
+package org.apache.tinkerpop.gremlin.neo4j.process.groovy;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
-
-import java.util.function.Predicate;
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.neo4j.MultiMetaNeo4jGraphProvider;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite;
+import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FilterTraversal<S, E> extends AbstractLambdaTraversal<S, E> implements LambdaHolder {
-
-    private boolean filter = true;
-    private final Predicate<S> predicate;
-
-    public FilterTraversal(final Predicate<S> predicate) {
-        this.predicate = predicate;
-    }
-
-    @Override
-    public boolean hasNext() {
-        return this.filter;
-    }
-
-    @Override
-    public void addStart(final Traverser<S> start) {
-        this.filter = this.predicate.test(start.get());
-    }
-
-    @Override
-    public String toString() {
-        return this.predicate.toString();
-    }
+@RunWith(GroovyProcessStandardSuite.class)
+@GraphProviderClass(provider = MultiMetaNeo4jGraphProvider.class, graph = Neo4jGraph.class)
+public class MultiMetaNeo4jGraphGroovyProcessStandardTest {
 }

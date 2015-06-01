@@ -30,7 +30,8 @@ limitations under the License.
             </includes>
         </fileSet>
         <fileSet>
-            <directory>conf</directory>
+            <directory>target/apache-${project.artifactId}-${project.version}-standalone/conf</directory>
+            <outputDirectory>conf</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>target/apache-${project.artifactId}-${project.version}-standalone/data</directory>

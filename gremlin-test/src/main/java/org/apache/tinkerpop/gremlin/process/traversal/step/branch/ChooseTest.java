@@ -22,12 +22,12 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,6 +44,9 @@ import static org.junit.Assert.assertFalse;
 public abstract class ChooseTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Object> get_g_V_chooseXout_countX_optionX2L__nameX_optionX3L__valueMapX();
+
+    public abstract Traversal<Vertex, String> get_g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name();
+
 
     @Test
     @LoadGraphWith(MODERN)
@@ -63,6 +66,14 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
         assertEquals(Long.valueOf(1), counts.get("josh"));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name() {
+        final Traversal<Vertex, String> traversal = get_g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("josh", "vadas", "josh", "josh", "marko", "peter"), traversal);
+    }
+
     public static class Traversals extends ChooseTest {
 
         @Override
@@ -70,6 +81,11 @@ public abstract class ChooseTest extends AbstractGremlinProcessTest {
             return g.V().choose(out().count())
                     .option(2L, values("name"))
                     .option(3L, valueMap());
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_chooseXlabel_eqXpersonX__outXknowsX__inXcreatedXX_name() {
+            return g.V().choose(v -> v.label().equals("person"), out("knows"), in("created")).values("name");
         }
     }
 }
