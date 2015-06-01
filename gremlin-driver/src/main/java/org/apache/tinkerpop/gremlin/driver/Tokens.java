@@ -22,9 +22,13 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * String constants used in gremlin-driver and gremlin-server.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Tokens {
+public final class Tokens {
+    private Tokens() {}
+
     public static final String OPS_SHOW = "show";
     public static final String OPS_EVAL = "eval";
     public static final String OPS_IMPORT = "import";
@@ -35,7 +39,6 @@ public class Tokens {
 
     public static final String ARGS_BINDINGS = "bindings";
     public static final String ARGS_COORDINATES = "coordinates";
-    public static final String ARGS_GRAPH_NAME = "graphName";
     public static final String ARGS_GREMLIN = "gremlin";
     public static final String ARGS_IMPORTS = "imports";
     public static final String ARGS_INFO_TYPE = "infoType";

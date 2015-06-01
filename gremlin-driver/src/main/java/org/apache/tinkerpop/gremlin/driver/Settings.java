@@ -33,7 +33,7 @@ import java.util.Optional;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class Settings {
+final class Settings {
 
     public int port = 8182;
 
