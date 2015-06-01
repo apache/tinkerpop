@@ -200,8 +200,13 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_STRING_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeString() throws Exception {
             try {
-                graph.addVertex(T.id, "this-is-a-valid-id");
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
+                final String id = "this-is-a-valid-id";
+                graph.addVertex(T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().vertex().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
             } catch (Exception e) {
                 validateException(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
@@ -213,15 +218,25 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeNumeric() throws Exception {
             try {
-                graph.addVertex(T.id, 123456);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
+                final int id = 123456;
+                graph.addVertex(T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().vertex().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception e) {
                 validateException(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
 
             try {
-                graph.addVertex(T.id, 123456l);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
+                final long id = 123456l;
+                graph.addVertex(T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().vertex().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception e) {
                 validateException(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
@@ -233,8 +248,13 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeUuid() throws Exception {
             try {
-                graph.addVertex(T.id, UUID.randomUUID());
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_UUID_IDS));
+                final UUID id = UUID.randomUUID();
+                graph.addVertex(T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().vertex().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_UUID_IDS));
             } catch (Exception e) {
                 validateException(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
@@ -246,8 +266,13 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_ANY_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeAny() throws Exception {
             try {
-                graph.addVertex(T.id, new Date());
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
+                final Date id = new Date();
+                graph.addVertex(T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().vertex().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception e) {
                 validateException(Vertex.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
@@ -417,9 +442,14 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_STRING_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeString() throws Exception {
             try {
+                final String id = "this-is-a-valid-id";
                 final Vertex v = graph.addVertex();
-                v.addEdge("test", v, T.id, "this-is-a-valid-id");
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
+                v.addEdge("test", v, T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().edge().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
             } catch (Exception e) {
                 validateException(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
@@ -431,17 +461,27 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeNumeric() throws Exception {
             try {
+                final int id = 123456;
                 final Vertex v = graph.addVertex();
-                v.addEdge("test", v, T.id, 123456);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
+                v.addEdge("test", v, T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().edge().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception e) {
                 validateException(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
 
             try {
+                final long id = 123456l;
                 final Vertex v = graph.addVertex();
-                v.addEdge("test", v, T.id, 123456l);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
+                v.addEdge("test", v, T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().edge().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception e) {
                 validateException(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
@@ -453,9 +493,14 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeUuid() throws Exception {
             try {
+                final UUID id = UUID.randomUUID();
                 final Vertex v = graph.addVertex();
-                v.addEdge("test", v, T.id, UUID.randomUUID());
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
+                v.addEdge("test", v, T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().edge().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_UUID_IDS));
             } catch (Exception e) {
                 validateException(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
@@ -468,9 +513,14 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_ANY_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeAny() throws Exception {
             try {
+                final Date id = new Date();
                 final Vertex v = graph.addVertex();
-                v.addEdge("test", v, T.id, new Date());
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
+                v.addEdge("test", v, T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().edge().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception e) {
                 validateException(Edge.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), e);
             }
@@ -653,9 +703,14 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeString() throws Exception {
             try {
+                final String id = "this-is-a-valid-id";
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "test", v, T.id, "this-is-a-valid-id");
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
+                v.property(VertexProperty.Cardinality.single, "test", v, T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().vertex().properties().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_STRING_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
             }
@@ -667,17 +722,27 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_NUMERIC_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeNumeric() throws Exception {
             try {
+                final int id = 123456;
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "test", v, T.id, 123456);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
+                v.property(VertexProperty.Cardinality.single, "test", v, T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().vertex().properties().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
             }
 
             try {
+                final long id = 123456l;
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "test", v, T.id, 123456l);
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
+                v.property(VertexProperty.Cardinality.single, "test", v, T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().vertex().properties().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_NUMERIC_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
             }
@@ -689,9 +754,14 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_UUID_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeUuid() throws Exception {
             try {
+                final UUID id = UUID.randomUUID();
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "test", v, T.id, UUID.randomUUID());
-                fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
+                v.property(VertexProperty.Cardinality.single, "test", v, T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().vertex().properties().willAllowId(id))
+                    fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_UUID_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
             }
@@ -704,8 +774,13 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_ANY_IDS, supported = false)
         public void shouldSupportUserSuppliedIdsOfTypeAny() throws Exception {
             try {
+                final Date id = new Date();
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "test", v, T.id, new Date());
+                v.property(VertexProperty.Cardinality.single, "test", v, T.id, id);
+
+                // a graph can "allow" an id without internally supporting it natively and therefore doesn't need
+                // to throw the exception
+                if (!graph.features().vertex().properties().willAllowId(id))
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexPropertyFeatures.class.getSimpleName(), FEATURE_ANY_IDS));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.userSuppliedIdsOfThisTypeNotSupported(), ex);
