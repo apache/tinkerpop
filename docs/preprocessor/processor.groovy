@@ -54,7 +54,6 @@ stringify = { def string ->
     "\"¶" + string.replaceAll("\\\\", "\\\\\\\\").replaceAll(/"/, "\\\\\"").replaceAll(/\$/, "\\\\\\\$") + "\""
 }
 
-//println "try {"
 println stringify("START")
 
 new File(this.args[0]).withReader { reader ->
@@ -149,6 +148,3 @@ new File(this.args[0]).withReader { reader ->
 }
 
 println "System.exit(0)"
-//println "} catch (Exception e) {"
-//println "  System.exit(1)"
-//println "}"
