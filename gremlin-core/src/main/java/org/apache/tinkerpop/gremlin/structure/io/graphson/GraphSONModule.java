@@ -51,7 +51,7 @@ abstract class GraphSONModule extends SimpleModule {
         /**
          * Constructs a new object.
          */
-        GraphSONModuleV1d0(final boolean normalize) {
+        protected GraphSONModuleV1d0(final boolean normalize) {
             super("graphson-1.0");
             addSerializer(Edge.class, new GraphSONSerializers.EdgeJacksonSerializer(normalize));
             addSerializer(Vertex.class, new GraphSONSerializers.VertexJacksonSerializer(normalize));

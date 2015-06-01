@@ -56,7 +56,7 @@ final class GraphSONSerializers {
 
     private GraphSONSerializers() {}
 
-    static class VertexPropertyJacksonSerializer extends StdSerializer<VertexProperty> {
+    final static class VertexPropertyJacksonSerializer extends StdSerializer<VertexProperty> {
 
         private final boolean normalize;
 
@@ -78,7 +78,7 @@ final class GraphSONSerializers {
         }
     }
 
-    static class PropertyJacksonSerializer extends StdSerializer<Property> {
+    final static class PropertyJacksonSerializer extends StdSerializer<Property> {
 
         public PropertyJacksonSerializer() {
             super(Property.class);
@@ -105,7 +105,7 @@ final class GraphSONSerializers {
         }
     }
 
-    static class EdgeJacksonSerializer extends StdSerializer<Edge> {
+    final static class EdgeJacksonSerializer extends StdSerializer<Edge> {
 
         private final boolean normalize;
 
@@ -160,7 +160,7 @@ final class GraphSONSerializers {
 
     }
 
-    static class VertexJacksonSerializer extends StdSerializer<Vertex> {
+    final static class VertexJacksonSerializer extends StdSerializer<Vertex> {
 
         private final boolean normalize;
 
@@ -226,7 +226,7 @@ final class GraphSONSerializers {
 
     }
 
-    static class PathJacksonSerializer extends StdSerializer<Path> {
+    final static class PathJacksonSerializer extends StdSerializer<Path> {
 
         public PathJacksonSerializer() {
             super(Path.class);
@@ -257,7 +257,7 @@ final class GraphSONSerializers {
     /**
      * Maps in the JVM can have {@link Object} as a key, but in JSON they must be a {@link String}.
      */
-    static class GraphSONKeySerializer extends StdKeySerializer {
+    final static class GraphSONKeySerializer extends StdKeySerializer {
 
         @Override
         public void serialize(final Object o, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider) throws IOException {
@@ -278,7 +278,7 @@ final class GraphSONSerializers {
         }
     }
 
-    static class TraversalMetricsJacksonSerializer extends StdSerializer<TraversalMetrics> {
+    final static class TraversalMetricsJacksonSerializer extends StdSerializer<TraversalMetrics> {
         public TraversalMetricsJacksonSerializer() {
             super(TraversalMetrics.class);
         }

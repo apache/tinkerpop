@@ -53,11 +53,11 @@ import java.util.function.Function;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class LegacyGraphSONReader implements GraphReader {
+public final class LegacyGraphSONReader implements GraphReader {
     private final ObjectMapper mapper;
     private final long batchSize;
 
-    public LegacyGraphSONReader(final ObjectMapper mapper, final long batchSize) {
+    private LegacyGraphSONReader(final ObjectMapper mapper, final long batchSize) {
         this.mapper = mapper;
         this.batchSize = batchSize;
     }
@@ -80,13 +80,13 @@ public class LegacyGraphSONReader implements GraphReader {
             while (parser.nextToken() != JsonToken.END_OBJECT) {
                 final String fieldName = parser.getCurrentName() == null ? "" : parser.getCurrentName();
                 switch (fieldName) {
-                    case GraphSONTokens.MODE:
+                    case GraphSONTokensTP2.MODE:
                         parser.nextToken();
                         final String mode = parser.getText();
                         if (!mode.equals("EXTENDED"))
                             throw new IllegalStateException("The legacy GraphSON must be generated with GraphSONMode.EXTENDED");
                         break;
-                    case GraphSONTokens.VERTICES:
+                    case GraphSONTokensTP2.VERTICES:
                         parser.nextToken();
                         while (parser.nextToken() != JsonToken.END_ARRAY) {
                             final JsonNode node = parser.readValueAsTree();
@@ -96,12 +96,12 @@ public class LegacyGraphSONReader implements GraphReader {
                                 graphToWriteTo.tx().commit();
                         }
                         break;
-                    case GraphSONTokens.EDGES:
+                    case GraphSONTokensTP2.EDGES:
                         parser.nextToken();
                         while (parser.nextToken() != JsonToken.END_ARRAY) {
                             final JsonNode node = parser.readValueAsTree();
-                            final Vertex inV = cache.get(LegacyGraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._IN_V)));
-                            final Vertex outV = cache.get(LegacyGraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokens._OUT_V)));
+                            final Vertex inV = cache.get(LegacyGraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokensTP2._IN_V)));
+                            final Vertex outV = cache.get(LegacyGraphSONUtility.getTypedValueFromJsonNode(node.get(GraphSONTokensTP2._OUT_V)));
                             graphson.edgeFromJson(node, outV, inV);
 
                             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
@@ -201,7 +201,7 @@ public class LegacyGraphSONReader implements GraphReader {
         return new Builder();
     }
 
-    public static class Builder {
+    public final static class Builder {
         private boolean loadCustomModules = false;
         private List<SimpleModule> customModules = new ArrayList<>();
         private long batchSize = 10000;
@@ -263,7 +263,7 @@ public class LegacyGraphSONReader implements GraphReader {
         public Vertex vertexFromJson(final JsonNode json) throws IOException {
             final Map<String, Object> props = readProperties(json);
 
-            final Object vertexId = getTypedValueFromJsonNode(json.get(GraphSONTokens._ID));
+            final Object vertexId = getTypedValueFromJsonNode(json.get(GraphSONTokensTP2._ID));
             final Vertex v = vertexFeatures.willAllowId(vertexId) ? g.addVertex(T.id, vertexId) : g.addVertex();
             cache.put(vertexId, v);
 
@@ -277,8 +277,8 @@ public class LegacyGraphSONReader implements GraphReader {
         public Edge edgeFromJson(final JsonNode json, final Vertex out, final Vertex in) throws IOException {
             final Map<String, Object> props = LegacyGraphSONUtility.readProperties(json);
 
-            final Object edgeId = getTypedValueFromJsonNode(json.get(GraphSONTokens._ID));
-            final JsonNode nodeLabel = json.get(GraphSONTokens._LABEL);
+            final Object edgeId = getTypedValueFromJsonNode(json.get(GraphSONTokensTP2._ID));
+            final JsonNode nodeLabel = json.get(GraphSONTokensTP2._LABEL);
             final String label = nodeLabel == null ? EMPTY_STRING : nodeLabel.textValue();
 
             final Edge e = edgeFeatures.willAllowId(edgeId) ? out.addEdge(label, in, T.id, edgeId) : out.addEdge(label, in) ;
@@ -310,35 +310,35 @@ public class LegacyGraphSONReader implements GraphReader {
         }
 
         private static boolean isReservedKey(final String key) {
-            return key.equals(GraphSONTokens._ID) || key.equals(GraphSONTokens._TYPE) || key.equals(GraphSONTokens._LABEL)
-                    || key.equals(GraphSONTokens._OUT_V) || key.equals(GraphSONTokens._IN_V);
+            return key.equals(GraphSONTokensTP2._ID) || key.equals(GraphSONTokensTP2._TYPE) || key.equals(GraphSONTokensTP2._LABEL)
+                    || key.equals(GraphSONTokensTP2._OUT_V) || key.equals(GraphSONTokensTP2._IN_V);
         }
 
         private static Object readProperty(final JsonNode node) {
             final Object propertyValue;
 
-            if (node.get(GraphSONTokens.TYPE).textValue().equals(GraphSONTokens.TYPE_UNKNOWN)) {
+            if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_UNKNOWN)) {
                 propertyValue = null;
-            } else if (node.get(GraphSONTokens.TYPE).textValue().equals(GraphSONTokens.TYPE_BOOLEAN)) {
-                propertyValue = node.get(GraphSONTokens.VALUE).booleanValue();
-            } else if (node.get(GraphSONTokens.TYPE).textValue().equals(GraphSONTokens.TYPE_FLOAT)) {
-                propertyValue = Float.parseFloat(node.get(GraphSONTokens.VALUE).asText());
-            } else if (node.get(GraphSONTokens.TYPE).textValue().equals(GraphSONTokens.TYPE_BYTE)) {
-                propertyValue = Byte.parseByte(node.get(GraphSONTokens.VALUE).asText());
-            } else if (node.get(GraphSONTokens.TYPE).textValue().equals(GraphSONTokens.TYPE_SHORT)) {
-                propertyValue = Short.parseShort(node.get(GraphSONTokens.VALUE).asText());
-            } else if (node.get(GraphSONTokens.TYPE).textValue().equals(GraphSONTokens.TYPE_DOUBLE)) {
-                propertyValue = node.get(GraphSONTokens.VALUE).doubleValue();
-            } else if (node.get(GraphSONTokens.TYPE).textValue().equals(GraphSONTokens.TYPE_INTEGER)) {
-                propertyValue = node.get(GraphSONTokens.VALUE).intValue();
-            } else if (node.get(GraphSONTokens.TYPE).textValue().equals(GraphSONTokens.TYPE_LONG)) {
-                propertyValue = node.get(GraphSONTokens.VALUE).longValue();
-            } else if (node.get(GraphSONTokens.TYPE).textValue().equals(GraphSONTokens.TYPE_STRING)) {
-                propertyValue = node.get(GraphSONTokens.VALUE).textValue();
-            } else if (node.get(GraphSONTokens.TYPE).textValue().equals(GraphSONTokens.TYPE_LIST)) {
-                propertyValue = readProperties(node.get(GraphSONTokens.VALUE).elements());
-            } else if (node.get(GraphSONTokens.TYPE).textValue().equals(GraphSONTokens.TYPE_MAP)) {
-                propertyValue = readProperties(node.get(GraphSONTokens.VALUE));
+            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_BOOLEAN)) {
+                propertyValue = node.get(GraphSONTokensTP2.VALUE).booleanValue();
+            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_FLOAT)) {
+                propertyValue = Float.parseFloat(node.get(GraphSONTokensTP2.VALUE).asText());
+            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_BYTE)) {
+                propertyValue = Byte.parseByte(node.get(GraphSONTokensTP2.VALUE).asText());
+            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_SHORT)) {
+                propertyValue = Short.parseShort(node.get(GraphSONTokensTP2.VALUE).asText());
+            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_DOUBLE)) {
+                propertyValue = node.get(GraphSONTokensTP2.VALUE).doubleValue();
+            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_INTEGER)) {
+                propertyValue = node.get(GraphSONTokensTP2.VALUE).intValue();
+            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_LONG)) {
+                propertyValue = node.get(GraphSONTokensTP2.VALUE).longValue();
+            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_STRING)) {
+                propertyValue = node.get(GraphSONTokensTP2.VALUE).textValue();
+            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_LIST)) {
+                propertyValue = readProperties(node.get(GraphSONTokensTP2.VALUE).elements());
+            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_MAP)) {
+                propertyValue = readProperties(node.get(GraphSONTokensTP2.VALUE));
             } else {
                 propertyValue = node.textValue();
             }
@@ -389,7 +389,10 @@ public class LegacyGraphSONReader implements GraphReader {
         }
     }
 
-    public static class GraphSONTokens {
+    public final static class GraphSONTokensTP2 {
+
+        private GraphSONTokensTP2() {}
+
         public static final String _ID = "_id";
         public static final String _LABEL = "_label";
         public static final String _TYPE = "_type";

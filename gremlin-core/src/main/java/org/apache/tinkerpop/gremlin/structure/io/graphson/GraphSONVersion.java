@@ -29,7 +29,7 @@ public enum GraphSONVersion {
     private final GraphSONModule.GraphSONModuleBuilder builder;
     private final String versionNumber;
 
-    private GraphSONVersion(final GraphSONModule.GraphSONModuleBuilder builder, final String versionNumber) {
+    GraphSONVersion(final GraphSONModule.GraphSONModuleBuilder builder, final String versionNumber) {
         this.builder = builder;
         this.versionNumber = versionNumber;
     }
