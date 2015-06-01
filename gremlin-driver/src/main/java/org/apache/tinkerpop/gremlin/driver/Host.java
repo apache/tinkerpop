@@ -32,7 +32,7 @@ import java.util.function.Function;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class Host {
+final class Host {
     private static final Logger logger = LoggerFactory.getLogger(Host.class);
     private final InetSocketAddress address;
     private final URI hostUri;

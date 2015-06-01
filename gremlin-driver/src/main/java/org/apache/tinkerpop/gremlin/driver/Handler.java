@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class Handler {
+final class Handler {
 
     /**
      * Takes a map of requests pending responses and writes responses to the {@link ResultQueue} of a request

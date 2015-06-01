@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Cluster {
+public final class Cluster {
 
     private Manager manager;
 

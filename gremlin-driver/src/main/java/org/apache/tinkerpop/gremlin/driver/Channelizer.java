@@ -113,7 +113,7 @@ public interface Channelizer extends ChannelHandler {
     /**
      * WebSocket {@link Channelizer} implementation.
      */
-    class WebSocketChannelizer extends AbstractChannelizer {
+    final class WebSocketChannelizer extends AbstractChannelizer {
         private WebSocketClientHandler handler;
 
         private WebSocketGremlinRequestEncoder webSocketGremlinRequestEncoder;
@@ -166,7 +166,7 @@ public interface Channelizer extends ChannelHandler {
     /**
      * NIO {@link Channelizer} implementation.
      */
-    class NioChannelizer extends AbstractChannelizer {
+    final class NioChannelizer extends AbstractChannelizer {
         private NioGremlinRequestEncoder nioGremlinRequestEncoder;
 
         @Override
