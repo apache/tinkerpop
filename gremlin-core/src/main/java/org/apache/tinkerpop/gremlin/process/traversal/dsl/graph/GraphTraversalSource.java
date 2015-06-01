@@ -179,7 +179,7 @@ public class GraphTraversalSource implements TraversalSource {
 
     //////
 
-    public static class Builder implements TraversalSource.Builder<GraphTraversalSource> {
+    public final static class Builder implements TraversalSource.Builder<GraphTraversalSource> {
 
         private TraversalEngine.Builder engineBuilder = StandardTraversalEngine.build();
         private List<TraversalStrategy> withStrategies = new ArrayList<>();

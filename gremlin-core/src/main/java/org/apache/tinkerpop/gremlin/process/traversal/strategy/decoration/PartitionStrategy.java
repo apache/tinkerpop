@@ -104,7 +104,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         return Stream.concat(Stream.of(propertyKeyValues), Stream.of(partitionKey, writePartition)).toArray();
     }
 
-    public static class Builder {
+    public final static class Builder {
         private String writePartition;
         private String partitionKey;
         private Set<String> readPartitions = new HashSet<>();

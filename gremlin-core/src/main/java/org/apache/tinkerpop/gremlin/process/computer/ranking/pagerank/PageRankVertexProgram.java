@@ -163,7 +163,7 @@ public class PageRankVertexProgram extends StaticVertexProgram<Double> {
         return new Builder();
     }
 
-    public static class Builder extends AbstractVertexProgramBuilder<Builder> {
+    public final static class Builder extends AbstractVertexProgramBuilder<Builder> {
 
         private Builder() {
             super(PageRankVertexProgram.class);

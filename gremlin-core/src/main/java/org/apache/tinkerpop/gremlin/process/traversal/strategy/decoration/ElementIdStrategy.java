@@ -152,7 +152,7 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
         return StringFactory.traversalStrategyString(this);
     }
 
-    public static class Builder {
+    public final static class Builder {
         private String idPropertyKey = "__id";
 
         private Supplier<Object> idMaker = () -> UUID.randomUUID().toString();

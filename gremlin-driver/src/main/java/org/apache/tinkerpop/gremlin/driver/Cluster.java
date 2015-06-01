@@ -187,7 +187,7 @@ public class Cluster {
         return manager.allHosts();
     }
 
-    public static class Builder {
+    public final static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private MessageSerializer serializer = Serializers.GRYO_V1D0.simpleInstance();
