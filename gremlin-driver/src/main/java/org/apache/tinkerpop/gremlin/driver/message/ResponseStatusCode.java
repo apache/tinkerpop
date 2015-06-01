@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.message;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -97,7 +95,7 @@ public enum ResponseStatusCode {
         return codeValueMap.get(codeValue);
     }
 
-    private ResponseStatusCode(final int value) {
+    ResponseStatusCode(final int value) {
         this.value = value;
     }
 

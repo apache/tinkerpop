@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ResponseResult {
+public final class ResponseResult {
     private final Object data;
     private final Map<String, Object> meta;
 

@@ -30,7 +30,7 @@ import java.util.UUID;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class RequestMessage {
+public final class RequestMessage {
     /**
      * An "invalid" message.  Used internally only.
      */
