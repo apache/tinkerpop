@@ -94,44 +94,29 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
         final Object finalFirstVertex = firstVertex instanceof Iterable ? ((Iterable) firstVertex).iterator() : firstVertex;
         final Object finalSecondVertex = secondVertex instanceof Iterable ? ((Iterable) secondVertex).iterator() : secondVertex;
 
-        if (finalFirstVertex instanceof Iterator || finalSecondVertex instanceof Iterator) {
-            if (finalFirstVertex instanceof Iterator) {
-                return IteratorUtils.map((Iterator<Vertex>) finalFirstVertex, vertex -> {
-                    final Edge edge = this.direction.equals(Direction.OUT) ?
+        final Iterator<Edge> edgeIterator;
+        if (finalFirstVertex instanceof Iterator) {
+            edgeIterator = IteratorUtils.map((Iterator<Vertex>) finalFirstVertex, vertex ->
+                    this.direction.equals(Direction.OUT) ?
                             vertex.addEdge(this.edgeLabel, (Vertex) finalSecondVertex, this.propertyKeyValues) :
-                            ((Vertex) finalSecondVertex).addEdge(this.edgeLabel, vertex, this.propertyKeyValues);
-
-                    if (callbacks != null) {
-                        final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
-                        callbacks.forEach(c -> c.accept(vae));
-                    }
-                    return edge;
-                });
-            } else {
-                return IteratorUtils.map((Iterator<Vertex>) finalSecondVertex, vertex -> {
-                    final Edge edge = this.direction.equals(Direction.OUT) ?
+                            ((Vertex) finalSecondVertex).addEdge(this.edgeLabel, vertex, this.propertyKeyValues));
+        } else if (finalSecondVertex instanceof Iterator) {
+            edgeIterator = IteratorUtils.map((Iterator<Vertex>) finalSecondVertex, vertex ->
+                    this.direction.equals(Direction.OUT) ?
                             ((Vertex) finalFirstVertex).addEdge(this.edgeLabel, vertex, this.propertyKeyValues) :
-                            vertex.addEdge(this.edgeLabel, ((Vertex) finalFirstVertex), this.propertyKeyValues);
-
-                    if (callbacks != null) {
-                        final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
-                        callbacks.forEach(c -> c.accept(vae));
-                    }
-                    return edge;
-                });
-            }
+                            vertex.addEdge(this.edgeLabel, ((Vertex) finalFirstVertex), this.propertyKeyValues));
         } else {
-            final Edge edge = this.direction.equals(Direction.OUT) ?
+            edgeIterator = IteratorUtils.of(this.direction.equals(Direction.OUT) ?
                     ((Vertex) firstVertex).addEdge(this.edgeLabel, (Vertex) secondVertex, this.propertyKeyValues) :
-                    ((Vertex) secondVertex).addEdge(this.edgeLabel, (Vertex) firstVertex, this.propertyKeyValues);
+                    ((Vertex) secondVertex).addEdge(this.edgeLabel, (Vertex) firstVertex, this.propertyKeyValues));
+        }
 
+        return IteratorUtils.consume(edgeIterator, edge -> {
             if (callbacks != null) {
                 final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
                 callbacks.forEach(c -> c.accept(vae));
             }
-
-            return IteratorUtils.of(edge);
-        }
+        });
     }
 
     @Override
@@ -163,7 +148,7 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.direction.hashCode() ^ this.edgeLabel.hashCode();
+        int result = super.hashCode() ^ this.scope.hashCode() ^ this.direction.hashCode() ^ this.edgeLabel.hashCode();
         if (null != this.firstVertexKey)
             result ^= this.firstVertexKey.hashCode();
         if (null != this.secondVertexKey)

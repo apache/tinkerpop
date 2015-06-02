@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `AddEdgeStep` now supports both `Scope.global` and `Scope.local` semantics.
 * Dropped dependency on `org.json:json` - used existing Jackson dependency.
 * Added back neo4j-gremlin as the licensing of the Neo4j API is now Apache2.
 * Added `willAllowId` method to features related to vertices, edges and vertex properties to test if an identifier can be use when `supportsUserSuppliedIds` is `true`.

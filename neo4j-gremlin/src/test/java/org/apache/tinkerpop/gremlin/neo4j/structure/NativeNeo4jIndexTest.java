@@ -70,7 +70,7 @@ public class NativeNeo4jIndexTest extends AbstractNeo4jGremlinTest {
         neo4j.cypher("CREATE INDEX ON :something(myId)").iterate();
         this.graph.tx().commit();
         this.graph.tx().readWrite();
-        ((Neo4jGraph) this.graph).baseGraph.awaitIndexesOnline(1, TimeUnit.MINUTES);
+        Thread.sleep(5000); // wait for indices to be built
         assertTrue(this.getBaseGraph().hasSchemaIndex("something", "myId"));
         TimeUtil.clock(20, traversal);
         final double indexTime = TimeUtil.clock(20, traversal);
@@ -111,7 +111,7 @@ public class NativeNeo4jIndexTest extends AbstractNeo4jGremlinTest {
         neo4j.cypher("CREATE INDEX ON :vertexProperty(myId)").iterate();
         this.graph.tx().commit();
         this.graph.tx().readWrite();
-        ((Neo4jGraph) this.graph).baseGraph.awaitIndexesOnline(1, TimeUnit.MINUTES);
+        Thread.sleep(5000); // wait for indices to be built
         assertTrue(this.getBaseGraph().hasSchemaIndex("something", "myId"));
         TimeUtil.clock(20, traversal);
         final double indexTime = TimeUtil.clock(20, traversal);
