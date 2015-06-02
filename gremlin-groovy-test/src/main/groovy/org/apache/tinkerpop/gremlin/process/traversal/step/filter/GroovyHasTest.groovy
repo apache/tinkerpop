@@ -114,5 +114,10 @@ public abstract class GroovyHasTest {
         public Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id) {
             TraversalScriptHelper.compute("g.V(v1Id).outE.has('weight', inside(0.0d, 0.6d)).inV", g, "v1Id", v1Id);
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXlocationX() {
+            TraversalScriptHelper.compute("g.V.has('location')", g)
+        }
     }
 }

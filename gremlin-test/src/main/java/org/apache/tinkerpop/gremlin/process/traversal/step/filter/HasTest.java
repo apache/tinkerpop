@@ -21,11 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.CoreMatchers;
@@ -79,6 +79,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Integer> get_g_V_hasXperson_name_markoX_age();
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXlocationX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -291,6 +293,7 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         final Object edgeId11 = convertToEdgeId("josh", "created", "lop");
         final Object edgeId10 = convertToEdgeId("josh", "created", "ripple");
         final Traversal<Edge, Edge> traversal = get_g_EX11X_outV_outE_hasXid_10X(edgeId11, edgeId10);
+        printTraversalForm(traversal);
         assert_g_EX11X(edgeId10, traversal);
     }
 
@@ -300,7 +303,16 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         final Object edgeId11 = convertToEdgeId("josh", "created", "lop");
         final Object edgeId10 = convertToEdgeId("josh", "created", "ripple");
         final Traversal<Edge, Edge> traversal = get_g_EX11X_outV_outE_hasXid_10X(edgeId11.toString(), edgeId10.toString());
+        printTraversalForm(traversal);
         assert_g_EX11X(edgeId10, traversal);
+    }
+
+    @Test
+    @LoadGraphWith(CREW)
+    public void g_V_hasXlocationX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXlocationX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "stephen"), convertToVertex(graph, "daniel"), convertToVertex(graph, "matthias")), traversal);
     }
 
     private void assert_g_EX11X(final Object edgeId, final Traversal<Edge, Edge> traversal) {
@@ -395,6 +407,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_outE_hasXweight_inside_0_06X_inV(final Object v1Id) {
             return g.V(v1Id).outE().has("weight", P.inside(0.0d, 0.6d)).inV();
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXlocationX() {
+            return g.V().has("location");
         }
     }
 }
