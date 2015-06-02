@@ -43,7 +43,7 @@ public final class CypherStartStep extends StartStep<Map<String, Object>> implem
     }
 
     @Override
-    public void setScope(Scope scope) {
+    public void setScope(final Scope scope) {
 
     }
 
