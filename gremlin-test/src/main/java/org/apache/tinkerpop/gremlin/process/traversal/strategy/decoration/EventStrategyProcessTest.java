@@ -93,7 +93,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         v.addEdge("self", v);
 
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.V(v).addOutE("self", v).next();
+        gts.withSideEffect("v",()->v).V(v).addOutE("self", "v").next();
 
         tryCommit(graph, g -> assertEquals(2, IteratorUtils.count(gts.E())));
 
@@ -210,7 +210,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         v.addEdge("self", v);
 
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.V(v).addOutE("self", v).property("some", "thing").next();
+        gts.withSideEffect("v",v).V(v).addOutE("self", "v").property("some", "thing").next();
 
         tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.E().has("some", "thing"))));
 

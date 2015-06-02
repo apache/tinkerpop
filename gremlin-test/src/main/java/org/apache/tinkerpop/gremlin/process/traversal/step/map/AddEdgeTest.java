@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -46,7 +45,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id);
 
-    public abstract Traversal<Vertex, Edge> get_g_V_addOutEXexistsWith__g_V__time_nowX();
+    public abstract Traversal<Vertex, Edge> get_g_withSideEffectXx__g_V_toListX_addOutEXexistsWith_x_time_nowX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -92,7 +91,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_V_addOutEXexistsWith__g_V__time_nowX() {
-        final Traversal<Vertex, Edge> traversal = get_g_V_addOutEXexistsWith__g_V__time_nowX();
+        final Traversal<Vertex, Edge> traversal = get_g_withSideEffectXx__g_V_toListX_addOutEXexistsWith_x_time_nowX();
         printTraversalForm(traversal);
         int count = 0;
         while (traversal.hasNext()) {
@@ -124,8 +123,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Edge> get_g_V_addOutEXexistsWith__g_V__time_nowX() {
-            return g.V().addOutE("existsWith", g.V(), "time", "now");
+        public Traversal<Vertex, Edge> get_g_withSideEffectXx__g_V_toListX_addOutEXexistsWith_x_time_nowX() {
+            return g.withSideEffect("x",g.V().toList()).V().addOutE("existsWith", "x", "time", "now");
         }
     }
 }

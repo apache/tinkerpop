@@ -411,6 +411,11 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
         return Scope.local;
     }
 
+    @Override
+    public void setScope(final Scope scope) {
+
+    }
+
     /**
      * A wrapper for a traversal in a query which maintains statistics about the traversal as
      * it consumes inputs and produces outputs.

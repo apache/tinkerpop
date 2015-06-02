@@ -25,11 +25,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -39,17 +36,12 @@ public class AddEdgeStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
-        final Vertex v1 = new DetachedVertex(1, Vertex.DEFAULT_LABEL, new HashMap<>());
-        final Vertex v2 = new DetachedVertex(2, Vertex.DEFAULT_LABEL, new HashMap<>());
-        final List<Vertex> v = Arrays.asList(v1, v2);
         return Arrays.asList(
-                __.addE(Direction.IN, "knows", v1),
-                __.addE(Direction.IN, "knows", v2),
-                __.addE(Direction.IN, "knows", v.iterator()),
-                __.addE(Direction.OUT, "knows", v1),
-                __.addE(Direction.IN, "knows", v1, "weight", 0),
-                __.addE(Direction.IN, "knows", v1, "weight", 1),
-                __.addE(Direction.IN, "knows", v.iterator(), "weight", 0)
+                __.addE(Direction.IN, "knows", "x"),
+                __.addE(Direction.IN, "knows", "y"),
+                __.addE(Direction.OUT, "knows", "x"),
+                __.addE(Direction.IN, "knows", "x", "weight", 0),
+                __.addE(Direction.IN, "knows", "x", "weight", 1)
         );
     }
 }

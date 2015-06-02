@@ -113,6 +113,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
                 TraverserRequirement.OBJECT : TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
     }
 
+    @Override
     public void setScope(final Scope scope) {
         this.scope = scope;
     }

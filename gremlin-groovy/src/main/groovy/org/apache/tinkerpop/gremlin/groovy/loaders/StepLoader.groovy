@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.groovy.function.GSupplier
 import org.apache.tinkerpop.gremlin.groovy.function.GUnaryOperator
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
+import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -36,12 +37,23 @@ class StepLoader {
             return ((GraphTraversal) delegate).by(1 == closure.getMaximumNumberOfParameters() ? new GFunction(closure) : new GComparator(closure));
         }
 
+        GraphTraversalSource.metaClass.withSideEffect = { final String key, final Object object ->
+            return ((GraphTraversalSource) delegate).withSideEffect(key, object instanceof Closure ? new GSupplier((Closure) object) : new ConstantSupplier<>(object));
+        }
+
         GraphTraversalSource.metaClass.withSack = { final Closure closure ->
             return ((GraphTraversalSource) delegate).withSack(new GSupplier(closure));
         }
 
         GraphTraversalSource.metaClass.withSack = { final Closure closure, final Closure operator ->
             return ((GraphTraversalSource) delegate).withSack(new GSupplier(closure), new GUnaryOperator(operator));
+        }
+
+        ///////////////////
+
+        GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSideEffect = {
+            final String key, final Object object ->
+                return (((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSideEffect(key, object instanceof Closure ? new GSupplier((Closure) object) : new ConstantSupplier<>(object)));
         }
 
         GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSack = { final Closure closure ->

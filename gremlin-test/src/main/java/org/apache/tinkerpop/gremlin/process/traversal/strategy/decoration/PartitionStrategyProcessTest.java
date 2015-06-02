@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -28,9 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -58,7 +55,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource source = create(partitionStrategy);
         final Vertex v1 = source.addV("any", "thing").next();
         final Vertex v2 = source.addV("some", "thing").next();
-        final Edge e = source.V(v1.id()).addInE("connectsTo", v2, "every", "thing").next();
+        final Edge e = source.withSideEffect("v2", v2).V(v1.id()).addInE("connectsTo", "v2", "every", "thing").next();
 
         assertNotNull(v1);
         assertEquals("thing", v1.property("any").value());
@@ -146,7 +143,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource sourceA = create(partitionStrategyA);
 
         final Vertex vA = sourceAA.addV("any", "a").next();
-        final Edge e = sourceAA.V(vA.id()).addOutE("knows", vA).next();
+        final Edge e = sourceAA.withSideEffect("vA", vA).V(vA.id()).addOutE("knows", "vA").next();
         assertEquals(e.id(), g.E(e.id()).id().next());
 
         try {
@@ -199,14 +196,14 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
 
         final Vertex vA = sourceAA.addV("any", "a").next();
         final Vertex vAA = sourceAA.addV("any", "aa").next();
-        final Edge eAtoAA = sourceAA.V(vA.id()).addOutE("a->a", vAA).next();
+        final Edge eAtoAA = sourceAA.withSideEffect("vAA", vAA).V(vA.id()).addOutE("a->a", "vAA").next();
 
         final Vertex vB = sourceBA.addV("any", "b").next();
-        sourceBA.V(vA.id()).addOutE("a->b", vB).next();
+        sourceBA.withSideEffect("vB", vB).V(vA.id()).addOutE("a->b", "vB").next();
 
         final Vertex vC = sourceCAB.addV("any", "c").next();
-        final Edge eBtovC = sourceCAB.V(vB.id()).addOutE("b->c", vC).next();
-        final Edge eAtovC = sourceCAB.V(vA.id()).addOutE("a->c", vC).next();
+        final Edge eBtovC = sourceCAB.withSideEffect("vC", vC).V(vB.id()).addOutE("b->c", "vC").next();
+        final Edge eAtovC = sourceCAB.withSideEffect("vC", vC).V(vA.id()).addOutE("a->c", "vC").next();
 
         assertEquals(0, IteratorUtils.count(sourceC.V()));
         assertEquals(0, IteratorUtils.count(sourceC.E()));

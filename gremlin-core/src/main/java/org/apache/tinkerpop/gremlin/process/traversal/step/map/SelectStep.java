@@ -113,6 +113,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         return this.getSelfAndChildRequirements(this.scope == Scope.local ? TraverserRequirement.OBJECT : TraverserRequirement.PATH);
     }
 
+    @Override
     public void setScope(final Scope scope) {
         this.scope = scope;
     }
