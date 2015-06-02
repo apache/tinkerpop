@@ -26,20 +26,27 @@ input=$2
 name=`basename ${input}`
 output="${TP_HOME}/target/postprocess-asciidoc/${name}"
 
-echo "${input} > ${output}"
+echo
+echo " * source:   ${input}"
+echo "   target:   ${output}"
+echo -ne "   progress: initializing"
 
 if [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
   pushd "${CONSOLE_HOME}" > /dev/null
-  bin/gremlin.sh -e ${TP_HOME}/docs/preprocessor/processor.groovy ${input} > ${input}.groovy
+  bin/gremlin.sh -e ${TP_HOME}/docs/preprocessor/processor.groovy ${input} > ${input}.part2.groovy
+  cat ${input}.part2.groovy | grep -o '^pb([0-9][0-9]*' | tail -n1 | grep -o '[0-9]*' | xargs echo "TOTAL_LINES =" > ${input}.part1.groovy
+  cat ${input}.part?.groovy > ${input}.groovy && rm -f ${input}.part?.groovy
   ec=${PIPESTATUS[0]}
   if [ ${ec} -eq 0 ]; then
     HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/hadoop-gremlin/lib" bin/gremlin.sh ${input}.groovy | awk 'BEGIN {b=1} /¶IGNORE/ {b=!b} !/¶IGNORE/ {if(a&&b)print} /¶START/ {a=1}' | grep -v '^WARN ' | sed 's/^==>¶//' > ${output}
     ec=${PIPESTATUS[0]}
-    rm -f ${input}.groovy
   fi
   rm -f ${input}.groovy
   popd > /dev/null
-  exit ${ec}
+  if [ ${ec} -ne 0 ]; then
+    exit 255
+  fi
 else
   cp ${input} ${output}
+  echo -ne "\r   progress: [====================================================================================================] 100%\n"
 fi

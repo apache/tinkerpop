@@ -44,49 +44,47 @@ TP_HOME=`pwd`
 CONSOLE_HOME=`directory "${TP_HOME}/gremlin-console/target/apache-gremlin-console-*-standalone"`
 PLUGIN_DIR="${CONSOLE_HOME}/ext"
 TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -o 'version>[^<]*' | grep -o '>.*' | grep -o '[^>]*')
-
-# install Hadoop plugin
-hadoopPlugin=$(find . -name "HadoopGremlinPlugin.java")
-hadoopPluginName=`echo ${hadoopPlugin} | cut -d '/' -f2`
-hadoopPluginClass=`echo ${hadoopPlugin} | sed -e 's@.*src/main/java/@@' -e 's/\.java$//' | tr '/' '.'`
-hadoopPluginDirectory="${PLUGIN_DIR}/${hadoopPluginName}"
-match=`grep -c "$hadoopPluginClass" ${PLUGIN_DIR}/plugins.txt`
+TMP_DIR="/tmp/tp-docs-preprocessor"
 
 trap cleanup INT
 
 function cleanup() {
-  # remove Hadoop plugin if it wasn't installed prior pre-processing
-  if [ "${rmHadoopPlugin}" == "1" ]; then
-    rm -rf "${PLUGIN_DIR}/${hadoopPluginName}"
-    sed -e "/${hadoopPluginClass}/d" "${PLUGIN_DIR}/plugins.txt" > "${PLUGIN_DIR}/plugins.txt."
-    mv "${PLUGIN_DIR}/plugins.txt." "${PLUGIN_DIR}/plugins.txt"
-  fi
+  echo -ne "\r\n\n"
+  docs/preprocessor/uninstall-plugins.sh "${CONSOLE_HOME}" "${TMP_DIR}"
   find "${TP_HOME}/docs/src/" -name "*.asciidoc.groovy" | xargs rm -f
+  rm -rf ${TMP_DIR}
 }
 
-if [ ! -z "${hadoopPluginName}" ] && [ ! -d "${hadoopPluginDirectory}" ] && [ ${match} -eq 0 ]; then
-  rmHadoopPlugin=1
-  echo -e "\n${hadoopPluginClass}" >> "${PLUGIN_DIR}/plugins.txt"
-  mkdir -p "${PLUGIN_DIR}/${hadoopPluginName}/"{lib,plugin}
-  cp ${hadoopPluginName}/target/*${TP_VERSION}.jar "${PLUGIN_DIR}/${hadoopPluginName}/plugin"
-  libdir=`directory "${hadoopPluginName}/target/*-standalone/lib/"`
-  if [ -d "${libdir}" ]; then
-    cp ${libdir}/*.jar "${PLUGIN_DIR}/${hadoopPluginName}/plugin"
-  fi
-  cp */target/*${TP_VERSION}.jar "${PLUGIN_DIR}/${hadoopPluginName}/lib"
-  for libdir in $(find . -name lib | grep -v ext); do
-    cp ${libdir}/*.jar "${PLUGIN_DIR}/${hadoopPluginName}/lib"
-  done
-  rm -f "${PLUGIN_DIR}/hadoop-gremlin"/plugin/slf4j-*.jar
-  echo "System.exit(0)" > "${PLUGIN_DIR}/${hadoopPluginName}/init.groovy"
-  ${CONSOLE_HOME}/bin/gremlin.sh "${PLUGIN_DIR}/${hadoopPluginName}/init.groovy" > /dev/null 2> /dev/null
+mkdir -p ${TMP_DIR}
+
+# install plugins
+echo
+echo "=========================="
+echo "+   Installing Plugins   +"
+echo "=========================="
+echo
+docs/preprocessor/install-plugins.sh "${CONSOLE_HOME}" "${TP_VERSION}" "${TMP_DIR}"
+
+if [ ${PIPESTATUS[0]} -ne 0 ]; then
+  cleanup
+  exit 1
+else
+  echo
 fi
 
-# copy Gremlin-Hadoop configuration files
-cp ${TP_HOME}/hadoop-gremlin/conf/* "${CONSOLE_HOME}/conf/"
-
 # process *.asciidoc files
-find "${TP_HOME}/docs/src/" -name "*.asciidoc" | xargs -n1 -P4 "${TP_HOME}/docs/preprocessor/preprocess-file.sh" "${CONSOLE_HOME}"
+echo
+echo "============================"
+echo "+   Processing AsciiDocs   +"
+echo "============================"
+find "${TP_HOME}/docs/src/" -name "*.asciidoc" | xargs -n1 ${TP_HOME}/docs/preprocessor/preprocess-file.sh "${CONSOLE_HOME}"
+
+if [ ${PIPESTATUS[1]} -ne 0 ]; then
+  cleanup
+  exit 1
+else
+  echo
+fi
 
 cleanup
 
