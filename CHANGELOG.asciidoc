@@ -27,6 +27,7 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 
 * Added `LabelP` to support index lookups and `has()` filtering on `Neo4jGraph` multi-label vertices.
 * `AddEdgeStep` now supports both `Scope.global` and `Scope.local` semantics.
+* Added a fully defined set of `Graph.Feature` implementations to `EmptyGraph`.
 * Dropped dependency on `org.json:json` - used existing Jackson dependency.
 * Added back neo4j-gremlin as the licensing of the Neo4j API is now Apache2.
 * Added `willAllowId` method to features related to vertices, edges and vertex properties to test if an identifier can be use when `supportsUserSuppliedIds` is `true`.
