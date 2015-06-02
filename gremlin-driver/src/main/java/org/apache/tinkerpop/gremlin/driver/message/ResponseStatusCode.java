@@ -48,6 +48,18 @@ public enum ResponseStatusCode {
     PARTIAL_CONTENT(206),
 
     /**
+     * The server could not authenticate the request.  This code is for future use.
+     */
+    UNAUTHORIZED(401),
+
+    /**
+     * The server could authenticate the request, but will not fulfill it.  This is a general purpose code that
+     * would typically be returned if the request is authenticated but not authorized to do what it is doing. This
+     * code is for future use.
+     */
+    FORBIDDEN(403),
+
+    /**
      * The request message was not properly formatted which means it could not be parsed at all or the "op" code was
      * not recognized such that Gremlin Server could properly route it for processing.  Check the message format and
      * retry the request.
