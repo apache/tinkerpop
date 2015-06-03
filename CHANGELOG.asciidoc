@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `LabelP` to support index lookups and `has()` filtering on `Neo4jGraph` multi-label vertices.
 * `AddEdgeStep` now supports both `Scope.global` and `Scope.local` semantics.
 * Dropped dependency on `org.json:json` - used existing Jackson dependency.
 * Added back neo4j-gremlin as the licensing of the Neo4j API is now Apache2.
@@ -37,7 +38,7 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 * `GraphComputerTest` extended with validation of the semantics of all `ResultGraph`/`Persist` combinations.
 * GiraphGraphComputer no longer requires an extra iteration and MapReduce job to derive the full `Memory` result.
 * SparkGraphComputer now supports `InputRDD` and `OutputRDD` to allow vendors/users to use a `SparkContext` to read/write the graph adjacency list.
-* Added `Scope.getScopeValueByKey()` static method so all "selecting" steps use the same pattern for map, path, and sideEffect data retrieval.
+* Added `Scoping.getScopeValueByKey()` method so all "selecting" steps use the same pattern for map, path, and sideEffect data retrieval.
 
 TinkerPop 3.0.0.M9 (Release Date: May 26, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
