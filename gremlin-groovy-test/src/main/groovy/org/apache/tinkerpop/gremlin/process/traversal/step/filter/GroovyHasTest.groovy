@@ -86,6 +86,11 @@ public abstract class GroovyHasTest {
         }
 
         @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXage_isXgt_30XX() {
+            TraversalScriptHelper.compute("g.V.has('age', __.is(gt(30)))", g);
+        }
+
+        @Override
         public Traversal<Edge, Edge> get_g_EX7X_hasLabelXknowsX(final Object e7Id) {
             TraversalScriptHelper.compute("g.E(e7Id).hasLabel('knows')", g, "e7Id", e7Id);
         }
