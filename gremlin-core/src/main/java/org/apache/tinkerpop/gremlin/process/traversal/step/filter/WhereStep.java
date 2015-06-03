@@ -140,13 +140,21 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         if (this.noStartAndEndKeys()) {
             return this.predicate.getBiPredicate().test(getStartObject(traverser), null);
         } else {
-            return this.predicate.getBiPredicate().test(
-                    null == this.startKey ? getStartObject(traverser) : this.getScopeValueByKey(this.startKey, traverser),
-                    null == this.endKey ? null : this.getScopeValueByKey(this.endKey, traverser));
+            final Object startObject = null == this.startKey ? getStartObject(traverser) : this.getOptionalScopeValueByKey(this.startKey, traverser).orElse(null);
+            if (null == startObject) return false;
+            final Object endObject;
+            if (null == this.endKey) {
+                endObject = null;
+            } else {
+                endObject = this.getOptionalScopeValueByKey(this.endKey, traverser).orElse(null);
+                if (null == endObject) return false;
+            }
+            return this.predicate.getBiPredicate().test(startObject, endObject);
         }
     }
 
     private boolean doMultiKeyFilter(final Traverser.Admin<S> traverser) {
+        // TODO: getOptionalScopeValueByKey()
         final List<Object> startObjects = new ArrayList<>();
         final List<Object> endObjects = new ArrayList<>();
 
