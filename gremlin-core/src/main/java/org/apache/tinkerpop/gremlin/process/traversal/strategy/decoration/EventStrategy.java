@@ -97,6 +97,10 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
         }
     }
 
+    /**
+     * Gathers messages from callbacks and fires them to listeners.  When the event is sent to the listener is
+     * up to the implementation of this interface.
+     */
     public interface EventQueue {
         /**
          * Provide listeners to the queue that were given to the {@link EventStrategy} on construction.
@@ -109,6 +113,9 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
         public void addEvent(final Event evt);
     }
 
+    /**
+     * Immediately notifies all listeners as events arrive.
+     */
     public static class DefaultEventQueue implements EventQueue {
         private List<MutationListener> listeners = Collections.emptyList();
 
