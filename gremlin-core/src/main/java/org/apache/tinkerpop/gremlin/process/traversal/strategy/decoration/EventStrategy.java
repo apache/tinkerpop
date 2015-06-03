@@ -59,7 +59,7 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
         if (!traversal.getGraph().isPresent())
             throw new IllegalStateException(String.format("%s requires a graph instance is present on the traversal", EventStrategy.class.getName()));
 
-        final EventStrategyCallback callback = new EventStrategyCallback(new EventTrigger(traversal.getGraph().get()));
+        final EventStrategyCallback callback = new EventStrategyCallback(new EventQueue(traversal.getGraph().get()));
         TraversalHelper.getStepsOfAssignableClass(Mutating.class, traversal).forEach(s -> s.getMutatingCallbackRegistry().addCallback(callback));
     }
 
@@ -68,9 +68,9 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
     }
 
     public class EventStrategyCallback implements EventCallback<Event>, Serializable {
-        private final EventTrigger trigger;
+        private final EventQueue trigger;
 
-        public EventStrategyCallback(final EventTrigger trigger) {
+        public EventStrategyCallback(final EventQueue trigger) {
             this.trigger = trigger;
         }
 
@@ -85,7 +85,7 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
 
         Builder() {}
 
-        public Builder addListener(MutationListener listener) {
+        public Builder addListener(final MutationListener listener) {
             this.listeners.add(listener);
             return this;
         }
@@ -95,7 +95,7 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
         }
     }
 
-    class EventTrigger {
+    class EventQueue {
 
         /**
          * A queue of events that are triggered by change to the graph. The queue builds up until the trigger fires them
@@ -112,7 +112,7 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
          */
         private final boolean enqueueEvents;
 
-        public EventTrigger(final Graph graph) {
+        public EventQueue(final Graph graph) {
             enqueueEvents = graph.features().graph().supportsTransactions();
 
             if (enqueueEvents) {
@@ -124,7 +124,7 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
                     else if (status == Transaction.Status.ROLLBACK)
                         resetEventQueue();
                     else
-                        throw new RuntimeException(String.format("The %s is not aware of this status: %s", EventTrigger.class.getName(), status));
+                        throw new RuntimeException(String.format("The %s is not aware of this status: %s", EventQueue.class.getName(), status));
                 });
             }
         }
