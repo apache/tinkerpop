@@ -60,7 +60,7 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
             throw new IllegalStateException(String.format("%s requires a graph instance is present on the traversal", EventStrategy.class.getName()));
 
         final EventStrategyCallback callback = new EventStrategyCallback(new EventTrigger(traversal.getGraph().get()));
-        TraversalHelper.getStepsOfAssignableClass(Mutating.class, traversal).forEach(s -> s.addCallback(callback));
+        TraversalHelper.getStepsOfAssignableClass(Mutating.class, traversal).forEach(s -> s.getMutatingCallbackRegistry().addCallback(callback));
     }
 
     public static Builder build() {

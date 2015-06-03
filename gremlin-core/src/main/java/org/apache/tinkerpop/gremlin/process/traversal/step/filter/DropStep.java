@@ -21,8 +21,9 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -30,17 +31,13 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class DropStep<S> extends FilterStep<S> implements Mutating<EventCallback<Event>> {
+public final class DropStep<S> extends FilterStep<S> implements Mutating<Event> {
 
-    private List<EventCallback<Event>> callbacks = null;
+    private CallbackRegistry<Event> callbackRegistry;
 
     public DropStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -51,7 +48,7 @@ public final class DropStep<S> extends FilterStep<S> implements Mutating<EventCa
         final S s = traverser.get();
         if (s instanceof Element) {
             final Element toRemove = ((Element) s);
-            if (callbacks != null) {
+            if (callbackRegistry != null) {
                 final Event removeEvent;
                 if (s instanceof Vertex)
                     removeEvent = new Event.VertexRemovedEvent(DetachedFactory.detach((Vertex) s, true));
@@ -62,13 +59,13 @@ public final class DropStep<S> extends FilterStep<S> implements Mutating<EventCa
                 else
                     throw new IllegalStateException("The incoming object is not removable: " + s);
 
-                callbacks.forEach(c -> c.accept(removeEvent));
+                callbackRegistry.getCallbacks().forEach(c -> c.accept(removeEvent));
             }
 
             toRemove.remove();
         } else if (s instanceof Property) {
             final Property toRemove = ((Property) s);
-            if (callbacks != null) {
+            if (callbackRegistry != null) {
                 final Event.ElementPropertyEvent removeEvent;
                 if (toRemove.element() instanceof Edge)
                     removeEvent = new Event.EdgePropertyRemovedEvent((Edge) toRemove.element(), DetachedFactory.detach(toRemove));
@@ -77,7 +74,7 @@ public final class DropStep<S> extends FilterStep<S> implements Mutating<EventCa
                 else
                     throw new IllegalStateException("The incoming object is not removable: " + s);
 
-                callbacks.forEach(c -> c.accept(removeEvent));
+                callbackRegistry.getCallbacks().forEach(c -> c.accept(removeEvent));
             }
             toRemove.remove();
         } else
@@ -86,23 +83,8 @@ public final class DropStep<S> extends FilterStep<S> implements Mutating<EventCa
     }
 
     @Override
-    public void addCallback(final EventCallback<Event> elementPropertyRemovedEventEventCallback) {
-        if (callbacks == null) callbacks = new ArrayList<>();
-        callbacks.add(elementPropertyRemovedEventEventCallback);
-    }
-
-    @Override
-    public void removeCallback(final EventCallback<Event> elementPropertyRemovedEventEventCallback) {
-        if (callbacks != null) callbacks.remove(elementPropertyRemovedEventEventCallback);
-    }
-
-    @Override
-    public void clearCallbacks() {
-        if (callbacks != null) callbacks.clear();
-    }
-
-    @Override
-    public List<EventCallback<Event>> getCallbacks() {
-        return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
+    public CallbackRegistry<Event> getMutatingCallbackRegistry() {
+        if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
+        return callbackRegistry;
     }
 }

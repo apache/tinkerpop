@@ -23,8 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -32,18 +33,15 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scoping, Mutating<EventCallback<Event.EdgeAddedEvent>> {
+public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scoping, Mutating<Event.EdgeAddedEvent> {
 
     private static final Set<TraverserRequirement> LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
     private static final Set<TraverserRequirement> GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
@@ -55,7 +53,7 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
     private final String secondVertexKey;
     private final Object[] propertyKeyValues;
 
-    private List<EventCallback<Event.EdgeAddedEvent>> callbacks = null;
+    private CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry;
 
     public AddEdgeStep(final Traversal.Admin traversal, final Scope scope, final Direction direction, final String firstVertexKey, final String edgeLabel, final String secondVertexKey, final Object... propertyKeyValues) {
         super(traversal);
@@ -112,9 +110,9 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
         }
 
         return IteratorUtils.consume(edgeIterator, edge -> {
-            if (callbacks != null) {
+            if (callbackRegistry != null) {
                 final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
-                callbacks.forEach(c -> c.accept(vae));
+                callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
             }
         });
     }
@@ -125,26 +123,10 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
     }
 
     @Override
-    public void addCallback(final EventCallback<Event.EdgeAddedEvent> edgeAddedEventEventCallback) {
-        if (callbacks == null) callbacks = new ArrayList<>();
-        callbacks.add(edgeAddedEventEventCallback);
+    public CallbackRegistry<Event.EdgeAddedEvent> getMutatingCallbackRegistry() {
+        if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
+        return callbackRegistry;
     }
-
-    @Override
-    public void removeCallback(final EventCallback<Event.EdgeAddedEvent> edgeAddedEventEventCallback) {
-        if (callbacks != null) callbacks.remove(edgeAddedEventEventCallback);
-    }
-
-    @Override
-    public void clearCallbacks() {
-        if (callbacks != null) callbacks.clear();
-    }
-
-    @Override
-    public List<EventCallback<Event.EdgeAddedEvent>> getCallbacks() {
-        return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
-    }
-
 
     @Override
     public int hashCode() {

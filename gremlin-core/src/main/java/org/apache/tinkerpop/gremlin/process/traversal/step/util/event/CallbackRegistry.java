@@ -16,22 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.process.traversal.step.util.event;
 
-package org.apache.tinkerpop.gremlin.process.traversal.step;
-
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
+import java.util.List;
 
 /**
- * A marker interface for steps that modify the graph.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Matt Frantz
  */
-public interface Mutating<E extends Event> {
-
-    /**
-     * Gets the callback registry for events that the step raises.
-     */
-    public CallbackRegistry<E> getMutatingCallbackRegistry();
+public interface CallbackRegistry<E extends Event> {
+    public void addCallback(final EventCallback<E> c);
+    public void removeCallback(final EventCallback<E> c);
+    public void clearCallbacks();
+    public List<EventCallback<E>> getCallbacks();
 }
