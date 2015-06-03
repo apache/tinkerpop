@@ -132,11 +132,11 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         return this.multiKeyedTraversal ? this.endKeys.isEmpty() && this.startKeys.isEmpty() : this.endKey == null && this.startKey == null;
     }
 
-    private Object getStartObject(final Traverser<S> traverser) {
+    private Object getStartObject(final Traverser.Admin<S> traverser) {
         return this.predicate instanceof TraversalP ? traverser : traverser.get();
     }
 
-    private boolean doSingleKeyFilter(final Traverser<S> traverser) {
+    private boolean doSingleKeyFilter(final Traverser.Admin<S> traverser) {
         if (this.noStartAndEndKeys()) {
             return this.predicate.getBiPredicate().test(getStartObject(traverser), null);
         } else {
@@ -146,7 +146,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         }
     }
 
-    private boolean doMultiKeyFilter(final Traverser<S> traverser) {
+    private boolean doMultiKeyFilter(final Traverser.Admin<S> traverser) {
         final List<Object> startObjects = new ArrayList<>();
         final List<Object> endObjects = new ArrayList<>();
 

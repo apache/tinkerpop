@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public interface Scoping {
 
-    public default <S> S getScopeValueByKey(final String key, final Traverser<?> traverser) {
+    public default <S> S getScopeValueByKey(final String key, final Traverser.Admin<?> traverser) {
         if (Scope.local == this.getScope()) {
             final S s = ((Map<String, S>) traverser.get()).get(key);
             if (null == s)
@@ -40,7 +40,7 @@ public interface Scoping {
             return s;
         } else {
             final Path path = traverser.path();
-            return path.hasLabel(key) ? path.get(key) : traverser.sideEffects(key);
+            return path.hasLabel(key) ? path.get(key) : traverser.getSideEffects().<S>get(key).orElseThrow(() -> new IllegalArgumentException("Neither the current path nor sideEffects have a " + key + "-key: " + traverser));
         }
     }
 
