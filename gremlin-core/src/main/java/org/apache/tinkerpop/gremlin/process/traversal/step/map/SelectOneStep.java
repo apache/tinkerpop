@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -51,7 +50,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        return (E) TraversalUtil.apply(Scope.local == this.scope ? ((Map) traverser.get()).get(this.selectLabel) : traverser.path().<Object>get(this.selectLabel), this.selectTraversal);
+        return (E) TraversalUtil.apply((Object) this.getScopeValueByKey(this.selectLabel, traverser), this.selectTraversal);
     }
 
     @Override
@@ -94,6 +93,11 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     @Override
     public Scope recommendNextScope() {
         return Scope.global;
+    }
+
+    @Override
+    public Scope getScope() {
+        return this.scope;
     }
 }
 

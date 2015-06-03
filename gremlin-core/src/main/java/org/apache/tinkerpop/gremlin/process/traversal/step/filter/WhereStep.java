@@ -119,6 +119,11 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     }
 
     @Override
+    public Scope getScope() {
+        return this.scope;
+    }
+
+    @Override
     public Scope recommendNextScope() {
         return this.scope;
     }
@@ -136,8 +141,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             return this.predicate.getBiPredicate().test(getStartObject(traverser), null);
         } else {
             return this.predicate.getBiPredicate().test(
-                    null == this.startKey ? getStartObject(traverser) : Scope.getScopeValueByKey(this.scope, this.startKey, traverser),
-                    null == this.endKey ? null : Scope.getScopeValueByKey(this.scope, this.endKey, traverser));
+                    null == this.startKey ? getStartObject(traverser) : this.getScopeValueByKey(this.startKey, traverser),
+                    null == this.endKey ? null : this.getScopeValueByKey(this.endKey, traverser));
         }
     }
 
@@ -149,11 +154,11 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             startObjects.add(traverser.get());
         else {
             for (final String startKey : this.startKeys) {
-                startObjects.add(Scope.getScopeValueByKey(this.scope, startKey, traverser));
+                startObjects.add(this.getScopeValueByKey(startKey, traverser));
             }
         }
         for (final String endKey : this.endKeys) {
-            endObjects.add(Scope.getScopeValueByKey(this.scope, endKey, traverser));
+            endObjects.add(this.getScopeValueByKey(endKey, traverser));
         }
 
         return this.predicate.getBiPredicate().test(new TraversalUtil.Multiple<>(startObjects), endObjects.isEmpty() ? null : new TraversalUtil.Multiple<>(endObjects));

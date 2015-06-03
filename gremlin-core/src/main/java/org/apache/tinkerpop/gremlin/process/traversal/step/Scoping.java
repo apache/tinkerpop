@@ -21,12 +21,30 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+
+import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Scoping {
+
+    public default <S> S getScopeValueByKey(final String key, final Traverser<?> traverser) {
+        if (Scope.local == this.getScope()) {
+            final S s = ((Map<String, S>) traverser.get()).get(key);
+            if (null == s)
+                throw new IllegalArgumentException("The provided map does not have a " + key + "-key: " + traverser);
+            return s;
+        } else {
+            final Path path = traverser.path();
+            return path.hasLabel(key) ? path.get(key) : traverser.sideEffects(key);
+        }
+    }
+
+    public Scope getScope();
 
     public Scope recommendNextScope();
 

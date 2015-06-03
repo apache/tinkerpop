@@ -64,7 +64,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
                 path.labels().stream().flatMap(Set::stream).distinct().forEach(label -> bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next())));
             }
         } else
-            this.selectLabels.forEach(label -> bindings.put(label, (E) TraversalUtil.apply((Object) Scope.getScopeValueByKey(this.scope, label, traverser), this.traversalRing.next())));
+            this.selectLabels.forEach(label -> bindings.put(label, (E) TraversalUtil.apply((Object) this.getScopeValueByKey(label, traverser), this.traversalRing.next())));
 
         this.traversalRing.reset();
         return bindings;
@@ -116,6 +116,11 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     @Override
     public void setScope(final Scope scope) {
         this.scope = scope;
+    }
+
+    @Override
+    public Scope getScope()  {
+        return this.scope;
     }
 
     @Override

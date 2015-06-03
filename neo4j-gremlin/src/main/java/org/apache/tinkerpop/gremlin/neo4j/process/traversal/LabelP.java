@@ -48,7 +48,7 @@ public final class LabelP extends P<String> {
 
         @Override
         public boolean test(final String labels, final String checkLabel) {
-            return labels.contains(checkLabel);
+            return labels.contains(checkLabel); // TODO: contains may be bad -- use :: reg-ex parsing?
         }
 
         public static LabelBiPredicate instance() {
