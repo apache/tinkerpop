@@ -24,6 +24,7 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.neo4j.AbstractNeo4jGremlinTest;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.neo4j.structure.trait.MultiMetaNeo4jTrait;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -55,6 +56,51 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
     @Test
     public void shouldOpenWithOverriddenConfig() throws Exception {
         assertNotNull(this.graph);
+    }
+
+    @Test
+    public void shouldSupportHasContainersWithMultiLabels() throws Exception {
+        final Neo4jVertex vertex = (Neo4jVertex) this.graph.addVertex(T.label,"person","name","marko");
+        graph.tx().commit();
+        assertTrue(g.V().has(T.label, "person").hasNext());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("person")).values("name").next());
+        assertEquals("marko", g.V().has(T.label, "person").values("name").next());
+        // more labels
+        vertex.addLabel("animal");
+        vertex.addLabel("object");
+        graph.tx().commit();
+        // no indices (neo4j graph step)
+        assertFalse(g.V().has(T.label, "person").hasNext());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("person")).values("name").next());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("animal")).values("name").next());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("object")).values("name").next());
+        // no indices (has step)
+        assertFalse(g.V().as("a").select("a").has(T.label, "person").hasNext());
+        assertEquals("marko", g.V().as("a").select("a").has(T.label, LabelP.of("person")).values("name").next());
+        assertEquals("marko", g.V().as("a").select("a").has(T.label, LabelP.of("animal")).values("name").next());
+        assertEquals("marko", g.V().as("a").select("a").has(T.label, LabelP.of("object")).values("name").next());
+        // indices (neo4j graph step)
+        this.getGraph().cypher("CREATE INDEX ON :person(name)").iterate();
+        graph.tx().commit();
+        Thread.sleep(500);
+        assertFalse(g.V().has(T.label, "person").has("name", "marko").hasNext());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("person")).has("name", "marko").values("name").next());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("animal")).has("name","marko").values("name").next());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("object")).has("name","marko").values("name").next());
+        this.getGraph().cypher("CREATE INDEX ON :animal(name)").iterate();
+        graph.tx().commit();
+        Thread.sleep(500);
+        assertFalse(g.V().has(T.label, "animal").has("name", "marko").hasNext());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("person")).has("name", "marko").values("name").next());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("animal")).has("name","marko").values("name").next());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("object")).has("name","marko").values("name").next());
+        this.getGraph().cypher("CREATE INDEX ON :object(name)").iterate();
+        graph.tx().commit();
+        Thread.sleep(500);
+        assertFalse(g.V().has(T.label, "object").has("name", "marko").hasNext());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("person")).has("name", "marko").values("name").next());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("animal")).has("name","marko").values("name").next());
+        assertEquals("marko", g.V().has(T.label, LabelP.of("object")).has("name","marko").values("name").next());
     }
 
     @Test

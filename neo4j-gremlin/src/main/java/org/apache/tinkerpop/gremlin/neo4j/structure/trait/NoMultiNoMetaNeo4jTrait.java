@@ -21,6 +21,7 @@
 
 package org.apache.tinkerpop.gremlin.neo4j.structure.trait;
 
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
@@ -45,7 +46,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
+public final class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
 
     private static final NoMultiNoMetaNeo4jTrait INSTANCE = new NoMultiNoMetaNeo4jTrait();
 
@@ -156,11 +157,18 @@ public class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
         ////// do index lookups //////
         graph.tx().readWrite();
         // get a label being search on
-        final Optional<String> label = hasContainers.stream()
+        Optional<String> label = hasContainers.stream()
                 .filter(hasContainer -> hasContainer.getKey().equals(T.label.getAccessor()))
                 .filter(hasContainer -> Compare.eq == hasContainer.getBiPredicate())
                 .map(hasContainer -> (String) hasContainer.getValue())
                 .findAny();
+        if (!label.isPresent())
+            label = hasContainers.stream()
+                    .filter(hasContainer -> hasContainer.getKey().equals(T.label.getAccessor()))
+                    .filter(hasContainer -> hasContainer.getPredicate() instanceof LabelP)
+                    .map(hasContainer -> (String) hasContainer.getValue())
+                    .findAny();
+
         if (label.isPresent()) {
             // find a vertex by label and key/value
             for (final HasContainer hasContainer : hasContainers) {
