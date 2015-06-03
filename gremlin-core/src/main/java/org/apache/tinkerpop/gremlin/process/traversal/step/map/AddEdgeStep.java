@@ -166,7 +166,7 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
 
     @Override
     public Scope recommendNextScope() {
-        return this.scope;
+        return Scope.global;
     }
 
     @Override
