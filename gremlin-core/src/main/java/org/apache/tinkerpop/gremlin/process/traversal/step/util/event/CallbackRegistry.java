@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @author Matt Frantz
+ * @author Matt Frantz (http://github.com/mhfrantz)
  */
 public interface CallbackRegistry<E extends Event> {
     public void addCallback(final EventCallback<E> c);

@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
  * A marker interface for steps that modify the graph.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @author Matt Frantz
+ * @author Matt Frantz (http://github.com/mhfrantz)
  */
 public interface Mutating<E extends Event> {
 

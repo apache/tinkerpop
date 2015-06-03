@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @author Matt Frantz
+ * @author Matt Frantz (http://github.com/mhfrantz)
  */
 public class ListCallbackRegistry<E extends Event> implements CallbackRegistry<E> {
     private List<EventCallback<E>> callbacks;
