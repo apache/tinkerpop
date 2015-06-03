@@ -952,14 +952,6 @@ gremlin> g.V().out().out().values('name')
 ==>lop
 ==>ripple
 
-[gremlin-groovy]
-----
-graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-g = graph.traversal(computer(SparkGraphComputer))
-g.V().count()
-g.V().out().out().values('name')
-----
-
 For using lambdas in Gremlin-Groovy, simply provide `:remote connect` a `TraversalSource` which leverages SparkGraphComputer.
 
 [source,test]
