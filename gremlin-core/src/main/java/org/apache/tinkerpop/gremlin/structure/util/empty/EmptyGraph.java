@@ -37,9 +37,9 @@ public final class EmptyGraph implements Graph {
 
     private static final String MESSAGE = "The graph is immutable and empty";
     private static final EmptyGraph INSTANCE = new EmptyGraph();
+    private final EmptyGraphFeatures features = new EmptyGraphFeatures();
 
     private EmptyGraph() {
-
     }
 
     public static Graph instance() {
@@ -48,7 +48,7 @@ public final class EmptyGraph implements Graph {
 
     @Override
     public Features features() {
-        return EmptyGraphFeatures.INSTANCE;
+        return features;
     }
 
     @Override
@@ -96,16 +96,19 @@ public final class EmptyGraph implements Graph {
         return Collections.emptyIterator();
     }
 
+    /**
+     * Features defined such that they support immutability but allow all other possibilities.
+     */
     public static final class EmptyGraphFeatures implements Graph.Features {
 
-        static final EmptyGraphFeatures INSTANCE = new EmptyGraphFeatures();
         private GraphFeatures graphFeatures = new EmptyGraphGraphFeatures();
         private VertexFeatures vertexFeatures = new EmptyGraphVertexFeatures();
         private EdgeFeatures edgeFeatures = new EmptyGraphEdgeFeatures();
         private EdgePropertyFeatures edgePropertyFeatures = new EmptyGraphEdgePropertyFeatures();
         private VertexPropertyFeatures vertexPropertyFeatures = new EmptyGraphVertexPropertyFeatures();
 
-        private EmptyGraphFeatures() {}
+        private EmptyGraphFeatures() {
+        }
 
         @Override
         public GraphFeatures graph() {
@@ -122,6 +125,9 @@ public final class EmptyGraph implements Graph {
             return edgeFeatures;
         }
 
+        /**
+         * Graph features defined such that they support immutability but allow all other possibilities.
+         */
         public final class EmptyGraphGraphFeatures implements GraphFeatures {
             @Override
             public boolean supportsPersistence() {
@@ -149,6 +155,9 @@ public final class EmptyGraph implements Graph {
             }
         }
 
+        /**
+         * Vertex features defined such that they support immutability but allow all other possibilities.
+         */
         public final class EmptyGraphVertexFeatures extends EmptyGraphElementFeatures implements VertexFeatures {
             @Override
             public VertexProperty.Cardinality getCardinality(final String key) {
@@ -167,21 +176,14 @@ public final class EmptyGraph implements Graph {
             }
 
             @Override
-            public boolean supportsMultiProperties() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsMetaProperties() {
-                return false;
-            }
-
-            @Override
             public VertexPropertyFeatures properties() {
                 return vertexPropertyFeatures;
             }
         }
 
+        /**
+         * Edge features defined such that they support immutability but allow all other possibilities.
+         */
         public final class EmptyGraphEdgeFeatures extends EmptyGraphElementFeatures implements EdgeFeatures {
             @Override
             public boolean supportsAddEdges() {
@@ -199,7 +201,10 @@ public final class EmptyGraph implements Graph {
             }
         }
 
-        public final class EmptyGraphVertexPropertyFeatures extends EmptyGraphPropertyFeatures implements VertexPropertyFeatures {
+        /**
+         * Vertex Property features defined such that they support immutability but allow all other possibilities.
+         */
+        public final class EmptyGraphVertexPropertyFeatures implements VertexPropertyFeatures {
             @Override
             public boolean supportsAddProperty() {
                 return false;
@@ -209,144 +214,16 @@ public final class EmptyGraph implements Graph {
             public boolean supportsRemoveProperty() {
                 return false;
             }
-
-            @Override
-            public boolean supportsUserSuppliedIds() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsNumericIds() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsStringIds() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsUuidIds() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsCustomIds() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsAnyIds() {
-                return false;
-            }
-
-            @Override
-            public boolean willAllowId(Object id) {
-                return false;
-            }
         }
 
-        public final class EmptyGraphEdgePropertyFeatures extends EmptyGraphPropertyFeatures implements EdgePropertyFeatures {
+        /**
+         * Edge property features defined such that they support immutability but allow all other possibilities.
+         */
+        public final class EmptyGraphEdgePropertyFeatures implements EdgePropertyFeatures {}
 
-        }
-
-        public abstract class EmptyGraphPropertyFeatures implements PropertyFeatures {
-            @Override
-            public boolean supportsSerializableValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsProperties() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsBooleanValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsByteValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsDoubleValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsFloatValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsIntegerValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsLongValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsMapValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsMixedListValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsBooleanArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsByteArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsDoubleArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsFloatArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsIntegerArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsStringArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsLongArrayValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsStringValues() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsUniformListValues() {
-                return false;
-            }
-        }
-
+        /**
+         * Vertex features defined such that they support immutability but allow all other possibilities.
+         */
         public abstract class EmptyGraphElementFeatures implements ElementFeatures {
             @Override
             public boolean supportsAddProperty() {
@@ -355,42 +232,6 @@ public final class EmptyGraph implements Graph {
 
             @Override
             public boolean supportsRemoveProperty() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsUserSuppliedIds() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsNumericIds() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsStringIds() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsUuidIds() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsCustomIds() {
-                return false;
-            }
-
-            @Override
-            public boolean supportsAnyIds() {
-                return false;
-            }
-
-            @Override
-            public boolean willAllowId(final Object id) {
-                // going to assume "false" here...it's an "empty graph"
                 return false;
             }
         }
