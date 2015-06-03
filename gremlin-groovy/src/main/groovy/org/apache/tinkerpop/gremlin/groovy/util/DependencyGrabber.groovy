@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.util
 
-import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact
 import groovy.grape.Grape
 import org.apache.commons.lang3.SystemUtils
+import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact
 
 import java.nio.file.*
 import java.util.jar.JarFile
@@ -79,33 +79,38 @@ class DependencyGrabber {
         // if windows then the path contains a starting forward slash that prevents it from being
         // recognized by FileSystem - strip it off
         dependencyLocations.collect {
-                    def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
-                    return fs.getPath(p)
-                }.findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
-                .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
-                .each {
-                    def copying = targetPluginPath.resolve(it.fileName)
-                    Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-                    println "Copying - $copying"
-                }
+            def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
+            return fs.getPath(p)
+        }.findAll {
+            def name = it.fileName.toFile().name
+            !(name ==~ /(slf4j|logback\-classic)-.*\.jar/) && name != 'servlet-api-2.5-6.1.14.jar'
+        }.findAll {
+            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
+        }.each {
+            def copying = targetPluginPath.resolve(it.fileName)
+            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
+            println "Copying - $copying"
+        }
 
         dependencyLocations.collect {
-                    def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
-                    return fs.getPath(p)
-                }.each {
-                    def copying = targetLibPath.resolve(it.fileName)
-                    Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-                    println "Copying - $copying"
-                }
+            def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
+            return fs.getPath(p)
+        }.each {
+            def copying = targetLibPath.resolve(it.fileName)
+            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
+            println "Copying - $copying"
+        }
 
-        getAdditionalDependencies(targetPluginPath, artifact).collect { fs.getPath(it.path) }
-                .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
-                .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
-                .each {
-                    def copying = targetPluginPath.resolve(it.fileName)
-                    Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-                    println "Copying - $copying"
-                }
+        getAdditionalDependencies(targetPluginPath, artifact).collect { fs.getPath(it.path) }.findAll {
+            def name = it.fileName.toFile().name
+            !(name ==~ /(slf4j|logback\-classic)-.*\.jar/) && name != 'servlet-api-2.5-6.1.14.jar'
+        }.findAll {
+            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
+        }.each {
+            def copying = targetPluginPath.resolve(it.fileName)
+            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
+            println "Copying - $copying"
+        }
 
         getAdditionalDependencies(targetLibPath, artifact).collect { fs.getPath(it.path) }.each {
             def copying = targetLibPath.resolve(it.fileName)
