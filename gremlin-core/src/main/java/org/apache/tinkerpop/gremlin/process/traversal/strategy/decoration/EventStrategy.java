@@ -37,8 +37,7 @@ import java.util.Deque;
 import java.util.List;
 
 /**
- * A strategy that raises events when {@link org.apache.tinkerpop.gremlin.process.traversal.step.Mutating} steps are
- * encountered and successfully executed.
+ * A strategy that raises events when {@link Mutating} steps are encountered and successfully executed.
  * <p/>
  * Note that this implementation requires a {@link Graph} on the {@link Traversal} instance.  If that is not present
  * an {@link java.lang.IllegalStateException} will be thrown.
@@ -160,10 +159,6 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
             });
         }
 
-        /**
-         * Add an event to the event queue. If this is a non-transactional graph, then the queue fires and resets after
-         * each event is added.
-         */
         public void addEvent(final Event evt) {
             eventQueue.get().add(evt);
         }
