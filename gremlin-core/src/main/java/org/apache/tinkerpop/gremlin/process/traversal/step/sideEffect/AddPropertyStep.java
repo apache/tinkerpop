@@ -58,6 +58,26 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
         this(traversal, null, key, value, vertexPropertyKeyValues);
     }
 
+    public VertexProperty.Cardinality getCardinality() {
+        return cardinality;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public Object getValue() {
+        return value;
+    }
+
+    public Object[] getVertexPropertyKeyValues() {
+        return vertexPropertyKeyValues;
+    }
+
+    public boolean isAsVertex() {
+        return asVertex;
+    }
+
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         if (callbackRegistry != null) {
