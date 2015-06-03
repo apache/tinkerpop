@@ -34,6 +34,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -41,7 +42,7 @@ import java.util.Set;
  */
 public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Scoping, TraversalParent, PathProcessor {
 
-    private TraversalRing<Object, Object> traversalRing = new TraversalRing<>();
+    private TraversalRing<Object, E> traversalRing = new TraversalRing<>();
     private Scope scope;
     private final List<String> selectLabels;
 
@@ -59,13 +60,21 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         if (this.selectLabels.isEmpty()) {
             if (Scope.local == this.scope)
                 ((Map<String, Object>) start).forEach((key, value) -> bindings.put(key, (E) TraversalUtil.apply(value, this.traversalRing.next())));
-            else  {
+            else {
                 final Path path = traverser.path();
                 path.labels().stream().flatMap(Set::stream).distinct().forEach(label -> bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next())));
             }
-        } else
-            this.selectLabels.forEach(label -> bindings.put(label, (E) TraversalUtil.apply((Object) this.getScopeValueByKey(label, traverser), this.traversalRing.next())));
-
+        } else {
+            for (final String label : this.selectLabels) {
+                final Optional<E> optional = this.getOptionalScopeValueByKey(label, traverser);
+                if (optional.isPresent())
+                    bindings.put(label, TraversalUtil.apply(optional.get(), this.traversalRing.next()));
+                else {
+                    this.traversalRing.reset();
+                    return null;
+                }
+            }
+        }
         this.traversalRing.reset();
         return bindings;
     }
@@ -99,7 +108,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     }
 
     @Override
-    public List<Traversal.Admin<Object, Object>> getLocalChildren() {
+    public List<Traversal.Admin<Object, E>> getLocalChildren() {
         return this.traversalRing.getTraversals();
     }
 
@@ -119,7 +128,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     }
 
     @Override
-    public Scope getScope()  {
+    public Scope getScope() {
         return this.scope;
     }
 

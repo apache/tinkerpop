@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -40,7 +41,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     private Scope scope;
     private final String selectLabel;
-    private Traversal.Admin<Object, Object> selectTraversal = new IdentityTraversal<>();
+    private Traversal.Admin<S, E> selectTraversal = new IdentityTraversal<>();
 
     public SelectOneStep(final Traversal.Admin traversal, final Scope scope, final String selectLabel) {
         super(traversal);
@@ -50,7 +51,8 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        return (E) TraversalUtil.apply((Object) this.getScopeValueByKey(this.selectLabel, traverser), this.selectTraversal);
+        final Optional<S> optional = this.getOptionalScopeValueByKey(this.selectLabel, traverser);
+        return optional.isPresent() ? TraversalUtil.apply(optional.get(), this.selectTraversal) : null;
     }
 
     @Override
@@ -71,7 +73,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    public List<Traversal.Admin<Object, Object>> getLocalChildren() {
+    public List<Traversal.Admin<S, E>> getLocalChildren() {
         return Collections.singletonList(this.selectTraversal);
     }
 
