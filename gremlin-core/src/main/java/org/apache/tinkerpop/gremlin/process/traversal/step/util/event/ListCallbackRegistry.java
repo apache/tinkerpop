@@ -16,22 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.process.traversal.step.util.event;
 
-package org.apache.tinkerpop.gremlin.process.traversal.step;
-
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
- * A marker interface for steps that modify the graph.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public interface Mutating<E extends Event> {
+public class ListCallbackRegistry<E extends Event> implements CallbackRegistry<E> {
+    private List<EventCallback<E>> callbacks;
 
-    /**
-     * Gets the callback registry for events that the step raises.
-     */
-    public CallbackRegistry<E> getMutatingCallbackRegistry();
+    @Override
+    public void addCallback(final EventCallback<E> c) {
+        if (callbacks == null) callbacks = new ArrayList<>();
+        callbacks.add(c);
+    }
+
+    @Override
+    public void removeCallback(final EventCallback<E> c) {
+        if (callbacks != null) callbacks.remove(c);
+    }
+
+    @Override
+    public void clearCallbacks() {
+        if (callbacks != null) callbacks.clear();
+    }
+
+    @Override
+    public List<EventCallback<E>> getCallbacks() {
+        return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
+    }
 }

@@ -24,20 +24,22 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Collections;
 import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class EmptyGraph implements Graph {
 
     private static final String MESSAGE = "The graph is immutable and empty";
     private static final EmptyGraph INSTANCE = new EmptyGraph();
+    private final EmptyGraphFeatures features = new EmptyGraphFeatures();
 
     private EmptyGraph() {
-
     }
 
     public static Graph instance() {
@@ -46,17 +48,7 @@ public final class EmptyGraph implements Graph {
 
     @Override
     public Features features() {
-        return new Features() {
-            @Override
-            public GraphFeatures graph() {
-                return new GraphFeatures() {
-                    @Override
-                    public boolean supportsTransactions() {
-                        return false;
-                    }
-                };
-            }
-        };
+        return features;
     }
 
     @Override
@@ -102,5 +94,146 @@ public final class EmptyGraph implements Graph {
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
         return Collections.emptyIterator();
+    }
+
+    /**
+     * Features defined such that they support immutability but allow all other possibilities.
+     */
+    public static final class EmptyGraphFeatures implements Graph.Features {
+
+        private GraphFeatures graphFeatures = new EmptyGraphGraphFeatures();
+        private VertexFeatures vertexFeatures = new EmptyGraphVertexFeatures();
+        private EdgeFeatures edgeFeatures = new EmptyGraphEdgeFeatures();
+        private EdgePropertyFeatures edgePropertyFeatures = new EmptyGraphEdgePropertyFeatures();
+        private VertexPropertyFeatures vertexPropertyFeatures = new EmptyGraphVertexPropertyFeatures();
+
+        private EmptyGraphFeatures() {
+        }
+
+        @Override
+        public GraphFeatures graph() {
+            return graphFeatures;
+        }
+
+        @Override
+        public VertexFeatures vertex() {
+            return vertexFeatures;
+        }
+
+        @Override
+        public EdgeFeatures edge() {
+            return edgeFeatures;
+        }
+
+        /**
+         * Graph features defined such that they support immutability but allow all other possibilities.
+         */
+        public final class EmptyGraphGraphFeatures implements GraphFeatures {
+            @Override
+            public boolean supportsPersistence() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsTransactions() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsThreadedTransactions() {
+                return false;
+            }
+
+            @Override
+            public VariableFeatures variables() {
+                return null;
+            }
+
+            @Override
+            public boolean supportsComputer() {
+                return false;
+            }
+        }
+
+        /**
+         * Vertex features defined such that they support immutability but allow all other possibilities.
+         */
+        public final class EmptyGraphVertexFeatures extends EmptyGraphElementFeatures implements VertexFeatures {
+            @Override
+            public VertexProperty.Cardinality getCardinality(final String key) {
+                // probably not much hurt here in returning list...it's an "empty graph"
+                return VertexProperty.Cardinality.list;
+            }
+
+            @Override
+            public boolean supportsAddVertices() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsRemoveVertices() {
+                return false;
+            }
+
+            @Override
+            public VertexPropertyFeatures properties() {
+                return vertexPropertyFeatures;
+            }
+        }
+
+        /**
+         * Edge features defined such that they support immutability but allow all other possibilities.
+         */
+        public final class EmptyGraphEdgeFeatures extends EmptyGraphElementFeatures implements EdgeFeatures {
+            @Override
+            public boolean supportsAddEdges() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsRemoveEdges() {
+                return false;
+            }
+
+            @Override
+            public EdgePropertyFeatures properties() {
+                return edgePropertyFeatures;
+            }
+        }
+
+        /**
+         * Vertex Property features defined such that they support immutability but allow all other possibilities.
+         */
+        public final class EmptyGraphVertexPropertyFeatures implements VertexPropertyFeatures {
+            @Override
+            public boolean supportsAddProperty() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsRemoveProperty() {
+                return false;
+            }
+        }
+
+        /**
+         * Edge property features defined such that they support immutability but allow all other possibilities.
+         */
+        public final class EmptyGraphEdgePropertyFeatures implements EdgePropertyFeatures {}
+
+        /**
+         * Vertex features defined such that they support immutability but allow all other possibilities.
+         */
+        public abstract class EmptyGraphElementFeatures implements ElementFeatures {
+            @Override
+            public boolean supportsAddProperty() {
+                return false;
+            }
+
+            @Override
+            public boolean supportsRemoveProperty() {
+                return false;
+            }
+        }
     }
 }

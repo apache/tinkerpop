@@ -43,12 +43,22 @@ public final class CypherStartStep extends StartStep<Map<String, Object>> implem
     }
 
     @Override
+    public void setScope(final Scope scope) {
+
+    }
+
+    @Override
     public Scope recommendNextScope() {
         return Scope.local;
     }
 
     @Override
+    public Scope getScope() {
+        return Scope.local;
+    }
+
+    @Override
     public String toString() {
-        return StringFactory.stepString(this,this.query);
+        return StringFactory.stepString(this, this.query);
     }
 }

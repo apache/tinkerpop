@@ -20,13 +20,12 @@ package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedElement;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.neo4j.tinkerpop.api.Neo4jEntity;
 
-import java.util.Iterator;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -56,7 +55,12 @@ public abstract class Neo4jElement implements Element, WrappedElement<Neo4jEntit
     @Override
     public Set<String> keys() {
         this.graph.tx().readWrite();
-        return Element.super.keys();
+        final Set<String> keys = new HashSet<>();
+        for (final String key : this.baseElement.getKeys()) {
+            if (!Graph.Hidden.isHidden(key))
+                keys.add(key);
+        }
+        return Collections.unmodifiableSet(keys);
     }
 
     @Override
@@ -73,7 +77,6 @@ public abstract class Neo4jElement implements Element, WrappedElement<Neo4jEntit
     public Neo4jEntity getBaseElement() {
         return this.baseElement;
     }
-
 
 
 }

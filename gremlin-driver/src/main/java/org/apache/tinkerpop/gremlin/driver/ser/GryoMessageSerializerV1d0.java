@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GryoMessageSerializerV1d0 implements MessageSerializer {
+public final class GryoMessageSerializerV1d0 implements MessageSerializer {
     private GryoMapper gryoMapper;
     private ThreadLocal<Kryo> kryoThreadLocal = new ThreadLocal<Kryo>() {
         @Override

@@ -55,7 +55,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
@@ -372,40 +371,23 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), keyValues));
     }
 
-    public default GraphTraversal<S, Edge> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
-        return this.asAdmin().addStep(new AddEdgeByPathStep(this.asAdmin(), direction, edgeLabel, stepLabel, propertyKeyValues));
+    public default GraphTraversal<S, Edge> addE(final Scope scope, final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
+        if (propertyKeyValues.length % 2 == 0)
+            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), scope, direction, null, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues));
+        else
+            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), scope, direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, (String) propertyKeyValues[0], Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length)));
     }
 
-    public default GraphTraversal<S, Edge> addE(final Direction direction, final String edgeLabel, final Vertex otherVertex, final Object... propertyKeyValues) {
-        return this.asAdmin().addStep(new AddEdgeStep(this.asAdmin(), direction, edgeLabel, otherVertex, propertyKeyValues));
+    public default GraphTraversal<S, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
+        return this.addE(Scope.global, direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
-    public default GraphTraversal<S, Edge> addE(final Direction direction, final String edgeLabel, final Iterator<Vertex> otherVertices, final Object... propertyKeyValues) {
-        return this.asAdmin().addStep(new AddEdgeStep(this.asAdmin(), direction, edgeLabel, otherVertices, propertyKeyValues));
+    public default GraphTraversal<S, Edge> addOutE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
+        return this.addE(Scope.global, Direction.OUT, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
-    public default GraphTraversal<S, Edge> addInE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
-        return this.addE(Direction.IN, edgeLabel, stepLabel, propertyKeyValues);
-    }
-
-    public default GraphTraversal<S, Edge> addInE(final String edgeLabel, final Vertex otherVertex, final Object... propertyKeyValues) {
-        return this.addE(Direction.IN, edgeLabel, otherVertex, propertyKeyValues);
-    }
-
-    public default GraphTraversal<S, Edge> addInE(final String edgeLabel, final Iterator<Vertex> otherVertices, final Object... propertyKeyValues) {
-        return this.addE(Direction.IN, edgeLabel, otherVertices, propertyKeyValues);
-    }
-
-    public default GraphTraversal<S, Edge> addOutE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
-        return this.addE(Direction.OUT, edgeLabel, stepLabel, propertyKeyValues);
-    }
-
-    public default GraphTraversal<S, Edge> addOutE(final String edgeLabel, final Vertex otherVertex, final Object... propertyKeyValues) {
-        return this.addE(Direction.OUT, edgeLabel, otherVertex, propertyKeyValues);
-    }
-
-    public default GraphTraversal<S, Edge> addOutE(final String edgeLabel, final Iterator<Vertex> otherVertices, final Object... propertyKeyValues) {
-        return this.addE(Direction.OUT, edgeLabel, otherVertices, propertyKeyValues);
+    public default GraphTraversal<S, Edge> addInE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
+        return this.addE(Scope.global, Direction.IN, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
     ///////////////////// FILTER STEPS /////////////////////

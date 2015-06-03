@@ -21,7 +21,9 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class SerTokens {
+public final  class SerTokens {
+    private SerTokens() {}
+
     public static final String TOKEN_ATTRIBUTES = "attributes";
     public static final String TOKEN_RESULT = "result";
     public static final String TOKEN_STATUS = "status";

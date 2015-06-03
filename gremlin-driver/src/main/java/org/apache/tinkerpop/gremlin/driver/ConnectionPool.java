@@ -40,7 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class ConnectionPool {
+final class ConnectionPool {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
     public static final int MIN_POOL_SIZE = 2;

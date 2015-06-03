@@ -21,26 +21,23 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutating<EventCallback<Event.VertexAddedEvent>> {
+public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutating<Event.VertexAddedEvent> {
 
     private final Object[] keyValues;
     private final transient Graph graph;
 
-    private List<EventCallback<Event.VertexAddedEvent>> callbacks = null;
+    private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
 
     public AddVertexStep(final Traversal.Admin traversal, final Object... keyValues) {
         super(traversal);
@@ -55,32 +52,17 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutati
     @Override
     protected Vertex map(final Traverser.Admin<S> traverser) {
         final Vertex v = this.graph.addVertex(this.keyValues);
-        if (callbacks != null) {
+        if (callbackRegistry != null) {
             final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(DetachedFactory.detach(v, true));
-            callbacks.forEach(c -> c.accept(vae));
+            callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
         }
         return v;
     }
 
     @Override
-    public void addCallback(final EventCallback<Event.VertexAddedEvent> vertexAddedEventEventCallback) {
-        if (callbacks == null) callbacks = new ArrayList<>();
-        callbacks.add(vertexAddedEventEventCallback);
-    }
-
-    @Override
-    public void removeCallback(final EventCallback<Event.VertexAddedEvent> vertexAddedEventEventCallback) {
-        if (callbacks != null) callbacks.remove(vertexAddedEventEventCallback);
-    }
-
-    @Override
-    public void clearCallbacks() {
-        if (callbacks != null) callbacks.clear();
-    }
-
-    @Override
-    public List<EventCallback<Event.VertexAddedEvent>> getCallbacks() {
-        return (callbacks != null) ? Collections.unmodifiableList(callbacks) : Collections.emptyList();
+    public CallbackRegistry<Event.VertexAddedEvent> getMutatingCallbackRegistry() {
+        if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
+        return callbackRegistry;
     }
 
     @Override

@@ -36,7 +36,7 @@ import java.util.List;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ChannelHandler.Sharable
-public class WebSocketGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
+public final class WebSocketGremlinRequestEncoder extends MessageToMessageEncoder<RequestMessage> {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketGremlinRequestEncoder.class);
     private final boolean binaryEncoding;
 

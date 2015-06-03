@@ -161,5 +161,15 @@ public abstract class GroovySelectTest {
             TraversalScriptHelper.compute("""g.V.hasLabel('software').as('name').as('language').as('creators').select().by('name').by('lang').
                     by(__.in('created').values('name').fold().order(local))""", g)
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_untilXout_outX_repeatXin_asXaXX_selectXaX_byXtailXlocalX_nameX() {
+            TraversalScriptHelper.compute("g.V.until(__.out.out).repeat(__.in.as('a')).select('a').by(tail(local).name)", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_untilXout_outX_repeatXin_asXaX_in_asXbXX_selectXa_bX_byXnameX() {
+            TraversalScriptHelper.compute("g.V.until(__.out.out).repeat(__.in.as('a').in.as('b')).select('a','b').by('name')", g);
+        }
     }
 }

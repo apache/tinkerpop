@@ -21,12 +21,43 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Scoping {
 
+    public default <S> S getScopeValueByKey(final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
+        if (Scope.local == this.getScope()) {
+            final S s = ((Map<String, S>) traverser.get()).get(key);
+            if (null == s)
+                throw new IllegalArgumentException("The provided map does not have a " + key + "-key: " + traverser);
+            return s;
+        } else {
+            final Path path = traverser.path();
+            return path.hasLabel(key) ? path.get(key) : traverser.getSideEffects().<S>get(key).orElseThrow(() -> new IllegalArgumentException("Neither the current path nor sideEffects have a " + key + "-key: " + traverser));
+        }
+    }
+
+    public default <S> Optional<S> getOptionalScopeValueByKey(final String key, final Traverser.Admin<?> traverser) {
+        if (Scope.local == this.getScope()) {
+            return Optional.ofNullable(((Map<String, S>) traverser.get()).get(key));
+        } else {
+            final Path path = traverser.path();
+            return Optional.ofNullable(path.hasLabel(key) ? path.get(key) : traverser.getSideEffects().<S>get(key).orElse(null));
+        }
+    }
+
+    public Scope getScope();
+
     public Scope recommendNextScope();
+
+    public void setScope(final Scope scope);
+
 }

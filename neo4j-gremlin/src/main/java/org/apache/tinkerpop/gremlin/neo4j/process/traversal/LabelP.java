@@ -19,31 +19,41 @@
  *
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.lambda;
+package org.apache.tinkerpop.gremlin.neo4j.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 
 import java.io.Serializable;
-import java.util.function.Function;
+import java.util.function.BiPredicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class FunctionTraverser<A, B> implements Function<Traverser<A>, B>, Serializable {
+public final class LabelP extends P<String> {
 
-    private final Function<A, B> function;
-
-    public FunctionTraverser(final Function<A, B> function) {
-        this.function = function;
+    private LabelP(final String label) {
+        super(LabelBiPredicate.instance(), label);
     }
 
-    @Override
-    public B apply(final Traverser<A> traverser) {
-        return this.function.apply(traverser.get());
+    public static P<String> of(final String label) {
+        return new LabelP(label);
     }
 
-    @Override
-    public String toString() {
-        return this.function.toString();
+    public static final class LabelBiPredicate implements BiPredicate<String, String>, Serializable {
+
+        private static final LabelBiPredicate INSTANCE = new LabelBiPredicate();
+
+        private LabelBiPredicate() {
+        }
+
+        @Override
+        public boolean test(final String labels, final String checkLabel) {
+            return labels.contains(checkLabel); // TODO: contains may be bad -- use :: reg-ex parsing?
+        }
+
+        public static LabelBiPredicate instance() {
+            return INSTANCE;
+        }
     }
+
 }

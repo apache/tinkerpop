@@ -36,9 +36,13 @@ import java.util.Map;
 public class NoMultiNoMetaNeo4jGraphProvider extends AbstractNeo4jGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData graphData) {
+        final String directory = getWorkingDirectory() + File.separator
+                + TestHelper.cleanPathSegment(this.getClass().getSimpleName()) + File.separator
+                + TestHelper.cleanPathSegment(graphName) + File.separator
+                + cleanParameters(TestHelper.cleanPathSegment(testMethodName));
+
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, Neo4jGraph.class.getName());
-            String directory = getWorkingDirectory() + File.separator + TestHelper.cleanPathSegment(graphName) + File.separator + cleanParameters(TestHelper.cleanPathSegment(testMethodName));
             put(Neo4jGraph.CONFIG_DIRECTORY, directory);
             put(Neo4jGraph.CONFIG_META_PROPERTIES, false);
             put(Neo4jGraph.CONFIG_MULTI_PROPERTIES, false);

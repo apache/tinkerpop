@@ -113,8 +113,14 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
                 TraverserRequirement.OBJECT : TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
     }
 
+    @Override
     public void setScope(final Scope scope) {
         this.scope = scope;
+    }
+
+    @Override
+    public Scope getScope() {
+        return this.scope;
     }
 
     @Override
@@ -126,21 +132,29 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         return this.multiKeyedTraversal ? this.endKeys.isEmpty() && this.startKeys.isEmpty() : this.endKey == null && this.startKey == null;
     }
 
-    private Object getStartObject(final Traverser<S> traverser) {
+    private Object getStartObject(final Traverser.Admin<S> traverser) {
         return this.predicate instanceof TraversalP ? traverser : traverser.get();
     }
 
-    private boolean doSingleKeyFilter(final Traverser<S> traverser) {
+    private boolean doSingleKeyFilter(final Traverser.Admin<S> traverser) {
         if (this.noStartAndEndKeys()) {
             return this.predicate.getBiPredicate().test(getStartObject(traverser), null);
         } else {
-            return this.predicate.getBiPredicate().test(
-                    null == this.startKey ? getStartObject(traverser) : Scope.getScopeValueByKey(this.scope, this.startKey, traverser),
-                    null == this.endKey ? null : Scope.getScopeValueByKey(this.scope, this.endKey, traverser));
+            final Object startObject = null == this.startKey ? getStartObject(traverser) : this.getOptionalScopeValueByKey(this.startKey, traverser).orElse(null);
+            if (null == startObject) return false;
+            final Object endObject;
+            if (null == this.endKey) {
+                endObject = null;
+            } else {
+                endObject = this.getOptionalScopeValueByKey(this.endKey, traverser).orElse(null);
+                if (null == endObject) return false;
+            }
+            return this.predicate.getBiPredicate().test(startObject, endObject);
         }
     }
 
-    private boolean doMultiKeyFilter(final Traverser<S> traverser) {
+    private boolean doMultiKeyFilter(final Traverser.Admin<S> traverser) {
+        // TODO: getOptionalScopeValueByKey()
         final List<Object> startObjects = new ArrayList<>();
         final List<Object> endObjects = new ArrayList<>();
 
@@ -148,11 +162,11 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             startObjects.add(traverser.get());
         else {
             for (final String startKey : this.startKeys) {
-                startObjects.add(Scope.getScopeValueByKey(this.scope, startKey, traverser));
+                startObjects.add(this.getScopeValueByKey(startKey, traverser));
             }
         }
         for (final String endKey : this.endKeys) {
-            endObjects.add(Scope.getScopeValueByKey(this.scope, endKey, traverser));
+            endObjects.add(this.getScopeValueByKey(endKey, traverser));
         }
 
         return this.predicate.getBiPredicate().test(new TraversalUtil.Multiple<>(startObjects), endObjects.isEmpty() ? null : new TraversalUtil.Multiple<>(endObjects));

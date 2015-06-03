@@ -34,6 +34,7 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -196,6 +197,29 @@ public final class IteratorUtils {
 
     ///////////////
 
+    public static final <S> Iterator<S> consume(final Iterator<S> iterator, final Consumer<S> consumer) {
+        return new Iterator<S>() {
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public S next() {
+                final S s = iterator.next();
+                consumer.accept(s);
+                return s;
+            }
+        };
+    }
+
+    public static final <S> Iterable<S> consume(final Iterable<S> iterable, final Consumer<S> consumer) {
+        return () -> IteratorUtils.consume(iterable.iterator(), consumer);
+    }
+
+
+    ///////////////
+
     public static final <S, E> Iterator<E> map(final Iterator<S> iterator, final Function<S, E> function) {
         return new Iterator<E>() {
             @Override
@@ -211,12 +235,7 @@ public final class IteratorUtils {
     }
 
     public static final <S, E> Iterable<E> map(final Iterable<S> iterable, final Function<S, E> function) {
-        return new Iterable<E>() {
-            @Override
-            public Iterator<E> iterator() {
-                return IteratorUtils.map(iterable.iterator(), function);
-            }
-        };
+        return () -> IteratorUtils.map(iterable.iterator(), function);
     }
 
     ///////////////

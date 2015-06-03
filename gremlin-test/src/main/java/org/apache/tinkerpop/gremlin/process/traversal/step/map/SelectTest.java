@@ -21,10 +21,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -77,7 +77,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_asXaX_outXcreatedX_asXaX_select();
 
-    // below we original back()-tests
+    // below are original back()-tests
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_asXhereX_out_selectXhereX(final Object v1Id);
 
@@ -100,6 +100,12 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX();
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX();
+
+    // when labels don't exist
+
+    public abstract Traversal<Vertex, String> get_g_V_untilXout_outX_repeatXin_asXaXX_selectXaX_byXtailXlocalX_nameX();
+
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_untilXout_outX_repeatXin_asXaX_in_asXbXX_selectXa_bX_byXnameX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -469,6 +475,30 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_untilXout_outX_repeatXin_asXaXX_selectXaX_byXtailXlocalX_nameX() {
+        final Traversal<Vertex, String> traversal = get_g_V_untilXout_outX_repeatXin_asXaXX_selectXaX_byXtailXlocalX_nameX();
+        printTraversalForm(traversal);
+        checkResults(this.<String, Long>makeMapList(1, "marko", 5l).get(0), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_untilXout_outX_repeatXin_asXaX_in_asXbXX_selectXa_bX_byXnameX() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_untilXout_outX_repeatXin_asXaX_in_asXbXX_selectXa_bX_byXnameX();
+        printTraversalForm(traversal);
+        Map<String, String> result = traversal.next();
+        assertEquals(2, result.size());
+        assertEquals("josh", result.get("a"));
+        assertEquals("marko", result.get("b"));
+        result = traversal.next();
+        assertEquals(2, result.size());
+        assertEquals("josh", result.get("a"));
+        assertEquals("marko", result.get("b"));
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends SelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
@@ -593,6 +623,16 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
             return g.V().hasLabel("software").as("name").as("language").as("creators").select().by("name").by("lang").
                     by(__.in("created").values("name").fold().order(local));
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_untilXout_outX_repeatXin_asXaXX_selectXaX_byXtailXlocalX_nameX() {
+            return g.V().until(__.out().out()).repeat(__.in().as("a")).<String>select("a").by(__.tail(local).values("name"));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_untilXout_outX_repeatXin_asXaX_in_asXbXX_selectXa_bX_byXnameX() {
+            return g.V().until(__.out().out()).repeat(__.in().as("a").in().as("b")).<String>select("a", "b").by("name");
         }
     }
 }

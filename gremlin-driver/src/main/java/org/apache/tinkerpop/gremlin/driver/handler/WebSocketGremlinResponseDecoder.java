@@ -34,7 +34,7 @@ import java.util.List;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ChannelHandler.Sharable
-public class WebSocketGremlinResponseDecoder extends MessageToMessageDecoder<WebSocketFrame> {
+public final class WebSocketGremlinResponseDecoder extends MessageToMessageDecoder<WebSocketFrame> {
     private final MessageSerializer serializer;
 
     public WebSocketGremlinResponseDecoder(final MessageSerializer serializer) {

@@ -117,37 +117,22 @@ g.V().choose(has('name','marko'),
 AddEdge Step
 ~~~~~~~~~~~~
 
-It is possible to mutate the graph within a traversal. The typical mutations are adding/removing vertices, edges, and properties. To add edges, there are a collection of `addE()`-steps (*map*/*sideEffect*).
-
-[gremlin-groovy,modern]
-----
-g.V(1).addOutE('co-worker',g.V(2),'year',2009) <1>
-g.V(4).addInE('createdBy',g.V(3,5)) <2>
-g.V(1).addOutE('livesNear',g.V(2),'year',2009).inV().inE('livesNear').values('year') <3>
-g.V(1).out('livesNear')
-----
-
-<1> Add an outgoing co-worker edge from the marko-vertex to the vadas-vertex with a year property of value 2009.
-<2> Add incoming createdBy edges from the josh-vertex to the lop- and ripple-vertices.
-<3> The newly created edge is a traversable object.
+link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data was is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. To add edges via a traversal, there is a collection of `addE()`-steps (*map*/*sideEffect*).
 
 image::addedge-step.png[width=450]
 
-link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data was is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived.
-
 [gremlin-groovy,modern]
 ----
-g.V(1).as('a').out('created')
-g.V(1).as('a').out('created').in('created')
-g.V(1).as('a').out('created').in('created').where(neq('a')) <1>
-g.V(1).as('a').out('created').in('created').where(neq('a')).
-   addOutE('co-developer','a').outV().
-   addInE('co-developer','a')
-g.V(1).out('co-developer').values('name')
-g.V(1).in('co-developer').values('name')
+g.V(1).as('a').out('created').in('created').where(neq('a')).addOutE('co-developer','a','year',2009) <1>
+g.withSideEffect('a',g.V(3,5).toList()).V(4).addInE('createdBy','a') <2>
+g.V().as('a').out('created').as('b').select().addOutE('b','createdBy','a','acl','public') <3>
+g.V(1).as('a').out('knows').addInE('livesNear','a','year',2009).inV().inE('livesNear').values('year') <4>
 ----
 
-<1> Marko can't be a co-developer with himself.
+<1> Add a co-developer edge with a year-property between marko and his collaborators.
+<2> Add incoming createdBy edges from the josh-vertex to the lop- and ripple-vertices.
+<3> It is possible to pull the vertices from a select-projection.
+<4> The newly created edge is a traversable object.
 
 [[addvertex-step]]
 AddVertex Step

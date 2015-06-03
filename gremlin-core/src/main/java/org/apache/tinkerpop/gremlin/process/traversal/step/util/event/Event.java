@@ -29,7 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import java.util.Iterator;
 
 /**
- * A representation of some mutation action that occurs on a {@link Graph} for a {@link Traversal}.
+ * A representation of some action that occurs on a {@link Graph} for a {@link Traversal}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 
 import java.util.HashSet;
@@ -34,6 +35,7 @@ public final class Neo4jGremlinPlugin extends AbstractGremlinPlugin {
 
     private static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT_SPACE + Neo4jGraph.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_STATIC_SPACE + LabelP.class.getCanonicalName() + DOT_STAR);
     }};
 
     @Override

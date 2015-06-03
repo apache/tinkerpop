@@ -40,7 +40,7 @@ import java.util.stream.StreamSupport;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ResultSet implements Iterable<Result> {
+public final class ResultSet implements Iterable<Result> {
     private final ResultQueue resultQueue;
     private final ExecutorService executor;
     private final Channel channel;

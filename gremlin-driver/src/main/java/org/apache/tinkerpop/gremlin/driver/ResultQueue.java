@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class ResultQueue {
+final class ResultQueue {
     public enum Status {
         FETCHING,
         COMPLETE

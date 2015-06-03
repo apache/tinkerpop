@@ -158,7 +158,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.V(v).addE(Direction.OUT, "self", v, "test", "value", T.id, "some-id").next();
+        final Edge e = sg.withSideEffect("v",() -> v).V(v).addE(Direction.OUT, "self", "v", "test", "value", T.id, "some-id").next();
         assertEquals("value", e.value("test"));
         assertEquals("some-id", sg.E(e).id().next());
         assertEquals("some-id", sg.E("some-id").id().next());
@@ -170,7 +170,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.V(v).addE(Direction.OUT, "self", v, "test", "value").next();
+        final Edge e = sg.withSideEffect("v",() -> v).V(v).addE(Direction.OUT, "self", "v", "test", "value").next();
         assertEquals("value", e.value("test"));
         assertNotNull(UUID.fromString(sg.E(e).id().next().toString()));
     }
@@ -181,7 +181,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().idPropertyKey("name").create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.V(v).addE(Direction.OUT, "self", v, "test", "value", T.id, "some-id").next();
+        final Edge e = sg.withSideEffect("v",() -> v).V(v).addE(Direction.OUT, "self", "v", "test", "value", T.id, "some-id").next();
         assertEquals("value", e.value("test"));
         assertEquals("some-id", e.value("name"));
         assertEquals("some-id", sg.E(e).id().next());
@@ -194,7 +194,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         final ElementIdStrategy strategy = ElementIdStrategy.build().idPropertyKey("name").create();
         final GraphTraversalSource sg = create(strategy);
         final Vertex v = sg.addV().next();
-        final Edge e = sg.V(v).addE(Direction.OUT, "self", v, "test", "value", "name", "some-id").next();
+        final Edge e = sg.withSideEffect("v",() -> v).V(v).addE(Direction.OUT, "self", "v", "test", "value", "name", "some-id").next();
         assertEquals("value", e.value("test"));
         assertEquals("some-id", e.value("name"));
         assertEquals("some-id", sg.E(e).id().next());
