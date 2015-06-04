@@ -277,16 +277,33 @@ public class Settings {
      * Settings to configure SSL support.
      */
     public static class SslSettings {
+        /**
+         * Enables SSL.  Other settings will be ignored unless this is set to true. By default a self-signed
+         * certificate is used (not suitable for production) for SSL.  To override this setting, be sure to set
+         * the {@link #keyCertChainFile} and the {@link #keyFile}.
+         */
         public boolean enabled = false;
-        public String keyManagerAlgorithm = "SunX509";
-        public String keyStoreFormat = "JKS";
-        public String keyStoreFile = null;
-        public String keyStorePassword = null;
-        public String keyManagerPassword = null;
-        public String trustStoreFile = null;
-        public String trustStoreFormat = null;
-        public String trustStorePassword = null;
-        public String trustStoreAlgorithm = null;
+
+        /**
+         * The X.509 certificate chain file in PEM format.
+         */
+        public String keyCertChainFile = null;
+
+        /**
+         * The PKCS#8 private key file in PEM format.
+         */
+        public String keyFile = null;
+
+        /**
+         * The password of the {@link #keyFile}, or {@code null} if it's not password-protected
+         */
+        public String keyPassword = null;
+
+        /**
+         * Trusted certificates for verifying the remote endpoint's certificate. The file should
+         * contain an X.509 certificate chain in PEM format. {@code null} uses the system default.
+         */
+        public String trustCertChainFile = null;
     }
 
     /**
