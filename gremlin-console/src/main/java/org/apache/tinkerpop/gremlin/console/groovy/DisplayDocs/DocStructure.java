@@ -96,7 +96,12 @@ public class DocStructure {
                                                 position = 0;
                                                 break;
                                             }
-                                            temp += str;
+                                            if (str.contains("</pre>")) {
+                                                str += "\n";
+                                            }
+                                            str = str.replaceAll("<br>", "\n");
+                                            temp += cleanHtmlEntities(
+                                                    str.replaceAll("\\<.*?>",""));
                                         }
                                         name = MethodStructure.cleanName(name);
                                         if (methodList.containsKey(name)) {
@@ -137,5 +142,23 @@ public class DocStructure {
          */
         public TreeMap<String, MethodStructure> getMethodList() {
             return(methodList);
+        }
+        /**
+         * 
+         * @param str
+         * @return returns the line of html with the correct characters
+         */
+        public String cleanHtmlEntities (String str) {
+            str = str.replaceAll("&nbsp;", " ");
+            str = str.replaceAll("&lt;", "<");
+            str = str.replaceAll("&gt;", ">");
+            str = str.replaceAll("&amp;", "&");
+            str = str.replaceAll("&cent;", "¢");
+            str = str.replaceAll("&pound;", "£");
+            str = str.replaceAll("&yen;", "¥");
+            str = str.replaceAll("&euro;", "€");
+            str = str.replaceAll("&copy;", "©");
+            str = str.replaceAll("&reg;", "®");
+            return(str);
         }
 }
