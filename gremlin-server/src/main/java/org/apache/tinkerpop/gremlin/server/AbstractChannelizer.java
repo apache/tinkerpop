@@ -18,13 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import io.netty.handler.codec.spdy.SpdyOrHttpChooser;
-import io.netty.handler.ssl.ApplicationProtocolConfig;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
-import org.apache.ivy.util.FileUtil;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.handler.IteratorHandler;
@@ -37,14 +34,8 @@ import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
-import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.security.KeyStore;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
