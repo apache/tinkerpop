@@ -25,6 +25,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Refactored SSL support in the Gremlin Server/Driver.
+* Bumped to netty 4.0.28.Final.
 * Refactored the `Mutating` interface and introduce `CallbackRegistry` interface around `EventStrategy`.
 * Changed `onReadWrite` and `onClose` of `AbstractTransaction` to be synchronized.
 * Added `LabelP` to support index lookups and `has()` filtering on `Neo4jGraph` multi-label vertices.
