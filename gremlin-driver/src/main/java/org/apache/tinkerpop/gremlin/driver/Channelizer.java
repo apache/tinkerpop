@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
@@ -34,7 +36,10 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -63,6 +68,8 @@ public interface Channelizer extends ChannelHandler {
      * Base implementation of the client side {@link Channelizer}.
      */
     abstract class AbstractChannelizer extends ChannelInitializer<SocketChannel> implements Channelizer {
+        private static final Logger logger = LoggerFactory.getLogger(AbstractChannelizer.class);
+
         protected Connection connection;
         protected Cluster cluster;
         private ConcurrentMap<UUID, ResultQueue> pending;
@@ -92,8 +99,15 @@ public interface Channelizer extends ChannelHandler {
             final Optional<SslContext> sslCtx;
             if (supportsSsl()) {
                 try {
-                    final SelfSignedCertificate ssc = new SelfSignedCertificate();
-                    sslCtx = Optional.of(SslContext.newServerContext(ssc.certificate(), ssc.privateKey()));
+                    final SslContextBuilder builder = SslContextBuilder.forClient();
+                    if (cluster.connectionPoolSettings().trustCertChainFile != null)
+                        builder.trustManager(new File(cluster.connectionPoolSettings().trustCertChainFile));
+                    else {
+                        logger.warn("SSL configured without a trustCertChainFile and thus trusts all certificates without verification (not suitable for production)");
+                        builder.trustManager(InsecureTrustManagerFactory.INSTANCE);
+                    }
+
+                    sslCtx = Optional.of(builder.build());
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }

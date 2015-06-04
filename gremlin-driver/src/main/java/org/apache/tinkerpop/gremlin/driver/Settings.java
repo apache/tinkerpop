@@ -67,6 +67,7 @@ final class Settings {
 
     static class ConnectionPoolSettings {
         public boolean enableSsl = false;
+        public String trustCertChainFile = null;
         public int minSize = ConnectionPool.MIN_POOL_SIZE;
         public int maxSize = ConnectionPool.MAX_POOL_SIZE;
         public int minSimultaneousUsagePerConnection = ConnectionPool.MIN_SIMULTANEOUS_USAGE_PER_CONNECTION;
