@@ -335,47 +335,47 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_2X() {
-            return g.V().as("a").in().as("a").in().as("a").<List<String>>select("a").by(unfold().values("name").fold()).<List<String>>limit(local, 2);
+            return g.V().as("a").in().as("a").in().as("a").<List<String>>select("a").by(unfold().values("name").fold()).limit(local, 2);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_1X() {
-            return g.V().as("a").in().as("a").in().as("a").<List<String>>select("a").by(unfold().values("name").fold()).<String>limit(local, 1);
+            return g.V().as("a").in().as("a").in().as("a").<List<String>>select("a").by(unfold().values("name").fold()).limit(local, 1);
         }
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X() {
-            return g.V().as("a").out().as("a").out().as("a").<List<String>>select("a").by(unfold().values("name").fold()).<List<String>>range(local, 1, 3);
+            return g.V().as("a").out().as("a").out().as("a").<List<String>>select("a").by(unfold().values("name").fold()).range(local, 1, 3);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X() {
-            return g.V().as("a").out().as("a").out().as("a").<List<String>>select("a").by(unfold().values("name").fold()).<String>range(local, 1, 2);
+            return g.V().as("a").out().as("a").out().as("a").<List<String>>select("a").by(unfold().values("name").fold()).range(local, 1, 2);
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X() {
-            return g.V().as("a").out().as("a").out().as("a").<List<String>>select("a").by(unfold().values("name").fold()).<String>range(local, 4, 5);
+            return g.V().as("a").out().as("a").out().as("a").<List<String>>select("a").by(unfold().values("name").fold()).range(local, 4, 5);
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_2X() {
-            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select().by("name").<Map<String, String>>limit(local, 2);
+            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select().by("name").limit(local, 2);
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_1X() {
-            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select().by("name").<Map<String, String>>limit(local, 1);
+            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select().by("name").limit(local, 1);
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_3X() {
-            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select().by("name").<Map<String, String>>range(local, 1, 3);
+            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select().by("name").range(local, 1, 3);
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_2X() {
-            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select().by("name").<Map<String, String>>range(local, 1, 2);
+            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select().by("name").range(local, 1, 2);
         }
     }
 }

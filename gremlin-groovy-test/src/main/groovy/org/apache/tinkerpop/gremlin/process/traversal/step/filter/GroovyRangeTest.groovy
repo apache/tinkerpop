@@ -18,12 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -69,47 +66,47 @@ public abstract class GroovyRangeTest {
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_2X() {
-            TraversalScriptHelper.compute("g.V().as('a').in().as('a').in().as('a').select('a').by(unfold().values('name').fold().limit(local, 2)", g)
+            TraversalScriptHelper.compute("g.V().as('a').in().as('a').in().as('a').select('a').by(unfold().values('name').fold).limit(local,2)", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_in_asXaX_in_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_limitXlocal_1X() {
-            TraversalScriptHelper.compute("g.V().as('a').in().as('a').in().as('a').select('a').by(unfold().values('name').fold().limit(local, 1)", g)
+            TraversalScriptHelper.compute("g.V().as('a').in().as('a').in().as('a').select('a').by(unfold().values('name').fold).limit(local,1)", g)
         }
 
         @Override
         public Traversal<Vertex, List<String>> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_3X() {
-            TraversalScriptHelper.compute("g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold().range(local, 1, 3)", g)
+            TraversalScriptHelper.compute("g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold).range(local,1,3)", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_1_2X() {
-            TraversalScriptHelper.compute("g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold().range(local, 1, 2)", g)
+            TraversalScriptHelper.compute("g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold).range(local,1,2)", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X() {
-            TraversalScriptHelper.compute("g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold().range(local, 4, 5)", g)
+            TraversalScriptHelper.compute("g.V().as('a').out().as('a').out().as('a').select('a').by(unfold().values('name').fold).range(local,4,5)", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_2X() {
-            TraversalScriptHelper.compute("g.V().as('a').in().as('b').in().as('c').select().by('name').limit(local, 2)", g)
+            TraversalScriptHelper.compute("g.V.as('a').in.as('b').in.as('c').select.by('name').limit(local,2)", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_1X() {
-            TraversalScriptHelper.compute("g.V().as('a').in().as('b').in().as('c').select().by('name').limit(local, 1)", g)
+            TraversalScriptHelper.compute("g.V.as('a').in.as('b').in.as('c').select.by('name').limit(local,1)", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_3X() {
-            TraversalScriptHelper.compute("g.V().as('a').out().as('b').out().as('c').select().by('name').range(local, 1, 3)", g)
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select.by('name').range(local,1,3)", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_2X() {
-            TraversalScriptHelper.compute("g.V().as('a').out().as('b').out().as('c').select().by('name').range(local, 1, 2)", g)
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select.by('name').range(local,1,2)", g)
         }
     }
 }
