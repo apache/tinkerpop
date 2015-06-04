@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.*;
@@ -64,37 +65,61 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
      * </li>
      * </ul>
      */
-    static <S> S applyRange(S start, long low, long high) {
+    static <S> S applyRange(final S start, final long low, final long high) {
         if (start instanceof Map) {
-            final Map map = (Map) start;
-            final long capacity = (high != -1 ? high : map.size()) - low;
-            final Map result = new LinkedHashMap((int) Math.min(capacity, map.size()));
-            long c = 0L;
-            for (final Object obj : map.entrySet()) {
-                final Map.Entry entry = (Map.Entry) obj;
-                if (c >= low) {
-                    if (c < high || high == -1) {
-                        result.put(entry.getKey(), entry.getValue());
-                    } else break;
-                }
-                c++;
-            }
-            return (S) result;
+            return (S) applyRangeMap((Map) start, low, high);
         } else if (start instanceof Collection) {
-            final Collection collection = (Collection) start;
-            final Collection result = (collection instanceof Set) ? new LinkedHashSet() : new LinkedList();
-            long c = 0L;
-            for (final Object item : collection) {
-                if (c >= low) {
-                    if (c < high || high == -1) {
-                        result.add(item);
-                    } else break;
-                }
-                c++;
-            }
-            return (S) result;
+            return (S) applyRangeCollection((Collection) start, low, high);
         }
         return start;
+    }
+
+    /** Extracts specified range of elements from a Map. */
+    private static Map applyRangeMap(final Map map, final long low, final long high) {
+        final long capacity = (high != -1 ? high : map.size()) - low;
+        final Map result = new LinkedHashMap((int) Math.min(capacity, map.size()));
+        long c = 0L;
+        for (final Object obj : map.entrySet()) {
+            final Map.Entry entry = (Map.Entry) obj;
+            if (c >= low) {
+                if (c < high || high == -1) {
+                    result.put(entry.getKey(), entry.getValue());
+                } else break;
+            }
+            c++;
+        }
+        return result;
+    }
+
+    /** Extracts specified range of elements from a Collection. */
+    private static Object applyRangeCollection(final Collection collection, final long low, final long high) {
+        // See if we only want a single item.  It is also possible that we will allow more than one item, but that the
+        // incoming container is only capable of producing a single item.  In that case, we will still emit a
+        // container.  This allows the result type to be predictable based on the step arguments.  It also allows us to
+        // avoid creating the result container for the single case.
+        boolean single = high != -1 ? (high - low == 1) : false;
+
+        final Collection resultCollection =
+            single ? null : (collection instanceof Set) ? new LinkedHashSet() : new LinkedList();
+        Object result = single ? null : resultCollection;
+        long c = 0L;
+        for (final Object item : collection) {
+            if (c >= low) {
+                if (c < high || high == -1) {
+                    if (single) {
+                        result = item;
+                        break;
+                    } else {
+                        resultCollection.add(item);
+                    }
+                } else break;
+            }
+            c++;
+        }
+        if (null == result)
+            // We have nothing to emit, so stop traversal.
+            throw FastNoSuchElementException.instance();
+        return result;
     }
 
     @Override

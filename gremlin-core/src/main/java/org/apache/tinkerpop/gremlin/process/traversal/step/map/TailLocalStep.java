@@ -22,7 +22,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collection;
@@ -54,19 +53,7 @@ public final class TailLocalStep<S> extends MapStep<S, S> {
                                 this.limit;
         final long low = high - this.limit;
         final S result = RangeLocalStep.applyRange(start, low, high);
-
-        // If we are limiting a collection to a single item, then emit only that item.
-        if (1 == this.limit && result instanceof Collection) {
-            final Collection c = (Collection) result;
-            if (c.isEmpty()) {
-                // We have nothing to emit, so stop traversal.
-                throw FastNoSuchElementException.instance();
-            } else {
-                return (S) c.iterator().next();
-            }
-        } else {
-            return result;
-        }
+        return result;
     }
 
     @Override
