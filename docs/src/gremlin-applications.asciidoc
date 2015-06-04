@@ -512,6 +512,10 @@ The following table describes the various configuration options that Gremlin Ser
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
 |serializedResponseTimeout |The amount of time in milliseconds before a response serialization times out.  The notion of "response serialization" refers to the time it takes for Gremlin Server to iterate an entire result after the script is evaluated in the `ScriptEngine`. |30000
 |ssl.enabled |Determines if SSL is turned on or not. |false
+|ssl.keyCertChainFile |The X.509 certificate chain file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
+|ssl.keyFile |The `PKCS#8` private key file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
+|ssl.keyPassword |The password of the `keyFile` if it's not password-protected |_none_
+|ssl.trustCertChainFile |Trusted certificates for verifying the remote endpoint's certificate. The file should contain an X.509 certificate chain in PEM format. A system default will be used if this setting is not present. |_none_
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
 |=========================================================

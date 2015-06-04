@@ -295,7 +295,7 @@ public class Settings {
         public String keyFile = null;
 
         /**
-         * The password of the {@link #keyFile}, or {@code null} if it's not password-protected
+         * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
          */
         public String keyPassword = null;
 
