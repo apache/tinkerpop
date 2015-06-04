@@ -43,7 +43,7 @@ cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
 TP_HOME=`pwd`
 CONSOLE_HOME=`directory "${TP_HOME}/gremlin-console/target/apache-gremlin-console-*-standalone"`
 PLUGIN_DIR="${CONSOLE_HOME}/ext"
-TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -o 'version>[^<]*' | grep -o '>.*' | grep -o '[^>]*')
+TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -o 'version>[^<]*' | grep -o '>.*' | cut -d '>' -f2 | head -n1)
 TMP_DIR="/tmp/tp-docs-preprocessor"
 
 trap cleanup INT
