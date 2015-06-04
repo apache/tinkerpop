@@ -231,11 +231,11 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern.yaml
 [INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
 [INFO] Graphs - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
-[INFO] GremlinServer - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
+[INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
 [INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
 [INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
-[INFO] GremlinServer - Initialized GremlinExecutor and configured ScriptEngines.
-[INFO] GremlinServer - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
+[INFO] ServerGremlinExecutor - Initialized GremlinExecutor and configured ScriptEngines.
+[INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
 [INFO] GremlinServer - Executing start up LifeCycleHook
 [INFO] Logger$info - Loading 'modern' graph data.
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0

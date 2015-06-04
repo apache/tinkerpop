@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import io.netty.channel.EventLoopGroup;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
@@ -30,6 +31,7 @@ import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
+import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,14 +92,12 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     }
 
     @Override
-    public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
-                     final ExecutorService gremlinExecutorService,
-                     final Graphs graphs, final ScheduledExecutorService scheduledExecutorService) {
-        this.settings = settings;
-        this.gremlinExecutor = gremlinExecutor;
-        this.graphs = graphs;
-        this.gremlinExecutorService = gremlinExecutorService;
-        this.scheduledExecutorService = scheduledExecutorService;
+    public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
+        this.settings = serverGremlinExecutor.getSettings();
+        this.gremlinExecutor = serverGremlinExecutor.getGremlinExecutor();
+        this.graphs = serverGremlinExecutor.getGraphs();
+        this.gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
+        this.scheduledExecutorService = serverGremlinExecutor.getScheduledExecutorService();
 
         // instantiate and configure the serializers that gremlin server will use - could error out here
         // and fail the server startup

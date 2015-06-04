@@ -16,24 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server;
+package org.apache.tinkerpop.gremlin.server.util;
 
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.EventLoopGroup;
-import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+
+import java.util.concurrent.ThreadFactory;
 
 /**
- * An interface that makes it possible to plugin different Netty pipelines to Gremlin Server, enabling the use of
- * different protocols, mapper security and other such functions.  A {@code Channelizer} implementation can be
- * configured in Gremlin Server with the {@code channelizer} setting in the configuration file.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @see org.apache.tinkerpop.gremlin.server.AbstractChannelizer
  */
-public interface Channelizer extends ChannelHandler {
+public final class ThreadFactoryUtil {
+    private static final String SERVER_THREAD_PREFIX = "gremlin-server-";
+    private ThreadFactoryUtil() {}
 
-    /**
-     * This method is called just after the {@code Channelizer} is initialized.
-     */
-    public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor);
+    public static ThreadFactory create(final String pattern) {
+        return new BasicThreadFactory.Builder().namingPattern(SERVER_THREAD_PREFIX + pattern).build();
+    }
 }

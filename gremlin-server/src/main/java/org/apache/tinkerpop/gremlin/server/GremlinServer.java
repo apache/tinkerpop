@@ -18,11 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
+import org.apache.tinkerpop.gremlin.server.util.ThreadFactoryUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -35,23 +34,16 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Start and stop Gremlin Server.
@@ -69,8 +61,6 @@ public class GremlinServer {
 
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
     private final Settings settings;
-    private Optional<Graphs> graphs = Optional.empty();
-    private List<LifeCycleHook> hooks = new ArrayList<>();
     private Channel ch;
 
     private CompletableFuture<Void> serverStopped = null;
@@ -79,20 +69,42 @@ public class GremlinServer {
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
     private final ExecutorService gremlinExecutorService;
+    private final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor;
 
+    /**
+     * Construct a Gremlin Server instance from {@link Settings}.
+     */
     public GremlinServer(final Settings settings) {
         this.settings = settings;
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> this.stop().join(), SERVER_THREAD_PREFIX + "shutdown"));
 
-        final BasicThreadFactory threadFactoryBoss = new BasicThreadFactory.Builder().namingPattern(SERVER_THREAD_PREFIX + "boss-%d").build();
+        final ThreadFactory threadFactoryBoss = ThreadFactoryUtil.create("boss-%d");
         bossGroup = new NioEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
 
-        final BasicThreadFactory threadFactoryWorker = new BasicThreadFactory.Builder().namingPattern(SERVER_THREAD_PREFIX + "worker-%d").build();
+        final ThreadFactory threadFactoryWorker = ThreadFactoryUtil.create("worker-%d");
         workerGroup = new NioEventLoopGroup(settings.threadPoolWorker, threadFactoryWorker);
 
-        final BasicThreadFactory threadFactoryGremlin = new BasicThreadFactory.Builder().namingPattern(SERVER_THREAD_PREFIX + "exec-%d").build();
-        gremlinExecutorService = Executors.newFixedThreadPool(settings.gremlinPool, threadFactoryGremlin);
+        serverGremlinExecutor = new ServerGremlinExecutor<>(settings, null, workerGroup, EventLoopGroup.class);
+        gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
+    }
+
+    /**
+     * Construct a Gremlin Server instance from the {@link ServerGremlinExecutor} which internally carries some
+     * pre-constructed objects used by the server as well as the {@link Settings} object itself.  This constructor
+     * is useful when Gremlin Server is being used in an embedded style and there is a need to share thread pools
+     * with the hosting application.
+     */
+    public GremlinServer(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
+        this.serverGremlinExecutor = serverGremlinExecutor;
+        this.settings = serverGremlinExecutor.getSettings();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> this.stop().join(), SERVER_THREAD_PREFIX + "shutdown"));
+
+        final ThreadFactory threadFactoryBoss = ThreadFactoryUtil.create("boss-%d");
+        bossGroup = new NioEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
+        workerGroup = serverGremlinExecutor.getScheduledExecutorService();
+        gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
     }
 
     /**
@@ -115,10 +127,9 @@ public class GremlinServer {
             b.childOption(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, settings.writeBufferHighWaterMark);
             b.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
 
-            // get the executor initialized and fire off any lifecycle scripts that were provided by the user.
-            // hooks get initialized during GremlinExecutor initialization
-            final GremlinExecutor gremlinExecutor = initializeGremlinExecutor(gremlinExecutorService, workerGroup);
-            hooks.forEach(hook -> {
+            // fire off any lifecycle scripts that were provided by the user. hooks get initialized during
+            // ServerGremlinExecutor initialization
+            serverGremlinExecutor.getHooks().forEach(hook -> {
                 logger.info("Executing start up {}", LifeCycleHook.class.getSimpleName());
                 try {
                     hook.onStartUp(new LifeCycleHook.Context(logger));
@@ -129,7 +140,7 @@ public class GremlinServer {
             });
 
             final Channelizer channelizer = createChannelizer(settings);
-            channelizer.init(settings, gremlinExecutor, gremlinExecutorService, graphs.get(), workerGroup);
+            channelizer.init(serverGremlinExecutor);
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(channelizer);
@@ -176,60 +187,6 @@ public class GremlinServer {
         }
     }
 
-    private GremlinExecutor initializeGremlinExecutor(final ExecutorService gremlinExecutorService,
-                                                      final ScheduledExecutorService scheduledExecutorService) {
-        // initialize graphs from configuration
-        if (!graphs.isPresent()) graphs = Optional.of(new Graphs(settings));
-
-        logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
-
-        final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
-                .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
-                .afterFailure((b, e) -> graphs.get().rollbackAll())
-                .afterSuccess(b -> graphs.get().commitAll())
-                .beforeEval(b -> graphs.get().rollbackAll())
-                .afterTimeout(b -> graphs.get().rollbackAll())
-                .enabledPlugins(new HashSet<>(settings.plugins))
-                .globalBindings(graphs.get().getGraphsAsBindings())
-                .promoteBindings(kv -> kv.getValue() instanceof Graph
-                                    || kv.getValue() instanceof TraversalSource
-                                    || kv.getValue() instanceof LifeCycleHook)
-                .executorService(gremlinExecutorService)
-                .scheduledExecutorService(scheduledExecutorService);
-
-        settings.scriptEngines.forEach((k, v) -> {
-            // make sure that server related classes are available at init
-            v.imports.add(LifeCycleHook.class.getCanonicalName());
-            gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
-        });
-        final GremlinExecutor gremlinExecutor = gremlinExecutorBuilder.create();
-
-        logger.info("Initialized GremlinExecutor and configured ScriptEngines.");
-
-        // script engine init may have altered the graph bindings or maybe even created new ones - need to
-        // re-apply those references back
-        gremlinExecutor.getGlobalBindings().entrySet().stream()
-                .filter(kv -> kv.getValue() instanceof Graph)
-                .forEach(kv -> graphs.get().getGraphs().put(kv.getKey(), (Graph) kv.getValue()));
-
-        // script engine init may have constructed the TraversalSource bindings - store them in Graphs object
-        gremlinExecutor.getGlobalBindings().entrySet().stream()
-                .filter(kv -> kv.getValue() instanceof TraversalSource)
-                .forEach(kv -> {
-                    logger.info("A {} is now bound to [{}] with {}", kv.getValue().getClass().getSimpleName(), kv.getKey(), kv.getValue());
-                    graphs.get().getTraversalSources().put(kv.getKey(), (TraversalSource) kv.getValue());
-                });
-
-        // determine if the initialization scripts introduced LifeCycleHook objects - if so we need to gather them
-        // up for execution
-        hooks = gremlinExecutor.getGlobalBindings().entrySet().stream()
-                .filter(kv -> kv.getValue() instanceof LifeCycleHook)
-                .map(kv -> (LifeCycleHook) kv.getValue())
-                .collect(Collectors.toList());
-
-        return gremlinExecutor;
-    }
-
     /**
      * Stop Gremlin Server and free the port binding. Note that multiple calls to this method will return the
      * same instance of the {@link java.util.concurrent.CompletableFuture}.
@@ -266,11 +223,11 @@ public class GremlinServer {
 
         // channel is shutdown as are the thread pools - time to kill graphs as nothing else should be acting on them
         new Thread(() -> {
-            hooks.forEach(hook -> {
+            serverGremlinExecutor.getHooks().forEach(hook -> {
                 logger.info("Executing shutdown {}", LifeCycleHook.class.getSimpleName());
                 try {
                     hook.onShutDown(new LifeCycleHook.Context(logger));
-                } catch (UnsupportedOperationException | UndeclaredThrowableException  uoe) {
+                } catch (UnsupportedOperationException | UndeclaredThrowableException uoe) {
                     // if the user doesn't implement onShutDown the scriptengine will throw
                     // this exception.  it can safely be ignored.
                 }
@@ -288,7 +245,7 @@ public class GremlinServer {
                 logger.warn("Timeout waiting for bossy/worker thread pools to shutdown - continuing with shutdown process.");
             }
 
-            graphs.ifPresent(gs -> gs.getGraphs().forEach((k, v) -> {
+            serverGremlinExecutor.getGraphs().getGraphs().forEach((k, v) -> {
                 logger.debug("Closing Graph instance [{}]", k);
                 try {
                     v.close();
@@ -297,7 +254,7 @@ public class GremlinServer {
                 } finally {
                     logger.info("Closed Graph instance [{}]", k);
                 }
-            }));
+            });
 
             logger.info("Gremlin Server - shutdown complete");
             serverStopped.complete(null);
