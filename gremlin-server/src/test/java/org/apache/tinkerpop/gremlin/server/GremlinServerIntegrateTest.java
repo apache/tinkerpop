@@ -107,6 +107,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldWorkOverNioTransport":
                 settings.channelizer = NioChannelizer.class.getName();
                 break;
+            case "shouldEnableSsl":
+                settings.ssl = new Settings.SslSettings();
+                settings.ssl.enabled = true;
+                break;
             case "shouldHaveTheSessionTimeout":
                 settings.processors.clear();
                 final Settings.ProcessorSettings processorSettings = new Settings.ProcessorSettings();
@@ -118,6 +122,19 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldEnableSsl() {
+        final Cluster cluster = Cluster.build().enableSsl(true).create();
+        final Client client = cluster.connect();
+
+        try {
+            // this should return "nothing" - there should be no exception
+            assertEquals("test", client.submit("'test'").one().getString());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
