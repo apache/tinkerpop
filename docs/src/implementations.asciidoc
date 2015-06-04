@@ -882,6 +882,14 @@ gremlin> :remote connect tinkerpop.hadoop graph g
 gremlin> :> g.V().group().by{it.value('name')[1]}.by('name')
 ==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
 
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+g = graph.traversal(computer(SparkGraphComputer))
+:remote connect tinkerpop.hadoop graph g
+:> g.V().group().by{it.value('name')[1]}.by('name')
+----
+
 The `SparkGraphComputer` algorithm leverages Spark's caching abilities to reduce the amount of data shuffled across the wire on each iteration of the <<vertexprogram,`VertexProgram`>>. When the graph is loaded as a Spark RDD (Resilient Distributed Dataset) it is immediately cached as `graphRDD`. The `graphRDD` is a distributed adjacency list which encodes the vertex, its properties, and all its incident edges. On the first iteration, each vertex (in parallel) is passed through `VertexProgram.execute()`. This yields an output of the vertex's mutated state (i.e. updated compute keys -- `propertyX`) and its outgoing messages. This `viewOutgoingRDD` is then reduced to `viewIncomingRDD` where the outgoing messages are sent to their respective vertices. If a `MessageCombiner` exists for the vertex program, then messages are aggregated locally and globally to ultimately yield one incoming message for the vertex. This reduce sequence is the "message pass." If the vertex program does not terminate on this iteration, then the `viewIncomingRDD` is joined with the cached `graphRDD` and the process continues. When there are no more iterations, there is a final join and the resultant RDD is stripped of its edges and messages. This `mapReduceRDD` is cached and is processed by each <<mapreduce,`MapReduce`>> job in the <<graphcomputer,`GraphComputer`>> computation.
 
 image::spark-algorithm.png[width=775]
