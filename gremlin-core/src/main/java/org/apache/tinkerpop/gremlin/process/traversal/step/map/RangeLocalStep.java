@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.*;
@@ -91,17 +92,33 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
     }
 
     /** Extracts specified range of elements from a Collection. */
-    private static Collection applyRangeCollection(final Collection collection, final long low, final long high) {
-        final Collection result = (collection instanceof Set) ? new LinkedHashSet() : new LinkedList();
+    private static Object applyRangeCollection(final Collection collection, final long low, final long high) {
+        // See if we only want a single item.  It is also possible that we will allow more than one item, but that the
+        // incoming container is only capable of producing a single item.  In that case, we will still emit a
+        // container.  This allows the result type to be predictable based on the step arguments.  It also allows us to
+        // avoid creating the result container for the single case.
+        boolean single = high != -1 ? (high - low == 1) : false;
+
+        final Collection resultCollection =
+            single ? null : (collection instanceof Set) ? new LinkedHashSet() : new LinkedList();
+        Object result = single ? null : resultCollection;
         long c = 0L;
         for (final Object item : collection) {
             if (c >= low) {
                 if (c < high || high == -1) {
-                    result.add(item);
+                    if (single) {
+                        result = item;
+                        break;
+                    } else {
+                        resultCollection.add(item);
+                    }
                 } else break;
             }
             c++;
         }
+        if (null == result)
+            // We have nothing to emit, so stop traversal.
+            throw FastNoSuchElementException.instance();
         return result;
     }
 

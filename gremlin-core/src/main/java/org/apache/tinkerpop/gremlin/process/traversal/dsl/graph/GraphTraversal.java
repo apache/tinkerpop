@@ -509,20 +509,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> range(final long low, final long high) {
-        return this.range(Scope.global, low, high);
+        return this.<E>range(Scope.global, low, high);
     }
 
-    public default GraphTraversal<S, E> range(final Scope scope, final long low, final long high) {
+    public default <E2> GraphTraversal<S, E2> range(final Scope scope, final long low, final long high) {
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new RangeGlobalStep<>(this.asAdmin(), low, high)
                 : new RangeLocalStep<>(this.asAdmin(), low, high));
     }
 
     public default GraphTraversal<S, E> limit(final long limit) {
-        return this.range(Scope.global, 0, limit);
+        return this.<E>range(Scope.global, 0, limit);
     }
 
-    public default GraphTraversal<S, E> limit(final Scope scope, final long limit) {
+    public default <E2> GraphTraversal<S, E2> limit(final Scope scope, final long limit) {
         return this.range(scope, 0, limit);
     }
 
@@ -534,11 +534,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.tail(Scope.global, limit);
     }
 
-    public default GraphTraversal<S, E> tail(final Scope scope) {
-        return this.tail(scope, 1);
+    public default <E2> GraphTraversal<S, E2> tail(final Scope scope) {
+        return this.<E2>tail(scope, 1);
     }
 
-    public default GraphTraversal<S, E> tail(final Scope scope, final long limit) {
+    public default <E2> GraphTraversal<S, E2> tail(final Scope scope, final long limit) {
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new TailGlobalStep<>(this.asAdmin(), limit)
                 : new TailLocalStep<>(this.asAdmin(), limit));
