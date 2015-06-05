@@ -18,24 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.server.channel;
 
-import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import io.netty.channel.EventLoopGroup;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
-import org.apache.tinkerpop.gremlin.server.Graphs;
-import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.netty.util.concurrent.DefaultEventExecutorGroup;
-import io.netty.util.concurrent.EventExecutorGroup;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Constructs a {@link org.apache.tinkerpop.gremlin.server.Channelizer} that exposes an HTTP/REST endpoint in Gremlin Server.
@@ -48,10 +41,8 @@ public class HttpChannelizer extends AbstractChannelizer {
     private HttpGremlinEndpointHandler httpGremlinEndpointHandler;
 
     @Override
-    public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
-                     final ExecutorService gremlinExecutorService, final Graphs graphs,
-                     final ScheduledExecutorService scheduledExecutorService) {
-        super.init(settings, gremlinExecutor, gremlinExecutorService, graphs, scheduledExecutorService);
+    public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
+        super.init(serverGremlinExecutor);
         httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(serializers, gremlinExecutor);
     }
 

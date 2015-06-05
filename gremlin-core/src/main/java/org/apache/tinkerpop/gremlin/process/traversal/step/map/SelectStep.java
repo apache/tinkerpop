@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -119,7 +120,9 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(this.scope == Scope.local ? TraverserRequirement.OBJECT : TraverserRequirement.PATH);
+        return this.getSelfAndChildRequirements(Scope.local == this.scope ?
+                new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS} :
+                new TraverserRequirement[]{TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS});
     }
 
     @Override
@@ -135,5 +138,10 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     @Override
     public Scope recommendNextScope() {
         return Scope.local;
+    }
+
+    @Override
+    public Set<String> getScopeKeys() {
+        return new HashSet<>(this.selectLabels);
     }
 }

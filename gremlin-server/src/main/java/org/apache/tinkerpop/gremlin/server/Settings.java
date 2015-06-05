@@ -89,14 +89,13 @@ public class Settings {
     public int resultIterationBatchSize = 64;
 
     /**
-     * The maximum length of the initial line (e.g. {@code "GET / HTTP/1.0"}). Can reduce excessive sideEffects consumption.
-     * This setting ties to the Netty {@code HttpRequestDecoder}
+     * The maximum length of the initial line (e.g. {@code "GET / HTTP/1.0"}) processed in a request, which essentially
+     * controls the maximum length of the submitted URI. This setting ties to the Netty {@code HttpRequestDecoder}.
      */
     public int maxInitialLineLength = 4096;
 
     /**
-     * The maximum length of all headers.  If the sum of the length of each header exceeds this value. Can reduce
-     * excessive sideEffects consumption. This setting ties to the Netty {@code HttpRequestDecoder}
+     * The maximum length of all headers.  This setting ties to the Netty {@code HttpRequestDecoder}
      */
     public int maxHeaderSize = 8192;
 
@@ -104,8 +103,7 @@ public class Settings {
      * The maximum length of the content or each chunk.  If the content length exceeds this value, the transfer
      * encoding of the decoded request will be converted to 'chunked' and the content will be split into multiple
      * {@code HttpContent}s.  If the transfer encoding of the HTTP request is 'chunked' already, each chunk will be
-     * split into smaller chunks if the length of the chunk exceeds this value. Can reduce excessive sideEffects
-     * consumption. This setting ties to the Netty {@code HttpRequestDecoder}
+     * split into smaller chunks if the length of the chunk exceeds this value.
      */
     public int maxChunkSize = 8192;
 
@@ -115,7 +113,7 @@ public class Settings {
      * return a 413 - Request Entity Too Large status code.  A response exceeding this size will raise an internal
      * exception.
      */
-    public int maxContentLength = 65536;
+    public int maxContentLength = 1024 * 64;
 
     /**
      * Maximum number of request components that can be aggregated for a message.
@@ -124,7 +122,7 @@ public class Settings {
 
     /**
      * If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable,
-     * accepting no additional writes until buffer is drained and the low water mark is met.
+     * accepting no additional writes until buffer is drained and the {@link #writeBufferLowWaterMark} is met.
      */
     public int writeBufferHighWaterMark = 1024 * 64;
 
@@ -135,8 +133,7 @@ public class Settings {
     public int writeBufferLowWaterMark = 1024 * 32;
 
     /**
-     * The full class name of the {@link Channelizer} to use in
-     * Gremlin Server.
+     * The full class name of the {@link Channelizer} to use in Gremlin Server.
      */
     public String channelizer = WebSocketChannelizer.class.getName();
 
@@ -277,16 +274,33 @@ public class Settings {
      * Settings to configure SSL support.
      */
     public static class SslSettings {
+        /**
+         * Enables SSL.  Other settings will be ignored unless this is set to true. By default a self-signed
+         * certificate is used (not suitable for production) for SSL.  To override this setting, be sure to set
+         * the {@link #keyCertChainFile} and the {@link #keyFile}.
+         */
         public boolean enabled = false;
-        public String keyManagerAlgorithm = "SunX509";
-        public String keyStoreFormat = "JKS";
-        public String keyStoreFile = null;
-        public String keyStorePassword = null;
-        public String keyManagerPassword = null;
-        public String trustStoreFile = null;
-        public String trustStoreFormat = null;
-        public String trustStorePassword = null;
-        public String trustStoreAlgorithm = null;
+
+        /**
+         * The X.509 certificate chain file in PEM format.
+         */
+        public String keyCertChainFile = null;
+
+        /**
+         * The PKCS#8 private key file in PEM format.
+         */
+        public String keyFile = null;
+
+        /**
+         * The password of the {@link #keyFile}, or {@code null} if it's not password-protected.
+         */
+        public String keyPassword = null;
+
+        /**
+         * Trusted certificates for verifying the remote endpoint's certificate. The file should
+         * contain an X.509 certificate chain in PEM format. {@code null} uses the system default.
+         */
+        public String trustCertChainFile = null;
     }
 
     /**

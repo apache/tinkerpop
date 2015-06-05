@@ -33,6 +33,10 @@ public final class NoOpBarrierStep<S> extends CollectingBarrierStep<S> {
         super(traversal);
     }
 
+    public NoOpBarrierStep(final Traversal.Admin traversal, final int maxBarrierSize) {
+        super(traversal, maxBarrierSize);
+    }
+
     @Override
     public void barrierConsumer(final TraverserSet<S> traverserSet) {
 

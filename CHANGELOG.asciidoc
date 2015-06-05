@@ -25,6 +25,13 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `CollectingBarrierStep` supports `maxBarrierSize` for "lazy barrier," memory conservation.
+* `Scoping` now has `getScope()`, `setScope()`, and `getScopeKeys()`.
+* `ScopingStrategy` is smart about `Scope.global` settings based on traversal labels.
+* `Scope.global` and `Scope.local` both account for traversal side-effects. The distinction is between path and map.
+* Refactored SSL support in the Gremlin Server/Driver.
+* Factored out `ServerGremlinExecutor` which contains the core elements of server-side script execution in Gremlin Server.
+* Bumped to netty 4.0.28.Final.
 * Refactored the `Mutating` interface and introduce `CallbackRegistry` interface around `EventStrategy`.
 * Changed `onReadWrite` and `onClose` of `AbstractTransaction` to be synchronized.
 * Added `LabelP` to support index lookups and `has()` filtering on `Neo4jGraph` multi-label vertices.

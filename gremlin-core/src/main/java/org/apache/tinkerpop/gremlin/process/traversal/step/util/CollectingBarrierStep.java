@@ -32,8 +32,15 @@ import java.util.Set;
 public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
     private TraverserSet<S> traverserSet = new TraverserSet<>();
 
+    private int maxBarrierSize;
+
     public CollectingBarrierStep(final Traversal.Admin traversal) {
+        this(traversal, Integer.MAX_VALUE);
+    }
+
+    public CollectingBarrierStep(final Traversal.Admin traversal, final int maxBarrierSize) {
         super(traversal);
+        this.maxBarrierSize = maxBarrierSize;
     }
 
     public abstract void barrierConsumer(final TraverserSet<S> traverserSet);
@@ -45,9 +52,18 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
 
     @Override
     public Traverser<S> processNextStart() {
-        if (this.starts.hasNext()) {
-            this.starts.forEachRemaining(this.traverserSet::add);
-            this.barrierConsumer(this.traverserSet);
+        if (!this.traverserSet.isEmpty()) {
+            return this.traverserSet.remove();
+        } else if (this.starts.hasNext()) {
+            if (Integer.MAX_VALUE == this.maxBarrierSize) {
+                this.starts.forEachRemaining(this.traverserSet::add);
+                this.barrierConsumer(this.traverserSet);
+            } else {
+                while (this.starts.hasNext() && this.traverserSet.size() < this.maxBarrierSize) {
+                    this.traverserSet.add(this.starts.next());
+                }
+                this.barrierConsumer(this.traverserSet);
+            }
         }
         return this.traverserSet.remove();
     }

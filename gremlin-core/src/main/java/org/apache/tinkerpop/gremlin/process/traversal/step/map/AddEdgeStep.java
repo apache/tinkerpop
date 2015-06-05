@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -154,5 +155,15 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
     @Override
     public Scope getScope() {
         return this.scope;
+    }
+
+    @Override
+    public Set<String> getScopeKeys() {
+        final Set<String> keys = new HashSet<>();
+        if (null != this.firstVertexKey)
+            keys.add(this.firstVertexKey);
+        if (null != this.secondVertexKey)
+            keys.add(this.secondVertexKey);
+        return keys;
     }
 }

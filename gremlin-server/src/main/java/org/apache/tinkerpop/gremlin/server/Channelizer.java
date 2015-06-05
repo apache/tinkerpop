@@ -18,12 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import io.netty.channel.ChannelHandler;
-import io.netty.util.concurrent.EventExecutorGroup;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
+import io.netty.channel.EventLoopGroup;
+import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 
 /**
  * An interface that makes it possible to plugin different Netty pipelines to Gremlin Server, enabling the use of
@@ -38,7 +35,5 @@ public interface Channelizer extends ChannelHandler {
     /**
      * This method is called just after the {@code Channelizer} is initialized.
      */
-    public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
-                     final ExecutorService gremlinExecutorService,
-                     final Graphs graphs, final ScheduledExecutorService scheduledExecutorService);
+    public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor);
 }

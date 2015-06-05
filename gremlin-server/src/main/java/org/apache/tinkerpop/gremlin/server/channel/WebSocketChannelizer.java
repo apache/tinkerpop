@@ -18,10 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.server.channel;
 
-import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import io.netty.channel.EventLoopGroup;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
-import org.apache.tinkerpop.gremlin.server.Graphs;
-import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinBinaryRequestDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinResponseEncoder;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinTextRequestDecoder;
@@ -32,11 +30,9 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * A {@link org.apache.tinkerpop.gremlin.server.Channelizer} that exposes a WebSocket-based Gremlin endpoint with a custom
@@ -52,10 +48,8 @@ public class WebSocketChannelizer extends AbstractChannelizer {
     private WsGremlinBinaryRequestDecoder wsGremlinBinaryRequestDecoder;
 
     @Override
-    public void init(final Settings settings, final GremlinExecutor gremlinExecutor,
-                     final ExecutorService gremlinExecutorService, final Graphs graphs,
-                     final ScheduledExecutorService scheduledExecutorService) {
-        super.init(settings, gremlinExecutor, gremlinExecutorService, graphs, scheduledExecutorService);
+    public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
+        super.init(serverGremlinExecutor);
 
         wsGremlinResponseEncoder = new WsGremlinResponseEncoder();
         wsGremlinTextRequestDecoder = new WsGremlinTextRequestDecoder(serializers);

@@ -16,30 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server;
+package org.apache.tinkerpop.gremlin.server.util;
 
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.Test;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
-import java.util.Map;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphsTest {
+public final class ThreadFactoryUtil {
+    private static final String SERVER_THREAD_PREFIX = "gremlin-server-";
+    private ThreadFactoryUtil() {}
 
-    @Test
-    public void shouldReturnGraphs() {
-        final Settings settings = Settings.read(GraphsTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
-        final Graphs graphs = new Graphs(settings);
-        final Map<String, Graph> m = graphs.getGraphs();
-
-        assertNotNull(m);
-        assertTrue(m.containsKey("graph"));
-        assertTrue(m.get("graph") instanceof TinkerGraph);
+    public static ThreadFactory create(final String pattern) {
+        return new BasicThreadFactory.Builder().namingPattern(SERVER_THREAD_PREFIX + pattern).build();
     }
 }
