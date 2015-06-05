@@ -21,11 +21,19 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.NoOpBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.HashSet;
@@ -40,6 +48,10 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
     private static final Set<Class<? extends FinalizationStrategy>> PRIORS = new HashSet<>();
     private static final Set<Class<? extends FinalizationStrategy>> POSTS = new HashSet<>();
 
+    private static final int REQUIRED_DEPTH = 2;
+    private static final int BIG_START_SIZE = 5;
+    private static final int MAX_BARRIER_SIZE = 10000;
+
     static {
         PRIORS.add(ScopingStrategy.class);
         //
@@ -52,9 +64,35 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if(traversal.getEngine().isComputer())
+        if (traversal.getEngine().isComputer())
             return;
-        // TODO:
+
+        if (traversal.getTraverserRequirements().contains(TraverserRequirement.PATH))
+            return;
+
+        int depth = 0;
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (step instanceof VertexStep)
+                depth++;
+        }
+
+        if (depth > REQUIRED_DEPTH) {
+            boolean bigStart = false;
+            for (int i = 0; i < traversal.getSteps().size() - 1; i++) {
+                final Step<?, ?> step = traversal.getSteps().get(i);
+                if (i == 0)
+                    bigStart = step instanceof GraphStep && (((GraphStep) step).getIds().length >= BIG_START_SIZE || (((GraphStep) step).getIds().length == 0 && step instanceof HasContainerHolder && ((HasContainerHolder) step).getHasContainers().isEmpty()));
+                else if (i > 1 || bigStart) {
+                    if (!(step instanceof FilterStep) &&
+                            !(step instanceof CollectingBarrierStep) &&
+                            !(step instanceof SupplyingBarrierStep) &&
+                            !(step instanceof ReducingBarrierStep) &&
+                            !(step instanceof VertexStep && ((VertexStep) step).returnsEdge())) {
+                        TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE), step, traversal);
+                    }
+                }
+            }
+        }
     }
 
 

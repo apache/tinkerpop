@@ -27,9 +27,10 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -38,12 +39,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEn
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.PartitionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
@@ -90,7 +92,10 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(GraphTraversal.class.getPackage().getName() + DOT_STAR);
         imports.add(ComputerTraversalEngine.class.getPackage().getName() + DOT_STAR);
         imports.add(PartitionStrategy.class.getPackage().getName() + DOT_STAR);       // decoration strategies
+        imports.add(IdentityRemovalStrategy.class.getPackage().getName() + DOT_STAR); // optimization strategies
+        imports.add(ProfileStrategy.class.getPackage().getName() + DOT_STAR);         // finalization strategies
         imports.add(ReadOnlyStrategy.class.getPackage().getName() + DOT_STAR);        // verification strategies
+
         imports.add(Event.class.getPackage().getName() + DOT_STAR);                   // eventing
         staticImports.add(__.class.getCanonicalName() + DOT_STAR);
         staticImports.add(TraversalOptionParent.Pick.class.getCanonicalName() + DOT_STAR);
