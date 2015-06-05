@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `LazyBarrierStrategy` which "stalls" a traversal of a particular form in order to gain a bulking optimization.
 * `CollectingBarrierStep` supports `maxBarrierSize` for "lazy barrier," memory conservation.
 * `Scoping` now has `getScope()`, `setScope()`, and `getScopeKeys()`.
 * `ScopingStrategy` is smart about `Scope.global` settings based on traversal labels.
