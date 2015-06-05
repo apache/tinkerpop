@@ -580,4 +580,8 @@ public class __ {
         return __.<A>start().barrier();
     }
 
+    public static <A> GraphTraversal<A, A> barrier(final int maxBarrierSize) {
+        return __.<A>start().barrier(maxBarrierSize);
+    }
+
 }

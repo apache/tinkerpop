@@ -708,6 +708,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new NoOpBarrierStep<>(this.asAdmin()));
     }
 
+    public default GraphTraversal<S, E> barrier(final int maxBarrierSize) {
+        return this.asAdmin().addStep(new NoOpBarrierStep<>(this.asAdmin(), maxBarrierSize));
+    }
+
     ////
 
     public default GraphTraversal<S, E> by(final Traversal<?, ?> byTraversal) {
