@@ -162,7 +162,7 @@ public class PartitionStrategyTraverseTest {
         } else {
             strategy.apply(traversal.asAdmin());
         }
-        System.out.println(name + "::::::" + traversal.toString());
+        //System.out.println(name + "::::::" + traversal.toString());
 
         final List<HasStep> steps = TraversalHelper.getStepsOfClass(HasStep.class, traversal.asAdmin());
         assertEquals(expectedInsertedSteps, steps.size());

@@ -82,6 +82,11 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
     }
 
     @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.maxBarrierSize;
+    }
+
+    @Override
     public void reset() {
         super.reset();
         this.traverserSet.clear();
