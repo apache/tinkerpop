@@ -152,6 +152,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
 
     protected abstract Traverser<E> processNextStart() throws NoSuchElementException;
 
+    @Override
     public String toString() {
         return StringFactory.stepString(this);
     }

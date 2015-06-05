@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
@@ -50,7 +51,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
 
     private static final int REQUIRED_DEPTH = 2;
     private static final int BIG_START_SIZE = 5;
-    private static final int MAX_BARRIER_SIZE = 10000;
+    protected static final int MAX_BARRIER_SIZE = 10000;
 
     static {
         PRIORS.add(ScopingStrategy.class);
@@ -78,11 +79,13 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
 
         if (depth > REQUIRED_DEPTH) {
             boolean bigStart = false;
+            char foundVertexStep = 'x';
             for (int i = 0; i < traversal.getSteps().size() - 1; i++) {
                 final Step<?, ?> step = traversal.getSteps().get(i);
                 if (i == 0)
                     bigStart = step instanceof GraphStep && (((GraphStep) step).getIds().length >= BIG_START_SIZE || (((GraphStep) step).getIds().length == 0 && step instanceof HasContainerHolder && ((HasContainerHolder) step).getHasContainers().isEmpty()));
-                else if (i > 1 || bigStart) {
+
+                if ('v' == foundVertexStep || bigStart) {
                     if (!(step instanceof FilterStep) &&
                             !(step instanceof CollectingBarrierStep) &&
                             !(step instanceof SupplyingBarrierStep) &&
@@ -91,6 +94,11 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
                         TraversalHelper.insertAfterStep(new NoOpBarrierStep<>(traversal, MAX_BARRIER_SIZE), step, traversal);
                     }
                 }
+
+                if ('x' == foundVertexStep && step instanceof VertexStep)
+                    foundVertexStep = ((VertexStep) step).returnsVertex() ? 'v' : 'e';
+                else if ('e' == foundVertexStep && step instanceof EdgeVertexStep)
+                    foundVertexStep = 'v';
             }
         }
     }

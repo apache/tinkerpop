@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Set;
@@ -73,6 +74,11 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
         final CollectingBarrierStep<S> clone = (CollectingBarrierStep<S>) super.clone();
         clone.traverserSet = new TraverserSet<>();
         return clone;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.maxBarrierSize);
     }
 
     @Override
