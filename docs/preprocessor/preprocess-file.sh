@@ -34,7 +34,7 @@ echo -ne "   progress: initializing"
 if [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
   pushd "${CONSOLE_HOME}" > /dev/null
   bin/gremlin.sh -e ${TP_HOME}/docs/preprocessor/processor.groovy ${input} > ${input}.part2.groovy
-  cat ${input}.part2.groovy | grep -o '^pb([0-9][0-9]*' | tail -n1 | grep -o '[0-9]*' | xargs echo "TOTAL_LINES =" > ${input}.part1.groovy
+  cat ${input}.part2.groovy | grep -o '^pb([0-9][0-9]*' | tail -n1 | cut -d '(' -f2 | xargs echo "TOTAL_LINES =" > ${input}.part1.groovy
   cat ${input}.part?.groovy > ${input}.groovy && rm -f ${input}.part?.groovy
   ec=${PIPESTATUS[0]}
   if [ ${ec} -eq 0 ]; then
