@@ -83,14 +83,21 @@ new File(this.args[0]).withReader { reader ->
                     def sanitizedLine = sanitize(line)
                     script.append(sanitizedLine)
                     println stringify(STATEMENT_PREFIX + format(line), lineNumber)
-                    if (!sanitizedLine.isEmpty() && sanitizedLine[-1] in STATEMENT_CONTINUATION_CHARACTERS) {
-                        while (true) {
+                    if (!sanitizedLine.isEmpty() && (sanitizedLine[-1] in STATEMENT_CONTINUATION_CHARACTERS || line.split('"""', -1).size() % 2 == 0)) {
+                        def inMultiLineString = line.split('"""', -1).size() % 2 == 0
+                        def run = true
+                        while (run) {
                             line = reader.readLine()
-                            if (!line.startsWith(" ") && !line.startsWith("}") && !line.startsWith(")") || line.equals(BLOCK_DELIMITER)) {
+                            if (inMultiLineString) {
+                                if (line.split('"""', -1).size() % 2 == 0) {
+                                    run = false
+                                }
+                            } else if (!line.startsWith(" ") && !line.startsWith("}") && !line.startsWith(")") || line.equals(BLOCK_DELIMITER)) {
                                 skipNextRead = true
                                 break
                             }
                             sanitizedLine = sanitize(line)
+                            if (inMultiLineString) script.append("\n")
                             script.append(sanitizedLine)
                             println stringify(STATEMENT_CONTINUATION_PREFIX + format(line), lineNumber)
                         }
@@ -121,6 +128,7 @@ new File(this.args[0]).withReader { reader ->
                     println "marko = g.V().has(\"name\", \"marko\").tryNext().orElse(null)"
                     println "f = new File('/tmp/neo4j')"
                     println "if (f.exists()) f.deleteDir()"
+                    println ":set max-iteration 100"
                     println stringify("IGNORE")
                     reader.readLine()
                     inCodeSection = true
