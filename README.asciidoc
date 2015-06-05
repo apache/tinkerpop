@@ -128,7 +128,7 @@ Release Process
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/x.y.z`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/x.y.z`
 . `cp dev/x.y.z/* release/x.y.z/.` (rename to `-bin` and `-src`)
-. `cd release; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release."`
+. `cd release; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`.
