@@ -122,10 +122,15 @@ Release Process
 .. `svn ci -m "TinkerPop x.y.z release"`
 . Submit for `[VOTE]` at `general@incubator.apache.org` (see email template below).
 . *Wait for vote acceptance* (72 hours).
+. `mvn clean install -Dmaven.test.skip=true; bin/process-docs.sh` - rebuild source and docs of tagged release
 . `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
-. Review and close the staging repository (Apache Nexus)
-. Upload artifacts to `https://dist.apache.org/repos/dist/release/incubator/tinkerpop` (rename to `-bin` and `-src`)
+. Review and close the staging repository (Apache Nexus at link:https://repository.apache.org/[https://repository.apache.org/])
+. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/x.y.z`
+. `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/x.y.z`
+. `cp dev/3.0.0.9-incubating/* release/x.y.z/.` (rename to `-bin` and `-src`)
+. `cd release; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release."`
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
+. Wait for Apache Central to sync the jars and src.
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`.
 
 Example `[VOTE]` email:
