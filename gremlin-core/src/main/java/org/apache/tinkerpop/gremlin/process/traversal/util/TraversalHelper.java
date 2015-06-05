@@ -30,7 +30,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -284,5 +290,20 @@ public final class TraversalHelper {
             traversal = traversal.getParent().asStep().getTraversal();
         }
         return traversal;
+    }
+
+    public static Set<String> getLabels(final Traversal.Admin<?, ?> traversal) {
+        return getLabels(new HashSet<>(), traversal);
+    }
+
+    private static Set<String> getLabels(final Set<String> labels, final Traversal.Admin<?, ?> traversal) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            labels.addAll(step.getLabels());
+            if (step instanceof TraversalParent) {
+                ((TraversalParent) step).getLocalChildren().forEach(child -> getLabels(labels, child));
+                ((TraversalParent) step).getGlobalChildren().forEach(child -> getLabels(labels, child));
+            }
+        }
+        return labels;
     }
 }

@@ -93,6 +93,22 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     }
 
     @Override
+    public Set<String> getScopeKeys() {
+        final Set<String> keys = new HashSet<>();
+        if(this.multiKeyedTraversal) {
+            keys.addAll(this.startKeys);
+            keys.addAll(this.endKeys);
+        } else {
+            if (null != this.startKey)
+                keys.add(this.startKey);
+            if (null != this.endKey)
+                keys.add(this.endKey);
+        }
+        return keys;
+
+    }
+
+    @Override
     public WhereStep<S> clone() {
         final WhereStep<S> clone = (WhereStep<S>) super.clone();
         clone.predicate = this.predicate.clone();
@@ -110,7 +126,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(Scope.local == this.scope || this.noStartAndEndKeys() ?
-                TraverserRequirement.OBJECT : TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
+                new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS} :
+                new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS});
     }
 
     @Override
