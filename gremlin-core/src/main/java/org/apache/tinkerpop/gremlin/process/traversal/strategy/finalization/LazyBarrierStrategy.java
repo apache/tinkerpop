@@ -84,8 +84,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
                 final Step<?, ?> step = traversal.getSteps().get(i);
                 if (i == 0)
                     bigStart = step instanceof GraphStep && (((GraphStep) step).getIds().length >= BIG_START_SIZE || (((GraphStep) step).getIds().length == 0 && step instanceof HasContainerHolder && ((HasContainerHolder) step).getHasContainers().isEmpty()));
-
-                if ('v' == foundVertexStep || bigStart) {
+                else if ('v' == foundVertexStep || bigStart) {
                     if (!(step instanceof FilterStep) &&
                             !(step instanceof CollectingBarrierStep) &&
                             !(step instanceof SupplyingBarrierStep) &&
