@@ -30,22 +30,10 @@ A `Feature` implementation describes the capabilities of a `Graph` instance. Thi
 
 The following example in the Gremlin Console shows how to print all the features of a `Graph`:
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> graph = TinkerGraph.open()
-==>tinkergraph[vertices:0 edges:0]
-gremlin> graph.features()
-==>FEATURES
-> GraphFeatures
->-- Persistence: false
->-- ThreadedTransactions: false
->-- Computer: true
->-- Transactions: false
-> VariableFeatures
->-- Variables: true
->-- IntegerArrayValues: true
->-- BooleanValues: true
-...
+graph = TinkerGraph.open()
+graph.features()
 ----
 
 A common pattern for using features is to check their support prior to performing an operation:
@@ -227,12 +215,12 @@ gremlin> graph.tx().commit()
 
 The `Transaction` object also exposes a method for executing automatic transaction retries:
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> graph.tx().submit {it.addVertex("name","josh")}.retry(10)
-==>v[2]
-gremlin> graph.tx().submit {it.addVertex("name","daniel")}.exponentialBackoff(10)
-==>v[3]
+graph = Neo4jGraph.open('/tmp/neo4j')
+graph.tx().submit {it.addVertex("name","josh")}.retry(10)
+graph.tx().submit {it.addVertex("name","daniel")}.exponentialBackoff(10)
+graph.close()
 ----
 
 As shown above, the `submit` method takes a `Function<Graph, R>` which is the unit of work to execute and possibly retry on failure.  The method returns a `Transaction.Workload` object which has a number of default methods for common retry strategies.  It is also possible to supply a custom retry function if a default one does not suit the required purpose.

@@ -1676,16 +1676,12 @@ g.V('42a')
 
 Other `Graph` implementations, such as Neo4j, generate element identifiers automatically and cannot be assigned.  As a helper, `ElementIdStrategy` can be used to make identifier assignment possible by using vertex and edge indicies under the hood.
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
-==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> strategy = ElementIdStrategy.build().create()
-==>ElementIdStrategy
-gremlin> g = GraphTraversalSource.build().with(strategy).create(graph)
-==>graphtraversalsource[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]], standard]
-gremlin> g.addV(id, '42a').id()
-==>42a
+graph = Neo4jGraph.open('/tmp/neo4j')
+strategy = ElementIdStrategy.build().create()
+g = GraphTraversalSource.build().with(strategy).create(graph)
+g.addV(id, '42a').id()
 ----
 
 IMPORTANT: The key that is used to store the assigned identifier should be indexed in the underlying graph database. If it is not indexed, then lookups for the elements that use these identifiers will perform a linear scan.

@@ -123,29 +123,12 @@ In addition to the standard commands of the link:http://groovy.codehaus.org/Groo
 
 Gremlin Console adds a special `max-iteration` preference that can be configured with the standard `:set` command from the Groovy Shell.  Use this setting to control the maximum number of results that the Console will display. Consider the following usage:
 
-[source, groovy]
+[gremlin-groovy]
 ----
-gremlin> :set max-iteration 10
-gremlin> (0..200)
-==>0
-==>1
-==>2
-==>3
-==>4
-==>5
-==>6
-==>7
-==>8
-==>9
-...
-gremlin> :set max-iteration 5
-gremlin> (0..200)
-==>0
-==>1
-==>2
-==>3
-==>4
-...
+:set max-iteration 10
+(0..200)
+:set max-iteration 5
+(0..200)
 ----
 
 If this setting is not present, the console will default the maximum to 100 results.
@@ -276,60 +259,38 @@ gremlin>
 
 The console has the notion of a "remote", which represents a place a script will be sent from the console to be evaluated elsewhere in some other context (e.g. Gremlin Server, Hadoop, etc.).  To create a remote in the console, do the following:
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> :remote connect tinkerpop.server conf/remote.yaml
-==>Connected - localhost/127.0.0.1:8182
+:remote connect tinkerpop.server conf/remote.yaml
 ----
 
 The `:remote` command shown above displays the current status of the remote connection.  This command can also be used to configure a new connection and change other related settings.  To actually send a script to the server a different command is required:
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> :> g.V().values('name')
-==>marko
-==>vadas
-==>lop
-==>josh
-==>ripple
-==>peter
-gremlin> :> g.V().has('name','marko').out('created').values('name')
-==>lop
-gremlin> :> g.E().label().groupCount()
-==>{created=4, knows=2}
-gremlin> result
-==>result{object={created=4, knows=2} class=java.lang.String}
-gremlin> :remote close
-==>Removed - gremlin server - [localhost/127.0.0.1:8182]
+:> g.V().values('name')
+:> g.V().has('name','marko').out('created').values('name')
+:> g.E().label().groupCount()
+result
+:remote close
 ----
 
 The `:>` command, which is a shorthand for `:submit`, sends the script to the server to execute there.  Results are wrapped in an `Result` object which is a just a holder for each individual result.  The `class` shows the data type for the containing value.  Note that the last script sent was supposed to return a `Map`, but its `class` is `java.lang.String`.  By default, the connection is configured to only return text results.  In other words, Gremlin Server is using `toString` to serialize all results back to the console.  This enables virtually any object on the server to be returned to the console, but it doesn't allow the opportunity to work with this data in any way in the console itself.  A different configuration of the `:remote` is required to get the results back as "objects":
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> :remote connect tinkerpop.server conf/remote-objects.yaml <1>
-==>connected - localhost/127.0.0.1:8182
-gremlin> :remote list <2>
-==>0 - Gremlin Server - [localhost/127.0.0.1:8182]
-==>*1 - Gremlin Server - [localhost/127.0.0.1:8182]
-gremlin> :> g.E().label().groupCount() <3>
-==>[created:4, knows:2]
-gremlin> m = result[0].object <4>
-==>created=4
-==>knows=2
-gremlin> m.sort{it.value}
-==>knows=2
-==>created=4
-gremlin> script = """
-                  matthias = graph.addVertex('name','matthias')
-                  matthias.addEdge('co-creator',g.V().has('name','marko').next())
-                  """
-gremlin> :> @script   <5>
-==>e[14][12-co-creator->1]
-gremlin> :> g.V().has('name','matthias').out('co-creator').values('name')
-==>marko
-gremlin> :remote close
-==>Removed - gremlin server - [localhost/127.0.0.1:8182]
+:remote connect tinkerpop.server conf/remote-objects.yaml <1>
+:remote list <2>
+:> g.E().label().groupCount() <3>
+m = result[0].object <4>
+m.sort {it.value}
+script = """
+         matthias = graph.addVertex('name','matthias')
+         matthias.addEdge('co-creator',g.V().has('name','marko').next())
+         """
+:> @script   <5>
+:> g.V().has('name','matthias').out('co-creator').values('name')
+:remote close
 ----
 
 <1> This configuration file specifies that results should be deserialized back into an `Object` in the console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
@@ -960,8 +921,10 @@ image:gremlin-sugar.png[width=120,float=left] In previous versions of Gremlin-Gr
 IMPORTANT: It is important that the sugar plugin is loaded in a Gremlin Console session prior to any manipulations of the respective TinkerPop3 objects as Groovy will cache unavailable methods and properties.
 
 [source,groovy]
+----
 gremlin> :plugin use tinkerpop.sugar
 ==>tinkerpop.sugar activated
+----
 
 Graph Traversal Methods
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -969,6 +932,7 @@ Graph Traversal Methods
 If a `GraphTraversal` property is unknown and there is a corresponding method with said name off of `GraphTraversal` then the property is assumed to be a method call. This enables the user to omit `( )` from the method name. However, if the property does not reference a `GraphTraversal` method, then it is assumed to be a call to `values(property)`.
 
 [source,groovy]
+----
 gremlin> g.V ////<1>
 ==>v[1]
 ==>v[2]
@@ -990,6 +954,7 @@ gremlin> g.V.outE.weight ////<3>
 ==>1.0
 ==>0.4
 ==>0.2
+----
 
 <1> There is no need for the parentheses in `g.V()`.
 <2> The traversal is interpreted as `g.V().values('name')`.
@@ -1001,6 +966,7 @@ Range Queries
 The `[x]` and `[x..y]` range operators in Groovy translate to `RangeStep` calls.
 
 [source,groovy]
+----
 gremlin> g.V[0..2]
 ==>v[1]
 ==>v[2]
@@ -1008,6 +974,7 @@ gremlin> g.V[0..<2]
 ==>v[1]
 gremlin> g.V[2]
 ==>v[3]
+----
 
 Logical Operators
 ^^^^^^^^^^^^^^^^^
@@ -1015,6 +982,7 @@ Logical Operators
 The `&` and `|` operator are overloaded in `SugarGremlinPlugin`. When used, they introduce the `AndStep.AndMarker` and `OrStep.OrStep` markers into the traversal. See <<and-step,`and()`>> and <<or-step,`or()`>> for more information.
 
 [source,groovy]
+----
 gremlin> g.V.has(outE('knows') & outE('created')).name ////<1>
 ==>marko
 gremlin> t = g.V.has(outE('knows') | inE('created')).name; null ////<2>
@@ -1027,6 +995,7 @@ gremlin> t
 ==>ripple
 gremlin> t.toString()
 ==>[TinkerGraphStep(vertex), HasTraversalStep([OrStep([[VertexStep(OUT,[knows],edge)], [VertexStep(IN,[created],edge)]])]), PropertiesStep([name],value)]
+----
 
 <1> Introducing the `AndStep` with the `&` operator.
 <2> Introducing the `OrStep` with the `|` operator.
@@ -1037,11 +1006,12 @@ Comparators
 Unfortunately, Groovy does not support comparator overloading -- `>`, `<=`, `==`, etc. However, the `Compare` enums are available as methods in `SugarGremlinPlugin`.
 
 [source,groovy]
-gremlin> g.V.has(outE('created').count.gt(1) | __.age.lt(30)).name ////<1>
+----
+gremlin> g.V.has(outE('created').count.gt(1l) | __.age.lt(30)).name ////<1>
 ==>marko
 ==>vadas
 ==>josh
-gremlin> t = g.V.has(outE('created').count.gt(1) | __.age.lt(30) & outE('knows')).name; null ////<2>
+gremlin> t = g.V.has(outE('created').count.gt(1l) | __.age.lt(30) & outE('knows')).name; null ////<2>
 ==>null
 gremlin> t.toString()
 ==>[GraphStep(vertex), HasTraversalStep([VertexStep(OUT,[created],edge), CountStep, IsStep(gt,1), OrMarker, PropertiesStep([age],value), IsStep(lt,30), AndMarker, VertexStep(OUT,[knows],edge)]), PropertiesStep([name],value)]
@@ -1050,6 +1020,7 @@ gremlin> t
 ==>josh
 gremlin> t.toString()
 ==>[TinkerGraphStep(vertex), HasTraversalStep([OrStep([[VertexStep(OUT,[created],edge), CountStep, IsStep(gt,1)], [AndStep([[PropertiesStep([age],value), IsStep(lt,30)], [VertexStep(OUT,[knows],edge)]])]])]), PropertiesStep([name],value)]
+----
 
 <1> Using `gt(x)` in place of `is(gt,x)`.
 <2> A complex and/or chain with `IsStep` substitutions.
@@ -1060,6 +1031,9 @@ Traverser Methods
 It is rare that a user will ever interact with a `Traverser` directly. However, if they do, some method redirects exist to make it easy.
 
 [source,groovy]
+----
+
+
 gremlin> g.V().map{it.get().value('name')}  // conventional
 ==>marko
 ==>vadas
@@ -1074,6 +1048,7 @@ gremlin> g.V.map{it.name}  // sugar
 ==>josh
 ==>ripple
 ==>peter
+----
 
 [[utilities-plugin]]
 Utilities Plugin

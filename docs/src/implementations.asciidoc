@@ -827,33 +827,16 @@ g.V().out().out().values('name')
 
 IMPORTANT: The examples above do not use lambdas (i.e. closures in Gremlin-Groovy). This makes the traversal serializable and thus, able to be distributed to all machines in the Hadoop cluster. If a lambda is required in a traversal, then the traversal must be sent as a `String` and compiled locally at each machine in the cluster. The following example demonstrates the `:remote` command which allows for submitting Gremlin traversals as a `String`.
 
-[source,text]
-gremlin> graph = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-gryo.properties')
-==>hadoopgraph[gryoinputformat->gryooutputformat]
-gremlin> :remote connect tinkerpop.hadoop graph
-==>useTraversalSource=graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], giraphgraphcomputer]
-==>useSugar=false
-gremlin> :> g.V().group().by{it.value('name')[1]}.by('name')
-INFO  org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[GraphStep(vertex), GroupStep(lambda,value(name)), ComputerResultStep]
-INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0039
-INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
-...
-INFO  org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: GroupMapReduce[~reducing]
-INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0040
-INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
-...
-==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
-gremlin> result
-==>result[hadoopgraph[gryoinputformat->gryooutputformat],memory[size:1]]
-gremlin> result.memory.runtime
-==>20356
-gremlin> result.memory.keys()
-==>~reducing
-gremlin> result.memory.get('~reducing')
-==>a={marko=1, vadas=1}
-==>e={peter=1}
-==>i={ripple=1}
-==>o={lop=1, josh=1}
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+:remote connect tinkerpop.hadoop graph
+:> g.V().group().by{it.value('name')[1]}.by('name')
+result
+result.memory.runtime
+result.memory.keys()
+result.memory.get('~reducing')
+----
 
 [[sparkgraphcomputer]]
 SparkGraphComputer
@@ -870,17 +853,6 @@ g.V().out().out().values('name')
 ----
 
 For using lambdas in Gremlin-Groovy, simply provide `:remote connect` a `TraversalSource` which leverages SparkGraphComputer.
-
-[source,test]
-gremlin> graph = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-gryo.properties')
-==>hadoopgraph[gryoinputformat->gryooutputformat]
-gremlin> g = graph.traversal(computer(SparkGraphComputer))
-==>graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], sparkgraphcomputer]
-gremlin> :remote connect tinkerpop.hadoop graph g
-==>useTraversalSource=graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], sparkgraphcomputer]
-==>useSugar=false
-gremlin> :> g.V().group().by{it.value('name')[1]}.by('name')
-==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
 
 [gremlin-groovy]
 ----
@@ -1026,29 +998,16 @@ Interacting with HDFS
 
 The distributed file system of Hadoop is called link:http://en.wikipedia.org/wiki/Apache_Hadoop#Hadoop_distributed_file_system[HDFS]. The results of any OLAP operation are stored in HDFS accessible via `hdfs`.
 
-[source,text]
-gremlin> :remote connect tinkerpop.hadoop ../../../hadoop-gremlin/conf/hadoop-gryo.properties
-==>hadoopgraph[gryoinputformat->gryooutputformat]
-gremlin> :> g.V().group().by{it.value('name')[1]}.by('name')
-...
-==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
-gremlin> hdfs.ls()
-==>rwxr-xr-x marko supergroup 0 (D) output
-==>rw-r--r-- marko supergroup 1439 tinkerpop-modern-vertices.kryo
-gremlin> hdfs.ls('output')
-==>rwxr-xr-x marko supergroup 0 (D) a
-gremlin> hdfs.ls('output/a')
-==>rw-r--r-- marko supergroup 0 _SUCCESS
-==>rwxr-xr-x marko supergroup 0 (D) _logs
-==>rw-r--r-- marko supergroup 140 part-r-00000
-==>rw-r--r-- marko supergroup 1109 part-r-00001
-==>rw-r--r-- marko supergroup 140 part-r-00002
-==>rw-r--r-- marko supergroup 468 part-r-00003
-gremlin> hdfs.head('output/a',ObjectWritable.class)
-==>a	{marko=1, vadas=1}
-==>e	{peter=1}
-==>i	{ripple=1}
-==>o	{lop=1, josh=1}
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+:remote connect tinkerpop.hadoop graph
+:> g.V().group().by{it.value('name')[1]}.by('name')
+hdfs.ls()
+hdfs.ls('output')
+hdfs.ls('output/a')
+hdfs.head('output/a',ObjectWritable.class)
+----
 
 A list of the HDFS methods available are itemized below. Note that these methods are also available for the 'local' variable:
 
