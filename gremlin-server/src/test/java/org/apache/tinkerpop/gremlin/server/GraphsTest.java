@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Map;
@@ -34,15 +33,13 @@ import static org.junit.Assert.assertTrue;
 public class GraphsTest {
 
     @Test
-    @Ignore("Does not work on marko's local machine for some reason -- good for stephen and travis-ci")
     public void shouldReturnGraphs() {
-        // todo: why doesn't this test work?
         final Settings settings = Settings.read(GraphsTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
         final Graphs graphs = new Graphs(settings);
         final Map<String, Graph> m = graphs.getGraphs();
 
         assertNotNull(m);
-        assertTrue(m.containsKey("g"));
-        assertTrue(m.get("g") instanceof TinkerGraph);
+        assertTrue(m.containsKey("graph"));
+        assertTrue(m.get("graph") instanceof TinkerGraph);
     }
 }
