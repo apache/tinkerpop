@@ -19,19 +19,19 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.EventCallback;
-
-import java.util.List;
 
 /**
  * A marker interface for steps that modify the graph.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Matt Frantz (http://github.com/mhfrantz)
  */
-public interface Mutating<C extends EventCallback<? extends Event>> {
-    public void addCallback(final C c);
-    public void removeCallback(final C c);
-    public void clearCallbacks();
-    public List<C> getCallbacks();
+public interface Mutating<E extends Event> {
+
+    /**
+     * Gets the callback registry for events that the step raises.
+     */
+    public CallbackRegistry<E> getMutatingCallbackRegistry();
 }

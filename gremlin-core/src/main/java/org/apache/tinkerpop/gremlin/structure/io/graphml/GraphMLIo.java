@@ -36,10 +36,10 @@ import java.io.OutputStream;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.Builder, GraphMLMapper.Builder> {
+public final class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.Builder, GraphMLMapper.Builder> {
     private final Graph graph;
 
-    public GraphMLIo(final Graph graph) {
+    private GraphMLIo(final Graph graph) {
         this.graph = graph;
     }
 
@@ -91,7 +91,7 @@ public class GraphMLIo implements Io<GraphMLReader.Builder, GraphMLWriter.Builde
         return new Builder();
     }
 
-    public static class Builder implements Io.Builder<GraphMLIo> {
+    public final static class Builder implements Io.Builder<GraphMLIo> {
 
         private Graph graph;
 

@@ -556,9 +556,11 @@ gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 
 For those leveraging Neo4j High Availability, configure `Neo4jGraph` for "HA mode" by setting the `gremlin.neo4j.ha` flag to `true` in the `Configuration` object passed to `Neo4jGraph.open()`.  Note that when the flag is set (by default it is `false`), the `Neo4jGraph` instance expects HA configuration settings to be present.  As with embedded Neo4j, HA configuration keys should be prefixed with `gremlin.neo4j.conf`.  Please consult Neo4j documentation for more information on link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] configuration.
 
-IMPORTANT: `Neo4jGraph` supports both meta- and multi-properties (see <<_vertex_properties,vertex properties>>). However, these are implemented by making use of "hidden" Neo4j nodes. For example, when a vertex has multiple "name" properties, each property is a new node (multi-properties) which can have properties attached to it (meta-properties). As such, the underlying representation may become difficult to query directly using another graph language such as Cypher. The default setting is to disable multi- and meta-properties. However, if this feature is desired, then it can be activated via `gremlin.neo4j.metaProperties` and `gremlin.neo4j.multiProperties` configurations being set to `true`. Once the configuration is set, it can not be changed for the lifetime of the graph.
+IMPORTANT: `Neo4jGraph` supports both multi- and meta-properties (see <<_vertex_properties,vertex properties>>). This is not a native feature of Neo4j and is implemented by making use of "hidden" Neo4j nodes. For example, when a vertex has multiple "name" properties, each property is a new node (multi-properties) which can have properties attached to it (meta-properties). As such, the native, underlying representation may become difficult to query directly using another graph language such as Cypher. The default setting is to disable multi- and meta-properties. However, if this feature is desired, then it can be activated via `gremlin.neo4j.metaProperties` and `gremlin.neo4j.multiProperties` configurations being set to `true`. Once the configuration is set, it can not be changed for the lifetime of the graph.
 
-TIP: To host Neo4j in Gremlin Server, the dependencies must first be "installed" or otherwise copied to the Gremlin Server path.  The automated method for doing this would be to execute `bin/gremlin-server.sh -i org.apache.tinkerpop neo4j-gremlin x.y.z`.
+WARNING: `Neo4jGraph` without multi- and meta-properties is in 1-to-1 correspondence with the native, underlying Neo4j representation. It is recommended that if the user does not require these features, then they should not enable them. Without multi- and meta-properties enabled, Neo4j can be interacted with with other tools and technologies that do not leverage TinkerPop.
+
+TIP: To host Neo4j in Gremlin Server, the dependencies must first be "installed" or otherwise copied to the Gremlin Server path. The automated method for doing this would be to execute `bin/gremlin-server.sh -i org.apache.tinkerpop neo4j-gremlin x.y.z`.
 
 Indices
 ~~~~~~~
@@ -572,44 +574,37 @@ The Gremlin-Console session below demonstrates Neo4j indices. For more informati
 * Manipulating indices with link:http://docs.neo4j.org/chunked/stable/query-schema-index.html[Cypher].
 * Manipulating indices with the Neo4j link:http://docs.neo4j.org/chunked/stable/tutorials-java-embedded-new-index.html[Java API].
 
-[source,groovy]
-gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
-==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> graph.cypher("CREATE INDEX ON :person(name)")
-gremlin> graph.tx().commit() // schema mutations must happen in a different tx than graph mutations
-==>null
-gremlin> graph.addVertex(label,'person','name','marko')
-==>v[0]
-gremlin> graph.addVertex(label,'dog','name','puppy')
-==>v[1]
-gremlin> g = graph.traversal(standard())
-==>graphtraversalsource[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]], standard]
-gremlin> g.V().hasLabel('person').has('name','marko').values('name')
-==>marko
+[gremlin-groovy]
+----
+graph = Neo4jGraph.open('/tmp/neo4j')
+graph.cypher("CREATE INDEX ON :person(name)")
+graph.tx().commit()  <1>
+graph.addVertex(label,'person','name','marko')
+graph.addVertex(label,'dog','name','puppy')
+g = graph.traversal(standard())
+g.V().hasLabel('person').has('name','marko').values('name')
+graph.close()
+----
+
+<1> schema mutations must happen in a different tx than graph mutations
 
 Below demonstrates the runtime benefits of indices and demonstrates how if there is no defined index (only vertex labels), a linear scan of the vertex-label partition is still faster than a linear scan of all vertices.
 
-[source,groovy]
-gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
-==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> graph.cypher("CREATE INDEX ON :artist(name)") <1>
-gremlin> graph.tx().commit()
-==>null
-gremlin> graph.io(graphml()).readGraph('data/grateful-dead.xml')
-==>null
-gremlin> g = graph.traversal(standard())
-==>graphtraversalsource[neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]], standard]
-gremlin> clock(1000){g.V().hasLabel('artist').has('name','Garcia').next()}  <2>
-==>0.0585639999999997
-gremlin> clock(1000){g.V().has('name','Garcia').next()} <3>
-==>0.6039889999999992
-gremlin> graph.cypher("DROP INDEX ON :artist(name)") <4>
-gremlin> g.tx().commit()
-==>null
-gremlin> clock(1000){g.V().hasLabel('artist').has('name','Garcia').next()} <5>
-==>0.26470499999999936
-gremlin> clock(1000){g.V().has('name','Garcia').next()} <6>
-==>0.6293959999999993
+[gremlin-groovy]
+----
+graph = Neo4jGraph.open('/tmp/neo4j')
+graph.cypher("CREATE INDEX ON :artist(name)") <1>
+graph.tx().commit()
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g = graph.traversal(standard())
+clock(1000) {g.V().hasLabel('artist').has('name','Garcia').next()}  <2>
+clock(1000) {g.V().has('name','Garcia').next()} <3>
+graph.cypher("DROP INDEX ON :artist(name)") <4>
+g.tx().commit()
+clock(1000) {g.V().hasLabel('artist').has('name','Garcia').next()} <5>
+clock(1000) {g.V().has('name','Garcia').next()} <6>
+graph.close()
+----
 
 <1> Create an index for all artist vertices on their name property.
 <2> Find all artists whose name is Garcia which uses the pre-defined schema index.
@@ -618,6 +613,8 @@ gremlin> clock(1000){g.V().has('name','Garcia').next()} <6>
 <5> Find all artists whose name is Garcia which does a linear scan of the artist vertex-label partition.
 <6> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
 
+IMPORTANT: When using a multi-property enabled `Neo4jGraph`, vertices may represent their properties on "hidden nodes" adjacent to the vertex. If a vertex property key/value is required for indexing, then two indices are required -- e.g. `CREATE INDEX ON :person(name)` and `CREATE INDEX ON :vertexProperty(name)`.
+
 Cypher
 ~~~~~~
 
@@ -625,16 +622,14 @@ image::gremlin-loves-cypher.png[width=400]
 
 NeoTechnology are the creators of the graph pattern-match query language link:http://www.neo4j.org/learn/cypher[Cypher]. It is possible to leverage Cypher from within Gremlin by using the `Neo4jGraph.cypher()` graph traversal method.
 
-[source,groovy]
-gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
-==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
-gremlin> graph.io(gryo()).readGraph('data/tinkerpop-modern.kryo')
-==>null
-gremlin> graph.cypher('MATCH (a {name:"marko"}) RETURN a')
-==>[a:v[0]]
-gremlin> graph.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').values('name')
-==>vadas
-==>josh
+[gremlin-groovy]
+----
+graph = Neo4jGraph.open('/tmp/neo4j')
+graph.io(gryo()).readGraph('data/tinkerpop-modern.kryo')
+graph.cypher('MATCH (a {name:"marko"}) RETURN a')
+graph.cypher('MATCH (a {name:"marko"}) RETURN a').select('a').out('knows').values('name')
+graph.close()
+----
 
 Thus, like <<match-step,`match()`>>-step in Gremlin, it is possible to do a declarative pattern match and then move back into imperative Gremlin.
 
@@ -729,14 +724,14 @@ gremlin>
 Properties Files
 ~~~~~~~~~~~~~~~~
 
-`HadoopGraph` makes heavy use of properties files which ultimately get turned into Apache configurations and Hadoop configurations. The example properties file presented below is located at `conf/hadoop-gryo.properties`.
+`HadoopGraph` makes heavy use of properties files which ultimately get turned into Apache configurations and Hadoop configurations. The example properties file presented below is located at `conf/hadoop/hadoop-gryo.properties`.
 
 [source,text]
 gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
 gremlin.hadoop.graphInputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
 gremlin.hadoop.graphOutputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat
 gremlin.hadoop.jarsInDistributedCache=true
-gremlin.hadoop.inputLocation=tinkerpop-modern-vertices.kryo
+gremlin.hadoop.inputLocation=tinkerpop-modern.kryo
 gremlin.hadoop.outputLocation=output
 #####################################
 # GiraphGraphComputer Configuration #
@@ -781,25 +776,16 @@ image:hadoop-pipes.png[width=180,float=left] It is possible to execute OLTP oper
 
 CAUTION: OLTP operations on `HadoopGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP implementation of the Gremlin language. Hadoop-Gremlin provides various `GraphComputer` implementations to execute OLAP computations over a `HadoopGraph`.
 
-[source,text]
-gremlin> hdfs.copyFromLocal('data/tinkerpop-modern-vertices.kryo', 'tinkerpop-modern-vertices.kryo')
-==>null
-gremlin> hdfs.ls()
-==>rw-r--r-- marko supergroup 1439 tinkerpop-modern-vertices.kryo
-gremlin> graph = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-gryo.properties')
-==>hadoopgraph[gryoinputformat->gryooutputformat]
-gremlin> g = graph.traversal(standard())
-==>graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], standard]
-gremlin> g.V().count()
-==>6
-gremlin> g.V().out().out().values('name')
-==>ripple
-==>lop
-gremlin> g.V().group().by{it.value('name')[1]}.by('name').next()
-==>a={marko=1, vadas=1}
-==>e={peter=1}
-==>i={ripple=1}
-==>o={lop=1, josh=1}
+[gremlin-groovy]
+----
+hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
+hdfs.ls()
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+g = graph.traversal(standard())
+g.V().count()
+g.V().out().out().values('name')
+g.V().group().by{it.value('name')[1]}.by('name').next()
+----
 
 OLAP Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~
@@ -831,60 +817,26 @@ WARNING: Giraph uses a large number of Hadoop counters. The default for Hadoop i
 
 WARNING: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
 
-[source,text]
-gremlin> g = graph.traversal(computer()) // GiraphGraphComputer is the default graph computer when no class is specified
-==>graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], giraphgraphcomputer]
-gremlin> g.V().count()
-INFO  org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[GraphStep(vertex), CountGlobalStep, ComputerResultStep]
-INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0037
-INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
-...
-INFO  org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: CountGlobalMapReduce
-INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0038
-INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
-...
-==>6
-gremlin> g.V().out().out().values('name')
-INFO  org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[GraphStep(vertex), VertexStep(OUT,vertex), VertexStep(OUT,vertex), PropertiesStep([name],value), ComputerResultStep]
-INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0031
-INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
-...
-INFO  org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: TraverserMapReduce
-INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0032
-INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
-...
-==>ripple
-==>lop
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+g = graph.traversal(computer())
+g.V().count()
+g.V().out().out().values('name')
+----
 
 IMPORTANT: The examples above do not use lambdas (i.e. closures in Gremlin-Groovy). This makes the traversal serializable and thus, able to be distributed to all machines in the Hadoop cluster. If a lambda is required in a traversal, then the traversal must be sent as a `String` and compiled locally at each machine in the cluster. The following example demonstrates the `:remote` command which allows for submitting Gremlin traversals as a `String`.
 
-[source,text]
-gremlin> graph = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-gryo.properties')
-==>hadoopgraph[gryoinputformat->gryooutputformat]
-gremlin> :remote connect tinkerpop.hadoop graph
-==>useTraversalSource=graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], giraphgraphcomputer]
-==>useSugar=false
-gremlin> :> g.V().group().by{it.value('name')[1]}.by('name')
-INFO  org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer  - HadoopGremlin(Giraph): TraversalVertexProgram[GraphStep(vertex), GroupStep(lambda,value(name)), ComputerResultStep]
-INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0039
-INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
-...
-INFO  org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph  - HadoopGremlin: GroupMapReduce[~reducing]
-INFO  org.apache.hadoop.mapred.JobClient  - Running job: job_201407281259_0040
-INFO  org.apache.hadoop.mapred.JobClient  -  map 0% reduce 0%
-...
-==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
-gremlin> result
-==>result[hadoopgraph[gryoinputformat->gryooutputformat],memory[size:1]]
-gremlin> result.memory.runtime
-==>20356
-gremlin> result.memory.keys()
-==>~reducing
-gremlin> result.memory.get('~reducing')
-==>a={marko=1, vadas=1}
-==>e={peter=1}
-==>i={ripple=1}
-==>o={lop=1, josh=1}
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+:remote connect tinkerpop.hadoop graph
+:> g.V().group().by{it.value('name')[1]}.by('name')
+result
+result.memory.runtime
+result.memory.keys()
+result.memory.get('~reducing')
+----
 
 [[sparkgraphcomputer]]
 SparkGraphComputer
@@ -892,27 +844,23 @@ SparkGraphComputer
 
 image:spark-logo.png[width=175,float=left] link:http://spark.apache.org[Spark] is an Apache Software Foundation project focused on general-purpose OLAP data processing. Spark provides a hybrid in-memory/disk-based distributed computing model that is similar to Hadoop's MapReduce model. Spark maintains a fluent function chaining DSL that is arguably easier for developers to work with than native Hadoop MapReduce. While Spark has a shorter startup time between "jobs" (a scatter/gather-step), the actual message passing algorithm (as designed by TinkerPop) is less efficient than that of Giraph. For small graphs, Spark will typically be much faster than Giraph, but as the graph becomes larger, the Hadoop MapReduce startup time incurred by Giraph will amortize as more time is spent passing messages (i.e. traversers) between the vertices of the graph.
 
-[source,text]
-gremlin> g = graph.traversal(computer(SparkGraphComputer))
-==>graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], sparkgraphcomputer]
-gremlin> g.V().count()
-==>6
-gremlin> g.V().out().out().values('name')
-==>lop
-==>ripple
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+g = graph.traversal(computer(SparkGraphComputer))
+g.V().count()
+g.V().out().out().values('name')
+----
 
 For using lambdas in Gremlin-Groovy, simply provide `:remote connect` a `TraversalSource` which leverages SparkGraphComputer.
 
-[source,test]
-gremlin> graph = GraphFactory.open('../../../hadoop-gremlin/conf/hadoop-gryo.properties')
-==>hadoopgraph[gryoinputformat->gryooutputformat]
-gremlin> g = graph.traversal(computer(SparkGraphComputer))
-==>graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], sparkgraphcomputer]
-gremlin> :remote connect tinkerpop.hadoop graph g
-==>useTraversalSource=graphtraversalsource[hadoopgraph[gryoinputformat->gryooutputformat], sparkgraphcomputer]
-==>useSugar=false
-gremlin> :> g.V().group().by{it.value('name')[1]}.by('name')
-==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+g = graph.traversal(computer(SparkGraphComputer))
+:remote connect tinkerpop.hadoop graph g
+:> g.V().group().by{it.value('name')[1]}.by('name')
+----
 
 The `SparkGraphComputer` algorithm leverages Spark's caching abilities to reduce the amount of data shuffled across the wire on each iteration of the <<vertexprogram,`VertexProgram`>>. When the graph is loaded as a Spark RDD (Resilient Distributed Dataset) it is immediately cached as `graphRDD`. The `graphRDD` is a distributed adjacency list which encodes the vertex, its properties, and all its incident edges. On the first iteration, each vertex (in parallel) is passed through `VertexProgram.execute()`. This yields an output of the vertex's mutated state (i.e. updated compute keys -- `propertyX`) and its outgoing messages. This `viewOutgoingRDD` is then reduced to `viewIncomingRDD` where the outgoing messages are sent to their respective vertices. If a `MessageCombiner` exists for the vertex program, then messages are aggregated locally and globally to ultimately yield one incoming message for the vertex. This reduce sequence is the "message pass." If the vertex program does not terminate on this iteration, then the `viewIncomingRDD` is joined with the cached `graphRDD` and the process continues. When there are no more iterations, there is a final join and the resultant RDD is stripped of its edges and messages. This `mapReduceRDD` is cached and is processed by each <<mapreduce,`MapReduce`>> job in the <<graphcomputer,`GraphComputer`>> computation.
 
@@ -1050,29 +998,16 @@ Interacting with HDFS
 
 The distributed file system of Hadoop is called link:http://en.wikipedia.org/wiki/Apache_Hadoop#Hadoop_distributed_file_system[HDFS]. The results of any OLAP operation are stored in HDFS accessible via `hdfs`.
 
-[source,text]
-gremlin> :remote connect tinkerpop.hadoop ../../../hadoop-gremlin/conf/hadoop-gryo.properties
-==>hadoopgraph[gryoinputformat->gryooutputformat]
-gremlin> :> g.V().group().by{it.value('name')[1]}.by('name')
-...
-==>[a:[marko, vadas], e:[peter], i:[ripple], o:[lop, josh]]
-gremlin> hdfs.ls()
-==>rwxr-xr-x marko supergroup 0 (D) output
-==>rw-r--r-- marko supergroup 1439 tinkerpop-modern-vertices.kryo
-gremlin> hdfs.ls('output')
-==>rwxr-xr-x marko supergroup 0 (D) a
-gremlin> hdfs.ls('output/a')
-==>rw-r--r-- marko supergroup 0 _SUCCESS
-==>rwxr-xr-x marko supergroup 0 (D) _logs
-==>rw-r--r-- marko supergroup 140 part-r-00000
-==>rw-r--r-- marko supergroup 1109 part-r-00001
-==>rw-r--r-- marko supergroup 140 part-r-00002
-==>rw-r--r-- marko supergroup 468 part-r-00003
-gremlin> hdfs.head('output/a',ObjectWritable.class)
-==>a	{marko=1, vadas=1}
-==>e	{peter=1}
-==>i	{ripple=1}
-==>o	{lop=1, josh=1}
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+:remote connect tinkerpop.hadoop graph
+:> g.V().group().by{it.value('name')[1]}.by('name')
+hdfs.ls()
+hdfs.ls('output')
+hdfs.ls('output/~reducing')
+hdfs.head('output/~reducing', ObjectWritable)
+----
 
 A list of the HDFS methods available are itemized below. Note that these methods are also available for the 'local' variable:
 

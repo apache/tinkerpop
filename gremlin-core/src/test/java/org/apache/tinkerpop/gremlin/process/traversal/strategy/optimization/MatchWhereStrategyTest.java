@@ -112,7 +112,7 @@ public class MatchWhereStrategyTest {
 
         public void doTest(final Traversal traversal, final Traversal optimized) {
             applyMatchWhereStrategy(traversal);
-            assertEquals(optimized.toString(), traversal.toString());
+            assertEquals(optimized, traversal);
         }
 
         static Iterable<Object[]> generateTestParameters() {

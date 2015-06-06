@@ -161,7 +161,7 @@ public class CommunityGenerator extends AbstractGenerator {
         return new Builder(g);
     }
 
-    public static class Builder extends AbstractGeneratorBuilder<Builder> {
+    public final static class Builder extends AbstractGeneratorBuilder<Builder> {
         private final Graph g;
         private Distribution communitySize = null;
         private Distribution edgeDegree = null;

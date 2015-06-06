@@ -181,7 +181,7 @@ public abstract class Client {
      * given a {@link LoadBalancingStrategy}.  Transactions are automatically committed
      * (or rolled-back on error) after each request.
      */
-    public static class ClusteredClient extends Client {
+    public final static class ClusteredClient extends Client {
 
         private ConcurrentMap<Host, ConnectionPool> hostConnectionPools = new ConcurrentHashMap<>();
 
@@ -238,7 +238,7 @@ public abstract class Client {
      * server, where each request is bound to the same thread with the same set of bindings across requests.
      * Transaction are not automatically committed. It is up the client to issue commit/rollback commands.
      */
-    public static class SessionedClient extends Client {
+    public final static class SessionedClient extends Client {
         private final String sessionId;
 
         private ConnectionPool connectionPool;

@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ConsoleMutationListener;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
@@ -85,7 +84,7 @@ public class EventStrategyTest {
                 .filter(s -> s instanceof Mutating)
                 .forEach(s -> {
                     final Mutating mutating = (Mutating) s;
-                    assertEquals(1, mutating.getCallbacks().size());
+                    assertEquals(1, mutating.getMutatingCallbackRegistry().getCallbacks().size());
                     mutatingStepsFound.incrementAndGet();
                 });
 

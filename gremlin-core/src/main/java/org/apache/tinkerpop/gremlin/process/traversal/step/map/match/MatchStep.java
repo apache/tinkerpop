@@ -61,7 +61,7 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
 
     private final String startLabel;
     private final Map<String, List<TraversalWrapper<S, S>>> traversalsByStartAs;
-    private final List<Traversal> traversals = new ArrayList<>();
+    private final List<Traversal<?,?>> traversals = new ArrayList<>();
 
     private int startsPerOptimize = DEFAULT_STARTS_PER_OPTIMIZE;
     private int optimizeCounter = -1;
@@ -89,6 +89,17 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements();
+    }
+
+    @Override
+    public Set<String> getScopeKeys() {
+        final Set<String> keys = new HashSet<>();
+        keys.add(this.startLabel);
+        this.traversals.forEach(t -> {
+            keys.addAll(t.asAdmin().getStartStep().getLabels());
+            keys.addAll(t.asAdmin().getEndStep().getLabels());
+        });
+        return keys;
     }
 
     @Override
@@ -402,12 +413,22 @@ public final class MatchStep<S, E> extends AbstractStep<S, Map<String, E>> imple
     }
 
     @Override
-    public List<Traversal> getLocalChildren() {
+    public List<Traversal<?,?>> getLocalChildren() {
         return this.traversals;
     }
 
     @Override
     public Scope recommendNextScope() {
+        return Scope.local;
+    }
+
+    @Override
+    public void setScope(final Scope scope) {
+
+    }
+
+    @Override
+    public Scope getScope() {
         return Scope.local;
     }
 

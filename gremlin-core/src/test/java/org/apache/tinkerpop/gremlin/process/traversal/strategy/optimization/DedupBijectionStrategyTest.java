@@ -111,7 +111,7 @@ public class DedupBijectionStrategyTest {
 
         public void doTest(final Traversal traversal, final Traversal optimized) {
             applyDedupBijectionStrategy(traversal);
-            assertEquals(optimized.toString(), traversal.toString());
+            assertEquals(optimized, traversal);
         }
 
         static Iterable<Object[]> generateTestParameters() {

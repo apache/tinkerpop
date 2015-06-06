@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -42,8 +42,18 @@ public abstract class GroovyAddEdgeTest {
         }
 
         @Override
-        public Traversal<Vertex, Edge> get_g_V_addOutEXexistsWith__g_V__time_nowX() {
-            TraversalScriptHelper.compute("g.V.addOutE('existsWith', g.V, 'time', 'now')", g)
+        public Traversal<Vertex, Edge> get_g_withSideEffectXx__g_V_toListX_addOutEXexistsWith_x_time_nowX() {
+            TraversalScriptHelper.compute("g.withSideEffect('x',g.V.toList()).V.addOutE('existsWith', 'x', 'time', 'now')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_select_addInEXa_codeveloper_b_year_2009X() {
+            TraversalScriptHelper.compute("g.V.as('a').out('created').in('created').where(neq('a')).as('b').select.addInE('a', 'co-developer', 'b', 'year', 2009)", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_V_asXaX_inXcreatedX_addInEXcreatedBy_a_year_2009_acl_publicX() {
+            TraversalScriptHelper.compute("g.V.as('a').in('created').addInE('createdBy', 'a', 'year', 2009, 'acl', 'public')", g)
         }
     }
 }

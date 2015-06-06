@@ -132,13 +132,13 @@ public abstract class AbstractTransaction implements Transaction {
     }
 
     @Override
-    public Transaction onReadWrite(final Consumer<Transaction> consumer) {
+    public synchronized Transaction onReadWrite(final Consumer<Transaction> consumer) {
         readWriteConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull);
         return this;
     }
 
     @Override
-    public Transaction onClose(final Consumer<Transaction> consumer) {
+    public synchronized Transaction onClose(final Consumer<Transaction> consumer) {
         closeConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onCloseBehaviorCannotBeNull);
         return this;
     }

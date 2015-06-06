@@ -63,7 +63,7 @@ public class GraphConstructionTest extends AbstractGremlinTest {
      * A {@link Graph} should maintain the original {@code Configuration} object passed to it via {@link GraphFactory}.
      */
     @Test
-    public void shouldMaintainOriginalConfigurationObjectGivenToFactory() {
+    public void shouldMaintainOriginalConfigurationObjectGivenToFactory() throws Exception {
         final Configuration originalConfig = graphProvider.newGraphConfiguration("temp2", this.getClass(), name.getMethodName(), null);
         final Graph createdGraph = GraphFactory.open(originalConfig);
 
@@ -77,5 +77,7 @@ public class GraphConstructionTest extends AbstractGremlinTest {
         // need some keys in the originalConfig for this test to be meaningful
         assertTrue(keyCount.get() > 0);
         assertEquals(keyCount.get(), IteratorUtils.count(configInGraph.getKeys()));
+
+        graphProvider.clear(createdGraph, originalConfig);
     }
 }

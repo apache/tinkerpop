@@ -18,11 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
@@ -125,20 +124,11 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
         });
 
         TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal).stream().forEach(s -> {
-            if (ElementHelper.getIdValue(s.getKeyValues()).isPresent())
-                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getVertices().iterator(), ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
+            if (ElementHelper.getIdValue(s.getPropertyKeyValues()).isPresent())
+                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getScope(), s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), ElementHelper.replaceKey(s.getPropertyKeyValues(), T.id, idPropertyKey)), traversal);
             else {
-                final Object[] kvs = ElementHelper.getKeys(s.getKeyValues()).contains(idPropertyKey) ? s.getKeyValues() : ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get());
-                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getVertices().iterator(), kvs), traversal);
-            }
-        });
-
-        TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal).stream().forEach(s -> {
-            if (ElementHelper.getIdValue(s.getKeyValues()).isPresent())
-                TraversalHelper.replaceStep(s, new AddEdgeByPathStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getStepLabel(), ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
-            else {
-                final Object[] kvs = ElementHelper.getKeys(s.getKeyValues()).contains(idPropertyKey) ? s.getKeyValues() : ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get());
-                TraversalHelper.replaceStep(s, new AddEdgeByPathStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getStepLabel(), kvs), traversal);
+                final Object[] kvs = ElementHelper.getKeys(s.getPropertyKeyValues()).contains(idPropertyKey) ? s.getPropertyKeyValues() : ElementHelper.upsert(s.getPropertyKeyValues(), idPropertyKey, idMaker.get());
+                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getScope(), s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), kvs), traversal);
             }
         });
     }
@@ -152,7 +142,7 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
         return StringFactory.traversalStrategyString(this);
     }
 
-    public static class Builder {
+    public final static class Builder {
         private String idPropertyKey = "__id";
 
         private Supplier<Object> idMaker = () -> UUID.randomUUID().toString();

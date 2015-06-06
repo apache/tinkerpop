@@ -21,13 +21,14 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -41,14 +42,16 @@ public final class ScopingStrategy extends AbstractTraversalStrategy<TraversalSt
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
+        final Set<String> pathLabels = TraversalHelper.getLabels(TraversalHelper.getRootTraversal(traversal));
         traversal.getSteps().stream().forEach(step -> {
-            if (step.getPreviousStep() instanceof Scoping) {
-                if (step instanceof SelectStep)
-                    ((SelectStep) step).setScope(((Scoping) step.getPreviousStep()).recommendNextScope());
-                else if (step instanceof SelectOneStep)
-                    ((SelectOneStep) step).setScope(((Scoping) step.getPreviousStep()).recommendNextScope());
-                else if (step instanceof WhereStep)
-                    ((WhereStep) step).setScope(((Scoping) step.getPreviousStep()).recommendNextScope());
+            if (step instanceof Scoping) {
+                if (step.getPreviousStep() instanceof Scoping)
+                    ((Scoping) step).setScope(((Scoping) step.getPreviousStep()).recommendNextScope());
+                else if (Scope.global == ((Scoping) step).getScope()) {
+                    final Set<String> keys = ((Scoping) step).getScopeKeys();
+                    if (!keys.isEmpty() && !((Scoping) step).getScopeKeys().stream().filter(pathLabels::contains).findAny().isPresent())
+                        ((Scoping) step).setScope(Scope.local);
+                }
             }
         });
     }

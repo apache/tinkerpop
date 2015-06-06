@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class EntrySerializer extends Serializer<Map.Entry> {
+final class EntrySerializer extends Serializer<Map.Entry> {
     @Override
     public void write(final Kryo kryo, final Output output, final Map.Entry entry) {
         kryo.writeClassAndObject(output, entry.getKey());

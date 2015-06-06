@@ -21,11 +21,14 @@
 
 package org.apache.tinkerpop.gremlin.neo4j.structure.trait;
 
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jProperty;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
+import org.apache.tinkerpop.gremlin.process.traversal.Compare;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -42,6 +45,7 @@ import org.neo4j.tinkerpop.api.Neo4jRelationship;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -49,14 +53,23 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class MultiMetaNeo4jTrait implements Neo4jTrait {
+public final class MultiMetaNeo4jTrait implements Neo4jTrait {
+
+    private static final MultiMetaNeo4jTrait INSTANCE = new MultiMetaNeo4jTrait();
 
     public static final String VERTEX_PROPERTY_LABEL = "vertexProperty";
-    public static final String VERTEX_PROPERTY_PREFIX = Graph.Hidden.hide("");
     public static final String VERTEX_PROPERTY_TOKEN = Graph.Hidden.hide("vertexProperty");
 
     private static final Predicate<Neo4jNode> NODE_PREDICATE = node -> !node.hasLabel(VERTEX_PROPERTY_LABEL);
-    private static final Predicate<Neo4jRelationship> RELATIONSHIP_PREDICATE = relationship -> !relationship.type().startsWith(VERTEX_PROPERTY_PREFIX);
+    private static final Predicate<Neo4jRelationship> RELATIONSHIP_PREDICATE = relationship -> !Graph.Hidden.isHidden(relationship.type());
+
+    private MultiMetaNeo4jTrait() {
+
+    }
+
+    public static MultiMetaNeo4jTrait instance() {
+        return INSTANCE;
+    }
 
     @Override
     public Predicate<Neo4jNode> getNodePredicate() {
@@ -72,13 +85,12 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
     public void removeVertex(final Neo4jVertex vertex) {
         try {
             final Neo4jNode node = vertex.getBaseVertex();
-            for (final Neo4jRelationship relationship : node.relationships(Neo4jDirection.OUTGOING)) {
+            for (final Neo4jRelationship relationship : node.relationships(Neo4jDirection.BOTH)) {
                 final Neo4jNode otherNode = relationship.other(node);
                 if (otherNode.hasLabel(VERTEX_PROPERTY_LABEL)) {
-                    otherNode.relationships(Neo4jDirection.BOTH).forEach(Neo4jRelationship::delete);
                     otherNode.delete(); // meta property node
-                } else
-                    relationship.delete();
+                }
+                relationship.delete();
             }
             node.delete();
         } catch (final IllegalStateException ignored) {
@@ -94,11 +106,10 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
         final Neo4jNode node = vertex.getBaseVertex();
         if (node.hasProperty(key)) {
             if (node.getProperty(key).equals(VERTEX_PROPERTY_TOKEN)) {
-                if (node.degree(Neo4jDirection.OUTGOING, VERTEX_PROPERTY_PREFIX.concat(key)) > 1)
+                if (node.degree(Neo4jDirection.OUTGOING, Graph.Hidden.hide(key)) > 1)
                     throw Vertex.Exceptions.multiplePropertiesExistForProvidedKey(key);
                 else {
-                    final Neo4jNode vertexPropertyNode = node.relationships(Neo4jDirection.OUTGOING, VERTEX_PROPERTY_PREFIX.concat(key)).iterator().next().end();
-                    return new Neo4jVertexProperty<>(vertex, (String) vertexPropertyNode.getProperty(T.key.getAccessor()), (V) vertexPropertyNode.getProperty(T.value.getAccessor()), vertexPropertyNode);
+                    return (VertexProperty<V>) new Neo4jVertexProperty<>(vertex, node.relationships(Neo4jDirection.OUTGOING, Graph.Hidden.hide(key)).iterator().next().end());
                 }
             } else {
                 return new Neo4jVertexProperty<>(vertex, key, (V) node.getProperty(key));
@@ -109,16 +120,14 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
 
     @Override
     public <V> Iterator<VertexProperty<V>> getVertexProperties(final Neo4jVertex vertex, final String... keys) {
-        if (Neo4jHelper.isDeleted(vertex.getBaseVertex())) return Collections.emptyIterator(); // TODO: WHY?
+        if (Neo4jHelper.isDeleted(vertex.getBaseVertex()))
+            return Collections.emptyIterator(); // TODO: I believe its because the vertex property is deleted, but then seen again in the iterator. ?
         return IteratorUtils.stream(vertex.getBaseVertex().getKeys())
                 .filter(key -> ElementHelper.keyExists(key, keys))
                 .flatMap(key -> {
                     if (vertex.getBaseVertex().getProperty(key).equals(VERTEX_PROPERTY_TOKEN))
-                        return IteratorUtils.stream(vertex.getBaseVertex().relationships(Neo4jDirection.OUTGOING, (VERTEX_PROPERTY_PREFIX.concat(key))))
-                                .map(relationship -> {
-                                    final Neo4jNode vertexPropertyNode = relationship.end();
-                                    return (VertexProperty<V>) new Neo4jVertexProperty<>(vertex, (String) vertexPropertyNode.getProperty(T.key.getAccessor()), vertexPropertyNode.getProperty(T.value.getAccessor()), vertexPropertyNode);
-                                });
+                        return IteratorUtils.stream(vertex.getBaseVertex().relationships(Neo4jDirection.OUTGOING, Graph.Hidden.hide(key)))
+                                .map(relationship -> (VertexProperty<V>) new Neo4jVertexProperty<>(vertex, relationship.end()));
                     else
                         return Stream.of(new Neo4jVertexProperty<>(vertex, key, (V) vertex.getBaseVertex().getProperty(key)));
                 }).iterator();
@@ -131,25 +140,30 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
             if (optionalVertexProperty.isPresent()) return optionalVertexProperty.get();
             final Neo4jNode node = vertex.getBaseVertex();
             final Neo4jGraphAPI graph = ((Neo4jGraph) vertex.graph()).getBaseGraph();
-            final String prefixedKey = VERTEX_PROPERTY_PREFIX.concat(key);
+            final String prefixedKey = Graph.Hidden.hide(key);
             if (node.hasProperty(key)) {
                 if (node.getProperty(key).equals(VERTEX_PROPERTY_TOKEN)) {
                     final Neo4jNode vertexPropertyNode = graph.createNode(VERTEX_PROPERTY_LABEL, key);
                     vertexPropertyNode.setProperty(T.key.getAccessor(), key);
                     vertexPropertyNode.setProperty(T.value.getAccessor(), value);
+                    vertexPropertyNode.setProperty(key, value);
                     node.connectTo(vertexPropertyNode, prefixedKey);
                     final Neo4jVertexProperty<V> property = new Neo4jVertexProperty<>(vertex, key, value, vertexPropertyNode);
                     ElementHelper.attachProperties(property, keyValues); // TODO: make this inlined
                     return property;
                 } else {
+                    // move current key to be a vertex property node
                     Neo4jNode vertexPropertyNode = graph.createNode(VERTEX_PROPERTY_LABEL, key);
+                    final Object tempValue = node.removeProperty(key);
                     vertexPropertyNode.setProperty(T.key.getAccessor(), key);
-                    vertexPropertyNode.setProperty(T.value.getAccessor(), node.removeProperty(key));
+                    vertexPropertyNode.setProperty(T.value.getAccessor(), tempValue);
+                    vertexPropertyNode.setProperty(key, tempValue);
                     node.connectTo(vertexPropertyNode, prefixedKey);
                     node.setProperty(key, VERTEX_PROPERTY_TOKEN);
                     vertexPropertyNode = graph.createNode(VERTEX_PROPERTY_LABEL, key);
                     vertexPropertyNode.setProperty(T.key.getAccessor(), key);
                     vertexPropertyNode.setProperty(T.value.getAccessor(), value);
+                    vertexPropertyNode.setProperty(key, value);
                     node.connectTo(vertexPropertyNode, prefixedKey);
                     final Neo4jVertexProperty<V> property = new Neo4jVertexProperty<>(vertex, key, value, vertexPropertyNode);
                     ElementHelper.attachProperties(property, keyValues); // TODO: make this inlined
@@ -186,14 +200,14 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
         final Neo4jNode vertexPropertyNode = Neo4jHelper.getVertexPropertyNode(vertexProperty);
         final Neo4jNode vertexNode = ((Neo4jVertex) vertexProperty.element()).getBaseVertex();
         if (null == vertexPropertyNode) {
-            if (vertexNode.degree(Neo4jDirection.OUTGOING, VERTEX_PROPERTY_PREFIX.concat(vertexProperty.key())) == 0) {
+            if (vertexNode.degree(Neo4jDirection.OUTGOING, Graph.Hidden.hide(vertexProperty.key())) == 0) {
                 if (vertexNode.hasProperty(vertexProperty.key()))
                     vertexNode.removeProperty(vertexProperty.key());
             }
         } else {
-            vertexPropertyNode.relationships(null).forEach(Neo4jRelationship::delete);
+            vertexPropertyNode.relationships(Neo4jDirection.BOTH).forEach(Neo4jRelationship::delete);
             vertexPropertyNode.delete();
-            if (vertexNode.degree(Neo4jDirection.OUTGOING, VERTEX_PROPERTY_PREFIX.concat(vertexProperty.key())) == 0) {
+            if (vertexNode.degree(Neo4jDirection.OUTGOING, Graph.Hidden.hide(vertexProperty.key())) == 0) {
                 if (vertexNode.hasProperty(vertexProperty.key()))
                     vertexNode.removeProperty(vertexProperty.key());
             }
@@ -211,8 +225,9 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
             final Neo4jNode newVertexPropertyNode = ((WrappedGraph<Neo4jGraphAPI>) vertexProperty.element().graph()).getBaseGraph().createNode(VERTEX_PROPERTY_LABEL, vertexProperty.label());
             newVertexPropertyNode.setProperty(T.key.getAccessor(), vertexProperty.key());
             newVertexPropertyNode.setProperty(T.value.getAccessor(), vertexProperty.value());
+            newVertexPropertyNode.setProperty(vertexProperty.key(), vertexProperty.value());
             newVertexPropertyNode.setProperty(key, value);
-            vertexNode.connectTo(newVertexPropertyNode, VERTEX_PROPERTY_PREFIX.concat(vertexProperty.key()));
+            vertexNode.connectTo(newVertexPropertyNode, Graph.Hidden.hide(vertexProperty.key()));
             vertexNode.setProperty(vertexProperty.key(), VERTEX_PROPERTY_TOKEN);
             Neo4jHelper.setVertexPropertyNode(vertexProperty, newVertexPropertyNode);
             return new Neo4jProperty<>(vertexProperty, key, value);
@@ -237,30 +252,63 @@ public class MultiMetaNeo4jTrait implements Neo4jTrait {
     }
 
     @Override
-    public <V> Iterator<Property<V>> getProperties(Neo4jVertexProperty vertexProperty, String... keys) {
+    public <V> Iterator<Property<V>> getProperties(final Neo4jVertexProperty vertexProperty, final String... keys) {
         final Neo4jNode vertexPropertyNode = Neo4jHelper.getVertexPropertyNode(vertexProperty);
         if (null == vertexPropertyNode)
             return Collections.emptyIterator();
         else
-            return IteratorUtils.map(IteratorUtils
-                            .filter(vertexPropertyNode.getKeys().iterator(), key -> !key.equals(T.key.getAccessor()) && !key.equals(T.value.getAccessor()) && ElementHelper.keyExists(key, keys)),
-                    key -> (Property<V>) new Neo4jProperty<>(vertexProperty, key, (V) vertexPropertyNode.getProperty(key)));
+            return IteratorUtils.stream(vertexPropertyNode.getKeys())
+                    .filter(key -> ElementHelper.keyExists(key, keys))
+                    .filter(key -> !key.equals(vertexProperty.key()))
+                    .map(key -> (Property<V>) new Neo4jProperty<>(vertexProperty, key, (V) vertexPropertyNode.getProperty(key))).iterator();
+
     }
 
-    /*
-     @Override
-    public Set<String> keys() {
-        if (isNode()) {
-            this.vertex.graph().tx().readWrite();
-            final Set<String> keys = new HashSet<>();
-            for (final String key : this.node.getKeys()) {
-                if (!Graph.Hidden.isHidden(key))
-                    keys.add(key);
+    @Override
+    public Iterator<Vertex> lookupVertices(final Neo4jGraph graph, final List<HasContainer> hasContainers, final Object... ids) {
+        // ids are present, filter on them first
+        if (ids.length > 0)
+            return IteratorUtils.filter(graph.vertices(ids), vertex -> HasContainer.testAll(vertex, hasContainers));
+        ////// do index lookups //////
+        graph.tx().readWrite();
+        // get a label being search on
+        Optional<String> label = hasContainers.stream()
+                .filter(hasContainer -> hasContainer.getKey().equals(T.label.getAccessor()))
+                .filter(hasContainer -> Compare.eq == hasContainer.getBiPredicate())
+                .map(hasContainer -> (String) hasContainer.getValue())
+                .findAny();
+        if (!label.isPresent())
+            label = hasContainers.stream()
+                    .filter(hasContainer -> hasContainer.getKey().equals(T.label.getAccessor()))
+                    .filter(hasContainer -> hasContainer.getPredicate() instanceof LabelP)
+                    .map(hasContainer -> (String) hasContainer.getValue())
+                    .findAny();
+
+        if (label.isPresent()) {
+            // find a vertex by label and key/value
+            for (final HasContainer hasContainer : hasContainers) {
+                if (Compare.eq == hasContainer.getBiPredicate()) {
+                    if (graph.getBaseGraph().hasSchemaIndex(label.get(), hasContainer.getKey())) {
+                        return Stream.concat(
+                                IteratorUtils.stream(graph.getBaseGraph().findNodes(label.get(), hasContainer.getKey(), hasContainer.getValue()))
+                                        .filter(getNodePredicate())
+                                        .map(node -> (Vertex) new Neo4jVertex(node, graph))
+                                        .filter(vertex -> HasContainer.testAll(vertex, hasContainers)),
+                                IteratorUtils.stream(graph.getBaseGraph().findNodes(VERTEX_PROPERTY_LABEL, hasContainer.getKey(), hasContainer.getValue()))  // look up indexed vertex property nodes
+                                        .map(node -> node.relationships(Neo4jDirection.INCOMING).iterator().next().start())
+                                        .map(node -> (Vertex) new Neo4jVertex(node, graph))
+                                        .filter(vertex -> HasContainer.testAll(vertex, hasContainers))).iterator();
+                    }
+                }
             }
-            return keys;
+            // find a vertex by label
+            return IteratorUtils.stream(graph.getBaseGraph().findNodes(label.get()))
+                    .filter(getNodePredicate())
+                    .map(node -> (Vertex) new Neo4jVertex(node, graph))
+                    .filter(vertex -> HasContainer.testAll(vertex, hasContainers)).iterator();
         } else {
-            return Collections.emptySet();
+            // linear scan
+            return IteratorUtils.filter(graph.vertices(), vertex -> HasContainer.testAll(vertex, hasContainers));
         }
     }
-     */
 }

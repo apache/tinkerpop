@@ -58,7 +58,7 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GryoReader implements GraphReader {
+public final class GryoReader implements GraphReader {
     private final Kryo kryo;
 
     private final long batchSize;
@@ -246,7 +246,7 @@ public class GryoReader implements GraphReader {
         return new Builder();
     }
 
-    public static class Builder implements ReaderBuilder<GryoReader> {
+    public final static class Builder implements ReaderBuilder<GryoReader> {
 
         private long batchSize = 10000;
         /**

@@ -21,10 +21,16 @@
 
 package org.apache.tinkerpop.gremlin.neo4j.structure.trait;
 
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jHelper;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertexProperty;
+import org.apache.tinkerpop.gremlin.process.traversal.Compare;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -33,14 +39,26 @@ import org.neo4j.tinkerpop.api.Neo4jNode;
 import org.neo4j.tinkerpop.api.Neo4jRelationship;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
+public final class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
+
+    private static final NoMultiNoMetaNeo4jTrait INSTANCE = new NoMultiNoMetaNeo4jTrait();
 
     private final static Predicate TRUE_PREDICATE = x -> true;
+
+    public static NoMultiNoMetaNeo4jTrait instance() {
+        return INSTANCE;
+    }
+
+    private NoMultiNoMetaNeo4jTrait() {
+
+    }
 
     @Override
     public Predicate<Neo4jNode> getNodePredicate() {
@@ -129,5 +147,46 @@ public class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
     @Override
     public <V> Iterator<Property<V>> getProperties(final Neo4jVertexProperty vertexProperty, final String... keys) {
         throw VertexProperty.Exceptions.metaPropertiesNotSupported();
+    }
+
+    @Override
+    public Iterator<Vertex> lookupVertices(final Neo4jGraph graph, final List<HasContainer> hasContainers, final Object... ids) {
+        // ids are present, filter on them first
+        if (ids.length > 0)
+            return IteratorUtils.filter(graph.vertices(ids), vertex -> HasContainer.testAll(vertex, hasContainers));
+        ////// do index lookups //////
+        graph.tx().readWrite();
+        // get a label being search on
+        Optional<String> label = hasContainers.stream()
+                .filter(hasContainer -> hasContainer.getKey().equals(T.label.getAccessor()))
+                .filter(hasContainer -> Compare.eq == hasContainer.getBiPredicate())
+                .map(hasContainer -> (String) hasContainer.getValue())
+                .findAny();
+        if (!label.isPresent())
+            label = hasContainers.stream()
+                    .filter(hasContainer -> hasContainer.getKey().equals(T.label.getAccessor()))
+                    .filter(hasContainer -> hasContainer.getPredicate() instanceof LabelP)
+                    .map(hasContainer -> (String) hasContainer.getValue())
+                    .findAny();
+
+        if (label.isPresent()) {
+            // find a vertex by label and key/value
+            for (final HasContainer hasContainer : hasContainers) {
+                if (Compare.eq == hasContainer.getBiPredicate() && !hasContainer.getKey().equals(T.label.getAccessor())) {
+                    if (graph.getBaseGraph().hasSchemaIndex(label.get(), hasContainer.getKey())) {
+                        return IteratorUtils.stream(graph.getBaseGraph().findNodes(label.get(), hasContainer.getKey(), hasContainer.getValue()))
+                                .map(node -> (Vertex) new Neo4jVertex(node, graph))
+                                .filter(vertex -> HasContainer.testAll(vertex, hasContainers)).iterator();
+                    }
+                }
+            }
+            // find a vertex by label
+            return IteratorUtils.stream(graph.getBaseGraph().findNodes(label.get()))
+                    .map(node -> (Vertex) new Neo4jVertex(node, graph))
+                    .filter(vertex -> HasContainer.testAll(vertex, hasContainers)).iterator();
+        } else {
+            // linear scan
+            return IteratorUtils.filter(graph.vertices(), vertex -> HasContainer.testAll(vertex, hasContainers));
+        }
     }
 }

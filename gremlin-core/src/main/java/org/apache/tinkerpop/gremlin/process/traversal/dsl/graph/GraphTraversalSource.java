@@ -107,9 +107,15 @@ public class GraphTraversalSource implements TraversalSource {
 
     //// UTILITIES
 
-    public <S> GraphTraversalSourceStub withSideEffect(final String key, final Supplier supplier) {
+    public GraphTraversalSourceStub withSideEffect(final String key, final Supplier supplier) {
         final GraphTraversal.Admin traversal = this.generateTraversal();
         traversal.getSideEffects().registerSupplier(key, supplier);
+        return new GraphTraversalSourceStub(traversal, false);
+    }
+
+    public GraphTraversalSourceStub withSideEffect(final String key, final Object object) {
+        final GraphTraversal.Admin traversal = this.generateTraversal();
+        traversal.getSideEffects().registerSupplier(key, new ConstantSupplier<>(object));
         return new GraphTraversalSourceStub(traversal, false);
     }
 
@@ -179,7 +185,7 @@ public class GraphTraversalSource implements TraversalSource {
 
     //////
 
-    public static class Builder implements TraversalSource.Builder<GraphTraversalSource> {
+    public final static class Builder implements TraversalSource.Builder<GraphTraversalSource> {
 
         private TraversalEngine.Builder engineBuilder = StandardTraversalEngine.build();
         private List<TraversalStrategy> withStrategies = new ArrayList<>();
@@ -241,6 +247,11 @@ public class GraphTraversalSource implements TraversalSource {
 
         public GraphTraversalSourceStub withSideEffect(final String key, final Supplier supplier) {
             this.traversal.getSideEffects().registerSupplier(key, supplier);
+            return this;
+        }
+
+        public GraphTraversalSourceStub withSideEffect(final String key, final Object object) {
+            this.traversal.getSideEffects().registerSupplier(key, new ConstantSupplier<>(object));
             return this;
         }
 

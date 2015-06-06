@@ -152,7 +152,7 @@ public final class GryoMapper implements Mapper<Kryo> {
     /**
      * A builder to construct a {@link GryoMapper} instance.
      */
-    public static class Builder implements Mapper.Builder<Builder> {
+    public final static class Builder implements Mapper.Builder<Builder> {
 
         /**
          * Map with one entry that is used so that it is possible to get the class of LinkedHashMap.Entry.

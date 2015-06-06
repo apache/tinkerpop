@@ -123,29 +123,12 @@ In addition to the standard commands of the link:http://groovy.codehaus.org/Groo
 
 Gremlin Console adds a special `max-iteration` preference that can be configured with the standard `:set` command from the Groovy Shell.  Use this setting to control the maximum number of results that the Console will display. Consider the following usage:
 
-[source, groovy]
+[gremlin-groovy]
 ----
-gremlin> :set max-iteration 10
-gremlin> (0..200)
-==>0
-==>1
-==>2
-==>3
-==>4
-==>5
-==>6
-==>7
-==>8
-==>9
-...
-gremlin> :set max-iteration 5
-gremlin> (0..200)
-==>0
-==>1
-==>2
-==>3
-==>4
-...
+:set max-iteration 10
+(0..200)
+:set max-iteration 5
+(0..200)
 ----
 
 If this setting is not present, the console will default the maximum to 100 results.
@@ -231,11 +214,11 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-modern.yaml
 [INFO] MetricManager - Configured Metrics Slf4jReporter configured with interval=180000ms and loggerName=org.apache.tinkerpop.gremlin.server.Settings$Slf4jReporterMetrics
 [INFO] Graphs - Graph [graph] was successfully configured via [conf/tinkergraph-empty.properties].
-[INFO] GremlinServer - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
+[INFO] ServerGremlinExecutor - Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*
 [INFO] ScriptEngines - Loaded gremlin-groovy ScriptEngine
 [INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
-[INFO] GremlinServer - Initialized GremlinExecutor and configured ScriptEngines.
-[INFO] GremlinServer - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
+[INFO] ServerGremlinExecutor - Initialized GremlinExecutor and configured ScriptEngines.
+[INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
 [INFO] GremlinServer - Executing start up LifeCycleHook
 [INFO] Logger$info - Loading 'modern' graph data.
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
@@ -276,60 +259,38 @@ gremlin>
 
 The console has the notion of a "remote", which represents a place a script will be sent from the console to be evaluated elsewhere in some other context (e.g. Gremlin Server, Hadoop, etc.).  To create a remote in the console, do the following:
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> :remote connect tinkerpop.server conf/remote.yaml
-==>Connected - localhost/127.0.0.1:8182
+:remote connect tinkerpop.server conf/remote.yaml
 ----
 
 The `:remote` command shown above displays the current status of the remote connection.  This command can also be used to configure a new connection and change other related settings.  To actually send a script to the server a different command is required:
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> :> g.V().values('name')
-==>marko
-==>vadas
-==>lop
-==>josh
-==>ripple
-==>peter
-gremlin> :> g.V().has('name','marko').out('created').values('name')
-==>lop
-gremlin> :> g.E().label().groupCount()
-==>{created=4, knows=2}
-gremlin> result
-==>result{object={created=4, knows=2} class=java.lang.String}
-gremlin> :remote close
-==>Removed - gremlin server - [localhost/127.0.0.1:8182]
+:> g.V().values('name')
+:> g.V().has('name','marko').out('created').values('name')
+:> g.E().label().groupCount()
+result
+:remote close
 ----
 
 The `:>` command, which is a shorthand for `:submit`, sends the script to the server to execute there.  Results are wrapped in an `Result` object which is a just a holder for each individual result.  The `class` shows the data type for the containing value.  Note that the last script sent was supposed to return a `Map`, but its `class` is `java.lang.String`.  By default, the connection is configured to only return text results.  In other words, Gremlin Server is using `toString` to serialize all results back to the console.  This enables virtually any object on the server to be returned to the console, but it doesn't allow the opportunity to work with this data in any way in the console itself.  A different configuration of the `:remote` is required to get the results back as "objects":
 
-[source,groovy]
+[gremlin-groovy]
 ----
-gremlin> :remote connect tinkerpop.server conf/remote-objects.yaml <1>
-==>connected - localhost/127.0.0.1:8182
-gremlin> :remote list <2>
-==>0 - Gremlin Server - [localhost/127.0.0.1:8182]
-==>*1 - Gremlin Server - [localhost/127.0.0.1:8182]
-gremlin> :> g.E().label().groupCount() <3>
-==>[created:4, knows:2]
-gremlin> m = result[0].object <4>
-==>created=4
-==>knows=2
-gremlin> m.sort{it.value}
-==>knows=2
-==>created=4
-gremlin> script = """
-                  matthias = graph.addVertex('name','matthias')
-                  matthias.addEdge('co-creator',g.V().has('name','marko').next())
-                  """
-gremlin> :> @script   <5>
-==>e[14][12-co-creator->1]
-gremlin> :> g.V().has('name','matthias').out('co-creator').values('name')
-==>marko
-gremlin> :remote close
-==>Removed - gremlin server - [localhost/127.0.0.1:8182]
+:remote connect tinkerpop.server conf/remote-objects.yaml <1>
+:remote list <2>
+:> g.E().label().groupCount() <3>
+m = result[0].object <4>
+m.sort {it.value}
+script = """
+         matthias = graph.addVertex('name','matthias')
+         matthias.addEdge('co-creator',g.V().has('name','marko').next())
+         """
+:> @script   <5>
+:> g.V().has('name','matthias').out('co-creator').values('name')
+:remote close
 ----
 
 <1> This configuration file specifies that results should be deserialized back into an `Object` in the console with the caveat being that the server and console both know how to serialize and deserialize the result to be returned.
@@ -473,10 +434,15 @@ The following table describes the various configuration options that Gremlin Ser
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
-|channelizer |Defines the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. Websockets, Java NIO, etc.). |WebSocketChannelizer,HttpChannelizer
+|channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. Websockets, Java NIO, etc.). |WebSocketChannelizer
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. |8
 |host |The name of the host to bind the server to. |localhost
+|maxAccumulationBufferComponents |Maximum number of request components that can be aggregated for a message. |1024
+|maxChunkSize |The maximum length of the content or each chunk.  If the content length exceeds this value, the transfer encoding of the decoded request will be converted to 'chunked' and the content will be split into multiple `HttpContent` objects.  If the transfer encoding of the HTTP request is 'chunked' already, each chunk will be split into smaller chunks if the length of the chunk exceeds this value. |8192
+|maxContentLength |The maximum length of the aggregated content for a message.  Works in concert with `maxChunkSize` where chunked requests are accumulated back into a single message.  A request exceeding this size will return a `413 - Request Entity Too Large` status code.  A response exceeding this size will raise an internal exception. |65536
+|maxHeaderSize |The maximum length of all headers. |8192
+|maxInitialLineLength |The maximum length of the initial line (e.g.  "GET / HTTP/1.0") processed in a request, which essentially controls the maximum length of the submitted URI. |4096
 |metrics.consoleReporter.enabled |Turns on console reporting of metrics. |false
 |metrics.consoleReporter.interval |Time in milliseconds between reports of metrics to console. |180000
 |metrics.csvReporter.enabled |Turns on CSV reporting of metrics. |false
@@ -512,8 +478,14 @@ The following table describes the various configuration options that Gremlin Ser
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
 |serializedResponseTimeout |The amount of time in milliseconds before a response serialization times out.  The notion of "response serialization" refers to the time it takes for Gremlin Server to iterate an entire result after the script is evaluated in the `ScriptEngine`. |30000
 |ssl.enabled |Determines if SSL is turned on or not. |false
+|ssl.keyCertChainFile |The X.509 certificate chain file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
+|ssl.keyFile |The `PKCS#8` private key file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
+|ssl.keyPassword |The password of the `keyFile` if it's not password-protected |_none_
+|ssl.trustCertChainFile |Trusted certificates for verifying the remote endpoint's certificate. The file should contain an X.509 certificate chain in PEM format. A system default will be used if this setting is not present. |_none_
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
+|writeBufferHighWaterMark | If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable, accepting no additional writes until buffer is drained and the `writeBufferLowWaterMark` is met. |65536
+|writeBufferLowWaterMark | Once the number of bytes queued in the network send buffer exceeds the `writeBufferHighWaterMark`, the channel will not become writeable again until the buffer is drained and it drops below this value. |65536
 |=========================================================
 
 NOTE: Configuration of link:http://ganglia.sourceforge.net/[Ganglia] requires an additional library that is not packaged with Gremlin Server due to its LGPL licensing that conflicts with the TinkerPop's Apache 2.0 License.  To run Gremlin Server with Ganglia monitoring, download the `org.acplt:oncrpc` jar from link:http://repo1.maven.org/maven2/org/acplt/oncrpc/1.0.7/[here] and copy it to the Gremlin Server `/lib` directory before starting the server.
@@ -578,7 +550,7 @@ Tuning
 
 image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
 
-* A "good" setting for `threadPoolWorker` is `2*number of cores`.  If a smaller setting can be used there while still achieving performance needs, then choose the smaller setting.  If a larger setting is needed, then consider a server with more cores.
+* When configuring the size of `threadPoolWorker` start with the default of `1` and increment by one as needed to a maximum of `2*number of cores`.
 * The "right" size of the `gremlinPool` setting is somewhat dependent on the type of scripts that will be processed by Gremlin Server.  As requests arrive to Gremlin Server they are decoded and queued to be processed by threads in this pool.  When this pool is exhausted of threads, Gremlin Server will continue to accept incoming requests, but the queue will continue to grow.  If left to grow too large, the server will begin to slow.  When tuning around this setting, consider whether the bulk of the scripts being processed will be "fast" or "slow", where "fast" generally means being measured in the low hundreds of milliseconds and "slow" means anything longer than that.
 ** If the bulk of the scripts being processed are expected to be "fast", then a good starting point for this setting is `2*threadPoolWorker`.
 ** If the bulk of the scripts being processed are expected to be "slow", then a good starting point for this setting is `4*threadPoolWorker`.
@@ -960,8 +932,10 @@ image:gremlin-sugar.png[width=120,float=left] In previous versions of Gremlin-Gr
 IMPORTANT: It is important that the sugar plugin is loaded in a Gremlin Console session prior to any manipulations of the respective TinkerPop3 objects as Groovy will cache unavailable methods and properties.
 
 [source,groovy]
+----
 gremlin> :plugin use tinkerpop.sugar
 ==>tinkerpop.sugar activated
+----
 
 Graph Traversal Methods
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -969,6 +943,7 @@ Graph Traversal Methods
 If a `GraphTraversal` property is unknown and there is a corresponding method with said name off of `GraphTraversal` then the property is assumed to be a method call. This enables the user to omit `( )` from the method name. However, if the property does not reference a `GraphTraversal` method, then it is assumed to be a call to `values(property)`.
 
 [source,groovy]
+----
 gremlin> g.V ////<1>
 ==>v[1]
 ==>v[2]
@@ -990,6 +965,7 @@ gremlin> g.V.outE.weight ////<3>
 ==>1.0
 ==>0.4
 ==>0.2
+----
 
 <1> There is no need for the parentheses in `g.V()`.
 <2> The traversal is interpreted as `g.V().values('name')`.
@@ -1001,6 +977,7 @@ Range Queries
 The `[x]` and `[x..y]` range operators in Groovy translate to `RangeStep` calls.
 
 [source,groovy]
+----
 gremlin> g.V[0..2]
 ==>v[1]
 ==>v[2]
@@ -1008,6 +985,7 @@ gremlin> g.V[0..<2]
 ==>v[1]
 gremlin> g.V[2]
 ==>v[3]
+----
 
 Logical Operators
 ^^^^^^^^^^^^^^^^^
@@ -1015,6 +993,7 @@ Logical Operators
 The `&` and `|` operator are overloaded in `SugarGremlinPlugin`. When used, they introduce the `AndStep.AndMarker` and `OrStep.OrStep` markers into the traversal. See <<and-step,`and()`>> and <<or-step,`or()`>> for more information.
 
 [source,groovy]
+----
 gremlin> g.V.has(outE('knows') & outE('created')).name ////<1>
 ==>marko
 gremlin> t = g.V.has(outE('knows') | inE('created')).name; null ////<2>
@@ -1027,6 +1006,7 @@ gremlin> t
 ==>ripple
 gremlin> t.toString()
 ==>[TinkerGraphStep(vertex), HasTraversalStep([OrStep([[VertexStep(OUT,[knows],edge)], [VertexStep(IN,[created],edge)]])]), PropertiesStep([name],value)]
+----
 
 <1> Introducing the `AndStep` with the `&` operator.
 <2> Introducing the `OrStep` with the `|` operator.
@@ -1037,11 +1017,12 @@ Comparators
 Unfortunately, Groovy does not support comparator overloading -- `>`, `<=`, `==`, etc. However, the `Compare` enums are available as methods in `SugarGremlinPlugin`.
 
 [source,groovy]
-gremlin> g.V.has(outE('created').count.gt(1) | __.age.lt(30)).name ////<1>
+----
+gremlin> g.V.has(outE('created').count.gt(1l) | __.age.lt(30)).name ////<1>
 ==>marko
 ==>vadas
 ==>josh
-gremlin> t = g.V.has(outE('created').count.gt(1) | __.age.lt(30) & outE('knows')).name; null ////<2>
+gremlin> t = g.V.has(outE('created').count.gt(1l) | __.age.lt(30) & outE('knows')).name; null ////<2>
 ==>null
 gremlin> t.toString()
 ==>[GraphStep(vertex), HasTraversalStep([VertexStep(OUT,[created],edge), CountStep, IsStep(gt,1), OrMarker, PropertiesStep([age],value), IsStep(lt,30), AndMarker, VertexStep(OUT,[knows],edge)]), PropertiesStep([name],value)]
@@ -1050,6 +1031,7 @@ gremlin> t
 ==>josh
 gremlin> t.toString()
 ==>[TinkerGraphStep(vertex), HasTraversalStep([OrStep([[VertexStep(OUT,[created],edge), CountStep, IsStep(gt,1)], [AndStep([[PropertiesStep([age],value), IsStep(lt,30)], [VertexStep(OUT,[knows],edge)]])]])]), PropertiesStep([name],value)]
+----
 
 <1> Using `gt(x)` in place of `is(gt,x)`.
 <2> A complex and/or chain with `IsStep` substitutions.
@@ -1060,6 +1042,9 @@ Traverser Methods
 It is rare that a user will ever interact with a `Traverser` directly. However, if they do, some method redirects exist to make it easy.
 
 [source,groovy]
+----
+
+
 gremlin> g.V().map{it.get().value('name')}  // conventional
 ==>marko
 ==>vadas
@@ -1074,6 +1059,7 @@ gremlin> g.V.map{it.name}  // sugar
 ==>josh
 ==>ripple
 ==>peter
+----
 
 [[utilities-plugin]]
 Utilities Plugin

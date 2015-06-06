@@ -23,6 +23,7 @@ package org.apache.tinkerpop.gremlin.neo4j;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.neo4j.process.NativeNeo4jCypherTest;
+import org.apache.tinkerpop.gremlin.neo4j.structure.NativeNeo4jIndexTest;
 import org.apache.tinkerpop.gremlin.neo4j.structure.NativeNeo4jStructureTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.junit.runners.model.InitializationError;
@@ -37,10 +38,15 @@ public class NativeNeo4jSuite extends AbstractGremlinSuite {
         super(klass, builder,
                 new Class<?>[]{
                         NativeNeo4jStructureTest.class,
+                        NativeNeo4jIndexTest.class,
                         NativeNeo4jCypherTest.class,
                 }, new Class<?>[]{
                         NativeNeo4jStructureTest.class,
-                        NativeNeo4jCypherTest.class}, true, TraversalEngine.Type.STANDARD);
+                        NativeNeo4jIndexTest.class,
+                        NativeNeo4jCypherTest.class
+                },
+                false,
+                TraversalEngine.Type.STANDARD);
     }
 
 }

@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ResponseStatus {
+public final class ResponseStatus {
     private final ResponseStatusCode code;
     private final String message;
     private final Map<String, Object> attributes;

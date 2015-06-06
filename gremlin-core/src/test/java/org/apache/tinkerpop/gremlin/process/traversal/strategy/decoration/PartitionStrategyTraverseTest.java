@@ -18,18 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -43,9 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -118,21 +115,21 @@ public class PartitionStrategyTraverseTest {
                 assertEquals(1, addEdgeSteps.size());
 
                 addEdgeSteps.forEach(s -> {
-                    final Object[] keyValues = s.getKeyValues();
+                    final Object[] keyValues = s.getPropertyKeyValues();
                     final List<Pair<String, Object>> pairs = ElementHelper.asPairs(keyValues);
                     assertEquals("test", s.getEdgeLabel());
                     assertEquals(d, s.getDirection());
                     assertTrue(pairs.stream().anyMatch(p -> p.getValue0().equals("p") && p.getValue1().equals("a")));
                 });
-            } else if (TraversalHelper.hasStepOfAssignableClass(AddEdgeByPathStep.class, traversal.asAdmin())) {
-                final Direction d = TraversalHelper.getStepsOfClass(AddEdgeByPathStep.class, traversal.asAdmin()).get(0).getDirection();
+            } else if (TraversalHelper.hasStepOfAssignableClass(AddEdgeStep.class, traversal.asAdmin())) {
+                final Direction d = TraversalHelper.getStepsOfClass(AddEdgeStep.class, traversal.asAdmin()).get(0).getDirection();
                 strategy.apply(traversal.asAdmin());
 
-                final List<AddEdgeByPathStep> addEdgeSteps = TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal.asAdmin());
+                final List<AddEdgeStep> addEdgeSteps = TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal.asAdmin());
                 assertEquals(1, addEdgeSteps.size());
 
                 addEdgeSteps.forEach(s -> {
-                    final Object[] keyValues = s.getKeyValues();
+                    final Object[] keyValues = s.getPropertyKeyValues();
                     final List<Pair<String, Object>> pairs = ElementHelper.asPairs(keyValues);
                     assertEquals("test", s.getEdgeLabel());
                     assertEquals(d, s.getDirection());
@@ -165,7 +162,7 @@ public class PartitionStrategyTraverseTest {
         } else {
             strategy.apply(traversal.asAdmin());
         }
-        System.out.println(name + "::::::" + traversal.toString());
+        //System.out.println(name + "::::::" + traversal.toString());
 
         final List<HasStep> steps = TraversalHelper.getStepsOfClass(HasStep.class, traversal.asAdmin());
         assertEquals(expectedInsertedSteps, steps.size());

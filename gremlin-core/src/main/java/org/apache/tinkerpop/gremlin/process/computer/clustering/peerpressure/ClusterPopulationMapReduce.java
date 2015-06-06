@@ -109,7 +109,7 @@ public class ClusterPopulationMapReduce extends StaticMapReduce<Serializable, Lo
         return new Builder();
     }
 
-    public static class Builder {
+    public final static class Builder {
 
         private String memoryKey = DEFAULT_MEMORY_KEY;
 

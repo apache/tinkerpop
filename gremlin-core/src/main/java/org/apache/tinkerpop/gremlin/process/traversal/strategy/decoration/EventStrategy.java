@@ -32,13 +32,12 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 
 /**
- * A strategy that raises events when {@link org.apache.tinkerpop.gremlin.process.traversal.step.Mutating} steps are
- * encountered and successfully executed.
+ * A strategy that raises events when {@link Mutating} steps are encountered and successfully executed.
  * <p/>
  * Note that this implementation requires a {@link Graph} on the {@link Traversal} instance.  If that is not present
  * an {@link java.lang.IllegalStateException} will be thrown.
@@ -46,21 +45,17 @@ import java.util.List;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class EventStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
-    private final List<MutationListener> listeners = new ArrayList<>();
+    private final EventQueue eventQueue;
 
-    private EventStrategy(final MutationListener... listeners) {
-        this.listeners.addAll(Arrays.asList(listeners));
+    private EventStrategy(final Builder builder) {
+        this.eventQueue = builder.eventQueue;
+        this.eventQueue.setListeners(builder.listeners);
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        // EventStrategy requires access to both graph features and the current transaction object which are
-        // both part of Graph - if that isn't present, this strategy doesn't work.
-        if (!traversal.getGraph().isPresent())
-            throw new IllegalStateException(String.format("%s requires a graph instance is present on the traversal", EventStrategy.class.getName()));
-
-        final EventStrategyCallback callback = new EventStrategyCallback(new EventTrigger(traversal.getGraph().get()));
-        TraversalHelper.getStepsOfAssignableClass(Mutating.class, traversal).forEach(s -> s.addCallback(callback));
+        final EventStrategyCallback callback = new EventStrategyCallback(eventQueue);
+        TraversalHelper.getStepsOfAssignableClass(Mutating.class, traversal).forEach(s -> s.getMutatingCallbackRegistry().addCallback(callback));
     }
 
     public static Builder build() {
@@ -68,78 +63,109 @@ public final class EventStrategy extends AbstractTraversalStrategy<TraversalStra
     }
 
     public class EventStrategyCallback implements EventCallback<Event>, Serializable {
-        private final EventTrigger trigger;
+        private final EventQueue eventQueue;
 
-        public EventStrategyCallback(final EventTrigger trigger) {
-            this.trigger = trigger;
+        public EventStrategyCallback(final EventQueue eventQueue) {
+            this.eventQueue = eventQueue;
         }
 
         @Override
         public void accept(final Event event) {
-            trigger.addEvent(event);
+            eventQueue.addEvent(event);
         }
     }
 
-    public static class Builder {
+    public final static class Builder {
         private final List<MutationListener> listeners = new ArrayList<>();
+        private EventQueue eventQueue = new DefaultEventQueue();
 
         Builder() {}
 
-        public Builder addListener(MutationListener listener) {
+        public Builder addListener(final MutationListener listener) {
             this.listeners.add(listener);
             return this;
         }
 
+        public Builder eventQueue(final EventQueue eventQueue) {
+            this.eventQueue = eventQueue;
+            return this;
+        }
+
         public EventStrategy create() {
-            return new EventStrategy(this.listeners.toArray(new MutationListener[this.listeners.size()]));
+            return new EventStrategy(this);
         }
     }
 
-    class EventTrigger {
+    /**
+     * Gathers messages from callbacks and fires them to listeners.  When the event is sent to the listener is
+     * up to the implementation of this interface.
+     */
+    public interface EventQueue {
+        /**
+         * Provide listeners to the queue that were given to the {@link EventStrategy} on construction.
+         */
+        public void setListeners(final List<MutationListener> listeners);
 
         /**
-         * A queue of events that are triggered by change to the graph. The queue builds up until the trigger fires them
-         * in the order they were received.
+         * Add an event to the event queue.
          */
+        public void addEvent(final Event evt);
+    }
+
+    /**
+     * Immediately notifies all listeners as events arrive.
+     */
+    public static class DefaultEventQueue implements EventQueue {
+        private List<MutationListener> listeners = Collections.emptyList();
+
+        @Override
+        public void setListeners(final List<MutationListener> listeners) {
+            this.listeners = listeners;
+        }
+
+        @Override
+        public void addEvent(final Event evt) {
+            evt.fireEvent(listeners.iterator());
+        }
+    }
+
+    /**
+     * Stores events in a queue that builds up until the transaction is committed which then fires them in the order
+     * they were received.
+     */
+    public static class TransactionalEventQueue implements EventQueue {
+
         private final ThreadLocal<Deque<Event>> eventQueue = new ThreadLocal<Deque<Event>>() {
             protected Deque<Event> initialValue() {
                 return new ArrayDeque<>();
             }
         };
 
-        /**
-         * When set to true, events in the event queue will only be fired when a transaction is committed.
-         */
-        private final boolean enqueueEvents;
+        private List<MutationListener> listeners = Collections.emptyList();
 
-        public EventTrigger(final Graph graph) {
-            enqueueEvents = graph.features().graph().supportsTransactions();
+        public TransactionalEventQueue(final Graph graph) {
+            if (!graph.features().graph().supportsTransactions())
+                throw new IllegalStateException(String.format("%s requires the graph to support transactions", EventStrategy.class.getName()));
 
-            if (enqueueEvents) {
-                // since this is a transactional graph events are enqueued so the events should be fired/reset only after
-                // transaction is committed/rolled back as tied to a graph transaction
-                graph.tx().addTransactionListener(status -> {
-                    if (status == Transaction.Status.COMMIT)
-                        fireEventQueue();
-                    else if (status == Transaction.Status.ROLLBACK)
-                        resetEventQueue();
-                    else
-                        throw new RuntimeException(String.format("The %s is not aware of this status: %s", EventTrigger.class.getName(), status));
-                });
-            }
+            // since this is a transactional graph events are enqueued so the events should be fired/reset only after
+            // transaction is committed/rolled back as tied to a graph transaction
+            graph.tx().addTransactionListener(status -> {
+                if (status == Transaction.Status.COMMIT)
+                    fireEventQueue();
+                else if (status == Transaction.Status.ROLLBACK)
+                    resetEventQueue();
+                else
+                    throw new RuntimeException(String.format("The %s is not aware of this status: %s", EventQueue.class.getName(), status));
+            });
         }
 
-        /**
-         * Add an event to the event queue. If this is a non-transactional graph, then the queue fires and resets after
-         * each event is added.
-         */
         public void addEvent(final Event evt) {
             eventQueue.get().add(evt);
+        }
 
-            if (!this.enqueueEvents) {
-                fireEventQueue();
-                resetEventQueue();
-            }
+        @Override
+        public void setListeners(final List<MutationListener> listeners) {
+            this.listeners = listeners;
         }
 
         private void resetEventQueue() {

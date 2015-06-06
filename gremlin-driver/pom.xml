@@ -26,7 +26,7 @@ limitations under the License.
     <artifactId>gremlin-driver</artifactId>
     <name>Apache TinkerPop :: Gremlin Driver</name>
     <properties>
-        <netty.version>4.0.25.Final</netty.version>
+        <netty.version>4.0.28.Final</netty.version>
     </properties>
     <dependencies>
         <dependency>
@@ -55,12 +55,6 @@ limitations under the License.
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20131018</version>
             <scope>test</scope>
         </dependency>
         <dependency>

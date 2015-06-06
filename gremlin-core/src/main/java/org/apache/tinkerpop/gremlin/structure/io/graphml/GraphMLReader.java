@@ -55,7 +55,7 @@ import java.util.stream.Stream;
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphMLReader implements GraphReader {
+public final class GraphMLReader implements GraphReader {
     private final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
 
     private final String edgeLabelKey;

@@ -28,7 +28,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -43,12 +45,27 @@ public final class CypherStartStep extends StartStep<Map<String, Object>> implem
     }
 
     @Override
+    public void setScope(final Scope scope) {
+
+    }
+
+    @Override
+    public Set<String> getScopeKeys() {
+        return Collections.emptySet();
+    }
+
+    @Override
     public Scope recommendNextScope() {
         return Scope.local;
     }
 
     @Override
+    public Scope getScope() {
+        return Scope.local;
+    }
+
+    @Override
     public String toString() {
-        return StringFactory.stepString(this,this.query);
+        return StringFactory.stepString(this, this.query);
     }
 }

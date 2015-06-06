@@ -18,18 +18,27 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.*;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -79,13 +88,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
 
         // all write edge steps need to have partition keys tossed into the property key/value list after mutating steps
         TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal).forEach(s -> {
-            final Object[] keyValues = injectPartitionInfo(s.getKeyValues());
-            TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getVertices().iterator(), keyValues), traversal);
-        });
-
-        TraversalHelper.getStepsOfAssignableClass(AddEdgeByPathStep.class, traversal).forEach(s -> {
-            final Object[] keyValues = injectPartitionInfo(s.getKeyValues());
-            TraversalHelper.replaceStep(s, new AddEdgeByPathStep(traversal, s.getDirection(), s.getEdgeLabel(), s.getStepLabel(), keyValues), traversal);
+            final Object[] keyValues = injectPartitionInfo(s.getPropertyKeyValues());
+            TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getScope(), s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), keyValues), traversal);
         });
 
         // all write vertex steps need to have partition keys tossed into the property key/value list after mutating steps
@@ -104,12 +108,13 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         return Stream.concat(Stream.of(propertyKeyValues), Stream.of(partitionKey, writePartition)).toArray();
     }
 
-    public static class Builder {
+    public final static class Builder {
         private String writePartition;
         private String partitionKey;
         private Set<String> readPartitions = new HashSet<>();
 
-        Builder() {}
+        Builder() {
+        }
 
         public Builder writePartition(final String writePartition) {
             this.writePartition = writePartition;
@@ -127,7 +132,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         }
 
         public PartitionStrategy create() {
-            if (partitionKey == null || partitionKey.isEmpty()) throw new IllegalStateException("The partitionKey cannot be null or empty");
+            if (partitionKey == null || partitionKey.isEmpty())
+                throw new IllegalStateException("The partitionKey cannot be null or empty");
 
             return new PartitionStrategy(this.partitionKey, this.writePartition, this.readPartitions);
         }

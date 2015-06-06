@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.message;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -48,6 +46,18 @@ public enum ResponseStatusCode {
      * {@link #SUCCESS} to signify the end of the stream.
      */
     PARTIAL_CONTENT(206),
+
+    /**
+     * The server could not authenticate the request.  This code is for future use.
+     */
+    UNAUTHORIZED(401),
+
+    /**
+     * The server could authenticate the request, but will not fulfill it.  This is a general purpose code that
+     * would typically be returned if the request is authenticated but not authorized to do what it is doing. This
+     * code is for future use.
+     */
+    FORBIDDEN(403),
 
     /**
      * The request message was not properly formatted which means it could not be parsed at all or the "op" code was
@@ -97,7 +107,7 @@ public enum ResponseStatusCode {
         return codeValueMap.get(codeValue);
     }
 
-    private ResponseStatusCode(final int value) {
+    ResponseStatusCode(final int value) {
         this.value = value;
     }
 

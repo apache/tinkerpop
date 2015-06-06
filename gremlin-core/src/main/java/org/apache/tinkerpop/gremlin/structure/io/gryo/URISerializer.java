@@ -28,7 +28,7 @@ import java.net.URI;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class URISerializer extends Serializer<URI> {
+final class URISerializer extends Serializer<URI> {
 
     public URISerializer() {
         setImmutable(true);

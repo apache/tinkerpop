@@ -60,7 +60,7 @@ public final class StandardTraversalEngine implements TraversalEngine {
         return StringFactory.traversalEngineString(this);
     }
 
-    public static class Builder implements TraversalEngine.Builder {
+    public final static class Builder implements TraversalEngine.Builder {
 
         private static final Builder INSTANCE = new Builder();
 

@@ -35,7 +35,9 @@ public abstract class MapStep<S, E> extends AbstractStep<S, E> {
     protected Traverser<E> processNextStart() {
         while (true) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            return traverser.split(this.map(traverser), this);
+            final E e = this.map(traverser);
+            if (null != e)
+                return traverser.split(e, this);
         }
     }
 

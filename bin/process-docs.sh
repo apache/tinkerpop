@@ -19,9 +19,5 @@
 #
 
 pushd "$(dirname $0)/.." > /dev/null
-
-docs/preprocessor/preprocess.sh
-mvn process-resources -Dasciidoc
-docs/postprocessor/postprocess.sh
-
+docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc && docs/postprocessor/postprocess.sh
 popd > /dev/null

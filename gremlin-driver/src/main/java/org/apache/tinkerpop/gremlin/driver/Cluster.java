@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Cluster {
+public final class Cluster {
 
     private Manager manager;
 
@@ -187,7 +187,7 @@ public class Cluster {
         return manager.allHosts();
     }
 
-    public static class Builder {
+    public final static class Builder {
         private List<InetAddress> addresses = new ArrayList<>();
         private int port = 8182;
         private MessageSerializer serializer = Serializers.GRYO_V1D0.simpleInstance();

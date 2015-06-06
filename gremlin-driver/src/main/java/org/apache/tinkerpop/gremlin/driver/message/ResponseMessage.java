@@ -25,7 +25,7 @@ import java.util.UUID;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ResponseMessage {
+public final class ResponseMessage {
 
     /**
      * The current request that generated this response.
@@ -70,7 +70,7 @@ public class ResponseMessage {
         return new Builder(requestId);
     }
 
-    public static class Builder {
+    public final static class Builder {
 
         private final UUID requestId;
         private ResponseStatusCode code = ResponseStatusCode.SUCCESS;

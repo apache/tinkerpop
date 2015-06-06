@@ -63,14 +63,14 @@ import java.util.function.Function;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONReader implements GraphReader {
+public final class GraphSONReader implements GraphReader {
     private final ObjectMapper mapper;
     private final long batchSize;
 
     final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
     };
 
-    public GraphSONReader(final GraphSONMapper mapper, final long batchSize) {
+    private GraphSONReader(final GraphSONMapper mapper, final long batchSize) {
         this.mapper = mapper.createMapper();
         this.batchSize = batchSize;
     }
@@ -248,13 +248,12 @@ public class GraphSONReader implements GraphReader {
         return new Builder();
     }
 
-    public static class Builder implements ReaderBuilder<GraphSONReader> {
+    public final static class Builder implements ReaderBuilder<GraphSONReader> {
         private long batchSize = 10000;
 
         private GraphSONMapper mapper = GraphSONMapper.build().create();
 
-        private Builder() {
-        }
+        private Builder() {}
 
         /**
          * Number of mutations to perform before a commit is executed when using

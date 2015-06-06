@@ -35,15 +35,4 @@ public enum Scope {
         return global.equals(this) ? local : global;
     }
 
-    public static <S> S getScopeValueByKey(final Scope scope, final String key, final Traverser<?> traverser) {
-        if (local == scope) {
-            final S s = ((Map<String, S>) traverser.get()).get(key);
-            if (null == s)
-                throw new IllegalArgumentException("The provided map does not have a " + key + "-key: " + traverser);
-            return s;
-        } else {
-            final Path path = traverser.path();
-            return path.hasLabel(key) ? path.get(key) : traverser.sideEffects(key);
-        }
-    }
 }

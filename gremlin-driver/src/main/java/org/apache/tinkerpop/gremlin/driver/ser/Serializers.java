@@ -46,7 +46,7 @@ public enum Serializers {
      */
     public static final MessageSerializer DEFAULT_REQUEST_SERIALIZER = new GraphSONMessageSerializerV1d0();
 
-    private Serializers(final String mimeType) {
+    Serializers(final String mimeType) {
         this.value = mimeType;
     }
 

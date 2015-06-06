@@ -18,7 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.util;
 
+import org.javatuples.Pair;
+
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
@@ -57,5 +60,18 @@ public final class TimeUtil {
             runnable.run();
             return (System.nanoTime() - t) * 0.000001;
         }).sum() / loops;
+    }
+
+    public static <S> Pair<Double, S> clockWithResult(final Supplier<S> supplier) {
+        return clockWithResult(100, supplier);
+    }
+
+    public static <S> Pair<Double, S> clockWithResult(final int loops, final Supplier<S> supplier) {
+        final S result = supplier.get(); // warm up
+        return Pair.with(IntStream.range(0, loops).mapToDouble(i -> {
+            long t = System.nanoTime();
+            supplier.get();
+            return (System.nanoTime() - t) * 0.000001;
+        }).sum() / loops, result);
     }
 }

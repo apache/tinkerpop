@@ -28,7 +28,7 @@ import java.nio.ByteBuffer;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphSONMessageSerializerGremlinV1d0 extends AbstractGraphSONMessageSerializerV1d0 {
+public final class GraphSONMessageSerializerGremlinV1d0 extends AbstractGraphSONMessageSerializerV1d0 {
 
     private static final String MIME_TYPE = SerTokens.MIME_GRAPHSON_V1D0;
 

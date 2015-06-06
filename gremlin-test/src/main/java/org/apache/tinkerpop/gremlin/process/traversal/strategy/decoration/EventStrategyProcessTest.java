@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.MutationListener;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -37,6 +36,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -49,9 +50,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerAddVertex() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         graph.addVertex("some", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
@@ -67,9 +73,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerAddVertexFromStart() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         graph.addVertex("some", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
@@ -85,15 +96,20 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerAddEdge() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         final Vertex v = graph.addVertex();
         v.addEdge("self", v);
 
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.V(v).addOutE("self", v).next();
+        gts.withSideEffect("v",()->v).V(v).addOutE("self", "v").next();
 
         tryCommit(graph, g -> assertEquals(2, IteratorUtils.count(gts.E())));
 
@@ -109,9 +125,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerAddEdgeByPath() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         final Vertex v = graph.addVertex();
         v.addEdge("self", v);
@@ -133,9 +154,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerAddVertexPropertyAdded() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         final Vertex vSome = graph.addVertex("some", "thing");
         vSome.property(VertexProperty.Cardinality.single, "that", "thing");
@@ -155,9 +181,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerAddVertexPropertyChanged() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         final Vertex vSome = graph.addVertex("some", "thing");
         vSome.property(VertexProperty.Cardinality.single, "that", "thing");
@@ -179,9 +210,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerAddVertexPropertyPropertyChanged() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         final Vertex vSome = graph.addVertex("some", "thing");
         vSome.property(VertexProperty.Cardinality.single, "that", "thing", "is", "good");
@@ -202,15 +238,20 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerAddEdgePropertyAdded() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         final Vertex v = graph.addVertex();
         v.addEdge("self", v);
 
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.V(v).addOutE("self", v).property("some", "thing").next();
+        gts.withSideEffect("v",v).V(v).addOutE("self", "v").property("some", "thing").next();
 
         tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.E().has("some", "thing"))));
 
@@ -230,9 +271,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerEdgePropertyChanged() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         final Vertex v = graph.addVertex();
         final Edge e = v.addEdge("self", v);
@@ -258,9 +304,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerRemoveVertex() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         graph.addVertex("some", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
@@ -277,9 +328,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerRemoveEdge() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         final Vertex v = graph.addVertex("some", "thing");
         v.addEdge("self", v);
@@ -297,9 +353,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerRemoveVertexProperty() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         graph.addVertex("some", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
@@ -316,9 +377,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerRemoveEdgeProperty() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         final Vertex v = graph.addVertex();
         v.addEdge("self", v, "some", "thing");
@@ -337,9 +403,14 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
     public void shouldTriggerAddVertexPropertyPropertyRemoved() {
         final StubMutationListener listener1 = new StubMutationListener();
         final StubMutationListener listener2 = new StubMutationListener();
-        final EventStrategy eventStrategy = EventStrategy.build()
+        final EventStrategy.Builder builder = EventStrategy.build()
                 .addListener(listener1)
-                .addListener(listener2).create();
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
 
         final Vertex vSome = graph.addVertex("some", "thing");
         vSome.property(VertexProperty.Cardinality.single, "that", "thing", "is", "good");
@@ -356,6 +427,75 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(1, listener1.vertexPropertyPropertyChangedEventRecorded());
         assertEquals(1, listener2.vertexPropertyPropertyRemovedEventRecorded());
         assertEquals(1, listener1.vertexPropertyPropertyRemovedEventRecorded());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldTriggerAfterCommit() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .eventQueue(new EventStrategy.TransactionalEventQueue(graph))
+                .addListener(listener1)
+                .addListener(listener2);
+
+        final EventStrategy eventStrategy = builder.create();
+
+        graph.addVertex("some", "thing");
+        final GraphTraversalSource gts = create(eventStrategy);
+        gts.V().addV("any", "thing").next();
+        gts.V().addV("any", "one").next();
+
+        assertEquals(0, listener1.addVertexEventRecorded());
+        assertEquals(0, listener2.addVertexEventRecorded());
+
+        gts.tx().commit();
+        assertEquals(2, IteratorUtils.count(gts.V().has("any")));
+
+        assertEquals(2, listener1.addVertexEventRecorded());
+        assertEquals(2, listener2.addVertexEventRecorded());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldResetAfterRollback() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .eventQueue(new EventStrategy.TransactionalEventQueue(graph))
+                .addListener(listener1)
+                .addListener(listener2);
+
+        final EventStrategy eventStrategy = builder.create();
+
+        graph.addVertex("some", "thing");
+        final GraphTraversalSource gts = create(eventStrategy);
+        gts.V().addV("any", "thing").next();
+        gts.V().addV("any", "one").next();
+
+        assertEquals(0, listener1.addVertexEventRecorded());
+        assertEquals(0, listener2.addVertexEventRecorded());
+
+        gts.tx().rollback();
+        assertThat(gts.V().has("any").hasNext(), is(false));
+
+        assertEquals(0, listener1.addVertexEventRecorded());
+        assertEquals(0, listener2.addVertexEventRecorded());
+
+        graph.addVertex("some", "thing");
+        gts.V().addV("any", "thing").next();
+        gts.V().addV("any", "one").next();
+
+        assertEquals(0, listener1.addVertexEventRecorded());
+        assertEquals(0, listener2.addVertexEventRecorded());
+
+        gts.tx().commit();
+        assertEquals(2, IteratorUtils.count(gts.V().has("any")));
+
+        assertEquals(2, listener1.addVertexEventRecorded());
+        assertEquals(2, listener2.addVertexEventRecorded());
     }
 
     private GraphTraversalSource create(final EventStrategy strategy) {

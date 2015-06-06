@@ -21,8 +21,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -30,6 +32,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
+import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -109,11 +112,12 @@ public class IncidentToAdjacentStrategyTest {
 
         public void doTest(final Traversal traversal, final Traversal optimized) {
             applyIncidentToAdjacentStrategy(traversal);
-            assertEquals(optimized.toString(), traversal.toString());
+            assertEquals(optimized, traversal);
         }
 
         static Iterable<Object[]> generateTestParameters() {
 
+            Function<Traverser<Vertex>, Vertex> lambda = Traverser::get; // to ensure same hashCode
             return Arrays.asList(new Traversal[][]{
                     {__.outE().inV(), __.out()},
                     {__.inE().outV(), __.in()},
@@ -125,7 +129,7 @@ public class IncidentToAdjacentStrategyTest {
                     {__.bothE().outV(), __.bothE().outV()},
                     {__.outE().as("a").inV(), __.outE().as("a").inV()}, // todo: this can be optimized, but requires a lot more checks
                     {__.outE().inV().path(), __.outE().inV().path()},
-                    {__.outE().inV().map(e -> e), __.outE().inV().map(e -> e)},
+                    {__.outE().inV().map(lambda), __.outE().inV().map(lambda)},
                     {__.union(__.outE().inV(), __.inE().outV()).path(), __.union(__.outE().inV(), __.inE().outV()).path()}});
         }
     }

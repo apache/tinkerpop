@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Result {
+public final class Result {
     final Object resultObject;
 
     /**

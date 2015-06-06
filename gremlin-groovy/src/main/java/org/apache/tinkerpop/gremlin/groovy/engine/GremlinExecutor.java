@@ -457,7 +457,7 @@ public class GremlinExecutor implements AutoCloseable {
         return new Builder().addEngineSettings(engineName, imports, staticImports, scripts, config);
     }
 
-    public static class Builder {
+    public final static class Builder {
         private long scriptEvaluationTimeout = 8000;
         private Map<String, EngineSettings> settings = new HashMap<>();
         private ExecutorService executorService = null;

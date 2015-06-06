@@ -172,7 +172,7 @@ public class __ {
         return __.<A>start().path();
     }
 
-    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startLabel, final Traversal<?,?>... traversals) {
+    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startLabel, final Traversal<?, ?>... traversals) {
         return __.<A>start().match(startLabel, traversals);
     }
 
@@ -264,40 +264,20 @@ public class __ {
         return __.<A>start().addV(propertyKeyValues);
     }
 
-    public static <A> GraphTraversal<A, Edge> addE(final Direction direction, final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
-        return __.<A>start().addE(direction, edgeLabel, stepLabel, propertyKeyValues);
+    public static <A> GraphTraversal<A, Edge> addE(final Scope scope, final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
+        return __.<A>start().addE(scope, direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
-    public static <A> GraphTraversal<A, Edge> addE(final Direction direction, final String edgeLabel, final Vertex otherVertex, final Object... propertyKeyValues) {
-        return __.<A>start().addE(direction, edgeLabel, otherVertex, propertyKeyValues);
+    public static <A> GraphTraversal<A, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
+        return __.<A>start().addE(direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
-    public static <A> GraphTraversal<A, Edge> addE(final Direction direction, final String edgeLabel, final Iterator<Vertex> otherVertices, final Object... propertyKeyValues) {
-        return __.<A>start().addE(direction, edgeLabel, otherVertices, propertyKeyValues);
+    public static <A> GraphTraversal<A, Edge> addOutE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
+        return __.<A>start().addOutE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
-    public static <A> GraphTraversal<A, Edge> addInE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
-        return __.<A>start().addInE(edgeLabel, stepLabel, propertyKeyValues);
-    }
-
-    public static <A> GraphTraversal<A, Edge> addInE(final String edgeLabel, final Vertex otherVertex, final Object... propertyKeyValues) {
-        return __.<A>start().addInE(edgeLabel, otherVertex, propertyKeyValues);
-    }
-
-    public static <A> GraphTraversal<A, Edge> addInE(final String edgeLabel, final Iterator<Vertex> otherVertices, final Object... propertyKeyValues) {
-        return __.<A>start().addInE(edgeLabel, otherVertices, propertyKeyValues);
-    }
-
-    public static <A> GraphTraversal<A, Edge> addOutE(final String edgeLabel, final String stepLabel, final Object... propertyKeyValues) {
-        return __.<A>start().addOutE(edgeLabel, stepLabel, propertyKeyValues);
-    }
-
-    public static <A> GraphTraversal<A, Edge> addOutE(final String edgeLabel, final Vertex otherVertex, final Object... propertyKeyValues) {
-        return __.<A>start().addOutE(edgeLabel, otherVertex, propertyKeyValues);
-    }
-
-    public static <A> GraphTraversal<A, Edge> addOutE(final String edgeLabel, final Iterator<Vertex> otherVertices, final Object... propertyKeyValues) {
-        return __.<A>start().addOutE(edgeLabel, otherVertices, propertyKeyValues);
+    public static <A> GraphTraversal<A, Edge> addInE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
+        return __.<A>start().addInE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -350,7 +330,7 @@ public class __ {
         return __.<A>start().has(label, key, predicate);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String key, final Traversal<?,?> propertyTraversal) {
+    public static <A> GraphTraversal<A, A> has(final String key, final Traversal<?, ?> propertyTraversal) {
         return __.<A>start().has(key, propertyTraversal);
     }
 
@@ -386,7 +366,7 @@ public class __ {
         return __.<A>start().where(scope, predicate);
     }
 
-    public static <A> GraphTraversal<A, A> where(final Scope scope, final Traversal<?,?> whereTraversal) {
+    public static <A> GraphTraversal<A, A> where(final Scope scope, final Traversal<?, ?> whereTraversal) {
         return __.<A>start().where(scope, whereTraversal);
     }
 
@@ -398,7 +378,7 @@ public class __ {
         return __.<A>start().where(predicate);
     }
 
-    public static <A> GraphTraversal<A, A> where(final Traversal<?,?> whereTraversal) {
+    public static <A> GraphTraversal<A, A> where(final Traversal<?, ?> whereTraversal) {
         return __.<A>start().where(whereTraversal);
     }
 
@@ -598,6 +578,10 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> barrier() {
         return __.<A>start().barrier();
+    }
+
+    public static <A> GraphTraversal<A, A> barrier(final int maxBarrierSize) {
+        return __.<A>start().barrier(maxBarrierSize);
     }
 
 }

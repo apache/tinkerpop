@@ -41,4 +41,9 @@ public final class FunctionTraverser<A, B> implements Function<Traverser<A>, B>,
     public B apply(final Traverser<A> traverser) {
         return this.function.apply(traverser.get());
     }
+
+    @Override
+    public String toString() {
+        return this.function.toString();
+    }
 }

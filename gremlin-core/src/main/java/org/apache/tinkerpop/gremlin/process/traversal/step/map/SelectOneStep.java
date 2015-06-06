@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -41,7 +41,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     private Scope scope;
     private final String selectLabel;
-    private Traversal.Admin<Object, Object> selectTraversal = new IdentityTraversal<>();
+    private Traversal.Admin<S, E> selectTraversal = new IdentityTraversal<>();
 
     public SelectOneStep(final Traversal.Admin traversal, final Scope scope, final String selectLabel) {
         super(traversal);
@@ -51,7 +51,8 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        return (E) TraversalUtil.apply(Scope.local == this.scope ? ((Map) traverser.get()).get(this.selectLabel) : traverser.path().<Object>get(this.selectLabel), this.selectTraversal);
+        final Optional<S> optional = this.getOptionalScopeValueByKey(this.selectLabel, traverser);
+        return optional.isPresent() ? TraversalUtil.apply(optional.get(), this.selectTraversal) : null;
     }
 
     @Override
@@ -72,7 +73,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     }
 
     @Override
-    public List<Traversal.Admin<Object, Object>> getLocalChildren() {
+    public List<Traversal.Admin<S, E>> getLocalChildren() {
         return Collections.singletonList(this.selectTraversal);
     }
 
@@ -83,9 +84,12 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(this.scope == Scope.local ? TraverserRequirement.OBJECT : TraverserRequirement.PATH);
+        return this.getSelfAndChildRequirements(Scope.local == this.scope ?
+                new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS} :
+                new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS});
     }
 
+    @Override
     public void setScope(final Scope scope) {
         this.scope = scope;
     }
@@ -93,6 +97,16 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     @Override
     public Scope recommendNextScope() {
         return Scope.global;
+    }
+
+    @Override
+    public Scope getScope() {
+        return this.scope;
+    }
+
+    @Override
+    public Set<String> getScopeKeys() {
+        return Collections.singleton(this.selectLabel);
     }
 }
 

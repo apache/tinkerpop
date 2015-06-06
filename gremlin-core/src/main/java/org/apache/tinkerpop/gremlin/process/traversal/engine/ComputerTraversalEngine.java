@@ -65,7 +65,7 @@ public final class ComputerTraversalEngine implements TraversalEngine {
         return new Builder();
     }
 
-    public static class Builder implements TraversalEngine.Builder {
+    public final static class Builder implements TraversalEngine.Builder {
 
         private Class<? extends GraphComputer> graphComputerClass;
         private static final List<TraversalStrategy> WITH_STRATEGIES = Collections.singletonList(ComputerResultStrategy.instance());

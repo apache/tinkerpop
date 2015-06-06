@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeByPathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
@@ -38,9 +37,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -94,15 +91,13 @@ public class ElementIdStrategyTraverseTest {
         strategy.apply(traversal.asAdmin());
 
         final Step s = (Step) traversal.asAdmin().getSteps().get(expectedInsertedSteps);
-        if(s instanceof AddVertexStep)
+        if (s instanceof AddVertexStep)
             assertTrue(ElementHelper.getKeys(((AddVertexStep) s).getKeyValues()).contains(strategy.getIdPropertyKey()));
-        else if(s instanceof AddVertexStartStep)
+        else if (s instanceof AddVertexStartStep)
             assertTrue(ElementHelper.getKeys(((AddVertexStartStep) s).getKeyValues()).contains(strategy.getIdPropertyKey()));
-        else if(s instanceof AddEdgeByPathStep)
-            assertTrue(ElementHelper.getKeys(((AddEdgeByPathStep) s).getKeyValues()).contains(strategy.getIdPropertyKey()));
-        else if(s instanceof AddEdgeStep)
-            assertTrue(ElementHelper.getKeys(((AddEdgeStep) s).getKeyValues()).contains(strategy.getIdPropertyKey()));
-        else if(s instanceof PropertiesStep)
+        else if (s instanceof AddEdgeStep)
+            assertTrue(ElementHelper.getKeys(((AddEdgeStep) s).getPropertyKeyValues()).contains(strategy.getIdPropertyKey()));
+        else if (s instanceof PropertiesStep)
             assertEquals(strategy.getIdPropertyKey(), ((PropertiesStep) s).getPropertyKeys()[0]);
         else
             fail("Check test definition - the expectedInsertedSteps should be the index of the step to trigger the ID substitution");

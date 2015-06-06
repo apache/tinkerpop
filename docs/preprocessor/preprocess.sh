@@ -27,32 +27,67 @@ if [ ! -f bin/gremlin.sh ]; then
   exit 1
 fi
 
-mkdir -p target/postprocess-asciidoc
+function directory {
+  d1=`pwd`
+  cd $1
+  d2=`pwd`
+  cd $d1
+  echo "$d2"
+}
 
-rm -rf target/postprocess-asciidoc/*
-mkdir target/postprocess-asciidoc/tmp
+mkdir -p target/postprocess-asciidoc/tmp
 cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
 
 TP_HOME=`pwd`
+CONSOLE_HOME=`directory "${TP_HOME}/gremlin-console/target/apache-gremlin-console-*-standalone"`
+PLUGIN_DIR="${CONSOLE_HOME}/ext"
+TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -o 'version>[^<]*' | grep -o '>.*' | cut -d '>' -f2 | head -n1)
+TMP_DIR="/tmp/tp-docs-preprocessor"
 
-cd target/postprocess-asciidoc/tmp
-ln -s ../../../data data
+trap cleanup INT
 
-for input in $(find "${TP_HOME}/docs/src/" -name "*.asciidoc")
-do
-  name=`basename $input`
-  output="${TP_HOME}/target/postprocess-asciidoc/${name}"
-  echo "${input} > ${output}"
-  if [ $(grep -c '^\[gremlin' $input) -gt 0 ]; then
-    ${TP_HOME}/bin/gremlin.sh -e ${TP_HOME}/docs/preprocessor/processor.groovy $input > $output
-    ec=$?
-    if [ $ec -ne 0 ]; then
-      popd > /dev/null
-      exit $ec
-    fi
-  else
-    cp $input $output
-  fi
-done
+function cleanup() {
+  echo -ne "\r\n\n"
+  docs/preprocessor/uninstall-plugins.sh "${CONSOLE_HOME}" "${TMP_DIR}"
+  find "${TP_HOME}/docs/src/" -name "*.asciidoc.groovy" | xargs rm -f
+  rm -rf ${TMP_DIR}
+}
+
+mkdir -p ${TMP_DIR}
+
+# install plugins
+echo
+echo "=========================="
+echo "+   Installing Plugins   +"
+echo "=========================="
+echo
+docs/preprocessor/install-plugins.sh "${CONSOLE_HOME}" "${TP_VERSION}" "${TMP_DIR}"
+
+if [ ${PIPESTATUS[0]} -ne 0 ]; then
+  cleanup
+  exit 1
+else
+  echo
+fi
+
+# process *.asciidoc files
+echo
+echo "============================"
+echo "+   Processing AsciiDocs   +"
+echo "============================"
+find "${TP_HOME}/docs/src/" -name "*.asciidoc" |
+     xargs -n1 basename |
+     xargs -n1 -I {} echo "echo -ne {}' '; (grep -n {} ${TP_HOME}/docs/src/index.asciidoc || echo 0) | cut -d ':' -f1" | /bin/bash | sort -nk2 | cut -d ' ' -f1 |
+     xargs -n1 -I {} echo "${TP_HOME}/docs/src/{}" |
+     xargs -n1 ${TP_HOME}/docs/preprocessor/preprocess-file.sh "${CONSOLE_HOME}"
+
+if [ ${PIPESTATUS[4]} -ne 0 ]; then
+  cleanup
+  exit 1
+else
+  echo
+fi
+
+cleanup
 
 popd > /dev/null

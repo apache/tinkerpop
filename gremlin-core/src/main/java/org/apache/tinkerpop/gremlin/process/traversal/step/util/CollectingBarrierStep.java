@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.Set;
@@ -32,8 +33,15 @@ import java.util.Set;
 public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
     private TraverserSet<S> traverserSet = new TraverserSet<>();
 
+    private int maxBarrierSize;
+
     public CollectingBarrierStep(final Traversal.Admin traversal) {
+        this(traversal, Integer.MAX_VALUE);
+    }
+
+    public CollectingBarrierStep(final Traversal.Admin traversal, final int maxBarrierSize) {
         super(traversal);
+        this.maxBarrierSize = maxBarrierSize;
     }
 
     public abstract void barrierConsumer(final TraverserSet<S> traverserSet);
@@ -45,9 +53,18 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
 
     @Override
     public Traverser<S> processNextStart() {
-        if (this.starts.hasNext()) {
-            this.starts.forEachRemaining(this.traverserSet::add);
-            this.barrierConsumer(this.traverserSet);
+        if (!this.traverserSet.isEmpty()) {
+            return this.traverserSet.remove();
+        } else if (this.starts.hasNext()) {
+            if (Integer.MAX_VALUE == this.maxBarrierSize) {
+                this.starts.forEachRemaining(this.traverserSet::add);
+                this.barrierConsumer(this.traverserSet);
+            } else {
+                while (this.starts.hasNext() && this.traverserSet.size() < this.maxBarrierSize) {
+                    this.traverserSet.add(this.starts.next());
+                }
+                this.barrierConsumer(this.traverserSet);
+            }
         }
         return this.traverserSet.remove();
     }
@@ -57,6 +74,16 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
         final CollectingBarrierStep<S> clone = (CollectingBarrierStep<S>) super.clone();
         clone.traverserSet = new TraverserSet<>();
         return clone;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.maxBarrierSize);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.maxBarrierSize;
     }
 
     @Override

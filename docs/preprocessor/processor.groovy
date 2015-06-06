@@ -38,16 +38,38 @@ def imports = new org.apache.tinkerpop.gremlin.console.ConsoleImportCustomizerPr
 def skipNextRead = false
 def inCodeSection = false
 def engine
-def lineNumber = 0;
-def line = "";
+def lineNumber = 0
+def line = ""
 
 sanitize = { def codeLine ->
     codeLine.replaceAll(/\s*(\<\d+\>\s*)*\<\d+\>\s*$/, "").replaceAll(/\s*\/\/.*$/, "").trim()
 }
 
 format = { def codeLine ->
-    codeLine.replaceAll(/\s*((\s\<\d+\>\s*)*\s\<\d+\>)\s*$/, '   ////$1')
+    codeLine.replaceAll(/\s*((\s\<\d+\>\s*)*\s\<\d+\>)\s*$/, '   ////$1').replaceAll(/(\.\.\/){3}[^\/]+\//, "")
 }
+
+stringify = { def string, def lineNum = -1 ->
+    //def result = lineNum >= 0 ? "pb(${System.env['PREPROCESSOR_TOTAL_LINES']}, ${lineNum});" : ""
+    def result = lineNum >= 0 ? "pb(${lineNum});" : ""
+    "${result}\"¶" + string.replaceAll("\\\\", "\\\\\\\\").replaceAll(/"/, "\\\\\"").replaceAll(/\$/, "\\\\\\\$") + "\""
+}
+
+println """pb = { def progress ->
+  def barLength = 100
+  def ratio = barLength / 100
+  def builder = new StringBuilder()
+  def percent = (int) ((progress / TOTAL_LINES) * 100)
+  def progressLength = (int) ((progress / TOTAL_LINES) * (100 * ratio))
+  builder.append('=' * progressLength)
+  if (progressLength < barLength) {
+    builder.append('>')
+    builder.append(' ' * (barLength - progressLength - 1))
+  }
+  System.err.print(String.format("\\r   progress: [%s] %s", builder, "\${percent}%"))
+}"""
+
+println stringify("START", 0)
 
 new File(this.args[0]).withReader { reader ->
     try {
@@ -57,50 +79,38 @@ new File(this.args[0]).withReader { reader ->
             if (inCodeSection) {
                 inCodeSection = !line.equals(BLOCK_DELIMITER)
                 if (inCodeSection) {
-                    def script = new StringBuilder(header.toString())
-                    imports.getCombinedImports().each { script.append("import ${it}\n") }
-                    imports.getCombinedStaticImports().each { script.append("import static ${it}\n") }
+                    def script = new StringBuilder()
                     def sanitizedLine = sanitize(line)
                     script.append(sanitizedLine)
-                    println STATEMENT_PREFIX + format(line)
-                    if (!sanitizedLine.isEmpty() && sanitizedLine[-1] in STATEMENT_CONTINUATION_CHARACTERS) {
-                        while (true) {
+                    println stringify(STATEMENT_PREFIX + format(line), lineNumber)
+                    if (!sanitizedLine.isEmpty() && (sanitizedLine[-1] in STATEMENT_CONTINUATION_CHARACTERS || line.split('"""', -1).size() % 2 == 0)) {
+                        def inMultiLineString = line.split('"""', -1).size() % 2 == 0
+                        def run = true
+                        while (run) {
                             line = reader.readLine()
-                            if (!line.startsWith(" ") && !line.startsWith("}") && !line.startsWith(")") || line.equals(BLOCK_DELIMITER)) {
+                            if (inMultiLineString) {
+                                if (line.split('"""', -1).size() % 2 == 0) {
+                                    run = false
+                                }
+                            } else if (!line.startsWith(" ") && !line.startsWith("}") && !line.startsWith(")") || line.equals(BLOCK_DELIMITER)) {
                                 skipNextRead = true
                                 break
                             }
                             sanitizedLine = sanitize(line)
+                            if (inMultiLineString) script.append("\n")
                             script.append(sanitizedLine)
-                            println STATEMENT_CONTINUATION_PREFIX + format(line)
+                            println stringify(STATEMENT_CONTINUATION_PREFIX + format(line), lineNumber)
                         }
                     }
-                    if (line.startsWith("import ")) {
-                        println "..."
-                    } else {
-                        if (line.equals(BLOCK_DELIMITER)) {
-                            skipNextRead = false
-                            inCodeSection = false
-                        }
-                        def res = engine.eval(script.toString())
-
-                        if (res instanceof Map) {
-                            res = res.entrySet()
-                        }
-                        if (res instanceof Iterable) {
-                            res = res.iterator()
-                        }
-                        if (res instanceof Iterator) {
-                            while (res.hasNext()) {
-                                def current = res.next()
-                                println RESULT_PREFIX + (current ?: "null")
-                            }
-                        } else if (!line.isEmpty() && !line.startsWith("//")) {
-                            println RESULT_PREFIX + (res ?: "null")
-                        }
+                    if (line.equals(BLOCK_DELIMITER)) {
+                        skipNextRead = false
+                        inCodeSection = false
                     }
+                    println script.toString()
                 }
-                if (!inCodeSection) println BLOCK_DELIMITER
+                if (!inCodeSection) {
+                    println stringify(BLOCK_DELIMITER, lineNumber)
+                }
             } else {
                 if (line.startsWith("[gremlin-")) {
                     def parts = line.split(/,/, 2)
@@ -108,19 +118,28 @@ new File(this.args[0]).withReader { reader ->
                     def lang = parts[0].split(/-/, 2)[1].replaceAll(/\s*\]\s*$/, "")
                     def graph = graphString.isEmpty() ? TinkerGraph.open() : TinkerFactory."create${graphString}"()
                     def g = graph.traversal(standard())
-                    engine = ScriptEngineCache.get(lang)
-                    engine.put("graph", graph)
-                    engine.put("g", g)
-                    engine.put("marko", g.V().has("name", "marko").tryNext().orElse(null))
+                    println stringify("IGNORE")
+                    if (graphString.isEmpty()) {
+                        println "graph = TinkerGraph.open()"
+                    } else {
+                        println "graph = TinkerFactory.create${graphString}()"
+                    }
+                    println "g = graph.traversal(standard())"
+                    println "marko = g.V().has(\"name\", \"marko\").tryNext().orElse(null)"
+                    println "f = new File('/tmp/neo4j')"
+                    println "if (f.exists()) f.deleteDir()"
+                    println ":set max-iteration 100"
+                    println stringify("IGNORE")
                     reader.readLine()
                     inCodeSection = true
-                    println "[source,${lang}]"
-                    println BLOCK_DELIMITER
-                } else println line
+                    println stringify("[source,${lang}]")
+                    println stringify(BLOCK_DELIMITER)
+                } else println stringify(line, lineNumber)
             }
         }
     } catch (final Throwable e) {
         try {
+            System.err.println()
             e.printStackTrace()
             throw new IllegalArgumentException("The script that failed:\n(${lineNumber}) ${line}");
         } catch (final Exception e1) {
@@ -130,3 +149,4 @@ new File(this.args[0]).withReader { reader ->
     }
 }
 
+println "System.err.println(); System.exit(0)"

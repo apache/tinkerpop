@@ -41,4 +41,9 @@ public final class PredicateTraverser<A> implements Predicate<Traverser<A>>, Ser
     public boolean test(final Traverser<A> traverser) {
         return this.predicate.test(traverser.get());
     }
+
+    @Override
+    public String toString() {
+        return this.predicate.toString();
+    }
 }
