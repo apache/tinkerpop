@@ -35,9 +35,7 @@ function directory {
   echo "$d2"
 }
 
-mkdir -p target/postprocess-asciidoc
-rm -rf target/postprocess-asciidoc/*
-mkdir target/postprocess-asciidoc/tmp
+mkdir -p target/postprocess-asciidoc/tmp
 cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
 
 TP_HOME=`pwd`
@@ -77,9 +75,13 @@ echo
 echo "============================"
 echo "+   Processing AsciiDocs   +"
 echo "============================"
-find "${TP_HOME}/docs/src/" -name "*.asciidoc" | xargs -n1 ${TP_HOME}/docs/preprocessor/preprocess-file.sh "${CONSOLE_HOME}"
+find "${TP_HOME}/docs/src/" -name "*.asciidoc" |
+     xargs -n1 basename |
+     xargs -n1 -I {} echo "echo -ne {}' '; (grep -n {} ${TP_HOME}/docs/src/index.asciidoc || echo 0) | cut -d ':' -f1" | /bin/bash | sort -nk2 | cut -d ' ' -f1 |
+     xargs -n1 -I {} echo "${TP_HOME}/docs/src/{}" |
+     xargs -n1 ${TP_HOME}/docs/preprocessor/preprocess-file.sh "${CONSOLE_HOME}"
 
-if [ ${PIPESTATUS[1]} -ne 0 ]; then
+if [ ${PIPESTATUS[4]} -ne 0 ]; then
   cleanup
   exit 1
 else
