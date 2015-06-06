@@ -1005,8 +1005,8 @@ graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
 :> g.V().group().by{it.value('name')[1]}.by('name')
 hdfs.ls()
 hdfs.ls('output')
-hdfs.ls('output/a')
-hdfs.head('output/a',ObjectWritable.class)
+hdfs.ls('output/~reducing')
+hdfs.head('output/~reducing', ObjectWritable)
 ----
 
 A list of the HDFS methods available are itemized below. Note that these methods are also available for the 'local' variable:
