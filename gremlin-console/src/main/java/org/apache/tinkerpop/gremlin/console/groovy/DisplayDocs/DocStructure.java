@@ -28,7 +28,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 public class DocStructure {
 
-	private String className;
+	private String className = "Not initalized";
 	private String classPath;
 	private TreeMap<String, MethodStructure> methodList;
         private final String methodSeparator = "<!-- ============ METHOD DETAIL ========== -->";
@@ -49,7 +49,7 @@ public class DocStructure {
                 MethodStructure temporary;
                 int position = 0, counter = 0;
 		try {
-			BufferedReader in = new BufferedReader(new FileReader("target/apache-gremlin-console-3.0.0-SNAPSHOT-standalone/javadocs/" + path));
+			BufferedReader in = new BufferedReader(new FileReader(path));
 			String str;
                         while ((str = in.readLine()) != null) {
                             if (finishReading)
@@ -99,6 +99,11 @@ public class DocStructure {
                                             if (str.contains("</pre>")) {
                                                 str += "\n";
                                             }
+                                            if (str.contains("</dt>") ||
+                                                    str.contains("<dl>") ||
+                                                    str.contains("</dd>")) {
+                                                str = "\n" + str + "\n";
+                                            }
                                             str = str.replaceAll("<br>", "\n");
                                             temp += cleanHtmlEntities(
                                                     str.replaceAll("\\<.*?>",""));
@@ -111,13 +116,14 @@ public class DocStructure {
                                             counter = 0;
                                         temporary = new MethodStructure(name, temp);
                                         methodList.put(temporary.getMethodName(), temporary);
+                                        temp = "";
                                     } else {
                                         position =0;
                                     }
                                 }
                             }
                         }
-		} catch (Exception e) {
+		} catch (Exception e) { 
                    System.out.println(e.getMessage()); 
                 }
 
@@ -160,5 +166,17 @@ public class DocStructure {
             str = str.replaceAll("&copy;", "©");
             str = str.replaceAll("&reg;", "®");
             return(str);
+        }
+        
+        public String getAllDocumentation(String name) {
+            name = name.replaceAll("\"", "");
+            MethodStructure temp = methodList.get(name);
+            String displayedDoc;
+            if (temp != null)
+                displayedDoc = temp.getMethodName() + "\n" + temp.getMethodDoc();
+            else
+                displayedDoc = "There is not method with that name in" +
+                        className + "plase use \":importdocs\" to import the correct Class";
+            return(displayedDoc);
         }
 }

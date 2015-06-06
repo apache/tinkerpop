@@ -20,12 +20,15 @@
 package org.apache.tinkerpop.gremlin.console.commands
 
 import org.apache.tinkerpop.gremlin.console.Mediator
+import org.apache.tinkerpop.gremlin.console.Console
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.CommandSupport
 
-//import org.apache.tinkerpop.gremlin.console.groovy.DisplayDocs.*
+import org.apache.tinkerpop.gremlin.console.groovy.DisplayDocs.*
 
 class ImportDocsCommand extends CommandSupport {
+    
+    private final Mediator mediator
     
     public ImportDocsCommand(final Groovysh shell, final Mediator mediator) {
 	super(shell, ":importdocs", ":idcs")
@@ -34,7 +37,8 @@ class ImportDocsCommand extends CommandSupport {
     
     @Override
     def Object execute(final List<String> arguments) {
-        io.println argument.get(0);
+        def classes = arguments as String[]
+        Console.updateCurrdocs(ImportJavadocs.findClass(classes[0]))
     }
 }
 

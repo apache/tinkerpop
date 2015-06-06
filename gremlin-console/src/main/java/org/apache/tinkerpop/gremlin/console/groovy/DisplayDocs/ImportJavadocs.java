@@ -39,14 +39,16 @@ public class ImportJavadocs {
          * @param className The name of a class whom javadocs we want to import.
          * @return true if this class exists and false if not.
          */
-	public static boolean findClass (String className) {
+	public static DocStructure findClass (String className) {
 		try {
-			currentDoc = new DocStructure(findPath2TheJavadoc(className), className);
+                        className = className.replaceAll("\"", "");
+                        String path = findPath2TheJavadoc(">" + className + "<");
+			DocStructure tempDoc = new DocStructure(path, className);
+                        currentDoc = tempDoc;
 		} catch (Exception e) {
-                        System.out.println("sgbddbb");
-			return(false);
+                        System.out.println("Unsuccesful import!");
 		}
-		return(true);
+                return(currentDoc);
 	}
         
         /**
@@ -70,14 +72,18 @@ public class ImportJavadocs {
 		boolean find = false;
 		String line = "";
                 String path[] = new String[2];
+                path[0] = ".";
+                int i = 0;
 		try {
-			File javadocDirectory = new File ("target/apache-gremlin-console-3.0.0-SNAPSHOT-standalone/javadocs");
-                        String[] folders = javadocDirectory.list();
+                        File pathDefinition = new File(".");
+                        path[0] = pathDefinition.getCanonicalPath().replace("bin", "target/site/apidocs");
+			File javadocDirectory = new File (path[0]);
+                        String[] folders = {"/core", "/full"};
 			for (String dir : folders) {
 				BufferedReader in = new BufferedReader(
-                                        new FileReader("target/apache-gremlin-console-3.0.0-SNAPSHOT-standalone/javadocs/" + dir + 
+                                        new FileReader(path[0] + dir + 
                                                 "/allclasses-noframe.html"));
-				String str;
+                                String str;
 				while ((str = in.readLine()) != null) {
 					find = str.contains(className);
 					if (find) {
@@ -85,17 +91,16 @@ public class ImportJavadocs {
 						break;
 					}
 				}
-                                path[0] = dir;
 				in.close();
 				if (find) {
-					break;
+                                    path[0] += dir;
+                                    break;
 				}
 			}
 		} catch (Exception e) {
-			System.out.println("xhbdxzfhn");
+			System.out.println(e.getMessage());
 		}
                 path[1] = line;
 		return(path);
 	}
-
 }

@@ -17,38 +17,30 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.console.groovy.DisplayDocs;
+package org.apache.tinkerpop.gremlin.console.commands
 
-/**
- *
- * @author xristosoik (https://github.com/xristosoik)
- */
-public class MethodStructure {
+import org.apache.tinkerpop.gremlin.console.Mediator
+import org.apache.tinkerpop.gremlin.console.Console
+import org.codehaus.groovy.tools.shell.Groovysh
+import org.codehaus.groovy.tools.shell.CommandSupport
+
+import org.apache.tinkerpop.gremlin.console.groovy.DisplayDocs.*
+
+class DocsCommand extends CommandSupport {
     
-    private String methodName;
-    private String documentation;
-    private static int counter = 0;
-
-    public MethodStructure (String name, String Block) {
-        methodName = name;
-        documentation = Block;
+    private final Mediator mediator
+    
+    public DocsCommand(final Groovysh shell, final Mediator mediator) {
+	super(shell, ":docs", ":dc")
+        this.mediator = mediator
     }
-
-    public static String cleanName(String name){
-        name = name.split("<h4>")[1];
-        name = name.split("</h4>")[0];
-        return(name);
-    }
-
-    public String getMethodName() {
-        return(methodName);
-    }
-
-    /**
-     *
-     * @return
-     */
-    public String getMethodDoc() {
-            return(documentation);
+    
+    @Override
+    def Object execute(final List<String> arguments) {
+        def method = arguments as String[]
+        def doc = Console.getCurrdocs()
+        io.out.println(doc.getAllDocumentation(method[0]))
     }
 }
+
+
