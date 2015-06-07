@@ -45,8 +45,9 @@ public class ImportJavadocs {
                         currentDoc = tempDoc;
 		} catch (Exception e) {
                         System.out.println("Unsuccesful import!");
-		}
-                return(currentDoc);
+		} finally {
+                    return(currentDoc);
+                }
 	}
         
         /**
@@ -71,6 +72,7 @@ public class ImportJavadocs {
 		String line = "";
                 String path[] = new String[2];
                 path[0] = ".";
+                path[1] = "";
                 int i = 0;
 		try {
                         webpage = false;
@@ -98,11 +100,8 @@ public class ImportJavadocs {
 			}
                     path[1] = line;
 		} catch (Exception e) {
-                    if (path[0].equals("")) {
-                        System.out.println("ATTENTION!!! It was not able to access the local javadoc folder");
-                        path = findPath2CorrectLineWeb(className);
-                    } else
-			System.out.println(e.getMessage());
+                    System.out.println("ATTENTION!!! It was not able to access the local javadoc folder");
+                    path = findPath2CorrectLineWeb(className);
 		} finally {
                     return(path);
                 }
@@ -122,13 +121,8 @@ public class ImportJavadocs {
                 File javadocDirectory = new File (path);
                 if (javadocDirectory.list() != null)
                     return(path);
-
-                path = pathDefinition.getCanonicalPath().replace("bin", "target/site/apidocs");
-                javadocDirectory = new File (path);
-                if (javadocDirectory.list() != null)
-                    return(path);
             } catch (Exception e) {
-                
+                return("");
             }
             return("");
         }
