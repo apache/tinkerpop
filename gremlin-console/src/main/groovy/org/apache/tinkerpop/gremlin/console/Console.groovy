@@ -89,6 +89,7 @@ class Console {
         groovy.register(new SubmitCommand(groovy, mediator))
         groovy.register(new ImportDocsCommand(groovy, mediator))
         groovy.register(new DocsCommand(groovy, mediator))
+        groovy.register(new CurrDocsCommand(groovy, mediator))
 
         // hide output temporarily while imports execute
         showShellEvaluationOutput(false)
