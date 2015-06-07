@@ -22,9 +22,6 @@ package org.apache.tinkerpop.gremlin.console.groovy.DisplayDocs;
  *
  * @author xristosoik (https://github.com/xristosoik)
  */
-
-import static org.junit.Assert.*;
-
-public class ImportJavadocsTest {
+public class DocStructureTest {
     
 }

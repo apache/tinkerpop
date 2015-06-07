@@ -57,7 +57,7 @@ class Console {
     private static final String IMPORT_STATIC_SPACE = "import static "
     private static final String NULL = "null"
     private static final String ELLIPSIS = "..."
-    protected static DocStructure currdocs = ImportJavadocs.findClass("AbstractChannelizer")
+    protected static DocStructure currdocs = ImportJavadocs.findClass("Graph")
 
     private Iterator tempIterator = Collections.emptyIterator()
 
