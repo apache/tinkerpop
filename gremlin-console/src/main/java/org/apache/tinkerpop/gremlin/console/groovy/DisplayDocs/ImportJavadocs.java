@@ -37,7 +37,7 @@ public class ImportJavadocs {
 	/**
          * This method find the target fill to the javadocs of the Class that is specifies by the className.
          * @param className The name of a class whom javadocs we want to import.
-         * @return true if this class exists and false if not.
+         * @return The DocStructure of the class.
          */
 	public static DocStructure findClass (String className) {
 		try {

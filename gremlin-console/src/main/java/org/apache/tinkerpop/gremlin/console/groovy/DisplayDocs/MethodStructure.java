@@ -34,21 +34,62 @@ public class MethodStructure {
         documentation = Block;
     }
 
+    /**
+     * 
+     * @param name The name of the Method in html code
+     * @return The name of the method without
+     */
+    
     public static String cleanName(String name){
         name = name.split("<h4>")[1];
         name = name.split("</h4>")[0];
         return(name);
     }
 
+    /**
+     * 
+     * @return Returns the method name
+     */
     public String getMethodName() {
         return(methodName);
     }
 
     /**
-     *
-     * @return
+     *  
+     * @return Return the method documentation
      */
     public String getMethodDoc() {
             return(documentation);
+    }
+    /**
+     * This method has as a purpose to create a separator based on the length of
+     * the method name.
+     * @param name the name of a method
+     * @return the separator
+     */    
+    public String createNameSeparator(String name) {
+        String sep = "";
+        int nameLength;
+        /*
+            I am identify the length of the method name
+        */
+        nameLength = name.toCharArray().length;
+
+        for (int i = 0; i < nameLength; i++) {
+            sep += "=";
+        }
+        sep += "\n";
+        return(sep);
+    }
+    
+    @Override
+    public String toString() {
+        String finalText = "", separator;
+        separator = createNameSeparator(methodName.split("-")[0]);
+        finalText += separator;
+        finalText += methodName.split("-")[0] + "\n";
+        finalText += separator;
+        finalText += documentation + "\n";
+        return(finalText);
     }
 }

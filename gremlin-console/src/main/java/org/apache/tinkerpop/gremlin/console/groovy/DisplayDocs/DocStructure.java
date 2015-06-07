@@ -97,7 +97,7 @@ public class DocStructure {
                                                 break;
                                             }
                                             if (str.contains("</pre>")) {
-                                                str += "\n";
+                                                str += "\n\n";
                                             }
                                             if (str.contains("</dt>") ||
                                                     str.contains("<dl>") ||
@@ -109,8 +109,12 @@ public class DocStructure {
                                                     str.replaceAll("\\<.*?>",""));
                                         }
                                         name = MethodStructure.cleanName(name);
+                                        /*
+                                        I the key exists i add in the end of the name
+                                        the char - and a number of a counter.
+                                        */
                                         if (methodList.containsKey(name)) {
-                                            name += counter;
+                                            name += "-" + counter;
                                             counter++;
                                         } else
                                             counter = 0;
@@ -171,10 +175,22 @@ public class DocStructure {
         public String getAllDocumentation(String name) {
             name = name.replaceAll("\"", "");
             MethodStructure temp = methodList.get(name);
-            String displayedDoc;
-            if (temp != null)
-                displayedDoc = temp.getMethodName() + "\n" + temp.getMethodDoc();
-            else
+            String displayedDoc = "", tempName;
+            int counter = 0;
+            if (temp != null) {
+                displayedDoc += temp;
+                tempName = name + "-" + counter;
+                temp = methodList.get(tempName);
+                /*
+                The purpose of this loop is to add all the overloaded methods.
+                */
+                while (temp != null) {
+                    displayedDoc += temp;
+                    counter++;
+                    tempName = name + "-" + counter;
+                    temp = methodList.get(tempName);
+                }
+            } else
                 displayedDoc = "There is not method with that name in" +
                         className + "plase use \":importdocs\" to import the correct Class";
             return(displayedDoc);
