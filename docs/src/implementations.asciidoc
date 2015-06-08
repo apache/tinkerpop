@@ -593,24 +593,22 @@ graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal()
 g.tx().commit()
 clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()}  <1>
-clock(1000) {g.V().has('name','Garcia').iterate()} <2>
-graph.cypher("CREATE INDEX ON :artist(name)") <3>
+graph.cypher("CREATE INDEX ON :artist(name)") <2>
 g.tx().commit()
-Thread.sleep(5000) <4>
-clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()} <5>
-clock(1000) {g.V().has('name','Garcia').iterate()} <6>
-graph.cypher("DROP INDEX ON :artist(name)") <7>
+Thread.sleep(5000) <3>
+clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()} <4>
+clock(1000) {g.V().has('name','Garcia').iterate()} <5>
+graph.cypher("DROP INDEX ON :artist(name)") <6>
 g.tx().commit()
 graph.close()
 ----
 
 <1> Find all artists whose name is Garcia which does a linear scan of the artist vertex-label partition.
-<2> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
-<3> Create an index for all artist vertices on their name property.
-<4> Neo4j indices are eventually consistent so this stalls to give the index to populate itself.
-<5> Find all artists whose name is Garcia which uses the pre-defined schema index.
-<6> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
-<7> Drop the created index.
+<2> Create an index for all artist vertices on their name property.
+<3> Neo4j indices are eventually consistent so this stalls to give the index time to populate itself.
+<4> Find all artists whose name is Garcia which uses the pre-defined schema index.
+<5> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
+<6> Drop the created index.
 
 Multi/Meta-Properties
 ~~~~~~~~~~~~~~~~~~~~~
