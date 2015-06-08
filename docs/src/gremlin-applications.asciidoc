@@ -1044,8 +1044,6 @@ It is rare that a user will ever interact with a `Traverser` directly. However, 
 
 [source,groovy]
 ----
-
-
 gremlin> g.V().map{it.get().value('name')}  // conventional
 ==>marko
 ==>vadas
