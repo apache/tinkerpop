@@ -21,6 +21,7 @@
 
 TP_HOME=`pwd`
 CONSOLE_HOME=$1
+AWK_SCRIPTS="${TP_HOME}/docs/preprocessor/awk"
 
 input=$2
 name=`basename ${input}`
@@ -48,15 +49,21 @@ if [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
     exit 0
   fi
   pushd "${CONSOLE_HOME}" > /dev/null
-  bin/gremlin.sh -e ${TP_HOME}/docs/preprocessor/processor.groovy ${input} > ${input}.part2.groovy
-  ec=${PIPESTATUS[0]}
-  if [ ${ec} -eq 0 ]; then
-    cat ${input}.part2.groovy | grep -o '^pb([0-9][0-9]*' | tail -n1 | cut -d '(' -f2 | xargs echo "TOTAL_LINES =" > ${input}.part1.groovy
-    cat ${input}.part?.groovy > ${input}.groovy && rm -f ${input}.part?.groovy
-    cat ${input}.groovy | HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/hadoop-gremlin/lib" bin/gremlin.sh | grep -v '^gremlin> ' | awk 'BEGIN {i=0} /^==>¶IGNORE$/ {i=!i} /^==>¶END$/ {p=0} !/^==>¶IGNORE$/ {if(!i&&p)print} /^==>¶START$/ {p=1}' | grep -v '^WARN ' | sed 's/^==>¶//' > ${output}
-    ec=${PIPESTATUS[1]}
-  fi
-  rm -f ${input}.groovy
+
+  awk -f ${AWK_SCRIPTS}/prepare.awk ${input} |
+  awk -f ${AWK_SCRIPTS}/init-code-blocks.awk |
+  awk -f ${AWK_SCRIPTS}/progressbar.awk -v tpl=${AWK_SCRIPTS}/progressbar.groovy.template | HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/hadoop-gremlin/lib" bin/gremlin.sh |
+  stdbuf -oL awk -f ${AWK_SCRIPTS}/ignore.awk   |
+  stdbuf -oL awk -f ${AWK_SCRIPTS}/prettify.awk |
+  stdbuf -oL awk -f ${AWK_SCRIPTS}/cleanup.awk  > ${output}
+
+  ps=(${PIPESTATUS[@]})
+  for i in {0..6}; do
+    ec=${ps[i]}
+    [ ${ec} -eq 0 ] || break
+  done
+
+  echo
   popd > /dev/null
   if [ ${ec} -ne 0 ]; then
     cleanup

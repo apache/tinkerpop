@@ -27,6 +27,20 @@ if [ ! -f bin/gremlin.sh ]; then
   exit 1
 fi
 
+for daemon in "NameNode" "DataNode" "JobTracker" "TaskTracker"
+do
+  running=`jps | cut -d ' ' -f2 | grep -c ${daemon}`
+  if [ ${running} -eq 0 ]; then
+    echo "Hadoop is not running, be sure to start it before processing the docs."
+    exit 1
+  fi
+done
+
+if [ -e /tmp/neo4j ]; then
+  echo "The directory '/tmp/neo4j' is required by the pre-processor, be sure to delete it before processing the docs."
+  exit 1
+fi
+
 function directory {
   d1=`pwd`
   cd $1
@@ -44,6 +58,15 @@ PLUGIN_DIR="${CONSOLE_HOME}/ext"
 TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -o 'version>[^<]*' | grep -o '>.*' | cut -d '>' -f2 | head -n1)
 TMP_DIR="/tmp/tp-docs-preprocessor"
 
+GREMLIN_SERVER=$(netstat -a | grep -o ':8182[0-9]*' | grep -cx ':8182')
+
+if [ ${GREMLIN_SERVER} -eq 0 ]; then
+  pushd gremlin-server/target/apache-gremlin-server-*-standalone > /dev/null
+  bin/gremlin-server.sh conf/gremlin-server-modern.yaml > /dev/null 2> /dev/null &
+  GREMLIN_SERVER_PID=$!
+  popd > /dev/null
+fi
+
 trap cleanup INT
 
 function cleanup() {
@@ -51,6 +74,9 @@ function cleanup() {
   docs/preprocessor/uninstall-plugins.sh "${CONSOLE_HOME}" "${TMP_DIR}"
   find "${TP_HOME}/docs/src/" -name "*.asciidoc.groovy" | xargs rm -f
   rm -rf ${TMP_DIR}
+  if [ ${GREMLIN_SERVER} -eq 0 ]; then
+    kill ${GREMLIN_SERVER_PID}
+  fi
 }
 
 mkdir -p ${TMP_DIR}
@@ -63,7 +89,7 @@ echo "=========================="
 echo
 docs/preprocessor/install-plugins.sh "${CONSOLE_HOME}" "${TP_VERSION}" "${TMP_DIR}"
 
-if [ ${PIPESTATUS[0]} -ne 0 ]; then
+if [ $? -ne 0 ]; then
   cleanup
   exit 1
 else
@@ -81,7 +107,13 @@ find "${TP_HOME}/docs/src/" -name "*.asciidoc" |
      xargs -n1 -I {} echo "${TP_HOME}/docs/src/{}" |
      xargs -n1 ${TP_HOME}/docs/preprocessor/preprocess-file.sh "${CONSOLE_HOME}"
 
-if [ ${PIPESTATUS[4]} -ne 0 ]; then
+ps=(${PIPESTATUS[@]})
+for i in {0..7}; do
+  ec=${ps[i]}
+  [ ${ec} -eq 0 ] || break
+done
+
+if [ ${ec} -ne 0 ]; then
   cleanup
   exit 1
 else
