@@ -540,7 +540,7 @@ Neo4j-Gremlin
 
 link:http://neotechnology.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.org[Neo4j graph database].
 
-CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licensed as link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. The `neo4j-gremlin` module is licensed Apache2 because it only references the Apache2-licensed Neo4j API (not implementation). Note that neither the <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j binaries. To access the Neo4j binaries, use the `:install` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
+CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licensed link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. The `neo4j-gremlin` module is licensed Apache2 because it only references the Apache2-licensed Neo4j API (not its implementation). Note that neither the <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j binaries. To access the Neo4j binaries, use the `:install` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
 
 [source,groovy]
 ----
@@ -556,18 +556,18 @@ gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 
 For those leveraging Neo4j High Availability, configure `Neo4jGraph` for "HA mode" by setting the `gremlin.neo4j.ha` flag to `true` in the `Configuration` object passed to `Neo4jGraph.open()`.  Note that when the flag is set (by default it is `false`), the `Neo4jGraph` instance expects HA configuration settings to be present.  As with embedded Neo4j, HA configuration keys should be prefixed with `gremlin.neo4j.conf`.  Please consult Neo4j documentation for more information on link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] configuration.
 
-IMPORTANT: `Neo4jGraph` supports both multi- and meta-properties (see <<_vertex_properties,vertex properties>>). This is not a native feature of Neo4j and is implemented by making use of "hidden" Neo4j nodes. For example, when a vertex has multiple "name" properties, each property is a new node (multi-properties) which can have properties attached to it (meta-properties). As such, the native, underlying representation may become difficult to query directly using another graph language such as Cypher. The default setting is to disable multi- and meta-properties. However, if this feature is desired, then it can be activated via `gremlin.neo4j.metaProperties` and `gremlin.neo4j.multiProperties` configurations being set to `true`. Once the configuration is set, it can not be changed for the lifetime of the graph.
+IMPORTANT: `Neo4jGraph` supports both multi- and meta-properties (see <<_vertex_properties,vertex properties>>). These features are not native to Neo4j and is implemented by making use of "hidden" Neo4j nodes. For example, when a vertex has multiple "name" properties, each property is a new node (multi-properties) which can have properties attached to it (meta-properties). As such, the native, underlying representation may become difficult to query directly using another graph language such as Cypher. The default setting is to disable multi- and meta-properties. However, if this feature is desired, then it can be activated via `gremlin.neo4j.metaProperties` and `gremlin.neo4j.multiProperties` configurations being set to `true`. Once the configuration is set, it can not be changed for the lifetime of the graph.
 
 WARNING: `Neo4jGraph` without multi- and meta-properties is in 1-to-1 correspondence with the native, underlying Neo4j representation. It is recommended that if the user does not require these features, then they should not enable them. Without multi- and meta-properties enabled, Neo4j can be interacted with with other tools and technologies that do not leverage TinkerPop.
 
-TIP: To host Neo4j in Gremlin Server, the dependencies must first be "installed" or otherwise copied to the Gremlin Server path. The automated method for doing this would be to execute `bin/gremlin-server.sh -i org.apache.tinkerpop neo4j-gremlin x.y.z`.
+TIP: To host Neo4j in <<gremlin-server,Gremlin Server>>, the dependencies must first be "installed" or otherwise copied to the Gremlin Server path. The automated method for doing this would be to execute `bin/gremlin-server.sh -i org.apache.tinkerpop neo4j-gremlin x.y.z`.
 
 Indices
 ~~~~~~~
 
 Neo4j 2.x indices leverage vertex labels to partition the index space. TinkerPop3 does not provide method interfaces for defining schemas/indices for the underlying graph system. Thus, in order to create indices, it is important to call the Neo4j API directly.
 
-NOTE: `Neo4jGraphStep` will attempt to discern which indices to use when executing a traversal of the form `g.V().has()`. The general order of checking is: indices, label grouping linear-scan iteration, full linear-scan iteration.
+NOTE: `Neo4jGraphStep` will attempt to discern which indices to use when executing a traversal of the form `g.V().has()`.
 
 The Gremlin-Console session below demonstrates Neo4j indices. For more information, please refer to the Neo4j documentation:
 
@@ -581,12 +581,12 @@ graph.cypher("CREATE INDEX ON :person(name)")
 graph.tx().commit()  <1>
 graph.addVertex(label,'person','name','marko')
 graph.addVertex(label,'dog','name','puppy')
-g = graph.traversal(standard())
+g = graph.traversal()
 g.V().hasLabel('person').has('name','marko').values('name')
 graph.close()
 ----
 
-<1> schema mutations must happen in a different tx than graph mutations
+<1> Schema mutations must happen in a different transaction than graph mutations
 
 Below demonstrates the runtime benefits of indices and demonstrates how if there is no defined index (only vertex labels), a linear scan of the vertex-label partition is still faster than a linear scan of all vertices.
 
@@ -597,12 +597,12 @@ graph.cypher("CREATE INDEX ON :artist(name)") <1>
 graph.tx().commit()
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal(standard())
-clock(1000) {g.V().hasLabel('artist').has('name','Garcia').next()}  <2>
-clock(1000) {g.V().has('name','Garcia').next()} <3>
+clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()}  <2>
+clock(1000) {g.V().has('name','Garcia').iterate()} <3>
 graph.cypher("DROP INDEX ON :artist(name)") <4>
 g.tx().commit()
-clock(1000) {g.V().hasLabel('artist').has('name','Garcia').next()} <5>
-clock(1000) {g.V().has('name','Garcia').next()} <6>
+clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()} <5>
+clock(1000) {g.V().has('name','Garcia').iterate()} <6>
 graph.close()
 ----
 
@@ -642,31 +642,33 @@ TinkerPop3 requires every `Element` to have a single, immutable string label (i.
 
 [source,java]
 public Set<String> labels() // get all the labels of the vertex
-public void addLabel(final String label) // add a label to the vertex
-public void removeLabel(final String label) // remove a label from the vertex
+public void addLabel(String label) // add a label to the vertex
+public void removeLabel(String label) // remove a label from the vertex
 
 An example use case is presented below.
 
-[source,java]
+[gremlin-groovy]
 ----
-Neo4jVertex v = (Neo4jVertex) graph.addVertex("human::animal");
-assertEquals("animal::human",v.label()) // standard Vertex.label() method (note that labels are alphabetically sorted)
-assertEquals(2, v.labels().size()) // specific Neo4jVertex.labels() method
-assertTrue(v.labels().contains("human"))
-assertTrue(v.labels().contains("animal"))
-
-v.addLabel("organism") // specific Neo4jVertex.addLabel() method
-v.removeLabel("human") // specific Neo4jVertex.removeLabel() method
-assertEquals(2, v.labels().size()) // specific Neo4jVertex.labels() method
-assertTrue(v.labels().contains("animal"))
-assertTrue(v.labels().contains("organism"))
-
-v.addLabel("organism") // add a repeat
-v.addLabel("human") // remove a label that doesn't exist
-assertEquals(2, v.labels().size()) // specific Neo4jVertex.labels() method
-assertTrue(v.labels().contains("animal"))
-assertTrue(v.labels().contains("organism"))
+graph = Neo4jGraph.open('/tmp/neo4j')
+vertex = (Neo4jVertex) graph.addVertex('human::animal') // typecasting only required in Java
+vertex.label() // standard Vertex.label() method (note that labels are alphabetically sorted)
+vertex.labels() // specific Neo4jVertex.labels() method
+vertex.addLabel('organism') // specific Neo4jVertex.addLabel() method
+vertex.label()
+vertex.removeLabel('human') // specific Neo4jVertex.removeLabel() method
+vertex.labels()
+vertex.addLabel('organism') // add a repeat
+vertex.labels()
+vertex.removeLabel('human') // remove a label that doesn't exist
+vertex.label()
+g = graph.traversal()
+g.V().has(label,'organism') // does not match as P.eq() does a full string match
+g.V().has(label,of('organism')) // N.of() is specific to neo4j-gremlin and used for multi-label matching
+g.V().has(label,of('organism')).has(label,of('animal'))
+g.V().has(label,of('organism').and(of('animal')))
 ----
+
+`N.of()` is only required if multi-labels are leveraged. `N.of()` is used when filtering/looking-up vertices by their label(s) as the standard `P.eq()` does a direct match on the `::`-representation of `vertex.label()`
 
 [[hadoop-gremlin]]
 Hadoop-Gremlin
