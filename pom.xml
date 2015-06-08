@@ -63,7 +63,7 @@ limitations under the License.
         </developer>
         <developer>
             <name>Stephen Mallette</name>
-            <email>spmva@genoprime.com</email>
+            <email>spmallette@apache.org</email>
             <url>http://stephen.genoprime.com</url>
         </developer>
     </developers>
@@ -72,6 +72,11 @@ limitations under the License.
             <name>Joshua Shinavier</name>
             <email>josh@fortytwo.net</email>
             <url>http://fortytwo.net</url>
+        </contributor>
+        <contributor>
+            <name>Matt Frantz</name>
+            <email>matthew.h.frantz@gmail.com</email>
+            <url>https://github.com/mhfrantz</url>
         </contributor>
     </contributors>
     <modules>
