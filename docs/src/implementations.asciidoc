@@ -556,10 +556,6 @@ gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 
 For those leveraging Neo4j High Availability, configure `Neo4jGraph` for "HA mode" by setting the `gremlin.neo4j.ha` flag to `true` in the `Configuration` object passed to `Neo4jGraph.open()`.  Note that when the flag is set (by default it is `false`), the `Neo4jGraph` instance expects HA configuration settings to be present.  As with embedded Neo4j, HA configuration keys should be prefixed with `gremlin.neo4j.conf`.  Please consult Neo4j documentation for more information on link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] configuration.
 
-IMPORTANT: `Neo4jGraph` supports both multi- and meta-properties (see <<_vertex_properties,vertex properties>>). These features are not native to Neo4j and is implemented by making use of "hidden" Neo4j nodes. For example, when a vertex has multiple "name" properties, each property is a new node (multi-properties) which can have properties attached to it (meta-properties). As such, the native, underlying representation may become difficult to query directly using another graph language such as Cypher. The default setting is to disable multi- and meta-properties. However, if this feature is desired, then it can be activated via `gremlin.neo4j.metaProperties` and `gremlin.neo4j.multiProperties` configurations being set to `true`. Once the configuration is set, it can not be changed for the lifetime of the graph.
-
-WARNING: `Neo4jGraph` without multi- and meta-properties is in 1-to-1 correspondence with the native, underlying Neo4j representation. It is recommended that if the user does not require these features, then they should not enable them. Without multi- and meta-properties enabled, Neo4j can be interacted with with other tools and technologies that do not leverage TinkerPop.
-
 TIP: To host Neo4j in <<gremlin-server,Gremlin Server>>, the dependencies must first be "installed" or otherwise copied to the Gremlin Server path. The automated method for doing this would be to execute `bin/gremlin-server.sh -i org.apache.tinkerpop neo4j-gremlin x.y.z`.
 
 Indices
@@ -613,7 +609,31 @@ graph.close()
 <5> Find all artists whose name is Garcia which does a linear scan of the artist vertex-label partition.
 <6> Find all vertices whose name is Garcia which requires a linear scan of all the data in the graph.
 
-IMPORTANT: When using a multi-property enabled `Neo4jGraph`, vertices may represent their properties on "hidden nodes" adjacent to the vertex. If a vertex property key/value is required for indexing, then two indices are required -- e.g. `CREATE INDEX ON :person(name)` and `CREATE INDEX ON :vertexProperty(name)`.
+Multi/Meta-Properties
+~~~~~~~~~~~~~~~~~~~~~
+
+`Neo4jGraph` supports both multi- and meta-properties (see <<_vertex_properties,vertex properties>>). These features are not native to Neo4j and are implemented using "hidden" Neo4j nodes. For example, when a vertex has multiple "name" properties, each property is a new node (multi-properties) which can have properties attached to it (meta-properties). As such, the native, underlying representation may become difficult to query directly using another graph language such as <<_cypher,Cypher>>. The default setting is to disable multi- and meta-properties. However, if this feature is desired, then it can be activated via `gremlin.neo4j.metaProperties` and `gremlin.neo4j.multiProperties` configurations being set to `true`. Once the configuration is set, it can not be changed for the lifetime of the graph.
+
+[gremlin-groovy]
+----
+conf = new BaseConfiguration()
+conf.setProperty('gremlin.neo4j.directory','/tmp/neo4j')
+conf.setProperty('gremlin.neo4j.multiProperties',true)
+conf.setProperty('gremlin.neo4j.metaProperties',true)
+graph = Neo4jGraph.open(conf)
+g = graph.traversal()
+random = new Random()
+g.addV('name','michael','name','michael hunger','name','mhunger')
+g.V().properties('name').property('acl', random.nextBoolean() ? 'private' : 'public')
+g.V(0).valueMap()
+g.V(0).properties()
+g.V(0).properties().valueMap()
+graph.close()
+----
+
+WARNING: `Neo4jGraph` without multi- and meta-properties is in 1-to-1 correspondence with the native, underlying Neo4j representation. It is recommended that if the user does not require multi/meta-properties, then they should not enable them. Without multi- and meta-properties enabled, Neo4j can be interacted with with other tools and technologies that do not leverage TinkerPop.
+
+IMPORTANT: When using a multi-property enabled `Neo4jGraph`, vertices may represent their properties on "hidden nodes" adjacent to the vertex. If a vertex property key/value is required for indexing, then two indices are required -- e.g. `CREATE INDEX ON :person(name)` and `CREATE INDEX ON :vertexProperty(name)` (see <<_indices,Neo4j indices>>).
 
 Cypher
 ~~~~~~
@@ -650,25 +670,35 @@ An example use case is presented below.
 [gremlin-groovy]
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
-vertex = (Neo4jVertex) graph.addVertex('human::animal') // typecasting only required in Java
-vertex.label() // standard Vertex.label() method (note that labels are alphabetically sorted)
-vertex.labels() // specific Neo4jVertex.labels() method
-vertex.addLabel('organism') // specific Neo4jVertex.addLabel() method
+vertex = (Neo4jVertex) graph.addVertex('human::animal') <1>
+vertex.label() <2>
+vertex.labels() <3>
+vertex.addLabel('organism') <4>
 vertex.label()
-vertex.removeLabel('human') // specific Neo4jVertex.removeLabel() method
+vertex.removeLabel('human') <5>
 vertex.labels()
-vertex.addLabel('organism') // add a repeat
+vertex.addLabel('organism') <6>
 vertex.labels()
-vertex.removeLabel('human') // remove a label that doesn't exist
+vertex.removeLabel('human') <7>
 vertex.label()
 g = graph.traversal()
-g.V().has(label,'organism') // does not match as P.eq() does a full string match
-g.V().has(label,of('organism')) // LabelP.of() is specific to neo4j-gremlin and used for multi-label matching
+g.V().has(label,'organism') <8>
+g.V().has(label,of('organism')) <9>
 g.V().has(label,of('organism')).has(label,of('animal'))
 g.V().has(label,of('organism').and(of('animal')))
 ----
 
-`LabelP.of()` is only required if multi-labels are leveraged. `LabelP.of()` is used when filtering/looking-up vertices by their label(s) as the standard `P.eq()` does a direct match on the `::`-representation of `vertex.label()`
+<1> Typecasting to a `Neo4jVertex` is only required in Java.
+<2> The standard `Vertex.label()` method returns all the labels in alphabetical order concatenated using `::`.
+<3> `Neo4jVertex.labels()` method returns the individual labels as a set.
+<4> `Neo4jVertex.addLabel()` method adds a single label.
+<5> `Neo4jVertex.removeLabel()` method removes a single label.
+<6> Labels are unique and thus duplicate labels don't exist.
+<7> If a label that does not exist is removed, nothing happens.
+<8> `P.eq()` does a full string match and should only be used if multi-labels are not leveraged.
+<9> `LabelP.of()` is specific to `Neo4jGraph` and used for multi-label matching.
+
+IMPORTANT: `LabelP.of()` is only required if multi-labels are leveraged. `LabelP.of()` is used when filtering/looking-up vertices by their label(s) as the standard `P.eq()` does a direct match on the `::`-representation of `vertex.label()`
 
 [[hadoop-gremlin]]
 Hadoop-Gremlin
