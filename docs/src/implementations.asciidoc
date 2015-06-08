@@ -475,11 +475,11 @@ The execution times for a vertex lookup by property is provided below for both n
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = graph.traversal(standard())
+g = graph.traversal()
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
 clock(1000) {g.V().has('name','Garcia').next()} <1>
 graph = TinkerGraph.open()
-g = graph.traversal(standard())
+g = graph.traversal()
 graph.createIndex('name',Vertex.class)
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
 clock(1000){g.V().has('name','Garcia').next()} <2>
@@ -590,12 +590,12 @@ Below demonstrates the runtime benefits of indices and demonstrates how if there
 ----
 graph = Neo4jGraph.open('/tmp/neo4j')
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g = graph.traversal()
 g.tx().commit()
-g = graph.traversal(standard())
 clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()}  <1>
 clock(1000) {g.V().has('name','Garcia').iterate()} <2>
 graph.cypher("CREATE INDEX ON :artist(name)") <3>
-graph.tx().commit()
+g.tx().commit()
 Thread.sleep(5000) <4>
 clock(1000) {g.V().hasLabel('artist').has('name','Garcia').iterate()} <5>
 clock(1000) {g.V().has('name','Garcia').iterate()} <6>
@@ -817,7 +817,7 @@ CAUTION: OLTP operations on `HadoopGraph` are not efficient. They require linear
 hdfs.copyFromLocal('data/tinkerpop-modern.kryo', 'tinkerpop-modern.kryo')
 hdfs.ls()
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-g = graph.traversal(standard())
+g = graph.traversal()
 g.V().count()
 g.V().out().out().values('name')
 g.V().group().by{it.value('name')[1]}.by('name').next()
