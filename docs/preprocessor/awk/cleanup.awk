@@ -26,7 +26,11 @@
     if (!evaluated || $0 !~ /^gremlin> [']?:/) {
       if (evaluated && $0 ~ /^==>:/) gsub(/^==>/, "gremlin> ")
       if (!evaluated || $0 == "==>----") gsub(/^==>/, "")
-      if (evaluated || ($0 !~ /^gremlin> pb\([0-9]*\); / && $0 !~ /^gremlin> $/)) print
+      if (evaluated) {
+        if ($0 !~ /^WARN /) print
+      } else if ($0 !~ /^gremlin> pb\([0-9]*\); / && $0 !~ /^gremlin> $/) {
+        print
+      }
     }
   }
 }
