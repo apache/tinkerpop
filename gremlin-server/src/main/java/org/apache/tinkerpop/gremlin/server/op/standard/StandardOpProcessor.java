@@ -20,10 +20,14 @@ package org.apache.tinkerpop.gremlin.server.op.standard;
 
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +64,35 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
 
         super.evalOpInternal(context, context::getGremlinExecutor, () -> {
             final Bindings bindings = new SimpleBindings();
+
+            // rebind any global bindings to a different variable.
+            if (msg.getArgs().containsKey(Tokens.ARGS_REBINDINGS)) {
+                final Map<String, String> rebinds = (Map<String, String>) msg.getArgs().get(Tokens.ARGS_REBINDINGS);
+                for (Map.Entry<String,String> kv : rebinds.entrySet()) {
+                    boolean found = false;
+                    final Map<String, Graph> graphs = context.getGraphs().getGraphs();
+                    if (graphs.containsKey(kv.getValue())) {
+                        bindings.put(kv.getKey(), graphs.get(kv.getValue()));
+                        found = true;
+                    }
+
+                    if (!found) {
+                        final Map<String, TraversalSource> traversalSources = context.getGraphs().getTraversalSources();
+                        if (traversalSources.containsKey(kv.getValue())) {
+                            bindings.put(kv.getKey(), traversalSources.get(kv.getValue()));
+                            found = true;
+                        }
+                    }
+
+                    if (!found) {
+                        final String error = String.format("Could not rebind [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
+                                kv.getKey(), kv.getValue(), kv.getValue());
+                        throw new OpProcessorException(error, ResponseMessage.build(msg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(error).create());
+                    }
+                }
+            }
+
+            // add any bindings to override any other supplied
             Optional.ofNullable((Map<String, Object>) msg.getArgs().get(Tokens.ARGS_BINDINGS)).ifPresent(bindings::putAll);
             return bindings;
         });

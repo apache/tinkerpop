@@ -128,7 +128,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
      *                         {@link GremlinExecutor#eval} method.
      */
     protected void evalOpInternal(final Context context, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
-                              final Supplier<Bindings> bindingsSupplier) throws OpProcessorException {
+                              final BindingSupplier<Bindings> bindingsSupplier) throws OpProcessorException {
         final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
@@ -247,5 +247,10 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         }
 
         stopWatch.stop();
+    }
+
+    @FunctionalInterface
+    public interface BindingSupplier<T> {
+        public T get() throws OpProcessorException;
     }
 }

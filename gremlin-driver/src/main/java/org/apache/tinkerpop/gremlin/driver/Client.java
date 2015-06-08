@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +102,8 @@ public abstract class Client {
     /**
      * Submits a Gremlin script to the server and returns a {@link ResultSet} once the write of the request is
      * complete.
+     *
+     * @param gremlin the gremlin script to execute
      */
     public ResultSet submit(final String gremlin) {
         return submit(gremlin, null);
@@ -111,6 +114,9 @@ public abstract class Client {
      * the request is complete.  If a script is to be executed repeatedly with slightly different arguments, prefer
      * this method to concatenating a Gremlin script from dynamically produced strings and sending it to
      * {@link #submit(String)}.  Parameterized scripts will perform better.
+     *
+     * @param gremlin the gremlin script to execute
+     * @param parameters a map of parameters that will be bound to the script on execution
      */
     public ResultSet submit(final String gremlin, final Map<String, Object> parameters) {
         try {
@@ -123,6 +129,8 @@ public abstract class Client {
     /**
      * The asynchronous version of {@link #submit(String)} where the returned future will complete when the
      * write of the request completes.
+     *
+     * @param gremlin the gremlin script to execute
      */
     public CompletableFuture<ResultSet> submitAsync(final String gremlin) {
         return submitAsync(gremlin, null);
@@ -131,6 +139,9 @@ public abstract class Client {
     /**
      * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
      * write of the request completes.
+     *
+     * @param gremlin the gremlin script to execute
+     * @param parameters a map of parameters that will be bound to the script on execution
      */
     public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String, Object> parameters) {
         final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
@@ -138,6 +149,7 @@ public abstract class Client {
                 .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
 
         Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
+
         return submitAsync(buildMessage(request));
     }
 
@@ -190,6 +202,56 @@ public abstract class Client {
         }
 
         /**
+         * Submits a Gremlin script to the server and returns a {@link ResultSet} once the write of the request is
+         * complete.
+         *
+         * @param gremlin the gremlin script to execute
+         */
+        public ResultSet submit(final String gremlin, final String graphOrTraversalSource) {
+            return submit(gremlin, graphOrTraversalSource, null);
+        }
+
+        /**
+         * Submits a Gremlin script and bound parameters to the server and returns a {@link ResultSet} once the write of
+         * the request is complete.  If a script is to be executed repeatedly with slightly different arguments, prefer
+         * this method to concatenating a Gremlin script from dynamically produced strings and sending it to
+         * {@link #submit(String)}.  Parameterized scripts will perform better.
+         *
+         * @param gremlin the gremlin script to execute
+         * @param parameters a map of parameters that will be bound to the script on execution
+         * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
+         */
+        public ResultSet submit(final String gremlin, final String graphOrTraversalSource, final Map<String, Object> parameters) {
+            try {
+                return submitAsync(gremlin, graphOrTraversalSource, parameters).get();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
+        /**
+         * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
+         * write of the request completes.
+         *
+         * @param gremlin the gremlin script to execute
+         * @param parameters a map of parameters that will be bound to the script on execution
+         * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
+         */
+        public CompletableFuture<ResultSet> submitAsync(final String gremlin, final String graphOrTraversalSource,
+                                                        final Map<String, Object> parameters) {
+            final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .add(Tokens.ARGS_GREMLIN, gremlin)
+                    .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
+
+            Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
+
+            if (graphOrTraversalSource != null && !graphOrTraversalSource.isEmpty())
+                request.addArg(Tokens.ARGS_REBINDINGS, makeRebindings(graphOrTraversalSource));
+
+            return submitAsync(buildMessage(request));
+        }
+
+        /**
          * Uses a {@link LoadBalancingStrategy} to choose the best {@link Host} and then selects the best connection
          * from that host's connection pool.
          */
@@ -230,6 +292,12 @@ public abstract class Client {
             final CompletableFuture[] poolCloseFutures = new CompletableFuture[hostConnectionPools.size()];
             hostConnectionPools.values().stream().map(ConnectionPool::closeAsync).collect(Collectors.toList()).toArray(poolCloseFutures);
             return CompletableFuture.allOf(poolCloseFutures);
+        }
+
+        private Map<String,String> makeRebindings(final String graphOrTraversalSource) {
+            final Map<String,String> rebindings = new HashMap<>();
+            rebindings.put("g", graphOrTraversalSource);
+            return rebindings;
         }
     }
 

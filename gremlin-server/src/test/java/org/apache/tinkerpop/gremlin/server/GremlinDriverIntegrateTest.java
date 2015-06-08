@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.Result;
@@ -50,6 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 
 /**
@@ -69,15 +71,24 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     public Settings overrideSettings(final Settings settings) {
         final String nameOfTest = name.getMethodName();
 
-        // todo: how do we do transactional testing?
-        /** removed neo4j - how do we test transactions now??
         switch (nameOfTest) {
+            case "shouldRebindTraversalSourceVariables":
+                try {
+                    final String p = TestHelper.generateTempFileFromResource(
+                            GremlinDriverIntegrateTest.class, "generate-shouldRebindTraversalSourceVariables.groovy", "").getAbsolutePath();
+                    settings.scriptEngines.get("gremlin-groovy").scripts = Arrays.asList(p);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+                break;
+            /*
+            // todo: how do we do transactional testing without neo4j?
             case "shouldExecuteScriptInSessionOnTransactionalGraph":
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("g", "conf/neo4j-empty.properties");
                 break;
+                */
         }
-         */
 
         return settings;
     }
@@ -449,5 +460,47 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         for (int ix = 0; ix < results.size(); ix++) {
             assertEquals(1000 + ix, results.get(ix).intValue());
         }
+    }
+
+    @Test
+    public void shouldRebindGraphVariables() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        try {
+            client.submit("g.addVertex('name','stephen');").all().get().get(0).getVertex();
+            fail("Should have tossed an exception because \"g\" does not have the addVertex method under default config");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ResponseException.class));
+            final ResponseException re = (ResponseException) root;
+            assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
+        }
+
+        final Vertex v = client.submit("g.addVertex('name','stephen')", "graph").all().get().get(0).getVertex();
+        assertEquals("stephen", v.value("name"));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldRebindTraversalSourceVariables() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client.ClusteredClient client = cluster.connect();
+
+        try {
+            client.submit("g.addV('name','stephen');").all().get().get(0).getVertex();
+            fail("Should have tossed an exception because \"g\" is readonly in this context");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ResponseException.class));
+            final ResponseException re = (ResponseException) root;
+            assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
+        }
+
+        final Vertex v = client.submit("g.addV('name','stephen')", "g1").all().get().get(0).getVertex();
+        assertEquals("stephen", v.value("name"));
+
+        cluster.close();
     }
 }

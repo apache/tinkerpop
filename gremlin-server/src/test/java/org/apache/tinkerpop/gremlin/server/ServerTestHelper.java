@@ -28,13 +28,18 @@ import java.util.stream.Collectors;
 public class ServerTestHelper {
     /**
      *  Tests from maven will pass this value in via failsafe plugin. basically we want to home this in on the
-     *  gremlin-server directory to get stuff to reference scripts properly from the file system from any directory
+     *  gremlin-server directory to get stuff to reference scripts properly from the file system from any directory.
+     *  If an overriden path is determined to be absolute then the path is not re-written.
      */
     static void rewritePathsInGremlinServerSettings(final Settings overridenSettings) {
         final String buildDir = System.getProperty("build.dir");
         final String homeDir = buildDir.substring(0, buildDir.indexOf("gremlin-server") + "gremlin-server".length());
+
         overridenSettings.scriptEngines.get("gremlin-groovy").scripts = overridenSettings.scriptEngines
-                .get("gremlin-groovy").scripts.stream().map(s -> homeDir + File.separator + s).collect(Collectors.toList());
+                .get("gremlin-groovy").scripts.stream()
+                .map(s -> new File(s).isAbsolute() ? s : homeDir + File.separator + s)
+                .collect(Collectors.toList());
+
         overridenSettings.graphs = overridenSettings.graphs.entrySet().stream()
                 .map(kv -> {
                     kv.setValue(homeDir + File.separator + kv.getValue());

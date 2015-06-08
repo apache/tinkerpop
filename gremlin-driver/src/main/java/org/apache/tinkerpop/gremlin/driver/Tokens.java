@@ -37,13 +37,14 @@ public final class Tokens {
     public static final String OPS_USE = "use";
     public static final String OPS_VERSION = "version";
 
+    public static final String ARGS_BATCH_SIZE = "batchSize";
     public static final String ARGS_BINDINGS = "bindings";
     public static final String ARGS_COORDINATES = "coordinates";
     public static final String ARGS_GREMLIN = "gremlin";
     public static final String ARGS_IMPORTS = "imports";
     public static final String ARGS_INFO_TYPE = "infoType";
     public static final String ARGS_LANGUAGE = "language";
-    public static final String ARGS_BATCH_SIZE = "batchSize";
+    public static final String ARGS_REBINDINGS = "rebindings";
     public static final String ARGS_SESSION = "session";
 
     public static final String ARGS_COORDINATES_GROUP = "group";
