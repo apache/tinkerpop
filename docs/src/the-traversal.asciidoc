@@ -252,9 +252,10 @@ g.V().hasLabel('software').as('a','b','c').
 Barrier Step
 ~~~~~~~~~~~~
 
-The `barrier()`-step turns the the lazy traversal pipeline into a bulk-synchronous pipeline (*barrier*). This step is useful in the following situations:
-  . When everything prior to `barrier()` needs to be executed before moving onto the steps after the `barrier()` (i.e. ordering).
-  . When "stalling" the traversal may lead to a "bulking optimization" in traversals that repeatedly touch many of the same elements (i.e. optimizing).
+The `barrier()`-step (*barrier*) turns the the lazy traversal pipeline into a bulk-synchronous pipeline. This step is useful in the following situations:
+
+  * When everything prior to `barrier()` needs to be executed before moving onto the steps after the `barrier()` (i.e. ordering).
+  * When "stalling" the traversal may lead to a "bulking optimization" in traversals that repeatedly touch many of the same elements (i.e. optimizing).
 
 [gremlin-groovy,modern]
 ----

@@ -43,9 +43,13 @@ public final class CoinStep<S> extends FilterStep<S> {
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
         long newBulk = 0l;
-        for (int i = 0; i < traverser.bulk(); i++) {
-            if (this.probability >= RANDOM.nextDouble())
-                newBulk++;
+        if (traverser.bulk() < 10) {
+            for (int i = 0; i < traverser.bulk(); i++) {
+                if (this.probability >= RANDOM.nextDouble())
+                    newBulk++;
+            }
+        } else {
+            newBulk = Double.valueOf(RANDOM.nextBoolean() ? Math.floor(this.probability * traverser.bulk()) : Math.ceil(this.probability * traverser.bulk())).longValue();
         }
         if (0 == newBulk) return false;
         traverser.setBulk(newBulk);
