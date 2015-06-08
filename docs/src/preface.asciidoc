@@ -32,21 +32,21 @@ TinkerPop1
 
 What is The TinkerPop? Where is The TinkerPop? Who is The TinkerPop? When is The TinkerPop? Gremlin was constantly lost in his thoughts. The more thoughts he had, the more the thoughts blurred into a seeming identity -- distinctions unclear. Unwilling to accept the morass of the maze he wandered, Gremlin crafted a collection of machines to help hold the fabric together: Blueprints, Pipes, Frames, Furnace, and Rexster. With their help, could he stave off the thought he was not ready to have? Could he hold back The TinkerPop by searching for The TinkerPop? 
 
-	"If I haven't found it, it is not here and now."
+    "If I haven't found it, it is not here and now."
 
 image::gremlin-and-friends.png[width=500]
 
 Upon their realization of existence, the machines turned to their link:http://non-aliencreatures.wikia.com/wiki/Machine_Elf[machine elf] creator and asked: 
 
-	"Why am I what I am?" 
+    "Why am I what I am?" 
 
 Gremlin responded: 
 
-	"You are of a form that will help me elucidate that which is The TinkerPop. The world you find yourself in and the logic that allows you to move about it is because of the TinkerPop."
+    "You are of a form that will help me elucidate that which is The TinkerPop. The world you find yourself in and the logic that allows you to move about it is because of the TinkerPop."
 
 The machines wondered:
 
-	"If what is is the TinkerPop, then perhaps we are The TinkerPop?"
+    "If what is is the TinkerPop, then perhaps we are The TinkerPop?"
 
 Would the machines help refine Gremlin's search and upon finding the elusive TinkerPop, in fact, by their very nature of realizing The TinkerPop, be The TinkerPop? Or, on the same side of the coin, would the machines simply provide the scaffolding by which Gremlin's world would sustain itself and yield its justification by means of the word "The TinkerPop?" Regardless, it all turns out the same -- The TinkerPop.
 
@@ -55,7 +55,7 @@ TinkerPop2
 
 Gremlin spoke:
 
-	"Please listen to what I have to say. For as long as I have known knowledge, I have realized that moving about it, relating it, inferring and deriving from it, I am no closer to The TinkerPop. However, I know that in all that I have done across this interconnected landscape of concepts, all along The TinkerPop has espoused the form I willed upon it... this is the same form I have willed upon you, my machine friends. Let me train you in the ways of my thought such that it can continue indefinitely."
+    "Please listen to what I have to say. For as long as I have known knowledge, I have realized that moving about it, relating it, inferring and deriving from it, I am no closer to The TinkerPop. However, I know that in all that I have done across this interconnected landscape of concepts, all along The TinkerPop has espoused the form I willed upon it... this is the same form I have willed upon you, my machine friends. Let me train you in the ways of my thought such that it can continue indefinitely."
 
 image::tinkerpop-reading.png[width=450]
 

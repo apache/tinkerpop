@@ -1159,10 +1159,10 @@ TINKERPOP TEST SUITE
 > org.apache.tinkerpop.gremlin.process.GroovyProcessComputerSuite
 - Opts out of 12 individual tests
 > org.apache.tinkerpop.gremlin.process.graph.step.map.MatchTest$StandardTest#g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX
-	"Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute."
+    "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute."
 ...
 > org.apache.tinkerpop.gremlin.process.graph.step.map.MatchTest$JavaMatchTest#g_V_matchXa_inXsungByX_b__a_inXsungByX_c__b_outXwrittenByX_d__c_outXwrittenByX_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX
-	"Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute."
+    "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute."
 
 - NOTE -
 The describeGraph() function shows information about a Graph implementation.
