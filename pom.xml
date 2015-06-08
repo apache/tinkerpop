@@ -66,6 +66,11 @@ limitations under the License.
             <email>spmallette@apache.org</email>
             <url>http://stephen.genoprime.com</url>
         </developer>
+        <developer>
+            <name>Daniel Kuppitz</name>
+            <email>dkuppitz@apache.org</email>
+            <url>http://gremlin.guru</url>
+        </developer>
     </developers>
     <contributors>
         <contributor>
