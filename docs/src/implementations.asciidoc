@@ -663,12 +663,12 @@ vertex.removeLabel('human') // remove a label that doesn't exist
 vertex.label()
 g = graph.traversal()
 g.V().has(label,'organism') // does not match as P.eq() does a full string match
-g.V().has(label,of('organism')) // N.of() is specific to neo4j-gremlin and used for multi-label matching
+g.V().has(label,of('organism')) // LabelP.of() is specific to neo4j-gremlin and used for multi-label matching
 g.V().has(label,of('organism')).has(label,of('animal'))
 g.V().has(label,of('organism').and(of('animal')))
 ----
 
-`N.of()` is only required if multi-labels are leveraged. `N.of()` is used when filtering/looking-up vertices by their label(s) as the standard `P.eq()` does a direct match on the `::`-representation of `vertex.label()`
+`LabelP.of()` is only required if multi-labels are leveraged. `LabelP.of()` is used when filtering/looking-up vertices by their label(s) as the standard `P.eq()` does a direct match on the `::`-representation of `vertex.label()`
 
 [[hadoop-gremlin]]
 Hadoop-Gremlin

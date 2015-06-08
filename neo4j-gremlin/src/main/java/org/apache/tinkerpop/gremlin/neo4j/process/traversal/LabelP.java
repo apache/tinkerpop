@@ -21,6 +21,7 @@
 
 package org.apache.tinkerpop.gremlin.neo4j.process.traversal;
 
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 
 import java.io.Serializable;
@@ -48,7 +49,7 @@ public final class LabelP extends P<String> {
 
         @Override
         public boolean test(final String labels, final String checkLabel) {
-            return labels.contains(checkLabel); // TODO: contains may be bad -- use :: reg-ex parsing?
+            return labels.equals(checkLabel) || labels.contains(Neo4jVertex.LABEL_DELIMINATOR + checkLabel) || labels.contains(checkLabel + Neo4jVertex.LABEL_DELIMINATOR);
         }
 
         public static LabelBiPredicate instance() {
