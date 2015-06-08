@@ -46,6 +46,8 @@ import org.neo4j.tinkerpop.api.Neo4jGraphAPI;
 import org.neo4j.tinkerpop.api.Neo4jNode;
 import org.neo4j.tinkerpop.api.Neo4jRelationship;
 import org.neo4j.tinkerpop.api.Neo4jTx;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -69,7 +71,13 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE)
 @Graph.OptIn("org.apache.tinkerpop.gremlin.neo4j.NativeNeo4jSuite")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.structure.TransactionTest",
+        method = "shouldRollbackOnShutdownWhenConfigured",
+        reason = "There appears to be a race condition that occurs between Graph.close() and Neo4jGraphAPI.shutdown()")
 public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
+
+    public static final Logger LOGGER = LoggerFactory.getLogger(Neo4jGraph.class);
 
     static {
         TraversalStrategies.GlobalCache.registerStrategies(Neo4jGraph.class, TraversalStrategies.GlobalCache.getStrategies(Graph.class).clone().addStrategies(Neo4jGraphStepStrategy.instance()));
@@ -110,6 +118,8 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         if (!hasMetaProperties.isPresent())
             this.neo4jGraphVariables.set(Graph.Hidden.hide(CONFIG_META_PROPERTIES), supportsMetaProperties);
         this.trait = supportsMultiProperties ? MultiMetaNeo4jTrait.instance() : NoMultiNoMetaNeo4jTrait.instance();
+        if (supportsMultiProperties)
+            LOGGER.warn(this.getClass().getSimpleName() + "'s multi/meta-properties feature is considered experimental and should not be used in a production setting until this warning is removed");
         this.tx().commit();
     }
 
@@ -307,8 +317,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
     public <S, E> GraphTraversal<S, E> cypher(final String query, final Map<String, Object> parameters) {
         this.tx().readWrite();
         final GraphTraversal.Admin<S, E> traversal = new DefaultGraphTraversal<>(this);
-        Iterator result = this.baseGraph.execute(query, parameters);
-        traversal.addStep(new CypherStartStep(traversal, query, new Neo4jCypherIterator<S>(result, this)));
+        traversal.addStep(new CypherStartStep(traversal, query, new Neo4jCypherIterator<>((Iterator) this.baseGraph.execute(query, parameters), this)));
         return traversal;
     }
 

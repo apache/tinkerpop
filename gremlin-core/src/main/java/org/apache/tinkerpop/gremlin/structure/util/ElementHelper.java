@@ -48,7 +48,8 @@ import java.util.stream.Stream;
  */
 public final class ElementHelper {
 
-    private ElementHelper() {}
+    private ElementHelper() {
+    }
 
     /**
      * Determine whether the Element label can be legally set. This is typically used as a pre-condition check.
@@ -65,7 +66,13 @@ public final class ElementHelper {
             throw Element.Exceptions.labelCanNotBeAHiddenKey(label);
     }
 
-    public static void validateMixedElementIds(final Class<? extends Element> clazz, final Object... ids) {
+    /**
+     * Determine whether an array of ids are either all elements or ids of elements. This is typically used as a pre-condition check.
+     *
+     * @param clazz the class of the element for which the ids will bind
+     * @param ids   the ids that must be either elements or id objects, else {@link Graph.Exceptions#idArgsMustBeEitherIdOrElement()} is thrown.
+     */
+    public static void validateMixedElementIds(final Class<? extends Element> clazz, final Object... ids) throws IllegalArgumentException {
         if (ids.length > 1) {
             final boolean element = clazz.isAssignableFrom(ids[0].getClass());
             for (int i = 1; i < ids.length; i++) {
@@ -132,7 +139,7 @@ public final class ElementHelper {
      * there are no values left, the key value list is returned as empty.
      *
      * @param keyToRemove the key to remove
-     * @param keyValues the list to remove the accessor from
+     * @param keyValues   the list to remove the accessor from
      * @return the key/values without the specified accessor or an empty array if no values remain after removal
      */
     public static Optional<Object[]> remove(final String keyToRemove, final Object... keyValues) {
@@ -144,7 +151,7 @@ public final class ElementHelper {
      * assure that key positions contain strings and that there are an even number of elements. If after removal
      * there are no values left, the key value list is returned as empty.
      *
-     * @param accessor to remove
+     * @param accessor  to remove
      * @param keyValues the list to remove the accessor from
      * @return the key/values without the specified accessor or an empty array if no values remain after removal
      */
@@ -188,8 +195,8 @@ public final class ElementHelper {
      * Replaces one key with a different key.
      *
      * @param keyValues the list of key/values to alter
-     * @param oldKey the key to replace
-     * @param newKey the new key
+     * @param oldKey    the key to replace
+     * @param newKey    the new key
      */
     public static Object[] replaceKey(final Object[] keyValues, final Object oldKey, final Object newKey) {
         final Object[] kvs = new Object[keyValues.length];
