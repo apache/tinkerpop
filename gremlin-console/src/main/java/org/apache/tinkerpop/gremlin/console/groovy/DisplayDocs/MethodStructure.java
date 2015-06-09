@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.tinkerpop.gremlin.console.groovy.DisplayDocs;
 
 /**
@@ -24,64 +23,65 @@ package org.apache.tinkerpop.gremlin.console.groovy.DisplayDocs;
  * @author xristosoik (https://github.com/xristosoik)
  */
 public class MethodStructure {
-    
+
     private String methodName;
     private String documentation;
     private static int counter = 0;
 
-    public MethodStructure (String name, String Block) {
+    public MethodStructure(String name, String Block) {
         methodName = name;
         documentation = Block;
     }
 
     /**
-     * 
+     *
      * @param name The name of the Method in html code
      * @return The name of the method without
      */
-    
-    public static String cleanName(String name){
+    public static String cleanName(String name) {
         name = name.split("<h4>")[1];
         name = name.split("</h4>")[0];
-        return(name);
+        return (name);
     }
 
     /**
-     * 
+     *
      * @return Returns the method name
      */
     public String getMethodName() {
-        return(methodName);
+        return (methodName);
     }
 
     /**
-     *  
+     *
      * @return Return the method documentation
      */
     public String getMethodDoc() {
-            return(documentation);
+        return (documentation);
     }
+
     /**
      * This method has as a purpose to create a separator based on the length of
      * the method name.
+     *
      * @param name the name of a method
      * @return the separator
-     */    
+     */
     public String createNameSeparator(String name) {
         String sep = "";
         int nameLength;
         /*
-            I am identify the length of the method name
-        */
+         I am identify the length of the method name
+         */
         nameLength = name.toCharArray().length;
 
         for (int i = 0; i < nameLength; i++) {
             sep += "=";
         }
         sep += "\n";
-        return(sep);
+        return (sep);
     }
-    
+
     @Override
     public String toString() {
         String finalText = "", separator;
@@ -90,6 +90,6 @@ public class MethodStructure {
         finalText += methodName.split("-")[0] + "\n";
         finalText += separator;
         finalText += documentation + "\n";
-        return(finalText);
+        return (finalText);
     }
 }

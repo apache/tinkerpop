@@ -77,7 +77,7 @@ class Console {
                     maxIteration = Integer.parseInt(evt.newValue)
             }
         })
-        //static PreferenceChangeListener doc = new PreferenceChangeListener();
+        
         final Mediator mediator = new Mediator(this)
         def commandsToRemove = groovy.getRegistry().commands().findAll{it instanceof SetCommand}
         commandsToRemove.each {groovy.getRegistry().remove(it)}
