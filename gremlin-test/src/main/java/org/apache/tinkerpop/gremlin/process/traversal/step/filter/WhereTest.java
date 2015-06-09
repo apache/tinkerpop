@@ -81,7 +81,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     // multi-labels
 
-    public abstract Traversal<Vertex, String> get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name();
+    //public abstract Traversal<Vertex, String> get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -257,12 +257,12 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     }
 
     // multi-labels
-    @Test
+   /* @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name();
         checkResults(Arrays.asList("josh"), traversal);
-    }
+    } */
 
 
     public static class Traversals extends WhereTest {
@@ -337,9 +337,9 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
         // multi-labels
 
-        @Override
+       /* @Override
         public Traversal<Vertex, String> get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name() {
             return g.V().as("a").out("knows").as("b").where(as("a", "b").out("created").has("name", "ripple")).values("name");
-        }
+        }*/
     }
 }

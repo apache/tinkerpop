@@ -22,8 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -101,25 +99,6 @@ public final class TraversalUtil {
         return false;
     }
 
-    public static final <S, E> boolean test(final Multiple<S> start, final Traversal.Admin<S, E> traversal, final Multiple<E> end) {
-        if (null == end) return TraversalUtil.test(start, traversal);
-
-        traversal.reset();
-        traversal.addStarts(traversal.getTraverserGenerator().generateIterator(start.iterator(), (Step) traversal.getStartStep(), 1l));
-        final Step<?, E> endStep = traversal.getEndStep();
-        while (traversal.hasNext()) {
-            if (end.contains(endStep.next().get()))
-                return true;
-        }
-        return false;
-    }
-
-    public static final <S, E> boolean test(final Multiple<S> start, final Traversal.Admin<S, E> traversal) {
-        traversal.reset();
-        traversal.addStarts(traversal.getTraverserGenerator().generateIterator(start.iterator(), (Step) traversal.getStartStep(), 1l));
-        return traversal.hasNext();
-    }
-
     public static final <S, E> E applyNullable(final S start, final Traversal.Admin<S, E> traversal) {
         return null == traversal ? (E) start : TraversalUtil.apply(start, traversal);
     }
@@ -128,21 +107,5 @@ public final class TraversalUtil {
         traversal.reset();
         traversal.addStart(traversal.getTraverserGenerator().generate(start, traversal.getStartStep(), 1l));
         return traversal.hasNext(); // filter
-    }
-
-    public static class Multiple<S> implements Iterable<S> {
-        private Collection<S> multiple;
-
-        public Multiple(final Collection<S> multiple) {
-            this.multiple = multiple;
-        }
-
-        public Iterator<S> iterator() {
-            return this.multiple.iterator();
-        }
-
-        public boolean contains(final S object) {
-            return this.multiple.contains(object);
-        }
     }
 }

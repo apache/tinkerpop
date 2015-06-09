@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `WhereStep` now uses a `SelectOneStep` for `as('a').out()...` forms as this ensures `Traverser` (and metadata) propagation.
 * Renamed `KeyStep` to `PropertyKeyStep` to be consistent with `PropertyValueStep`.
 * Added `Gremlin-Lib-Paths` to modify paths in plugin `lib` directory.
 * Modified the capabilities of `Gremlin-Plugin-Paths` to delete paths that have no value on the right-hand-side of the equals sign.
