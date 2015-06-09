@@ -67,7 +67,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.KeyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
@@ -81,6 +80,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
@@ -167,114 +167,287 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ///////////////////// MAP STEPS /////////////////////
 
+    /**
+     * Map a traveser referencing an object of type <code>E</code> to an object of type <code>E2</code>.
+     *
+     * @param function the lambda expression that does the functional mapping
+     * @param <E2>the  mapping end type
+     * @return the traversal with an appended {@link LambdaMapStep}.
+     */
     public default <E2> GraphTraversal<S, E2> map(final Function<Traverser<E>, E2> function) {
         return this.asAdmin().addStep(new LambdaMapStep<>(this.asAdmin(), function));
     }
 
+    /**
+     * Map a traverser referencing an object of type <code>E</code> to an iterator of objects of type <code>E2</code>.
+     * The resultant iterator is drained one-by-one before a new <code>E</code> object is pulled in for processing.
+     *
+     * @param function the lambda expression that does the functional mapping
+     * @param <E2>     the type of the returned iterator objects
+     * @return the traversal with an appended {@link LambdaFlatMapStep}.
+     */
     public default <E2> GraphTraversal<S, E2> flatMap(final Function<Traverser<E>, Iterator<E2>> function) {
         return this.asAdmin().addStep(new LambdaFlatMapStep<>(this.asAdmin(), function));
     }
 
+    /**
+     * Map the {@link Element} to its {@link Element#id}.
+     *
+     * @return the traversal with an appended {@link IdStep}.
+     */
     public default GraphTraversal<S, Object> id() {
         return this.asAdmin().addStep(new IdStep<>(this.asAdmin()));
     }
 
+    /**
+     * Map the {@link Element} to its {@link Element#label}.
+     *
+     * @return the traversal with an appended {@link LabelStep}.
+     */
     public default GraphTraversal<S, String> label() {
         return this.asAdmin().addStep(new LabelStep<>(this.asAdmin()));
     }
 
+    /**
+     * Map the <code>E</code> object to itself. In other words, a "no op."
+     *
+     * @return the traversal with an appended {@link IdentityStep}.
+     */
     public default GraphTraversal<S, E> identity() {
         return this.asAdmin().addStep(new IdentityStep<>(this.asAdmin()));
     }
 
+    /**
+     * Map the {@link Vertex} to its adjacent vertices given a direction and edge labels.
+     *
+     * @param direction  the direction to traverse from the current vertex
+     * @param edgeLabels the edge labels to traverse
+     * @return the traversal with an appended {@link VertexStep}.
+     */
     public default GraphTraversal<S, Vertex> to(final Direction direction, final String... edgeLabels) {
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Vertex.class, direction, edgeLabels));
     }
 
+    /**
+     * Map the {@link Vertex} to its outgoing adjacent vertices given the edge labels.
+     *
+     * @param edgeLabels the edge labels to traverse
+     * @return the traversal with an appended {@link VertexStep}.
+     */
     public default GraphTraversal<S, Vertex> out(final String... edgeLabels) {
         return this.to(Direction.OUT, edgeLabels);
     }
 
+    /**
+     * Map the {@link Vertex} to its incoming adjacent vertices given the edge labels.
+     *
+     * @param edgeLabels the edge labels to traverse
+     * @return the traversal with an appended {@link VertexStep}.
+     */
     public default GraphTraversal<S, Vertex> in(final String... edgeLabels) {
         return this.to(Direction.IN, edgeLabels);
     }
 
+    /**
+     * Map the {@link Vertex} to its adjacent vertices given the edge labels.
+     *
+     * @param edgeLabels the edge labels to traverse
+     * @return the traversal with an appended {@link VertexStep}.
+     */
     public default GraphTraversal<S, Vertex> both(final String... edgeLabels) {
         return this.to(Direction.BOTH, edgeLabels);
     }
 
+    /**
+     * Map the {@link Vertex} to its incident edges given the direction and edge labels.
+     *
+     * @param direction  the direction to traverse from the current vertex
+     * @param edgeLabels the edge labels to traverse
+     * @return the traversal with an appended {@link VertexStep}.
+     */
     public default GraphTraversal<S, Edge> toE(final Direction direction, final String... edgeLabels) {
         return this.asAdmin().addStep(new VertexStep<>(this.asAdmin(), Edge.class, direction, edgeLabels));
     }
 
+    /**
+     * Map the {@link Vertex} to its outgoing incident edges given the edge labels.
+     *
+     * @param edgeLabels the edge labels to traverse
+     * @return the traversal with an appended {@link VertexStep}.
+     */
     public default GraphTraversal<S, Edge> outE(final String... edgeLabels) {
         return this.toE(Direction.OUT, edgeLabels);
     }
 
+    /**
+     * Map the {@link Vertex} to its incoming incident edges given the edge labels.
+     *
+     * @param edgeLabels the edge labels to traverse
+     * @return the traversal with an appended {@link VertexStep}.
+     */
     public default GraphTraversal<S, Edge> inE(final String... edgeLabels) {
         return this.toE(Direction.IN, edgeLabels);
     }
 
+    /**
+     * Map the {@link Vertex} to its incident edges given the edge labels.
+     *
+     * @param edgeLabels the edge labels to traverse
+     * @return the traversal with an appended {@link VertexStep}.
+     */
     public default GraphTraversal<S, Edge> bothE(final String... edgeLabels) {
         return this.toE(Direction.BOTH, edgeLabels);
     }
 
+    /**
+     * Map the {@link Edge} to its incident vertices given the direction.
+     *
+     * @param direction the direction to traverser from the current edge
+     * @return the traversal with an appended {@link EdgeVertexStep}.
+     */
     public default GraphTraversal<S, Vertex> toV(final Direction direction) {
         return this.asAdmin().addStep(new EdgeVertexStep(this.asAdmin(), direction));
     }
 
+    /**
+     * Map the {@link Edge} to its incoming/head incident {@link Vertex}.
+     *
+     * @return the traversal with an appended {@link EdgeVertexStep}.
+     */
     public default GraphTraversal<S, Vertex> inV() {
         return this.toV(Direction.IN);
     }
 
+    /**
+     * Map the {@link Edge} to its outgoing/tail incident {@link Vertex}.
+     *
+     * @return the traversal with an appended {@link EdgeVertexStep}.
+     */
     public default GraphTraversal<S, Vertex> outV() {
         return this.toV(Direction.OUT);
     }
 
+    /**
+     * Map the {@link Edge} to its incident vertices.
+     *
+     * @return the traversal with an appended {@link EdgeVertexStep}.
+     */
     public default GraphTraversal<S, Vertex> bothV() {
         return this.toV(Direction.BOTH);
     }
 
+    /**
+     * Map the {@link Edge} to the incident vertex that was not just traversed from in the path history.
+     *
+     * @return the traversal with an appended {@link EdgeOtherVertexStep}.
+     */
     public default GraphTraversal<S, Vertex> otherV() {
         return this.asAdmin().addStep(new EdgeOtherVertexStep(this.asAdmin()));
     }
 
+    /**
+     * Order all the objects in the traversal up to this point and then emit them one-by-one in their ordered sequence.
+     *
+     * @return the traversal with an appended {@link OrderGlobalStep}.
+     */
     public default GraphTraversal<S, E> order() {
         return this.order(Scope.global);
     }
 
+    /**
+     * Order either the {@link Scope#local} object (e.g. a list, map, etc.) or the entire {@link Scope#global} traversal stream.
+     *
+     * @param scope whether the ordering is the current local object or the entire global stream.
+     * @return the traversal with an appended {@link OrderGlobalStep} or {@link OrderLocalStep}.
+     */
     public default GraphTraversal<S, E> order(final Scope scope) {
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new OrderGlobalStep<>(this.asAdmin()) : new OrderLocalStep<>(this.asAdmin()));
     }
 
+    /**
+     * Map the {@link Element} to its associated properties given the provide property keys.
+     * If no property keys are provided, then all properties are emitted.
+     *
+     * @param propertyKeys the properties to retrieve
+     * @param <E2>         the value type of the returned properties
+     * @return the traversal with an appended {@link PropertiesStep}.
+     */
     public default <E2> GraphTraversal<S, ? extends Property<E2>> properties(final String... propertyKeys) {
         return this.asAdmin().addStep(new PropertiesStep<>(this.asAdmin(), PropertyType.PROPERTY, propertyKeys));
     }
 
+    /**
+     * Map the {@link Element} to the values of the associated properties given the provide property keys.
+     * If no property keys are provided, then all property values are emitted.
+     *
+     * @param propertyKeys the properties to retrieve their value from
+     * @param <E2>         the value type of the properties
+     * @return the traversal with an appended {@link PropertiesStep}.
+     */
     public default <E2> GraphTraversal<S, E2> values(final String... propertyKeys) {
         return this.asAdmin().addStep(new PropertiesStep<>(this.asAdmin(), PropertyType.VALUE, propertyKeys));
     }
 
+    /**
+     * Map the {@link Element} to a {@link Map} of the properties key'd according to their {@link Property#key}.
+     * If no property keys are provided, then all properties are retrieved.
+     *
+     * @param propertyKeys the properties to retrieve
+     * @param <E2>         the value type of the returned properties
+     * @return the traversal with an appended {@link PropertyMapStep}.
+     */
     public default <E2> GraphTraversal<S, Map<String, E2>> propertyMap(final String... propertyKeys) {
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), false, PropertyType.PROPERTY, propertyKeys));
     }
 
+    /**
+     * Map the {@link Element} to a {@link Map} of the property values key'd according to their {@link Property#key}.
+     * If no property keys are provided, then all property values are retrieved.
+     *
+     * @param propertyKeys the properties to retrieve
+     * @param <E2>         the value type of the returned properties
+     * @return the traversal with an appended {@link PropertyMapStep}.
+     */
     public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final String... propertyKeys) {
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), false, PropertyType.VALUE, propertyKeys));
     }
 
+    /**
+     * Map the {@link Element} to a {@link Map} of the property values key'd according to their {@link Property#key}.
+     * If no property keys are provided, then all property values are retrieved.
+     *
+     * @param includeTokens whether to include {@link T} tokens in the emitted map.
+     * @param propertyKeys  the properties to retrieve
+     * @param <E2>          the value type of the returned properties
+     * @return the traversal with an appended {@link PropertyMapStep}.
+     */
     public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), includeTokens, PropertyType.VALUE, propertyKeys));
     }
 
+    /**
+     * Map the {@link Property} to its {@link Property#key}.
+     *
+     * @return the traversal with an appended {@link PropertyKeyStep}.
+     */
     public default GraphTraversal<S, String> key() {
-        return this.asAdmin().addStep(new KeyStep(this.asAdmin()));
+        return this.asAdmin().addStep(new PropertyKeyStep(this.asAdmin()));
     }
 
+    /**
+     * Map the {@link Property} to its {@link Property#value}.
+     *
+     * @return the traversal with an appended {@link PropertyValueStep}.
+     */
     public default <E2> GraphTraversal<S, E2> value() {
         return this.asAdmin().addStep(new PropertyValueStep<>(this.asAdmin()));
     }
 
+    /**
+     * Map the {@link Traverser} to its {@link Path} history via {@link Traverser#path}.
+     *
+     * @return the traversal with an appended {@link PathStep}.
+     */
     public default GraphTraversal<S, Path> path() {
         return this.asAdmin().addStep(new PathStep<>(this.asAdmin()));
     }
@@ -283,6 +456,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return (GraphTraversal) this.asAdmin().addStep(new MatchStep<E, Map<String, E2>>(this.asAdmin(), startLabel, traversals));
     }
 
+    /**
+     * Map the {@link Traverser} to its {@link Traverser#sack} value.
+     *
+     * @param <E2> the sack value type
+     * @return the traversal with an appended {@link SackStep}.
+     */
     public default <E2> GraphTraversal<S, E2> sack() {
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
@@ -315,6 +494,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new FoldStep<>(this.asAdmin(), new ConstantSupplier<>(seed), foldFunction)); // TODO: User should provide supplier?
     }
 
+    /**
+     * Map the traversal stream to its reduction as a sum of the {@link Traverser#bulk} values (i.e. count the number of traversers up to this point).
+     *
+     * @return the traversal with an appended {@link CountGlobalStep}.
+     */
     public default GraphTraversal<S, Long> count() {
         return this.count(Scope.global);
     }
@@ -323,6 +507,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new CountGlobalStep<>(this.asAdmin()) : new CountLocalStep<>(this.asAdmin()));
     }
 
+    /**
+     * Map the traversal stream to its reduction as a sum of the {@link Traverser#get} values multiplied by their {@link Traverser#bulk} (i.e. sum the traverser values up to this point).
+     *
+     * @return the traversal with an appended {@link SumGlobalStep}.
+     */
     public default GraphTraversal<S, Double> sum() {
         return this.sum(Scope.global);
     }
@@ -412,6 +601,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new InjectStep<>(this.asAdmin(), injections));
     }
 
+    /**
+     * Remove all duplicates in the traversal stream up to this point.
+     *
+     * @return the traversal with an appended {@link DedupGlobalStep}.
+     */
     public default GraphTraversal<S, E> dedup() {
         return this.dedup(Scope.global);
     }
@@ -500,10 +694,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new IsStep<>(this.asAdmin(), predicate));
     }
 
+    /**
+     * Filter the <code>E</code> object if it is not {@link P#eq} to the provided value.
+     *
+     * @param value the value that the object must equal.
+     * @return the traversal with an appended {@link IsStep}.
+     */
     public default GraphTraversal<S, E> is(final Object value) {
         return this.is(value instanceof P ? (P<E>) value : P.eq((E) value));
     }
 
+    /**
+     * Filter the <code>E</code> object given a biased coin toss.
+     *
+     * @param probability the probability that the object will pass through
+     * @return the traversal with an appended {@link CoinStep}.
+     */
     public default GraphTraversal<S, E> coin(final double probability) {
         return this.asAdmin().addStep(new CoinStep<>(this.asAdmin(), probability));
     }
@@ -544,10 +750,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 : new TailLocalStep<>(this.asAdmin(), limit));
     }
 
+    /**
+     * Filter the <code>E</code> object if its {@link Traverser#path} is not {@link Path#isSimple}.
+     *
+     * @return the traversal with an appended {@link SimplePathStep}.
+     */
     public default GraphTraversal<S, E> simplePath() {
         return this.asAdmin().addStep(new SimplePathStep<>(this.asAdmin()));
     }
 
+    /**
+     * Filter the <code>E</code> object if its {@link Traverser#path} is {@link Path#isSimple}.
+     *
+     * @return the traversal with an appended {@link CyclicPathStep}.
+     */
     public default GraphTraversal<S, E> cyclicPath() {
         return this.asAdmin().addStep(new CyclicPathStep<>(this.asAdmin()));
     }

@@ -29,9 +29,9 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class KeyStep extends MapStep<Property, String> {
+public final class PropertyKeyStep extends MapStep<Property, String> {
 
-    public KeyStep(final Traversal.Admin traversal) {
+    public PropertyKeyStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 

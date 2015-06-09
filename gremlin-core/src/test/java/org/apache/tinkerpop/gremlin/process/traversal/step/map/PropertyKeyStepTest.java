@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class KeyStepTest extends StepTest {
+public class PropertyKeyStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
