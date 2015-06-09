@@ -348,6 +348,21 @@ client.submit("[1,2,3,x]", params); <5>
 <4> Submit a script asynchronously without waiting for the request to be written to the server.
 <5> Parameterized request are considered the most efficient way to send Gremlin to the server as they can be cached, which will boost performance and reduce resources required on the server.
 
+Scripts submitted to Gremlin Server automatically have the globally configured `Graph` and `TraversalSource` instances made available to them.  Therefore, if Gremlin Server configures two `TraversalSource` instances called "g1" and "g2" a script can simply reference them directly as:
+
+[source,java]
+client.submit("g1.V()")
+client.submit("g2.V()")
+
+While this is an acceptable way to submit scripts, it has the downside of forcing the client to encode the server-side variable name directly into the script being sent.  If the server configuration ever changed such that "g1" became "g100", the client-side code might have to see a significant amount of change.  Decoupling the script code from the server configuration can be managed by the `rebind` method on `Client` as follows:
+
+[source,java]
+Client g1Client = client.rebind("g1")
+Client g2Client = client.rebind("g2")
+g1Client.submit("g.V()")
+g2Client.submit("g.V()")
+
+The above code demonstrates how the `rebind` method can be used such that the script need only contain a reference to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
 
 Connecting via REST
 ~~~~~~~~~~~~~~~~~~~
