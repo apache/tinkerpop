@@ -56,7 +56,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             // START STEP
             startKey.ifPresent(key -> whereTraversal.addStep(new SelectOneStep<>(whereTraversal, scope, startKey.get())));
             // END STEP
-            whereTraversal.addStep(new IsStep<>(whereTraversal, new ScopeP<>(predicate, this)));
+            whereTraversal.addStep(new IsStep<>(whereTraversal, new ScopeP<>(predicate)));
             this.predicate = new TraversalP(whereTraversal, false);
         } else {                                                                     // a TraversalP, AndP, or OrP
             for (final Traversal.Admin<?, ?> whereTraversal : this.predicate.getTraversals()) {
@@ -74,7 +74,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
                         throw new IllegalArgumentException("The end step of a where()-traversal predicate can only have one label: " + endStep);
                     final String label = endStep.getLabels().iterator().next();
                     endStep.removeLabel(label);
-                    whereTraversal.addStep(new IsStep<>(whereTraversal, new ScopeP<>(P.eq(label), this)));
+                    whereTraversal.addStep(new IsStep<>(whereTraversal, new ScopeP<>(P.eq(label))));
                 }
             }
         }
@@ -90,7 +90,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         for (final Traversal.Admin<?, ?> traversal : this.predicate.getTraversals()) {
             final Step<?, ?> endStep = traversal.getEndStep();
             if (endStep instanceof IsStep && ((IsStep) endStep).getPredicate() instanceof ScopeP)
-                ((ScopeP) ((IsStep) endStep).getPredicate()).bind(traverser);
+                ((ScopeP) ((IsStep) endStep).getPredicate()).bind(this, traverser);
         }
         return this.predicate.getBiPredicate().test(traverser, null);
     }

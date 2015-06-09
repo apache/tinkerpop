@@ -36,16 +36,14 @@ public final class ScopeP<V> extends P<V> {
     private static final Object EMPTY_OBJECT = new Object();
 
     private final String key;
-    private final Scoping scopingStep;
 
-    public ScopeP(final P<?> predicate, final Scoping scopingStep) {
+    public ScopeP(final P<?> predicate) {
         super((BiPredicate) predicate.getBiPredicate(), (V) EMPTY_OBJECT);
         this.key = predicate.getValue() instanceof Collection ? ((Collection<String>) predicate.getValue()).iterator().next() : predicate.getValue().toString();   // HACK: for within("x") as it sees that as an array
-        this.scopingStep = scopingStep;
     }
 
-    public void bind(final Traverser.Admin<?> traverser) {
-        this.value = (V) this.scopingStep.getOptionalScopeValueByKey(this.key, traverser).orElse(null);
+    public void bind(final Scoping scopingStep, final Traverser.Admin<?> traverser) {
+        this.value = (V) scopingStep.getOptionalScopeValueByKey(this.key, traverser).orElse(null);
     }
 
     @Override
