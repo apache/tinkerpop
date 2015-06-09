@@ -62,6 +62,7 @@ public class ImportJavadocs {
         path[1] = path[1].split("href=\"")[1];
         path[1] = path[1].split("\" title")[0];
         if (!webpage) {
+            path[1].replaceAll("/", File.separator);
             return (path[0] + File.separator + path[1]);
         } else {
             return (path[0] + "/" + path[1]);
@@ -87,11 +88,11 @@ public class ImportJavadocs {
             if (path[0].equals("")) {
                 throw new Exception();
             }
-            String[] folders = {"/core", "/full"};
+            String[] folders = {File.separator + "core", File.separator + "full"};
             for (String dir : folders) {
                 BufferedReader in = new BufferedReader(
                         new FileReader(path[0] + dir
-                                + "/allclasses-noframe.html"));
+                                + File.separator + "allclasses-noframe.html"));
                 String str;
                 while ((str = in.readLine()) != null) {
                     find = str.contains(className);
