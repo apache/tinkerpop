@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -68,6 +69,7 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
             while (currentStep instanceof WhereStep || currentStep instanceof SelectStep || currentStep instanceof SelectOneStep) {
                 if (currentStep instanceof WhereStep) {
                     if (!((WhereStep) currentStep).getLocalChildren().isEmpty()) {
+                        MatchWhereStrategy.convertWhereSelectOneStepToStartStep((WhereStep<?>) currentStep);
                         matchStep.addTraversal(((WhereStep<?>) currentStep).getLocalChildren().get(0));
                         traversal.removeStep(currentStep);
                     } else {
@@ -93,6 +95,19 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
     @Override
     public Set<Class<? extends OptimizationStrategy>> applyPrior() {
         return PRIORS;
+    }
+
+    // HACK: until MatchStep gets some work done on it.
+    private static void convertWhereSelectOneStepToStartStep(final WhereStep<?> whereStep) {
+        if (!whereStep.getLocalChildren().isEmpty()) {
+            final Traversal.Admin<?, ?> traversal = whereStep.getLocalChildren().get(0);
+            if (traversal.getStartStep() instanceof SelectOneStep) {
+                final SelectOneStep<?, ?> selectOneStep = (SelectOneStep) traversal.getStartStep();
+                final StartStep startStep = new StartStep(traversal);
+                startStep.addLabel(selectOneStep.getScopeKeys().iterator().next());
+                TraversalHelper.replaceStep(selectOneStep, startStep, traversal);
+            }
+        }
     }
 
 }

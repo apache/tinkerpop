@@ -112,8 +112,6 @@ public final class TraversalP<S, E> extends P<E> {
             final boolean result;
             if (start instanceof Traverser)
                 result = TraversalUtil.test(((Traverser<S>) start).asAdmin(), traversalP.traversal, end);
-            else if (start instanceof TraversalUtil.Multiple)
-                result = TraversalUtil.test((TraversalUtil.Multiple<S>) start, traversalP.traversal, (TraversalUtil.Multiple<E>) end);
             else
                 result = TraversalUtil.test(start, traversalP.traversal, end);
             return traversalP.negate ? !result : result;

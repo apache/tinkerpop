@@ -104,9 +104,9 @@ public abstract class GroovyWhereTest {
             TraversalScriptHelper.compute("g.V.where(not(out('created'))).name", g);
         }
 
-        @Override
+        /*@Override
         public Traversal<Vertex, String> get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name() {
             TraversalScriptHelper.compute("g.V.as('a').out('knows').as('b').where(__.as('a', 'b').out('created').has('name', 'ripple')).name", g)
-        }
+        }*/
     }
 }
