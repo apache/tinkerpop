@@ -112,17 +112,18 @@ class InstallCommand extends CommandSupport {
                 .each { Files.copy(it, targetLibPath.resolve(it.fileName), StandardCopyOption.REPLACE_EXISTING) }
 
         // the ordering of jars seems to matter in some cases (e.g. neo4j).  the plugin system allows the plugin
-        // to place a Gremlin-Plugin entry in the jar manifest file to define where specific jar files should
+        // to place a Gremlin-Plugin-Paths entry in the jar manifest file to define where specific jar files should
         // go in the path which provides enough flexibility to control when jars should load.  unfortunately,
         // this "ordering" issue doesn't seem to be documented as an issue anywhere and it is difficult to say
         // whether it is a java issue, groovy classloader issue, grape issue, etc.  see this issue for more
         // on the weirdness: https://github.org/apache/tinkerpop/tinkerpop3/issues/230
         //
         // another unfortunate side-effect to this approach is that manual cleanup of jars is kinda messy now
-        // because you can't just delete the plugin director as one or more of the jars might have been moved.
+        // because you can't just delete the plugin directory as one or more of the jars might have been moved.
         // unsure of what the long term effects of this is.  at the end of the day, users may simply need to
         // know something about their dependencies in order to have lots of "installed" plugins/dependencies.
-        alterPaths(targetPluginPath, artifact)
+        alterPaths("Gremlin-Plugin-Paths", targetPluginPath, artifact)
+        alterPaths("Gremlin-Lib-Paths", targetLibPath, artifact)
 
         return "Loaded: " + arguments + (pluginsThatNeedRestart.size() == 0 ? "" : " - restart the console to use $pluginsThatNeedRestart")
     }
@@ -131,7 +132,7 @@ class InstallCommand extends CommandSupport {
         return System.getProperty("user.dir") + fileSep + "ext" + fileSep + (String) dep.module
     }
 
-    private static alterPaths(final Path extPath, final Artifact artifact) {
+    private static alterPaths(final String manifestEntry, final Path extPath, final Artifact artifact) {
         try {
             // another assumption about the pathing - seems safe for right now as the :install command is
             // responsible for all this stuff.  if the user chooses to manually install their dependencies
@@ -141,12 +142,16 @@ class InstallCommand extends CommandSupport {
             final Manifest manifest = jar.getManifest()
 
             // containsKey doesn't seem to want to work - so just check for null - dah
-            def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin-Paths")
+            def attrLine = manifest.mainAttributes.getValue(manifestEntry)
             if (attrLine != null) {
                 def splitLine = attrLine.split(";")
                 splitLine.each {
-                    def kv = it.split("=")
-                    Files.move(extPath.resolve(kv[0]), extPath.resolve(kv[1]), StandardCopyOption.REPLACE_EXISTING)
+                    if (it.endsWith("="))
+                        Files.delete(extPath.resolve(it.substring(0, it.length() - 1)))
+                    else {
+                        def kv = it.split("=")
+                        Files.move(extPath.resolve(kv[0]), extPath.resolve(kv[1]), StandardCopyOption.REPLACE_EXISTING)
+                    }
                 }
             }
         } catch (Exception ex) {

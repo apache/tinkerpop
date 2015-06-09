@@ -81,10 +81,7 @@ class DependencyGrabber {
         dependencyLocations.collect {
             def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
             return fs.getPath(p)
-        }.findAll {
-            def name = it.fileName.toFile().name
-            !(name ==~ /(slf4j|logback\-classic)-.*\.jar/) && name != 'servlet-api-2.5-6.1.14.jar'
-        }.findAll {
+        }.findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }.findAll {
             !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
         }.each {
             def copying = targetPluginPath.resolve(it.fileName)
@@ -101,16 +98,14 @@ class DependencyGrabber {
             println "Copying - $copying"
         }
 
-        getAdditionalDependencies(targetPluginPath, artifact).collect { fs.getPath(it.path) }.findAll {
-            def name = it.fileName.toFile().name
-            !(name ==~ /(slf4j|logback\-classic)-.*\.jar/) && name != 'servlet-api-2.5-6.1.14.jar'
-        }.findAll {
-            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
-        }.each {
-            def copying = targetPluginPath.resolve(it.fileName)
-            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-            println "Copying - $copying"
-        }
+        getAdditionalDependencies(targetPluginPath, artifact).collect { fs.getPath(it.path) }
+            .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
+            .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
+            .each {
+                def copying = targetPluginPath.resolve(it.fileName)
+                Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
+                println "Copying - $copying"
+            }
 
         getAdditionalDependencies(targetLibPath, artifact).collect { fs.getPath(it.path) }.each {
             def copying = targetLibPath.resolve(it.fileName)
@@ -118,7 +113,8 @@ class DependencyGrabber {
             println "Copying - $copying"
         }
 
-        alterPaths(targetPluginPath, artifact)
+        alterPaths("Gremlin-Plugin-Paths", targetPluginPath, artifact)
+        alterPaths("Gremlin-Lib-Paths", targetLibPath, artifact)
     }
 
     private Set<URI> getAdditionalDependencies(final Path extPath, final Artifact artifact) {
@@ -145,17 +141,21 @@ class DependencyGrabber {
         }
     }
 
-    private static alterPaths(final Path extPath, final Artifact artifact) {
+    private static alterPaths(final String manifestEntry, final Path extPath, final Artifact artifact) {
         try {
             def pathToInstalled = extPath.resolve(artifact.artifact + "-" + artifact.version + ".jar")
             final JarFile jar = new JarFile(pathToInstalled.toFile());
             final Manifest manifest = jar.getManifest()
-            def attrLine = manifest.mainAttributes.getValue("Gremlin-Plugin-Paths")
+            def attrLine = manifest.mainAttributes.getValue(manifestEntry)
             if (attrLine != null) {
                 def splitLine = attrLine.split(";")
                 splitLine.each {
-                    def kv = it.split("=")
-                    Files.move(extPath.resolve(kv[0]), extPath.resolve(kv[1]), StandardCopyOption.REPLACE_EXISTING)
+                    if (it.endsWith("="))
+                        Files.delete(extPath.resolve(it.substring(0, it.length() - 1)))
+                    else {
+                        def kv = it.split("=")
+                        Files.move(extPath.resolve(kv[0]), extPath.resolve(kv[1]), StandardCopyOption.REPLACE_EXISTING)
+                    }
                 }
             }
         } catch (Exception ex) {
