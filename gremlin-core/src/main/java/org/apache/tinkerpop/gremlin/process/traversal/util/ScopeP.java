@@ -51,6 +51,12 @@ public final class ScopeP<V> extends P<V> {
         return this.biPredicate.test(testValue, this.value);
     }
 
+    @Override
+    public ScopeP<V> negate() {
+        this.biPredicate = this.biPredicate.negate();
+        return this; // TODO: not cloning -- is that bad?
+    }
+
     public String getKey() {
         return this.key;
     }
