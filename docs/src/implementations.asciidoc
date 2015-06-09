@@ -540,7 +540,7 @@ Neo4j-Gremlin
 
 link:http://neotechnology.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.org[Neo4j graph database].
 
-CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licensed link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. The `neo4j-gremlin` module is licensed Apache2 because it only references the Apache2-licensed Neo4j API (not its implementation). Note that neither the <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j binaries. To access the Neo4j binaries, use the `:install` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
+CAUTION: Unless under a commercial agreement with Neo Technology, Neo4j is licensed link:http://en.wikipedia.org/wiki/Affero_General_Public_License[AGPL]. The `neo4j-gremlin` module is licensed Apache2 because it only references the Apache2-licensed Neo4j API (not its implementation). Note that neither the <<gremlin-console,Gremlin Console>> nor <<gremlin-server,Gremlin Server>> distribute with the Neo4j implementation binaries. To access the binaries, use the `:install` command to download binaries from link:http://search.maven.org/[Maven Central Repository].
 
 [source,groovy]
 ----
@@ -554,7 +554,7 @@ gremlin> graph = Neo4jGraph.open('/tmp/neo4j')
 ==>neo4jgraph[EmbeddedGraphDatabase [/tmp/neo4j]]
 ----
 
-For those leveraging Neo4j High Availability, configure `Neo4jGraph` for "HA mode" by setting the `gremlin.neo4j.ha` flag to `true` in the `Configuration` object passed to `Neo4jGraph.open()`.  Note that when the flag is set (by default it is `false`), the `Neo4jGraph` instance expects HA configuration settings to be present.  As with embedded Neo4j, HA configuration keys should be prefixed with `gremlin.neo4j.conf`.  Please consult Neo4j documentation for more information on link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] configuration.
+NOTE: Neo4j link:http://docs.neo4j.org/chunked/stable/ha.html[High Availability] is currently not supported by Neo4j-Gremlin.
 
 TIP: To host Neo4j in <<gremlin-server,Gremlin Server>>, the dependencies must first be "installed" or otherwise copied to the Gremlin Server path. The automated method for doing this would be to execute `bin/gremlin-server.sh -i org.apache.tinkerpop neo4j-gremlin x.y.z`.
 
@@ -654,7 +654,7 @@ graph.close()
 
 Thus, like <<match-step,`match()`>>-step in Gremlin, it is possible to do a declarative pattern match and then move back into imperative Gremlin.
 
-IMPORTANT: For those developers using <<gremlin-server,Gremlin Server>> against Neo4j, it is possible to do Cypher queries by simply placing the Cypher string in `graph.cypher(...)` before submission to the server.
+TIP: For those developers using <<gremlin-server,Gremlin Server>> against Neo4j, it is possible to do Cypher queries by simply placing the Cypher string in `graph.cypher(...)` before submission to the server.
 
 Multi-Label
 ~~~~~~~~~~~
