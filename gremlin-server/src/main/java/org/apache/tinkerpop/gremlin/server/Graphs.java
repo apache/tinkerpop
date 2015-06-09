@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * {@link Graph} instances configured for the server to be passed to script engine bindings. The
@@ -37,8 +37,15 @@ import java.util.Map;
 public class Graphs {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
 
-    private final Map<String, Graph> graphs = new HashMap<>();
-    private final Map<String, TraversalSource> traversalSources = new HashMap<>();
+    private final Map<String, Graph> graphs = new ConcurrentHashMap<>();
+    private final Map<String, TraversalSource> traversalSources = new ConcurrentHashMap<>();
+
+    /**
+     * Construct a new instance without {@link Settings} which might be useful when embedding Gremlin Server.
+     */
+    public Graphs() {
+        // allow the Graphs object to be constructed without Settings
+    }
 
     /**
      * Create a new instance using the {@link Settings} from Gremlin Server.
@@ -59,7 +66,7 @@ public class Graphs {
 
     /**
      * Get a list of the {@link Graph} instances and their binding names as defined in the Gremlin Server
-     * configuration file.  This {@link Map} is immutable.
+     * configuration file.
      *
      * @return a {@link Map} where the key is the name of the {@link Graph} and the value is the {@link Graph} itself
      */
@@ -67,6 +74,13 @@ public class Graphs {
         return graphs;
     }
 
+    /**
+     * Get a list of the {@link TraversalSource} instances and their binding names as defined by Gremlin Server
+     * initialization scripts.
+     *
+     * @return a {@link Map} where the key is the name of the {@link TraversalSource} and the value is the
+     *         {@link TraversalSource} itself
+     */
     public Map<String, TraversalSource> getTraversalSources() {
         return traversalSources;
     }
@@ -82,7 +96,7 @@ public class Graphs {
     }
 
     /**
-     * Rollback transactions across all {@link org.apache.tinkerpop.gremlin.structure.Graph} objects.
+     * Rollback transactions across all {@link Graph} objects.
      */
     public void rollbackAll() {
         graphs.entrySet().forEach(e -> {
@@ -93,7 +107,7 @@ public class Graphs {
     }
 
     /**
-     * Commit transactions across all {@link org.apache.tinkerpop.gremlin.structure.Graph} objects.
+     * Commit transactions across all {@link Graph} objects.
      */
     public void commitAll() {
         graphs.entrySet().forEach(e -> {
