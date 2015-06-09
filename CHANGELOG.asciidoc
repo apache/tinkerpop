@@ -25,7 +25,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Added `rebindings` optional argument to sessionless requests to allow global bindings to be rebound as needed by an individual request.
+* The REST API in Gremlin Server now requires parameters to be defined with a "bindings." prefix.
+* Modified the REST API in Gremlin Server to accept rebindings.
+* Added `rebindings` optional argument to sessionless requests to allow global bindings to be rebound as needed.
 * Added `LazyBarrierStrategy` which "stalls" a traversal of a particular form in order to gain a bulking optimization.
 * `CollectingBarrierStep` supports `maxBarrierSize` for "lazy barrier," memory conservation.
 * `Scoping` now has `getScope()`, `setScope()`, and `getScopeKeys()`.

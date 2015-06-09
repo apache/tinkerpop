@@ -30,8 +30,11 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.server.Graphs;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.buffer.ByteBuf;
@@ -50,10 +53,12 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.javatuples.Triplet;
+import org.javatuples.Quartet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.script.Bindings;
+import javax.script.SimpleBindings;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -86,6 +91,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final Charset UTF8 = Charset.forName("UTF-8");
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
+    private static final String ARGS_BINDINGS_DOT = Tokens.ARGS_BINDINGS + ".";
+    private static final String ARGS_REBINDINGS_DOT = Tokens.ARGS_REBINDINGS + ".";
+
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
 
     /**
@@ -100,11 +108,14 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final GremlinExecutor gremlinExecutor;
+    private final Graphs graphs;
 
     public HttpGremlinEndpointHandler(final Map<String, MessageSerializer> serializers,
-                                      final GremlinExecutor gremlinExecutor) {
+                                      final GremlinExecutor gremlinExecutor,
+                                      final Graphs graphs) {
         this.serializers = serializers;
         this.gremlinExecutor = gremlinExecutor;
+        this.graphs = graphs;
     }
 
     @Override
@@ -122,9 +133,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 return;
             }
 
-            final Triplet<String, Map<String, Object>, String> requestArguments;
+            final Quartet<String, Map<String, Object>, String, Map<String, String>> requestArguments;
             try {
-                requestArguments = getGremlinScript(req);
+                requestArguments = getRequestArguments(req);
             } catch (IllegalArgumentException iae) {
                 sendError(ctx, BAD_REQUEST, iae.getMessage());
                 ReferenceCountUtil.release(msg);
@@ -174,10 +185,20 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                 });
 
                 final Timer.Context timerContext = evalOpTimer.time();
+
+                final Bindings bindings;
+                try {
+                    bindings = createBindings(requestArguments.getValue1(), requestArguments.getValue3());
+                } catch (IllegalStateException iae) {
+                    sendError(ctx, BAD_REQUEST, iae.getMessage());
+                    ReferenceCountUtil.release(msg);
+                    return;
+                }
+
                 // provide a transform function to serialize to message - this will force serialization to occur
                 // in the same thread as the eval. after the CompletableFuture is returned from the eval the result
                 // is ready to be written as a ByteBuf directly to the response.  nothing should be blocking here.
-                final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(requestArguments.getValue0(), requestArguments.getValue2(), requestArguments.getValue1(),
+                final CompletableFuture<Object> evalFuture = gremlinExecutor.eval(requestArguments.getValue0(), requestArguments.getValue2(), bindings,
                         FunctionUtils.wrapFunction(o -> {
                             // stopping the timer here is roughly equivalent to where the timer would have been stopped for
                             // this metric in other contexts.  we just want to measure eval time not serialization time.
@@ -223,7 +244,41 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-    private static Triplet<String, Map<String, Object>, String> getGremlinScript(final FullHttpRequest request) {
+    private Bindings createBindings(final Map<String,Object> bindingMap, final Map<String,String> rebindingMap)  {
+        final Bindings bindings = new SimpleBindings();
+
+        // rebind any global bindings to a different variable.
+        if (!rebindingMap.isEmpty()) {
+            for (Map.Entry<String, String> kv : rebindingMap.entrySet()) {
+                boolean found = false;
+                final Map<String, Graph> graphs = this.graphs.getGraphs();
+                if (graphs.containsKey(kv.getValue())) {
+                    bindings.put(kv.getKey(), graphs.get(kv.getValue()));
+                    found = true;
+                }
+
+                if (!found) {
+                    final Map<String, TraversalSource> traversalSources = this.graphs.getTraversalSources();
+                    if (traversalSources.containsKey(kv.getValue())) {
+                        bindings.put(kv.getKey(), traversalSources.get(kv.getValue()));
+                        found = true;
+                    }
+                }
+
+                if (!found) {
+                    final String error = String.format("Could not rebind [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
+                            kv.getKey(), kv.getValue(), kv.getValue());
+                    throw new IllegalStateException(error);
+                }
+            }
+        }
+
+        bindings.putAll(bindingMap);
+
+        return bindings;
+    }
+
+    private static Quartet<String, Map<String, Object>, String, Map<String,String>> getRequestArguments(final FullHttpRequest request) {
         if (request.getMethod() == GET) {
             final QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
             final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
@@ -234,13 +289,17 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
             // query string parameters - take the first instance of a key only - ignore the rest
             final Map<String, Object> bindings = new HashMap<>();
-            decoder.parameters().entrySet().stream().filter(kv -> !kv.getKey().equals(Tokens.ARGS_GREMLIN))
-                    .forEach(kv -> bindings.put(kv.getKey(), kv.getValue().get(0)));
+            decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(ARGS_BINDINGS_DOT))
+                    .forEach(kv -> bindings.put(kv.getKey().substring(ARGS_BINDINGS_DOT.length()), kv.getValue().get(0)));
+
+            final Map<String, String> rebindings = new HashMap<>();
+            decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(ARGS_REBINDINGS_DOT))
+                    .forEach(kv -> rebindings.put(kv.getKey().substring(ARGS_REBINDINGS_DOT.length()), kv.getValue().get(0)));
 
             final List<String> languageParms = decoder.parameters().get(Tokens.ARGS_LANGUAGE);
             final String language = (null == languageParms || languageParms.size() == 0) ? null : languageParms.get(0);
 
-            return Triplet.with(script, bindings, language);
+            return Quartet.with(script, bindings, language, rebindings);
         } else {
             final JsonNode body;
             try {
@@ -260,10 +319,18 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             if (bindingsNode != null)
                 bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
 
+            final JsonNode rebindingsNode = body.get(Tokens.ARGS_REBINDINGS);
+            if (rebindingsNode != null && !rebindingsNode.isObject())
+                throw new IllegalArgumentException("rebindings must be a Map");
+
+            final Map<String, String> rebindings = new HashMap<>();
+            if (rebindingsNode != null)
+                rebindingsNode.fields().forEachRemaining(kv -> rebindings.put(kv.getKey(), kv.getValue().asText()));
+
             final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
             final String language = null == languageNode ? null : languageNode.asText();
 
-            return Triplet.with(scriptNode.asText(), bindings, language);
+            return Quartet.with(scriptNode.asText(), bindings, language, rebindings);
         }
     }
 
