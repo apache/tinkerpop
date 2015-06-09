@@ -130,6 +130,13 @@ public interface Step<S, E> extends Iterator<Traverser<E>>, Serializable, Clonea
     public void addLabel(final String label);
 
     /**
+     * Remove a label from this step.
+     *
+     * @param label the label to remove from this step
+     */
+    public void removeLabel(final String label);
+
+    /**
      * Get the unique id of the step.
      * These ids can change when strategies are applied and anonymous traversals are embedded in the parent traversal.
      * A developer should typically not need to call this method.

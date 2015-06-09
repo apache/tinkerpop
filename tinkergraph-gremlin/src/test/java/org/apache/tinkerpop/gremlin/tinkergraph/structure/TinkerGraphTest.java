@@ -161,8 +161,20 @@ public class TinkerGraphTest {
         //g.V().choose(__.outE().count().is(0L), __.as("x"), __.as("y")).select("x", "y").forEachRemaining(System.out::println);
         // g.V().hasLabel("person").values("age").is(P.lt(27).or(P.gt(29))).forEachRemaining(System.out::println);
         //System.out.println(g.V().as("a").out("knows").as("b").where(as("a","b").out("created")).select().by("name"));
-        System.out.println(g.V().as("a").out().as("b").select().where(as("a").out("knows").as("b")).select().by("name").iterate());
-        g.V().as("a").out().as("b").select().where(as("a").out("knows").where(eq("b"))).select().by("name").forEachRemaining(System.out::println);
+        Supplier<Traversal<?,?>> supplier = () -> g.V().as("a").values("name").as("b").where(as("b").is(eq("marko"))).select();
+
+                /*() ->
+                g.V().as("a").out("created").as("b").in("created").as("c").where(
+                        or(
+                                as("a").out("knows"),
+                                and(
+                                        as("b").has("name","ripple"),
+                                        as("b").in("created").as("a"),
+                                        as("b").in().has("name","josh"))
+                        )
+                ).select().by("name");*/
+        System.out.println(supplier.get().iterate());
+        supplier.get().forEachRemaining(System.out::println);
     }
 
     @Test

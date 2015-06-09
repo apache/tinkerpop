@@ -23,16 +23,17 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ScopeP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -44,35 +45,40 @@ import java.util.Set;
 public final class WhereStep<S> extends FilterStep<S> implements TraversalParent, Scoping {
 
     protected P<Object> predicate;
-    protected String startKey;
-    protected String endKey;
     protected Scope scope;
 
     public WhereStep(final Traversal.Admin traversal, final Scope scope, final Optional<String> startKey, final P<?> predicate) {
         super(traversal);
         this.scope = scope;
         this.predicate = (P) predicate;
-        if (!this.predicate.getTraversals().isEmpty()) {
-            final Traversal.Admin<?, ?> whereTraversal = predicate.getTraversals().get(0);
-            //// START STEP
-            final Step<?, ?> startStep = whereTraversal.getStartStep();
-            if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
-                if (startStep.getLabels().size() > 1)
-                    throw new IllegalArgumentException("The start step of a where()-traversal predicate can only have one label: " + startStep);
-                TraversalHelper.replaceStep(whereTraversal.getStartStep(), new SelectOneStep<>(whereTraversal, scope, this.startKey = startStep.getLabels().iterator().next()), whereTraversal);
+        if (this.predicate.getTraversals().isEmpty()) {                              // a standard P
+            final Traversal.Admin<?, ?> whereTraversal = new DefaultGraphTraversal<>();
+            // START STEP
+            startKey.ifPresent(key -> whereTraversal.addStep(new SelectOneStep<>(whereTraversal, scope, startKey.get())));
+            // END STEP
+            whereTraversal.addStep(new IsStep<>(whereTraversal, new ScopeP<>(predicate, this)));
+            this.predicate = new TraversalP(whereTraversal, false);
+        } else {                                                                     // a TraversalP, AndP, or OrP
+            for (final Traversal.Admin<?, ?> whereTraversal : this.predicate.getTraversals()) {
+                //// START STEP
+                final Step<?, ?> startStep = whereTraversal.getStartStep();
+                if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
+                    if (startStep.getLabels().size() > 1)
+                        throw new IllegalArgumentException("The start step of a where()-traversal predicate can only have one label: " + startStep);
+                    TraversalHelper.replaceStep(whereTraversal.getStartStep(), new SelectOneStep<>(whereTraversal, scope, startStep.getLabels().iterator().next()), whereTraversal);
+                }
+                //// END STEP
+                final Step<?, ?> endStep = whereTraversal.getEndStep();
+                if (!endStep.getLabels().isEmpty()) {
+                    if (endStep.getLabels().size() > 1)
+                        throw new IllegalArgumentException("The end step of a where()-traversal predicate can only have one label: " + endStep);
+                    final String label = endStep.getLabels().iterator().next();
+                    endStep.removeLabel(label);
+                    whereTraversal.addStep(new IsStep<>(whereTraversal, new ScopeP<>(P.eq(label), this)));
+                }
             }
-            //// END STEP
-            final Step<?, ?> endStep = whereTraversal.getEndStep();
-            if (!endStep.getLabels().isEmpty()) {
-                if (endStep.getLabels().size() > 1)
-                    throw new IllegalArgumentException("The end step of a where()-traversal predicate can only have one label: " + endStep);
-                this.endKey = endStep.getLabels().iterator().next();
-            }
-            this.predicate.getTraversals().forEach(this::integrateChild);
-        } else {
-            this.startKey = startKey.orElse(null);
-            this.endKey = (String) (this.predicate.getValue() instanceof Collection ? ((Collection) this.predicate.getValue()).iterator().next() : this.predicate.getValue());
         }
+        this.predicate.getTraversals().forEach(this::integrateChild);
     }
 
     public WhereStep(final Traversal.Admin traversal, final Scope scope, final P<?> predicate) {
@@ -81,20 +87,12 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        if (this.predicate instanceof TraversalP) {
-            return this.predicate.getBiPredicate().test(traverser, this.getOptionalScopeValueByKey(this.endKey, traverser).orElse(null));
-        } else {
-            final Object startObject = null == this.startKey ? traverser.get() : this.getOptionalScopeValueByKey(this.startKey, traverser).orElse(null);
-            if (null == startObject) return false;
-            final Object endObject;
-            if (null == this.endKey) {
-                endObject = null;
-            } else {
-                endObject = this.getOptionalScopeValueByKey(this.endKey, traverser).orElse(null);
-                if (null == endObject) return false;
-            }
-            return this.predicate.getBiPredicate().test(startObject, endObject);
+        for (final Traversal.Admin<?, ?> traversal : this.predicate.getTraversals()) {
+            final Step<?, ?> endStep = traversal.getEndStep();
+            if (endStep instanceof IsStep && ((IsStep) endStep).getPredicate() instanceof ScopeP)
+                ((ScopeP) ((IsStep) endStep).getPredicate()).bind(traverser);
         }
+        return this.predicate.getBiPredicate().test(traverser, null);
     }
 
     @Override
@@ -104,18 +102,21 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.scope, this.startKey, this.predicate);
+        return StringFactory.stepString(this, this.scope, this.predicate);
     }
 
     @Override
     public Set<String> getScopeKeys() {
         final Set<String> keys = new HashSet<>();
-        if (null != this.startKey)
-            keys.add(this.startKey);
-        if (null != this.endKey)
-            keys.add(this.endKey);
+        this.predicate.getTraversals().forEach(traversal -> {
+            final Step<?, ?> startStep = traversal.getStartStep();
+            final Step<?, ?> endStep = traversal.getEndStep();
+            if (startStep instanceof SelectOneStep)
+                keys.addAll(((SelectOneStep<?, ?>) startStep).getScopeKeys());
+            if (endStep instanceof IsStep && ((IsStep) endStep).getPredicate() instanceof ScopeP)
+                keys.add(((ScopeP) ((IsStep) endStep).getPredicate()).getKey());
+        });
         return keys;
-
     }
 
     @Override
@@ -128,14 +129,12 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.scope.hashCode() ^ predicate.hashCode();
-        if (this.startKey != null) result ^= this.startKey.hashCode();
-        return result;
+        return super.hashCode() ^ this.scope.hashCode() ^ this.predicate.hashCode();
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(Scope.local == this.scope || (this.endKey == null && this.startKey == null) ?
+        return this.getSelfAndChildRequirements(Scope.local == this.scope ?
                 new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS} :
                 new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS});
     }
@@ -143,8 +142,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     @Override
     public void setScope(final Scope scope) {
         this.scope = scope;
-        if (this.predicate instanceof TraversalP) {
-            final Step startStep = this.predicate.getTraversals().get(0).getStartStep();
+        for (final Traversal.Admin<?, ?> traversal : this.predicate.getTraversals()) {
+            final Step<?, ?> startStep = traversal.getStartStep();
             if (startStep instanceof Scoping)
                 ((Scoping) startStep).setScope(scope);
         }

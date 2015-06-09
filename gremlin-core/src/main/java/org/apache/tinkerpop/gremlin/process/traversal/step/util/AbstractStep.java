@@ -24,7 +24,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.EmptyTraversal;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -60,6 +65,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     @Override
     public void addLabel(final String label) {
         this.labels.add(label);
+    }
+
+    @Override
+    public void removeLabel(final String label) {
+        this.labels.remove(label);
     }
 
     @Override

@@ -43,8 +43,6 @@ public class WhereStepTest extends StepTest {
     public void shouldHaveProperKeysAndState() {
         Traversal<?, ?> traversal = as("a").out().as("b").where(as("a").out());
         WhereStep<?> whereStep = (WhereStep) traversal.asAdmin().getEndStep();
-        assertNull(whereStep.endKey);
-        assertEquals("a", whereStep.startKey);
         assertEquals(TraversalP.class, whereStep.predicate.getClass());
     }
 
