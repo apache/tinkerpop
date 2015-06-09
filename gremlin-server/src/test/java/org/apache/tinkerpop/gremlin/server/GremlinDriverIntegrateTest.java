@@ -465,7 +465,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldRebindGraphVariables() throws Exception {
         final Cluster cluster = Cluster.build().create();
-        final Client.ClusteredClient client = cluster.connect();
+        final Client client = cluster.connect();
 
         try {
             client.submit("g.addVertex('name','stephen');").all().get().get(0).getVertex();
@@ -477,7 +477,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
         }
 
-        final Vertex v = client.submit("g.addVertex('name','stephen')", "graph").all().get().get(0).getVertex();
+        final Vertex v = client.rebind("graph").submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
         assertEquals("stephen", v.value("name"));
 
         cluster.close();
@@ -486,7 +486,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldRebindTraversalSourceVariables() throws Exception {
         final Cluster cluster = Cluster.build().create();
-        final Client.ClusteredClient client = cluster.connect();
+        final Client client = cluster.connect();
 
         try {
             client.submit("g.addV('name','stephen');").all().get().get(0).getVertex();
@@ -498,7 +498,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
         }
 
-        final Vertex v = client.submit("g.addV('name','stephen')", "g1").all().get().get(0).getVertex();
+        final Vertex v = client.rebind("g1").submit("g.addV('name','stephen')").all().get().get(0).getVertex();
         assertEquals("stephen", v.value("name"));
 
         cluster.close();

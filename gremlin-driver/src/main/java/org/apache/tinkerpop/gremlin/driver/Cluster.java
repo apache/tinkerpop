@@ -70,7 +70,7 @@ public final class Cluster {
      * one or more servers (depending on the cluster configuration), where each request represents the entirety of a
      * transaction.  A commit or rollback (in case of error) is automatically executed at the end of the request.
      */
-    public Client.ClusteredClient connect() {
+    public Client connect() {
         return new Client.ClusteredClient(this);
     }
 
@@ -82,7 +82,7 @@ public final class Cluster {
      *
      * @param sessionId user supplied id for the session which should be unique (a UUID is ideal).
      */
-    public Client.SessionedClient connect(final String sessionId) {
+    public Client connect(final String sessionId) {
         if (null == sessionId || sessionId.isEmpty())
             throw new IllegalArgumentException("sessionId cannot be null or empty");
         return new Client.SessionedClient(this, sessionId);

@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +82,14 @@ public abstract class Client {
      * Asynchronous close of the {@code Client}.
      */
     public abstract CompletableFuture<Void> closeAsync();
+
+    /**
+     * Create a new {@code Client} that rebinds the specified {@link Graph} or {@link TraversalSource} name on the
+     * server to a variable called "g" for the context of the requests made through that {@code Client}.
+     *
+     * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
+     */
+    public abstract Client rebind(final String graphOrTraversalSource);
 
     /**
      * Initializes the client which typically means that a connection is established to the server.  Depending on the
@@ -252,6 +262,23 @@ public abstract class Client {
         }
 
         /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Client rebind(final String graphOrTraversalSource) {
+            return new ReboundClusteredClient(this, graphOrTraversalSource);
+        }
+
+        /**
+         * Creates a {@code Client} that supplies the specified set of rebindings, thus allowing the user to re-name
+         * one or more globally defined {@link Graph} or {@link TraversalSource} server bindings for the context of
+         * the created {@code Client}.
+         */
+        public Client rebind(final Map<String,String> rebindings) {
+            return new ReboundClusteredClient(this, rebindings);
+        }
+
+        /**
          * Uses a {@link LoadBalancingStrategy} to choose the best {@link Host} and then selects the best connection
          * from that host's connection pool.
          */
@@ -302,6 +329,75 @@ public abstract class Client {
     }
 
     /**
+     * Uses a {@link org.apache.tinkerpop.gremlin.driver.Client.ClusteredClient} that rebinds requests to a
+     * specified {@link Graph} or {@link TraversalSource} instances on the server-side.
+     */
+    public final static class ReboundClusteredClient extends Client {
+        private final ClusteredClient clusteredClient;
+        private final Map<String,String> rebindings = new HashMap<>();
+        final CompletableFuture<Void> close = new CompletableFuture<>();
+
+        ReboundClusteredClient(final ClusteredClient clusteredClient, final String graphOrTraversalSource) {
+            super(clusteredClient.cluster);
+            this.clusteredClient = clusteredClient;
+            rebindings.put("g", graphOrTraversalSource);
+        }
+
+        ReboundClusteredClient(final ClusteredClient clusteredClient, final Map<String,String> rebindings) {
+            super(clusteredClient.cluster);
+            this.clusteredClient = clusteredClient;
+            this.rebindings.putAll(rebindings);
+        }
+
+        @Override
+        public synchronized Client init() {
+            // no init required
+            if (close.isDone()) throw new IllegalStateException("Client is closed");
+            return this;
+        }
+
+        @Override
+        public RequestMessage buildMessage(final RequestMessage.Builder builder) {
+            if (close.isDone()) throw new IllegalStateException("Client is closed");
+            if (!rebindings.isEmpty())
+                builder.addArg(Tokens.ARGS_REBINDINGS, rebindings);
+
+            return builder.create();
+        }
+
+        @Override
+        protected void initializeImplementation() {
+            // no init required
+            if (close.isDone()) throw new IllegalStateException("Client is closed");
+        }
+
+        /**
+         * Delegates to the underlying {@link org.apache.tinkerpop.gremlin.driver.Client.ClusteredClient}.
+         */
+        @Override
+        protected Connection chooseConnection(final RequestMessage msg) throws TimeoutException, ConnectionException {
+            if (close.isDone()) throw new IllegalStateException("Client is closed");
+            return clusteredClient.chooseConnection(msg);
+        }
+
+        /**
+         * Prevents messages from being sent from this {@code Client}. Note that calling this method does not call
+         * close on the {@code Client} that created it.
+         */
+        @Override
+        public CompletableFuture<Void> closeAsync() {
+            close.complete(null);
+            return close;
+        }
+
+        @Override
+        public Client rebind(final String graphOrTraversalSource) {
+            if (close.isDone()) throw new IllegalStateException("Client is closed");
+            return new ReboundClusteredClient(clusteredClient, graphOrTraversalSource);
+        }
+    }
+
+    /**
      * A {@code Client} implementation that operates in the context of a session.  Requests are sent to a single
      * server, where each request is bound to the same thread with the same set of bindings across requests.
      * Transaction are not automatically committed. It is up the client to issue commit/rollback commands.
@@ -314,6 +410,11 @@ public abstract class Client {
         SessionedClient(final Cluster cluster, final String sessionId) {
             super(cluster);
             this.sessionId = sessionId;
+        }
+
+        @Override
+        public Client rebind(final String graphOrTraversalSourceName){
+            throw new UnsupportedOperationException("Sessioned client do no support rebinding");
         }
 
         /**
