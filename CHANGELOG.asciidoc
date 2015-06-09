@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Renamed `KeyStep` to `PropertyKeyStep` to be consistent with `PropertyValueStep`.
 * The REST API in Gremlin Server now requires parameters to be defined with a "bindings." prefix.
 * Modified the REST API in Gremlin Server to accept rebindings.
 * Added `rebindings` optional argument to sessionless requests to allow global bindings to be rebound as needed.
