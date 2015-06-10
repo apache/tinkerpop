@@ -18,8 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import info.ganglia.gmetric4j.gmetric.GMetric;
+import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -32,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.UUID;
 
 /**
@@ -170,7 +176,8 @@ public class Settings {
     public List<String> plugins = new ArrayList<>();
 
     /**
-     * Custom settings for {@link org.apache.tinkerpop.gremlin.server.OpProcessor} implementations.
+     * Custom settings for {@link OpProcessor} implementations. Implementations are loaded via
+     * {@link ServiceLoader} but custom configurations can be supplied through this configuration.
      */
     public List<ProcessorSettings> processors = new ArrayList<>();
 
@@ -250,8 +257,20 @@ public class Settings {
         return yaml.loadAs(stream, Settings.class);
     }
 
+    /**
+     * Custom configurations for any {@link OpProcessor} implementations.  These settings will not be relevant
+     * unless the referenced {@link OpProcessor} is actually loaded via {@link ServiceLoader}.
+     */
     public static class ProcessorSettings {
+        /**
+         * The fully qualified class name of an {@link OpProcessor} implementation.
+         */
         public String className;
+
+        /**
+         * A set of configurations as expected by the {@link OpProcessor}.  Consult the documentation of the
+         * {@link OpProcessor} for information on what these configurations should be.
+         */
         public Map<String, Object> config;
     }
 
@@ -259,14 +278,46 @@ public class Settings {
      * Settings for the {@code ScriptEngine}.
      */
     public static class ScriptEngineSettings {
+        /**
+         * A comma separated list of classes/packages to make available to the {@code ScriptEngine}.
+         */
         public List<String> imports = new ArrayList<>();
+
+        /**
+         * A comma separated list of "static" imports to make available to the {@code ScriptEngine}.
+         */
         public List<String> staticImports = new ArrayList<>();
+
+        /**
+         * A comma separated list of script files to execute on {@code ScriptEngine} initialization. {@link Graph} and
+         * {@link TraversalSource} instance references produced from scripts will be stored globally in Gremlin
+         * Server, therefore it is possible to use initialization scripts to add {@link TraversalStrategy} instances
+         * or create entirely new {@link Graph} instances all together. Instantiating a {@link LifeCycleHook} in a
+         * script provides a way to execute scripts when Gremlin Server starts and stops.
+         */
         public List<String> scripts = new ArrayList<>();
+
+        /**
+         * A Map of configuration settings for the {@code ScriptEngine}. These settings are dependent on the
+         * {@code ScriptEngine} implementation being used.
+         */
         public Map<String, Object> config = null;
     }
 
+    /**
+     * Settings for the {@link MessageSerializer} implementations.
+     */
     public static class SerializerSettings {
+        /**
+         * The fully qualified class name of the {@link MessageSerializer} implementation. This class name will be
+         * used to load the implementation from the classpath.
+         */
         public String className;
+
+        /**
+         * A {@link Map} containing {@link MessageSerializer} specific configurations. Consult the
+         * {@link MessageSerializer} implementation for specifics on what configurations are expected.
+         */
         public Map<String, Object> config = null;
     }
 
