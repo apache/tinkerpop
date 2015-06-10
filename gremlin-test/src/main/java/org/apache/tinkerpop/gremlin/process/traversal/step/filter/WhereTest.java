@@ -38,7 +38,7 @@ import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -78,6 +78,10 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     // hasNot functionality
 
     public abstract Traversal<Vertex, String> get_g_V_whereXnotXoutXcreatedXXX_name();
+
+    // complex and/or functionality
+
+    public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX();
 
     // multi-labels
 
@@ -256,6 +260,25 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("vadas", "lop", "ripple"), traversal);
     }
 
+    // complex and/or functionality
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX() {
+        Traversal<Vertex,Map<String,String>> traversal = get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while(traversal.hasNext()) {
+            final Map<String,String> map = traversal.next();
+            assertEquals(2,map.size());
+            assertEquals("marko",map.get("a"));
+            assertTrue(map.get("b").equals("josh") || map.get("b").equals("vadas"));
+            counter++;
+        }
+        assertEquals(2,counter);
+    }
+
+
     // multi-labels
    /* @Test
     @LoadGraphWith(MODERN)
@@ -333,6 +356,13 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_whereXnotXoutXcreatedXXX_name() {
             return g.V().where(not(__.out("created"))).values("name");
+        }
+
+        // complex and/or functionality
+
+        @Override
+        public Traversal<Vertex,Map<String,String>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX() {
+              return g.V().as("a").out().as("b").where(and(as("a").out("knows").as("b"),or(as("b").out("created").has("name","ripple"),as("b").in("knows").count().is(not(eq(0)))))).<String>select().by("name");
         }
 
         // multi-labels
