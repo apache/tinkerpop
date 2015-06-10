@@ -111,6 +111,11 @@ public abstract class GroovyWhereTest {
             TraversalScriptHelper.compute("g.V.as('a').out.as('b').where(and(__.as('a').out('knows').as('b'),or(__.as('b').out('created').has('name','ripple'),__.as('b').in('knows').count.is(not(eq(0)))))).select.by('name')", g)
         }
 
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX() {
+            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').in.as('c').where('a',eq('c').and(__.as('a').out('knows'))).select.by('name')", g)
+        }
+
         /*@Override
         public Traversal<Vertex, String> get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name() {
             TraversalScriptHelper.compute("g.V.as('a').out('knows').as('b').where(__.as('a', 'b').out('created').has('name', 'ripple')).name", g)

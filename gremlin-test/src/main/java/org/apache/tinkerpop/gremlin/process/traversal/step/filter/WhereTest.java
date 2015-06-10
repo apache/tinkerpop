@@ -83,6 +83,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX();
 
+    public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX();
+
     // multi-labels
 
     //public abstract Traversal<Vertex, String> get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name();
@@ -278,6 +280,23 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         assertEquals(2,counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX() {
+        Traversal<Vertex,Map<String,String>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while(traversal.hasNext()) {
+            final Map<String,String> map = traversal.next();
+            assertEquals(3,map.size());
+            assertEquals("marko",map.get("a"));
+            assertEquals("lop",map.get("b"));
+            assertEquals("marko", map.get("c"));
+            counter++;
+        }
+        assertEquals(1,counter);
+    }
+
 
     // multi-labels
    /* @Test
@@ -363,6 +382,11 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex,Map<String,String>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX() {
               return g.V().as("a").out().as("b").where(and(as("a").out("knows").as("b"),or(as("b").out("created").has("name","ripple"),as("b").in("knows").count().is(not(eq(0)))))).<String>select().by("name");
+        }
+
+        @Override
+        public Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX() {
+            return g.V().as("a").out("created").as("b").in().as("c").where("a",eq("c").and(__.as("a").out("knows"))).<String>select().by("name");
         }
 
         // multi-labels
