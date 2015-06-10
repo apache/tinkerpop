@@ -26,6 +26,7 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Replaced dependency on `groovy-all` with individual Groovy dependencies as needed.
+* Bumped `org.gperfutils:gbench` to the `0.4.3` and a version explicitly compatible with Groovy 2.4.x.
 * Added `ScopeP` which wraps a predicate and is bound by the `Traverser` and `Scoping` step.
 * `WhereStep` only operates on `Traversals`. Provided predicates are translated to `__.as('a').is(eq('b'))` or `__.is(eq('a'))`.
 * `WhereStep` now uses a `SelectOneStep` for `as('a').out()...` and `IsStep` for `...as('b')` as this ensures `Traverser` (and metadata) propagation.

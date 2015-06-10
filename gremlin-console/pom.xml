@@ -55,7 +55,7 @@ limitations under the License.
         <dependency>
             <groupId>org.gperfutils</groupId>
             <artifactId>gbench</artifactId>
-            <version>0.4.2-groovy-2.1</version>
+            <version>0.4.3-groovy-2.4</version>
         </dependency>
         <dependency>
             <groupId>org.gperfutils</groupId>
