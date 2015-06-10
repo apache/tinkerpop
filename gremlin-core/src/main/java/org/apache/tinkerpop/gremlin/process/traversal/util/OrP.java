@@ -32,8 +32,8 @@ import java.util.function.Predicate;
  */
 public final class OrP<V> extends ConjunctionP<V> {
 
-    public OrP(final P<V> predicate, final P<V>... predicates) {
-        super(predicate, predicates);
+    public OrP(final Object... predicatesOrTraversals) {
+        super(predicatesOrTraversals);
         this.biPredicate = new OrBiPredicate(this);
     }
 
@@ -48,8 +48,7 @@ public final class OrP<V> extends ConjunctionP<V> {
     @Override
     public P<V> negate() {
         super.negate();
-        final P[] arg2 = new P[this.predicates.size() - 1];
-        return new AndP(this.predicates.get(0), this.predicates.subList(1, this.predicates.size()).toArray(arg2));
+        return new AndP(this.predicates.toArray(new P[this.predicates.size()]));
     }
 
     @Override

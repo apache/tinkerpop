@@ -163,7 +163,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             for (int i = 0; i < conjunctionPredicates.size(); i++) {
                 ps[i] = convertToTraversalP(startKey, conjunctionPredicates.get(i));
             }
-            return predicate instanceof AndP ? new AndP(ps[0], Arrays.copyOfRange(ps, 1, ps.length)) : new OrP(ps[0], Arrays.copyOfRange(ps, 1, ps.length));
+            return predicate instanceof AndP ? new AndP(ps) : new OrP(ps);
         } else {
             final Traversal.Admin<?, ?> whereTraversal = new DefaultGraphTraversal<>();
             // START STEP

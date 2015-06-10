@@ -22,6 +22,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import java.io.Serializable;
 import java.util.function.BiPredicate;
@@ -32,8 +33,8 @@ import java.util.function.Predicate;
  */
 public final class AndP<V> extends ConjunctionP<V> {
 
-    public AndP(final P<V> predicate, final P<V>... predicates) {
-        super(predicate, predicates);
+    public AndP(final Object... predicatesOrTraversals) {
+        super(predicatesOrTraversals);
         this.biPredicate = new AndBiPredicate(this);
     }
 
@@ -48,8 +49,7 @@ public final class AndP<V> extends ConjunctionP<V> {
     @Override
     public P<V> negate() {
         super.negate();
-        final P[] arg2 = new P[this.predicates.size() - 1];
-        return new OrP(this.predicates.get(0), this.predicates.subList(1, this.predicates.size()).toArray(arg2));
+        return new OrP(this.predicates.toArray(new P[this.predicates.size()]));
     }
 
     @Override

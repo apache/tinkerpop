@@ -37,12 +37,18 @@ public abstract class ConjunctionP<V> extends P<V> {
 
     protected List<P<V>> predicates;
 
-    public ConjunctionP(final P<V> predicate, final P<V>... predicates) {
+    public ConjunctionP(final Object... predicatesOrTraversals) {
         super(null, null);
+        if (0 == predicatesOrTraversals.length)
+            throw new IllegalArgumentException("The provided predicate array must have at least one predicate");
         this.predicates = new ArrayList<>();
-        this.predicates.add(predicate);
-        for (final P<V> p : predicates) {
-            this.predicates.add(p);
+        for (final Object object : predicatesOrTraversals) {
+            if (object instanceof P)
+                this.predicates.add((P<V>) object);
+            else if (object instanceof Traversal)
+                this.predicates.add(new TraversalP((Traversal.Admin) object, false));
+            else
+                throw new IllegalArgumentException("The provided array must contain either predicates or traversals: " + object);
         }
     }
 
