@@ -22,8 +22,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -31,7 +35,6 @@ import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,10 +43,26 @@ import static org.junit.Assert.assertNull;
 public class WhereStepTest extends StepTest {
 
     @Test
-    public void shouldHaveProperKeysAndState() {
+    public void shouldHaveProperPredicate() {
         Traversal<?, ?> traversal = as("a").out().as("b").where(as("a").out());
         WhereStep<?> whereStep = (WhereStep) traversal.asAdmin().getEndStep();
         assertEquals(TraversalP.class, whereStep.predicate.getClass());
+
+        traversal = as("a", "b").out().as("b", "c").where(as("a").out().as("b").and().as("c").out().as("d"));
+        traversal.asAdmin().setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class));
+        traversal.iterate();
+        whereStep = (WhereStep) traversal.asAdmin().getEndStep();
+        //System.out.println(traversal);
+        //System.out.println(whereStep.predicate);
+        assertEquals(TraversalP.class,whereStep.predicate.getClass());
+        assertEquals(1,whereStep.predicate.getTraversals().size());
+        whereStep = (WhereStep) whereStep.predicate.getTraversals().get(0).getStartStep();
+        assertEquals(AndP.class, whereStep.predicate.getClass());
+        assertEquals(2, whereStep.predicate.getTraversals().size());
+        assertEquals(SelectOneStep.class, whereStep.predicate.getTraversals().get(0).getStartStep().getClass());
+        assertEquals(SelectOneStep.class, whereStep.predicate.getTraversals().get(1).getStartStep().getClass());
+        assertEquals(IsStep.class, whereStep.predicate.getTraversals().get(0).getEndStep().getClass());
+        assertEquals(IsStep.class, whereStep.predicate.getTraversals().get(1).getEndStep().getClass());
     }
 
     @Override
