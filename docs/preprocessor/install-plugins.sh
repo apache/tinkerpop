@@ -52,6 +52,7 @@ while [ ${i} -lt ${pluginsCount} ]; do
 done
 
 echo "System.exit(0)" >> ${INSTALL_FILE}
+echo -ne " * tinkerpop-sugar ... "
 
 pushd ${CONSOLE_HOME} > /dev/null
 bin/gremlin.sh ${INSTALL_FILE} > /dev/null
