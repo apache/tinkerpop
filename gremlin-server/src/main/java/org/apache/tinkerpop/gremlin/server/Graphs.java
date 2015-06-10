@@ -41,13 +41,6 @@ public class Graphs {
     private final Map<String, TraversalSource> traversalSources = new ConcurrentHashMap<>();
 
     /**
-     * Construct a new instance without {@link Settings} which might be useful when embedding Gremlin Server.
-     */
-    public Graphs() {
-        // allow the Graphs object to be constructed without Settings
-    }
-
-    /**
      * Create a new instance using the {@link Settings} from Gremlin Server.
      */
     public Graphs(final Settings settings) {
