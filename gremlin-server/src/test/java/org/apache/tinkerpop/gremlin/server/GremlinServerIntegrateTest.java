@@ -111,6 +111,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 break;
+            case "shouldStartWithDefaultSettings":
+                return new Settings();
             case "shouldHaveTheSessionTimeout":
                 settings.processors.clear();
                 final Settings.ProcessorSettings processorSettings = new Settings.ProcessorSettings();
@@ -122,6 +124,20 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldStartWithDefaultSettings() {
+        // just quickly validate that results are returning given defaults. no graphs are config'd with defaults
+        // so just eval a groovy script.
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+        final AtomicInteger counter = new AtomicInteger(0);
+        results.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
+
+        cluster.close();
     }
 
     @Test

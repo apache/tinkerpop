@@ -19,12 +19,15 @@
 package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import info.ganglia.gmetric4j.gmetric.GMetric;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -33,6 +36,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,6 +50,17 @@ import java.util.UUID;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Settings {
+
+    public Settings() {
+        // setup some sensible defaults like gremlin-groovy and gryo serialization
+        scriptEngines = new HashMap<>();
+        scriptEngines.put("gremlin-groovy", new ScriptEngineSettings());
+
+        serializers = new ArrayList<>();
+        final SerializerSettings graphson = new SerializerSettings();
+        graphson.className = GryoMessageSerializerV1d0.class.getName();
+        serializers.add(graphson);
+    }
 
     /**
      * Host to bind the server to. Defaults to localhost.
@@ -149,9 +164,9 @@ public class Settings {
     public ServerMetrics metrics = null;
 
     /**
-     * {@link Map} of {@link org.apache.tinkerpop.gremlin.structure.Graph} objects keyed by their binding name.
+     * {@link Map} of {@link Graph} objects keyed by their binding name.
      */
-    public Map<String, String> graphs;
+    public Map<String, String> graphs = new HashMap<>();
 
     /**
      * {@link Map} of settings for {@code ScriptEngine} setting objects keyed by the name of the {@code ScriptEngine}
@@ -160,7 +175,7 @@ public class Settings {
     public Map<String, ScriptEngineSettings> scriptEngines;
 
     /**
-     * List of {@link org.apache.tinkerpop.gremlin.driver.MessageSerializer} to configure.
+     * List of {@link MessageSerializer} to configure.
      */
     public List<SerializerSettings> serializers;
 
