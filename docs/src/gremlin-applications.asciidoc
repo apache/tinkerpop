@@ -101,6 +101,8 @@ g.V().values('name')
 g.V().has('name','marko').out('knows').values('name')
 ----
 
+TIP: When using Gremlin-Groovy in a Groovy class file, add `static { GremlinLoader.load() }` to the head of the file.
+
 Console Commands
 ~~~~~~~~~~~~~~~~
 
@@ -953,6 +955,8 @@ gremlin> :plugin use tinkerpop.sugar
 ==>tinkerpop.sugar activated
 ----
 
+TIP: When using Sugar in a Groovy class file, add `static { SugarLoader.load() }` to the head of the file. `SugarLoader.load()` will automatically call `GremlinLoader.load()`.
+
 Graph Traversal Methods
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1006,7 +1010,7 @@ gremlin> g.V[2]
 Logical Operators
 ^^^^^^^^^^^^^^^^^
 
-The `&` and `|` operator are overloaded in `SugarGremlinPlugin`. When used, they introduce the `AndStep.AndMarker` and `OrStep.OrStep` markers into the traversal. See <<and-step,`and()`>> and <<or-step,`or()`>> for more information.
+The `&` and `|` operator are overloaded in `SugarGremlinPlugin`. When used, they introduce the `AndStep` and `OrStep` markers into the traversal. See <<and-step,`and()`>> and <<or-step,`or()`>> for more information.
 
 [source,groovy]
 ----
@@ -1026,31 +1030,6 @@ gremlin> t.toString()
 
 <1> Introducing the `AndStep` with the `&` operator.
 <2> Introducing the `OrStep` with the `|` operator.
-
-Comparators
-^^^^^^^^^^^
-
-Unfortunately, Groovy does not support comparator overloading -- `>`, `<=`, `==`, etc. However, the `Compare` enums are available as methods in `SugarGremlinPlugin`.
-
-[source,groovy]
-----
-gremlin> g.V.has(outE('created').count.gt(1l) | __.age.lt(30)).name ////<1>
-==>marko
-==>vadas
-==>josh
-gremlin> t = g.V.has(outE('created').count.gt(1l) | __.age.lt(30) & outE('knows')).name; null ////<2>
-==>null
-gremlin> t.toString()
-==>[GraphStep(vertex), HasTraversalStep([VertexStep(OUT,[created],edge), CountStep, IsStep(gt,1), OrMarker, PropertiesStep([age],value), IsStep(lt,30), AndMarker, VertexStep(OUT,[knows],edge)]), PropertiesStep([name],value)]
-gremlin> t
-==>marko
-==>josh
-gremlin> t.toString()
-==>[TinkerGraphStep(vertex), HasTraversalStep([OrStep([[VertexStep(OUT,[created],edge), CountStep, IsStep(gt,1)], [AndStep([[PropertiesStep([age],value), IsStep(lt,30)], [VertexStep(OUT,[knows],edge)]])]])]), PropertiesStep([name],value)]
-----
-
-<1> Using `gt(x)` in place of `is(gt,x)`.
-<2> A complex and/or chain with `IsStep` substitutions.
 
 Traverser Methods
 ^^^^^^^^^^^^^^^^^

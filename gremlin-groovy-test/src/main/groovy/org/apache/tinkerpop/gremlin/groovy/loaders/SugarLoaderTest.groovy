@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory
 import org.junit.Test
 
 import static org.junit.Assert.*
+import static org.apache.tinkerpop.gremlin.process.traversal.P.*
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -82,6 +83,7 @@ class SugarLoaderTest extends AbstractGremlinTest {
         assertEquals('okram', g.V(1).next().name);
         g.V(1).next()['name'] = 'marko a. rodriguez'
         assertEquals(["okram", "marko a. rodriguez"] as Set, g.V(1).values('name').toSet());
+        assertEquals(29, g.V.age.is(eq(29)).next())
     }
 
     @Test

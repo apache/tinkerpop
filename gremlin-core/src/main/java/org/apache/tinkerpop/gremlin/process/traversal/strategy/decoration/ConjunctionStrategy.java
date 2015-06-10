@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
@@ -39,8 +40,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>
- * __.has("name","stephen").or().has(__.out("knows").has("name","stephen"))   // is replaced by __.or(__.has("name","stephen"),__.has(__.out("knows").has("name","stephen")))
- * __.out("a").out("b").and().out("c").or().out("d")                          // is replaced by __.or(__.and(__.out("a").out("b"), __.out("c")), __.out("d"))
+ * __.has("name","stephen").or().where(__.out("knows").has("name","stephen"))   // is replaced by __.or(__.has("name","stephen"), __.where(__.out("knows").has("name","stephen")))
+ * __.out("a").out("b").and().out("c").or().out("d")                            // is replaced by __.or(__.and(__.out("a").out("b"), __.out("c")), __.out("d"))
+ * __.as("a").out().as("b").and().as("c").in().as("d")                          // is replaced by __.and(__.as("a").out().as("b"), __.as("c").in().as("d"))
  * </pre>
  */
 public final class ConjunctionStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
@@ -60,13 +62,18 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy<Travers
     }
 
     private static final boolean legalCurrentStep(final Step<?, ?> step) {
-        return !(step instanceof EmptyStep || step instanceof OrStep || step instanceof AndStep || step instanceof StartStep);
+        return !(step instanceof EmptyStep || step instanceof ConjunctionStep || step instanceof GraphStep || (step instanceof StartStep && (null != ((StartStep) step).getStart() || step.getLabels().isEmpty())));
     }
 
     private static final void processConjunctionMarker(final Class<? extends ConjunctionStep> markerClass, final Traversal.Admin<?, ?> traversal) {
         TraversalHelper.getStepsOfClass(markerClass, traversal).forEach(markerStep -> {
             Step<?, ?> currentStep = markerStep.getNextStep();
             final Traversal.Admin<?, ?> rightTraversal = __.start().asAdmin();
+            if (!markerStep.getLabels().isEmpty()) {
+                final StartStep<?> startStep = new StartStep<>(rightTraversal);
+                ((Step<?, ?>) markerStep).getLabels().forEach(startStep::addLabel);
+                rightTraversal.addStep(startStep);
+            }
             while (legalCurrentStep(currentStep)) {
                 final Step<?, ?> nextStep = currentStep.getNextStep();
                 rightTraversal.addStep(currentStep);
@@ -84,8 +91,8 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy<Travers
             }
             TraversalHelper.replaceStep(markerStep,
                     markerClass.equals(AndStep.class) ?
-                            new WhereStep<Object>(traversal, Scope.global, P.traversal(leftTraversal).and(rightTraversal)) :
-                            new WhereStep<Object>(traversal, Scope.global, P.traversal(leftTraversal).or(rightTraversal)),
+                            new WhereStep<>(traversal, Scope.global, P.traversal(leftTraversal).and(rightTraversal)) :
+                            new WhereStep<>(traversal, Scope.global, P.traversal(leftTraversal).or(rightTraversal)),
                     traversal);
         });
     }
