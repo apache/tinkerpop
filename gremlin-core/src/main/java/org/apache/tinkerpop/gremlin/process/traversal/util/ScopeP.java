@@ -39,7 +39,7 @@ public final class ScopeP<V> extends P<V> {
 
     public ScopeP(final P<?> predicate) {
         super((BiPredicate) predicate.getBiPredicate(), (V) EMPTY_OBJECT);
-        this.key = predicate.getValue() instanceof Collection ? ((Collection<String>) predicate.getValue()).iterator().next() : (String) predicate.getValue();   // HACK: for within("x") as it sees that as an array
+        this.key = predicate.getValue() instanceof Collection ? ((Collection<String>) predicate.getValue()).iterator().next() : (String) predicate.getValue();   // HACK: for within("x") -- it sees that as an array
     }
 
     public void bind(final Scoping scopingStep, final Traverser.Admin<?> traverser) {

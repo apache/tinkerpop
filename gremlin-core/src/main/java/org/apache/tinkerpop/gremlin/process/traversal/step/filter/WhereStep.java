@@ -131,7 +131,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(Scope.local == this.scope ?
                 new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS} :
-                new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS});
+                new TraverserRequirement[]{TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS});
     }
 
     @Override
