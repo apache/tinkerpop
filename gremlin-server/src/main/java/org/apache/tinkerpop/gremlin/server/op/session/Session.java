@@ -134,7 +134,7 @@ public class Session {
                     this.bindings.putAll(b);
                 })
                 .enabledPlugins(new HashSet<>(settings.plugins))
-                .globalBindings(graphs.getGraphsAsBindings())
+                .globalBindings(graphs.getAsBindings())
                 .promoteBindings(kv -> kv.getValue() instanceof Graph
                         || kv.getValue() instanceof TraversalSource)
                 .executorService(executor)

@@ -102,7 +102,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
                 .beforeEval(b -> graphs.rollbackAll())
                 .afterTimeout(b -> graphs.rollbackAll())
                 .enabledPlugins(new HashSet<>(settings.plugins))
-                .globalBindings(graphs.getGraphsAsBindings())
+                .globalBindings(graphs.getAsBindings())
                 .promoteBindings(kv -> kv.getValue() instanceof Graph
                         || kv.getValue() instanceof TraversalSource
                         || kv.getValue() instanceof LifeCycleHook)

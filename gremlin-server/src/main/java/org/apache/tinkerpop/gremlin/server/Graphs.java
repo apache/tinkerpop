@@ -81,7 +81,7 @@ public class Graphs {
     /**
      * Get the {@link Graph} and {@link TraversalSource} list as a set of bindings.
      */
-    public Bindings getGraphsAsBindings() {
+    public Bindings getAsBindings() {
         final Bindings bindings = new SimpleBindings();
         graphs.forEach(bindings::put);
         traversalSources.forEach(bindings::put);
