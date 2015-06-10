@@ -85,7 +85,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX();
 
-    public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_whereXasXbX_in_andXnotXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX();
+    public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX();
 
     // multi-labels
 
@@ -301,8 +301,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_outXcreatedX_asXbX_whereXasXbX_in_andXnotXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX() {
-        Traversal<Vertex,Map<String,String>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_whereXasXbX_in_andXnotXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX();
+    public void g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX() {
+        Traversal<Vertex,Map<String,String>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX();
         printTraversalForm(traversal);
         int counter = 0;
         while(traversal.hasNext()) {
@@ -408,8 +408,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_whereXasXbX_in_andXnotXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX() {
-            return g.V().as("a").out("created").as("b").where(as("b").in().and(not(as("a").out("created").has("name","ripple")))).<String>select().by("name");
+        public Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX() {
+            return g.V().as("a").out("created").as("b").where(and(as("b").in(),not(as("a").out("created").has("name","ripple")))).<String>select().by("name");
         }
 
         // multi-labels

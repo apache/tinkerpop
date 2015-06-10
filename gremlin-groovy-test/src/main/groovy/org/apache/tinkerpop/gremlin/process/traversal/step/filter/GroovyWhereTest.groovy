@@ -119,8 +119,8 @@ public abstract class GroovyWhereTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXcreatedX_asXbX_whereXasXbX_in_andXnotXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX() {
-            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').where(__.as('b').in.and(not(__.as('a').out('created').has('name','ripple')))).select.by('name')", g)
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX() {
+            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').where(and(__.as('b').in,not(__.as('a').out('created').has('name','ripple')))).select.by('name')", g)
         }
 
         /*@Override
