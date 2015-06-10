@@ -39,3 +39,5 @@ installPlugin = { def artifact ->
   }
 }
 
+:plugin use tinkerpop.sugar
+System.err.println("done")

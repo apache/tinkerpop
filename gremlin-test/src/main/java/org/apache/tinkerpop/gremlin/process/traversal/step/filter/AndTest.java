@@ -21,8 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -45,6 +45,8 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_outXknowsX_and_outXcreatedX_inXcreatedX_asXaX_name();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_andXhasXage_gt_27X__outE_count_gt_2X_name() {
@@ -61,6 +63,14 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("josh", "peter"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_outXknowsX_and_outXcreatedX_inXcreatedX_asXaX_name() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_asXaX_outXknowsX_and_outXcreatedX_inXcreatedX_asXaX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(convertToVertex(graph, "marko")), traversal);
+    }
+
 
     public static class Traversals extends AndTest {
 
@@ -72,6 +82,11 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name() {
             return g.V().and(outE(), has(T.label, "person").and().has("age", P.gte(32))).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_outXknowsX_and_outXcreatedX_inXcreatedX_asXaX_name() {
+            return g.V().as("a").out("knows").and().out("created").in("created").as("a").values("name");
         }
     }
 }

@@ -32,8 +32,8 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory
 class SugarLoader {
 
     private static final String NAME = "name";
-    private static final String FROM = "from";
-    private static final String SELECT = "select";
+    //private static final String FROM = "from";
+    //private static final String SELECT = "select";
 
     public static void load() {
 

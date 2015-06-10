@@ -29,11 +29,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConjunctionP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ScopeP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -50,32 +54,23 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     public WhereStep(final Traversal.Admin traversal, final Scope scope, final Optional<String> startKey, final P<?> predicate) {
         super(traversal);
         this.scope = scope;
-        this.predicate = (P) predicate;
-        if (this.predicate.getTraversals().isEmpty()) {                              // a standard P
-            final Traversal.Admin<?, ?> whereTraversal = new DefaultGraphTraversal<>();
-            // START STEP
-            startKey.ifPresent(key -> whereTraversal.addStep(new SelectOneStep<>(whereTraversal, scope, startKey.get())));
-            // END STEP
-            whereTraversal.addStep(new IsStep<>(whereTraversal, new ScopeP<>(predicate)));
-            this.predicate = new TraversalP(whereTraversal, false);
-        } else {                                                                     // a TraversalP, AndP, or OrP
-            for (final Traversal.Admin<?, ?> whereTraversal : this.predicate.getTraversals()) {
-                //// START STEP
-                final Step<?, ?> startStep = whereTraversal.getStartStep();
-                if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
-                    if (startStep.getLabels().size() > 1)
-                        throw new IllegalArgumentException("The start step of a where()-traversal predicate can only have one label: " + startStep);
-                    TraversalHelper.replaceStep(whereTraversal.getStartStep(), new SelectOneStep<>(whereTraversal, scope, startStep.getLabels().iterator().next()), whereTraversal);
-                }
-                //// END STEP
-                final Step<?, ?> endStep = whereTraversal.getEndStep();
-                if (!endStep.getLabels().isEmpty()) {
-                    if (endStep.getLabels().size() > 1)
-                        throw new IllegalArgumentException("The end step of a where()-traversal predicate can only have one label: " + endStep);
-                    final String label = endStep.getLabels().iterator().next();
-                    endStep.removeLabel(label);
-                    whereTraversal.addStep(new IsStep<>(whereTraversal, new ScopeP<>(P.eq(label))));
-                }
+        this.predicate = WhereStep.convertToTraversalP(startKey, predicate);
+        for (final Traversal.Admin<?, ?> whereTraversal : this.predicate.getTraversals()) {
+            //// START STEP
+            final Step<?, ?> startStep = whereTraversal.getStartStep();
+            if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
+                if (startStep.getLabels().size() > 1)
+                    throw new IllegalArgumentException("The start step of a where()-traversal predicate can only have one label: " + startStep);
+                TraversalHelper.replaceStep(whereTraversal.getStartStep(), new SelectOneStep<>(whereTraversal, scope, startStep.getLabels().iterator().next()), whereTraversal);
+            }
+            //// END STEP
+            final Step<?, ?> endStep = whereTraversal.getEndStep();
+            if (!endStep.getLabels().isEmpty()) {
+                if (endStep.getLabels().size() > 1)
+                    throw new IllegalArgumentException("The end step of a where()-traversal predicate can only have one label: " + endStep);
+                final String label = endStep.getLabels().iterator().next();
+                endStep.removeLabel(label);
+                whereTraversal.addStep(new IsStep<>(whereTraversal, new ScopeP<>(P.eq(label))));
             }
         }
         this.predicate.getTraversals().forEach(this::integrateChild);
@@ -157,5 +152,29 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     @Override
     public Scope recommendNextScope() {
         return this.scope;
+    }
+
+    private static P convertToTraversalP(final Optional<String> startKey, final P<?> predicate) {
+        if (predicate instanceof TraversalP)
+            return predicate;
+        else if (predicate instanceof ConjunctionP) {
+            final List<P<?>> conjunctionPredicates = ((ConjunctionP) predicate).getPredicates();
+            final P<?>[] ps = new P[conjunctionPredicates.size()];
+            for (int i = 0; i < conjunctionPredicates.size(); i++) {
+                ps[i] = convertToTraversalP(startKey, conjunctionPredicates.get(i));
+            }
+            return predicate instanceof AndP ? new AndP(ps[0], Arrays.copyOfRange(ps, 1, ps.length)) : new OrP(ps[0], Arrays.copyOfRange(ps, 1, ps.length));
+        } else {
+            final Traversal.Admin<?, ?> whereTraversal = new DefaultGraphTraversal<>();
+            // START STEP
+            if (startKey.isPresent()) {
+                final StartStep<?> startStep = new StartStep<>(whereTraversal);
+                startStep.addLabel(startKey.get());
+                whereTraversal.addStep(startStep);
+            }
+            // END STEP
+            whereTraversal.addStep(new IsStep<>(whereTraversal, new ScopeP<>(predicate)));
+            return new TraversalP(whereTraversal, false);
+        }
     }
 }
