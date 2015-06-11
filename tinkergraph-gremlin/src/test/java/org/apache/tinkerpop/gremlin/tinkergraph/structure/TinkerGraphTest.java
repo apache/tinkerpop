@@ -155,26 +155,10 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay5() throws Exception {
         GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        //g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").path().forEachRemaining(System.out::println);
-        //g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").select().by("skill").by("name").forEachRemaining(System.out::println);
-        //g.V().label().groupCount().as("x").select().forEachRemaining(System.out::println);
-        //g.V().choose(__.outE().count().is(0L), __.as("x"), __.as("y")).select("x", "y").forEachRemaining(System.out::println);
-        // g.V().hasLabel("person").values("age").is(P.lt(27).or(P.gt(29))).forEachRemaining(System.out::println);
-        //System.out.println(g.V().as("a").out("knows").as("b").where(as("a","b").out("created")).select().by("name"));
-        Supplier<Traversal<?,?>> supplier = () -> g.V().as("a").values("name").as("b").where(as("b").is(eq("marko"))).select();
-
-                /*() ->
-                g.V().as("a").out("created").as("b").in("created").as("c").where(
-                        or(
-                                as("a").out("knows"),
-                                and(
-                                        as("b").has("name","ripple"),
-                                        as("b").in("created").as("a"),
-                                        as("b").in().has("name","josh"))
-                        )
-                ).select().by("name");*/
-        System.out.println(supplier.get().iterate());
-        supplier.get().forEachRemaining(System.out::println);
+        g.V().as("a").xmatch(
+                as("a").out("knows").as("b"),
+                as("a").out("created").as("c"),
+                as("b").out("created").as("c")).select("a","b","c").forEachRemaining(System.out::println);
     }
 
     @Test

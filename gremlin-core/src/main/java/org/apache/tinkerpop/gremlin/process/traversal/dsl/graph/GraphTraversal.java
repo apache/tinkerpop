@@ -55,6 +55,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.exp.XMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
@@ -987,6 +988,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     ////
+
+    public default GraphTraversal<S, E> xmatch(final Traversal<?,?>... andTraversals) {
+        return this.asAdmin().addStep(new XMatchStep<>(this.asAdmin(), andTraversals));
+    }
 
     @Override
     public default GraphTraversal<S, E> iterate() {
