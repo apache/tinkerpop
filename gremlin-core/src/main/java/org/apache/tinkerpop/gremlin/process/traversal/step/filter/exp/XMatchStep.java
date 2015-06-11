@@ -78,10 +78,9 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
                     throw new IllegalArgumentException("The end step of a match()-traversal can only have one label: " + endStep);
                 final String label = endStep.getLabels().iterator().next();
                 endStep.removeLabel(label);
-                final Step<?, ?> isOrAllowStep = new IsOrAllowStep<>(andTraversal.asAdmin(), label);      // TODO: perhaps just have a XMatchEndStep private static?
-                isOrAllowStep.addLabel(label);
-                andTraversal.asAdmin().addStep(isOrAllowStep);
-                andTraversal.asAdmin().addStep(new EndStep(andTraversal.asAdmin(), true));
+                final Step<?, ?> step = new XMatchEndStep(andTraversal.asAdmin(), label);
+                step.addLabel(label);
+                andTraversal.asAdmin().addStep(step);
             }
             this.andTraversals.add(this.integrateChild(andTraversal.asAdmin()));
         }
@@ -163,6 +162,37 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
     }
+
+    //////////////////////////////
+
+    public class XMatchEndStep extends EndStep {
+
+        private final String matchKey;
+
+        public XMatchEndStep(final Traversal.Admin traversal, final String key) {
+            super(traversal);
+            this.matchKey = key;
+        }
+
+        @Override
+        protected Traverser<S> processNextStart() throws NoSuchElementException {
+            while (true) {
+                final Traverser.Admin<S> start = this.starts.next();
+                final Optional<S> optional = start.getSideEffects().get(this.matchKey);
+                if (optional.isPresent() && start.get().equals(optional.get())) {
+                    if (this.traverserStepIdSetByChild) start.setStepId(XMatchStep.this.getId());
+                    return start;
+                } else {
+                    final Path path = start.path();
+                    if (!path.hasLabel(this.matchKey) || start.get().equals(path.getSingle(Pop.head, this.matchKey))) {
+                        if (this.traverserStepIdSetByChild) start.setStepId(XMatchStep.this.getId());
+                        return start;
+                    }
+                }
+            }
+        }
+    }
+
 
     //////////////////////////////
 

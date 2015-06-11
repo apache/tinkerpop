@@ -155,11 +155,15 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay5() throws Exception {
-        GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.computer());
+        GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.standard());
         g.V().as("a").xmatch(
                 as("a").out("knows").as("b"),
                 as("a").out("created").as("c"),
-                as("b").out("created").as("c")).select(Pop.head,"a","b","c").forEachRemaining(System.out::println);
+                as("b").out("created").as("c"),
+                as("c").in("created").as("d"),
+                as("d").where(neq("a")).where(neq("b")),
+                as("b").out("created").has("name","ripple")
+                ).select(Pop.head,"a","b","c","d").by("name").forEachRemaining(System.out::println);
     }
 
     @Test

@@ -68,11 +68,15 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
     public class EndStep extends AbstractStep<S, S> implements EngineDependent {
 
-        private final boolean returnHome;
+        protected final boolean returnHome;
 
         public EndStep(final Traversal.Admin traversal, final boolean returnHome) {
             super(traversal);
             this.returnHome = returnHome;
+        }
+
+        public EndStep(final Traversal.Admin traversal) {
+            this(traversal, false);
         }
 
         @Override
