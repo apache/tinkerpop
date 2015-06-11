@@ -49,11 +49,15 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     private Scope scope;
     private final List<String> selectLabels;
 
-    public SelectStep(final Traversal.Admin traversal, final Scope scope, final Optional<Pop> pop, final String... selectLabels) {
+    public SelectStep(final Traversal.Admin traversal, final Scope scope, final Pop pop, final String... selectLabels) {
         super(traversal);
         this.scope = scope;
-        this.pop = pop.orElse(null);
+        this.pop = pop;
         this.selectLabels = Arrays.asList(selectLabels);
+    }
+
+    public SelectStep(final Traversal.Admin traversal, final Scope scope, final String... selectLabels) {
+        this(traversal, scope, null, selectLabels);
     }
 
     @Override
