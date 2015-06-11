@@ -1026,8 +1026,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             final long time = System.nanoTime();
             if (!memory.isInitialIteration())
                 assertNotEquals(-1l, TIME_KEEPER.get());
-            assertTrue(TIME_KEEPER.get() < time);
-            TIME_KEEPER.set(time);
+            assertTrue(TIME_KEEPER.getAndSet(time) < time);
             try {
                 memory.set("test", memory.getIteration());
                 fail("Should throw an immutable memory exception");
@@ -1054,14 +1053,13 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         public void workerIterationEnd(final Memory memory) {
             assertEquals(memory.getIteration(), memory.<Integer>get("test").intValue());
             assertNotEquals(-1l, TIME_KEEPER.get());
-            assertTrue(TIME_KEEPER.get() < System.nanoTime());
+            assertTrue(TIME_KEEPER.getAndSet(Long.MIN_VALUE) < System.nanoTime());
             try {
                 memory.set("test", memory.getIteration());
                 fail("Should throw an immutable memory exception");
             } catch (IllegalStateException e) {
                 assertEquals(Memory.Exceptions.memoryIsCurrentlyImmutable().getMessage(), e.getMessage());
             }
-            TIME_KEEPER.set(Long.MIN_VALUE);
         }
 
         @Override
@@ -1099,9 +1097,8 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         @Override
         public void workerStart(final Stage stage) {
             final long time = System.nanoTime();
-            assertTrue(TIME_KEEPER.get() < time);
             if (!stage.equals(Stage.MAP)) assertNotEquals(-1l, TIME_KEEPER.get());
-            TIME_KEEPER.set(time);
+            assertTrue(TIME_KEEPER.getAndSet(time) < time);
             WORKER_START.add(stage);
             if (!stage.equals(Stage.MAP))
                 assertFalse(WORKER_END.isEmpty());
@@ -1113,8 +1110,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             sleep(10);
             assertNotEquals(-1l, TIME_KEEPER.get());
             final long time = System.nanoTime();
-            assertTrue(TIME_KEEPER.get() < time);
-            TIME_KEEPER.set(time);
+            assertTrue(TIME_KEEPER.getAndSet(time) < time);
             assertEquals(1, WORKER_START.size());
             assertTrue(WORKER_START.contains(Stage.MAP));
         }
@@ -1125,8 +1121,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             sleep(10);
             assertNotEquals(-1l, TIME_KEEPER.get());
             final long time = System.nanoTime();
-            assertTrue(TIME_KEEPER.get() < time);
-            TIME_KEEPER.set(time);
+            assertTrue(TIME_KEEPER.getAndSet(time) < time);
             assertEquals(2, WORKER_START.size());
             assertTrue(WORKER_START.contains(Stage.MAP) && WORKER_START.contains(Stage.COMBINE));
             assertFalse(WORKER_END.isEmpty());
@@ -1138,8 +1133,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             sleep(10);
             assertNotEquals(-1l, TIME_KEEPER.get());
             final long time = System.nanoTime();
-            assertTrue(TIME_KEEPER.get() < time);
-            TIME_KEEPER.set(time);
+            assertTrue(TIME_KEEPER.getAndSet(time) < time);
             if (WORKER_START.size() == 2) {
                 assertEquals(2, WORKER_START.size());
                 assertTrue(WORKER_START.contains(Stage.MAP) && WORKER_START.contains(Stage.REDUCE));
