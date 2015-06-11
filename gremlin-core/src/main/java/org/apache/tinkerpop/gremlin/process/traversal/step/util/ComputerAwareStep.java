@@ -68,14 +68,18 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
     public class EndStep extends AbstractStep<S, S> implements EngineDependent {
 
-        public EndStep(final Traversal.Admin traversal) {
+        private final boolean returnHome;
+
+        public EndStep(final Traversal.Admin traversal, final boolean returnHome) {
             super(traversal);
+            this.returnHome = returnHome;
         }
 
         @Override
         protected Traverser<S> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<S> start = this.starts.next();
-            if (this.traverserStepIdSetByChild) start.setStepId(ComputerAwareStep.this.getNextStep().getId());
+            if (this.traverserStepIdSetByChild)
+                start.setStepId(this.returnHome ? ComputerAwareStep.this.getId() : ComputerAwareStep.this.getNextStep().getId());
             return start;
         }
 

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.*;
@@ -154,11 +155,11 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay5() throws Exception {
-        GraphTraversalSource g = TinkerFactory.createModern().traversal();
+        GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.computer());
         g.V().as("a").xmatch(
                 as("a").out("knows").as("b"),
                 as("a").out("created").as("c"),
-                as("b").out("created").as("c")).select("a","b","c").forEachRemaining(System.out::println);
+                as("b").out("created").as("c")).select(Pop.head,"a","b","c").forEachRemaining(System.out::println);
     }
 
     @Test

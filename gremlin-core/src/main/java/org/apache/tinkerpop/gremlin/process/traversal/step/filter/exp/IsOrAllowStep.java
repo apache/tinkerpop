@@ -21,6 +21,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter.exp;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -45,8 +46,10 @@ public final class IsOrAllowStep<S> extends FilterStep<S> {
         final Optional<S> optional = traverser.getSideEffects().get(this.key);
         if (optional.isPresent())
             return traverser.get().equals(optional.get());
-        else
-            return !traverser.path().hasLabel(this.key) || traverser.get().equals(traverser.path().getSingle(Pop.head, this.key));
+        else {
+            final Path path = traverser.path();
+            return !path.hasLabel(this.key) || traverser.get().equals(path.getSingle(Pop.head, this.key));
+        }
 
     }
 }

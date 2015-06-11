@@ -767,4 +767,8 @@ public class __ {
         return __.<A>start().barrier(maxBarrierSize);
     }
 
+    public static <A> GraphTraversal<A, A> xmatch(final Traversal<?, ?>... andTraversals) {
+        return __.<A>start().xmatch(andTraversals);
+    }
+
 }
