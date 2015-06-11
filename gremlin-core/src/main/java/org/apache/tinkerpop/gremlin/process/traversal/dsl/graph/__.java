@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -270,11 +271,20 @@ public class __ {
         return __.<A>start().sack();
     }
 
+
+    public static <A, B> GraphTraversal<A, B> select(final Scope scope, final Pop pop, final String stepLabel) {
+        return __.<A>start().select(scope, pop, stepLabel);
+    }
+
     /**
      * @see {@link GraphTraversal#select(Scope, String)}
      */
     public static <A, B> GraphTraversal<A, B> select(final Scope scope, final String stepLabel) {
         return __.<A>start().select(scope, stepLabel);
+    }
+
+    public static <A, B> GraphTraversal<A, B> select(final Pop pop, final String stepLabel) {
+        return __.<A>start().select(pop, stepLabel);
     }
 
     /**
@@ -284,11 +294,19 @@ public class __ {
         return __.<A>start().select(stepLabel);
     }
 
+    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Scope scope, final Pop pop, final String... stepLabels) {
+        return __.<A>start().select(scope, pop, stepLabels);
+    }
+
     /**
      * @see {@link GraphTraversal#select(Scope, String...)}
      */
     public static <A, B> GraphTraversal<A, Map<String, B>> select(final Scope scope, final String... stepLabels) {
         return __.<A>start().select(scope, stepLabels);
+    }
+
+    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Pop pop, final String... stepLabels) {
+        return __.<A>start().select(pop, stepLabels);
     }
 
     /**

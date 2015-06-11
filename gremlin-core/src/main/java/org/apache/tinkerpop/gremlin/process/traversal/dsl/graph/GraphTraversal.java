@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -467,20 +468,36 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
 
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Scope scope, final Pop pop, final String... stepLabels) {
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), scope, Optional.ofNullable(pop), stepLabels));
+    }
+
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final Scope scope, final String... stepLabels) {
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), scope, stepLabels));
+        return this.select(scope, null, stepLabels);
+    }
+
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String... stepLabels) {
+        return this.select(Scope.global, pop, stepLabels);
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final String... stepLabels) {
-        return this.select(Scope.global, stepLabels);
+        return this.select(Scope.global, null, stepLabels);
+    }
+
+    public default <E2> GraphTraversal<S, E2> select(final Scope scope, final Pop pop, final String stepLabel) {
+        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), scope, Optional.ofNullable(pop), stepLabel));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final Scope scope, final String stepLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), scope, stepLabel));
+        return this.select(scope, null, stepLabel);
+    }
+
+    public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String stepLabel) {
+        return this.select(Scope.global, pop, stepLabel);
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String stepLabel) {
-        return this.select(Scope.global, stepLabel);
+        return this.select(Scope.global, null, stepLabel);
     }
 
     public default <E2> GraphTraversal<S, E2> unfold() {

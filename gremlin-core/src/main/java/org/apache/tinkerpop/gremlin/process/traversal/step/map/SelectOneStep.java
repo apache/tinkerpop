@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -40,18 +41,20 @@ import java.util.Set;
 public final class SelectOneStep<S, E> extends MapStep<S, E> implements TraversalParent, Scoping, PathProcessor {
 
     private Scope scope;
+    private final Pop pop;
     private final String selectLabel;
     private Traversal.Admin<S, E> selectTraversal = new IdentityTraversal<>();
 
-    public SelectOneStep(final Traversal.Admin traversal, final Scope scope, final String selectLabel) {
+    public SelectOneStep(final Traversal.Admin traversal, final Scope scope, Optional<Pop> pop, final String selectLabel) {
         super(traversal);
         this.scope = scope;
+        this.pop = pop.orElse(null);
         this.selectLabel = selectLabel;
     }
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        final Optional<S> optional = this.getOptionalScopeValueByKey(this.selectLabel, traverser);
+        final Optional<S> optional = this.getOptionalScopeValueByKey(this.pop, this.selectLabel, traverser);
         return optional.isPresent() ? TraversalUtil.apply(optional.get(), this.selectTraversal) : null;
     }
 
