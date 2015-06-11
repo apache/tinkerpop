@@ -22,6 +22,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
@@ -34,7 +35,7 @@ import java.util.Set;
  */
 public interface Scoping {
 
-    public default <S> S getScopeValueByKey(final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
+    public default <S> S getScopeValueByKey(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
         if (traverser.getSideEffects().get(key).isPresent())
             return traverser.getSideEffects().<S>get(key).get();
         if (Scope.local == this.getScope()) {
@@ -46,13 +47,13 @@ public interface Scoping {
         } else {
             final Path path = traverser.path();
             if (path.hasLabel(key))
-                return path.get(key);
+                return null == pop ? path.get(key) : path.getSingle(pop, key);
             else
                 throw new IllegalArgumentException("Neither the current path nor sideEffects have a " + key + "-key: " + this);
         }
     }
 
-    public default <S> Optional<S> getOptionalScopeValueByKey(final String key, final Traverser.Admin<?> traverser) {
+    public default <S> Optional<S> getOptionalScopeValueByKey(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
         if (traverser.getSideEffects().get(key).isPresent())
             return traverser.getSideEffects().<S>get(key);
 
@@ -60,8 +61,16 @@ public interface Scoping {
             return Optional.ofNullable(((Map<String, S>) traverser.get()).get(key));
         } else {
             final Path path = traverser.path();
-            return path.hasLabel(key) ? Optional.of(path.get(key)) : Optional.<S>empty();
+            return path.hasLabel(key) ? Optional.of(null == pop ? path.get(key) : path.getSingle(pop, key)) : Optional.<S>empty();
         }
+    }
+
+    public default <S> S getScopeValueByKey(final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
+        return this.getScopeValueByKey(null, key, traverser);
+    }
+
+    public default <S> Optional<S> getOptionalScopeValueByKey(final String key, final Traverser.Admin<?> traverser) {
+        return this.getOptionalScopeValueByKey(null, key, traverser);
     }
 
     public Scope getScope();

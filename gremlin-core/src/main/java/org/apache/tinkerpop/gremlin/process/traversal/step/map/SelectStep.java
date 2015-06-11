@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -44,12 +45,14 @@ import java.util.Set;
 public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implements Scoping, TraversalParent, PathProcessor {
 
     private TraversalRing<Object, E> traversalRing = new TraversalRing<>();
+    private final Pop pop;
     private Scope scope;
     private final List<String> selectLabels;
 
-    public SelectStep(final Traversal.Admin traversal, final Scope scope, final String... selectLabels) {
+    public SelectStep(final Traversal.Admin traversal, final Scope scope, final Optional<Pop> pop, final String... selectLabels) {
         super(traversal);
         this.scope = scope;
+        this.pop = pop.orElse(null);
         this.selectLabels = Arrays.asList(selectLabels);
     }
 
@@ -63,11 +66,11 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
                 ((Map<String, Object>) start).forEach((key, value) -> bindings.put(key, (E) TraversalUtil.apply(value, this.traversalRing.next())));
             else {
                 final Path path = traverser.path();
-                path.labels().stream().flatMap(Set::stream).distinct().forEach(label -> bindings.put(label, (E) TraversalUtil.apply(path.<Object>get(label), this.traversalRing.next())));
+                path.labels().stream().flatMap(Set::stream).distinct().forEach(label -> bindings.put(label, (E) TraversalUtil.apply(null == this.pop ? path.<Object>get(label) : path.getSingle(this.pop, label), this.traversalRing.next())));
             }
         } else {
             for (final String label : this.selectLabels) {
-                final Optional<E> optional = this.getOptionalScopeValueByKey(label, traverser);
+                final Optional<E> optional = this.getOptionalScopeValueByKey(this.pop, label, traverser);
                 if (optional.isPresent())
                     bindings.put(label, TraversalUtil.apply(optional.get(), this.traversalRing.next()));
                 else {
