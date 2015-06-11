@@ -26,6 +26,7 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Gremlin Server `Settings` now has sensible defaults thus allowing the server to be started with no additional configuration.
+* Fixed garbled characters in Gremlin Console that notably showed up in `:help`
 * `GraphTraversal.and()` (and `or()`) now take `Object...` composed of `P` predicates or `Traversals` to be converted to `TraversalP`.
 * Replaced dependency on `groovy-all` with individual Groovy dependencies as needed.
 * Bumped `org.gperfutils:gbench` to the `0.4.3` and a version explicitly compatible with Groovy 2.4.x.
