@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -52,6 +53,7 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     private List<Traversal.Admin<Object, Object>> andTraversals = new ArrayList<>();
     private boolean first = true;
+    private Set<String> matchStartLabels = null;
 
     private final MatchAlgorithm matchAlgorithm = new GreedyMatchAlgorithm();
 
@@ -77,6 +79,17 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
             andTraversal.asAdmin().addStep(step);
             this.andTraversals.add(this.integrateChild(andTraversal.asAdmin()));
         }
+    }
+
+    public Set<String> getMatchStartLabels() {
+        if (null == this.matchStartLabels) {
+            this.matchStartLabels = new HashSet<>();
+            for (final Traversal.Admin<Object, Object> andTraversal : this.andTraversals) {
+                this.matchStartLabels.addAll(andTraversal.getStartStep().getLabels());
+            }
+            this.matchStartLabels = Collections.unmodifiableSet(this.matchStartLabels);
+        }
+        return this.matchStartLabels;
     }
 
 
@@ -202,6 +215,17 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
     //////////////////////////////
 
     public interface MatchAlgorithm extends Function<Traverser.Admin<Object>, Optional<Traversal.Admin<Object, Object>>> {
+
+        public static Set<String> getStartLabels(final Traversal.Admin<Object, Object> traversal) {
+            final Step<?, ?> startStep = traversal.getStartStep();
+            if (startStep instanceof XMatchStep)
+                return ((XMatchStep) startStep).getMatchStartLabels();
+            else if (startStep instanceof SelectOneStep)
+                return ((SelectOneStep) startStep).getScopeKeys();
+            else
+                return Collections.emptySet();
+        }
+
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals);
     }
 
@@ -209,14 +233,14 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
 
         private List<Traversal.Admin<Object, Object>> traversals;
         private List<String> traversalLabels = new ArrayList<>();
-        private List<String> startLabels = new ArrayList<>();
+        private List<Set<String>> startLabels = new ArrayList<>();
 
         @Override
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
             this.traversals = traversals;
             for (final Traversal.Admin<Object, Object> traversal : traversals) {
                 this.traversalLabels.add(traversal.getStartStep().getId());
-                this.startLabels.add(((SelectOneStep<?, ?>) traversal.getStartStep()).getScopeKeys().iterator().next());
+                this.startLabels.add(MatchAlgorithm.getStartLabels(traversal));
             }
         }
 
@@ -224,7 +248,7 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
         public Optional<Traversal.Admin<Object, Object>> apply(final Traverser.Admin<Object> traverser) {
             final Path path = traverser.path();
             for (int i = 0; i < this.traversals.size(); i++) {
-                if (path.hasLabel(this.startLabels.get(i)) && !path.hasLabel(this.traversalLabels.get(i))) {
+                if (this.startLabels.get(i).stream().filter(path::hasLabel).findAny().isPresent() && !path.hasLabel(this.traversalLabels.get(i))) {
                     return Optional.of(this.traversals.get(i));
                 }
             }
