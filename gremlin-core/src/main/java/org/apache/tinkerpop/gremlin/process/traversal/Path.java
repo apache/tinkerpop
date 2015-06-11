@@ -31,7 +31,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * A Path denotes a particular walk through a {@link Graph} as defined by a {@link Traverser}.
+ * A Path denotes a particular walk through a {@link Graph} as defined by a {@link Traversal}.
  * In abstraction, any Path implementation maintains two lists: a list of sets of labels and a list of objects.
  * The list of labels are the labels of the steps traversed. The list of objects are the objects traversed.
  *
@@ -95,6 +95,26 @@ public interface Path extends Cloneable {
         if (null == object)
             throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
         return (A) object;
+    }
+
+    public default <A> List<A> getList(final String label) throws IllegalArgumentException {
+        if (this.hasLabel(label)) {
+            final Object object = this.get(label);
+            if (object instanceof List)
+                return (List<A>) object;
+            else
+                return Collections.singletonList((A) object);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    public default <A> A getSingle(final Pop pop, final String label) throws IllegalArgumentException {
+        final Object object = this.get(label);
+        if (object instanceof List) {
+            return Pop.head == pop ? ((List<A>) object).get(((List) object).size() - 1) : ((List<A>) object).get(0);
+        } else
+            return (A) object;
     }
 
     /**

@@ -16,11 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.util;
+package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferencePath;
 import org.junit.Test;
@@ -163,6 +164,49 @@ public class PathTest extends AbstractGremlinProcessTest {
             assertEquals("marko", names.get(0));
             assertEquals("matthias", names.get(1));
             assertEquals("stephen", path.get("c"));
+        });
+    }
+
+    @Test
+    public void shouldSelectSingleCorrectly() {
+        PATH_SUPPLIERS.forEach(supplier -> {
+            Path path = supplier.get();
+            path = path.extend("marko", "a", "b");
+            path = path.extend("stephen", "a", "c");
+            path = path.extend("matthias", "c", "d");
+            assertEquals(3, path.size());
+            assertEquals("marko", path.getSingle(Pop.tail, "a"));
+            assertEquals("marko", path.getSingle(Pop.tail, "b"));
+            assertEquals("stephen", path.getSingle(Pop.tail, "c"));
+            assertEquals("matthias", path.getSingle(Pop.tail, "d"));
+            ///
+            assertEquals("marko", path.getSingle(Pop.head, "b"));
+            assertEquals("stephen", path.getSingle(Pop.head, "a"));
+            assertEquals("matthias", path.getSingle(Pop.head, "c"));
+            assertEquals("matthias", path.getSingle(Pop.head, "d"));
+        });
+    }
+
+    @Test
+    public void shouldSelectListCorrectly() {
+        PATH_SUPPLIERS.forEach(supplier -> {
+            Path path = supplier.get();
+            path = path.extend("marko", "a", "b");
+            path = path.extend("stephen", "a", "c");
+            path = path.extend("matthias", "c", "d");
+            assertEquals(3, path.size());
+            assertEquals(2, path.getList("a").size());
+            assertEquals("marko", path.getList("a").get(0));
+            assertEquals("stephen", path.getList("a").get(1));
+            assertEquals(1, path.getList("b").size());
+            assertEquals("marko", path.getList("b").get(0));
+            assertEquals(2, path.getList("c").size());
+            assertEquals("stephen", path.getList("c").get(0));
+            assertEquals("matthias", path.getList("c").get(1));
+            assertEquals(1, path.getList("d").size());
+            assertEquals("matthias", path.getList("d").get(0));
+            ///
+            assertEquals(0,path.getList("noExist").size());
         });
     }
 }

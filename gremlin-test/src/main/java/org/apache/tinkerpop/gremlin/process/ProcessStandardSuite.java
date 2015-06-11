@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
+import org.apache.tinkerpop.gremlin.process.traversal.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffectsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest;
@@ -153,7 +154,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // util
             TraversalSideEffectsTest.Traversals.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.util.PathTest.class,
+            PathTest.class,
 
             // compliance
             CoreTraversalTest.class,

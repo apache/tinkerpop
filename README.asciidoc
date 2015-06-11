@@ -36,7 +36,7 @@ TinkerPop requires `Java 1.8.0_40+` for proper building and proper operations.
 ** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the Maven project list argument, e.g.:
 +
 ----
-export GREMLIN_TESTS='org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest$Traversals,org.apache.tinkerpop.gremlin.process.traversal.step.util.PathTest'
+export GREMLIN_TESTS='org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest$Traversals,org.apache.tinkerpop.gremlin.process.traversal.PathTest'
 mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ----
 ** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
