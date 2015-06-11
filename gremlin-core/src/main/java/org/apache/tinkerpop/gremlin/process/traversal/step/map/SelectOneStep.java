@@ -45,11 +45,15 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     private final String selectLabel;
     private Traversal.Admin<S, E> selectTraversal = new IdentityTraversal<>();
 
-    public SelectOneStep(final Traversal.Admin traversal, final Scope scope, final Optional<Pop> pop, final String selectLabel) {
+    public SelectOneStep(final Traversal.Admin traversal, final Scope scope, Pop pop, final String selectLabel) {
         super(traversal);
         this.scope = scope;
-        this.pop = pop.orElse(null);
+        this.pop = pop;
         this.selectLabel = selectLabel;
+    }
+
+    public SelectOneStep(final Traversal.Admin traversal, final Scope scope, final String selectLabel) {
+        this(traversal, scope, null, selectLabel);
     }
 
     @Override
