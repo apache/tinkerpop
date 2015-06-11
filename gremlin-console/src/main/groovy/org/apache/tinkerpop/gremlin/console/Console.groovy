@@ -24,12 +24,15 @@ import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin
 import jline.console.history.FileHistory
 import org.apache.tinkerpop.gremlin.util.iterator.ArrayIterator
+import org.codehaus.groovy.tools.shell.AnsiDetector
 import org.codehaus.groovy.tools.shell.ExitNotification
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 import org.codehaus.groovy.tools.shell.InteractiveShellRunner
 import org.codehaus.groovy.tools.shell.commands.SetCommand
 import org.codehaus.groovy.tools.shell.util.Preferences
+import org.fusesource.jansi.Ansi
+import org.fusesource.jansi.AnsiConsole
 
 import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
@@ -43,6 +46,13 @@ class Console {
     static {
         // this is necessary so that terminal doesn't lose focus to AWT
         System.setProperty("java.awt.headless", "true")
+        // must be called before IO(), since it modifies System.in
+        // Install the system adapters, replaces System.out and System.err
+        // Must be called before using IO(), because IO stores refs to System.out and System.err
+        AnsiConsole.systemInstall()
+        // Register jline ansi detector
+        Ansi.setDetector(new AnsiDetector())
+        Ansi.enabled = true
     }
 
     public static final String PREFERENCE_ITERATION_MAX = "max-iteration"
