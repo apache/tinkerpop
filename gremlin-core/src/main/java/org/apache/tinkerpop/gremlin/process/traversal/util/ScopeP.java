@@ -48,7 +48,7 @@ public final class ScopeP<V> extends P<V> {
 
     @Override
     public boolean test(final V testValue) {
-        return this.biPredicate.test(testValue, this.value);
+        return this.value == null || this.biPredicate.test(testValue, this.value);
     }
 
     @Override
