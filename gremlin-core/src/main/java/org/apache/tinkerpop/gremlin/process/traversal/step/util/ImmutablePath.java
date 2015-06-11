@@ -32,9 +32,9 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class ImmutablePath implements Path, Serializable, Cloneable {
+public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Cloneable {
 
-    private Path previousPath = HeadPath.instance();
+    private ImmutablePathImpl previousPath = HeadPath.instance();
     private Object currentObject;
     private Set<String> currentLabels = new LinkedHashSet<>();
 
@@ -56,7 +56,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         this(HeadPath.instance(), currentObject, currentLabels);
     }
 
-    private ImmutablePath(final Path previousPath, final Object currentObject, final Set<String> currentLabels) {
+    private ImmutablePath(final ImmutablePathImpl previousPath, final Object currentObject, final Set<String> currentLabels) {
         this.previousPath = previousPath;
         this.currentObject = currentObject;
         this.currentLabels.addAll(currentLabels);
@@ -75,6 +75,45 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
     @Override
     public <A> A get(final int index) {
         return (this.size() - 1) == index ? (A) this.currentObject : this.previousPath.get(index);
+    }
+
+    @Override
+    public <A> List<A> getList(final String label) {
+        // Recursively build the list to avoid building objects/labels collections.
+        final List<A> list = this.previousPath.getList(label);
+        // Add our object, if our step labels match.
+        if (this.currentLabels.contains(label))
+            list.add((A)currentObject);
+        return list;
+    }
+
+    @Override
+    public <A> A getSingleHead(final String label) {
+        // Recursively search for the single value to avoid building throwaway collections, and to stop looking when we
+        // find it.
+        A single = this.previousPath.getSingleHead(label);
+        if (null == single) {
+            // See if we have a value.
+            if (this.currentLabels.contains(label)) {
+                single = (A) this.currentObject;
+            }
+        }
+        return single;
+    }
+
+    @Override
+    public <A> A getSingleTail(final String label) {
+        // Recursively search for the single value to avoid building throwaway collections, and to stop looking when we
+        // find it.
+        A single;
+        // See if we have a value.
+        if (this.currentLabels.contains(label)) {
+            single = (A) this.currentObject;
+        } else {
+            // Look for a previous value.
+            single = this.previousPath.getSingleTail(label);
+        }
+        return single;
     }
 
     @Override
@@ -108,7 +147,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         return this.objects().toString();
     }
 
-    private static class HeadPath implements Path {
+    private static class HeadPath implements Path, ImmutablePathImpl {
         private static final HeadPath INSTANCE = new HeadPath();
 
         private HeadPath() {
@@ -133,6 +172,24 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
         @Override
         public <A> A get(final int index) {
             return (A) Collections.emptyList().get(index);
+        }
+
+        @Override
+        public <A> List<A> getList(final String label) {
+            // Provide an empty, modifiable list as a seed for ImmutablePath.getList.
+            return new ArrayList<A>();
+        }
+
+        @Override
+        public <A> A getSingleHead(final String label) {
+            // Provide a null to bounce the search back to ImmutablePath.getSingleHead.
+            return null;
+        }
+
+        @Override
+        public <A> A getSingleTail(final String label) {
+            // Provide a null to bounce the search back to ImmutablePath.getSingleTail.
+            return null;
         }
 
         @Override
@@ -165,7 +222,7 @@ public class ImmutablePath implements Path, Serializable, Cloneable {
             return this;
         }
 
-        public static Path instance() {
+        public static HeadPath instance() {
             return INSTANCE;
         }
 

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -78,6 +79,23 @@ public class MutablePath implements Path, Serializable {
     @Override
     public <A> A get(int index) {
         return (A) this.objects.get(index);
+    }
+
+    @Override
+    public <A> A getSingle(final Pop pop, final String label) {
+        // Override default to avoid building temporary list, and to stop looking when we find the label.
+        if (Pop.tail == pop) {
+            for (int i = this.labels.size() - 1; i >= 0; i--) {
+                if (labels.get(i).contains(label))
+                    return (A) objects.get(i);
+            }
+        } else {
+            for (int i = 0; i != this.labels.size(); i++) {
+                if (labels.get(i).contains(label))
+                    return (A) objects.get(i);
+            }
+        }
+        throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
     }
 
     @Override

@@ -97,6 +97,13 @@ public interface Path extends Cloneable {
         return (A) object;
     }
 
+    /**
+     * Get the list of objects associated with the particular label of the path.
+     *
+     * @param label the label of the path
+     * @param <A>   the type of the object associated with the label
+     * @return the list of objects (List<A>) associated with the label of the path, or empty list if label is not found
+     */
     public default <A> List<A> getList(final String label) throws IllegalArgumentException {
         if (this.hasLabel(label)) {
             final Object object = this.get(label);
@@ -109,10 +116,19 @@ public interface Path extends Cloneable {
         }
     }
 
+    /**
+     * Get the object most/least recently associated with the particular label of the path.
+     *
+     * @param pop   head for least recent, tail for most recent
+     * @param label the label of the path
+     * @param <A>   the type of the object associated with the label
+     * @return the object associated with the label of the path
+     * @throws IllegalArgumentException if the path does not contain the label
+     */
     public default <A> A getSingle(final Pop pop, final String label) throws IllegalArgumentException {
         final Object object = this.get(label);
         if (object instanceof List) {
-            return Pop.head == pop ? ((List<A>) object).get(((List) object).size() - 1) : ((List<A>) object).get(0);
+            return Pop.tail == pop ? ((List<A>) object).get(((List) object).size() - 1) : ((List<A>) object).get(0);
         } else
             return (A) object;
     }
