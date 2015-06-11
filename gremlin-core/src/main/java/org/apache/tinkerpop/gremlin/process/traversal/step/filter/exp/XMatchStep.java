@@ -58,30 +58,23 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     public XMatchStep(final Traversal.Admin traversal, final Traversal... andTraversals) {
         super(traversal);
-        int counter = 0;
         for (final Traversal andTraversal : andTraversals) {
-            final String traversalLabel = "t" + counter++;  // TODO: this should be specified in a finalization strategy and based on the traversal then static id
             //// START STEP
             final Step<?, ?> startStep = andTraversal.asAdmin().getStartStep();
             if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
-                if (startStep.getLabels().size() > 1)
-                    throw new IllegalArgumentException("The start step of a match()-traversal can only have one label: " + startStep);
-                final String startLabel = startStep.getLabels().iterator().next();
-                final Step<?, ?> selectOneStep = new SelectOneStep<>(andTraversal.asAdmin(), Scope.global, Pop.head, startLabel);
-                selectOneStep.addLabel(traversalLabel);
-                TraversalHelper.replaceStep(andTraversal.asAdmin().getStartStep(), selectOneStep, andTraversal.asAdmin());
+                if (startStep.getLabels().size() != 1)
+                    throw new IllegalArgumentException("The start step of a match()-traversal can must have one and only one label: " + startStep);
+                TraversalHelper.replaceStep(andTraversal.asAdmin().getStartStep(), new SelectOneStep<>(andTraversal.asAdmin(), Scope.global, Pop.head, startStep.getLabels().iterator().next()), andTraversal.asAdmin());
             }
             //// END STEP
             final Step<?, ?> endStep = andTraversal.asAdmin().getEndStep();
-            if (!endStep.getLabels().isEmpty()) {
-                if (endStep.getLabels().size() > 1)
-                    throw new IllegalArgumentException("The end step of a match()-traversal can only have one label: " + endStep);
-                final String label = endStep.getLabels().iterator().next();
-                endStep.removeLabel(label);
-                final Step<?, ?> step = new XMatchEndStep(andTraversal.asAdmin(), label);
-                step.addLabel(label);
-                andTraversal.asAdmin().addStep(step);
-            }
+            if (endStep.getLabels().size() > 1)
+                throw new IllegalArgumentException("The end step of a match()-traversal can have at most one label: " + endStep);
+            final String label = endStep.getLabels().size() == 0 ? null : endStep.getLabels().iterator().next();
+            if (null != label) endStep.removeLabel(label);
+            final Step<?, ?> step = new XMatchEndStep(andTraversal.asAdmin(), label);
+            if (null != label) step.addLabel(label);
+            andTraversal.asAdmin().addStep(step);
             this.andTraversals.add(this.integrateChild(andTraversal.asAdmin()));
         }
     }
@@ -127,9 +120,11 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
             }
             final Traverser.Admin traverser = this.starts.next();
             final Optional<Traversal.Admin<Object, Object>> optional = this.matchAlgorithm.apply(traverser);
-            if (optional.isPresent())
-                optional.get().addStart(traverser);
-            else
+            if (optional.isPresent()) {
+                final Traversal.Admin<Object, Object> traversal = optional.get();
+                traverser.path().addLabel(traversal.getStartStep().getId());
+                traversal.addStart(traverser);
+            } else
                 // TODO: trim off internal traversal labels from path
                 return IteratorUtils.of(traverser);
         }
@@ -144,7 +139,9 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
         final Traverser.Admin traverser = this.starts.next();
         final Optional<Traversal.Admin<Object, Object>> optional = this.matchAlgorithm.apply(traverser);
         if (optional.isPresent()) {
-            traverser.asAdmin().setStepId(optional.get().getStartStep().getId());
+            final Traversal.Admin<Object, Object> traversal = optional.get();
+            traverser.path().addLabel(traversal.getStartStep().getId());
+            traverser.setStepId(traversal.getStartStep().getId());
             return IteratorUtils.of(traverser);
         } else {
             // TODO: trim off internal traversal labels from path
@@ -169,20 +166,28 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
 
         private final String matchKey;
 
-        public XMatchEndStep(final Traversal.Admin traversal, final String key) {
+        public XMatchEndStep(final Traversal.Admin traversal, final String matchKey) {
             super(traversal);
-            this.matchKey = key;
+            this.matchKey = matchKey;
         }
 
         @Override
         protected Traverser<S> processNextStart() throws NoSuchElementException {
             while (true) {
                 final Traverser.Admin<S> start = this.starts.next();
+                // no end label
+                if (null == this.matchKey) {
+                    if (this.traverserStepIdSetByChild) start.setStepId(XMatchStep.this.getId());
+                    return start;
+                }
+                // side-effect check
                 final Optional<S> optional = start.getSideEffects().get(this.matchKey);
                 if (optional.isPresent() && start.get().equals(optional.get())) {
                     if (this.traverserStepIdSetByChild) start.setStepId(XMatchStep.this.getId());
                     return start;
-                } else {
+                }
+                // path check
+                else {
                     final Path path = start.path();
                     if (!path.hasLabel(this.matchKey) || start.get().equals(path.getSingle(Pop.head, this.matchKey))) {
                         if (this.traverserStepIdSetByChild) start.setStepId(XMatchStep.this.getId());
@@ -210,7 +215,7 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
             this.traversals = traversals;
             for (final Traversal.Admin<Object, Object> traversal : traversals) {
-                this.traversalLabels.add(traversal.getStartStep().getLabels().iterator().next());
+                this.traversalLabels.add(traversal.getStartStep().getId());
                 this.startLabels.add(((SelectOneStep<?, ?>) traversal.getStartStep()).getScopeKeys().iterator().next());
             }
         }
