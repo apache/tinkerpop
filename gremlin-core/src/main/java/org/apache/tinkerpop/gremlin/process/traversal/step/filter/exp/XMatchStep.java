@@ -107,7 +107,7 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
     public XMatchStep<S> clone() {
         final XMatchStep<S> clone = (XMatchStep<S>) super.clone();
         clone.andTraversals = new ArrayList<>();
-        for (final Traversal.Admin<Object,Object> traversal : this.andTraversals) {
+        for (final Traversal.Admin<Object, Object> traversal : this.andTraversals) {
             clone.andTraversals.add(clone.integrateChild(traversal.clone()));
         }
         return clone;
@@ -157,11 +157,7 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        for(final Traversal.Admin<Object,Object> andTraversal : this.andTraversals) {
-            result ^= andTraversal.hashCode();
-        }
-        return result;
+        return super.hashCode() ^ this.andTraversals.hashCode();
     }
 
     @Override
