@@ -23,7 +23,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,8 +36,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -162,8 +165,8 @@ public class TinkerGraphTest {
                 as("b").out("created").as("c"),
                 as("c").in("created").as("d"),
                 as("d").where(neq("a")).where(neq("b")),
-                as("b").out("created").has("name","ripple")
-                ).select(Pop.head,"a","b","c","d").by("name").forEachRemaining(System.out::println);
+                as("b").out("created").has("name", "ripple"))
+                .select(Pop.head, "a", "b", "c", "d").forEachRemaining(System.out::println);
     }
 
     @Test

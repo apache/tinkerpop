@@ -54,9 +54,7 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
     private List<Traversal.Admin<Object, Object>> andTraversals = new ArrayList<>();
     private boolean first = true;
     private Set<String> matchStartLabels = null;
-
     private final MatchAlgorithm matchAlgorithm = new GreedyMatchAlgorithm();
-
 
     public XMatchStep(final Traversal.Admin traversal, final Traversal... andTraversals) {
         super(traversal);
@@ -92,7 +90,6 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
         return this.matchStartLabels;
     }
 
-
     public List<Traversal.Admin<Object, Object>> getGlobalChildren() {
         return Collections.unmodifiableList(this.andTraversals);
     }
@@ -122,24 +119,29 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
     @Override
     protected Iterator<Traverser<S>> standardAlgorithm() throws NoSuchElementException {
         while (true) {
+            Traverser.Admin traverser = null;
             if (this.first) {
                 this.matchAlgorithm.initialize(this.andTraversals);
                 this.first = false;
             } else {
                 for (final Traversal.Admin<?, ?> andTraversal : this.andTraversals) {
-                    if (andTraversal.hasNext())
-                        this.starts.add((Traverser.Admin) andTraversal.getEndStep().next().asAdmin());
+                    if (andTraversal.hasNext()) {
+                        traverser = andTraversal.getEndStep().next().asAdmin();
+                        break;
+                    }
                 }
             }
-            final Traverser.Admin traverser = this.starts.next();
-            final Optional<Traversal.Admin<Object, Object>> optional = this.matchAlgorithm.apply(traverser);
+            if (null == traverser) traverser = this.starts.next();
+            final Optional<Traversal.Admin<Object, Object>> optional = this.matchAlgorithm.apply(traverser); // determine which sub-pattern the traverser should try next
             if (optional.isPresent()) {
                 final Traversal.Admin<Object, Object> traversal = optional.get();
-                traverser.path().addLabel(traversal.getStartStep().getId());
-                traversal.addStart(traverser);
+                traverser.path().addLabel(traversal.getStartStep().getId()); // unique identifier for the traversal match sub-pattern
+                traversal.addStart(traverser);  // go down the traversal match sub-pattern
             } else
                 // TODO: trim off internal traversal labels from path
-                return IteratorUtils.of(traverser);
+                // TODO: simply iterate through traversals.startStep.getId() and remove those labels
+                // TODO: however, they are globally unique so it might not be necessary especially if we return Map<String,Object>
+                return IteratorUtils.of(traverser); // the traverser has survived all requisite match patterns and is ready to move onto the next step
         }
     }
 
@@ -150,16 +152,18 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
             this.first = false;
         }
         final Traverser.Admin traverser = this.starts.next();
-        final Optional<Traversal.Admin<Object, Object>> optional = this.matchAlgorithm.apply(traverser);
+        final Optional<Traversal.Admin<Object, Object>> optional = this.matchAlgorithm.apply(traverser); // determine which sub-pattern the traverser should try next
         if (optional.isPresent()) {
             final Traversal.Admin<Object, Object> traversal = optional.get();
-            traverser.path().addLabel(traversal.getStartStep().getId());
-            traverser.setStepId(traversal.getStartStep().getId());
+            traverser.path().addLabel(traversal.getStartStep().getId()); // unique identifier for the traversal match sub-pattern
+            traverser.setStepId(traversal.getStartStep().getId()); // go down the traversal match sub-pattern
             return IteratorUtils.of(traverser);
         } else {
             // TODO: trim off internal traversal labels from path
+            // TODO: simply iterate through traversals.startStep.getId() and remove those labels
+            // TODO: however, they are globally unique so it might not be necessary especially if we return Map<String,Object>
             traverser.asAdmin().setStepId(this.getNextStep().getId());
-            return IteratorUtils.of(traverser);
+            return IteratorUtils.of(traverser); // the traverser has survived all requisite match patterns and is ready to move onto the next step
         }
     }
 
@@ -200,12 +204,10 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
                     return start;
                 }
                 // path check
-                else {
-                    final Path path = start.path();
-                    if (!path.hasLabel(this.matchKey) || start.get().equals(path.getSingle(Pop.head, this.matchKey))) {
-                        if (this.traverserStepIdSetByChild) start.setStepId(XMatchStep.this.getId());
-                        return start;
-                    }
+                final Path path = start.path();
+                if (!path.hasLabel(this.matchKey) || start.get().equals(path.getSingle(Pop.head, this.matchKey))) {
+                    if (this.traverserStepIdSetByChild) start.setStepId(XMatchStep.this.getId());
+                    return start;
                 }
             }
         }
@@ -238,7 +240,7 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
         @Override
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
             this.traversals = traversals;
-            for (final Traversal.Admin<Object, Object> traversal : traversals) {
+            for (final Traversal.Admin<Object, Object> traversal : this.traversals) {
                 this.traversalLabels.add(traversal.getStartStep().getId());
                 this.startLabels.add(MatchAlgorithm.getStartLabels(traversal));
             }
