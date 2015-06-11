@@ -93,6 +93,11 @@ limitations under the License.
             <email>matthew.h.frantz@gmail.com</email>
             <url>https://github.com/mhfrantz</url>
         </contributor>
+        <contributor>
+            <name>Jason Plurad</name>
+            <email>pluradj@gmail.com</email>
+            <url>https://github.com/pluradj</url>
+        </contributor>
     </contributors>
     <modules>
         <module>gremlin-shaded</module>
