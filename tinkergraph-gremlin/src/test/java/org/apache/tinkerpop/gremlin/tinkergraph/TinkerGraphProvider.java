@@ -24,7 +24,9 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.GraphTest;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.IoEdgeTest;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
+import org.apache.tinkerpop.gremlin.structure.io.IoVertexTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedGraphTest;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphTest;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerEdge;
@@ -126,18 +128,24 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
                 return TinkerGraph.DefaultIdManager.LONG;
             else if (testsThatNeedUuidIdManager.contains(testMethodName))
                 return TinkerGraph.DefaultIdManager.UUID;
-        } else if (test.equals(IoTest.class)) {
+        }  else if (test.equals(IoEdgeTest.class)) {
             final Set<String> testsThatNeedLongIdManager = new HashSet<String>(){{
-                add("shouldReadWriteEdgeToGraphSON");
-                add("shouldReadWriteDetachedEdgeAsReferenceToGraphSON");
-                add("shouldReadWriteDetachedEdgeToGraphSON");
-                add("shouldReadWriteVertexNoEdgesToGraphSON");
-                add("shouldReadWriteDetachedVertexNoEdgesToGraphSON");
-                add("shouldReadWriteDetachedVertexAsReferenceNoEdgesToGraphSON");
-                add("shouldReadWriteVertexMultiPropsNoEdgesToGraphSON");
-                add("shouldReadWriteVertexWithOUTEdgesToGraphSON");
-                add("shouldReadWriteVertexWithINEdgesToGraphSON");
-                add("shouldReadWriteVertexWithBOTHEdgesToGraphSON");
+                add("shouldReadWriteEdge[graphson]");
+                add("shouldReadWriteDetachedEdgeAsReference[graphson]");
+                add("shouldReadWriteDetachedEdge[graphson]");
+            }};
+
+            if (testsThatNeedLongIdManager.contains(testMethodName))
+                return TinkerGraph.DefaultIdManager.LONG;
+        } else if (test.equals(IoVertexTest.class)) {
+            final Set<String> testsThatNeedLongIdManager = new HashSet<String>(){{
+                add("shouldReadWriteVertexWithBOTHEdges[graphson]");
+                add("shouldReadWriteVertexWithINEdges[graphson]");
+                add("shouldReadWriteVertexWithOUTEdges[graphson]");
+                add("shouldReadWriteVertexNoEdges[graphson]");
+                add("shouldReadWriteDetachedVertexNoEdges[graphson]");
+                add("shouldReadWriteDetachedVertexAsReferenceNoEdges[graphson]");
+                add("shouldReadWriteVertexMultiPropsNoEdges[graphson]");
             }};
 
             if (testsThatNeedLongIdManager.contains(testMethodName))
