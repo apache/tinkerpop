@@ -83,6 +83,13 @@ public class __ {
     }
 
     /**
+     * @see {@link GraphTraversal#constant()}
+     */
+    public static <A> GraphTraversal<A, A> constant(final A a) {
+        return __.<A>start().constant(a);
+    }
+
+    /**
      * @see {@link GraphTraversal#label()}
      */
     public static <A> GraphTraversal<A, String> label() {

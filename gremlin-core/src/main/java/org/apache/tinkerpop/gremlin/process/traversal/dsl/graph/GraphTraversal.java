@@ -60,6 +60,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.exp.XMatchStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.DedupLocalStep;
@@ -218,6 +219,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> identity() {
         return this.asAdmin().addStep(new IdentityStep<>(this.asAdmin()));
+    }
+
+    /**
+     * Map any object to a fixed <code>E</code> value.
+     *
+     * @return the traversal with an appended {@link ConstantStep}.
+     */
+    public default <E2> GraphTraversal<S, E2> constant(final E2 e) {
+        return this.asAdmin().addStep(new ConstantStep<E, E2>(this.asAdmin(), e));
     }
 
     /**
