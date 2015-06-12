@@ -419,6 +419,25 @@ g.V().coin(0.0)
 g.V().coin(1.0)
 ----
 
+[[constant-step]]
+Constant Step
+~~~~~~~~~~~~~
+
+To specify a constant value for a traverser, use the `constant()`-step (*map*).  This is often useful with conditional steps like <<choose-step,`choose()`-step>> or <<coalesce-step,`coalesce()`-step>>.
+
+[gremlin-groovy,modern]
+----
+g.V().choose(__.hasLabel('person'),
+    __.values('name'),
+    __.constant('inhuman')) <1>
+g.V().coalesce(
+    __.hasLabel('person').values('name'),
+    __.constant('inhuman')) <2>
+----
+
+<1> Show the names of people, but show "inhuman" for other vertices.
+<2> Same as statement 1 (unless there is a person vertex with no name).
+
 [[cyclicpath-step]]
 CyclicPath Step
 ~~~~~~~~~~~~~~~
