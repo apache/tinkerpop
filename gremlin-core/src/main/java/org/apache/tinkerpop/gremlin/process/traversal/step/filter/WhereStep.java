@@ -74,6 +74,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         for (final IsStep<?> isStep : this.scopePEndSteps) {
             ((ScopeP) isStep.getPredicate()).bind(this, traverser);
         }
+        //  return TraversalUtil.test(traverser, (Traversal.Admin<S,?>)this.predicate.getTraversals().get(0)); // TODO: we need to make WhereStep operate on Traversal (this fails for AndP() -- turn AndP() in And()?
         return this.predicate.getBiPredicate().test(traverser, null);
     }
 
