@@ -46,6 +46,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyWhereTes
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyAddEdgeTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyAddVertexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCoalesceTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyConstantTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyFoldTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMapTest;
@@ -118,6 +119,7 @@ public class GroovyProcessStandardSuite extends ProcessStandardSuite {
             GroovyAddEdgeTest.Traversals.class,
             GroovyAddVertexTest.Traversals.class,
             GroovyCoalesceTest.Traversals.class,
+            GroovyConstantTest.Traversals.class,
             GroovyCountTest.Traversals.class,
             GroovyFoldTest.Traversals.class,
             GroovyMapTest.Traversals.class,

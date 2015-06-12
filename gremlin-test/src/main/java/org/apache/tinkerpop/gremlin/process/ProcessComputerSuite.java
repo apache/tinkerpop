@@ -43,6 +43,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapTest;
@@ -122,6 +123,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // map
             CoalesceTest.Traversals.class,
+            ConstantTest.Traversals.class,
             CountTest.Traversals.class,
             FoldTest.Traversals.class,
             MapTest.Traversals.class,
@@ -191,6 +193,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
 
             // map
             CoalesceTest.class,
+            ConstantTest.class,
             CountTest.class,
             FoldTest.class,
             MapTest.class,
