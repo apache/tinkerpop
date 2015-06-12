@@ -594,14 +594,16 @@ g.V().hasLabel('person').out().has('name',within('vadas','josh')).
       outE().hasLabel('created')
 g.V().has('age',inside(20,30)).values('age') <1>
 g.V().has('age',outside(20,30)).values('age') <2>
-g.V().has('name',within(['josh','marko'])).valueMap() <3>
-g.V().has('name',without(['josh','marko'])).valueMap() <4>
+g.V().has('name',within('josh','marko')).valueMap() <3>
+g.V().has('name',without('josh','marko')).valueMap() <4>
+g.V().has('name',not(within('josh','marko'))).valueMap() <5>
 ----
 
 <1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
 <2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
-<3> Find all vertices whose names are exact matches to any names in the the collection [josh,marko], display all the key,value pairs for those verticies.
-<4> Find all vertices whose names are not in the collection [josh,marko], display all the key,value pairs for those vertices.
+<3> Find all vertices whose names are exact matches to any names in the the collection `[josh,marko]`, display all the key,value pairs for those verticies.
+<4> Find all vertices whose names are not in the collection `[josh,marko]`, display all the key,value pairs for those vertices.
+<5> Same as the prior example save using `not` on `within` to yield `without`.
 
 TinkerPop does not support a regular expression predicate, although specific graph databases that leverage TinkerPop may
 provide a partial match extension.
