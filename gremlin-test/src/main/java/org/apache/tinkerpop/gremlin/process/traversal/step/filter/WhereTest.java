@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -85,6 +84,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX();
 
     public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX();
+
+    public abstract Traversal<Vertex,String> get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX();
 
     public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX();
 
@@ -302,6 +303,14 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    public void g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_selectXaX_byXnameX() {
+        Traversal<Vertex,String> traversal = get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko","josh"),traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
     public void g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX() {
         Traversal<Vertex,Map<String,String>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX();
         printTraversalForm(traversal);
@@ -406,6 +415,11 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX() {
             return g.V().as("a").out("created").as("b").in().as("c").where("a",eq("c").and(__.as("a").out("knows"))).<String>select().by("name");
+        }
+
+        @Override
+        public Traversal<Vertex,String> get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX() {
+            return g.V().where(out("created").and().out("knows").or().in("knows")).values("name");
         }
 
         @Override

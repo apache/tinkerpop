@@ -23,8 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
-import static org.apache.tinkerpop.gremlin.process.traversal.P.not
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -116,6 +114,11 @@ public abstract class GroovyWhereTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX() {
             TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').in.as('c').where('a',eq('c').and(__.as('a').out('knows'))).select.by('name')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX() {
+            TraversalScriptHelper.compute("g.V.where(out('created').and.out('knows').or.in('knows')).name", g)
         }
 
         @Override

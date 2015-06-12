@@ -167,6 +167,9 @@ public class TinkerGraphTest {
                 as("d").where(neq("a")).where(neq("b")),
                 as("b").out("created").has("name", "ripple"))
                 .select(Pop.head, "a", "b", "c", "d").forEachRemaining(System.out::println);
+
+        System.out.println(g.V().out().and().in().iterate());
+        System.out.println(g.V().as("a","b").where(as("a").out().and().in().as("b")).iterate());
     }
 
     @Test
