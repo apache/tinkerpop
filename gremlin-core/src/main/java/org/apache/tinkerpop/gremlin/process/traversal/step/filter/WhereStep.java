@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -60,7 +61,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
                 if (startStep.getLabels().size() > 1)
                     throw new IllegalArgumentException("The start step of a where()-traversal predicate can only have one label: " + startStep);
-                TraversalHelper.replaceStep(whereTraversal.getStartStep(), new SelectOneStep<>(whereTraversal, scope, startStep.getLabels().iterator().next()), whereTraversal);   // TODO: pop head or allow multi-results?
+                TraversalHelper.replaceStep(whereTraversal.getStartStep(), new SelectOneStep<>(whereTraversal, scope, Pop.head, startStep.getLabels().iterator().next()), whereTraversal);
             }
             //// END STEP
             final Step<?, ?> endStep = whereTraversal.getEndStep();
