@@ -476,12 +476,12 @@ public class __ {
         return __.<A>start().filter(predicate);
     }
 
-    public static <A> GraphTraversal<A, A> and(final Object... predicatesOrTraversals) {
-        return __.<A>start().and(predicatesOrTraversals);
+    public static <A> GraphTraversal<A, A> and(final Traversal<?,?>... andTraversals) {
+        return __.<A>start().and(andTraversals);
     }
 
-    public static <A> GraphTraversal<A, A> or(final Object... predicatesOrTraversals) {
-        return __.<A>start().or(predicatesOrTraversals);
+    public static <A> GraphTraversal<A, A> or(final Traversal<?,?>... orTraversals) {
+        return __.<A>start().or(orTraversals);
     }
 
     public static <A> GraphTraversal<A, A> inject(final A... injections) {

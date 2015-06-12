@@ -118,7 +118,7 @@ public class ConjunctionStrategyTest {
 
             return Arrays.asList(new Traversal[][]{
                     {__.has("name", "stephen").or().where(__.out("knows").has("name", "stephen")), __.or(__.has("name", "stephen"), __.where(__.out("knows").has("name", "stephen")))},
-                    {__.out("a").out("b").and().out("c").or().out("d"), __.or(__.and(__.out("a").out("b"), __.out("c")), __.out("d"))},
+                    {__.out("a").out("b").and().out("c").or().out("d"), __.and(__.out("a").out("b"), __.or(__.out("c"), __.out("d")))},
                     {__.as("a").out().as("b").and().as("c").in().as("d"), __.and(__.as("a").out().as("b"),__.as("c").in().as("d"))}
             });
         }

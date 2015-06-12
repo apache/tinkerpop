@@ -21,6 +21,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.exp.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
@@ -108,7 +109,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return new OrP<>(this, (P<V>) predicate);
     }
 
-    public <S,E> List<Traversal.Admin<S,E>> getTraversals() {
+    public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
         return Collections.emptyList();
     }
 
@@ -178,8 +179,12 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return new TraversalP<>(traversal.asAdmin(), false);
     }
 
-    public static <S, E> P<E> not(final Traversal<S, E> traversal) {
+    /*public static <S, E> P<E> not(final Traversal<S, E> traversal) {
         return new TraversalP<>(traversal.asAdmin(), true);
+    }*/
+
+    public static <S, E> Traversal<S, E> not(final Traversal<S, E> traversal) {
+        return traversal.asAdmin().addStep(new NotStep<>(traversal.asAdmin()));
     }
 
     public static P test(final BiPredicate biPredicate, final Object value) {
