@@ -64,7 +64,7 @@ public class GremlinServer {
     private Channel ch;
 
     private CompletableFuture<Void> serverStopped = null;
-    private CompletableFuture<Void> serverStarted = null;
+    private CompletableFuture<ServerGremlinExecutor<EventLoopGroup>> serverStarted = null;
 
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
@@ -110,14 +110,14 @@ public class GremlinServer {
     /**
      * Start Gremlin Server with {@link Settings} provided to the constructor.
      */
-    public synchronized CompletableFuture<Void> start() throws Exception {
+    public synchronized CompletableFuture<ServerGremlinExecutor<EventLoopGroup>> start() throws Exception {
         if(serverStarted != null) {
             // server already started - don't get it rolling again
             return serverStarted;
         }
 
         serverStarted = new CompletableFuture<>();
-        final CompletableFuture<Void> serverReadyFuture = serverStarted = new CompletableFuture<>();
+        final CompletableFuture<ServerGremlinExecutor<EventLoopGroup>> serverReadyFuture = serverStarted = new CompletableFuture<>();
         try {
             final ServerBootstrap b = new ServerBootstrap();
 
@@ -156,7 +156,7 @@ public class GremlinServer {
                                 settings.threadPoolWorker, settings.gremlinPool, settings.threadPoolBoss);
                         logger.info("Channel started at port {}.", settings.port);
 
-                        serverReadyFuture.complete(null);
+                        serverReadyFuture.complete(serverGremlinExecutor);
                     } else {
                         serverReadyFuture.completeExceptionally(new IOException(
                                 String.format("Could not bind to %s and %s - perhaps something else is bound to that address.", settings.host, settings.port)));

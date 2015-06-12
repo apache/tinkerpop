@@ -26,6 +26,8 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Added `Path.getSingle(pop,label)` and `Path.getList(label)` as default helpers in `Path`.
+* Changed `GremlinServer.start()` to return a `CompletableFuture` that contains the constructed `ServerGremlinExecutor`.
+* Restructured `IoTest` breaking it up into smaller and more logically grouped test cases.
 * Gremlin Server `Settings` now has sensible defaults thus allowing the server to be started with no additional configuration.
 * Fixed garbled characters in Gremlin Console that notably showed up in `:help`
 * `GraphTraversal.and()` (and `or()`) now take `Object...` composed of `P` predicates or `Traversals` to be converted to `TraversalP`.

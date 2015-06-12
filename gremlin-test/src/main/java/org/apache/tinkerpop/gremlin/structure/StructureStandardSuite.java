@@ -23,7 +23,12 @@ import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.algorithm.generator.CommunityGeneratorTest;
 import org.apache.tinkerpop.gremlin.algorithm.generator.DistributionGeneratorTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.io.IoCustomTest;
+import org.apache.tinkerpop.gremlin.structure.io.IoEdgeTest;
+import org.apache.tinkerpop.gremlin.structure.io.IoGraphTest;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
+import org.apache.tinkerpop.gremlin.structure.io.IoPropertyTest;
+import org.apache.tinkerpop.gremlin.structure.io.IoVertexTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdgeTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedGraphTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPropertyTest;
@@ -81,6 +86,11 @@ public class StructureStandardSuite extends AbstractGremlinSuite {
             DistributionGeneratorTest.class,
             EdgeTest.class,
             FeatureSupportTest.class,
+            IoCustomTest.class,
+            IoEdgeTest.class,
+            IoGraphTest.class,
+            IoVertexTest.class,
+            IoPropertyTest.class,
             GraphTest.class,
             GraphConstructionTest.class,
             IoTest.class,

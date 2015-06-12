@@ -18,19 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
-import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -39,32 +32,24 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONMapper;
-import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.VertexByteArrayInputStream;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.io.util.CustomId;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
@@ -85,1814 +70,232 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.ElementFeatures.FEATURE_ANY_IDS;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VariableFeatures.FEATURE_VARIABLES;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
-import static org.apache.tinkerpop.gremlin.structure.io.IoCore.graphml;
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.graphson;
-import static org.apache.tinkerpop.gremlin.structure.io.IoCore.gryo;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Joshua Shinavier (http://fortytwo.net)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class IoTest extends AbstractGremlinTest {
+@RunWith(Enclosed.class)
+public class IoTest {
 
-    private Io.Builder<GraphMLIo> graphml;
-    private Io.Builder<GraphSONIo> graphson;
-    private Io.Builder<GryoIo> gryo;
-
-    @Before
-    public void setupBeforeEachTest() {
-        graphml = graphml();
-        graphson = graphson();
-        gryo = gryo();
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadGraphML() throws IOException {
-        readGraphMLIntoGraph(graph, "tinkerpop-classic.xml");
-        assertClassicGraph(graph, false, true);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadGraphMLUnorderedElements() throws IOException {
-        readGraphMLIntoGraph(graph, "tinkerpop-classic-unordered.xml");
-        assertClassicGraph(graph, false, true);
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_BOOLEAN_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_LONG_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_DOUBLE_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadGraphMLAnAllSupportedDataTypes() throws IOException {
-        final GraphReader reader = GraphMLReader.build().create();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graph-types.xml")) {
-            reader.readGraph(stream, graph);
-        }
-
-        final Vertex v = graph.vertices().next();
-        assertEquals(123.45d, v.value("d"), 0.000001d);
-        assertEquals("some-string", v.<String>value("s"));
-        assertEquals(29, v.<Integer>value("i").intValue());
-        assertEquals(true, v.<Boolean>value("b"));
-        assertEquals(123.54f, v.value("f"), 0.000001f);
-        assertEquals(10000000l, v.<Long>value("l").longValue());
-        assertEquals("junk", v.<String>value("n"));
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteClassicToGraphMLToFileWithHelpers() throws Exception {
-        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".xml");
-        try {
-            graph.io(graphml).writeGraph(f.getAbsolutePath());
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CLASSIC);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            g1.io(graphml).readGraph(f.getAbsolutePath());
-
+    public static class GraphMLTest extends AbstractGremlinTest {
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        public void shouldReadGraphML() throws IOException {
+            readGraphMLIntoGraph(graph, "tinkerpop-classic.xml");
             assertClassicGraph(graph, false, true);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        } catch (Exception ex) {
-            f.delete();
-            throw ex;
-        }
-    }
-
-    /**
-     * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
-     */
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    public void shouldWriteNormalizedGraphML() throws Exception {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            final GraphMLWriter w = GraphMLWriter.build().normalize(true).create();
-            w.writeGraph(bos, graph);
-
-            final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "tinkerpop-classic-normalized.xml"));
-            assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
-        }
-    }
-
-    /**
-     * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
-     */
-    @Test
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    public void shouldWriteNormalizedGraphSON() throws Exception {
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            final GraphSONMapper mapper = graph.io(graphson).mapper().normalize(true).create();
-            final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
-            w.writeGraph(bos, graph);
-
-            final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-normalized.json"));
-            assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
-        }
-    }
-
-    /**
-     * Note: this is only a very lightweight test of writer/reader encoding. It is known that there are characters
-     * which, when written by GraphMLWriter, cause parse errors for GraphMLReader. However, this happens uncommonly
-     * enough that is not yet known which characters those are. Only need to execute this test with TinkerGraph
-     * or other graphs that support user supplied identifiers.
-     */
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
-    public void shouldProperlyEncodeWithGraphML() throws Exception {
-        final Vertex v = graph.addVertex(T.id, "1");
-        v.property(VertexProperty.Cardinality.single, "text", "\u00E9");
-
-        final GraphMLWriter w = GraphMLWriter.build().create();
-
-        final File f = TestHelper.generateTempFile(this.getClass(), "test", ".txt");
-        try (final OutputStream out = new FileOutputStream(f)) {
-            w.writeGraph(out, graph);
         }
 
-        validateXmlAgainstGraphMLXsd(f);
-
-        // reusing the same config used for creation of "g".
-        final Configuration configuration = graphProvider.newGraphConfiguration("g2", this.getClass(), name.getMethodName(), null);
-        graphProvider.clear(configuration);
-        final Graph g2 = graphProvider.openTestGraph(configuration);
-        final GraphMLReader r = GraphMLReader.build().create();
-
-        try (final InputStream in = new FileInputStream(f)) {
-            r.readGraph(in, g2);
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        public void shouldReadGraphMLUnorderedElements() throws IOException {
+            readGraphMLIntoGraph(graph, "tinkerpop-classic-unordered.xml");
+            assertClassicGraph(graph, false, true);
         }
 
-        final Vertex v2 = g2.vertices("1").next();
-        assertEquals("\u00E9", v2.property("text").value());
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_BOOLEAN_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_LONG_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_DOUBLE_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        public void shouldReadGraphMLAnAllSupportedDataTypes() throws IOException {
+            final GraphReader reader = GraphMLReader.build().create();
+            try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graph-types.xml")) {
+                reader.readGraph(stream, graph);
+            }
 
-        // need to manually close the "g2" instance
-        graphProvider.clear(g2, configuration);
-    }
+            final Vertex v = graph.vertices().next();
+            assertEquals(123.45d, v.value("d"), 0.000001d);
+            assertEquals("some-string", v.<String>value("s"));
+            assertEquals(29, v.<Integer>value("i").intValue());
+            assertEquals(true, v.<Boolean>value("b"));
+            assertEquals(123.54f, v.value("f"), 0.000001f);
+            assertEquals(10000000l, v.<Long>value("l").longValue());
+            assertEquals("junk", v.<String>value("n"));
+        }
 
-    /**
-     * This is just a serialization check.
-     */
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
-    public void shouldProperlySerializeCustomIdWithGraphSON() throws Exception {
-        final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
-        graph.addVertex(T.id, new CustomId("vertex", id));
+        /**
+         * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
+         */
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+        @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+        public void shouldWriteNormalizedGraphML() throws Exception {
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                final GraphMLWriter w = GraphMLWriter.build().normalize(true).create();
+                w.writeGraph(bos, graph);
 
-        final SimpleModule module = new SimpleModule();
-        module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
-        final GraphWriter writer = graph.io(graphson).writer().mapper(
-                graph.io(graphson).mapper().addCustomModule(module).embedTypes(true).create()).create();
+                final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "tinkerpop-classic-normalized.xml"));
+                assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
+            }
+        }
 
-        try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            writer.writeGraph(baos, graph);
+        /**
+         * Note: this is only a very lightweight test of writer/reader encoding. It is known that there are characters
+         * which, when written by GraphMLWriter, cause parse errors for GraphMLReader. However, this happens uncommonly
+         * enough that is not yet known which characters those are. Only need to execute this test with TinkerGraph
+         * or other graphs that support user supplied identifiers.
+         */
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
+        public void shouldProperlyEncodeWithGraphML() throws Exception {
+            final Vertex v = graph.addVertex(T.id, "1");
+            v.property(VertexProperty.Cardinality.single, "text", "\u00E9");
 
-            final JsonNode jsonGraph = new ObjectMapper().readTree(baos.toByteArray());
-            final JsonNode idValue = jsonGraph.get(GraphSONTokens.ID);
-            assertTrue(idValue.has("cluster"));
-            assertEquals("vertex", idValue.get("cluster").asText());
-            assertTrue(idValue.has("elementId"));
-            assertEquals("AF4B5965-B176-4552-B3C1-FBBE2F52C305".toLowerCase(), idValue.get("elementId").get(1).asText());
+            final GraphMLWriter w = GraphMLWriter.build().create();
+
+            final File f = TestHelper.generateTempFile(this.getClass(), "test", ".txt");
+            try (final OutputStream out = new FileOutputStream(f)) {
+                w.writeGraph(out, graph);
+            }
+
+            validateXmlAgainstGraphMLXsd(f);
 
             // reusing the same config used for creation of "g".
             final Configuration configuration = graphProvider.newGraphConfiguration("g2", this.getClass(), name.getMethodName(), null);
             graphProvider.clear(configuration);
             final Graph g2 = graphProvider.openTestGraph(configuration);
+            final GraphMLReader r = GraphMLReader.build().create();
 
-            try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
-                final GraphReader reader = graph.io(graphson).reader()
-                        .mapper(graph.io(graphson).mapper().embedTypes(true).addCustomModule(module).create()).create();
-                reader.readGraph(is, g2);
+            try (final InputStream in = new FileInputStream(f)) {
+                r.readGraph(in, g2);
             }
 
-            final Vertex v2 = g2.vertices().next();
-            final CustomId customId = (CustomId) v2.id();
-            assertEquals(id, customId.getElementId());
-            assertEquals("vertex", customId.getCluster());
+            final Vertex v2 = g2.vertices("1").next();
+            assertEquals("\u00E9", v2.property("text").value());
 
             // need to manually close the "g2" instance
             graphProvider.clear(g2, configuration);
         }
     }
 
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
-    public void shouldProperlySerializeCustomIdWithGryo() throws Exception {
-        graph.addVertex(T.id, new CustomId("vertex", UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305")));
-        final GryoMapper gryo = GryoMapper.build().addCustom(CustomId.class).create();
+    public static final class GraphSONTest extends AbstractGremlinTest {
+        private Io.Builder<GraphSONIo> graphson;
 
-        final GryoWriter writer = GryoWriter.build().mapper(gryo).create();
-        final GryoReader reader = GryoReader.build().mapper(gryo).create();
+        @Before
+        public void setupBeforeEachTest() {
+            graphson = graphson();
+        }
 
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), null);
-        graphProvider.clear(configuration);
-        final Graph g1 = graphProvider.openTestGraph(configuration);
+        /**
+         * Only need to execute this test with TinkerGraph or other graphs that support user supplied identifiers.
+         */
+        @Test
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.VertexPropertyFeatures.FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.VariableFeatures.class, feature = FEATURE_VARIABLES)
+        @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
+        public void shouldWriteNormalizedGraphSON() throws Exception {
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                final GraphSONMapper mapper = graph.io(graphson).mapper().normalize(true).create();
+                final GraphSONWriter w = graph.io(graphson).writer().mapper(mapper).create();
+                w.writeGraph(bos, graph);
 
-        GraphMigrator.migrateGraph(graph, g1, reader, writer);
+                final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-normalized.json"));
+                assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
+            }
+        }
 
-        final Vertex onlyVertex = g1.traversal().V().next();
-        final CustomId id = (CustomId) onlyVertex.id();
-        assertEquals("vertex", id.getCluster());
-        assertEquals(UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305"), id.getElementId());
+        /**
+         * This is just a serialization check for JSON.
+         */
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_ANY_IDS)
+        public void shouldProperlySerializeCustomIdWithGraphSON() throws Exception {
+            final UUID id = UUID.fromString("AF4B5965-B176-4552-B3C1-FBBE2F52C305");
+            graph.addVertex(T.id, new CustomId("vertex", id));
 
-        // need to manually close the "g1" instance
-        graphProvider.clear(g1, configuration);
-    }
+            final SimpleModule module = new SimpleModule();
+            module.addSerializer(CustomId.class, new CustomId.CustomIdJacksonSerializer());
+            final GraphWriter writer = graph.io(graphson).writer().mapper(
+                    graph.io(graphson).mapper().addCustomModule(module).embedTypes(true).create()).create();
 
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldMigrateGraphWithFloat() throws Exception {
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), null);
-        graphProvider.clear(configuration);
-        final Graph g1 = graphProvider.openTestGraph(configuration);
+            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                writer.writeGraph(baos, graph);
 
-        final GryoReader reader = graph.io(gryo).reader().create();
-        final GryoWriter writer = graph.io(gryo).writer().create();
+                final JsonNode jsonGraph = new ObjectMapper().readTree(baos.toByteArray());
+                final JsonNode idValue = jsonGraph.get(GraphSONTokens.ID);
+                assertTrue(idValue.has("cluster"));
+                assertEquals("vertex", idValue.get("cluster").asText());
+                assertTrue(idValue.has("elementId"));
+                assertEquals("AF4B5965-B176-4552-B3C1-FBBE2F52C305".toLowerCase(), idValue.get("elementId").get(1).asText());
 
-        GraphMigrator.migrateGraph(graph, g1, reader, writer);
+                // reusing the same config used for creation of "g".
+                final Configuration configuration = graphProvider.newGraphConfiguration("g2", this.getClass(), name.getMethodName(), null);
+                graphProvider.clear(configuration);
+                final Graph g2 = graphProvider.openTestGraph(configuration);
 
-        assertClassicGraph(g1, false, false);
+                try (final InputStream is = new ByteArrayInputStream(baos.toByteArray())) {
+                    final GraphReader reader = graph.io(graphson).reader()
+                            .mapper(graph.io(graphson).mapper().embedTypes(true).addCustomModule(module).create()).create();
+                    reader.readGraph(is, g2);
+                }
 
-        // need to manually close the "g1" instance
-        graphProvider.clear(g1, configuration);
-    }
+                final Vertex v2 = g2.vertices().next();
+                final CustomId customId = (CustomId) v2.id();
+                assertEquals(id, customId.getElementId());
+                assertEquals("vertex", customId.getCluster());
 
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldMigrateGraph() throws Exception {
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
-        graphProvider.clear(configuration);
-        final Graph g1 = graphProvider.openTestGraph(configuration);
+                // need to manually close the "g2" instance
+                graphProvider.clear(g2, configuration);
+            }
+        }
 
-        final GryoReader reader = graph.io(gryo).reader().create();
-        final GryoWriter writer = graph.io(gryo).writer().create();
-
-        GraphMigrator.migrateGraph(graph, g1, reader, writer);
-
-        // by making this lossy for float it will assert floats for doubles
-        assertModernGraph(g1, true, false);
-
-        // need to manually close the "g1" instance
-        graphProvider.clear(g1, configuration);
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteModernToGryo() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeGraph(os, graph);
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
-            graphProvider.clear(configuration);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            final byte[] x = os.toByteArray();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(x)) {
-                reader.readGraph(bais, g1);
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        public void shouldReadLegacyGraphSON() throws IOException {
+            final GraphReader reader = LegacyGraphSONReader.build().create();
+            try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-legacy.json")) {
+                reader.readGraph(stream, graph);
             }
 
-            // by making this lossy for float it will assert floats for doubles
-            assertModernGraph(g1, true, false);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteModernToGryoToFileWithHelpers() throws Exception {
-        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".kryo");
-        try {
-            graph.io(gryo).writeGraph(f.getAbsolutePath());
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            g1.io(gryo).readGraph(f.getAbsolutePath());
-
-            // by making this lossy for float it will assert floats for doubles
-            assertModernGraph(g1, true, false);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        } catch (Exception ex) {
-            f.delete();
-            throw ex;
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteCrewToGryo() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeGraph(os, graph);
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CREW);
-            graphProvider.clear(configuration);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            final GryoReader reader = GryoReader.build()
-                    .mapper(graph.io(gryo).mapper().create()).create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readGraph(bais, g1);
-            }
-
-            // by making this lossy for float it will assert floats for doubles
-            assertCrewGraph(g1, false);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        }
-    }
-
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteClassicToGryo() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeGraph(os, graph);
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CLASSIC);
-            graphProvider.clear(configuration);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readGraph(bais, g1);
-            }
-
-            assertClassicGraph(g1, false, false);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteClassicToGraphSON() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeGraph(os, graph);
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CLASSIC);
-            graphProvider.clear(configuration);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readGraph(bais, g1);
-            }
-
-            assertClassicGraph(g1, true, false);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteModernToGraphSON() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeGraph(os, graph);
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
-            graphProvider.clear(configuration);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readGraph(bais, g1);
-            }
-
-            assertModernGraph(g1, true, false);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteModernToGraphSONWithHelpers() throws Exception {
-        final File f = TestHelper.generateTempFile(this.getClass(), name.getMethodName(), ".json");
-        try {
-            graph.io(graphson).writeGraph(f.getAbsolutePath());
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
-            graphProvider.clear(configuration);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            g1.io(graphson).readGraph(f.getAbsolutePath());
-
-            assertModernGraph(g1, true, false);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        } catch (Exception ex) {
-            f.delete();
-            throw ex;
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldReadWriteCrewToGraphSON() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeGraph(os, graph);
-
-            final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.CREW);
-            graphProvider.clear(configuration);
-            final Graph g1 = graphProvider.openTestGraph(configuration);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readGraph(bais, g1);
-            }
-
-            assertCrewGraph(g1, true);
-
-            // need to manually close the "g1" instance
-            graphProvider.clear(g1, configuration);
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadWriteEdgeToGryoUsingFloatProperty() throws Exception {
-        final Vertex v1 = graph.addVertex(T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, "acl", "rw");
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeEdge(os, e);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, edge -> {
-                    final Edge detachedEdge = (Edge) edge;
-                    assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.outVertex().id());
-                    assertEquals(v2.id(), detachedEdge.inVertex().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(v2.label(), detachedEdge.inVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5f, detachedEdge.properties("weight").next().value());
-                    assertEquals("rw", detachedEdge.properties("acl").next().value());
-
-                    called.set(true);
-
-                    return null;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteEdgeToGryo() throws Exception {
-        final Vertex v1 = graph.addVertex(T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = v1.addEdge("friend", v2, "weight", 0.5d, "acl", "rw");
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeEdge(os, e);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, edge -> {
-                    final Edge detachedEdge = (Edge) edge;
-                    assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.outVertex().id());
-                    assertEquals(v2.id(), detachedEdge.inVertex().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(v2.label(), detachedEdge.inVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5d, e.properties("weight").next().value());
-                    assertEquals("rw", e.properties("acl").next().value());
-                    called.set(true);
-                    return null;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedEdgeAsReferenceToGryo() throws Exception {
-        final Vertex v1 = graph.addVertex(T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5d, "acl", "rw"), false);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeEdge(os, e);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, edge -> {
-                    final Edge detachedEdge = (Edge) edge;
-                    assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.outVertex().id());
-                    assertEquals(v2.id(), detachedEdge.inVertex().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(v2.label(), detachedEdge.inVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(e.keys().size(), IteratorUtils.count(detachedEdge.properties()));
-                    called.set(true);
-
-                    return null;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedEdgeToGryo() throws Exception {
-        final Vertex v1 = graph.addVertex(T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5d, "acl", "rw"), true);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeEdge(os, e);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, edge -> {
-                    final Edge detachedEdge = (Edge) edge;
-                    assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.outVertex().id());
-                    assertEquals(v2.id(), detachedEdge.inVertex().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(v2.label(), detachedEdge.inVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5d, detachedEdge.properties("weight").next().value());
-                    assertEquals("rw", detachedEdge.properties("acl").next().value());
-                    called.set(true);
-                    return null;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteEdgeToGraphSON() throws Exception {
-        final Vertex v1 = graph.addVertex(T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, "acl", "rw");
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeEdge(os, e);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, edge -> {
-                    final Edge detachedEdge = (Edge) edge;
-                    assertEquals(e.id(), graph.edges(detachedEdge.id().toString()).next().id());
-                    assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
-                    assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(v2.label(), detachedEdge.inVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5d, detachedEdge.properties("weight").next().value());
-                    assertEquals("rw", detachedEdge.properties("acl").next().value());
-                    called.set(true);
-                    return null;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedEdgeAsReferenceToGraphSON() throws Exception {
-        final Vertex v1 = graph.addVertex(T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5f, "acl", "rw"), false);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeEdge(os, e);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, edge -> {
-                    final Edge detachedEdge = (Edge) edge;
-                    assertEquals(e.id(), graph.edges(detachedEdge.id().toString()).next().id());
-                    assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
-                    assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(v2.label(), detachedEdge.inVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(e.keys().size(), IteratorUtils.count(detachedEdge.properties()));
-                    called.set(true);
-                    return null;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedEdgeToGraphSON() throws Exception {
-        final Vertex v1 = graph.addVertex(T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = DetachedFactory.detach(v1.addEdge("friend", v2, "weight", 0.5f, "acl", "rw"), true);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeEdge(os, e);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, edge -> {
-                    final Edge detachedEdge = (Edge) edge;
-                    assertEquals(e.id(), graph.edges(detachedEdge.id().toString()).next().id());
-                    assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
-                    assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(v2.label(), detachedEdge.inVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5d, detachedEdge.properties("weight").next().value());
-                    assertEquals("rw", detachedEdge.properties("acl").next().value());
-                    called.set(true);
-                    return null;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
-    public void shouldReadWriteEdgeToGraphSONNonLossy() throws Exception {
-        final Vertex v1 = graph.addVertex(T.id, 1l, T.label, "person");
-        final Vertex v2 = graph.addVertex(T.id, 2l, T.label, "person");
-        final Edge e = v1.addEdge("friend", v2, "weight", 0.5f, "acl", "rw");
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().mapper(graph.io(graphson).mapper().embedTypes(true).create()).create();
-            writer.writeEdge(os, e);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().mapper(graph.io(graphson).mapper().embedTypes(true).create()).create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, edge -> {
-                    final Edge detachedEdge = (Edge) edge;
-                    assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.outVertex().id());
-                    assertEquals(v2.id(), detachedEdge.inVertex().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(v2.label(), detachedEdge.inVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(0.5f, detachedEdge.properties("weight").next().value());
-                    assertEquals("rw", detachedEdge.properties("acl").next().value());
-                    called.set(true);
-
-                    return null;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_SERIALIZABLE_VALUES)
-    public void shouldSupportUUIDInGraphSON() throws Exception {
-        final UUID id = UUID.randomUUID();
-        final Vertex v1 = graph.addVertex(T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = v1.addEdge("friend", v2, "uuid", id);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().mapper(graph.io(graphson).mapper().embedTypes(true).create()).create();
-            writer.writeEdge(os, e);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().mapper(graph.io(graphson).mapper().embedTypes(true).create()).create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, edge -> {
-                    final Edge detachedEdge = (Edge) edge;
-                    // a quick reminder here that the purpose of these id assertions is to ensure that those with
-                    // complex ids that are not simply toString'd (i.e. are complex objects in JSON as well)
-                    // properly respond to filtering in Graph.edges/vertices
-                    assertEquals(e.id(), graph.edges(detachedEdge.id()).next().id());
-                    assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id()).next().id());
-                    assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id()).next().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(v2.label(), detachedEdge.inVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(e.keys().size(), IteratorUtils.count(detachedEdge.properties()));
-                    assertEquals(id, detachedEdge.value("uuid"));
-
-                    called.set(true);
-
-                    return null;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_SERIALIZABLE_VALUES)
-    public void shouldSupportUUIDInGryo() throws Exception {
-        final UUID id = UUID.randomUUID();
-        final Vertex v1 = graph.addVertex(T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = v1.addEdge("friend", v2, "uuid", id);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeEdge(os, e);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readEdge(bais, edge -> {
-                    final Edge detachedEdge = (Edge) edge;
-                    assertEquals(e.id(), detachedEdge.id());
-                    assertEquals(v1.id(), detachedEdge.outVertex().id());
-                    assertEquals(v2.id(), detachedEdge.inVertex().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(v2.label(), detachedEdge.inVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(e.keys().size(), IteratorUtils.count(detachedEdge.properties()));
-                    assertEquals(id, detachedEdge.value("uuid"));
-
-                    called.set(true);
-
-                    return null;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadWriteVertexNoEdgesToGryoUsingFloatProperty() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", "acl", "rw");
-
-        final Vertex v2 = graph.addVertex();
-        v1.addEdge("friends", v2, "weight", 0.5f);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeVertex(os, v1);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    assertEquals(v1.id(), detachedVertex.id());
-                    assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(2, IteratorUtils.count(detachedVertex.properties()));
-                    assertEquals(v1.value("name"), detachedVertex.value("name").toString());
-                    assertEquals(v1.value("acl"), detachedVertex.value("acl").toString());
-                    called.set(true);
-                    return mock(Vertex.class);
-                });
-            }
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexNoEdgesToGryo() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", "acl", "rw");
-        final Vertex v2 = graph.addVertex();
-        v1.addEdge("friends", v2, "weight", 0.5d);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeVertex(os, v1);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    assertEquals(v1.id(), detachedVertex.id());
-                    assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(2, IteratorUtils.count(detachedVertex.properties()));
-                    assertEquals(v1.value("name"), detachedVertex.value("name").toString());
-                    assertEquals(v1.value("acl"), detachedVertex.value("acl").toString());
-                    called.set(true);
-                    return mock(Vertex.class);
-                });
-            }
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedVertexNoEdgesToGryo() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", "acl", "rw");
-        final Vertex v2 = graph.addVertex();
-        v1.addEdge("friends", v2, "weight", 0.5d);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            final DetachedVertex dv = DetachedFactory.detach(v1, true);
-            writer.writeVertex(os, dv);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    assertEquals(v1.id(), detachedVertex.id());
-                    assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(2, IteratorUtils.count(detachedVertex.properties()));
-                    assertEquals("marko", detachedVertex.properties("name").next().value());
-                    assertEquals("rw", detachedVertex.properties("acl").next().value());
-                    called.set(true);
-                    return mock(Vertex.class);
-                });
-            }
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedVertexAsReferenceNoEdgesToGryo() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", "acl", "rw");
-        final Vertex v2 = graph.addVertex();
-        v1.addEdge("friends", v2, "weight", 0.5d);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            final DetachedVertex dv = DetachedFactory.detach(v1, false);
-            writer.writeVertex(os, dv);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    assertEquals(v1.id(), detachedVertex.id());
-                    assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(0, IteratorUtils.count(detachedVertex.properties()));
-                    called.set(true);
-                    return mock(Vertex.class);
-                });
-            }
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
-    public void shouldReadWriteVertexMultiPropsNoEdgesToGryo() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", "name", "mark", "acl", "rw");
-        v1.property(VertexProperty.Cardinality.single, "propsSquared", 123, "x", "a", "y", "b");
-        final Vertex v2 = graph.addVertex();
-        v1.addEdge("friends", v2, "weight", 0.5d);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeVertex(os, v1);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    assertEquals(v1.id(), detachedVertex.id());
-                    assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(4, IteratorUtils.count(detachedVertex.properties()));
-                    assertEquals("a", detachedVertex.property("propsSquared").value("x"));
-                    assertEquals("b", detachedVertex.property("propsSquared").value("y"));
-                    assertEquals(2, IteratorUtils.count(detachedVertex.properties("name")));
-                    assertTrue(IteratorUtils.stream(detachedVertex.properties("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
-                    assertEquals(v1.value("acl"), detachedVertex.value("acl").toString());
-                    called.set(true);
-                    return mock(Vertex.class);
-                });
-            }
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexNoEdgesToGraphSON() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", "acl", "rw");
-        final Vertex v2 = graph.addVertex();
-        v1.addEdge("friends", v2, "weight", 0.5f);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeVertex(os, v1);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    assertEquals(v1.id(), graph.vertices(detachedVertex.id().toString()).next().id());
-                    assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(2, IteratorUtils.count(detachedVertex.properties()));
-                    assertEquals("marko", detachedVertex.properties("name").next().value());
-                    assertEquals("rw", detachedVertex.properties("acl").next().value());
-                    called.set(true);
-                    return detachedVertex;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedVertexNoEdgesToGraphSON() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", "acl", "rw");
-        final Vertex v2 = graph.addVertex();
-        v1.addEdge("friends", v2, "weight", 0.5f);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            final DetachedVertex dv = DetachedFactory.detach(v1, true);
-            writer.writeVertex(os, dv);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    assertEquals(v1.id(), graph.vertices(detachedVertex.id().toString()).next().id());
-                    assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(2, IteratorUtils.count(detachedVertex.properties()));
-                    assertEquals("marko", detachedVertex.properties("name").next().value());
-                    assertEquals("rw", detachedVertex.properties("acl").next().value());
-                    called.set(true);
-                    return detachedVertex;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteDetachedVertexAsReferenceNoEdgesToGraphSON() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", "acl", "rw");
-        final Vertex v2 = graph.addVertex();
-        v1.addEdge("friends", v2, "weight", 0.5f);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            final DetachedVertex dv = DetachedFactory.detach(v1, false);
-            writer.writeVertex(os, dv);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    assertEquals(v1.id(), graph.vertices(detachedVertex.id().toString()).next().id());
-                    assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(0, IteratorUtils.count(detachedVertex.properties()));
-
-                    called.set(true);
-                    return detachedVertex;
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
-    public void shouldReadWriteVertexMultiPropsNoEdgesToGraphSON() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", "name", "mark", "acl", "rw");
-        v1.property(VertexProperty.Cardinality.single, "propsSquared", 123, "x", "a", "y", "b");
-        final Vertex v2 = graph.addVertex();
-        v1.addEdge("friends", v2, "weight", 0.5d);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeVertex(os, v1);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    assertEquals(v1.id(), graph.vertices(detachedVertex.id().toString()).next().id());
-                    assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(4, IteratorUtils.count(detachedVertex.properties()));
-                    assertEquals("a", detachedVertex.property("propsSquared").value("x"));
-                    assertEquals("b", detachedVertex.property("propsSquared").value("y"));
-                    assertEquals(2, IteratorUtils.count(detachedVertex.properties("name")));
-                    assertTrue(IteratorUtils.stream(detachedVertex.properties("name")).allMatch(p -> p.key().equals("name") && (p.value().equals("marko") || p.value().equals("mark"))));
-                    assertEquals(v1.value("acl"), detachedVertex.value("acl").toString());
-                    called.set(true);
-                    return mock(Vertex.class);
-                });
-            }
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    public void shouldReadWriteVerticesNoEdgesToGryoManual() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeVertices(os, g.V().has("age", P.gt(30)));
-
-            final AtomicInteger called = new AtomicInteger(0);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final VertexByteArrayInputStream vbais = new VertexByteArrayInputStream(new ByteArrayInputStream(os.toByteArray()))) {
-                final byte[] y = vbais.readVertexBytes().toByteArray();
-                reader.readVertex(new ByteArrayInputStream(y),
-                        attachable -> {
-                            final Vertex detachedVertex = attachable.get();
-                            called.incrementAndGet();
-                            return detachedVertex;
-                        });
-
-                final byte[] z = vbais.readVertexBytes().toByteArray();
-                reader.readVertex(new ByteArrayInputStream(z),
-                        attachable -> {
-                            final Vertex detachedVertex = attachable.get();
-                            called.incrementAndGet();
-                            return detachedVertex;
-                        });
-            }
-
-            assertEquals(2, called.get());
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldReadWriteVerticesNoEdgesToGryo() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeVertices(os, g.V().has("age", P.gt(30)));
-
-            final AtomicInteger called = new AtomicInteger(0);
-            final GryoReader reader = graph.io(gryo).reader().create();
-
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                final Iterator<Vertex> itty = reader.readVertices(bais,
-                        attachable -> {
-                            final Vertex detachedVertex = attachable.get();
-                            called.incrementAndGet();
-                            return detachedVertex;
-                        }, null, null);
-
-                assertNotNull(itty.next());
-                assertNotNull(itty.next());
-                assertFalse(itty.hasNext());
-            }
-
-            assertEquals(2, called.get());
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldReadWriteVerticesNoEdgesToGraphSON() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeVertices(os, g.V().has("age", P.gt(30)));
-
-            final AtomicInteger called = new AtomicInteger(0);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                final Iterator<Vertex> itty = reader.readVertices(bais,
-                        attachable -> {
-                            final Vertex detachedVertex = attachable.get();
-                            called.incrementAndGet();
-                            return detachedVertex;
-                        }, null, null);
-
-                assertNotNull(itty.next());
-                assertNotNull(itty.next());
-                assertFalse(itty.hasNext());
-            }
-
-            assertEquals(2, called.get());
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CLASSIC)
-    public void shouldReadWriteVerticesNoEdgesToGraphSONManual() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeVertices(os, g.V().has("age", P.gt(30)));
-
-            final AtomicInteger called = new AtomicInteger(0);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            final BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(os.toByteArray())));
-            String line = br.readLine();
-            reader.readVertex(new ByteArrayInputStream(line.getBytes()),
-                    attachable -> {
-                        called.incrementAndGet();
-                        return mock(Vertex.class);
-                    });
-
-            line = br.readLine();
-            reader.readVertex(new ByteArrayInputStream(line.getBytes()),
-                    detachedVertex -> {
-                        called.incrementAndGet();
-                        return mock(Vertex.class);
-                    });
-
-            assertEquals(2, called.get());
-        }
-    }
-
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithOUTEdgesToGryo() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", T.label, "person");
-
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = v1.addEdge("friends", v2, "weight", 0.5d);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeVertex(os, v1, Direction.OUT);
-
-            final AtomicBoolean calledVertex = new AtomicBoolean(false);
-            final AtomicBoolean calledEdge = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                            final Vertex detachedVertex = attachable.get();
-                            TestHelper.validateVertexEquality(v1, detachedVertex, true);
-                            calledVertex.set(true);
-                            return detachedVertex;
-                        },
-                        attachable -> {
-                            final Edge detachedEdge = attachable.get();
-                            TestHelper.validateEdgeEquality(e, detachedEdge);
-                            calledEdge.set(true);
-
-                            return detachedEdge;
-                        }, Direction.OUT);
-            }
-
-            assertTrue(calledVertex.get());
-            assertTrue(calledEdge.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithOUTEdgesToGraphSON() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = v1.addEdge("friends", v2, "weight", 0.5f);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeVertex(os, v1, Direction.OUT);
-
-            final AtomicBoolean calledVertex = new AtomicBoolean(false);
-            final AtomicBoolean calledEdge = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    assertEquals(v1.id(), graph.vertices(detachedVertex.id().toString()).next().id());
-                    assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
-                    assertEquals("marko", detachedVertex.value("name"));
-                    calledVertex.set(true);
-                    return null;
-                }, attachable -> {
-                    final Edge detachedEdge = attachable.get();
-                    assertEquals(e.id(), graph.edges(detachedEdge.id().toString()).next().id());
-                    assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
-                    assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
-                    assertEquals(v1.label(), detachedEdge.outVertex().label());
-                    assertEquals(e.label(), detachedEdge.label());
-                    assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-                    assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
-
-                    calledEdge.set(true);
-                    return null;
-                }, Direction.OUT);
-            }
-
-            assertTrue(calledVertex.get());
-            assertTrue(calledEdge.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithINEdgesToGryo() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", T.label, "person");
-
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = v2.addEdge("friends", v1, "weight", 0.5d);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeVertex(os, v1, Direction.IN);
-
-            final AtomicBoolean calledVertex = new AtomicBoolean(false);
-            final AtomicBoolean calledEdge = new AtomicBoolean(false);
-
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    TestHelper.validateVertexEquality(v1, detachedVertex, true);
-                    calledVertex.set(true);
-                    return detachedVertex;
-                }, attachable -> {
-                    final Edge detachedEdge = attachable.get();
-                    TestHelper.validateEdgeEquality(e, detachedEdge);
-                    calledEdge.set(true);
-
-                    return detachedEdge;
-                }, Direction.IN);
-            }
-
-            assertTrue(calledVertex.get());
-            assertTrue(calledEdge.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithINEdgesToGraphSON() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e = v2.addEdge("friends", v1, "weight", 0.5f);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeVertex(os, v1, Direction.IN);
-            os.close();
-
-            final AtomicBoolean calledVertex = new AtomicBoolean(false);
-            final AtomicBoolean calledEdge = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                            final Vertex detachedVertex = attachable.get();
-                            assertEquals(v1.id(), graph.vertices(detachedVertex.id().toString()).next().id());
-                            assertEquals(v1.label(), detachedVertex.label());
-                            assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
-                            assertEquals("marko", detachedVertex.value("name"));
-                            calledVertex.set(true);
-                            return null;
-                        },attachable -> {
-                            final Edge detachedEdge = attachable.get();
-                            assertEquals(e.id(), graph.edges(detachedEdge.id().toString()).next().id());
-                            assertEquals(v1.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
-                            assertEquals(v2.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
-                            assertEquals(v2.label(), detachedEdge.inVertex().label());
-                            assertEquals(e.label(), detachedEdge.label());
-                            assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-                            assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
-
-                            calledEdge.set(true);
-                            return null;
-                        }, Direction.IN);
-            }
-
-            assertTrue(calledVertex.get());
-            assertTrue(calledEdge.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithBOTHEdgesToGryo() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", T.label, "person");
-
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5d);
-        final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0d);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            writer.writeVertex(os, v1, Direction.BOTH);
-
-            final AtomicBoolean calledVertex = new AtomicBoolean(false);
-            final AtomicBoolean calledEdge1 = new AtomicBoolean(false);
-            final AtomicBoolean calledEdge2 = new AtomicBoolean(false);
-
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                            final Vertex detachedVertex = attachable.get();
-                            TestHelper.validateVertexEquality(v1, detachedVertex, true);
-                            calledVertex.set(true);
-                            return detachedVertex;
-                        },attachable -> {
-                            final Edge detachedEdge = attachable.get();
-                            if (detachedEdge.id().equals(e1.id())) {
-                                TestHelper.validateEdgeEquality(e1, detachedEdge);
-                                calledEdge1.set(true);
-                            } else if (detachedEdge.id().equals(e2.id())) {
-                                TestHelper.validateEdgeEquality(e2, detachedEdge);
-                                calledEdge2.set(true);
-                            } else {
-                                fail("An edge id generated that does not exist");
-                            }
-
-                            return null;
-                        }, Direction.BOTH);
-            }
-
-            assertTrue(calledVertex.get());
-            assertTrue(calledEdge1.get());
-            assertTrue(calledEdge2.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithBOTHEdgesToGraphSON() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
-        final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            writer.writeVertex(os, v1, Direction.BOTH);
-
-            final AtomicBoolean vertexCalled = new AtomicBoolean(false);
-            final AtomicBoolean edge1Called = new AtomicBoolean(false);
-            final AtomicBoolean edge2Called = new AtomicBoolean(false);
-
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                            final Vertex detachedVertex = attachable.get();
-                            assertEquals(v1.id(), graph.vertices(detachedVertex.id().toString()).next().id());
-                            assertEquals(v1.label(), detachedVertex.label());
-                            assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
-                            assertEquals("marko", detachedVertex.value("name"));
-                            vertexCalled.set(true);
-                            return null;
-                        },attachable -> {
-                            final Edge detachedEdge = attachable.get();
-                            if (graph.edges(detachedEdge.id().toString()).next().id().equals(e1.id())) {
-                                assertEquals(e1.id(), graph.edges(detachedEdge.id().toString()).next().id());
-                                assertEquals(v1.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
-                                assertEquals(v2.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
-                                assertEquals(v2.label(), detachedEdge.inVertex().label());
-                                assertEquals(e1.label(), detachedEdge.label());
-                                assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-                                assertEquals(0.5d, detachedEdge.value("weight"), 0.000001d);                      // lossy
-                                edge1Called.set(true);
-                            } else if (graph.edges(detachedEdge.id().toString()).next().id().equals(e2.id())) {
-                                assertEquals(e2.id(), graph.edges(detachedEdge.id().toString()).next().id());
-                                assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id().toString()).next().id());
-                                assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id().toString()).next().id());
-                                assertEquals(v1.label(), detachedEdge.outVertex().label());
-                                assertEquals(e2.label(), detachedEdge.label());
-                                assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-                                assertEquals(1.0d, detachedEdge.value("weight"), 0.000001d);                      // lossy
-                                edge2Called.set(true);
-                            } else {
-                                fail("An edge id generated that does not exist");
-                            }
-
-                            return null;
-                        }, Direction.BOTH);
-            }
-
-            assertTrue(vertexCalled.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_DOUBLE_VALUES)
-    public void shouldReadWriteVertexWithBOTHEdgesToGraphSONWithTypes() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko", T.label, "person");
-        final Vertex v2 = graph.addVertex(T.label, "person");
-        final Edge e1 = v2.addEdge("friends", v1, "weight", 0.5f);
-        final Edge e2 = v1.addEdge("friends", v2, "weight", 1.0f);
-
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().mapper(graph.io(graphson).mapper().embedTypes(true).create()).create();
-            writer.writeVertex(os, v1, Direction.BOTH);
-
-            final AtomicBoolean vertexCalled = new AtomicBoolean(false);
-            final AtomicBoolean edge1Called = new AtomicBoolean(false);
-            final AtomicBoolean edge2Called = new AtomicBoolean(false);
-
-            final GraphSONReader reader = graph.io(graphson).reader().mapper(graph.io(graphson).mapper().embedTypes(true).create()).create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertex(bais, attachable -> {
-                    final Vertex detachedVertex = attachable.get();
-                    // a quick reminder here that the purpose of these id assertions is to ensure that those with
-                    // complex ids that are not simply toString'd (i.e. are complex objects in JSON as well)
-                    // properly respond to filtering in Graph.edges/vertices
-                    assertEquals(v1.id(), graph.vertices(detachedVertex.id()).next().id());
-                    assertEquals(v1.label(), detachedVertex.label());
-                    assertEquals(1, IteratorUtils.count(detachedVertex.properties()));
-                    assertEquals(v1.value("name"), detachedVertex.value("name").toString());
-                    vertexCalled.set(true);
-                    return null;
-                }, attachable -> {
-                    final Edge detachedEdge = attachable.get();
-                    // a quick reminder here that the purpose of these id assertions is to ensure that those with
-                    // complex ids that are not simply toString'd (i.e. are complex objects in JSON as well)
-                    // properly respond to filtering in Graph.edges/vertices
-                    if (graph.edges(detachedEdge.id()).next().id().equals(e1.id())) {
-                        assertEquals(v2.id(), graph.vertices(detachedEdge.outVertex().id()).next().id());
-                        assertEquals(v1.id(), graph.vertices(detachedEdge.inVertex().id()).next().id());
-                        assertEquals(v2.label(), detachedEdge.inVertex().label());
-                        assertEquals(e1.label(), detachedEdge.label());
-                        assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-                        assertEquals(0.5f, detachedEdge.value("weight"), 0.00001f);
-                        edge1Called.set(true);
-                    } else if (graph.edges(detachedEdge.id()).next().id().equals(e2.id())) {
-                        assertEquals(v1.id(), graph.vertices(detachedEdge.outVertex().id()).next().id());
-                        assertEquals(v2.id(), graph.vertices(detachedEdge.inVertex().id()).next().id());
-                        assertEquals(v1.label(), detachedEdge.outVertex().label());
-                        assertEquals(e1.label(), detachedEdge.label());
-                        assertEquals(1, IteratorUtils.count(detachedEdge.properties()));
-                        assertEquals(1.0f, detachedEdge.value("weight"), 0.00001f);
-                        edge2Called.set(true);
-                    } else {
-                        fail("An edge id generated that does not exist");
-                    }
-
-                    return null;
-                }, Direction.BOTH);
-            }
-
-            assertTrue(vertexCalled.get());
-            assertTrue(edge1Called.get());
-            assertTrue(edge2Called.get());
-        }
-    }
-
-    @Test
-    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
-    @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
-    @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-    public void shouldReadLegacyGraphSON() throws IOException {
-        final GraphReader reader = LegacyGraphSONReader.build().create();
-        try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-legacy.json")) {
-            reader.readGraph(stream, graph);
-        }
-
-        // the id is lossy in migration because TP2 treated ID as String
-        assertClassicGraph(graph, false, true);
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldReadWritePropertyGraphSON() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
-            writer.writeProperty(os, p);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readProperty(bais, propertyAttachable -> {
-                    assertEquals(p.value(), propertyAttachable.get().value());
-                    assertEquals(p.key(), propertyAttachable.get().key());
-                    called.set(true);
-                    return propertyAttachable.get();
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldReadWriteVertexPropertyNoMetaPropertiesGraphSON() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-            final VertexProperty p = g.V(convertToVertexId("marko")).next().property("name");
-            writer.writeVertexProperty(os, p);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertexProperty(bais, propertyAttachable -> {
-                    assertEquals(p.value(), propertyAttachable.get().value());
-                    assertEquals(p.key(), propertyAttachable.get().key());
-                    assertEquals(0, IteratorUtils.count(propertyAttachable.get().properties()));
-                    called.set(true);
-                    return propertyAttachable.get();
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
-    public void shouldReadWriteVertexPropertyWithMetaPropertiesGraphSON() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GraphSONWriter writer = graph.io(graphson).writer().create();
-
-            // select any vertexproperty that has both start/end time
-            final VertexProperty p = (VertexProperty) g.V(convertToVertexId("marko")).properties("location").as("p").has("endTime").select("p").next();
-            writer.writeVertexProperty(os, p);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GraphSONReader reader = graph.io(graphson).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertexProperty(bais, propertyAttachable -> {
-                    assertEquals(p.value(), propertyAttachable.get().value());
-                    assertEquals(p.key(), propertyAttachable.get().key());
-                    assertEquals(IteratorUtils.count(p.properties()), IteratorUtils.count(propertyAttachable.get().properties()));
-                    assertEquals(p.property("startTime").value(), ((Property) propertyAttachable.get().properties("startTime").next()).value());
-                    assertEquals(p.property("endTime").value(), ((Property) propertyAttachable.get().properties("endTime").next()).value());
-                    called.set(true);
-                    return propertyAttachable.get();
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldReadWritePropertyGryo() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            final Property p = g.E(convertToEdgeId("marko", "knows", "vadas")).next().property("weight");
-            writer.writeProperty(os, p);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readProperty(bais, propertyAttachable -> {
-                    assertEquals(p.value(), propertyAttachable.get().value());
-                    assertEquals(p.key(), propertyAttachable.get().key());
-                    called.set(true);
-                    return propertyAttachable.get();
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldReadWriteVertexPropertyNoMetaPropertiesGryo() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-            final VertexProperty p = g.V(convertToVertexId("marko")).next().property("name");
-            writer.writeVertexProperty(os, p);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertexProperty(bais, propertyAttachable -> {
-                    assertEquals(p.value(), propertyAttachable.get().value());
-                    assertEquals(p.key(), propertyAttachable.get().key());
-                    assertEquals(0, IteratorUtils.count(propertyAttachable.get().properties()));
-                    called.set(true);
-                    return propertyAttachable.get();
-                });
-            }
-
-            assertTrue(called.get());
-        }
-    }
-
-    @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.CREW)
-    public void shouldReadWriteVertexPropertyWithMetaPropertiesGryo() throws Exception {
-        try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-            final GryoWriter writer = graph.io(gryo).writer().create();
-
-            // select any vertexproperty that has both start/end time
-            final VertexProperty p = (VertexProperty) g.V(convertToVertexId("marko")).properties("location").as("p").has("endTime").select("p").next();
-            writer.writeVertexProperty(os, p);
-
-            final AtomicBoolean called = new AtomicBoolean(false);
-            final GryoReader reader = graph.io(gryo).reader().create();
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
-                reader.readVertexProperty(bais, propertyAttachable -> {
-                    assertEquals(p.value(), propertyAttachable.get().value());
-                    assertEquals(p.key(), propertyAttachable.get().key());
-                    assertEquals(IteratorUtils.count(p.properties()), IteratorUtils.count(propertyAttachable.get().properties()));
-                    assertEquals(p.property("startTime").value(), ((Property) propertyAttachable.get().properties("startTime").next()).value());
-                    assertEquals(p.property("endTime").value(), ((Property) propertyAttachable.get().properties("endTime").next()).value());
-                    called.set(true);
-                    return propertyAttachable.get();
-                });
-            }
-
-            assertTrue(called.get());
+            // the id is lossy in migration because TP2 treated ID as String
+            assertClassicGraph(graph, false, true);
         }
     }
 
@@ -2374,7 +777,7 @@ public class IoTest extends AbstractGremlinTest {
         }
     }
 
-    private void validateXmlAgainstGraphMLXsd(final File file) throws Exception {
+    private static void validateXmlAgainstGraphMLXsd(final File file) throws Exception {
         final Source xmlFile = new StreamSource(file);
         final SchemaFactory schemaFactory = SchemaFactory
                 .newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -2390,7 +793,7 @@ public class IoTest extends AbstractGremlinTest {
         }
     }
 
-    private String streamToString(final InputStream in) throws IOException {
+    private static String streamToString(final InputStream in) throws IOException {
         final Writer writer = new StringWriter();
         final char[] buffer = new char[1024];
         try (final Reader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"))) {
@@ -2403,59 +806,4 @@ public class IoTest extends AbstractGremlinTest {
         return writer.toString();
     }
 
-    public static class CustomId {
-        private String cluster;
-        private UUID elementId;
-
-        private CustomId() {
-            // required no-arg for gryo serialization
-        }
-
-        public CustomId(final String cluster, final UUID elementId) {
-            this.cluster = cluster;
-            this.elementId = elementId;
-        }
-
-        public String getCluster() {
-            return cluster;
-        }
-
-        public UUID getElementId() {
-            return elementId;
-        }
-
-        @Override
-        public String toString() {
-            return cluster + ":" + elementId;
-        }
-
-        static class CustomIdJacksonSerializer extends StdSerializer<CustomId> {
-            public CustomIdJacksonSerializer() {
-                super(CustomId.class);
-            }
-
-            @Override
-            public void serialize(final CustomId customId, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
-                    throws IOException, JsonGenerationException {
-                // when types are not embedded, stringify or resort to JSON primitive representations of the
-                // type so that non-jvm languages can better interoperate with the TinkerPop stack.
-                jsonGenerator.writeString(customId.toString());
-            }
-
-            @Override
-            public void serializeWithType(final CustomId customId, final JsonGenerator jsonGenerator,
-                                          final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException, JsonProcessingException {
-                // when the type is included add "class" as a key and then try to utilize as much of the
-                // default serialization provided by jackson data-bind as possible.  for example, write
-                // the uuid as an object so that when jackson serializes it, it uses the uuid serializer
-                // to write it out with the type.  in this way, data-bind should be able to deserialize
-                // it back when types are embedded.
-                jsonGenerator.writeStartObject();
-                jsonGenerator.writeStringField(GraphSONTokens.CLASS, CustomId.class.getName());
-                jsonGenerator.writeStringField("cluster", customId.getCluster());
-                jsonGenerator.writeObjectField("elementId", customId.getElementId());
-                jsonGenerator.writeEndObject();
-            }
-        }
-    }
 }
