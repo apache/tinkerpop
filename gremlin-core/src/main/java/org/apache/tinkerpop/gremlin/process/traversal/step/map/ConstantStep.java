@@ -36,6 +36,7 @@ public class ConstantStep<S, E> extends MapStep<S, E> {
         this.constant = constant;
     }
 
+    @Override
     protected E map(final Traverser.Admin<S> traverser) {
         return this.constant;
     }
@@ -48,10 +49,5 @@ public class ConstantStep<S, E> extends MapStep<S, E> {
     @Override
     public int hashCode() {
         return super.hashCode() ^ Objects.hashCode(this.constant);
-    }
-
-    @Override
-    public Set<TraverserRequirement> getRequirements() {
-        return Collections.emptySet();
     }
 }
