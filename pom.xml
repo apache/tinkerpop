@@ -98,6 +98,11 @@ limitations under the License.
             <email>pluradj@gmail.com</email>
             <url>https://github.com/pluradj</url>
         </contributor>
+        <contributor>
+            <name>Dylan Millikin</name>
+            <email>dylan.millikin@gmail.com</email>
+            <url>https://github.com/PommeVerte</url>
+        </contributor>
     </contributors>
     <modules>
         <module>gremlin-shaded</module>
