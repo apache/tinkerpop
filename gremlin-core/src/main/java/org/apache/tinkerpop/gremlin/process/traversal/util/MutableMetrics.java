@@ -71,7 +71,7 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
     }
 
     public void setDuration(long dur, TimeUnit unit) {
-        this.durationNs = unit.convert(dur, TimeUnit.NANOSECONDS);
+        this.durationNs = TimeUnit.NANOSECONDS.convert(dur, unit);
     }
 
     public void setCount(String key, final long val) {
