@@ -67,7 +67,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
     private Set<String> matchEndLabels = new HashSet<>();
     private final Conjunction conjunction;
     private final String startKey;
-    private final MatchAlgorithm matchAlgorithm = new GreedyMatchAlgorithm();
+    private final MatchAlgorithm matchAlgorithm = new CountMatchAlgorithm();
 
     public XMatchStep(final Traversal.Admin traversal, final String startKey, final Conjunction conjunction, final Traversal... conjunctionTraversals) {
         super(traversal);
@@ -146,7 +146,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
     @Override
     public void reset() {
         super.reset();
-        this.first = true;
+        //this.first = true;
     }
 
     @Override
@@ -191,8 +191,8 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         while (true) {
             Traverser.Admin traverser = null;
             if (this.first) {
-                this.matchAlgorithm.initialize(this.conjunctionTraversals);
                 this.first = false;
+                this.matchAlgorithm.initialize(this.conjunctionTraversals);
             } else {
                 for (final Traversal.Admin<?, ?> conjunctionTraversal : this.conjunctionTraversals) {
                     if (conjunctionTraversal.hasNext()) {
@@ -223,8 +223,8 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
     @Override
     protected Iterator<Traverser<Map<String, E>>> computerAlgorithm() throws NoSuchElementException {
         if (this.first) {
-            this.matchAlgorithm.initialize(this.conjunctionTraversals);
             this.first = false;
+            this.matchAlgorithm.initialize(this.conjunctionTraversals);
         }
         final Traverser.Admin traverser = this.starts.next();
         if (hasMatched(this.conjunction, traverser)) {
@@ -251,7 +251,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.conjunctionTraversals.hashCode();
+        return super.hashCode() ^ this.startKey.hashCode() ^ this.conjunctionTraversals.hashCode();
     }
 
     @Override
@@ -334,6 +334,39 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
             for (int i = 0; i < this.traversals.size(); i++) {
                 if (this.startLabels.get(i).stream().filter(path::hasLabel).findAny().isPresent() && !path.hasLabel(this.traversalLabels.get(i))) {
                     return this.traversals.get(i);
+                }
+            }
+            throw new IllegalArgumentException("The provided match pattern is unsolvable: " + this.traversals);
+        }
+    }
+
+    public static class CountMatchAlgorithm implements MatchAlgorithm {
+
+        private List<Traversal.Admin<Object, Object>> traversals;
+        private List<Integer[]> counts = new ArrayList<>();
+        private List<String> traversalLabels = new ArrayList<>();
+        private List<Set<String>> startLabels = new ArrayList<>();
+
+        @Override
+        public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
+            this.traversals = traversals;
+
+            for (int i = 0; i < this.traversals.size(); i++) {
+                final Traversal.Admin<Object, Object> traversal = this.traversals.get(i);
+                this.traversalLabels.add(traversal.getStartStep().getId());
+                this.startLabels.add(MatchAlgorithm.getStartLabels(traversal));
+                this.counts.add(new Integer[]{i, 0});
+            }
+        }
+
+        @Override
+        public Traversal.Admin<Object, Object> apply(final Traverser.Admin<Object> traverser) {
+            Collections.sort(this.counts, (a, b) -> b[1].compareTo(a[1]));
+            final Path path = traverser.path();
+            for (final Integer[] indexCounts : this.counts) {
+                if (this.startLabels.get(indexCounts[0]).stream().filter(path::hasLabel).findAny().isPresent() && !path.hasLabel(this.traversalLabels.get(indexCounts[0]))) {
+                    indexCounts[1]++;
+                    return this.traversals.get(indexCounts[0]);
                 }
             }
             throw new IllegalArgumentException("The provided match pattern is unsolvable: " + this.traversals);

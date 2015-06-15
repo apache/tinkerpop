@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
+import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -184,6 +185,25 @@ public class TinkerGraphTest {
 
         //System.out.println(g.V().and(out("created"),or(out("knows"),out("created").has("name","ripple"))).values("name").iterate());
         //g.V().and(out("created"),or(out("knows"),out("created").has("name","ripple"))).values("name").forEachRemaining(System.out::println);
+    }
+
+    @Test
+    @Ignore
+    public void testPlay6() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        for(int i=0; i<1000; i++) {
+            graph.addVertex(T.label, "person",T.id,i);
+        }
+        graph.vertices().forEachRemaining(a -> {
+            graph.vertices().forEachRemaining(b -> {
+                if(a != b) {
+                   a.addEdge("knows",b);
+                }
+            });
+        });
+        graph.vertices(50).next().addEdge("uncle", graph.vertices(70).next());
+        System.out.println(TimeUtil.clockWithResult(100,() -> g.V().xmatch("a",as("a").out("knows").as("b"),as("a").out("uncle").as("b")).toList()));
     }
 
     @Test
