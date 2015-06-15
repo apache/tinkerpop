@@ -67,18 +67,18 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
         super(traversal);
         this.conjunction = conjunction;
         this.conjunctionTraversals = (List) Stream.of(conjunctionTraversals).map(Traversal::asAdmin).map(this::integrateChild).collect(Collectors.toList());
-        this.conjunctionTraversals.forEach(this::addSelectOneStartStep);
+        this.conjunctionTraversals.forEach(this::addSelectOneStartStep); // recursively convert to SelectOneStep, XMatchStep, or XMatchEndStep
     }
 
     private void addSelectOneStartStep(final Traversal.Admin<?, ?> conjunctionTraversal) {
-        // CONJUNCTION STEPS to XMatchSteps
-        for (final Step<?, ?> conjunction : TraversalHelper.getStepsOfAssignableClass(ConjunctionStep.class, conjunctionTraversal)) {
-            final XMatchStep xMatchStep = new XMatchStep(conjunctionTraversal, conjunction instanceof AndStep ? XMatchStep.Conjunction.AND : XMatchStep.Conjunction.OR, ((ConjunctionStep<?>) conjunction).getLocalChildren().toArray(new Traversal[((ConjunctionStep<?>) conjunction).getLocalChildren().size()]));
-            TraversalHelper.replaceStep(conjunction, xMatchStep, conjunctionTraversal);
-        }
-        // START STEP to SelectOneStep
+        // START STEP to SelectOneStep OR XMatchStep
         final Step<?, ?> startStep = conjunctionTraversal.getStartStep();
-        if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
+        if (startStep instanceof ConjunctionStep) {
+            final XMatchStep xMatchStep = new XMatchStep(conjunctionTraversal,
+                    startStep instanceof AndStep ? XMatchStep.Conjunction.AND : XMatchStep.Conjunction.OR,
+                    ((ConjunctionStep<?>) startStep).getLocalChildren().toArray(new Traversal[((ConjunctionStep<?>) startStep).getLocalChildren().size()]));
+            TraversalHelper.replaceStep(startStep, xMatchStep, conjunctionTraversal);
+        } else if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
             if (startStep.getLabels().size() > 1)
                 throw new IllegalArgumentException("The start step of a match()-traversal can only have one label: " + startStep);
             TraversalHelper.replaceStep(conjunctionTraversal.getStartStep(), new SelectOneStep<>(conjunctionTraversal, Scope.global, Pop.head, startStep.getLabels().iterator().next()), conjunctionTraversal);
@@ -94,14 +94,6 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
             if (null != label) xMatchEndStep.addLabel(label);
             conjunctionTraversal.asAdmin().addStep(xMatchEndStep);
         }
-        // TODO: is this needed?
-        conjunctionTraversal.getSteps().stream()
-                .filter(step -> step instanceof TraversalParent)
-                .filter(step -> !(step instanceof XMatchStep))
-                .forEach(step -> {
-                    ((TraversalParent) step).getGlobalChildren().forEach(this::addSelectOneStartStep);
-                    ((TraversalParent) step).getLocalChildren().forEach(this::addSelectOneStartStep);
-                });
     }
 
     public Set<String> getMatchStartLabels() {
