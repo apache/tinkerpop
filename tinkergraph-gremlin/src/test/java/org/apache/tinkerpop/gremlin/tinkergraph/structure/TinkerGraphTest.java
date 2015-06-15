@@ -167,7 +167,7 @@ public class TinkerGraphTest {
                                 as("a").out().out()
                         )
                 ))
-                .select(Pop.head).by("name");
+                .select(Pop.head);
         /*
                 g.V().as("a").xmatch(
                         as("a").out("knows").as("b"),
