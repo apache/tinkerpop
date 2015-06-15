@@ -158,7 +158,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay5() throws Exception {
         GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.standard());
-        final Supplier<Traversal<?, ?>> traversal = () -> g.V().as("a").xmatch(
+        final Supplier<Traversal<?, ?>> traversal = () -> g.V().xmatch("a",
                 as("a").out("created").as("b"),
                 or(
                         as("a").out("knows").as("c"),
@@ -166,8 +166,7 @@ public class TinkerGraphTest {
                                 as("a").out("created").has("name", "ripple"),
                                 as("a").out().out()
                         )
-                ))
-                .select(Pop.head);
+                ));
         /*
                 g.V().as("a").xmatch(
                         as("a").out("knows").as("b"),

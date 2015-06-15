@@ -465,6 +465,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startLabel, final Traversal<?, ?>... traversals) {
         return (GraphTraversal) this.asAdmin().addStep(new MatchStep<E, Map<String, E2>>(this.asAdmin(), startLabel, traversals));
+        //return (GraphTraversal) this.asAdmin().addStep(new XMatchStep(this.asAdmin(), startLabel, XMatchStep.Conjunction.AND, traversals));
     }
 
     /**
@@ -1010,8 +1011,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     ////
 
-    public default GraphTraversal<S, E> xmatch(final Traversal<?, ?>... andTraversals) {
-        return this.asAdmin().addStep(new XMatchStep<>(this.asAdmin(), XMatchStep.Conjunction.AND, andTraversals));
+    public default <E2> GraphTraversal<S, Map<String,E2>> xmatch(final String startKey, final Traversal<?, ?>... andTraversals) {
+        return this.asAdmin().addStep(new XMatchStep<>(this.asAdmin(), startKey, XMatchStep.Conjunction.AND, andTraversals));
     }
 
     @Override
