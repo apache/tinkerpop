@@ -166,7 +166,7 @@ public class TinkerGraphTest {
                                 as("a").out("created").has("name", "ripple"),
                                 as("a").out().out()
                         )
-                ));
+                )).select().by("name");
         /*
                 g.V().as("a").xmatch(
                         as("a").out("knows").as("b"),

@@ -63,8 +63,8 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
     private List<Traversal.Admin<Object, Object>> conjunctionTraversals = new ArrayList<>();
     private boolean first = true;
-    private Set<String> matchStartLabels = null;
-    private Set<String> matchEndLabels = null;
+    private Set<String> matchStartLabels = new HashSet<>();
+    private Set<String> matchEndLabels = new HashSet<>();
     private final Conjunction conjunction;
     private final String startKey;
     private final MatchAlgorithm matchAlgorithm = new GreedyMatchAlgorithm();
@@ -86,13 +86,14 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
                     startStep instanceof AndStep ? XMatchStep.Conjunction.AND : XMatchStep.Conjunction.OR,
                     ((ConjunctionStep<?>) startStep).getLocalChildren().toArray(new Traversal[((ConjunctionStep<?>) startStep).getLocalChildren().size()]));
             TraversalHelper.replaceStep(startStep, xMatchStep, conjunctionTraversal);
+            this.matchStartLabels.addAll(xMatchStep.matchStartLabels);
+            this.matchEndLabels.addAll(xMatchStep.matchEndLabels);
         } else if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
             if (startStep.getLabels().size() > 1)
                 throw new IllegalArgumentException("The start step of a match()-traversal can only have one label: " + startStep);
             final String label = startStep.getLabels().iterator().next();
-            final Step selectOneStep = new SelectOneStep<>(conjunctionTraversal, Scope.global, Pop.head, label);
-            selectOneStep.addLabel(label);
-            TraversalHelper.replaceStep(conjunctionTraversal.getStartStep(), selectOneStep, conjunctionTraversal);
+            this.matchStartLabels.add(label);
+            TraversalHelper.replaceStep(conjunctionTraversal.getStartStep(), new SelectOneStep<>(conjunctionTraversal, Scope.global, Pop.head, label), conjunctionTraversal);
         }
         // END STEP to XMatchStep
         final Step<?, ?> endStep = conjunctionTraversal.getEndStep();
@@ -102,36 +103,12 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
             final String label = endStep.getLabels().size() == 0 ? null : endStep.getLabels().iterator().next();
             if (null != label) endStep.removeLabel(label);
             final Step<?, ?> xMatchEndStep = new XMatchEndStep(conjunctionTraversal, label);
-            if (null != label) xMatchEndStep.addLabel(label);
+            if (null != label) {
+                this.matchEndLabels.add(label);
+                xMatchEndStep.addLabel(label);
+            }
             conjunctionTraversal.asAdmin().addStep(xMatchEndStep);
         }
-    }
-
-    public Set<String> getMatchStartLabels() {
-        if (null == this.matchStartLabels) {
-            this.matchStartLabels = new HashSet<>();
-            for (final Traversal.Admin<Object, Object> conjunctionTraversal : this.conjunctionTraversals) {
-                this.matchStartLabels.addAll(conjunctionTraversal.getStartStep() instanceof XMatchStep ?
-                        ((XMatchStep) conjunctionTraversal.getStartStep()).getMatchStartLabels() :
-                        ((SelectOneStep) conjunctionTraversal.getStartStep()).getScopeKeys());
-            }
-            this.matchStartLabels = Collections.unmodifiableSet(this.matchStartLabels);
-        }
-        return this.matchStartLabels;
-    }
-
-    public Set<String> getMatchEndLabels() {
-        if (null == this.matchEndLabels) {
-            this.matchEndLabels = new HashSet<>();
-            for (final Traversal.Admin<Object, Object> conjunctionTraversal : this.conjunctionTraversals) {
-                if (conjunctionTraversal.getStartStep() instanceof XMatchStep) {
-                    this.matchEndLabels.addAll(((XMatchStep) conjunctionTraversal.getStartStep()).getMatchEndLabels());
-                }
-                this.matchEndLabels.add(((XMatchEndStep) (Step<?, ?>) conjunctionTraversal.getEndStep()).matchKey);
-            }
-            this.matchEndLabels = Collections.unmodifiableSet(this.matchEndLabels);
-        }
-        return this.matchEndLabels;
     }
 
     public List<Traversal.Admin<Object, Object>> getGlobalChildren() {
@@ -155,7 +132,10 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
     @Override
     public Set<String> getScopeKeys() {
-        return this.getMatchEndLabels();
+        final HashSet<String> scopedKeys = new HashSet<>();
+        scopedKeys.addAll(this.matchStartLabels);
+        scopedKeys.addAll(this.matchEndLabels);
+        return scopedKeys;
     }
 
     @Override
@@ -189,7 +169,6 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
                 counter++;
             }
         }
-        // if (counter == 0) traverser.path().addLabel(this.startKey); // for computer to add the start key
         return this.conjunctionTraversals.size() == counter;
     }
 
@@ -197,9 +176,9 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         final Map<String, E> bindings = new HashMap<>();
         traverser.path().forEach((object, labels) -> {
             for (final String label : labels) {
-                if (this.getMatchEndLabels().contains(label)) {
+                if (this.matchEndLabels.contains(label)) {
                     bindings.put(label, (E) object);
-                } else if (this.getMatchStartLabels().contains(label)) {
+                } else if (this.matchStartLabels.contains(label)) {
                     bindings.put(label, (E) object);
                 }
             }
@@ -222,9 +201,9 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
                     }
                 }
             }
-            if (null == traverser) {
+            if (null == traverser)
                 traverser = this.starts.next();
-            } else if (hasMatched(this.conjunction, traverser))
+            else if (hasMatched(this.conjunction, traverser))
                 return IteratorUtils.of(traverser.split(this.getBindings(traverser), this));
 
             if (this.conjunction == Conjunction.AND) {
@@ -324,7 +303,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         public static Set<String> getStartLabels(final Traversal.Admin<Object, Object> traversal) {
             final Step<?, ?> startStep = traversal.getStartStep();
             if (startStep instanceof XMatchStep)
-                return ((XMatchStep) startStep).getMatchStartLabels();
+                return ((XMatchStep) startStep).matchStartLabels;
             else if (startStep instanceof SelectOneStep)
                 return ((SelectOneStep) startStep).getScopeKeys();
             else
