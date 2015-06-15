@@ -128,7 +128,7 @@ public interface Path extends Cloneable {
     public default <A> A getSingle(final Pop pop, final String label) throws IllegalArgumentException {
         final Object object = this.get(label);
         if (object instanceof List) {
-            return Pop.tail == pop ? ((List<A>) object).get(((List) object).size() - 1) : ((List<A>) object).get(0);
+            return Pop.head == pop ? ((List<A>) object).get(((List) object).size() - 1) : ((List<A>) object).get(0);
         } else
             return (A) object;
     }

@@ -26,6 +26,12 @@ package org.apache.tinkerpop.gremlin.process.traversal;
  */
 public enum Pop {
 
+    /**
+     * The end/terminal of a Path (or ordered collection)
+     */
     head,
+    /**
+     * The start/initial of a Path (or ordered collection)
+     */
     tail
 }

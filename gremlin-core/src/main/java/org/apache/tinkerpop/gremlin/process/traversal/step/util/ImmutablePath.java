@@ -23,11 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -83,26 +81,12 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
         final List<A> list = this.previousPath.getList(label);
         // Add our object, if our step labels match.
         if (this.currentLabels.contains(label))
-            list.add((A)currentObject);
+            list.add((A) currentObject);
         return list;
     }
 
     @Override
     public <A> A getSingleHead(final String label) {
-        // Recursively search for the single value to avoid building throwaway collections, and to stop looking when we
-        // find it.
-        A single = this.previousPath.getSingleHead(label);
-        if (null == single) {
-            // See if we have a value.
-            if (this.currentLabels.contains(label)) {
-                single = (A) this.currentObject;
-            }
-        }
-        return single;
-    }
-
-    @Override
-    public <A> A getSingleTail(final String label) {
         // Recursively search for the single value to avoid building throwaway collections, and to stop looking when we
         // find it.
         A single;
@@ -111,7 +95,21 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
             single = (A) this.currentObject;
         } else {
             // Look for a previous value.
-            single = this.previousPath.getSingleTail(label);
+            single = this.previousPath.getSingleHead(label);
+        }
+        return single;
+    }
+
+    @Override
+    public <A> A getSingleTail(final String label) {
+        // Recursively search for the single value to avoid building throwaway collections, and to stop looking when we
+        // find it.
+        A single = this.previousPath.getSingleTail(label);
+        if (null == single) {
+            // See if we have a value.
+            if (this.currentLabels.contains(label)) {
+                single = (A) this.currentObject;
+            }
         }
         return single;
     }

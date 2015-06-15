@@ -84,7 +84,7 @@ public class MutablePath implements Path, Serializable {
     @Override
     public <A> A getSingle(final Pop pop, final String label) {
         // Override default to avoid building temporary list, and to stop looking when we find the label.
-        if (Pop.tail == pop) {
+        if (Pop.head == pop) {
             for (int i = this.labels.size() - 1; i >= 0; i--) {
                 if (labels.get(i).contains(label))
                     return (A) objects.get(i);
