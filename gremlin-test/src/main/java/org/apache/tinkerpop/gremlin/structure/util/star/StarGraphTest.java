@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.star;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
@@ -39,9 +40,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -98,6 +101,20 @@ public class StarGraphTest extends AbstractGremlinTest {
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().properties().forEachRemaining(vertexProperty -> vertexProperty.properties().forEachRemaining(property -> TestHelper.validateEquality(property, ((Attachable<Property>) property).attach(Attachable.Method.get(graph))))));
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().edges(Direction.OUT).forEachRemaining(edge -> TestHelper.validateEquality(edge, ((Attachable<Edge>) edge).attach(Attachable.Method.get(graph)))));
         g.V().forEachRemaining(vertex -> StarGraph.of(vertex).getStarVertex().edges(Direction.OUT).forEachRemaining(edge -> edge.properties().forEachRemaining(property -> TestHelper.validateEquality(property, ((Attachable<Property>) property).attach(Attachable.Method.get(graph))))));
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldCopyFromGraphAToGraphB() throws Exception {
+        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), null);
+        final Graph g1 = graphProvider.openTestGraph(configuration);
+
+        List<StarGraph> starVertices = IteratorUtils.stream(graph.vertices()).map(StarGraph::of).collect(Collectors.toList());
+        starVertices.forEach(starVertex -> starVertex.edges().forEachRemaining(edge -> ((Attachable<Edge>) edge).attach(Attachable.Method.getOrCreate(g1))));
+        assertEquals(IteratorUtils.count(graph.vertices()), IteratorUtils.count(g1.vertices()));
+        assertEquals(IteratorUtils.count(graph.edges()), IteratorUtils.count(g1.edges()));
+        // TODO: you can't get adjacent labels -- graph.vertices().forEachRemaining(vertex -> TestHelper.validateVertexEquality(vertex, g1.vertices(vertex.id()).next(), true));
+        graphProvider.clear(g1, configuration);
     }
 
     @Test
