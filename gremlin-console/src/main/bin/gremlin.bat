@@ -34,7 +34,8 @@ FOR /D /r %%i in (*) do (
 
 cd ..
 
-set JAVA_OPTIONS=-Xms32m -Xmx512m
+:: workaround for https://issues.apache.org/jira/browse/GROOVY-6453
+set JAVA_OPTIONS=-Xms32m -Xmx512m -Djline.terminal=none
 
 :: Launch the application
 
