@@ -300,14 +300,14 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
     public interface MatchAlgorithm extends Function<Traverser.Admin<Object>, Traversal.Admin<Object, Object>> {
 
-        public static Set<String> getStartLabels(final Traversal.Admin<Object, Object> traversal) {
+        public static String getStartLabel(final Traversal.Admin<Object, Object> traversal) {
             final Step<?, ?> startStep = traversal.getStartStep();
             if (startStep instanceof XMatchStep)
-                return ((XMatchStep) startStep).matchStartLabels;
+                return ((XMatchStep) startStep).startKey;
             else if (startStep instanceof SelectOneStep)
-                return ((SelectOneStep) startStep).getScopeKeys();
+                return ((SelectOneStep<?,?>) startStep).getScopeKeys().iterator().next();
             else
-                return Collections.emptySet();
+                throw new IllegalArgumentException("The provided start step must be either an XMatchStep or a SelectOneStep: " + startStep);
         }
 
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals);
@@ -317,14 +317,14 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
         private List<Traversal.Admin<Object, Object>> traversals;
         private List<String> traversalLabels = new ArrayList<>();
-        private List<Set<String>> startLabels = new ArrayList<>();
+        private List<String> startLabels = new ArrayList<>();
 
         @Override
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
             this.traversals = traversals;
             for (final Traversal.Admin<Object, Object> traversal : this.traversals) {
                 this.traversalLabels.add(traversal.getStartStep().getId());
-                this.startLabels.add(MatchAlgorithm.getStartLabels(traversal));
+                this.startLabels.add(MatchAlgorithm.getStartLabel(traversal));
             }
         }
 
@@ -332,7 +332,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         public Traversal.Admin<Object, Object> apply(final Traverser.Admin<Object> traverser) {
             final Path path = traverser.path();
             for (int i = 0; i < this.traversals.size(); i++) {
-                if (this.startLabels.get(i).stream().filter(path::hasLabel).findAny().isPresent() && !path.hasLabel(this.traversalLabels.get(i))) {
+                if (path.hasLabel(this.startLabels.get(i)) && !path.hasLabel(this.traversalLabels.get(i))) {
                     return this.traversals.get(i);
                 }
             }
@@ -345,7 +345,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         private List<Traversal.Admin<Object, Object>> traversals;
         private List<Integer[]> counts = new ArrayList<>();
         private List<String> traversalLabels = new ArrayList<>();
-        private List<Set<String>> startLabels = new ArrayList<>();
+        private List<String> startLabels = new ArrayList<>();
 
         @Override
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
@@ -354,7 +354,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
             for (int i = 0; i < this.traversals.size(); i++) {
                 final Traversal.Admin<Object, Object> traversal = this.traversals.get(i);
                 this.traversalLabels.add(traversal.getStartStep().getId());
-                this.startLabels.add(MatchAlgorithm.getStartLabels(traversal));
+                this.startLabels.add(MatchAlgorithm.getStartLabel(traversal));
                 this.counts.add(new Integer[]{i, 0});
             }
         }
@@ -364,7 +364,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
             Collections.sort(this.counts, (a, b) -> b[1].compareTo(a[1]));
             final Path path = traverser.path();
             for (final Integer[] indexCounts : this.counts) {
-                if (this.startLabels.get(indexCounts[0]).stream().filter(path::hasLabel).findAny().isPresent() && !path.hasLabel(this.traversalLabels.get(indexCounts[0]))) {
+                if (path.hasLabel(this.startLabels.get(indexCounts[0])) && !path.hasLabel(this.traversalLabels.get(indexCounts[0]))) {
                     indexCounts[1]++;
                     return this.traversals.get(indexCounts[0]);
                 }
