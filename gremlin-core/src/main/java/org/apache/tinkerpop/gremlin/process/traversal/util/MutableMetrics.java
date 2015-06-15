@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -67,6 +68,14 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
             this.counts.put(key, count);
         }
         count.addAndGet(incr);
+    }
+
+    public void setDuration(long dur, TimeUnit unit) {
+        this.durationNs = unit.convert(dur, TimeUnit.NANOSECONDS);
+    }
+
+    public void setCount(String key, final long val) {
+        this.counts.put(key, new AtomicLong(val));
     }
 
     public void aggregate(MutableMetrics other) {

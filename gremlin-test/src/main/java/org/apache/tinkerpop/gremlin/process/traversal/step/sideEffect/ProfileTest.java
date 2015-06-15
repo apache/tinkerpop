@@ -299,6 +299,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         public void setMetrics(final MutableMetrics parentMetrics) {
             if (parentMetrics != null) {
                 callbackCalled = true;
+                parentMetrics.setDuration(10, TimeUnit.MILLISECONDS);
+                parentMetrics.setCount("count", 100);
             }
         }
     }
@@ -311,6 +313,10 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         t.asAdmin().addStep(3, mockStep);
         t.iterate();
         assertTrue(mockStep.callbackCalled);
+
+        final TraversalMetrics traversalMetrics = t.asAdmin().getSideEffects().<TraversalMetrics>get(TraversalMetrics.METRICS_KEY).get();
+        assertEquals(10L, traversalMetrics.getMetrics(0).getCount("count").longValue());
+        assertEquals(10000, traversalMetrics.getMetrics(0).getDuration(TimeUnit.NANOSECONDS));
     }
 
     /**
