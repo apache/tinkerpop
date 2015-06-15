@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -67,10 +68,11 @@ public final class XMatchStep<S> extends ComputerAwareStep<S, S> implements Trav
         super(traversal);
         this.conjunction = conjunction;
         this.conjunctionTraversals = (List) Stream.of(conjunctionTraversals).map(Traversal::asAdmin).map(this::integrateChild).collect(Collectors.toList());
-        this.conjunctionTraversals.forEach(this::addSelectOneStartStep); // recursively convert to SelectOneStep, XMatchStep, or XMatchEndStep
+        this.conjunctionTraversals.forEach(this::configureStartAndEndSteps); // recursively convert to SelectOneStep, XMatchStep, or XMatchEndStep
     }
 
-    private void addSelectOneStartStep(final Traversal.Admin<?, ?> conjunctionTraversal) {
+    private void configureStartAndEndSteps(final Traversal.Admin<?, ?> conjunctionTraversal) {
+        ConjunctionStrategy.instance().apply(conjunctionTraversal);
         // START STEP to SelectOneStep OR XMatchStep
         final Step<?, ?> startStep = conjunctionTraversal.getStartStep();
         if (startStep instanceof ConjunctionStep) {
