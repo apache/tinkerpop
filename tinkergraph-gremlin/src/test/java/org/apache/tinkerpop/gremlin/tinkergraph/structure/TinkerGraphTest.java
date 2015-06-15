@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -159,17 +158,33 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay5() throws Exception {
         GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.standard());
-        g.V().as("a").xmatch(
-                as("a").out("knows").as("b"),
-                as("a").out("created").as("c"),
-                as("b").out("created").as("c"),
-                as("c").in("created").as("d"),
-                as("d").where(neq("a")).where(neq("b")),
-                as("b").out("created").has("name", "ripple"))
-                .select(Pop.head, "a", "b", "c", "d").forEachRemaining(System.out::println);
+        final Supplier<Traversal<?, ?>> traversal = () -> g.V().as("a").xmatch(
+                as("a").out("created").as("b"),
+                or(
+                        as("a").out("knows").as("c"),
+                        or(
+                                as("a").out("created").has("name", "ripple"),
+                                as("a").out().out()
+                        )
+                ))
+                .select(Pop.head).by("name");
+        /*
+                g.V().as("a").xmatch(
+                        as("a").out("knows").as("b"),
+                        as("a").out("created").as("c"),
+                        as("b").out("created").as("c"),
+                        as("c").in("created").as("d"),
+                        as("d").where(neq("a")).where(neq("b")),
+                        as("b").out("created").has("name", "ripple"))
+                        .select(Pop.head, "a", "b", "c", "d").forEachRemaining(System.out::println);
+                        */
 
-        System.out.println(g.V().out().and().in().iterate());
-        System.out.println(g.V().as("a","b").where(as("a").out().and().in().as("b")).iterate());
+        System.out.println(traversal.get());
+        System.out.println(traversal.get().iterate());
+        traversal.get().forEachRemaining(System.out::println);
+
+        //System.out.println(g.V().and(out("created"),or(out("knows"),out("created").has("name","ripple"))).values("name").iterate());
+        //g.V().and(out("created"),or(out("knows"),out("created").has("name","ripple"))).values("name").forEachRemaining(System.out::println);
     }
 
     @Test
