@@ -115,15 +115,26 @@ public class StarGraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_PROPERTY)
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldCopyFromGraphAToGraphB() throws Exception {
-        final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), null);
-        final Graph g1 = graphProvider.openTestGraph(configuration);
+        final List<StarGraph> starGraphs = IteratorUtils.stream(graph.vertices()).map(StarGraph::of).collect(Collectors.toList());
 
-        List<StarGraph> starVertices = IteratorUtils.stream(graph.vertices()).map(StarGraph::of).collect(Collectors.toList());
-        starVertices.forEach(starVertex -> starVertex.edges().forEachRemaining(edge -> ((Attachable<Edge>) edge).attach(Attachable.Method.getOrCreate(g1))));
+        // via vertices and then edges
+        final Configuration g1Configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), null);
+        Graph g1 = graphProvider.openTestGraph(g1Configuration);
+        starGraphs.stream().map(StarGraph::getStarVertex).forEach(vertex -> vertex.attach(Attachable.Method.getOrCreate(g1)));
+        starGraphs.stream().forEach(starGraph -> starGraph.edges().forEachRemaining(edge -> ((Attachable<Edge>) edge).attach(Attachable.Method.getOrCreate(g1))));
         assertEquals(IteratorUtils.count(graph.vertices()), IteratorUtils.count(g1.vertices()));
         assertEquals(IteratorUtils.count(graph.edges()), IteratorUtils.count(g1.edges()));
+        graph.vertices().forEachRemaining(vertex -> TestHelper.validateVertexEquality(vertex, g1.vertices(vertex.id()).next(), true));
+        graphProvider.clear(g1, g1Configuration);
+
+        // via edges only
+        final Configuration g2Configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), null);
+        final Graph g2 = graphProvider.openTestGraph(g2Configuration);
+        starGraphs.stream().forEach(starGraph -> starGraph.edges().forEachRemaining(edge -> ((Attachable<Edge>) edge).attach(Attachable.Method.getOrCreate(g2))));
+        assertEquals(IteratorUtils.count(graph.vertices()), IteratorUtils.count(g2.vertices()));
+        assertEquals(IteratorUtils.count(graph.edges()), IteratorUtils.count(g2.edges()));
         // TODO: you can't get adjacent labels -- graph.vertices().forEachRemaining(vertex -> TestHelper.validateVertexEquality(vertex, g1.vertices(vertex.id()).next(), true));
-        graphProvider.clear(g1, configuration);
+        graphProvider.clear(g2, g2Configuration);
     }
 
     @Test
