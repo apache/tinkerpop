@@ -273,7 +273,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertEquals(1, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
         assertEquals(1, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
 
-        assertEquals("Metrics 1 should have 3 nested metrics.", 3, metrics.getNested().size());
+        assertEquals("Metrics 1 should have 4 nested metrics.", 4, metrics.getNested().size());
     }
 
     /**

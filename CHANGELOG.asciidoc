@@ -25,8 +25,13 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+<<<<<<< HEAD
 * Renamed `Graphs` in Gremlin Server to `GraphManager`.
 * Arrow keys for cycling through command history now work in Gremlin Console when being used on Windows.
+=======
+* Simplified `SubgraphStrategy` by using `TraversalFilterStep` instead of the more complex `WhereStep`.
+* Added `TraversalMapStep`, `TraversalFlatMapStep`, `TraversalFilterStep`, and `TraversalSideEffectStep` which all leverage an internal traversal.
+>>>>>>> greatly reduced the complexity of WhereStep -- learned alot about variable binding from XMatchStep. WhereStep is looking really really good.
 * Added `Path.getSingle(pop,label)` and `Path.getList(label)` as default helpers in `Path`.
 * Added `Pop.first` and `Pop.last` as enums for getting single items from a collection.
 * Changed `GremlinServer.start()` to return a `CompletableFuture` that contains the constructed `ServerGremlinExecutor`.
@@ -37,8 +42,12 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 * Replaced dependency on `groovy-all` with individual Groovy dependencies as needed.
 * Bumped `org.gperfutils:gbench` to the `0.4.3` and a version explicitly compatible with Groovy 2.4.x.
 * Added `ScopeP` which wraps a predicate and is bound by the `Traverser` and `Scoping` step.
+<<<<<<< HEAD
 * `WhereStep` only operates on `Traversals`. Provided predicates are translated to `__.as('a').is(eq('b'))` or `__.is(eq('a'))`.
 * `WhereStep` now uses a `SelectOneStep` for `as('a').out()...` and `IsStep` for `...as('b')` as this ensures `Traverser` (and metadata) propagation.
+=======
+* `WhereStep` supports arbitrary nesting of `ConjunctionP`-predicates and `ConjunctionStep`-traversals.
+>>>>>>> greatly reduced the complexity of WhereStep -- learned alot about variable binding from XMatchStep. WhereStep is looking really really good.
 * Renamed `KeyStep` to `PropertyKeyStep` to be consistent with `PropertyValueStep`.
 * Added `Gremlin-Lib-Paths` to modify paths in plugin `lib` directory.
 * Modified the capabilities of `Gremlin-Plugin-Paths` to delete paths that have no value on the right-hand-side of the equals sign.

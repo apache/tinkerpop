@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -95,7 +96,7 @@ public class SubgraphStrategyTraverseTest {
         final SubgraphStrategy strategy = SubgraphStrategy.build().edgeCriterion(__.identity()).vertexCriterion(__.identity()).create();
         strategy.apply(traversal.asAdmin());
 
-        final List<WhereStep> steps = TraversalHelper.getStepsOfClass(WhereStep.class, traversal.asAdmin());
+        final List<TraversalFilterStep> steps = TraversalHelper.getStepsOfClass(TraversalFilterStep.class, traversal.asAdmin());
         assertEquals(expectedInsertedSteps, steps.size());
     }
 }

@@ -18,22 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Compare;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ScopeP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -62,7 +53,7 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(MatchStep.class, traversal))
+        /*if (!TraversalHelper.hasStepOfClass(MatchStep.class, traversal))
             return;
 
         final List<MatchStep> matchSteps = TraversalHelper.getStepsOfClass(MatchStep.class, traversal);
@@ -90,7 +81,7 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
                 // else is the identity step
                 currentStep = currentStep.getNextStep();
             }
-        }
+        }*/
     }
 
     public static MatchWhereStrategy instance() {
@@ -103,7 +94,7 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
     }
 
     // HACK: until MatchStep gets some work done on it.
-    private static void convertWhereSelectOneStepToStartStep(final WhereStep<?> whereStep) {
+    /*private static void convertWhereSelectOneStepToStartStep(final WhereStep<?> whereStep) {
         if (!whereStep.getLocalChildren().isEmpty()) {
             final Traversal.Admin<?, ?> traversal = whereStep.getLocalChildren().get(0);
             if (traversal.getStartStep() instanceof SelectOneStep) {
@@ -118,6 +109,6 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
                 traversal.getEndStep().addLabel(key);
             }
         }
-    }
+    }*/
 
 }

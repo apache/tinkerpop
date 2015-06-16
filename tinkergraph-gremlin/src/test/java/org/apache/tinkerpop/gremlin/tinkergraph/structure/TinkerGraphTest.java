@@ -224,11 +224,19 @@ public class TinkerGraphTest {
                         as("b").where(in("created").count().is(P.gt(1))))
                         .select();*/
 
-        final Supplier<Traversal<?,?>> traversal = () ->
+        /*final Supplier<Traversal<?,?>> traversal = () ->
                 g.V().xmatch("a",
                         as("a").out("knows").count().as("b"),
                         as("a").out("knows").as("c"),
-                        as("c").out("created").count().as("b")).select("a","b","c").by("name").by().by("name");
+                        as("c").out("created").count().as("b")).select("a","b","c").by("name").by().by("name");*/
+
+       final Supplier<Traversal<?,?>> traversal = () ->
+                g.V().as("a").out().as("b").where(
+                        in("created").as("a")
+                ).select().by("name");
+
+       /* final Supplier<Traversal<?,?>> traversal = () ->
+                g.V().as("a").out().as("b").in().as("c").where(P.neq("a")).select().by("name"); */
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());
