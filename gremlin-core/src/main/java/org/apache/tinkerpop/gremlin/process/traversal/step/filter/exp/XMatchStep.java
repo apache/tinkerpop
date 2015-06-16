@@ -31,6 +31,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
@@ -72,14 +74,16 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
     public XMatchStep(final Traversal.Admin traversal, final String startKey, final Conjunction conjunction, final Traversal... conjunctionTraversals) {
         super(traversal);
         this.conjunction = conjunction;
+        if (this.traversal.getEndStep() instanceof StartStep)  // in case a match() is after the start step
+            this.traversal.addStep(new IdentityStep<>(this.traversal));
         this.traversal.getEndStep().addLabel(this.startKey = startKey);
         this.conjunctionTraversals = (List) Stream.of(conjunctionTraversals).map(Traversal::asAdmin).map(this::integrateChild).collect(Collectors.toList());
-        this.conjunctionTraversals.forEach(this::configureStartAndEndSteps); // recursively convert to SelectOneStep, XMatchStep, or XMatchEndStep
+        this.conjunctionTraversals.forEach(this::configureStartAndEndSteps); // recursively convert to XMatchStep, XMatchStartStep, or XMatchEndStep
     }
 
     private void configureStartAndEndSteps(final Traversal.Admin<?, ?> conjunctionTraversal) {
         ConjunctionStrategy.instance().apply(conjunctionTraversal);
-        // START STEP to SelectOneStep OR XMatchStep
+        // START STEP to XMatchStep OR XMatchStartStep
         final Step<?, ?> startStep = conjunctionTraversal.getStartStep();
         if (startStep instanceof ConjunctionStep) {
             final XMatchStep xMatchStep = new XMatchStep(conjunctionTraversal, this.startKey,
@@ -88,14 +92,14 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
             TraversalHelper.replaceStep(startStep, xMatchStep, conjunctionTraversal);
             this.matchStartLabels.addAll(xMatchStep.matchStartLabels);
             this.matchEndLabels.addAll(xMatchStep.matchEndLabels);
-        } else if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
-            if (startStep.getLabels().size() > 1)
-                throw new IllegalArgumentException("The start step of a match()-traversal can only have one label: " + startStep);
+        } else if (startStep instanceof StartStep) {
+            if (startStep.getLabels().size() != 1)
+                throw new IllegalArgumentException("The start step of a match()-traversal must have one and only one label: " + startStep);
             final String label = startStep.getLabels().iterator().next();
             this.matchStartLabels.add(label);
             TraversalHelper.replaceStep((Step) conjunctionTraversal.getStartStep(), new XMatchStartStep(conjunctionTraversal, label), conjunctionTraversal);
         }
-        // END STEP to XMatchStep
+        // END STEP to XMatchEndStep
         final Step<?, ?> endStep = conjunctionTraversal.getEndStep();
         if (!(endStep instanceof XMatchStep.XMatchEndStep)) {
             if (endStep.getLabels().size() > 1)
@@ -139,6 +143,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
                 });
             });
             this.scopeKeys.removeAll(this.matchEndLabels);
+            this.scopeKeys.remove(this.startKey);
         }
         return this.scopeKeys;
     }
@@ -212,9 +217,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
                 return IteratorUtils.of(traverser.split(this.getBindings(traverser), this));
 
             if (this.conjunction == Conjunction.AND) {
-                final Traversal.Admin<Object, Object> conjunctionTraversal = this.matchAlgorithm.apply(traverser); // determine which sub-pattern the traverser should try next
-                traverser.path().addLabel(conjunctionTraversal.getStartStep().getId()); // unique identifier for the traversal match sub-pattern
-                conjunctionTraversal.addStart(traverser);  // go down the traversal match sub-pattern
+                this.matchAlgorithm.apply(traverser).addStart(traverser); // determine which sub-pattern the traverser should try next
             } else {
                 for (final Traversal.Admin<?, ?> conjunctionTraversal : this.conjunctionTraversals) {
                     final Traverser split = traverser.split();
@@ -239,7 +242,6 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
         if (this.conjunction == Conjunction.AND) {
             final Traversal.Admin<Object, Object> conjunctionTraversal = this.matchAlgorithm.apply(traverser); // determine which sub-pattern the traverser should try next
-            traverser.path().addLabel(conjunctionTraversal.getStartStep().getId()); // unique identifier for the traversal match sub-pattern
             traverser.setStepId(conjunctionTraversal.getStartStep().getId()); // go down the traversal match sub-pattern
             return IteratorUtils.of(traverser);
         } else {
@@ -279,11 +281,10 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         @Override
         protected Traverser<Object> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<Object> traverser = this.starts.next();
+            traverser.path().addLabel(this.getId());
             XMatchStep.this.matchAlgorithm.recordStart(traverser, this.getTraversal());
             // TODO: sideEffect check?
-            final Traverser.Admin<Object> split = traverser.split(traverser.path().getSingle(Pop.last, this.selectKey), this);
-            split.path().addLabel(XMatchStep.this.getId());
-            return split;
+            return traverser.split(traverser.path().getSingle(Pop.last, this.selectKey), this);
         }
 
         @Override
@@ -317,7 +318,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
                 this.scopeKeys = new HashSet<>();
                 this.scopeKeys.add(this.selectKey);
                 this.getTraversal().getSteps().forEach(step -> {
-                    if (step instanceof Scoping)
+                    if (step instanceof XMatchStep || step instanceof WhereStep)
                         this.scopeKeys.addAll(((Scoping) step).getScopeKeys());
                 });
             }

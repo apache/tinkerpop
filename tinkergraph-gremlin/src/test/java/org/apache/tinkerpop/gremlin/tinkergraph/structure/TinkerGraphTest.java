@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -195,7 +196,7 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay5() throws Exception {
-        GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.computer());
+        GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.standard());
         /*final Supplier<Traversal<?, ?>> traversal = () -> g.V().xmatch("a",
                 as("a").out("created").as("b"),
                 or(
@@ -211,7 +212,7 @@ public class TinkerGraphTest {
                 as("a").local(out("created").count()).as("b"))
                 .select().by("name");*/
 
-        final Supplier<Traversal<?, ?>> traversal = () ->
+        /*final Supplier<Traversal<?, ?>> traversal = () ->
                 g.V().xmatch("a",
                         where("a", P.neq("c")),
                         as("a").out("created").as("b"),
@@ -221,7 +222,15 @@ public class TinkerGraphTest {
                         ),
                         as("b").in("created").as("c"),
                         as("b").where(in("created").count().is(P.gt(1))))
-                        .select();
+                        .select();*/
+
+        final Supplier<Traversal<?,?>> traversal = () ->
+                g.V().xmatch("a",
+                        as("a").out("knows").as("b"),
+                        as("b").out("created").has("name", "lop"),
+                        as("b").xmatch("a1",
+                                as("a1").out("created").as("b1"),
+                                as("b1").in("created").as("c1")).select("c1").as("c")).<String>select().by("name");
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());
@@ -235,7 +244,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay6() throws Exception {
         final Graph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        final GraphTraversalSource g = graph.traversal(GraphTraversalSource.computer());
         for (int i = 0; i < 1000; i++) {
             graph.addVertex(T.label, "person", T.id, i);
         }
