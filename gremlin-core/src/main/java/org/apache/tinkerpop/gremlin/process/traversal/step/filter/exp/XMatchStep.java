@@ -410,7 +410,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         public Traversal.Admin<Object, Object> apply(final Traverser.Admin<Object> traverser) {
             final Path path = traverser.path();
             for (int i = 0; i < this.traversals.size(); i++) {
-                if (this.requiredLabels.get(i).stream().filter(path::hasLabel).findAny().isPresent() && !path.hasLabel(this.traversalLabels.get(i))) {
+                if (!this.requiredLabels.get(i).stream().filter(label -> !path.hasLabel(label)).findAny().isPresent() && !path.hasLabel(this.traversalLabels.get(i))) {
                     return this.traversals.get(i);
                 }
             }
@@ -440,7 +440,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         public Traversal.Admin<Object, Object> apply(final Traverser.Admin<Object> traverser) {
             final Path path = traverser.path();
             for (final Integer[] indexCounts : this.counts) {
-                if (this.requiredLabels.get(indexCounts[0]).stream().filter(path::hasLabel).findAny().isPresent() && !path.hasLabel(this.traversalLabels.get(indexCounts[0]))) {
+                if (!this.requiredLabels.get(indexCounts[0]).stream().filter(label -> !path.hasLabel(label)).findAny().isPresent() && !path.hasLabel(this.traversalLabels.get(indexCounts[0]))) {
                     return this.traversals.get(indexCounts[0]);
                 }
             }

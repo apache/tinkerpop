@@ -176,14 +176,14 @@ public class TinkerGraphTest {
 
         final Supplier<Traversal<?, ?>> traversal = () ->
                 g.V().xmatch("a",
+                        where("a", P.neq("c")),
                         as("a").out("created").as("b"),
                         or(
-                                as("a").out("knows").has("name","vadas"),
+                                as("a").out("knows").has("name", "vadas"),
                                 as("a").in("knows")
                         ),
                         as("b").in("created").as("c"),
-                        as("b").where(in("created").count().is(P.gt(1))),
-                        where("a",P.neq("c")))
+                        as("b").where(in("created").count().is(P.gt(1))))
                 .select().by("name");
 
         System.out.println(traversal.get());
