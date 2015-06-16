@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -157,8 +156,46 @@ public class TinkerGraphTest {
 
     @Test
     @Ignore
+    public void testPlay7() throws Exception {
+        Graph graph = TinkerGraph.open();
+        graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        //System.out.println(g.E().label().groupCount().next());
+        final Supplier<Traversal<?, ?>> traversal = () ->
+                /*g.V().match("a",
+                        as("a").in("sungBy").as("b"),
+                        as("a").in("writtenBy").as("b")).select().by("name");*/
+                /*g.V().xmatch("a",
+                        as("a").out("followedBy").as("b"),
+                        as("b").out("followedBy").as("a")).select().by("name");*/
+                /*g.V().xmatch("a",
+                        as("a").in("followedBy").as("b"),
+                        as("a").out("sungBy").as("c"),
+                        as("a").out("writtenBy").as("d")).select().by("name");*/
+                /*g.V().match("a",
+                        as("a").in("followedBy").as("b"),
+                        as("a").out("sungBy").as("c"),
+                        as("a").out("writtenBy").as("d")).
+                        where("c", P.neq("d")).select().by("name");*/
+                /*g.V().xmatch("a",
+                        as("a").in("sungBy").as("b"),
+                        as("a").in("writtenBy").as("b"),
+                        as("b").out("followedBy").as("c"),
+                        as("c").out("sungBy").as("a"),
+                        as("c").out("writtenBy").as("a")).select().by("name");*/
+                g.V().xmatch("a",
+                        as("a").has("name","Garcia"),
+                        as("a").in("writtenBy").as("b"),
+                        as("b").out("followedBy").as("c"),
+                        as("c").out("writtenBy").has("name",P.neq("Garcia")).as("d")).select().by("name");
+
+        System.out.println(TimeUtil.clockWithResult(100, () -> traversal.get().toList().size()));
+    }
+
+    @Test
+    @Ignore
     public void testPlay5() throws Exception {
-        GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.standard());
+        GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.computer());
         /*final Supplier<Traversal<?, ?>> traversal = () -> g.V().xmatch("a",
                 as("a").out("created").as("b"),
                 or(
@@ -184,7 +221,7 @@ public class TinkerGraphTest {
                         ),
                         as("b").in("created").as("c"),
                         as("b").where(in("created").count().is(P.gt(1))))
-                .select().by("name");
+                        .select();
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());
@@ -199,18 +236,18 @@ public class TinkerGraphTest {
     public void testPlay6() throws Exception {
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
-        for(int i=0; i<1000; i++) {
-            graph.addVertex(T.label, "person",T.id,i);
+        for (int i = 0; i < 1000; i++) {
+            graph.addVertex(T.label, "person", T.id, i);
         }
         graph.vertices().forEachRemaining(a -> {
             graph.vertices().forEachRemaining(b -> {
-                if(a != b) {
-                   a.addEdge("knows",b);
+                if (a != b) {
+                    a.addEdge("knows", b);
                 }
             });
         });
         graph.vertices(50).next().addEdge("uncle", graph.vertices(70).next());
-        System.out.println(TimeUtil.clockWithResult(100,() -> g.V().xmatch("a",as("a").out("knows").as("b"),as("a").out("uncle").as("b")).toList()));
+        System.out.println(TimeUtil.clockWithResult(1, () -> g.V().xmatch("a", as("a").out("knows").as("b"), as("a").out("uncle").as("b")).toList()));
     }
 
     @Test
