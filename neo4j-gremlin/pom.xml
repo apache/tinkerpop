@@ -148,6 +148,7 @@ limitations under the License.
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <skipTests>false</skipTests>
+                            <reuseForks>false</reuseForks>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -155,6 +156,7 @@ limitations under the License.
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <skipTests>false</skipTests>
+                            <reuseForks>false</reuseForks>
                         </configuration>
                     </plugin>
                     <plugin>
