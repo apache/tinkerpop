@@ -66,7 +66,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     @Override
     public int hashCode() {
-        return this.biPredicate.hashCode() + this.value.hashCode();
+        return this.biPredicate.hashCode() ^ (null == this.value ? "null".hashCode() : this.value.hashCode());
     }
 
     @Override

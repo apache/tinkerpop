@@ -159,7 +159,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay5() throws Exception {
         GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.standard());
-        final Supplier<Traversal<?, ?>> traversal = () -> g.V().xmatch("a",
+        /*final Supplier<Traversal<?, ?>> traversal = () -> g.V().xmatch("a",
                 as("a").out("created").as("b"),
                 or(
                         as("a").out("knows").as("c"),
@@ -167,17 +167,24 @@ public class TinkerGraphTest {
                                 as("a").out("created").has("name", "ripple"),
                                 as("a").out().out()
                         )
-                )).select().by("name");
-        /*
-                g.V().as("a").xmatch(
-                        as("a").out("knows").as("b"),
-                        as("a").out("created").as("c"),
-                        as("b").out("created").as("c"),
-                        as("c").in("created").as("d"),
-                        as("d").where(neq("a")).where(neq("b")),
-                        as("b").out("created").has("name", "ripple"))
-                        .select(Pop.head, "a", "b", "c", "d").forEachRemaining(System.out::println);
-                        */
+                )).select().by("name");*/
+
+        /*final Supplier<Traversal<?, ?>> traversal = () -> g.V().
+                xmatch("a",
+                as("a").local(out("created").count()).as("b"))
+                .select().by("name");*/
+
+        final Supplier<Traversal<?, ?>> traversal = () ->
+                g.V().xmatch("a",
+                        as("a").out("created").as("b"),
+                        or(
+                                as("a").out("knows").has("name","vadas"),
+                                as("a").in("knows")
+                        ),
+                        as("b").in("created").as("c"),
+                        as("b").where(in("created").count().is(P.gt(1))),
+                        where("a",P.neq("c")))
+                .select().by("name");
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());

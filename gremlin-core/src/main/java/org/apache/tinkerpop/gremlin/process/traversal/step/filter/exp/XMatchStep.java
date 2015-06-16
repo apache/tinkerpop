@@ -31,8 +31,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -48,7 +48,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -65,6 +64,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
     private boolean first = true;
     private Set<String> matchStartLabels = new HashSet<>();
     private Set<String> matchEndLabels = new HashSet<>();
+    private Set<String> scopeKeys = null;
     private final Conjunction conjunction;
     private final String startKey;
     private final MatchAlgorithm matchAlgorithm = new CountMatchAlgorithm();
@@ -93,7 +93,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
                 throw new IllegalArgumentException("The start step of a match()-traversal can only have one label: " + startStep);
             final String label = startStep.getLabels().iterator().next();
             this.matchStartLabels.add(label);
-            TraversalHelper.replaceStep(conjunctionTraversal.getStartStep(), new SelectOneStep<>(conjunctionTraversal, Scope.global, Pop.last, label), conjunctionTraversal);
+            TraversalHelper.replaceStep((Step) conjunctionTraversal.getStartStep(), new XMatchStartStep(conjunctionTraversal, label), conjunctionTraversal);
         }
         // END STEP to XMatchStep
         final Step<?, ?> endStep = conjunctionTraversal.getEndStep();
@@ -103,10 +103,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
             final String label = endStep.getLabels().size() == 0 ? null : endStep.getLabels().iterator().next();
             if (null != label) endStep.removeLabel(label);
             final Step<?, ?> xMatchEndStep = new XMatchEndStep(conjunctionTraversal, label);
-            if (null != label) {
-                this.matchEndLabels.add(label);
-                xMatchEndStep.addLabel(label);
-            }
+            if (null != label) this.matchEndLabels.add(label);
             conjunctionTraversal.asAdmin().addStep(xMatchEndStep);
         }
     }
@@ -132,10 +129,18 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
     @Override
     public Set<String> getScopeKeys() {
-        final HashSet<String> scopedKeys = new HashSet<>();
-        scopedKeys.addAll(this.matchStartLabels);
-        scopedKeys.addAll(this.matchEndLabels);
-        return scopedKeys;
+        if (null == this.scopeKeys) {
+            this.scopeKeys = new HashSet<>();
+            this.conjunctionTraversals.forEach(traversal -> {
+                traversal.getSteps().forEach(step -> {
+                    if (step instanceof XMatchStep.XMatchStartStep || step instanceof XMatchStep) {
+                        this.scopeKeys.addAll(((Scoping) step).getScopeKeys());
+                    }
+                });
+            });
+            this.scopeKeys.removeAll(this.matchEndLabels);
+        }
+        return this.scopeKeys;
     }
 
     @Override
@@ -261,6 +266,65 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
     //////////////////////////////
 
+    public class XMatchStartStep extends AbstractStep<Object, Object> implements Scoping {
+
+        private final String selectKey;
+        private Set<String> scopeKeys = null;
+
+        public XMatchStartStep(final Traversal.Admin traversal, final String selectKey) {
+            super(traversal);
+            this.selectKey = selectKey;
+        }
+
+        @Override
+        protected Traverser<Object> processNextStart() throws NoSuchElementException {
+            final Traverser.Admin<Object> traverser = this.starts.next();
+            XMatchStep.this.matchAlgorithm.recordStart(traverser, this.getTraversal());
+            // TODO: sideEffect check?
+            final Traverser.Admin<Object> split = traverser.split(traverser.path().getSingle(Pop.last, this.selectKey), this);
+            split.path().addLabel(XMatchStep.this.getId());
+            return split;
+        }
+
+        @Override
+        public String toString() {
+            return StringFactory.stepString(this, this.selectKey);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode() ^ this.selectKey.hashCode();
+        }
+
+        @Override
+        public Scope getScope() {
+            return Scope.global;
+        }
+
+        @Override
+        public Scope recommendNextScope() {
+            return Scope.global;
+        }
+
+        @Override
+        public void setScope(final Scope scope) {
+
+        }
+
+        @Override
+        public Set<String> getScopeKeys() {
+            if (null == this.scopeKeys) {
+                this.scopeKeys = new HashSet<>();
+                this.scopeKeys.add(this.selectKey);
+                this.getTraversal().getSteps().forEach(step -> {
+                    if (step instanceof Scoping)
+                        this.scopeKeys.addAll(((Scoping) step).getScopeKeys());
+                });
+            }
+            return this.scopeKeys;
+        }
+    }
+
     public class XMatchEndStep extends EndStep {
 
         private final String matchKey;
@@ -273,25 +337,33 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         @Override
         protected Traverser<S> processNextStart() throws NoSuchElementException {
             while (true) {
-                final Traverser.Admin<S> start = this.starts.next();
+                final Traverser.Admin traverser = this.starts.next();
                 // no end label
                 if (null == this.matchKey) {
-                    if (this.traverserStepIdSetByChild) start.setStepId(XMatchStep.this.getId());
-                    return start;
+                    if (this.traverserStepIdSetByChild) traverser.setStepId(XMatchStep.this.getId());
+                    XMatchStep.this.matchAlgorithm.recordEnd(traverser, this.getTraversal());
+                    return traverser;
                 }
-                // side-effect check
-                final Optional<S> optional = start.getSideEffects().get(this.matchKey);
-                if (optional.isPresent() && start.get().equals(optional.get())) {
-                    if (this.traverserStepIdSetByChild) start.setStepId(XMatchStep.this.getId());
-                    return start;
-                }
+                // TODO: sideEffect check?
                 // path check
-                final Path path = start.path();
-                if (!path.hasLabel(this.matchKey) || start.get().equals(path.getSingle(Pop.first, this.matchKey))) {
-                    if (this.traverserStepIdSetByChild) start.setStepId(XMatchStep.this.getId());
-                    return start;
+                final Path path = traverser.path();
+                if (!path.hasLabel(this.matchKey) || traverser.get().equals(path.getSingle(Pop.first, this.matchKey))) {
+                    if (this.traverserStepIdSetByChild) traverser.setStepId(XMatchStep.this.getId());
+                    traverser.path().addLabel(this.matchKey);
+                    XMatchStep.this.matchAlgorithm.recordEnd(traverser, this.getTraversal());
+                    return traverser;
                 }
             }
+        }
+
+        @Override
+        public String toString() {
+            return StringFactory.stepString(this, this.matchKey);
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode() ^ (null == this.matchKey ? "null".hashCode() : this.matchKey.hashCode());
         }
     }
 
@@ -300,31 +372,37 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
     public interface MatchAlgorithm extends Function<Traverser.Admin<Object>, Traversal.Admin<Object, Object>> {
 
-        public static String getStartLabel(final Traversal.Admin<Object, Object> traversal) {
+        public static Set<String> getRequiredLabels(final Traversal.Admin<Object, Object> traversal) {
             final Step<?, ?> startStep = traversal.getStartStep();
-            if (startStep instanceof XMatchStep)
-                return ((XMatchStep) startStep).startKey;
-            else if (startStep instanceof SelectOneStep)
-                return ((SelectOneStep<?,?>) startStep).getScopeKeys().iterator().next();
+            if (startStep instanceof Scoping)
+                return ((Scoping) startStep).getScopeKeys();
             else
-                throw new IllegalArgumentException("The provided start step must be either an XMatchStep or a SelectOneStep: " + startStep);
+                throw new IllegalArgumentException("The provided start step must be a scoping step: " + startStep);
         }
 
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals);
+
+        public default void recordStart(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
+
+        }
+
+        public default void recordEnd(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
+
+        }
     }
 
     public static class GreedyMatchAlgorithm implements MatchAlgorithm {
 
         private List<Traversal.Admin<Object, Object>> traversals;
         private List<String> traversalLabels = new ArrayList<>();
-        private List<String> startLabels = new ArrayList<>();
+        private List<Set<String>> requiredLabels = new ArrayList<>();
 
         @Override
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
             this.traversals = traversals;
             for (final Traversal.Admin<Object, Object> traversal : this.traversals) {
                 this.traversalLabels.add(traversal.getStartStep().getId());
-                this.startLabels.add(MatchAlgorithm.getStartLabel(traversal));
+                this.requiredLabels.add(MatchAlgorithm.getRequiredLabels(traversal));
             }
         }
 
@@ -332,7 +410,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         public Traversal.Admin<Object, Object> apply(final Traverser.Admin<Object> traverser) {
             final Path path = traverser.path();
             for (int i = 0; i < this.traversals.size(); i++) {
-                if (path.hasLabel(this.startLabels.get(i)) && !path.hasLabel(this.traversalLabels.get(i))) {
+                if (this.requiredLabels.get(i).stream().filter(path::hasLabel).findAny().isPresent() && !path.hasLabel(this.traversalLabels.get(i))) {
                     return this.traversals.get(i);
                 }
             }
@@ -345,31 +423,34 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         private List<Traversal.Admin<Object, Object>> traversals;
         private List<Integer[]> counts = new ArrayList<>();
         private List<String> traversalLabels = new ArrayList<>();
-        private List<String> startLabels = new ArrayList<>();
+        private List<Set<String>> requiredLabels = new ArrayList<>();
 
         @Override
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
             this.traversals = traversals;
-
             for (int i = 0; i < this.traversals.size(); i++) {
                 final Traversal.Admin<Object, Object> traversal = this.traversals.get(i);
                 this.traversalLabels.add(traversal.getStartStep().getId());
-                this.startLabels.add(MatchAlgorithm.getStartLabel(traversal));
+                this.requiredLabels.add(MatchAlgorithm.getRequiredLabels(traversal));
                 this.counts.add(new Integer[]{i, 0});
             }
         }
 
         @Override
         public Traversal.Admin<Object, Object> apply(final Traverser.Admin<Object> traverser) {
-            Collections.sort(this.counts, (a, b) -> b[1].compareTo(a[1]));
             final Path path = traverser.path();
             for (final Integer[] indexCounts : this.counts) {
-                if (path.hasLabel(this.startLabels.get(indexCounts[0])) && !path.hasLabel(this.traversalLabels.get(indexCounts[0]))) {
-                    indexCounts[1]++;
+                if (this.requiredLabels.get(indexCounts[0]).stream().filter(path::hasLabel).findAny().isPresent() && !path.hasLabel(this.traversalLabels.get(indexCounts[0]))) {
                     return this.traversals.get(indexCounts[0]);
                 }
             }
             throw new IllegalArgumentException("The provided match pattern is unsolvable: " + this.traversals);
+        }
+
+        public void recordEnd(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
+            final int currentIndex = this.traversals.indexOf(traversal);
+            this.counts.stream().filter(array -> currentIndex == array[0]).findAny().get()[1]++;
+            Collections.sort(this.counts, (a, b) -> a[1].compareTo(b[1]));
         }
     }
 }
