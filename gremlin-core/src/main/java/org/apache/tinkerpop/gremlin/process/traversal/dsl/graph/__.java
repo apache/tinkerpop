@@ -68,11 +68,19 @@ public class __ {
         return __.<A>start().map(function);
     }
 
+    public static <A, B> GraphTraversal<A, B> map(final Traversal<A, B> mapTraversal) {
+        return __.<A>start().map(mapTraversal);
+    }
+
     /**
      * @see {@link GraphTraversal#flatMap(Function)}.
      */
     public static <A, B> GraphTraversal<A, B> flatMap(final Function<Traverser<A>, Iterator<B>> function) {
         return __.<A>start().flatMap(function);
+    }
+
+    public static <A, B> GraphTraversal<A, B> flatMap(final Traversal<A, B> flatMapTraversal) {
+        return __.<A>start().flatMap(flatMapTraversal);
     }
 
     /**
@@ -476,11 +484,15 @@ public class __ {
         return __.<A>start().filter(predicate);
     }
 
-    public static <A> GraphTraversal<A, A> and(final Traversal<?,?>... andTraversals) {
+    public static <A> GraphTraversal<A, A> filter(final Traversal<A, ?> filterTraversal) {
+        return __.<A>start().filter(filterTraversal);
+    }
+
+    public static <A> GraphTraversal<A, A> and(final Traversal<?, ?>... andTraversals) {
         return __.<A>start().and(andTraversals);
     }
 
-    public static <A> GraphTraversal<A, A> or(final Traversal<?,?>... orTraversals) {
+    public static <A> GraphTraversal<A, A> or(final Traversal<?, ?>... orTraversals) {
         return __.<A>start().or(orTraversals);
     }
 
@@ -642,6 +654,10 @@ public class __ {
         return __.<A>start().sideEffect(consumer);
     }
 
+    public static <A> GraphTraversal<A, A> sideEffect(final Traversal<A, ?> sideEffectTraversal) {
+        return __.<A>start().sideEffect(sideEffectTraversal);
+    }
+
     public static <A, B> GraphTraversal<A, B> cap(final String sideEffectKey, String... sideEffectKeys) {
         return __.<A>start().cap(sideEffectKey, sideEffectKeys);
     }
@@ -774,7 +790,7 @@ public class __ {
         return __.<A>start().barrier(maxBarrierSize);
     }
 
-    public static <A,B> GraphTraversal<A, Map<String,B>> xmatch(final String startKey, final Traversal<?, ?>... andTraversals) {
+    public static <A, B> GraphTraversal<A, Map<String, B>> xmatch(final String startKey, final Traversal<?, ?>... andTraversals) {
         return __.<A>start().xmatch(startKey, andTraversals);
     }
 

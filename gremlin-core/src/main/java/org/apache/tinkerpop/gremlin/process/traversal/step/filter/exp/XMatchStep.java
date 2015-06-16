@@ -32,12 +32,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -109,6 +112,12 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
             final Step<?, ?> xMatchEndStep = new XMatchEndStep(conjunctionTraversal, label);
             if (null != label) this.matchEndLabels.add(label);
             conjunctionTraversal.asAdmin().addStep(xMatchEndStep);
+        }
+        // this turns barrier computations into locally computable traversals
+        if (!TraversalHelper.getStepsOfAssignableClass(ReducingBarrierStep.class, conjunctionTraversal).isEmpty()) {
+            final Traversal.Admin newTraversal = new DefaultTraversal<>();
+            TraversalHelper.removeToTraversal(conjunctionTraversal.getStartStep().getNextStep(), conjunctionTraversal.getEndStep(), newTraversal);
+            TraversalHelper.insertAfterStep(new TraversalFlatMapStep<>(conjunctionTraversal, newTraversal), conjunctionTraversal.getStartStep(), conjunctionTraversal);
         }
     }
 

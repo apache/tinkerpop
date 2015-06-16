@@ -226,11 +226,9 @@ public class TinkerGraphTest {
 
         final Supplier<Traversal<?,?>> traversal = () ->
                 g.V().xmatch("a",
-                        as("a").out("knows").as("b"),
-                        as("b").out("created").has("name", "lop"),
-                        as("b").xmatch("a1",
-                                as("a1").out("created").as("b1"),
-                                as("b1").in("created").as("c1")).select("c1").as("c")).<String>select().by("name");
+                        as("a").out("knows").count().as("b"),
+                        as("a").out("knows").as("c"),
+                        as("c").out("created").count().as("b")).select("a","b","c").by("name").by().by("name");
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());

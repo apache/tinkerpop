@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
@@ -43,6 +44,15 @@ public final class TraversalUtil {
         } catch (final NoSuchElementException e) {
             throw new IllegalArgumentException("The provided traverser does not map to a value: " + split + "->" + traversal);
         }
+    }
+
+    public static final <S, E> Iterator<E> applyAll(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal) {
+        final Traverser.Admin<S> split = traverser.split();
+        split.setSideEffects(traversal.getSideEffects());
+        split.setBulk(1l);
+        traversal.reset();
+        traversal.addStart(split);
+        return traversal; // flatmap
     }
 
     public static final <S, E> boolean test(final Traverser.Admin<S> traverser, final Traversal.Admin<S, E> traversal, E end) {
