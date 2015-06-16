@@ -93,7 +93,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
                 throw new IllegalArgumentException("The start step of a match()-traversal can only have one label: " + startStep);
             final String label = startStep.getLabels().iterator().next();
             this.matchStartLabels.add(label);
-            TraversalHelper.replaceStep(conjunctionTraversal.getStartStep(), new SelectOneStep<>(conjunctionTraversal, Scope.global, Pop.head, label), conjunctionTraversal);
+            TraversalHelper.replaceStep(conjunctionTraversal.getStartStep(), new SelectOneStep<>(conjunctionTraversal, Scope.global, Pop.last, label), conjunctionTraversal);
         }
         // END STEP to XMatchStep
         final Step<?, ?> endStep = conjunctionTraversal.getEndStep();
@@ -287,7 +287,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
                 }
                 // path check
                 final Path path = start.path();
-                if (!path.hasLabel(this.matchKey) || start.get().equals(path.getSingle(Pop.head, this.matchKey))) {
+                if (!path.hasLabel(this.matchKey) || start.get().equals(path.getSingle(Pop.first, this.matchKey))) {
                     if (this.traverserStepIdSetByChild) start.setStepId(XMatchStep.this.getId());
                     return start;
                 }

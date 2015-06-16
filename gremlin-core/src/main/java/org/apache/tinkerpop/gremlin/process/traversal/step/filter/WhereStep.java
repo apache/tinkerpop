@@ -76,7 +76,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         } else if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
             if (startStep.getLabels().size() > 1)
                 throw new IllegalArgumentException("The start step of a where()-traversal predicate can only have one label: " + startStep);
-            TraversalHelper.replaceStep(whereTraversal.getStartStep(), new SelectOneStep<>(whereTraversal, this.scope, Pop.head, startStep.getLabels().iterator().next()), whereTraversal);
+            TraversalHelper.replaceStep(whereTraversal.getStartStep(), new SelectOneStep<>(whereTraversal, this.scope, Pop.last, startStep.getLabels().iterator().next()), whereTraversal);
         }
         //// END STEP to IsStep(ScopeP)
         final Step<?, ?> endStep = whereTraversal.getEndStep();

@@ -27,11 +27,11 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 public enum Pop {
 
     /**
-     * The end/terminal of a Path (or ordered collection)
+     * The first item in an ordered collection (i.e. <code>collection[0]</code>)
      */
-    head,
+    first,
     /**
-     * The start/initial of a Path (or ordered collection)
+     * The last item in an ordered collection (i.e. <code>collection[collection.size()-1]</code>)
      */
-    tail
+    last
 }

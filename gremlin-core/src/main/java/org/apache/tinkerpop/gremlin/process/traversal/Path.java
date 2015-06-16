@@ -119,7 +119,7 @@ public interface Path extends Cloneable {
     /**
      * Get the object most/least recently associated with the particular label of the path.
      *
-     * @param pop   head for least recent, tail for most recent
+     * @param pop   first for least recent, last for most recent
      * @param label the label of the path
      * @param <A>   the type of the object associated with the label
      * @return the object associated with the label of the path
@@ -128,7 +128,7 @@ public interface Path extends Cloneable {
     public default <A> A getSingle(final Pop pop, final String label) throws IllegalArgumentException {
         final Object object = this.get(label);
         if (object instanceof List) {
-            return Pop.head == pop ? ((List<A>) object).get(((List) object).size() - 1) : ((List<A>) object).get(0);
+            return Pop.last == pop ? ((List<A>) object).get(((List) object).size() - 1) : ((List<A>) object).get(0);
         } else
             return (A) object;
     }

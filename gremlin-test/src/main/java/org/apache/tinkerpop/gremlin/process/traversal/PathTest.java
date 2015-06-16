@@ -175,15 +175,15 @@ public class PathTest extends AbstractGremlinProcessTest {
             path = path.extend("stephen", "a", "c");
             path = path.extend("matthias", "c", "d");
             assertEquals(3, path.size());
-            assertEquals("marko", path.getSingle(Pop.tail, "a"));
-            assertEquals("marko", path.getSingle(Pop.tail, "b"));
-            assertEquals("stephen", path.getSingle(Pop.tail, "c"));
-            assertEquals("matthias", path.getSingle(Pop.tail, "d"));
+            assertEquals("marko", path.getSingle(Pop.first, "a"));
+            assertEquals("marko", path.getSingle(Pop.first, "b"));
+            assertEquals("stephen", path.getSingle(Pop.first, "c"));
+            assertEquals("matthias", path.getSingle(Pop.first, "d"));
             ///
-            assertEquals("marko", path.getSingle(Pop.head, "b"));
-            assertEquals("stephen", path.getSingle(Pop.head, "a"));
-            assertEquals("matthias", path.getSingle(Pop.head, "c"));
-            assertEquals("matthias", path.getSingle(Pop.head, "d"));
+            assertEquals("marko", path.getSingle(Pop.last, "b"));
+            assertEquals("stephen", path.getSingle(Pop.last, "a"));
+            assertEquals("matthias", path.getSingle(Pop.last, "c"));
+            assertEquals("matthias", path.getSingle(Pop.last, "d"));
         });
     }
 

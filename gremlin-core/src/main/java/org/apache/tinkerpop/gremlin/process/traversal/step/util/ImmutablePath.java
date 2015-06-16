@@ -32,7 +32,7 @@ import java.util.Set;
  */
 public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Cloneable {
 
-    private ImmutablePathImpl previousPath = HeadPath.instance();
+    private ImmutablePathImpl previousPath = TailPath.instance();
     private Object currentObject;
     private Set<String> currentLabels = new LinkedHashSet<>();
 
@@ -41,7 +41,7 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
     }
 
     public static Path make() {
-        return HeadPath.instance();
+        return TailPath.instance();
     }
 
     @SuppressWarnings("CloneDoesntCallSuperClone,CloneDoesntDeclareCloneNotSupportedException")
@@ -51,7 +51,7 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
     }
 
     private ImmutablePath(final Object currentObject, final Set<String> currentLabels) {
-        this(HeadPath.instance(), currentObject, currentLabels);
+        this(TailPath.instance(), currentObject, currentLabels);
     }
 
     private ImmutablePath(final ImmutablePathImpl previousPath, final Object currentObject, final Set<String> currentLabels) {
@@ -145,10 +145,10 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
         return this.objects().toString();
     }
 
-    private static class HeadPath implements Path, ImmutablePathImpl {
-        private static final HeadPath INSTANCE = new HeadPath();
+    private static class TailPath implements Path, ImmutablePathImpl {
+        private static final TailPath INSTANCE = new TailPath();
 
-        private HeadPath() {
+        private TailPath() {
 
         }
 
@@ -216,17 +216,17 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
         }
 
         @Override
-        public HeadPath clone() {
+        public TailPath clone() {
             return this;
         }
 
-        public static HeadPath instance() {
+        public static TailPath instance() {
             return INSTANCE;
         }
 
         @Override
         public boolean equals(final Object object) {
-            return object instanceof HeadPath;
+            return object instanceof TailPath;
         }
 
         @Override
