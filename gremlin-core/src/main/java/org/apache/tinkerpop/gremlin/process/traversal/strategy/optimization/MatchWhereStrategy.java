@@ -62,21 +62,23 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
 
         // pull out match(as("a").has().has()) to has().has().match() in order to allow vendors to leverages has-containers for index lookups
         TraversalHelper.getStepsOfClass(XMatchStep.class, traversal).forEach(matchStep -> {
-            ((XMatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(conjunction -> {
-                ((XMatchStep<?, ?>.XMatchStartStep) conjunction.getStartStep()).getSelectKey().ifPresent(selectKey -> {
-                    if (selectKey.equals(matchStep.getStartKey()) && !conjunction.getSteps().stream()
-                            .filter(step -> !(step instanceof XMatchStep.XMatchStartStep) &&
-                                    !(step instanceof XMatchStep.XMatchEndStep) &&
-                                    !(step instanceof HasStep))
-                            .findAny()
-                            .isPresent()) {
-                        matchStep.removeGlobalChild(conjunction);
-                        conjunction.removeStep(0);                                     // remove XMatchStartStep
-                        conjunction.removeStep(conjunction.getSteps().size() - 1);    // remove XMatchEndStep
-                        TraversalHelper.insertTraversal(matchStep.getPreviousStep(), conjunction, traversal);
-                    }
+            if (matchStep.getStartKey().isPresent()) {
+                ((XMatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(conjunction -> {
+                    ((XMatchStep<?, ?>.XMatchStartStep) conjunction.getStartStep()).getSelectKey().ifPresent(selectKey -> {
+                        if (selectKey.equals(matchStep.getStartKey().get()) && !conjunction.getSteps().stream()
+                                .filter(step -> !(step instanceof XMatchStep.XMatchStartStep) &&
+                                        !(step instanceof XMatchStep.XMatchEndStep) &&
+                                        !(step instanceof HasStep))
+                                .findAny()
+                                .isPresent()) {
+                            matchStep.removeGlobalChild(conjunction);
+                            conjunction.removeStep(0);                                     // remove XMatchStartStep
+                            conjunction.removeStep(conjunction.getSteps().size() - 1);    // remove XMatchEndStep
+                            TraversalHelper.insertTraversal(matchStep.getPreviousStep(), conjunction, traversal);
+                        }
+                    });
                 });
-            });
+            }
         });
     }
 

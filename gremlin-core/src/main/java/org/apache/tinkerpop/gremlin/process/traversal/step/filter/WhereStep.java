@@ -124,7 +124,6 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-
         if (null != this.traversal)
             return TraversalUtil.test((Traverser.Admin) traverser, this.traversal);
         else {
@@ -155,7 +154,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         if (null != this.predicate)
             clone.predicate = this.predicate.clone();
         else
-            clone.integrateChild(clone.traversal = this.traversal.clone());
+            clone.traversal = clone.integrateChild(this.traversal.clone());
         return clone;
     }
 

@@ -163,7 +163,7 @@ public class TinkerGraphTest {
         graph.createIndex("name",Vertex.class);
         graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
         GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
-        //System.out.println(g.E().label().groupCount().next());
+        //System.out.println(g.V().properties().key().groupCount().next());
         final List<Supplier<GraphTraversal<?,?>>> traversals = Arrays.asList(
                 /*() -> g.V().xmatch("a",
                         as("a").in("sungBy").as("b"),
@@ -201,11 +201,15 @@ public class TinkerGraphTest {
                         as("c").out("sungBy").as("a"),
                         as("c").out("writtenBy").as("a")).select().by("name"),
                 () -> g.V().xmatch("a",
-                        as("a").has("name","Garcia"),
+                        as("a").has("name", "Garcia"),
                         as("a").in("writtenBy").as("b"),
                         as("b").out("followedBy").as("c"),
                         as("c").out("writtenBy").as("d"),
-                        as("d").where(P.neq("a"))).select().by("name"));
+                        as("d").where(P.neq("a"))).select().by("name"),
+                () -> g.V().as("a").out("followedBy").as("b").xmatch(
+                        as("a").and(has(T.label,"song"),has("performances",P.gt(10))),
+                        as("a").out("writtenBy").as("c"),
+                        as("b").out("writtenBy").as("c")).select().by("name"));
 
         traversals.forEach(traversal -> {
             System.out.println("pre-strategy:  " + traversal.get());

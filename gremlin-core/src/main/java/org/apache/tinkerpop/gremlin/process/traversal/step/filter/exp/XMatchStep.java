@@ -78,9 +78,12 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
     public XMatchStep(final Traversal.Admin traversal, final String startKey, final Conjunction conjunction, final Traversal... conjunctionTraversals) {
         super(traversal);
         this.conjunction = conjunction;
-        if (this.traversal.getEndStep() instanceof StartStep)  // in case a match() is after the start step
-            this.traversal.addStep(new IdentityStep<>(this.traversal));
-        this.traversal.getEndStep().addLabel(this.startKey = startKey);
+        this.startKey = startKey;
+        if (null != this.startKey) {
+            if (this.traversal.getEndStep() instanceof StartStep)  // in case a match() is after the start step
+                this.traversal.addStep(new IdentityStep<>(this.traversal));
+            this.traversal.getEndStep().addLabel(this.startKey);
+        }
         this.conjunctionTraversals = (List) Stream.of(conjunctionTraversals).map(Traversal::asAdmin).collect(Collectors.toList());
         this.conjunctionTraversals.forEach(this::configureStartAndEndSteps); // recursively convert to XMatchStep, XMatchStartStep, or XMatchEndStep
         this.conjunctionTraversals.forEach(this::integrateChild);
@@ -150,8 +153,8 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
     }
 
-    public String getStartKey() {
-        return this.startKey;
+    public Optional<String> getStartKey() {
+        return Optional.ofNullable(this.startKey);
     }
 
     @Override
@@ -280,7 +283,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.startKey.hashCode() ^ this.conjunctionTraversals.hashCode();
+        return super.hashCode() ^ this.conjunctionTraversals.hashCode() ^ (null == this.startKey ? "null".hashCode() : this.startKey.hashCode());
     }
 
     @Override

@@ -1040,6 +1040,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new XMatchStep<>(this.asAdmin(), startKey, XMatchStep.Conjunction.AND, andTraversals));
     }
 
+    public default <E2> GraphTraversal<S, Map<String, E2>> xmatch(final Traversal<?, ?>... andTraversals) {
+        return this.xmatch(null, andTraversals);
+    }
+
     @Override
     public default GraphTraversal<S, E> iterate() {
         Traversal.super.iterate();

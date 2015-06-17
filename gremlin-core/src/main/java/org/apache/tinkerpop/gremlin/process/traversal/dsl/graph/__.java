@@ -798,4 +798,8 @@ public class __ {
         return __.<A>start().xmatch(startKey, andTraversals);
     }
 
+    public static <A, B> GraphTraversal<A, Map<String, B>> xmatch(final Traversal<?, ?>... andTraversals) {
+        return __.<A>start().xmatch(andTraversals);
+    }
+
 }
