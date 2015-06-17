@@ -36,14 +36,17 @@ import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     protected BiPredicate<V, V> biPredicate;
     protected V value;
+    protected V originalValue;
 
     public P(final BiPredicate<V, V> biPredicate, final V value) {
         this.value = value;
+        this.originalValue = value;
         this.biPredicate = biPredicate;
     }
 
@@ -51,6 +54,19 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return this.biPredicate;
     }
 
+    /**
+     * Gets the original value used at time of construction of the {@code P}. This value can change its type
+     * in some cases.
+     *
+     * @see org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer
+     */
+    public V getOriginalValue() {
+        return originalValue;
+    }
+
+    /**
+     * Gets the current value to be passed to the predicate for testing.
+     */
     public V getValue() {
         return this.value;
     }

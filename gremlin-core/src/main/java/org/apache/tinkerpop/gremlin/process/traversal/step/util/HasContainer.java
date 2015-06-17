@@ -38,23 +38,40 @@ public final class HasContainer implements Serializable, Cloneable, Predicate<El
     private String key;
     private P predicate;
 
+    private boolean testingIdString;
+
     public HasContainer(final String key, final P<?> predicate) {
         this.key = key;
         this.predicate = predicate;
 
-        // if the key being evaluated is id then the has() test can evaluate as a toString() representation of the
-        // identifier.  this could be done in the test() method but it seems cheaper to do the conversion once in
-        // the constructor.  to avoid losing the original value, the string version of the collection is maintained
-        // separately
-        if (this.key.equals(T.id.getAccessor()))
-            this.predicate.setValue(this.predicate.getValue() instanceof Collection ? IteratorUtils.set(IteratorUtils.map(((Collection<Object>) this.predicate.getValue()).iterator(), Object::toString)) : this.predicate.getValue().toString());
+        if (!this.key.equals(T.id.getAccessor()))
+            testingIdString = false;
+        else {
+            // the values should be homogenous if a collection is submitted
+            final Object predicateValue = this.predicate.getValue();
+
+            // enforce a homogenous collection of values when testing ids
+            enforceHomogenousCollectionIfPresent(predicateValue);
+
+            // grab an instance of a value which is either the first item in a homogeneous collection or the value itself
+            final Object valueInstance = this.predicate.getValue() instanceof Collection ?
+                    ((Collection) this.predicate.getValue()).toArray()[0] : this.predicate.getValue();
+
+            // if the key being evaluated is id then the has() test can evaluate as a toString() representation of the
+            // identifier.  this could be done in the test() method but it seems cheaper to do the conversion once in
+            // the constructor.  the original value in P is maintained separately
+            this.testingIdString = this.key.equals(T.id.getAccessor()) && valueInstance instanceof String;
+            if (this.testingIdString)
+                this.predicate.setValue(this.predicate.getValue() instanceof Collection ? IteratorUtils.set(IteratorUtils.map(((Collection<Object>) this.predicate.getValue()).iterator(), Object::toString)) : this.predicate.getValue().toString());
+        }
     }
 
     public boolean test(final Element element) {
-        // it is OK to evaluate equality of ids via toString() now given that the toString() the test suite
-        // enforces the value of id().toString() to be a first class representation of the identifier
+        // it is OK to evaluate equality of ids via toString(), given that the test suite enforces the value of
+        // id().toString() to be a first class representation of the identifier. a string test is only executed
+        // if the predicate value is a String.  this allows stuff like: g.V().has(id,lt(10)) to work properly
         if (this.key.equals(T.id.getAccessor()))
-            return this.predicate.test(element.id().toString());
+            return testingIdString ?  this.predicate.test(element.id().toString()) : this.predicate.test(element.id());
         else if (this.key.equals(T.label.getAccessor()))
             return this.predicate.test(element.label());
         else if (element instanceof VertexProperty && this.key.equals(T.value.getAccessor()))
@@ -116,6 +133,15 @@ public final class HasContainer implements Serializable, Cloneable, Predicate<El
     }
 
     ////////////
+
+    private void enforceHomogenousCollectionIfPresent(final Object predicateValue) {
+        if (predicateValue instanceof Collection) {
+            final Collection collection = (Collection) predicateValue;
+            Class<?> first = collection.toArray()[0].getClass();
+            if (!((Collection) predicateValue).stream().map(Object::getClass).allMatch(c -> first.equals(c)))
+                throw new IllegalArgumentException("Has comparisons on a collection of ids require ids to all be of the same type");
+        }
+    }
 
     public static boolean testAll(final Element element, final List<HasContainer> hasContainers) {
         for (final HasContainer hasContainer : hasContainers) {
