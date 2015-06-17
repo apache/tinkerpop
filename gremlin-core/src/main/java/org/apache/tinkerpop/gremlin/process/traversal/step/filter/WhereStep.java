@@ -145,7 +145,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public Set<String> getScopeKeys() {
-        return this.scopeKeys;
+        return Collections.unmodifiableSet(this.scopeKeys);
     }
 
     @Override
