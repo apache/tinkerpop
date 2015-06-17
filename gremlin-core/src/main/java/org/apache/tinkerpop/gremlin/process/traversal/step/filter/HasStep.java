@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder, TraversalParent {
+public class HasStep<S extends Element> extends FilterStep<S> implements HasContainerHolder {
 
     private List<HasContainer> hasContainers;
 
@@ -66,24 +67,11 @@ public class HasStep<S extends Element> extends FilterStep<S> implements HasCont
     @Override
     public void addHasContainer(final HasContainer hasContainer) {
         this.hasContainers.add(hasContainer);
-        hasContainer.getPredicate().getTraversals().forEach(this::integrateChild);
-    }
-
-    @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> localChildTraversal) {
-        throw new UnsupportedOperationException("Use HasStep.addHasContainer(" + HasContainer.class.getSimpleName() + ") to add a local child traversal:" + this);
-    }
-
-    @Override
-    public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        return this.hasContainers.stream()
-                .flatMap(hasContainer -> hasContainer.getPredicate().getTraversals().stream())
-                .collect(Collectors.toList());
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
+        return EnumSet.of(TraverserRequirement.OBJECT);
     }
 
     @Override

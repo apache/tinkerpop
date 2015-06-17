@@ -32,8 +32,8 @@ import java.util.function.Predicate;
  */
 public final class OrP<V> extends ConjunctionP<V> {
 
-    public OrP(final Object... predicatesOrTraversals) {
-        super(predicatesOrTraversals);
+    public OrP(final P<V>... predicates) {
+        super(predicates);
         this.biPredicate = new OrBiPredicate(this);
     }
 

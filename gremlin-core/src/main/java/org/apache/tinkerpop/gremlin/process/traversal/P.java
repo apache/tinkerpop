@@ -24,13 +24,10 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.exp.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalP;
 
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
@@ -103,14 +100,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return new P<>(this.biPredicate.negate(), this.value);
     }
 
-    public P<V> and(final Traversal<?, ?> traversal) {
-        return this.and((Predicate) P.traversal(traversal));
-    }
-
-    public P<V> or(final Traversal<?, ?> traversal) {
-        return this.or((Predicate) P.traversal(traversal));
-    }
-
     @Override
     public P<V> and(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
@@ -123,10 +112,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be or'd together");
         return new OrP<>(this, (P<V>) predicate);
-    }
-
-    public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
-        return Collections.emptyList();
     }
 
     public P<V> clone() {
@@ -191,23 +176,17 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return new P(Contains.without, value);
     }
 
-    public static <S, E> P<E> traversal(final Traversal<S, E> traversal) {
-        return new TraversalP<>(traversal.asAdmin(), false);
-    }
-
-    /*public static <S, E> P<E> not(final Traversal<S, E> traversal) {
-        return new TraversalP<>(traversal.asAdmin(), true);
-    }*/
-
-    public static <S, E> Traversal<S, E> not(final Traversal<S, E> traversal) {
-        return traversal.asAdmin().addStep(new NotStep<>(traversal.asAdmin()));
-    }
-
     public static P test(final BiPredicate biPredicate, final Object value) {
         return new P(biPredicate, value);
     }
 
     public static <V> P<V> not(final P<V> predicate) {
         return predicate.negate();
+    }
+
+    ////////
+
+    public static <S, E> Traversal<S, E> not(final Traversal<S, E> traversal) {
+        return traversal.asAdmin().addStep(new NotStep<>(traversal.asAdmin()));
     }
 }

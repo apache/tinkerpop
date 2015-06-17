@@ -26,9 +26,14 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 * Renamed `Graphs` in Gremlin Server to `GraphManager`.
 * Arrow keys for cycling through command history now work in Gremlin Console when being used on Windows.
 =======
+=======
+* Removed `TraversalP`. Traversals and `P`-predicates are completely separate concepts.
+* `has(key,traversal)` is now an alias for `filter(__.values(key).traversal)`.
+>>>>>>> TraversalP dead. P and Traversal are now completely distinct concepts. HasStep and IsStep just work with P-predicates. has(key,traversal) is now an alias for filter(__.values(key).traversal). has(key) is now filter(values(key)) -- as TraversalFilterStep is much simpler and more efficient than WhereStep. P.getTraversals() no longer exists. ConjuctionP can only conjoin P-predicates, not a hybrid of traversals and P-predicates. Good stuff. Phew.
 * Simplified `SubgraphStrategy` by using `TraversalFilterStep` instead of the more complex `WhereStep`.
 * Added `TraversalMapStep`, `TraversalFlatMapStep`, `TraversalFilterStep`, and `TraversalSideEffectStep` which all leverage an internal traversal.
 >>>>>>> greatly reduced the complexity of WhereStep -- learned alot about variable binding from XMatchStep. WhereStep is looking really really good.
@@ -38,7 +43,11 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 * Restructured `IoTest` breaking it up into smaller and more logically grouped test cases.
 * Gremlin Server `Settings` now has sensible defaults thus allowing the server to be started with no additional configuration.
 * Fixed garbled characters in Gremlin Console that notably showed up in `:help`
+<<<<<<< HEAD
 * `GraphTraversal.and()` (and `or()`) now take `Object...` composed of `P` predicates or `Traversals` to be converted to `TraversalP`.
+=======
+* `GraphTraversal.and()` (and `or()`) no longer compiles to `WhereStep` but to `AndStep` (and `OrStep`).
+>>>>>>> TraversalP dead. P and Traversal are now completely distinct concepts. HasStep and IsStep just work with P-predicates. has(key,traversal) is now an alias for filter(__.values(key).traversal). has(key) is now filter(values(key)) -- as TraversalFilterStep is much simpler and more efficient than WhereStep. P.getTraversals() no longer exists. ConjuctionP can only conjoin P-predicates, not a hybrid of traversals and P-predicates. Good stuff. Phew.
 * Replaced dependency on `groovy-all` with individual Groovy dependencies as needed.
 * Bumped `org.gperfutils:gbench` to the `0.4.3` and a version explicitly compatible with Groovy 2.4.x.
 * Added `ScopeP` which wraps a predicate and is bound by the `Traverser` and `Scoping` step.

@@ -33,8 +33,8 @@ import java.util.function.Predicate;
  */
 public final class AndP<V> extends ConjunctionP<V> {
 
-    public AndP(final Object... predicatesOrTraversals) {
-        super(predicatesOrTraversals);
+    public AndP(final P<V>... predicates) {
+        super(predicates);
         this.biPredicate = new AndBiPredicate(this);
     }
 

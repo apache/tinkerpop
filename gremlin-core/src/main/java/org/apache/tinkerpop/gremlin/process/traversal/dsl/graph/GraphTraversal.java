@@ -625,7 +625,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LambdaFilterStep<>(this.asAdmin(), predicate));
     }
 
-    public default GraphTraversal<S, E> filter(final Traversal<E,?> filterTraversal) {
+    public default GraphTraversal<S, E> filter(final Traversal<E, ?> filterTraversal) {
         return this.asAdmin().addStep(new TraversalFilterStep<>(this.asAdmin(), filterTraversal));
     }
 
@@ -703,15 +703,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final String key, final Traversal<?, ?> propertyTraversal) {
-        return this.has(key, P.traversal(propertyTraversal));
+        return this.filter(propertyTraversal.asAdmin().addStep(0, new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, key)));
     }
 
     public default GraphTraversal<S, E> has(final String key) {
-        return this.where(__.values(key));
+        return this.filter(__.values(key));
     }
 
     public default GraphTraversal<S, E> hasNot(final String key) {
-        return this.where(P.not(__.values(key)));
+        return this.filter(P.not(__.values(key)));
     }
 
     public default GraphTraversal<S, E> hasLabel(final String... labels) {
@@ -828,7 +828,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LambdaSideEffectStep<>(this.asAdmin(), consumer));
     }
 
-    public default GraphTraversal<S, E> sideEffect(final Traversal<E,?> sideEffectTraversal) {
+    public default GraphTraversal<S, E> sideEffect(final Traversal<E, ?> sideEffectTraversal) {
         return this.asAdmin().addStep(new TraversalSideEffectStep<>(this.asAdmin(), sideEffectTraversal));
     }
 
