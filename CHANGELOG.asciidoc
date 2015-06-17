@@ -27,10 +27,14 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * Renamed `Graphs` in Gremlin Server to `GraphManager`.
 * Arrow keys for cycling through command history now work in Gremlin Console when being used on Windows.
 =======
 =======
+=======
+* Added `not(traversal)` via `TraversalFilterStep(boolean,traversal)` for not'ing a traversal.
+>>>>>>> removed P.not(traversal). We now have GraphTraversal.not(traversal) which is simply TraversalFilterStep(boolean,traversal). WhereStep is smart about TraversalParents and propagating WhereStart/EndSteps accordingly.
 * Removed `TraversalP`. Traversals and `P`-predicates are completely separate concepts.
 * `has(key,traversal)` is now an alias for `filter(__.values(key).traversal)`.
 >>>>>>> TraversalP dead. P and Traversal are now completely distinct concepts. HasStep and IsStep just work with P-predicates. has(key,traversal) is now an alias for filter(__.values(key).traversal). has(key) is now filter(values(key)) -- as TraversalFilterStep is much simpler and more efficient than WhereStep. P.getTraversals() no longer exists. ConjuctionP can only conjoin P-predicates, not a hybrid of traversals and P-predicates. Good stuff. Phew.

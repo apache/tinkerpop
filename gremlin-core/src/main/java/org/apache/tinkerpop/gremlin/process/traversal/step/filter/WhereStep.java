@@ -77,11 +77,11 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         ConjunctionStrategy.instance().apply(whereTraversal);
         //// START STEP to WhereStartStep
         final Step<?, ?> startStep = whereTraversal.getStartStep();
-        if (startStep.getLabels().size() > 1)
-            throw new IllegalArgumentException("The start step of a where()-traversal can only have one label: " + startStep);
-        if (startStep instanceof ConjunctionStep) {
-            ((ConjunctionStep<?>) startStep).getLocalChildren().forEach(this::configureStartAndEndSteps);
+        if (startStep instanceof TraversalParent) {
+            ((TraversalParent) startStep).getLocalChildren().forEach(this::configureStartAndEndSteps);
         } else if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {
+            if (startStep.getLabels().size() > 1)
+                throw new IllegalArgumentException("The start step of a where()-traversal can only have one label: " + startStep);
             TraversalHelper.replaceStep(startStep, (Step) new WhereStartStep(whereTraversal, startStep.getLabels().iterator().next()), whereTraversal);
         } else {
             TraversalHelper.insertBeforeStep(new WhereStartStep(whereTraversal, null), (Step) startStep, whereTraversal);

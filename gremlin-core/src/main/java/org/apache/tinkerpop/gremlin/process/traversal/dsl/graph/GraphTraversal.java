@@ -711,7 +711,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> hasNot(final String key) {
-        return this.filter(P.not(__.values(key)));
+        return this.not(__.values(key));
     }
 
     public default GraphTraversal<S, E> hasLabel(final String... labels) {
@@ -742,6 +742,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> is(final Object value) {
         return this.is(value instanceof P ? (P<E>) value : P.eq((E) value));
+    }
+
+    public default GraphTraversal<S, E> not(final Traversal<E, ?> notTraversal) {
+        return this.asAdmin().addStep(new TraversalFilterStep<E>(this.asAdmin(), true, notTraversal));
     }
 
     /**

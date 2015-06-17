@@ -36,15 +36,21 @@ import java.util.List;
 public final class TraversalFilterStep<S> extends FilterStep<S> implements TraversalParent {
 
     private Traversal.Admin<S, ?> filterTraversal;
+    private final boolean not;
 
-    public TraversalFilterStep(final Traversal.Admin traversal, final Traversal<S, ?> filterTraversal) {
+    public TraversalFilterStep(final Traversal.Admin traversal, final boolean not, final Traversal<S, ?> filterTraversal) {
         super(traversal);
         this.filterTraversal = this.integrateChild(filterTraversal.asAdmin());
+        this.not = not;
+    }
+
+    public TraversalFilterStep(final Traversal.Admin traversal, final Traversal<S, ?> filterTraversal) {
+        this(traversal, false, filterTraversal);
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        return TraversalUtil.test(traverser, this.filterTraversal);
+        return this.not == !TraversalUtil.test(traverser, this.filterTraversal);
     }
 
     @Override
@@ -61,11 +67,11 @@ public final class TraversalFilterStep<S> extends FilterStep<S> implements Trave
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.filterTraversal);
+        return StringFactory.stepString(this, this.not ? "!" + this.filterTraversal : this.filterTraversal);
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.filterTraversal.hashCode();
+        return super.hashCode() ^ this.filterTraversal.hashCode() ^ Boolean.valueOf(this.not).hashCode();
     }
 }

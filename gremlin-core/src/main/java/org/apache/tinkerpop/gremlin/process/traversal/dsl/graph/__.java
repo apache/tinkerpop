@@ -592,6 +592,10 @@ public class __ {
         return __.<A>start().is(value);
     }
 
+    public static <A> GraphTraversal<A, A> not(final Traversal<A, ?> notTraversal) {
+        return __.<A>start().not(notTraversal);
+    }
+
     public static <A> GraphTraversal<A, A> coin(final double probability) {
         return __.<A>start().coin(probability);
     }

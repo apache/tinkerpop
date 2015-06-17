@@ -21,7 +21,6 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.exp.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 
@@ -182,11 +181,5 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     public static <V> P<V> not(final P<V> predicate) {
         return predicate.negate();
-    }
-
-    ////////
-
-    public static <S, E> Traversal<S, E> not(final Traversal<S, E> traversal) {
-        return traversal.asAdmin().addStep(new NotStep<>(traversal.asAdmin()));
     }
 }
