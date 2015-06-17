@@ -67,8 +67,10 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         this.startKey = null;
         this.selectKey = null;
         this.predicate = null;
-        this.traversal = this.integrateChild(whereTraversal.asAdmin());
+        this.traversal = whereTraversal.asAdmin();
         this.configureStartAndEndSteps(this.traversal);
+        this.traversal = this.integrateChild(this.traversal);
+
     }
 
     private void configureStartAndEndSteps(final Traversal.Admin<?, ?> whereTraversal) {

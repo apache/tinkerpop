@@ -250,7 +250,7 @@ public class TinkerGraphTest {
     @Ignore
     public void testPlay6() throws Exception {
         final Graph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal(GraphTraversalSource.computer());
+        final GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
         for (int i = 0; i < 1000; i++) {
             graph.addVertex(T.label, "person", T.id, i);
         }
@@ -262,7 +262,7 @@ public class TinkerGraphTest {
             });
         });
         graph.vertices(50).next().addEdge("uncle", graph.vertices(70).next());
-        System.out.println(TimeUtil.clockWithResult(100, () -> g.V().xmatch("a", as("a").out("knows").as("b"), as("a").out("uncle").as("b")).toList()));
+        System.out.println(TimeUtil.clockWithResult(500, () -> g.V().xmatch("a", as("a").out("knows").as("b"), as("a").out("uncle").as("b")).toList()));
     }
 
     @Test

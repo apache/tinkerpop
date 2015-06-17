@@ -80,8 +80,9 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         if (this.traversal.getEndStep() instanceof StartStep)  // in case a match() is after the start step
             this.traversal.addStep(new IdentityStep<>(this.traversal));
         this.traversal.getEndStep().addLabel(this.startKey = startKey);
-        this.conjunctionTraversals = (List) Stream.of(conjunctionTraversals).map(Traversal::asAdmin).map(this::integrateChild).collect(Collectors.toList());
+        this.conjunctionTraversals = (List) Stream.of(conjunctionTraversals).map(Traversal::asAdmin).collect(Collectors.toList());
         this.conjunctionTraversals.forEach(this::configureStartAndEndSteps); // recursively convert to XMatchStep, XMatchStartStep, or XMatchEndStep
+        this.conjunctionTraversals.forEach(this::integrateChild);
     }
 
     private void configureStartAndEndSteps(final Traversal.Admin<?, ?> conjunctionTraversal) {
