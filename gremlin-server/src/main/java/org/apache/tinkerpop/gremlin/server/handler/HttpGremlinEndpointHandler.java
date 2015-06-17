@@ -31,7 +31,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.server.Graphs;
+import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -108,14 +108,14 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final GremlinExecutor gremlinExecutor;
-    private final Graphs graphs;
+    private final GraphManager graphManager;
 
     public HttpGremlinEndpointHandler(final Map<String, MessageSerializer> serializers,
                                       final GremlinExecutor gremlinExecutor,
-                                      final Graphs graphs) {
+                                      final GraphManager graphManager) {
         this.serializers = serializers;
         this.gremlinExecutor = gremlinExecutor;
-        this.graphs = graphs;
+        this.graphManager = graphManager;
     }
 
     @Override
@@ -251,14 +251,14 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         if (!rebindingMap.isEmpty()) {
             for (Map.Entry<String, String> kv : rebindingMap.entrySet()) {
                 boolean found = false;
-                final Map<String, Graph> graphs = this.graphs.getGraphs();
+                final Map<String, Graph> graphs = this.graphManager.getGraphs();
                 if (graphs.containsKey(kv.getValue())) {
                     bindings.put(kv.getKey(), graphs.get(kv.getValue()));
                     found = true;
                 }
 
                 if (!found) {
-                    final Map<String, TraversalSource> traversalSources = this.graphs.getTraversalSources();
+                    final Map<String, TraversalSource> traversalSources = this.graphManager.getTraversalSources();
                     if (traversalSources.containsKey(kv.getValue())) {
                         bindings.put(kv.getKey(), traversalSources.get(kv.getValue()));
                         found = true;

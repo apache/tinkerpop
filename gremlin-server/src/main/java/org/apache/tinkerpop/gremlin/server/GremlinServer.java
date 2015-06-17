@@ -245,7 +245,7 @@ public class GremlinServer {
                 logger.warn("Timeout waiting for bossy/worker thread pools to shutdown - continuing with shutdown process.");
             }
 
-            serverGremlinExecutor.getGraphs().getGraphs().forEach((k, v) -> {
+            serverGremlinExecutor.getGraphManager().getGraphs().forEach((k, v) -> {
                 logger.debug("Closing Graph instance [{}]", k);
                 try {
                     v.close();

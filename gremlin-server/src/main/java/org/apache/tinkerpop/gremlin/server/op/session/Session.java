@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.server.op.session;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Context;
-import org.apache.tinkerpop.gremlin.server.Graphs;
+import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -46,7 +46,7 @@ public class Session {
     private static final Logger logger = LoggerFactory.getLogger(Session.class);
     private final Bindings bindings;
     private final Settings settings;
-    private final Graphs graphs;
+    private final GraphManager graphManager;
     private final String session;
     private final ScheduledExecutorService scheduledExecutorService;
     private final long configuredSessionTimeout;
@@ -73,7 +73,7 @@ public class Session {
         this.session = session;
         this.bindings = new SimpleBindings();
         this.settings = context.getSettings();
-        this.graphs = context.getGraphs();
+        this.graphManager = context.getGraphManager();
         this.scheduledExecutorService = context.getScheduledExecutorService();
         this.sessions = sessions;
 
@@ -105,7 +105,7 @@ public class Session {
             if (killFuture != null) killFuture.cancel(false);
             kill.set(this.scheduledExecutorService.schedule(() -> {
                 // when the session is killed open transaction should be rolled back
-                graphs.getGraphs().values().forEach(g -> {
+                graphManager.getGraphs().values().forEach(g -> {
                     if (g.features().graph().supportsTransactions()) {
                         // have to execute the rollback in the executor because the transaction is associated with
                         // that thread of execution from this session
@@ -125,7 +125,7 @@ public class Session {
         final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
                 .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
                 .afterTimeout(b -> {
-                    graphs.rollbackAll();
+                    graphManager.rollbackAll();
                     this.bindings.clear();
                     this.bindings.putAll(b);
                 })
@@ -134,7 +134,7 @@ public class Session {
                     this.bindings.putAll(b);
                 })
                 .enabledPlugins(new HashSet<>(settings.plugins))
-                .globalBindings(graphs.getAsBindings())
+                .globalBindings(graphManager.getAsBindings())
                 .promoteBindings(kv -> kv.getValue() instanceof Graph
                         || kv.getValue() instanceof TraversalSource)
                 .executorService(executor)

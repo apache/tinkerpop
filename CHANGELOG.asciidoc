@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Renamed `Graphs` in Gremlin Server to `GraphManager`.
 * Arrow keys for cycling through command history now work in Gremlin Console when being used on Windows.
 * Added `Path.getSingle(pop,label)` and `Path.getList(label)` as default helpers in `Path`.
 * Added `Pop.first` and `Pop.last` as enums for getting single items from a collection.

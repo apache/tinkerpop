@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
@@ -35,13 +34,13 @@ import static org.junit.Assert.assertNotNull;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GraphsTest {
+public class GraphManagerTest {
 
     @Test
     public void shouldReturnGraphs() {
-        final Settings settings = Settings.read(GraphsTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
-        final Graphs graphs = new Graphs(settings);
-        final Map<String, Graph> m = graphs.getGraphs();
+        final Settings settings = Settings.read(GraphManagerTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
+        final GraphManager graphManager = new GraphManager(settings);
+        final Map<String, Graph> m = graphManager.getGraphs();
 
         assertNotNull(m);
         assertEquals(1, m.size());
@@ -51,9 +50,9 @@ public class GraphsTest {
 
     @Test
     public void shouldGetAsBindings() {
-        final Settings settings = Settings.read(GraphsTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
-        final Graphs graphs = new Graphs(settings);
-        final Bindings bindings = graphs.getAsBindings();
+        final Settings settings = Settings.read(GraphManagerTest.class.getResourceAsStream("gremlin-server-integration.yaml"));
+        final GraphManager graphManager = new GraphManager(settings);
+        final Bindings bindings = graphManager.getAsBindings();
 
         assertNotNull(bindings);
         assertEquals(1, bindings.size());

@@ -30,11 +30,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * {@link Graph} instances configured for the server to be passed to script engine bindings. The
- * {@link Graph} instances are read from the {@link Settings} for Gremlin Server as defined in the configuration
- * file. Also holds any {@link TraversalSource} objects as constructed in the server.
+ * Holder for {@link Graph} and {@link TraversalSource} instances configured for the server to be passed to script
+ * engine bindings. The {@link Graph} instances are read from the {@link Settings} for Gremlin Server as defined in
+ * the configuration file. The {@link TraversalSource} instances are rebound to the {@code GraphManager} once
+ * initialization scripts construct them.
  */
-public class Graphs {
+public final class GraphManager {
     private static final Logger logger = LoggerFactory.getLogger(GremlinServer.class);
 
     private final Map<String, Graph> graphs = new ConcurrentHashMap<>();
@@ -43,7 +44,7 @@ public class Graphs {
     /**
      * Create a new instance using the {@link Settings} from Gremlin Server.
      */
-    public Graphs(final Settings settings) {
+    public GraphManager(final Settings settings) {
         settings.graphs.entrySet().forEach(e -> {
             try {
                 final Graph newGraph = GraphFactory.open(e.getValue());

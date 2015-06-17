@@ -70,14 +70,14 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
                 final Map<String, String> rebinds = (Map<String, String>) msg.getArgs().get(Tokens.ARGS_REBINDINGS);
                 for (Map.Entry<String,String> kv : rebinds.entrySet()) {
                     boolean found = false;
-                    final Map<String, Graph> graphs = context.getGraphs().getGraphs();
+                    final Map<String, Graph> graphs = context.getGraphManager().getGraphs();
                     if (graphs.containsKey(kv.getValue())) {
                         bindings.put(kv.getKey(), graphs.get(kv.getValue()));
                         found = true;
                     }
 
                     if (!found) {
-                        final Map<String, TraversalSource> traversalSources = context.getGraphs().getTraversalSources();
+                        final Map<String, TraversalSource> traversalSources = context.getGraphManager().getTraversalSources();
                         if (traversalSources.containsKey(kv.getValue())) {
                             bindings.put(kv.getKey(), traversalSources.get(kv.getValue()));
                             found = true;

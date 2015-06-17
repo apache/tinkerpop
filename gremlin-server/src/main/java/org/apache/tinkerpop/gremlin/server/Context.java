@@ -29,21 +29,21 @@ import java.util.concurrent.ScheduledExecutorService;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class Context {
+public final class Context {
     private final RequestMessage requestMessage;
     private final ChannelHandlerContext channelHandlerContext;
     private final Settings settings;
-    private final Graphs graphs;
+    private final GraphManager graphManager;
     private final GremlinExecutor gremlinExecutor;
     private final ScheduledExecutorService scheduledExecutorService;
 
     public Context(final RequestMessage requestMessage, final ChannelHandlerContext ctx,
-                   final Settings settings, final Graphs graphs,
+                   final Settings settings, final GraphManager graphManager,
                    final GremlinExecutor gremlinExecutor, final ScheduledExecutorService scheduledExecutorService) {
         this.requestMessage = requestMessage;
         this.channelHandlerContext = ctx;
         this.settings = settings;
-        this.graphs = graphs;
+        this.graphManager = graphManager;
         this.gremlinExecutor = gremlinExecutor;
         this.scheduledExecutorService = scheduledExecutorService;
     }
@@ -77,8 +77,8 @@ public class Context {
     /**
      * Gets the set of {@link org.apache.tinkerpop.gremlin.structure.Graph} objects configured in Gremlin Server.
      */
-    public Graphs getGraphs() {
-        return graphs;
+    public GraphManager getGraphManager() {
+        return graphManager;
     }
 
     /**
