@@ -33,39 +33,39 @@ import java.util.List;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TraversalFilterStep<S> extends FilterStep<S> implements TraversalParent {
+public final class NotStep<S> extends FilterStep<S> implements TraversalParent {
 
-    private Traversal.Admin<S, ?> filterTraversal;
+    private Traversal.Admin<S, ?> notTraversal;
 
-    public TraversalFilterStep(final Traversal.Admin traversal, final Traversal<S, ?> filterTraversal) {
+    public NotStep(final Traversal.Admin traversal, final Traversal<S, ?> notTraversal) {
         super(traversal);
-        this.filterTraversal = this.integrateChild(filterTraversal.asAdmin());
+        this.notTraversal = this.integrateChild(notTraversal.asAdmin());
     }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        return TraversalUtil.test(traverser, this.filterTraversal);
+        return !TraversalUtil.test(traverser, this.notTraversal);
     }
 
     @Override
     public List<Traversal.Admin<S, ?>> getLocalChildren() {
-        return Collections.singletonList(this.filterTraversal);
+        return Collections.singletonList(this.notTraversal);
     }
 
     @Override
-    public TraversalFilterStep<S> clone() {
-        final TraversalFilterStep<S> clone = (TraversalFilterStep<S>) super.clone();
-        clone.filterTraversal = clone.integrateChild(this.filterTraversal.clone());
+    public NotStep<S> clone() {
+        final NotStep<S> clone = (NotStep<S>) super.clone();
+        clone.notTraversal = clone.integrateChild(this.notTraversal.clone());
         return clone;
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.filterTraversal);
+        return StringFactory.stepString(this, "!" + this.notTraversal);
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.filterTraversal.hashCode();
+        return super.hashCode() ^ this.notTraversal.hashCode();
     }
 }

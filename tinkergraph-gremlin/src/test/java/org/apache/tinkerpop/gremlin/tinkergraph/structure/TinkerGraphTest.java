@@ -162,35 +162,42 @@ public class TinkerGraphTest {
         graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
         GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
         //System.out.println(g.E().label().groupCount().next());
-        final Supplier<Traversal<?, ?>> traversal = () ->
-                /*g.V().match("a",
+        final List<Supplier<Traversal<?,?>>> traversals = Arrays.asList(
+                () -> g.V().xmatch("a",
                         as("a").in("sungBy").as("b"),
-                        as("a").in("writtenBy").as("b")).select().by("name");*/
-                /*g.V().xmatch("a",
+                        as("a").in("writtenBy").as("b")).select().by("name"),
+                /*() -> g.V().xmatch("a",
+                        as("a").in("sungBy").as("b"),
+                        not(as("a").in("writtenBy").as("b"))).select().by("name"),*/
+                () -> g.V().xmatch("a",
                         as("a").out("followedBy").as("b"),
-                        as("b").out("followedBy").as("a")).select().by("name");*/
-                /*g.V().xmatch("a",
+                        as("b").out("followedBy").as("a")).select().by("name"),
+                () -> g.V().xmatch("a",
                         as("a").in("followedBy").as("b"),
                         as("a").out("sungBy").as("c"),
-                        as("a").out("writtenBy").as("d")).select().by("name");*/
-                /*g.V().match("a",
+                        as("a").out("writtenBy").as("d")).select().by("name"),
+                () -> g.V().xmatch("a",
                         as("a").in("followedBy").as("b"),
                         as("a").out("sungBy").as("c"),
                         as("a").out("writtenBy").as("d")).
-                        where("c", P.neq("d")).select().by("name");*/
-                /*g.V().xmatch("a",
+                        where("c", P.neq("d")).select().by("name"),
+                () -> g.V().xmatch("a",
                         as("a").in("sungBy").as("b"),
                         as("a").in("writtenBy").as("b"),
                         as("b").out("followedBy").as("c"),
                         as("c").out("sungBy").as("a"),
-                        as("c").out("writtenBy").as("a")).select().by("name");*/
-                g.V().xmatch("a",
+                        as("c").out("writtenBy").as("a")).select().by("name"),
+                () -> g.V().xmatch("a",
                         as("a").has("name","Garcia"),
                         as("a").in("writtenBy").as("b"),
                         as("b").out("followedBy").as("c"),
-                        as("c").out("writtenBy").has("name",P.neq("Garcia")).as("d")).select().by("name");
+                        as("c").out("writtenBy").has("name",P.neq("Garcia")).as("d")).select().by("name"));
 
-        System.out.println(TimeUtil.clockWithResult(100, () -> traversal.get().toList().size()));
+        traversals.forEach(traversal -> {
+            System.out.println("pre-strategy:  " + traversal.get());
+            System.out.println("post-strategy: " + traversal.get().iterate());
+            System.out.println(TimeUtil.clockWithResult(10, () -> traversal.get().toList().size()));
+        });
     }
 
     @Test
@@ -230,13 +237,13 @@ public class TinkerGraphTest {
                         as("a").out("knows").as("c"),
                         as("c").out("created").count().as("b")).select("a","b","c").by("name").by().by("name");*/
 
-       final Supplier<Traversal<?,?>> traversal = () ->
+       /*final Supplier<Traversal<?,?>> traversal = () ->
                 g.V().as("a").out().as("b").where(
-                        in("created").as("a")
-                ).select().by("name");
+                        not(in("knows").as("a")).and().as("b").in().count().is(P.gt(1))
+                ).select().by("name"); */
 
-       /* final Supplier<Traversal<?,?>> traversal = () ->
-                g.V().as("a").out().as("b").in().as("c").where(P.neq("a")).select().by("name"); */
+        final Supplier<Traversal<?,?>> traversal = () ->
+                g.V().as("a").out("created").as("b").in("created").as("c").both("knows").both("knows").as("d").where("c",P.not(P.eq("a").or(P.eq("d")))).select().by("name");
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());
