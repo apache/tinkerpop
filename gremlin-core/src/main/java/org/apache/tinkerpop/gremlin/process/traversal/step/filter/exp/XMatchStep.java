@@ -73,7 +73,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
     private Set<String> scopeKeys = null;
     private final Conjunction conjunction;
     private final String startKey;
-    private final MatchAlgorithm matchAlgorithm = new CountMatchAlgorithm();
+    private final MatchAlgorithm matchAlgorithm = new GreedyMatchAlgorithm();
 
     public XMatchStep(final Traversal.Admin traversal, final String startKey, final Conjunction conjunction, final Traversal... conjunctionTraversals) {
         super(traversal);
@@ -246,7 +246,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
             } else {
                 for (final Traversal.Admin<?, ?> conjunctionTraversal : this.conjunctionTraversals) {
                     final Traverser split = traverser.split();
-                    split.path().addLabel(conjunctionTraversal.getStartStep().getId());
+                    split.path().addLabel(conjunctionTraversal.getParent().asStep().getId());
                     conjunctionTraversal.addStart(split);
                 }
             }
@@ -273,7 +273,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
             final List<Traverser<Map<String, E>>> traversers = new ArrayList<>();
             this.conjunctionTraversals.forEach(conjunctionTraversal -> {
                 final Traverser.Admin split = traverser.split();
-                split.path().addLabel(conjunctionTraversal.getStartStep().getId());
+                split.path().addLabel(conjunctionTraversal.getParent().asStep().getId());
                 split.setStepId(conjunctionTraversal.getStartStep().getId());
                 traversers.add(split);
             });

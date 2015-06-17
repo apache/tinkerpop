@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.exp.XMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -64,19 +65,21 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
         TraversalHelper.getStepsOfClass(XMatchStep.class, traversal).forEach(matchStep -> {
             if (matchStep.getStartKey().isPresent()) {
                 ((XMatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(conjunction -> {
-                    ((XMatchStep<?, ?>.XMatchStartStep) conjunction.getStartStep()).getSelectKey().ifPresent(selectKey -> {
-                        if (selectKey.equals(matchStep.getStartKey().get()) && !conjunction.getSteps().stream()
-                                .filter(step -> !(step instanceof XMatchStep.XMatchStartStep) &&
-                                        !(step instanceof XMatchStep.XMatchEndStep) &&
-                                        !(step instanceof HasStep))
-                                .findAny()
-                                .isPresent()) {
-                            matchStep.removeGlobalChild(conjunction);
-                            conjunction.removeStep(0);                                     // remove XMatchStartStep
-                            conjunction.removeStep(conjunction.getSteps().size() - 1);    // remove XMatchEndStep
-                            TraversalHelper.insertTraversal(matchStep.getPreviousStep(), conjunction, traversal);
-                        }
-                    });
+                    if (conjunction.getStartStep() instanceof XMatchStep.XMatchStartStep) {
+                        ((XMatchStep<?, ?>.XMatchStartStep) conjunction.getStartStep()).getSelectKey().ifPresent(selectKey -> {
+                            if (selectKey.equals(matchStep.getStartKey().get()) && !conjunction.getSteps().stream()
+                                    .filter(step -> !(step instanceof XMatchStep.XMatchStartStep) &&
+                                            !(step instanceof XMatchStep.XMatchEndStep) &&
+                                            !(step instanceof HasStep))
+                                    .findAny()
+                                    .isPresent() && !(matchStep.getPreviousStep() instanceof EmptyStep)) {
+                                matchStep.removeGlobalChild(conjunction);
+                                conjunction.removeStep(0);                                     // remove XMatchStartStep
+                                conjunction.removeStep(conjunction.getSteps().size() - 1);    // remove XMatchEndStep
+                                TraversalHelper.insertTraversal(matchStep.getPreviousStep(), conjunction, traversal);
+                            }
+                        });
+                    }
                 });
             }
         });

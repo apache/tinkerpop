@@ -221,7 +221,7 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay5() throws Exception {
-        GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.standard());
+        GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.computer());
         /*final Supplier<Traversal<?, ?>> traversal = () -> g.V().xmatch("a",
                 as("a").out("created").as("b"),
                 or(
@@ -237,17 +237,17 @@ public class TinkerGraphTest {
                 as("a").local(out("created").count()).as("b"))
                 .select().by("name");*/
 
-        /*final Supplier<Traversal<?, ?>> traversal = () ->
+        final Supplier<Traversal<?, ?>> traversal = () ->
                 g.V().xmatch("a",
                         where("a", P.neq("c")),
                         as("a").out("created").as("b"),
                         or(
                                 as("a").out("knows").has("name", "vadas"),
-                                as("a").in("knows")
+                                as("a").in("knows").and().as("a").has(T.label,"person")
                         ),
                         as("b").in("created").as("c"),
-                        as("b").where(in("created").count().is(P.gt(1))))
-                        .select();*/
+                        as("b").in("created").count().is(P.gt(1)))
+                        .select().by("name");
 
         /*final Supplier<Traversal<?,?>> traversal = () ->
                 g.V().xmatch("a",
@@ -260,8 +260,8 @@ public class TinkerGraphTest {
                         not(in("knows").as("a")).and().as("b").in().count().is(P.gt(1))
                 ).select().by("name"); */
 
-        final Supplier<Traversal<?,?>> traversal = () ->
-                g.V().as("a").out("created").as("b").in("created").as("c").both("knows").both("knows").as("d").where("c",P.not(P.eq("a").or(P.eq("d")))).select().by("name");
+        /*final Supplier<Traversal<?,?>> traversal = () ->
+                g.V().as("a").out("created").as("b").in("created").as("c").both("knows").both("knows").as("d").where("c",P.not(P.eq("a").or(P.eq("d")))).select().by("name"); */
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());
