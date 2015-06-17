@@ -29,6 +29,7 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 * Renamed `Graphs` in Gremlin Server to `GraphManager`.
 * Arrow keys for cycling through command history now work in Gremlin Console when being used on Windows.
 =======
@@ -47,12 +48,17 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 * Simplified `SubgraphStrategy` by using `TraversalFilterStep` instead of the more complex `WhereStep`.
 * Added `TraversalMapStep`, `TraversalFlatMapStep`, `TraversalFilterStep`, and `TraversalSideEffectStep` which all leverage an internal traversal.
 >>>>>>> greatly reduced the complexity of WhereStep -- learned alot about variable binding from XMatchStep. WhereStep is looking really really good.
+=======
+* Renamed `Graphs` in Gremlin Server to `GraphManager`.
+* Arrow keys for cycling through command history now work in Gremlin Console when being used on Windows.
+>>>>>>> old changelog.
 * Added `Path.getSingle(pop,label)` and `Path.getList(label)` as default helpers in `Path`.
 * Added `Pop.first` and `Pop.last` as enums for getting single items from a collection.
 * Changed `GremlinServer.start()` to return a `CompletableFuture` that contains the constructed `ServerGremlinExecutor`.
 * Restructured `IoTest` breaking it up into smaller and more logically grouped test cases.
 * Gremlin Server `Settings` now has sensible defaults thus allowing the server to be started with no additional configuration.
 * Fixed garbled characters in Gremlin Console that notably showed up in `:help`
+<<<<<<< HEAD
 <<<<<<< HEAD
 * `GraphTraversal.and()` (and `or()`) now take `Object...` composed of `P` predicates or `Traversals` to be converted to `TraversalP`.
 =======
@@ -67,6 +73,14 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 =======
 * `WhereStep` supports arbitrary nesting of `ConjunctionP`-predicates and `ConjunctionStep`-traversals.
 >>>>>>> greatly reduced the complexity of WhereStep -- learned alot about variable binding from XMatchStep. WhereStep is looking really really good.
+=======
+* `GraphTraversal.and()` (and `or()`) now take `Object...` composed of `P` predicates or `Traversals` to be converted to `TraversalP`.
+* Replaced dependency on `groovy-all` with individual Groovy dependencies as needed.
+* Bumped `org.gperfutils:gbench` to the `0.4.3` and a version explicitly compatible with Groovy 2.4.x.
+* Added `ScopeP` which wraps a predicate and is bound by the `Traverser` and `Scoping` step.
+* `WhereStep` only operates on `Traversals`. Provided predicates are translated to `__.as('a').is(eq('b'))` or `__.is(eq('a'))`.
+* `WhereStep` now uses a `SelectOneStep` for `as('a').out()...` and `IsStep` for `...as('b')` as this ensures `Traverser` (and metadata) propagation.
+>>>>>>> old changelog.
 * Renamed `KeyStep` to `PropertyKeyStep` to be consistent with `PropertyValueStep`.
 * Added `Gremlin-Lib-Paths` to modify paths in plugin `lib` directory.
 * Modified the capabilities of `Gremlin-Plugin-Paths` to delete paths that have no value on the right-hand-side of the equals sign.
