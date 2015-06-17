@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -158,20 +159,32 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay7() throws Exception {
-        Graph graph = TinkerGraph.open();
+        TinkerGraph graph = TinkerGraph.open();
+        graph.createIndex("name",Vertex.class);
         graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
         GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
         //System.out.println(g.E().label().groupCount().next());
-        final List<Supplier<Traversal<?,?>>> traversals = Arrays.asList(
-                () -> g.V().xmatch("a",
-                        as("a").in("sungBy").as("b"),
-                        as("a").in("writtenBy").as("b")).select().by("name"),
+        final List<Supplier<GraphTraversal<?,?>>> traversals = Arrays.asList(
                 /*() -> g.V().xmatch("a",
                         as("a").in("sungBy").as("b"),
                         not(as("a").in("writtenBy").as("b"))).select().by("name"),*/
                 () -> g.V().xmatch("a",
+                        as("a").in("sungBy").as("b"),
+                        as("a").in("writtenBy").as("b")).select().by("name"),
+                () -> g.V().xmatch("a",
                         as("a").out("followedBy").as("b"),
                         as("b").out("followedBy").as("a")).select().by("name"),
+                () -> g.V().xmatch("a",
+                        as("a").out("followedBy").count().as("b"),
+                        as("a").in("followedBy").count().as("b"),
+                        as("b").is(P.gt(10))).select("a").by("name"),
+                () -> g.V().xmatch("a",
+                        as("a").in("sungBy").count().as("b"),
+                        as("a").in("sungBy").as("c"),
+                        as("c").out("followedBy").as("d"),
+                        as("d").out("sungBy").as("e"),
+                        as("e").in("sungBy").count().as("b"),
+                        where("a",P.neq("e"))).select("a","e").by("name"),
                 () -> g.V().xmatch("a",
                         as("a").in("followedBy").as("b"),
                         as("a").out("sungBy").as("c"),
@@ -179,8 +192,8 @@ public class TinkerGraphTest {
                 () -> g.V().xmatch("a",
                         as("a").in("followedBy").as("b"),
                         as("a").out("sungBy").as("c"),
-                        as("a").out("writtenBy").as("d")).
-                        where("c", P.neq("d")).select().by("name"),
+                        as("a").out("writtenBy").as("d"),
+                        where("c", P.neq("d"))).select().by("name"),
                 () -> g.V().xmatch("a",
                         as("a").in("sungBy").as("b"),
                         as("a").in("writtenBy").as("b"),
@@ -191,12 +204,13 @@ public class TinkerGraphTest {
                         as("a").has("name","Garcia"),
                         as("a").in("writtenBy").as("b"),
                         as("b").out("followedBy").as("c"),
-                        as("c").out("writtenBy").has("name",P.neq("Garcia")).as("d")).select().by("name"));
+                        as("c").out("writtenBy").as("d"),
+                        as("d").where(P.neq("a"))).select().by("name"));
 
         traversals.forEach(traversal -> {
             System.out.println("pre-strategy:  " + traversal.get());
             System.out.println("post-strategy: " + traversal.get().iterate());
-            System.out.println(TimeUtil.clockWithResult(10, () -> traversal.get().toList().size()));
+            System.out.println(TimeUtil.clockWithResult(50, () -> traversal.get().count().next()));
         });
     }
 

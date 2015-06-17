@@ -60,6 +60,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         super(traversal);
         this.scope = scope;
         this.startKey = startKey.orElse(null);
+        if(null != this.startKey) this.scopeKeys.add(this.startKey);
         this.predicate = (P) predicate;
         this.selectKeys = new ArrayList<>();
         this.traversal = null;
@@ -81,7 +82,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         ConjunctionStrategy.instance().apply(whereTraversal);
         //// START STEP to WhereStartStep
         final Step<?, ?> startStep = whereTraversal.getStartStep();
-        if (startStep instanceof ConjunctionStep || startStep instanceof NotStep) {       // for conjunction and not steps
+        if (startStep instanceof ConjunctionStep || startStep instanceof NotStep) {       // for conjunction- and not-steps
             ((TraversalParent) startStep).getLocalChildren().forEach(this::configureStartAndEndSteps);
         } else if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {  // as("a").out()... traversals
             if (startStep.getLabels().size() > 1)
@@ -89,7 +90,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             final String label = startStep.getLabels().iterator().next();
             this.scopeKeys.add(label);
             TraversalHelper.replaceStep(startStep, (Step) new WhereStartStep(whereTraversal, label), whereTraversal);
-        } else {                                                                          // out()... traversals
+        } else if(!whereTraversal.getEndStep().getLabels().isEmpty()){                    // out().as("a").. traversals
             TraversalHelper.insertBeforeStep(new WhereStartStep(whereTraversal, null), (Step) startStep, whereTraversal);
         }
         //// END STEP to WhereEndStep
@@ -123,6 +124,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
+
         if (null != this.traversal)
             return TraversalUtil.test((Traverser.Admin) traverser, this.traversal);
         else {

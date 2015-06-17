@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -102,6 +103,8 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
             final String label = startStep.getLabels().iterator().next();
             this.matchStartLabels.add(label);
             TraversalHelper.replaceStep((Step) conjunctionTraversal.getStartStep(), new XMatchStartStep(conjunctionTraversal, label), conjunctionTraversal);
+        } else {
+            TraversalHelper.insertBeforeStep(new XMatchStartStep(conjunctionTraversal, null), (Step) conjunctionTraversal.getStartStep(), conjunctionTraversal);
         }
         // END STEP to XMatchEndStep
         final Step<?, ?> endStep = conjunctionTraversal.getEndStep();
@@ -122,6 +125,12 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
         }
     }
 
+    @Override
+    public void removeGlobalChild(final Traversal.Admin<?, ?> globalChildTraversal) {
+        this.conjunctionTraversals.remove(globalChildTraversal);
+    }
+
+    @Override
     public List<Traversal.Admin<Object, Object>> getGlobalChildren() {
         return Collections.unmodifiableList(this.conjunctionTraversals);
     }
@@ -141,16 +150,19 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
     }
 
+    public String getStartKey() {
+        return this.startKey;
+    }
+
     @Override
     public Set<String> getScopeKeys() {
         if (null == this.scopeKeys) {
             this.scopeKeys = new HashSet<>();
             this.conjunctionTraversals.forEach(traversal -> {
-                traversal.getSteps().forEach(step -> {
-                    if (step instanceof XMatchStep.XMatchStartStep || step instanceof XMatchStep) {
-                        this.scopeKeys.addAll(((Scoping) step).getScopeKeys());
-                    }
-                });
+                if (traversal.getStartStep() instanceof Scoping)
+                    this.scopeKeys.addAll(((Scoping) traversal.getStartStep()).getScopeKeys());
+                if (traversal.getEndStep() instanceof Scoping)
+                    this.scopeKeys.addAll(((Scoping) traversal.getEndStep()).getScopeKeys());
             });
             this.scopeKeys.removeAll(this.matchEndLabels);
             this.scopeKeys.remove(this.startKey);
@@ -294,7 +306,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
             traverser.path().addLabel(this.getId());
             XMatchStep.this.matchAlgorithm.recordStart(traverser, this.getTraversal());
             // TODO: sideEffect check?
-            return traverser.split(traverser.path().getSingle(Pop.last, this.selectKey), this);
+            return null == this.selectKey ? traverser : traverser.split(traverser.path().getSingle(Pop.last, this.selectKey), this);
         }
 
         @Override
@@ -304,7 +316,7 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
         @Override
         public int hashCode() {
-            return super.hashCode() ^ this.selectKey.hashCode();
+            return super.hashCode() ^ (null == this.selectKey ? "null".hashCode() : this.selectKey.hashCode());
         }
 
         @Override
@@ -322,11 +334,15 @@ public final class XMatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>>
 
         }
 
+        public Optional<String> getSelectKey() {
+            return Optional.ofNullable(this.selectKey);
+        }
+
         @Override
         public Set<String> getScopeKeys() {
             if (null == this.scopeKeys) {
                 this.scopeKeys = new HashSet<>();
-                this.scopeKeys.add(this.selectKey);
+                if (null != this.selectKey) this.scopeKeys.add(this.selectKey);
                 this.getTraversal().getSteps().forEach(step -> {
                     if (step instanceof XMatchStep || step instanceof WhereStep)
                         this.scopeKeys.addAll(((Scoping) step).getScopeKeys());
