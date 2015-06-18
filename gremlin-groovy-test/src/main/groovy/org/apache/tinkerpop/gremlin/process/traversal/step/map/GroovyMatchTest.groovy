@@ -223,7 +223,7 @@ public abstract class GroovyMatchTest {
         @Override
         public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_whereXa_neqXcXX__a_created_b__orXa_knows_vadas__a_0knows_and_a_hasXlabel_personXX__b_0created_c__b_0created_count_isXgtX1XXX_select_byXidX() {
             TraversalScriptHelper.compute("""
-                g.V().match('a',
+                g.V.match('a',
                     where('a', neq('c')),
                     __.as('a').out('created').as('b'),
                     or(
@@ -233,6 +233,13 @@ public abstract class GroovyMatchTest {
                     __.as('b').in('created').as('c'),
                     __.as('b').in('created').count.is(gt(1)))
                     .select.by(id);
+            """,g)
+        }
+
+        @Override
+        public Traversal<Vertex,Map<String,Object>> get_g_V_asXaX_out_asXbX_matchXa_out_count_c__b_in_count_cX() {
+            TraversalScriptHelper.compute("""
+                g.V.as('a').out.as('b').match(__.as('a').out.count.as('c'), __.as('b').in.count.as('c'))
             """,g)
         }
     }

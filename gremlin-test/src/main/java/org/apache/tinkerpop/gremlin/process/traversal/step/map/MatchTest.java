@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -104,6 +103,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     // nested or/and with patterns in order that won't execute serially
     public abstract Traversal<Vertex,Map<String,Object>> get_g_V_matchXa_whereXa_neqXcXX__a_created_b__orXa_knows_vadas__a_0knows_and_a_hasXlabel_personXX__b_0created_c__b_0created_count_isXgtX1XXX_select_byXidX();
+
+    // uses local barrier count() and no start key
+    public abstract Traversal<Vertex,Map<String,Object>> get_g_V_asXaX_out_asXbX_matchXa_out_count_c__b_in_count_cX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -333,6 +335,14 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 "a", convertToVertexId("josh"), "b", convertToVertexId("lop"), "c", convertToVertexId("peter")),traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_out_asXbX_matchXa_out_count_c__b_in_count_cX() {
+        final Traversal<Vertex,Map<String,Object>> traversal = get_g_V_asXaX_out_asXbX_matchXa_out_count_c__b_in_count_cX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(3, "a",convertToVertex(graph,"marko"),"c",3l,"b",convertToVertex(graph,"lop")),traversal);
+    }
+
     public static class Traversals extends MatchTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {
@@ -489,11 +499,16 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     as("a").out("created").as("b"),
                     or(
                             as("a").out("knows").has("name", "vadas"),
-                            as("a").in("knows").and().as("a").has(T.label,"person")
+                            as("a").in("knows").and().as("a").has(T.label, "person")
                     ),
                     as("b").in("created").as("c"),
                     as("b").in("created").count().is(P.gt(1)))
                     .select().by(T.id);
+        }
+
+        @Override
+        public Traversal<Vertex,Map<String,Object>> get_g_V_asXaX_out_asXbX_matchXa_out_count_c__b_in_count_cX() {
+            return g.V().as("a").out().as("b").match(as("a").out().count().as("c"), as("b").in().count().as("c"));
         }
 
     }

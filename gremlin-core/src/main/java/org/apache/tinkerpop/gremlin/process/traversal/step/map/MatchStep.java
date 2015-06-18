@@ -56,6 +56,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,6 +64,8 @@ import java.util.stream.Stream;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> implements TraversalParent, Scoping {
+
+    private static final Supplier<MatchAlgorithm> MATCH_ALGORITHM = CountMatchAlgorithm::new;
 
     public enum Conjunction {AND, OR}
 
@@ -73,7 +76,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     private Set<String> scopeKeys = null;
     private final Conjunction conjunction;
     private final String startKey;
-    private final MatchAlgorithm matchAlgorithm = new GreedyMatchAlgorithm();
+    private MatchAlgorithm matchAlgorithm = MATCH_ALGORITHM.get();
 
     public MatchStep(final Traversal.Admin traversal, final String startKey, final Conjunction conjunction, final Traversal... conjunctionTraversals) {
         super(traversal);
@@ -181,7 +184,13 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     @Override
     public void reset() {
         super.reset();
-        //this.first = true;
+        this.first = true;
+    }
+
+    public MatchAlgorithm getMatchAlgorithm() {
+        if (!this.matchAlgorithm.initialized())  // this is important in clone()ing situations where you need the match algorithm to reinitialize
+            this.matchAlgorithm.initialize(this.conjunctionTraversals);
+        return this.matchAlgorithm;
     }
 
     @Override
@@ -191,7 +200,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         for (final Traversal.Admin<Object, Object> traversal : this.conjunctionTraversals) {
             clone.conjunctionTraversals.add(clone.integrateChild(traversal.clone()));
         }
-        // TODO: does it need to clone the match algorithm?
+        clone.matchAlgorithm = MATCH_ALGORITHM.get();
         return clone;
     }
 
@@ -227,7 +236,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             Traverser.Admin traverser = null;
             if (this.first) {
                 this.first = false;
-                this.matchAlgorithm.initialize(this.conjunctionTraversals);
             } else {
                 for (final Traversal.Admin<?, ?> conjunctionTraversal : this.conjunctionTraversals) {
                     if (conjunctionTraversal.hasNext()) {
@@ -242,7 +250,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 return IteratorUtils.of(traverser.split(this.getBindings(traverser), this));
 
             if (this.conjunction == Conjunction.AND) {
-                this.matchAlgorithm.apply(traverser).addStart(traverser); // determine which sub-pattern the traverser should try next
+                this.getMatchAlgorithm().apply(traverser).addStart(traverser); // determine which sub-pattern the traverser should try next
             } else {
                 for (final Traversal.Admin<?, ?> conjunctionTraversal : this.conjunctionTraversals) {
                     final Traverser split = traverser.split();
@@ -255,10 +263,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     protected Iterator<Traverser<Map<String, E>>> computerAlgorithm() throws NoSuchElementException {
-        if (this.first) {
-            this.first = false;
-            this.matchAlgorithm.initialize(this.conjunctionTraversals);
-        }
         final Traverser.Admin traverser = this.starts.next();
         if (hasMatched(this.conjunction, traverser)) {
             traverser.setStepId(this.getNextStep().getId());
@@ -266,7 +270,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
         if (this.conjunction == Conjunction.AND) {
-            final Traversal.Admin<Object, Object> conjunctionTraversal = this.matchAlgorithm.apply(traverser); // determine which sub-pattern the traverser should try next
+            final Traversal.Admin<Object, Object> conjunctionTraversal = this.getMatchAlgorithm().apply(traverser); // determine which sub-pattern the traverser should try next
             traverser.setStepId(conjunctionTraversal.getStartStep().getId()); // go down the traversal match sub-pattern
             return IteratorUtils.of(traverser);
         } else {
@@ -307,7 +311,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         protected Traverser<Object> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<Object> traverser = this.starts.next();
             traverser.path().addLabel(this.getId());
-            MatchStep.this.matchAlgorithm.recordStart(traverser, this.getTraversal());
+            ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordStart(traverser, this.getTraversal());
             // TODO: sideEffect check?
             return null == this.selectKey ? traverser : traverser.split(traverser.path().getSingle(Pop.last, this.selectKey), this);
         }
@@ -370,17 +374,19 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 final Traverser.Admin traverser = this.starts.next();
                 // no end label
                 if (null == this.matchKey) {
-                    if (this.traverserStepIdSetByChild) traverser.setStepId(MatchStep.this.getId());
-                    MatchStep.this.matchAlgorithm.recordEnd(traverser, this.getTraversal());
+                    if (this.traverserStepIdSetByChild)
+                        traverser.setStepId(((MatchStep<?, ?>) this.getTraversal().getParent()).getId());
+                    ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
                     return traverser;
                 }
                 // TODO: sideEffect check?
                 // path check
                 final Path path = traverser.path();
                 if (!path.hasLabel(this.matchKey) || traverser.get().equals(path.getSingle(Pop.first, this.matchKey))) {
-                    if (this.traverserStepIdSetByChild) traverser.setStepId(MatchStep.this.getId());
+                    if (this.traverserStepIdSetByChild)
+                        traverser.setStepId(((MatchStep<?, ?>) this.getTraversal().getParent()).getId());
                     traverser.path().addLabel(this.matchKey);
-                    MatchStep.this.matchAlgorithm.recordEnd(traverser, this.getTraversal());
+                    ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
                     return traverser;
                 }
             }
@@ -402,6 +408,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     public interface MatchAlgorithm extends Function<Traverser.Admin<Object>, Traversal.Admin<Object, Object>>, Serializable {
 
+        public static Function<List<Traversal.Admin<Object, Object>>, IllegalStateException> UNMATCHABLE_PATTERN = traversals -> new IllegalStateException("The provided match pattern is unsolvable: " + traversals);
+
         public static Set<String> getRequiredLabels(final Traversal.Admin<Object, Object> traversal) {
             final Step<?, ?> startStep = traversal.getStartStep();
             if (startStep instanceof Scoping)
@@ -409,6 +417,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             else
                 throw new IllegalArgumentException("The provided start step must be a scoping step: " + startStep);
         }
+
+        public boolean initialized();
 
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals);
 
@@ -426,9 +436,16 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         private List<Traversal.Admin<Object, Object>> traversals;
         private List<String> traversalLabels = new ArrayList<>();
         private List<Set<String>> requiredLabels = new ArrayList<>();
+        private boolean initialized = false;
+
+        @Override
+        public boolean initialized() {
+            return this.initialized;
+        }
 
         @Override
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
+            this.initialized = true;
             this.traversals = traversals;
             for (final Traversal.Admin<Object, Object> traversal : this.traversals) {
                 this.traversalLabels.add(traversal.getStartStep().getId());
@@ -444,7 +461,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                     return this.traversals.get(i);
                 }
             }
-            throw new IllegalStateException("The provided match pattern is unsolvable: " + this.traversals);
+            throw UNMATCHABLE_PATTERN.apply(this.traversals);
         }
     }
 
@@ -454,9 +471,16 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         private List<Integer[]> counts = new ArrayList<>();
         private List<String> traversalLabels = new ArrayList<>();
         private List<Set<String>> requiredLabels = new ArrayList<>();
+        private boolean initialized = false;
+
+        @Override
+        public boolean initialized() {
+            return this.initialized;
+        }
 
         @Override
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
+            this.initialized = true;
             this.traversals = traversals;
             for (int i = 0; i < this.traversals.size(); i++) {
                 final Traversal.Admin<Object, Object> traversal = this.traversals.get(i);
@@ -474,7 +498,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                     return this.traversals.get(indexCounts[0]);
                 }
             }
-            throw new IllegalStateException("The provided match pattern is unsolvable: " + this.traversals);
+            throw UNMATCHABLE_PATTERN.apply(this.traversals);
         }
 
         public void recordEnd(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
