@@ -29,10 +29,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -46,6 +49,8 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_andXoutE__hasXlabel_personX_and_hasXage_gte_32XX_name();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_outXknowsX_and_outXcreatedX_inXcreatedX_asXaX_name();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_andXselectXaX_selectXaXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -71,6 +76,14 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(convertToVertex(graph, "marko")), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_andXselectXaX_selectXaXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_asXaX_andXselectXaX_selectXaXX();
+        printTraversalForm(traversal);
+        final List<Vertex> actual = traversal.toList();
+        assertEquals(6, actual.size());
+    }
 
     public static class Traversals extends AndTest {
 
@@ -87,6 +100,11 @@ public abstract class AndTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXaX_outXknowsX_and_outXcreatedX_inXcreatedX_asXaX_name() {
             return g.V().as("a").out("knows").and().out("created").in("created").as("a").values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_andXselectXaX_selectXaXX() {
+            return g.V().as("a").and(select("a"), select("a"));
         }
     }
 }

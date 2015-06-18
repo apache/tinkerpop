@@ -29,10 +29,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -43,6 +46,8 @@ public abstract class OrTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name();
 
     public abstract Traversal<Vertex, String> get_g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_orXselectXaX_selectXaXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -60,6 +65,15 @@ public abstract class OrTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("marko", "ripple", "lop", "peter"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_orXselectXaX_selectXaXX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_asXaX_orXselectXaX_selectXaXX();
+        printTraversalForm(traversal);
+        final List<Vertex> actual = traversal.toList();
+        assertEquals(6, actual.size());
+    }
+
     public static class Traversals extends OrTest {
         @Override
         public Traversal<Vertex, String> get_g_V_orXhasXage_gt_27X__outE_count_gte_2X_name() {
@@ -69,6 +83,11 @@ public abstract class OrTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name() {
             return g.V().or(outE("knows"), has(T.label, "software").or().has("age", P.gte(35))).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_orXselectXaX_selectXaXX() {
+            return g.V().as("a").or(select("a"), select("a"));
         }
     }
 }
