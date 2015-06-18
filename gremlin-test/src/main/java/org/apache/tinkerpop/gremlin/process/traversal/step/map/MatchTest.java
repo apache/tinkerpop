@@ -107,6 +107,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // uses local barrier count() and no start key
     public abstract Traversal<Vertex,Map<String,Object>> get_g_V_asXaX_out_asXbX_matchXa_out_count_c__b_in_count_cX();
 
+    // pulls out has container for index lookup and uses an where() with startKey and predicate
+    public abstract Traversal<Vertex,Map<String,Vertex>> get_g_V_matchXa__a_hasXname_GarciaX__a_0writtenBy_b__b_followedBy_c__c_writtenBy_d__whereXd_neqXaXXX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_out_bX() throws Exception {
@@ -332,7 +335,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 "a", convertToVertexId("marko"), "b", convertToVertexId("lop"), "c", convertToVertexId("josh"),
                 "a", convertToVertexId("marko"), "b", convertToVertexId("lop"), "c", convertToVertexId("peter"),
                 "a", convertToVertexId("josh"), "b", convertToVertexId("lop"), "c", convertToVertexId("marko"),
-                "a", convertToVertexId("josh"), "b", convertToVertexId("lop"), "c", convertToVertexId("peter")),traversal);
+                "a", convertToVertexId("josh"), "b", convertToVertexId("lop"), "c", convertToVertexId("peter")), traversal);
     }
 
     @Test
@@ -341,6 +344,17 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex,Map<String,Object>> traversal = get_g_V_asXaX_out_asXbX_matchXa_out_count_c__b_in_count_cX();
         printTraversalForm(traversal);
         checkResults(makeMapList(3, "a",convertToVertex(graph,"marko"),"c",3l,"b",convertToVertex(graph,"lop")),traversal);
+    }
+
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_matchXa__a_hasXname_GarciaX__a_0writtenBy_b__b_followedBy_c__c_writtenBy_d__whereXd_neqXaXXX() {
+        final Traversal<Vertex,Map<String,Vertex>> traversal= get_g_V_matchXa__a_hasXname_GarciaX__a_0writtenBy_b__b_followedBy_c__c_writtenBy_d__whereXd_neqXaXXX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(4,
+                "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph,"CRYPTICAL ENVELOPMENT"), "c", convertToVertex(graph,"WHARF RAT"), "d", convertToVertex(graph,"Hunter"),
+                "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph,"CRYPTICAL ENVELOPMENT"), "c", convertToVertex(graph,"THE OTHER ONE"), "d", convertToVertex(graph,"Weir"),
+                "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph,"CRYPTICAL ENVELOPMENT"), "c", convertToVertex(graph,"DRUMS"), "d", convertToVertex(graph,"Grateful_Dead")), traversal);
     }
 
     public static class Traversals extends MatchTest {
@@ -511,5 +525,14 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().as("a").out().as("b").match(as("a").out().count().as("c"), as("b").in().count().as("c"));
         }
 
+        @Override
+        public Traversal<Vertex,Map<String,Vertex>> get_g_V_matchXa__a_hasXname_GarciaX__a_0writtenBy_b__b_followedBy_c__c_writtenBy_d__whereXd_neqXaXXX() {
+            return g.V().match("a",
+                    as("a").has("name", "Garcia"),
+                    as("a").in("writtenBy").as("b"),
+                    as("b").out("followedBy").as("c"),
+                    as("c").out("writtenBy").as("d"),
+                    where("d", P.neq("a")));
+        }
     }
 }

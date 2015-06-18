@@ -18,16 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.P
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
-import org.apache.tinkerpop.gremlin.structure.T
 import org.apache.tinkerpop.gremlin.structure.Vertex
-
-import static org.apache.tinkerpop.gremlin.process.traversal.P.neq
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.or
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -188,7 +181,7 @@ public abstract class GroovyMatchTest {
                     __.as("b").in("created").has("age", 29).as("c"))
                     .where(__.as("c").repeat(__.out).times(2))
                     .select.by('name')
-            """,g)
+            """, g)
         }
 
         @Override
@@ -199,7 +192,7 @@ public abstract class GroovyMatchTest {
                     __.as('b').in('created').as('c'))
                     .where('a', neq('c'))
                     .select('a', 'c').by('name')
-            """,g)
+            """, g)
         }
 
         @Override
@@ -208,7 +201,7 @@ public abstract class GroovyMatchTest {
                 g.V.match('a',
                     __.as('a').out('created').as('b'),
                     __.as('c').out('created').as('b')).select().by('name')
-            """,g)
+            """, g)
         }
 
         @Override
@@ -217,7 +210,7 @@ public abstract class GroovyMatchTest {
                 g.V.out.out.match('a',
                     __.as('b').out('created').as('a'),
                     __.as('c').out('knows').as('b')).select('c').out('knows').name
-            """,g)
+            """, g)
         }
 
         @Override
@@ -233,14 +226,26 @@ public abstract class GroovyMatchTest {
                     __.as('b').in('created').as('c'),
                     __.as('b').in('created').count.is(gt(1)))
                     .select.by(id);
-            """,g)
+            """, g)
         }
 
         @Override
-        public Traversal<Vertex,Map<String,Object>> get_g_V_asXaX_out_asXbX_matchXa_out_count_c__b_in_count_cX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_matchXa_out_count_c__b_in_count_cX() {
             TraversalScriptHelper.compute("""
                 g.V.as('a').out.as('b').match(__.as('a').out.count.as('c'), __.as('b').in.count.as('c'))
-            """,g)
+            """, g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa__a_hasXname_GarciaX__a_0writtenBy_b__b_followedBy_c__c_writtenBy_d__whereXd_neqXaXXX() {
+            TraversalScriptHelper.compute("""
+                g.V.match('a',
+                    __.as('a').has('name', 'Garcia'),
+                    __.as('a').in('writtenBy').as('b'),
+                    __.as('b').out('followedBy').as('c'),
+                    __.as('c').out('writtenBy').as('d'),
+                    where('d', neq('a')))
+            """, g)
         }
     }
 

@@ -221,47 +221,36 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay5() throws Exception {
-        GraphTraversalSource g = TinkerFactory.createModern().traversal(GraphTraversalSource.computer());
-        /*final Supplier<Traversal<?, ?>> traversal = () -> g.V().xmatch("a",
-                as("a").out("created").as("b"),
-                or(
-                        as("a").out("knows").as("c"),
-                        or(
-                                as("a").out("created").has("name", "ripple"),
-                                as("a").out().out()
-                        )
-                )).select().by("name");*/
 
-        /*final Supplier<Traversal<?, ?>> traversal = () -> g.V().
-                xmatch("a",
-                as("a").local(out("created").count()).as("b"))
-                .select().by("name");*/
+        TinkerGraph graph = TinkerGraph.open();
+        graph.createIndex("name",Vertex.class);
+        graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
 
-        final Supplier<Traversal<?, ?>> traversal = () ->
+        /*final Supplier<Traversal<?, ?>> traversal = () ->
                 g.V().match("a",
                         where("a", P.neq("c")),
                         as("a").out("created").as("b"),
                         or(
                                 as("a").out("knows").has("name", "vadas"),
-                                as("a").in("knows").and().as("a").has(T.label,"person")
+                                as("a").in("knows").and().as("a").has(T.label, "person")
                         ),
                         as("b").in("created").as("c"),
                         as("b").in("created").count().is(P.gt(1)))
-                        .select().by("name");
+                        .select(); */
 
-        /*final Supplier<Traversal<?,?>> traversal = () ->
-                g.V().xmatch("a",
-                        as("a").out("knows").count().as("b"),
-                        as("a").out("knows").as("c"),
-                        as("c").out("created").count().as("b")).select("a","b","c").by("name").by().by("name");*/
+        final Supplier<Traversal<?,?>> traversal = () ->
+                g.V().match("a",
+                        as("a").has("name", "Garcia"),
+                        as("a").in("writtenBy").as("b"),
+                        as("b").out("followedBy").as("c"),
+                        as("c").out("writtenBy").as("d"),
+                        as("d").where(P.neq("a"))).select().by("name");
 
        /*final Supplier<Traversal<?,?>> traversal = () ->
                 g.V().as("a").out().as("b").where(
                         not(in("knows").as("a")).and().as("b").in().count().is(P.gt(1))
                 ).select().by("name"); */
-
-        /*final Supplier<Traversal<?,?>> traversal = () ->
-                g.V().as("a").out("created").as("b").in("created").as("c").both("knows").both("knows").as("d").where("c",P.not(P.eq("a").or(P.eq("d")))).select().by("name"); */
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());
