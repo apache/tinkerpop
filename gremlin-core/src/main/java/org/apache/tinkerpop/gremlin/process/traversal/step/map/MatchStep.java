@@ -297,7 +297,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     //////////////////////////////
 
-    public class MatchStartStep extends AbstractStep<Object, Object> implements Scoping {
+    public static class MatchStartStep extends AbstractStep<Object, Object> implements Scoping {
 
         private final String selectKey;
         private Set<String> scopeKeys = null;
@@ -359,7 +359,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
     }
 
-    public class MatchEndStep extends EndStep {
+    public static class MatchEndStep extends EndStep<Object> {
 
         private final String matchKey;
 
@@ -369,7 +369,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
         @Override
-        protected Traverser<S> processNextStart() throws NoSuchElementException {
+        protected Traverser<Object> processNextStart() throws NoSuchElementException {
             while (true) {
                 final Traverser.Admin traverser = this.starts.next();
                 // no end label

@@ -66,7 +66,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
     //////
 
-    public class EndStep extends AbstractStep<S, S> implements EngineDependent {
+    public static class EndStep<S> extends AbstractStep<S, S> implements EngineDependent {
 
         public EndStep(final Traversal.Admin traversal) {
             super(traversal);
@@ -76,7 +76,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         protected Traverser<S> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<S> start = this.starts.next();
             if (this.traverserStepIdSetByChild)
-                start.setStepId(ComputerAwareStep.this.getNextStep().getId());
+                start.setStepId(((ComputerAwareStep)this.getTraversal().getParent()).getNextStep().getId());
             return start;
         }
 
