@@ -58,7 +58,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.exp.XMatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
@@ -75,6 +74,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
@@ -101,7 +101,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountSideEffectStep;
@@ -476,9 +475,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PathStep<>(this.asAdmin()));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startLabel, final Traversal<?, ?>... traversals) {
-        return (GraphTraversal) this.asAdmin().addStep(new MatchStep<E, Map<String, E2>>(this.asAdmin(), startLabel, traversals));
-        //return this.asAdmin().addStep(new XMatchStep<>(this.asAdmin(), startLabel, XMatchStep.Conjunction.AND, traversals));
+    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startKey, final Traversal<?, ?>... andTraversals) {
+        return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), startKey, MatchStep.Conjunction.AND, andTraversals));
+    }
+
+    public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... andTraversals) {
+        return this.match(null, andTraversals);
     }
 
     /**
@@ -1035,14 +1037,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     ////
-
-    public default <E2> GraphTraversal<S, Map<String, E2>> xmatch(final String startKey, final Traversal<?, ?>... andTraversals) {
-        return this.asAdmin().addStep(new XMatchStep<>(this.asAdmin(), startKey, XMatchStep.Conjunction.AND, andTraversals));
-    }
-
-    public default <E2> GraphTraversal<S, Map<String, E2>> xmatch(final Traversal<?, ?>... andTraversals) {
-        return this.xmatch(null, andTraversals);
-    }
 
     @Override
     public default GraphTraversal<S, E> iterate() {

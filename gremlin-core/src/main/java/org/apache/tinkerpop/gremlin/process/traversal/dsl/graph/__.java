@@ -275,8 +275,15 @@ public class __ {
     /**
      * @see {@link GraphTraversal#match(String, Traversal[])}
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startLabel, final Traversal<?, ?>... traversals) {
-        return __.<A>start().match(startLabel, traversals);
+    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startKey, final Traversal<?, ?>... andTraversals) {
+        return __.<A>start().match(startKey, andTraversals);
+    }
+
+    /**
+     * @see {@link GraphTraversal#match(Traversal[])}
+     */
+    public static <A, B> GraphTraversal<A, Map<String, B>> match(final Traversal<?, ?>... andTraversals) {
+        return __.<A>start().match(andTraversals);
     }
 
     /**
@@ -792,14 +799,6 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> barrier(final int maxBarrierSize) {
         return __.<A>start().barrier(maxBarrierSize);
-    }
-
-    public static <A, B> GraphTraversal<A, Map<String, B>> xmatch(final String startKey, final Traversal<?, ?>... andTraversals) {
-        return __.<A>start().xmatch(startKey, andTraversals);
-    }
-
-    public static <A, B> GraphTraversal<A, Map<String, B>> xmatch(final Traversal<?, ?>... andTraversals) {
-        return __.<A>start().xmatch(andTraversals);
     }
 
 }

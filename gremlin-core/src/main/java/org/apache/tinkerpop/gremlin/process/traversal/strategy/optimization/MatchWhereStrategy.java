@@ -22,8 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.exp.XMatchStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -58,18 +57,18 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(XMatchStep.class, traversal))
+        if (!TraversalHelper.hasStepOfClass(MatchStep.class, traversal))
             return;
 
         // pull out match(as("a").has().has()) to has().has().match() in order to allow vendors to leverages has-containers for index lookups
-        TraversalHelper.getStepsOfClass(XMatchStep.class, traversal).forEach(matchStep -> {
+        TraversalHelper.getStepsOfClass(MatchStep.class, traversal).forEach(matchStep -> {
             if (matchStep.getStartKey().isPresent()) {
-                ((XMatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(conjunction -> {
-                    if (conjunction.getStartStep() instanceof XMatchStep.XMatchStartStep) {
-                        ((XMatchStep<?, ?>.XMatchStartStep) conjunction.getStartStep()).getSelectKey().ifPresent(selectKey -> {
+                ((MatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(conjunction -> {
+                    if (conjunction.getStartStep() instanceof MatchStep.MatchStartStep) {
+                        ((MatchStep.MatchStartStep) conjunction.getStartStep()).getSelectKey().ifPresent(selectKey -> {
                             if (selectKey.equals(matchStep.getStartKey().get()) && !conjunction.getSteps().stream()
-                                    .filter(step -> !(step instanceof XMatchStep.XMatchStartStep) &&
-                                            !(step instanceof XMatchStep.XMatchEndStep) &&
+                                    .filter(step -> !(step instanceof MatchStep.MatchStartStep) &&
+                                            !(step instanceof MatchStep.MatchEndStep) &&
                                             !(step instanceof HasStep))
                                     .findAny()
                                     .isPresent() && !(matchStep.getPreviousStep() instanceof EmptyStep)) {
