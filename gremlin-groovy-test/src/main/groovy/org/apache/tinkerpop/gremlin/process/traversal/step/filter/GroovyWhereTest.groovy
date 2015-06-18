@@ -101,14 +101,14 @@ public abstract class GroovyWhereTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_whereXnotXoutXcreatedXXX_name() {
-            TraversalScriptHelper.compute("g.V.where(not(out('created'))).name", g);
+            TraversalScriptHelper.compute("g.V.where(__.not(out('created'))).name", g);
         }
 
         // complex and/or functionality
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('b').where(and(__.as('a').out('knows').as('b'),or(__.as('b').out('created').has('name','ripple'),__.as('b').in('knows').count.is(P.not(eq(0)))))).select.by('name')", g)
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').where(and(__.as('a').out('knows').as('b'),or(__.as('b').out('created').has('name','ripple'),__.as('b').in('knows').count.is(not(eq(0)))))).select.by('name')", g)
         }
 
         @Override
@@ -118,13 +118,13 @@ public abstract class GroovyWhereTest {
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX() {
-            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').where(and(__.as('b').in,not(__.as('a').out('created').has('name','ripple')))).select.by('name')", g)
+            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').where(and(__.as('b').in,__.not(__.as('a').out('created').has('name','ripple')))).select.by('name')", g)
         }
 
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_select_byXnameX() {
-            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').in('created').as('c').both('knows').both('knows').as('d').where('c',P.not(eq('a').or(eq('d')))).select.by('name')", g)
+            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').in('created').as('c').both('knows').both('knows').as('d').where('c',not(eq('a').or(eq('d')))).select.by('name')", g)
         }
 
     }

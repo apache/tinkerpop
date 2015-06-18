@@ -91,7 +91,7 @@ public class __ {
     }
 
     /**
-     * @see {@link GraphTraversal#constant()}
+     * @see {@link GraphTraversal#constant(Object)}
      */
     public static <A> GraphTraversal<A, A> constant(final A a) {
         return __.<A>start().constant(a);
