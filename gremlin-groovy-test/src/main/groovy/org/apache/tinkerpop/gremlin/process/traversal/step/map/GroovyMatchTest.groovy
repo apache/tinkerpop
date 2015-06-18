@@ -88,14 +88,14 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_created_b__b_0created_aX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_created_b__b_0created_aX() {
             g.V().match('a',
                     __.as('a').out('created').as('b'),
                     __.as('b').in('created').as('a'))
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_knows_b__c_knows_bX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__c_knows_bX() {
             return g.V().match('a', __.as('a').out('knows').as('b'),
                     __.as('c').out('knows').as('b'));
         }
@@ -167,8 +167,8 @@ public abstract class GroovyMatchTest {
                     .select('a', 'c').by('name')
         }
 
-        /*@Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_selectXnameX() {
+        @Override
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_select_byXnameX() {
             g.V.match('a',
                     __.as('a').out('created').as('b'),
                     __.as('c').out('created').as('b')).select { it.value('name') }
@@ -179,7 +179,7 @@ public abstract class GroovyMatchTest {
             g.V.out.out.match('a',
                     __.as('b').out('created').as('a'),
                     __.as('c').out('knows').as('b')).select('c').out('knows').name
-        }*/
+        }
     }
 
 }
