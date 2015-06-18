@@ -107,8 +107,8 @@ public abstract class GroovyWhereTest {
         // complex and/or functionality
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('b').where(and(__.as('a').out('knows').as('b'),or(__.as('b').out('created').has('name','ripple'),__.as('b').in('knows').count.is(not(eq(0)))))).select.by('name')", g)
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select() {
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').where(and(__.as('a').out('knows').as('b'),or(__.as('b').out('created').has('name','ripple'),__.as('b').in('knows').count.is(not(eq(0)))))).select", g)
         }
 
         @Override
@@ -117,14 +117,19 @@ public abstract class GroovyWhereTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX() {
-            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').where(and(__.as('b').in,__.not(__.as('a').out('created').has('name','ripple')))).select.by('name')", g)
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select() {
+            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').where(and(__.as('b').in,__.not(__.as('a').out('created').has('name','ripple')))).select", g)
         }
 
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_select_byXnameX() {
-            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').in('created').as('c').both('knows').both('knows').as('d').where('c',not(eq('a').or(eq('d')))).select.by('name')", g)
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_select() {
+            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').in('created').as('c').both('knows').both('knows').as('d').where('c',not(eq('a').or(eq('d')))).select", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select() {
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').where(__.as('b').in.count.is(eq(3)).or.where(__.as('b').out('created').and.as('b').has(label,'person'))).select", g)
         }
 
     }

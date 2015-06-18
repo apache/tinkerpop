@@ -52,18 +52,18 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     protected String startKey;
     protected List<String> selectKeys;
     protected P<Object> predicate;
-    protected Traversal.Admin<?, ?> traversal;
+    protected Traversal.Admin<?, ?> whereTraversal;
     protected Scope scope;
     protected final Set<String> scopeKeys = new HashSet<>();
 
-    public WhereStep(final Traversal.Admin traversal, final Scope scope, final Optional<String> startKey, final P<?> predicate) {
-        super(traversal);
+    public WhereStep(final Traversal.Admin whereTraversal, final Scope scope, final Optional<String> startKey, final P<?> predicate) {
+        super(whereTraversal);
         this.scope = scope;
         this.startKey = startKey.orElse(null);
         if(null != this.startKey) this.scopeKeys.add(this.startKey);
         this.predicate = (P) predicate;
         this.selectKeys = new ArrayList<>();
-        this.traversal = null;
+        this.whereTraversal = null;
         this.configurePredicates(this.predicate);
     }
 
@@ -73,9 +73,9 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         this.startKey = null;
         this.predicate = null;
         this.selectKeys = null;
-        this.traversal = whereTraversal.asAdmin();
-        this.configureStartAndEndSteps(this.traversal);
-        this.traversal = this.integrateChild(this.traversal);
+        this.whereTraversal = whereTraversal.asAdmin();
+        this.configureStartAndEndSteps(this.whereTraversal);
+        this.whereTraversal = this.integrateChild(this.whereTraversal);
     }
 
     private void configureStartAndEndSteps(final Traversal.Admin<?, ?> whereTraversal) {
@@ -124,8 +124,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        if (null != this.traversal)
-            return TraversalUtil.test((Traverser.Admin) traverser, this.traversal);
+        if (null != this.whereTraversal)
+            return TraversalUtil.test((Traverser.Admin) traverser, this.whereTraversal);
         else {
             this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
             return this.predicate.test(null == this.startKey ? traverser.get() : this.getScopeValueByKey(Pop.last, this.startKey, traverser));
@@ -134,13 +134,13 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public List<Traversal.Admin<?, ?>> getLocalChildren() {
-        return null == this.traversal ? Collections.emptyList() : Collections.singletonList(this.traversal);
+        return null == this.whereTraversal ? Collections.emptyList() : Collections.singletonList(this.whereTraversal);
     }
 
     @Override
     public String toString() {
         // TODO: revert the predicates to their string form?
-        return StringFactory.stepString(this, this.scope, this.startKey, this.predicate, this.traversal);
+        return StringFactory.stepString(this, this.scope, this.startKey, this.predicate, this.whereTraversal);
     }
 
     @Override
@@ -154,13 +154,13 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         if (null != this.predicate)
             clone.predicate = this.predicate.clone();
         else
-            clone.traversal = clone.integrateChild(this.traversal.clone());
+            clone.whereTraversal = clone.integrateChild(this.whereTraversal.clone());
         return clone;
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.scope.hashCode() ^ (null == this.predicate ? this.traversal.hashCode() : this.predicate.hashCode());
+        return super.hashCode() ^ this.scope.hashCode() ^ (null == this.predicate ? this.whereTraversal.hashCode() : this.predicate.hashCode());
     }
 
     @Override
@@ -187,9 +187,10 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     //////////////////////////////
 
-    public class WhereStartStep extends MapStep<S, Object> {
+    public static class WhereStartStep<S> extends MapStep<S, Object> implements Scoping {
 
         private final String selectKey;
+        private Scope scope = Scope.global;
 
         public WhereStartStep(final Traversal.Admin traversal, final String selectKey) {
             super(traversal);
@@ -198,26 +199,47 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
         @Override
         protected Object map(final Traverser.Admin<S> traverser) {
-            if (this.traversal.getEndStep() instanceof WhereStep.WhereEndStep)
-                ((WhereEndStep) this.traversal.getEndStep()).processStartTraverser(traverser);
-            return null == this.selectKey ? traverser.get() : WhereStep.this.getScopeValueByKey(Pop.last, this.selectKey, traverser);
+            if (this.getTraversal().getEndStep() instanceof WhereEndStep)
+                ((WhereEndStep) this.getTraversal().getEndStep()).processStartTraverser(traverser);
+            return null == this.selectKey ? traverser.get() : this.getScopeValueByKey(Pop.last, this.selectKey, traverser);
         }
 
         @Override
         public String toString() {
-            return StringFactory.stepString(this, this.selectKey);
+            return StringFactory.stepString(this, this.scope, this.selectKey);
         }
 
         @Override
         public int hashCode() {
             return super.hashCode() ^ (null == this.selectKey ? "null".hashCode() : this.selectKey.hashCode());
         }
+
+        @Override
+        public Scope getScope() {
+            return this.scope;
+        }
+
+        @Override
+        public Scope recommendNextScope() {
+            return this.scope;
+        }
+
+        @Override
+        public void setScope(Scope scope) {
+            this.scope = scope;
+        }
+
+        @Override
+        public Set<String> getScopeKeys() {
+            return null == this.selectKey ? Collections.emptySet() : Collections.singleton(this.selectKey);
+        }
     }
 
-    public class WhereEndStep extends FilterStep<Object> {
+    public static class WhereEndStep extends FilterStep<Object> implements Scoping {
 
         private final String matchKey;
         private Object matchValue = null;
+        private Scope scope = Scope.global;
 
         public WhereEndStep(final Traversal.Admin traversal, final String matchKey) {
             super(traversal);
@@ -226,7 +248,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
         public void processStartTraverser(final Traverser.Admin traverser) {
             if (null != this.matchKey)
-                this.matchValue = WhereStep.this.getScopeValueByKey(Pop.last, this.matchKey, traverser);
+                this.matchValue = this.getScopeValueByKey(Pop.last, this.matchKey, traverser);
         }
 
         @Override
@@ -236,12 +258,32 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
         @Override
         public String toString() {
-            return StringFactory.stepString(this, this.matchKey);
+            return StringFactory.stepString(this, this.scope, this.matchKey);
         }
 
         @Override
         public int hashCode() {
             return super.hashCode() ^ (null == this.matchKey ? "null".hashCode() : this.matchKey.hashCode());
+        }
+
+        @Override
+        public Scope getScope() {
+            return this.scope;
+        }
+
+        @Override
+        public Scope recommendNextScope() {
+            return this.scope;
+        }
+
+        @Override
+        public void setScope(Scope scope) {
+            this.scope = scope;
+        }
+
+        @Override
+        public Set<String> getScopeKeys() {
+            return null == this.matchKey ? Collections.emptySet() : Collections.singleton(this.matchKey);
         }
     }
 
