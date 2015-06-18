@@ -21,13 +21,13 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,8 +39,7 @@ import java.util.Map;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -102,6 +101,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     //TODO: with Traversal.reverse()
     public abstract Traversal<Vertex, String> get_g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name();
+
+    // nested or/and with patterns in order that won't execute serially
+    public abstract Traversal<Vertex,Map<String,Object>> get_g_V_matchXa_whereXa_neqXcXX__a_created_b__orXa_knows_vadas__a_0knows_and_a_hasXlabel_personXX__b_0created_c__b_0created_count_isXgtX1XXX_select_byXidX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -187,7 +189,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     public void g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_selectXnameX() throws Exception {
         final List<Traversal<Vertex, Map<String, String>>> traversals = Arrays.asList(
                 get_g_V_matchXa_created_lop_b__b_0created_29_c__c_repeatXoutX_timesX2XX_selectXnameX());
-                //get_g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_selectXnameX());  // todo: predicate traversals are local traversals?
+        //get_g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_selectXnameX());  // todo: predicate traversals are local traversals?
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
             checkResults(makeMapList(3,
@@ -228,7 +230,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @Test(expected = IllegalStateException.class)
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_knows_b__c_knows_bX() {
-        final Traversal<Vertex, Map<String, Vertex>> traversal =  get_g_V_matchXa_knows_b__c_knows_bX();
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_knows_b__c_knows_bX();
         printTraversalForm(traversal);
         traversal.iterate();
     }
@@ -305,7 +307,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     public void g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX() throws Exception {
         final List<Traversal<Vertex, Map<String, Vertex>>> traversals = Arrays.asList(
                 get_g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX());
-                //get_g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_dX_whereXc_sungBy_dX_whereXd_hasXname_GarciaXX());  // TODO: the where() is trying to get Garcia's name. Why is ComputerVerificationStrategy allowing this?
+        //get_g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_dX_whereXc_sungBy_dX_whereXd_hasXname_GarciaXX());  // TODO: the where() is trying to get Garcia's name. Why is ComputerVerificationStrategy allowing this?
 
         traversals.forEach(traversal -> {
             printTraversalForm(traversal);
@@ -317,6 +319,18 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     "a", convertToVertex(graph, "Grateful_Dead"), "b", convertToVertex(graph, "CANT COME DOWN"), "c", convertToVertex(graph, "DOWN SO LONG"), "d", convertToVertex(graph, "Garcia"),
                     "a", convertToVertex(graph, "Grateful_Dead"), "b", convertToVertex(graph, "THE ONLY TIME IS NOW"), "c", convertToVertex(graph, "DOWN SO LONG"), "d", convertToVertex(graph, "Garcia")), traversal);
         });
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa_whereXa_neqXcXX__a_created_b__orXa_knows_vadas__a_0knows_and_a_hasXlabel_personXX__b_0created_c__b_0created_count_isXgtX1XXX_select_byXidX() {
+        final Traversal<Vertex,Map<String,Object>> traversal = get_g_V_matchXa_whereXa_neqXcXX__a_created_b__orXa_knows_vadas__a_0knows_and_a_hasXlabel_personXX__b_0created_c__b_0created_count_isXgtX1XXX_select_byXidX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(3,
+                "a", convertToVertexId("marko"), "b", convertToVertexId("lop"), "c", convertToVertexId("josh"),
+                "a", convertToVertexId("marko"), "b", convertToVertexId("lop"), "c", convertToVertexId("peter"),
+                "a", convertToVertexId("josh"), "b", convertToVertexId("lop"), "c", convertToVertexId("marko"),
+                "a", convertToVertexId("josh"), "b", convertToVertexId("lop"), "c", convertToVertexId("peter")),traversal);
     }
 
     public static class Traversals extends MatchTest {
@@ -466,6 +480,20 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().out().out().match("a",
                     as("b").out("created").as("a"),
                     as("c").out("knows").as("b")).select("c").out("knows").values("name");
+        }
+
+        @Override
+        public Traversal<Vertex,Map<String,Object>> get_g_V_matchXa_whereXa_neqXcXX__a_created_b__orXa_knows_vadas__a_0knows_and_a_hasXlabel_personXX__b_0created_c__b_0created_count_isXgtX1XXX_select_byXidX() {
+            return g.V().match("a",
+                    where("a", P.neq("c")),
+                    as("a").out("created").as("b"),
+                    or(
+                            as("a").out("knows").has("name", "vadas"),
+                            as("a").in("knows").and().as("a").has(T.label,"person")
+                    ),
+                    as("b").in("created").as("c"),
+                    as("b").in("created").count().is(P.gt(1)))
+                    .select().by(T.id);
         }
 
     }
