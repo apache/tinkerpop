@@ -229,6 +229,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         step.setNextStep(null != nextStep ? nextStep : EmptyStep.instance());
         if (null != previousStep) previousStep.setNextStep(step);
         if (null != nextStep) nextStep.setPreviousStep(step);
+        step.setTraversal(this);
         return (Traversal.Admin<S2, E2>) this;
     }
 
@@ -237,6 +238,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         if (this.locked) throw Exceptions.traversalIsLocked();
         final Step previousStep = this.steps.size() > 0 && index != 0 ? steps.get(index - 1) : null;
         final Step nextStep = this.steps.size() > index + 1 ? steps.get(index + 1) : null;
+        //this.steps.get(index).setTraversal(EmptyTraversal.instance());
         this.steps.remove(index);
         if (null != previousStep) previousStep.setNextStep(null == nextStep ? EmptyStep.instance() : nextStep);
         if (null != nextStep) nextStep.setPreviousStep(null == previousStep ? EmptyStep.instance() : previousStep);

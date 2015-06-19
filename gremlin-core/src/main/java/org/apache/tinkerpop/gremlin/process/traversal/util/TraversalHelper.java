@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
@@ -53,6 +54,13 @@ public final class TraversalHelper {
 
     private static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal, char state) {
         for (final Step step : traversal.getSteps()) {
+            if (step instanceof RepeatStep &&
+                    ((RepeatStep<?>) step).getGlobalChildren().stream()
+                            .flatMap(t -> t.getSteps().stream())
+                            .filter(temp -> temp instanceof VertexStep)
+                            .findAny()
+                            .isPresent())  // TODO: is this sufficient?
+                return false;
             if (step instanceof PropertiesStep && state == 'u')
                 return false;
             else if (step instanceof VertexStep) {

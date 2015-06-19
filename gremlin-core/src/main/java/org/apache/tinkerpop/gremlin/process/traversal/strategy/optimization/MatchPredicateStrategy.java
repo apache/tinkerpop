@@ -18,13 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.HashSet;
@@ -43,16 +47,16 @@ import java.util.stream.Collectors;
  * __.match(a,b).select().where(c)  // is replaced by __.match(a,b,c).select()
  * </pre>
  */
-public final class MatchWhereStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
+public final class MatchPredicateStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
-    private static final MatchWhereStrategy INSTANCE = new MatchWhereStrategy();
+    private static final MatchPredicateStrategy INSTANCE = new MatchPredicateStrategy();
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>();
 
     static {
         PRIORS.add(IdentityRemovalStrategy.class);
     }
 
-    private MatchWhereStrategy() {
+    private MatchPredicateStrategy() {
     }
 
     @Override
@@ -60,22 +64,34 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
         if (!TraversalHelper.hasStepOfClass(MatchStep.class, traversal))
             return;
 
-        // pull out match(as("a").has().has()) to has().has().match() in order to allow vendors to leverages has-containers for index lookups
         TraversalHelper.getStepsOfClass(MatchStep.class, traversal).forEach(matchStep -> {
+            Step<?, ?> nextStep = matchStep.getNextStep();
+            while (nextStep instanceof WhereStep || nextStep instanceof SelectStep || nextStep instanceof SelectOneStep) {   // match().select().where() --> match(where()).select()
+                if (nextStep instanceof WhereStep) {
+                    traversal.removeStep(nextStep);
+                    matchStep.addGlobalChild(new DefaultTraversal<>().addStep(nextStep));
+                    nextStep = matchStep.getNextStep();
+                } else if (nextStep.getLabels().isEmpty()) {
+                    nextStep = nextStep.getNextStep();
+                } else
+                    break;
+            }
             if (matchStep.getStartKey().isPresent()) {
-                ((MatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(conjunction -> {
-                    if (conjunction.getStartStep() instanceof MatchStep.MatchStartStep) {
-                        ((MatchStep.MatchStartStep) conjunction.getStartStep()).getSelectKey().ifPresent(selectKey -> {
-                            if (selectKey.equals(matchStep.getStartKey().get()) && !conjunction.getSteps().stream()
-                                    .filter(step -> !(step instanceof MatchStep.MatchStartStep) &&
-                                            !(step instanceof MatchStep.MatchEndStep) &&
-                                            !(step instanceof HasStep))
-                                    .findAny()
-                                    .isPresent() && !(matchStep.getPreviousStep() instanceof EmptyStep)) {
-                                matchStep.removeGlobalChild(conjunction);
-                                conjunction.removeStep(0);                                     // remove XMatchStartStep
-                                conjunction.removeStep(conjunction.getSteps().size() - 1);    // remove XMatchEndStep
-                                TraversalHelper.insertTraversal(matchStep.getPreviousStep(), conjunction, traversal);
+                ((MatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(matchTraversal -> {   // match('a',has(key,value)) --> as('a').has(key,value).match()
+                    if (matchTraversal.getStartStep() instanceof MatchStep.MatchStartStep) {
+                        ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().ifPresent(selectKey -> {
+                            if (selectKey.equals(matchStep.getStartKey().get()) &&
+                                    !(matchStep.getPreviousStep() instanceof EmptyStep) &&
+                                    !matchTraversal.getSteps().stream()
+                                            .filter(step -> !(step instanceof MatchStep.MatchStartStep) &&
+                                                    !(step instanceof MatchStep.MatchEndStep) &&
+                                                    !(step instanceof HasStep))
+                                            .findAny()
+                                            .isPresent()) {
+                                matchStep.removeGlobalChild(matchTraversal);
+                                matchTraversal.removeStep(0);                                     // remove XMatchStartStep
+                                matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove XMatchEndStep
+                                TraversalHelper.insertTraversal(matchStep.getPreviousStep(), matchTraversal, traversal);
                             }
                         });
                     }
@@ -84,7 +100,7 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
         });
     }
 
-    public static MatchWhereStrategy instance() {
+    public static MatchPredicateStrategy instance() {
         return INSTANCE;
     }
 
