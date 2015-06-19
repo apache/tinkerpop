@@ -789,8 +789,6 @@ g.V().match('a',
         select('a','c').by('name')
 ----
 
-WARNING: Currently, `match()` does not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
-
 [[using-where-with-match]]
 Using Where with Match
 ^^^^^^^^^^^^^^^^^^^^^^
