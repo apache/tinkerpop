@@ -78,12 +78,12 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_c__c_repeatXoutX_timesX2XX_selectXnameX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_c__c_whereXrepeatXoutX_timesX2XXX() {
             TraversalScriptHelper.compute("""
                 g.V.match('a',
                     __.as('a').out('created').has('name', 'lop').as('b'),
                     __.as('b').in('created').has('age', 29).as('c'),
-                    __.as('c').repeat(__.out).times(2)).select.by('name')
+                    __.as('c').where(repeat(__.out).times(2)))
             """, g)
         }
 
@@ -174,13 +174,13 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_selectXnameX() {
+        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_select() {
             TraversalScriptHelper.compute("""
                 g.V.match("a",
                     __.as("a").out("created").has("name", "lop").as("b"),
                     __.as("b").in("created").has("age", 29).as("c"))
                     .where(__.as("c").repeat(__.out).times(2))
-                    .select.by('name')
+                    .select
             """, g)
         }
 

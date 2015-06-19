@@ -24,7 +24,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +32,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -43,7 +41,7 @@ import static org.mockito.Mockito.when;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Enclosed.class)
-public class MatchWhereStrategyTest {
+public class MatchPredicateStrategyTest {
 
     @RunWith(Parameterized.class)
     public static class StandardTest extends AbstractMatchWhereStrategyTest {
@@ -103,7 +101,7 @@ public class MatchWhereStrategyTest {
 
         void applyMatchWhereStrategy(final Traversal traversal) {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(MatchWhereStrategy.instance(), IdentityRemovalStrategy.instance());
+            strategies.addStrategies(MatchPredicateStrategy.instance(), IdentityRemovalStrategy.instance());
 
             traversal.asAdmin().setStrategies(strategies);
             traversal.asAdmin().setEngine(this.traversalEngine);

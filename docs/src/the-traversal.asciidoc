@@ -706,7 +706,7 @@ WARNING: The anonymous traversal of `local()` processes the current object "loca
 Match Step
 ~~~~~~~~~~
 
-The `match()`-step (*map*) provides a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative] form of graph querying based on the notion of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. With `match()`, the user provides a collection of "traversal fragments," called patterns, that have variables defined that much hold true throughout the duration of the `match()`. When a traverser is in `match()`, a registered `MatchAlgorithm` analyzes the current state of the traverser (i.e. its history based on its <<path-data-structure,path data>>) and returns a traversal-pattern that the traverser should try next. The default `MatchAlgorithm` provided is called `CountMatchAlgorithm` and it dynamically revises the pattern execution plan to ensure that patterns that do the most filtering (i.e. largest set reduction) occur first. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is advantageous to use `match()`, as an optimal plan will be determined automatically. Furthermore, some queries are much easier to express via `match()` than with single-path traversals.
+The `match()`-step (*map*) provides a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative] form of graph querying based on the notion of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. With `match()`, the user provides a collection of "traversal fragments," called patterns, that have variables defined that much hold true throughout the duration of the `match()`. When a traverser is in `match()`, a registered `MatchAlgorithm` analyzes the current state of the traverser (i.e. its history based on its <<path-data-structure,path data>>) and returns a traversal-pattern that the traverser should try next. The default `MatchAlgorithm` provided is `CountMatchAlgorithm` and it dynamically revises the pattern execution plan by sorting the patterns according to their filtering capabilities (i.e. largest set reduction patterns execute first). For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is advantageous to use `match()`, as an optimal plan will be determined automatically. Furthermore, some queries are much easier to express via `match()` than with single-path traversals.
 
     "Who created a project named 'lop' that was also created by someone who is 29 years old? Return the two creators."
 
@@ -809,7 +809,7 @@ g.V().as('a').out().as('b'). <1>
           __.as('a').out('knows').as('b'),
           __.as('b').in().count().as('c').and().as('c').is(gt(2))  <5>
         )
-    )
+    ).select('a','b','c').by('name').by('name').by() <6>
 ----
 
 <1> A standard, labeled traversal can come prior to `match()`.
@@ -817,6 +817,7 @@ g.V().as('a').out().as('b'). <1>
 <3> It is possible to use <<a-note-on-barrier-steps,barrier steps>> though they are computed locally to the pattern (as one would expect).
 <4> It is possible to nest `and()`- and `or()`-steps for conjunction matching.
 <5> Both infix and prefix conjunction notation is supported.
+<6> The bound values are of different types -- vertex ("a"), vertex ("b"), long ("c").
 
 [[using-where-with-match]]
 Using Where with Match
@@ -832,26 +833,30 @@ g.V().match('a',
           where('a', neq('c')).select('a','c').by('name')
 ----
 
-The `where()`-step can take either a `P`-predicate (example above) or a `Traversal` (example below). Using `MatchWhereStrategy`, `where()`-clauses can be automatically folded into `match()` and thus, subject to the query optimizer within `match()`-step.
+The `where()`-step can take either a `P`-predicate (example above) or a `Traversal` (example below). Using `MatchPredicateStrategy`, `where()`-clauses can be automatically folded into `match()` and thus, subject to the query optimizer within `match()`-step.
 
 [gremlin-groovy,modern]
 ----
 traversal = g.V().match('a',
+                    __.as('a').has(label,'person'), <1>
                     __.as('a').out('created').as('b'),
                     __.as('b').in('created').as('c')).
-                      where(__.as('a').out('knows').as('c')). <1>
-                      select('a','c').by('name'); null <2>
-traversal.toString() <3>
-traversal <4> <5>
-traversal.toString() <6>
+                      where(__.as('a').out('knows').as('c')). <2>
+                      select('a','c').by('name'); null <3>
+traversal.toString() <4>
+traversal <5> <6>
+traversal.toString() <7>
 ----
 
-<1> A `where()`-step with a traversal containing variable bindings declared in `match()`.
-<2> A useful trick to ensure that that the traversal is not iterated by Gremlin Console.
-<3> The string representation of the traversal prior to its strategies being applied.
-<4> The Gremlin Console will automatically iterate anything that is an iterator or is iterable.
-<5> Both marko and josh are co-developers and marko knows josh.
-<6> The string representation of the traversal after the strategies have been applied (and thus, `where()` is folded into `match()`)
+<1> Any `has()`-step traversal patterns that start with the match-key are pulled out of `match()` to enable the vendor to leverage the filter for index lookups.
+<2> A `where()`-step with a traversal containing variable bindings declared in `match()`.
+<3> A useful trick to ensure that that the traversal is not iterated by Gremlin Console.
+<4> The string representation of the traversal prior to its strategies being applied.
+<5> The Gremlin Console will automatically iterate anything that is an iterator or is iterable.
+<6> Both marko and josh are co-developers and marko knows josh.
+<7> The string representation of the traversal after the strategies have been applied (and thus, `where()` is folded into `match()`)
+
+IMPORTANT: A `where()`-step is a filter and thus, variables within a `where()` clause are not globally bound to the path of the traverser in `match()`. As such, `where()`-steps in `match()` are used for filtering, not binding.
 
 [[max-step]]
 Max Step
