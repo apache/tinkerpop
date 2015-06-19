@@ -195,7 +195,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.conjunction, this.matchTraversals);
+        return StringFactory.stepString(this, this.startKey, this.conjunction, this.matchTraversals);
     }
 
     @Override

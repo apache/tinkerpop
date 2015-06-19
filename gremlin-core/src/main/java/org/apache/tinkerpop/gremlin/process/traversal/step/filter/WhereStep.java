@@ -55,12 +55,17 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     protected Traversal.Admin<?, ?> whereTraversal;
     protected Scope scope;
     protected final Set<String> scopeKeys = new HashSet<>();
+    protected final Set<Variable> variables = new HashSet<>();
 
     public WhereStep(final Traversal.Admin whereTraversal, final Scope scope, final Optional<String> startKey, final P<?> predicate) {
         super(whereTraversal);
         this.scope = scope;
         this.startKey = startKey.orElse(null);
-        if (null != this.startKey) this.scopeKeys.add(this.startKey);
+        if (null != this.startKey) {
+            this.scopeKeys.add(this.startKey);
+            this.variables.add(Variable.START);
+        }
+        this.variables.add(Variable.END);
         this.predicate = (P) predicate;
         this.selectKeys = new ArrayList<>();
         this.whereTraversal = null;
@@ -90,8 +95,11 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             final String label = startStep.getLabels().iterator().next();
             this.scopeKeys.add(label);
             TraversalHelper.replaceStep(startStep, new WhereStartStep(whereTraversal, label), whereTraversal);
-        } else if (!whereTraversal.getEndStep().getLabels().isEmpty()) {                    // out().as("a").. traversals
+            this.variables.add(Variable.START);
+        } else if (!whereTraversal.getEndStep().getLabels().isEmpty()) {                    // ...out().as("a") traversals
             TraversalHelper.insertBeforeStep(new WhereStartStep(whereTraversal, null), (Step) startStep, whereTraversal);
+        } else {
+            this.variables.add(Variable.NONE);
         }
         //// END STEP to WhereEndStep
         final Step<?, ?> endStep = whereTraversal.getEndStep();
@@ -102,6 +110,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             this.scopeKeys.add(label);
             endStep.removeLabel(label);
             whereTraversal.addStep(new WhereEndStep(whereTraversal, label));
+            this.variables.add(Variable.END);
         }
     }
 
@@ -198,6 +207,11 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         return this.scope;
     }
 
+    @Override
+    public Set<Variable> getVariableLocations() {
+        return this.variables;
+    }
+
     //////////////////////////////
 
     public static class WhereStartStep<S> extends MapStep<S, Object> implements Scoping {
@@ -224,7 +238,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
         @Override
         public int hashCode() {
-            return super.hashCode() ^ (null == this.selectKey ? "null".hashCode() : this.selectKey.hashCode());
+            return super.hashCode() ^ this.scope.hashCode() ^ (null == this.selectKey ? "null".hashCode() : this.selectKey.hashCode());
         }
 
         @Override
@@ -280,7 +294,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
         @Override
         public int hashCode() {
-            return super.hashCode() ^ (null == this.matchKey ? "null".hashCode() : this.matchKey.hashCode());
+            return super.hashCode() ^ this.scope.hashCode() ^ (null == this.matchKey ? "null".hashCode() : this.matchKey.hashCode());
         }
 
         @Override
