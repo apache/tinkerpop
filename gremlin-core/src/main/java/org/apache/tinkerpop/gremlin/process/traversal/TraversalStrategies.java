@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.EngineDependentStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.LazyBarrierStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ScopingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;

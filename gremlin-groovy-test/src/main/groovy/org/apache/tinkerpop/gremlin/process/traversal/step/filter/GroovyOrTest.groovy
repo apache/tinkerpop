@@ -38,5 +38,10 @@ public abstract class GroovyOrTest {
         public Traversal<Vertex, String> get_g_V_orXoutEXknowsX__hasXlabel_softwareX_or_hasXage_gte_35XX_name() {
             TraversalScriptHelper.compute("g.V.or(outE('knows'), has(T.label, 'software') | has('age', gte(35))).name", g)
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_orXselectXaX_selectXaXX() {
+            TraversalScriptHelper.compute("g.V().as('a').or(__.select('a'), __.select('a'))", g);
+        }
     }
 }

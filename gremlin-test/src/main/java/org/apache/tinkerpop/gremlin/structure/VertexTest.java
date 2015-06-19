@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures;
 import org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
+import org.apache.tinkerpop.gremlin.structure.io.util.CustomId;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -137,7 +138,7 @@ public class VertexTest {
 
             // this is different from "FEATURE_CUSTOM_IDS" as TinkerGraph does not define a specific id class
             // (i.e. TinkerId) for the identifier.
-            final IoTest.CustomId customId = new IoTest.CustomId("test", uuid);
+            final CustomId customId = new CustomId("test", uuid);
             final Vertex v = graph.addVertex();
             v.addEdge("self", v, T.id, customId);
             tryCommit(graph, graph -> {

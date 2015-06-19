@@ -49,7 +49,7 @@ public final class TraversalScriptHelper {
                 return new TraversalScriptFunction<S, E>(builder, scriptEngineName, traversalScript, bindings).apply(graph);
             }
         } catch (final Exception e) {
-            throw new IllegalArgumentException(e.getMessage(), e);
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 

@@ -49,12 +49,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
@@ -72,6 +74,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
@@ -93,10 +96,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountSideEffectStep;
@@ -111,6 +115,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffect
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementFunctionComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementValueComparator;
@@ -118,8 +123,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
-import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -171,7 +174,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     ///////////////////// MAP STEPS /////////////////////
 
     /**
-     * Map a traveser referencing an object of type <code>E</code> to an object of type <code>E2</code>.
+     * Map a traverser referencing an object of type <code>E</code> to an object of type <code>E2</code>.
      *
      * @param function the lambda expression that does the functional mapping
      * @param <E2>the  mapping end type
@@ -179,6 +182,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E2> map(final Function<Traverser<E>, E2> function) {
         return this.asAdmin().addStep(new LambdaMapStep<>(this.asAdmin(), function));
+    }
+
+    public default <E2> GraphTraversal<S, E2> map(final Traversal<E, E2> mapTraversal) {
+        return this.asAdmin().addStep(new TraversalMapStep<>(this.asAdmin(), mapTraversal));
     }
 
     /**
@@ -191,6 +198,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E2> flatMap(final Function<Traverser<E>, Iterator<E2>> function) {
         return this.asAdmin().addStep(new LambdaFlatMapStep<>(this.asAdmin(), function));
+    }
+
+    public default <E2> GraphTraversal<S, E2> flatMap(final Traversal<E, E2> flatMapTraversal) {
+        return this.asAdmin().addStep(new TraversalFlatMapStep<>(this.asAdmin(), flatMapTraversal));
     }
 
     /**
@@ -464,8 +475,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PathStep<>(this.asAdmin()));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startLabel, final Traversal<?, ?>... traversals) {
-        return (GraphTraversal) this.asAdmin().addStep(new MatchStep<E, Map<String, E2>>(this.asAdmin(), startLabel, traversals));
+    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startKey, final Traversal<?, ?>... matchTraversals) {
+        return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), startKey, MatchStep.Conjunction.AND, matchTraversals));
+    }
+
+    public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... matchTraversals) {
+        return this.match(null, matchTraversals);
     }
 
     /**
@@ -613,16 +628,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LambdaFilterStep<>(this.asAdmin(), predicate));
     }
 
-    public default GraphTraversal<S, E> or(final Object... predicatesOrTraversals) {
-        return this.asAdmin().addStep(0 == predicatesOrTraversals.length ?
-                new OrStep<>(this.asAdmin()) :
-                new WhereStep<>(this.asAdmin(), Scope.global, new OrP(predicatesOrTraversals)));
+    public default GraphTraversal<S, E> filter(final Traversal<E, ?> filterTraversal) {
+        return this.asAdmin().addStep(new TraversalFilterStep<>(this.asAdmin(), filterTraversal));
     }
 
-    public default GraphTraversal<S, E> and(final Object... predicatesOrTraversals) {
-        return this.asAdmin().addStep(0 == predicatesOrTraversals.length ?
-                new AndStep<>(this.asAdmin()) :
-                new WhereStep<>(this.asAdmin(), Scope.global, new AndP(predicatesOrTraversals)));
+    public default GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
+        return this.asAdmin().addStep(new OrStep(this.asAdmin(), orTraversals));
+    }
+
+    public default GraphTraversal<S, E> and(final Traversal<?, ?>... andTraversals) {
+        return this.asAdmin().addStep(new AndStep(this.asAdmin(), andTraversals));
     }
 
     public default GraphTraversal<S, E> inject(final E... injections) {
@@ -651,7 +666,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> where(final Scope scope, final Traversal<?, ?> whereTraversal) {
-        return this.where(scope, P.traversal(whereTraversal));
+        return this.asAdmin().addStep(new WhereStep(this.asAdmin(), scope, whereTraversal));
     }
 
     public default GraphTraversal<S, E> where(final String startKey, final P<?> predicate) {
@@ -691,15 +706,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final String key, final Traversal<?, ?> propertyTraversal) {
-        return this.has(key, P.traversal(propertyTraversal));
+        return this.filter(propertyTraversal.asAdmin().addStep(0, new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, key)));
     }
 
     public default GraphTraversal<S, E> has(final String key) {
-        return this.where(__.values(key));
+        return this.filter(__.values(key));
     }
 
     public default GraphTraversal<S, E> hasNot(final String key) {
-        return this.where(P.not(__.values(key)));
+        return this.not(__.values(key));
     }
 
     public default GraphTraversal<S, E> hasLabel(final String... labels) {
@@ -730,6 +745,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default GraphTraversal<S, E> is(final Object value) {
         return this.is(value instanceof P ? (P<E>) value : P.eq((E) value));
+    }
+
+    public default GraphTraversal<S, E> not(final Traversal<E, ?> notTraversal) {
+        return this.asAdmin().addStep(new NotStep<>(this.asAdmin(), notTraversal));
     }
 
     /**
@@ -814,6 +833,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> sideEffect(final Consumer<Traverser<E>> consumer) {
         return this.asAdmin().addStep(new LambdaSideEffectStep<>(this.asAdmin(), consumer));
+    }
+
+    public default GraphTraversal<S, E> sideEffect(final Traversal<E, ?> sideEffectTraversal) {
+        return this.asAdmin().addStep(new TraversalSideEffectStep<>(this.asAdmin(), sideEffectTraversal));
     }
 
     public default <E2> GraphTraversal<S, E2> cap(final String sideEffectKey, final String... sideEffectKeys) {

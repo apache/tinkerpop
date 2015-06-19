@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
@@ -293,6 +294,42 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         final List<Result> json = client.submit("b = new JsonBuilder();b.people{person {fname 'stephen'\nlname 'mallette'}};b").all().join();
         assertEquals("{\"people\":{\"person\":{\"fname\":\"stephen\",\"lname\":\"mallette\"}}}", json.get(0).getString());
+        cluster.close();
+    }
+
+    @Test
+    public void shouldWorkWithGraphSONSerialization() throws Exception {
+        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V1D0).create();
+        final Client client = cluster.connect();
+
+        final List<Result> r = client.submit("TinkerFactory.createModern().traversal().V(1)").all().join();
+        assertEquals(1, r.size());
+
+        final Map<String,Object> m = r.get(0).get(Map.class);
+        assertEquals(4, m.size());
+        assertEquals(1, m.get("id"));
+        assertEquals("person", m.get("label"));
+        assertEquals("vertex", m.get("type"));
+
+        final Map<String,Object> properties = (Map<String,Object>) m.get("properties");
+        assertEquals(2, properties.size());
+
+        final List<Object> names = (List<Object>) properties.get("name");
+        assertEquals(1, names.size());
+
+        final Map<String,Object> nameProperties = (Map<String,Object>) names.get(0);
+        assertEquals(2, nameProperties.size());
+        assertEquals(0l, nameProperties.get("id"));
+        assertEquals("marko", nameProperties.get("value"));
+
+        final List<Object> ages = (List<Object>) properties.get("age");
+        assertEquals(1, ages.size());
+
+        final Map<String,Object> ageProperties = (Map<String,Object>) ages.get(0);
+        assertEquals(2, ageProperties.size());
+        assertEquals(1l, ageProperties.get("id"));
+        assertEquals(29, ageProperties.get("value"));
+
         cluster.close();
     }
 

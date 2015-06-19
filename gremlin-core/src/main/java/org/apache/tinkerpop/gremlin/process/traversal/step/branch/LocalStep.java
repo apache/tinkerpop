@@ -89,4 +89,10 @@ public final class LocalStep<S, E> extends AbstractStep<S, E> implements Travers
     public int hashCode() {
         return super.hashCode() ^ this.localTraversal.hashCode();
     }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.first = true;
+    }
 }

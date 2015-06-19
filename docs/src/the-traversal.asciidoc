@@ -39,7 +39,7 @@ image::step-types.png[width=650]
 
 A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, Edge, or VertexProperty. It can also be spawned anonymously (i.e. empty) via `__`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal` inherit from the more general forms diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
 
-NOTE: To reduce the verbosity of the expression, it is good to `import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*`. This way, instead of doing `__.inE()` for an anonymous traversal, it is possible to simply write `inE()`.
+NOTE: To reduce the verbosity of the expression, it is good to `import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*`. This way, instead of doing `__.inE()` for an anonymous traversal, it is possible to simply write `inE()`. Be aware of language-specific reserved keywords when using anonymous traversals. For example, `in` and `as` are reserved keywords in Groovy, therefore you must use the verbose syntax `__.in()` and `__.as()` to avoid collisions.
 
 [[lambda-steps]]
 Lambda Steps
@@ -594,10 +594,19 @@ g.V().hasLabel('person').out().has('name',within('vadas','josh')).
       outE().hasLabel('created')
 g.V().has('age',inside(20,30)).values('age') <1>
 g.V().has('age',outside(20,30)).values('age') <2>
+g.V().has('name',within('josh','marko')).valueMap() <3>
+g.V().has('name',without('josh','marko')).valueMap() <4>
+g.V().has('name',not(within('josh','marko'))).valueMap() <5>
 ----
 
 <1> Find all vertices whose ages are between 20 (inclusive) and 30 (exclusive).
 <2> Find all vertices whose ages are not between 20 (inclusive) and 30 (exclusive).
+<3> Find all vertices whose names are exact matches to any names in the the collection `[josh,marko]`, display all the key,value pairs for those verticies.
+<4> Find all vertices whose names are not in the collection `[josh,marko]`, display all the key,value pairs for those vertices.
+<5> Same as the prior example save using `not` on `within` to yield `without`.
+
+TinkerPop does not support a regular expression predicate, although specific graph databases that leverage TinkerPop may
+provide a partial match extension.
 
 [[inject-step]]
 Inject Step
@@ -779,8 +788,6 @@ g.V().match('a',
                  select('y').as('c')).
         select('a','c').by('name')
 ----
-
-WARNING: Currently, `match()` does not operate within a multi-JVM <<graphcomputer,GraphComputer>> OLAP environment. Future work includes a linearization <<traversalstrategy,TraversalStrategy>> for `match()`.
 
 [[using-where-with-match]]
 Using Where with Match
@@ -1551,7 +1558,7 @@ g.V().where(out('created')).values('name') <1>
 g.V().out('knows').where(out('created')).values('name') <2>
 g.V().where(out('created').count().is(gte(2))).values('name') <3>
 g.V().where(out('knows').where(out('created'))).values('name') <4>
-g.V().where(not(out('created'))).where(__.in('knows')).values('name') <5>
+g.V().where(__.not(out('created'))).where(__.in('knows')).values('name') <5>
 ----
 
 <1> What are the names of the people who have created a project?

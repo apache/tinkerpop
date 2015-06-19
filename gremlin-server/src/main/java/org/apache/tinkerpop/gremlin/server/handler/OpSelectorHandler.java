@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.Context;
-import org.apache.tinkerpop.gremlin.server.Graphs;
+import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.Settings;
@@ -53,15 +53,15 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     private final Settings settings;
-    private final Graphs graphs;
+    private final GraphManager graphManager;
 
     private final GremlinExecutor gremlinExecutor;
     private final ScheduledExecutorService scheduledExecutorService;
 
-    public OpSelectorHandler(final Settings settings, final Graphs graphs, final GremlinExecutor gremlinExecutor,
+    public OpSelectorHandler(final Settings settings, final GraphManager graphManager, final GremlinExecutor gremlinExecutor,
                              final ScheduledExecutorService scheduledExecutorService) {
         this.settings = settings;
-        this.graphs = graphs;
+        this.graphManager = graphManager;
         this.gremlinExecutor = gremlinExecutor;
         this.scheduledExecutorService = scheduledExecutorService;
     }
@@ -70,7 +70,7 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
     protected void decode(final ChannelHandlerContext ctx, final RequestMessage msg,
                           final List<Object> objects) throws Exception {
         final Context gremlinServerContext = new Context(msg, ctx, settings,
-                graphs, gremlinExecutor, this.scheduledExecutorService);
+                graphManager, gremlinExecutor, this.scheduledExecutorService);
         try {
             // choose a processor to do the work based on the request message.
             final Optional<OpProcessor> processor = OpLoader.getProcessor(msg.getProcessor());

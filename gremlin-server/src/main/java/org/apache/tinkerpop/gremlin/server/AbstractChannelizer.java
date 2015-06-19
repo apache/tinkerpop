@@ -62,7 +62,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     protected Settings settings;
     protected GremlinExecutor gremlinExecutor;
     protected Optional<SslContext> sslContext;
-    protected Graphs graphs;
+    protected GraphManager graphManager;
     protected ExecutorService gremlinExecutorService;
     protected ScheduledExecutorService scheduledExecutorService;
 
@@ -95,7 +95,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
         this.settings = serverGremlinExecutor.getSettings();
         this.gremlinExecutor = serverGremlinExecutor.getGremlinExecutor();
-        this.graphs = serverGremlinExecutor.getGraphs();
+        this.graphManager = serverGremlinExecutor.getGraphManager();
         this.gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
         this.scheduledExecutorService = serverGremlinExecutor.getScheduledExecutorService();
 
@@ -109,8 +109,8 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         if (sslContext.isPresent()) logger.info("SSL enabled");
 
         // these handlers don't share any state and can thus be initialized once per pipeline
-        this.opSelectorHandler = new OpSelectorHandler(settings, graphs, gremlinExecutor, scheduledExecutorService);
-        this.opExecutorHandler = new OpExecutorHandler(settings, graphs, gremlinExecutor, scheduledExecutorService);
+        this.opSelectorHandler = new OpSelectorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
+        this.opExecutorHandler = new OpExecutorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
         this.iteratorHandler = new IteratorHandler(settings);
     }
 
@@ -143,7 +143,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
                 final MessageSerializer serializer = (MessageSerializer) clazz.newInstance();
                 if (config.config != null)
-                    serializer.configure(config.config, graphs.getGraphs());
+                    serializer.configure(config.config, graphManager.getGraphs());
 
                 return Optional.ofNullable(serializer);
             } catch (ClassNotFoundException cnfe) {

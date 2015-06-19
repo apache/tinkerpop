@@ -355,7 +355,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldReceiveFailureOnBadSerialization() throws Exception {
+    public void shouldReceiveFailureOnBadGraphSONSerialization() throws Exception {
         final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRAPHSON_V1D0).create();
         final Client client = cluster.connect();
 
@@ -364,6 +364,21 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getCause().getMessage().startsWith("Error during serialization: Direct self-reference leading to cycle (through reference chain:"));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldReceiveFailureOnBadGryoSerialization() throws Exception {
+        final Cluster cluster = Cluster.build("localhost").serializer(Serializers.GRYO_V1D0).create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("java.awt.Color.RED").all().join();
+            fail("Should throw an exception.");
+        } catch (RuntimeException re) {
+            assertTrue(re.getCause().getCause().getMessage().startsWith("Error during serialization: Class is not registered: java.awt.Color"));
         } finally {
             cluster.close();
         }

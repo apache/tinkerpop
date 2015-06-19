@@ -68,11 +68,19 @@ public class __ {
         return __.<A>start().map(function);
     }
 
+    public static <A, B> GraphTraversal<A, B> map(final Traversal<A, B> mapTraversal) {
+        return __.<A>start().map(mapTraversal);
+    }
+
     /**
      * @see {@link GraphTraversal#flatMap(Function)}.
      */
     public static <A, B> GraphTraversal<A, B> flatMap(final Function<Traverser<A>, Iterator<B>> function) {
         return __.<A>start().flatMap(function);
+    }
+
+    public static <A, B> GraphTraversal<A, B> flatMap(final Traversal<A, B> flatMapTraversal) {
+        return __.<A>start().flatMap(flatMapTraversal);
     }
 
     /**
@@ -83,7 +91,7 @@ public class __ {
     }
 
     /**
-     * @see {@link GraphTraversal#constant()}
+     * @see {@link GraphTraversal#constant(Object)}
      */
     public static <A> GraphTraversal<A, A> constant(final A a) {
         return __.<A>start().constant(a);
@@ -267,8 +275,15 @@ public class __ {
     /**
      * @see {@link GraphTraversal#match(String, Traversal[])}
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startLabel, final Traversal<?, ?>... traversals) {
-        return __.<A>start().match(startLabel, traversals);
+    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startKey, final Traversal<?, ?>... matchTraversals) {
+        return __.<A>start().match(startKey, matchTraversals);
+    }
+
+    /**
+     * @see {@link GraphTraversal#match(Traversal[])}
+     */
+    public static <A, B> GraphTraversal<A, Map<String, B>> match(final Traversal<?, ?>... matchTraversals) {
+        return __.<A>start().match(matchTraversals);
     }
 
     /**
@@ -476,12 +491,16 @@ public class __ {
         return __.<A>start().filter(predicate);
     }
 
-    public static <A> GraphTraversal<A, A> and(final Object... predicatesOrTraversals) {
-        return __.<A>start().and(predicatesOrTraversals);
+    public static <A> GraphTraversal<A, A> filter(final Traversal<A, ?> filterTraversal) {
+        return __.<A>start().filter(filterTraversal);
     }
 
-    public static <A> GraphTraversal<A, A> or(final Object... predicatesOrTraversals) {
-        return __.<A>start().or(predicatesOrTraversals);
+    public static <A> GraphTraversal<A, A> and(final Traversal<?, ?>... andTraversals) {
+        return __.<A>start().and(andTraversals);
+    }
+
+    public static <A> GraphTraversal<A, A> or(final Traversal<?, ?>... orTraversals) {
+        return __.<A>start().or(orTraversals);
     }
 
     public static <A> GraphTraversal<A, A> inject(final A... injections) {
@@ -580,6 +599,10 @@ public class __ {
         return __.<A>start().is(value);
     }
 
+    public static <A> GraphTraversal<A, A> not(final Traversal<A, ?> notTraversal) {
+        return __.<A>start().not(notTraversal);
+    }
+
     public static <A> GraphTraversal<A, A> coin(final double probability) {
         return __.<A>start().coin(probability);
     }
@@ -640,6 +663,10 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> sideEffect(final Consumer<Traverser<A>> consumer) {
         return __.<A>start().sideEffect(consumer);
+    }
+
+    public static <A> GraphTraversal<A, A> sideEffect(final Traversal<A, ?> sideEffectTraversal) {
+        return __.<A>start().sideEffect(sideEffectTraversal);
     }
 
     public static <A, B> GraphTraversal<A, B> cap(final String sideEffectKey, String... sideEffectKeys) {

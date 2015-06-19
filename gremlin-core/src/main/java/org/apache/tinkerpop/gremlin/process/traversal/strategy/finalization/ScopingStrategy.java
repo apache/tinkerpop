@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -47,9 +48,11 @@ public final class ScopingStrategy extends AbstractTraversalStrategy<TraversalSt
             if (step instanceof Scoping) {
                 if (step.getPreviousStep() instanceof Scoping)
                     ((Scoping) step).setScope(((Scoping) step.getPreviousStep()).recommendNextScope());
-                else if (Scope.global == ((Scoping) step).getScope()) {
+                else if (Scope.global == ((Scoping) step).getScope() && step != traversal.getStartStep()) { // for Match(Where())
                     final Set<String> keys = ((Scoping) step).getScopeKeys();
-                    if (!keys.isEmpty() && !((Scoping) step).getScopeKeys().stream().filter(pathLabels::contains).findAny().isPresent())
+                    if(keys.isEmpty() && step instanceof WhereStep)
+                        ((Scoping) step).setScope(Scope.local);
+                    else if (!keys.isEmpty() && !((Scoping) step).getScopeKeys().stream().filter(pathLabels::contains).findAny().isPresent())
                         ((Scoping) step).setScope(Scope.local);
                 }
             }

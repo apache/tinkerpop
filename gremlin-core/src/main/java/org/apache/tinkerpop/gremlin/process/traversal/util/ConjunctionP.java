@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -37,28 +38,16 @@ public abstract class ConjunctionP<V> extends P<V> {
 
     protected List<P<V>> predicates;
 
-    public ConjunctionP(final Object... predicatesOrTraversals) {
+    public ConjunctionP(final P<V>... predicates) {
         super(null, null);
-        if (predicatesOrTraversals.length < 2)
-            throw new IllegalArgumentException("The provided " + this.getClass().getSimpleName() + " array must have at least two arguments: " + predicatesOrTraversals.length);
+        if (predicates.length < 2)
+            throw new IllegalArgumentException("The provided " + this.getClass().getSimpleName() + " array must have at least two arguments: " + predicates.length);
         this.predicates = new ArrayList<>();
-        for (final Object object : predicatesOrTraversals) {
-            if (object instanceof P)
-                this.predicates.add((P<V>) object);
-            else if (object instanceof Traversal)
-                this.predicates.add(new TraversalP((Traversal.Admin) object, false));
-            else
-                throw new IllegalArgumentException("The provided " + this.getClass().getSimpleName() + " array must contain either predicates or traversals: " + object);
-        }
+        Stream.of(predicates).forEach(this.predicates::add);
     }
 
     public List<P<V>> getPredicates() {
         return Collections.unmodifiableList(this.predicates);
-    }
-
-    @Override
-    public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
-        return (List) this.predicates.stream().flatMap(p -> p.getTraversals().stream()).collect(Collectors.toList());
     }
 
     @Override
@@ -119,13 +108,13 @@ public abstract class ConjunctionP<V> extends P<V> {
     public P<V> and(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be and'd together");
-        return new AndP<>(this,predicate);
+        return new AndP<>(this, (P) predicate);
     }
 
     @Override
     public P<V> or(final Predicate<? super V> predicate) {
         if (!(predicate instanceof P))
             throw new IllegalArgumentException("Only P predicates can be or'd together");
-        return new OrP<>(this, predicate);
+        return new OrP<>(this, (P) predicate);
     }
 }

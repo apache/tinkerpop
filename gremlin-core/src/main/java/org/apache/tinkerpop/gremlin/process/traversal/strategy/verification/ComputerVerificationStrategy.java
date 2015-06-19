@@ -33,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
@@ -58,7 +57,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
     private static final ComputerVerificationStrategy INSTANCE = new ComputerVerificationStrategy();
     private static final Set<Class<?>> UNSUPPORTED_STEPS = new HashSet<>(Arrays.asList(
-            InjectStep.class, MatchStep.class, Mutating.class, SubgraphStep.class
+            InjectStep.class, Mutating.class, SubgraphStep.class
     ));
 
     private ComputerVerificationStrategy() {
@@ -94,7 +93,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep || step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof DedupGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
                 throw new ComputerVerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
 
-            if(step instanceof DedupGlobalStep && !((DedupGlobalStep) step).getLocalChildren().isEmpty())
+            if (step instanceof DedupGlobalStep && !((DedupGlobalStep) step).getLocalChildren().isEmpty())
                 throw new ComputerVerificationException("Global traversals on GraphComputer may not contain by()-projecting de-duplication steps: " + step, traversal);
 
             if (step instanceof TraversalParent) {

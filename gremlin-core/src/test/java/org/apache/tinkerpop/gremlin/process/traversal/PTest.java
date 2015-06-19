@@ -85,20 +85,6 @@ public class PTest {
                 {P.between("m", "n").or(P.eq("daniel")), "marko", true},
                 {P.between("m", "n").or(P.eq("daniel")), "daniel", true},
                 {P.between("m", "n").or(P.eq("daniel")), "stephen", false},
-                {P.traversal(__.inject(0).is(0)), __.identity(), true},
-                {P.traversal(__.inject(0).is(1)), __.identity(), false},
-                {P.not(__.inject(0).is(0)), __.identity(), false},
-                {P.not(__.inject(0).is(1)), __.identity(), true},
-                {P.test(Compare.eq, 0), 0, true},
-                {P.test(Compare.eq, 0), 1, false},
-                {P.eq(0).and(__.inject(0).is(0)), 0, true},
-                {P.eq(0).and(__.inject(0).is(1)), 0, false},
-                {P.eq(0).and(__.inject(0).is(0)), 2, false},
-                {P.eq(0).and(__.inject(0).is(1)), 2, false},
-                {P.eq(0).or(__.inject(0).is(0)), 0, true},
-                {P.eq(0).or(__.inject(0).is(1)), 0, true},
-                {P.eq(0).or(__.inject(0).is(0)), 2, true},
-                {P.eq(0).or(__.inject(0).is(1)), 2, false},
         }));
     }
 

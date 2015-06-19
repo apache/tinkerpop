@@ -41,11 +41,19 @@ public interface TraversalParent {
     }
 
     public default void addLocalChild(final Traversal.Admin<?, ?> localChildTraversal) {
-        throw new IllegalStateException("This traversal holder does not support the addition of local traversals: " + this.getClass().getCanonicalName());
+        throw new IllegalStateException("This traversal parent does not support the addition of local traversals: " + this.getClass().getCanonicalName());
     }
 
     public default void addGlobalChild(final Traversal.Admin<?, ?> globalChildTraversal) {
-        throw new IllegalStateException("This traversal holder does not support the addition of global traversals: " + this.getClass().getCanonicalName());
+        throw new IllegalStateException("This traversal parent does not support the addition of global traversals: " + this.getClass().getCanonicalName());
+    }
+
+    public default void removeLocalChild(final Traversal.Admin<?, ?> localChildTraversal) {
+        throw new IllegalStateException("This traversal parent does not support the removal of local traversals: " + this.getClass().getCanonicalName());
+    }
+
+    public default void removeGlobalChild(final Traversal.Admin<?, ?> globalChildTraversal) {
+        throw new IllegalStateException("This traversal parent does not support the removal of global traversals: " + this.getClass().getCanonicalName());
     }
 
     public default Set<TraverserRequirement> getSelfAndChildRequirements(final TraverserRequirement... selfRequirements) {

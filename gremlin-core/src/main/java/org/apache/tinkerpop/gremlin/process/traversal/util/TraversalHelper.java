@@ -150,6 +150,17 @@ public final class TraversalHelper {
         return list;
     }
 
+    public static <S, E> void removeToTraversal(final Step<S, ?> startStep, final Step<?, E> endStep, final Traversal.Admin<S, E> newTraversal) {
+        final Traversal.Admin<?, ?> originalTraversal = startStep.getTraversal();
+        Step<?, ?> currentStep = startStep;
+        while (currentStep != endStep && !(currentStep instanceof EmptyStep)) {
+            final Step<?, ?> temp = currentStep.getNextStep();
+            originalTraversal.removeStep(currentStep);
+            newTraversal.addStep(currentStep);
+            currentStep = temp;
+        }
+    }
+
     public static boolean hasStepOfClass(final Class stepClass, final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (step.getClass().equals(stepClass)) {

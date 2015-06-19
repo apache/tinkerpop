@@ -21,9 +21,15 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
+import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -33,7 +39,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -153,28 +158,125 @@ public class TinkerGraphTest {
 
     @Test
     @Ignore
-    public void testPlay5() throws Exception {
-        GraphTraversalSource g = TinkerFactory.createModern().traversal();
-        //g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").path().forEachRemaining(System.out::println);
-        //g.V().has("name", "gremlin").inE("uses").order().by("skill", Order.incr).as("a").outV().as("b").select().by("skill").by("name").forEachRemaining(System.out::println);
-        //g.V().label().groupCount().as("x").select().forEachRemaining(System.out::println);
-        //g.V().choose(__.outE().count().is(0L), __.as("x"), __.as("y")).select("x", "y").forEachRemaining(System.out::println);
-        // g.V().hasLabel("person").values("age").is(P.lt(27).or(P.gt(29))).forEachRemaining(System.out::println);
-        //System.out.println(g.V().as("a").out("knows").as("b").where(as("a","b").out("created")).select().by("name"));
-        Supplier<Traversal<?,?>> supplier = () -> g.V().as("a").values("name").as("b").where(as("b").is(eq("marko"))).select();
+    public void testPlay7() throws Exception {
+        TinkerGraph graph = TinkerGraph.open();
+        graph.createIndex("name",Vertex.class);
+        graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        //System.out.println(g.V().properties().key().groupCount().next());
+        final List<Supplier<GraphTraversal<?,?>>> traversals = Arrays.asList(
+                /*() -> g.V().xmatch("a",
+                        as("a").in("sungBy").as("b"),
+                        not(as("a").in("writtenBy").as("b"))).select().by("name"),*/
+                () -> g.V().match("a",
+                        as("a").in("sungBy").as("b"),
+                        as("a").in("writtenBy").as("b")).select().by("name"),
+                () -> g.V().match("a",
+                        as("a").out("followedBy").as("b"),
+                        as("b").out("followedBy").as("a")).select().by("name"),
+                () -> g.V().match("a",
+                        as("a").out("followedBy").count().as("b"),
+                        as("a").in("followedBy").count().as("b"),
+                        as("b").is(P.gt(10))).select("a").by("name"),
+                () -> g.V().match("a",
+                        as("a").in("sungBy").count().as("b"),
+                        as("a").in("sungBy").as("c"),
+                        as("c").out("followedBy").as("d"),
+                        as("d").out("sungBy").as("e"),
+                        as("e").in("sungBy").count().as("b"),
+                        where("a",P.neq("e"))).select("a","e").by("name"),
+                () -> g.V().match("a",
+                        as("a").in("followedBy").as("b"),
+                        as("a").out("sungBy").as("c"),
+                        as("a").out("writtenBy").as("d")).select().by("name"),
+                () -> g.V().match("a",
+                        as("a").in("followedBy").as("b"),
+                        as("a").out("sungBy").as("c"),
+                        as("a").out("writtenBy").as("d"),
+                        where("c", P.neq("d"))).select().by("name"),
+                () -> g.V().match("a",
+                        as("a").in("sungBy").as("b"),
+                        as("a").in("writtenBy").as("b"),
+                        as("b").out("followedBy").as("c"),
+                        as("c").out("sungBy").as("a"),
+                        as("c").out("writtenBy").as("a")).select().by("name"),
+                () -> g.V().match("a",
+                        as("a").has("name", "Garcia"),
+                        as("a").in("writtenBy").as("b"),
+                        as("b").out("followedBy").as("c"),
+                        as("c").out("writtenBy").as("d"),
+                        as("d").where(P.neq("a"))).select().by("name"),
+                () -> g.V().as("a").out("followedBy").as("b").match(
+                        as("a").and(has(T.label,"song"),has("performances",P.gt(10))),
+                        as("a").out("writtenBy").as("c"),
+                        as("b").out("writtenBy").as("c")).select().by("name"));
 
-                /*() ->
-                g.V().as("a").out("created").as("b").in("created").as("c").where(
+        traversals.forEach(traversal -> {
+            System.out.println("pre-strategy:  " + traversal.get());
+            System.out.println("post-strategy: " + traversal.get().iterate());
+            System.out.println(TimeUtil.clockWithResult(50, () -> traversal.get().count().next()));
+        });
+    }
+
+    @Test
+    @Ignore
+    public void testPlay5() throws Exception {
+
+        TinkerGraph graph = TinkerGraph.open();
+        graph.createIndex("name",Vertex.class);
+        graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+
+        /*final Supplier<Traversal<?, ?>> traversal = () ->
+                g.V().match("a",
+                        where("a", P.neq("c")),
+                        as("a").out("created").as("b"),
                         or(
-                                as("a").out("knows"),
-                                and(
-                                        as("b").has("name","ripple"),
-                                        as("b").in("created").as("a"),
-                                        as("b").in().has("name","josh"))
-                        )
-                ).select().by("name");*/
-        System.out.println(supplier.get().iterate());
-        supplier.get().forEachRemaining(System.out::println);
+                                as("a").out("knows").has("name", "vadas"),
+                                as("a").in("knows").and().as("a").has(T.label, "person")
+                        ),
+                        as("b").in("created").as("c"),
+                        as("b").in("created").count().is(P.gt(1)))
+                        .select(); */
+
+        final Supplier<Traversal<?,?>> traversal = () ->
+                g.V().match("a",
+                        as("a").has("name", "Garcia"),
+                        as("a").in("writtenBy").as("b"),
+                        as("b").out("followedBy").as("c"),
+                        as("c").out("writtenBy").as("d"),
+                        as("d").where(P.neq("a"))).select().by("name");
+
+       /*final Supplier<Traversal<?,?>> traversal = () ->
+                g.V().as("a").out().as("b").where(
+                        not(in("knows").as("a")).and().as("b").in().count().is(P.gt(1))
+                ).select().by("name"); */
+
+        System.out.println(traversal.get());
+        System.out.println(traversal.get().iterate());
+        traversal.get().forEachRemaining(System.out::println);
+
+        //System.out.println(g.V().and(out("created"),or(out("knows"),out("created").has("name","ripple"))).values("name").iterate());
+        //g.V().and(out("created"),or(out("knows"),out("created").has("name","ripple"))).values("name").forEachRemaining(System.out::println);
+    }
+
+    @Test
+    @Ignore
+    public void testPlay6() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        for (int i = 0; i < 1000; i++) {
+            graph.addVertex(T.label, "person", T.id, i);
+        }
+        graph.vertices().forEachRemaining(a -> {
+            graph.vertices().forEachRemaining(b -> {
+                if (a != b) {
+                    a.addEdge("knows", b);
+                }
+            });
+        });
+        graph.vertices(50).next().addEdge("uncle", graph.vertices(70).next());
+        System.out.println(TimeUtil.clockWithResult(500, () -> g.V().match("a", as("a").out("knows").as("b"), as("a").out("uncle").as("b")).toList()));
     }
 
     @Test

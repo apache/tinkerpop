@@ -26,6 +26,12 @@ package org.apache.tinkerpop.gremlin.process.traversal;
  */
 public enum Pop {
 
-    head,
-    tail
+    /**
+     * The first item in an ordered collection (i.e. <code>collection[0]</code>)
+     */
+    first,
+    /**
+     * The last item in an ordered collection (i.e. <code>collection[collection.size()-1]</code>)
+     */
+    last
 }

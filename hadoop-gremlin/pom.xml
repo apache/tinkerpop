@@ -102,6 +102,10 @@ limitations under the License.
                     <groupId>org.apache.zookeeper</groupId>
                     <artifactId>zookeeper</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- SPARK GRAPH COMPUTER -->
@@ -122,10 +126,6 @@ limitations under the License.
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.apache.commons</groupId>

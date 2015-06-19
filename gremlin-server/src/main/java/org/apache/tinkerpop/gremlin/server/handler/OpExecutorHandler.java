@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.server.handler;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.Context;
-import org.apache.tinkerpop.gremlin.server.Graphs;
+import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
@@ -43,14 +43,14 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
     private static final Logger logger = LoggerFactory.getLogger(OpExecutorHandler.class);
 
     private final Settings settings;
-    private final Graphs graphs;
+    private final GraphManager graphManager;
     private final ScheduledExecutorService scheduledExecutorService;
     private final GremlinExecutor gremlinExecutor;
 
-    public OpExecutorHandler(final Settings settings, final Graphs graphs, final GremlinExecutor gremlinExecutor,
+    public OpExecutorHandler(final Settings settings, final GraphManager graphManager, final GremlinExecutor gremlinExecutor,
                              final ScheduledExecutorService scheduledExecutorService) {
         this.settings = settings;
-        this.graphs = graphs;
+        this.graphManager = graphManager;
         this.gremlinExecutor = gremlinExecutor;
         this.scheduledExecutorService = scheduledExecutorService;
     }
@@ -60,7 +60,7 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
         final RequestMessage msg = objects.getValue0();
         final ThrowingConsumer<Context> op = objects.getValue1();
         final Context gremlinServerContext = new Context(msg, ctx,
-                settings, graphs, gremlinExecutor, scheduledExecutorService);
+                settings, graphManager, gremlinExecutor, scheduledExecutorService);
 
         try {
             op.accept(gremlinServerContext);

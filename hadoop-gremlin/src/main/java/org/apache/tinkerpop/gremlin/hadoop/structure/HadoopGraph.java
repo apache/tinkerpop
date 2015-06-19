@@ -65,9 +65,33 @@ import java.util.stream.Stream;
         method = "g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_d__c_sungBy_d__d_hasXname_GarciaXX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
+        method = "g_V_matchXa_knows_b__c_knows_bX",
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
+        method = "g_V_matchXa_created_b__c_created_bX_selectXnameX",
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
+        method = "g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name",
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
         method = "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
+        method = "g_V_matchXa_knows_b__c_knows_bX",
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
+        method = "g_V_matchXa_created_b__c_created_bX_selectXnameX",
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+@Graph.OptOut(
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
+        method = "g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name",
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
         method = "g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",

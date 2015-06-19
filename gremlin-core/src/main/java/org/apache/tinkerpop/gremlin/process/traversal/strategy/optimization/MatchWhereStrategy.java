@@ -18,23 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Compare;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.match.MatchStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ScopeP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * MatchWhereStrategy will fold any post-<code>where()</code> step that maintains a traversal constraint into <code>match()</code>.
@@ -65,32 +60,28 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
         if (!TraversalHelper.hasStepOfClass(MatchStep.class, traversal))
             return;
 
-        final List<MatchStep> matchSteps = TraversalHelper.getStepsOfClass(MatchStep.class, traversal);
-        for (final MatchStep matchStep : matchSteps) {
-            boolean foundWhereWithNoTraversal = false;
-            Step currentStep = matchStep.getNextStep();
-            while (currentStep instanceof WhereStep || currentStep instanceof SelectStep || currentStep instanceof SelectOneStep) {
-                if (currentStep instanceof WhereStep) {
-                    if (!((WhereStep) currentStep).getLocalChildren().isEmpty()) {
-                        if (!(((WhereStep<?>) currentStep).getLocalChildren().get(0).getEndStep() instanceof IsStep) || ((IsStep) ((WhereStep<?>) currentStep).getLocalChildren().get(0).getEndStep()).getPredicate().getBiPredicate() == Compare.eq) {
-                            MatchWhereStrategy.convertWhereSelectOneStepToStartStep((WhereStep<?>) currentStep);
-                            matchStep.addTraversal(((WhereStep<?>) currentStep).getLocalChildren().get(0));
-                            traversal.removeStep(currentStep);
-                        }
-                    } else {
-                        foundWhereWithNoTraversal = true;
+        // pull out match(as("a").has().has()) to has().has().match() in order to allow vendors to leverages has-containers for index lookups
+        TraversalHelper.getStepsOfClass(MatchStep.class, traversal).forEach(matchStep -> {
+            if (matchStep.getStartKey().isPresent()) {
+                ((MatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(conjunction -> {
+                    if (conjunction.getStartStep() instanceof MatchStep.MatchStartStep) {
+                        ((MatchStep.MatchStartStep) conjunction.getStartStep()).getSelectKey().ifPresent(selectKey -> {
+                            if (selectKey.equals(matchStep.getStartKey().get()) && !conjunction.getSteps().stream()
+                                    .filter(step -> !(step instanceof MatchStep.MatchStartStep) &&
+                                            !(step instanceof MatchStep.MatchEndStep) &&
+                                            !(step instanceof HasStep))
+                                    .findAny()
+                                    .isPresent() && !(matchStep.getPreviousStep() instanceof EmptyStep)) {
+                                matchStep.removeGlobalChild(conjunction);
+                                conjunction.removeStep(0);                                     // remove XMatchStartStep
+                                conjunction.removeStep(conjunction.getSteps().size() - 1);    // remove XMatchEndStep
+                                TraversalHelper.insertTraversal(matchStep.getPreviousStep(), conjunction, traversal);
+                            }
+                        });
                     }
-                } else if (currentStep instanceof SelectStep) {
-                    if (!currentStep.getLabels().isEmpty() || !((SelectStep) currentStep).getLocalChildren().isEmpty() || foundWhereWithNoTraversal)
-                        break;
-                } else if (currentStep instanceof SelectOneStep) {
-                    if (!currentStep.getLabels().isEmpty() || !((SelectOneStep) currentStep).getLocalChildren().isEmpty() || foundWhereWithNoTraversal)
-                        break;
-                }
-                // else is the identity step
-                currentStep = currentStep.getNextStep();
+                });
             }
-        }
+        });
     }
 
     public static MatchWhereStrategy instance() {
@@ -101,23 +92,4 @@ public final class MatchWhereStrategy extends AbstractTraversalStrategy<Traversa
     public Set<Class<? extends OptimizationStrategy>> applyPrior() {
         return PRIORS;
     }
-
-    // HACK: until MatchStep gets some work done on it.
-    private static void convertWhereSelectOneStepToStartStep(final WhereStep<?> whereStep) {
-        if (!whereStep.getLocalChildren().isEmpty()) {
-            final Traversal.Admin<?, ?> traversal = whereStep.getLocalChildren().get(0);
-            if (traversal.getStartStep() instanceof SelectOneStep) {
-                final SelectOneStep<?, ?> selectOneStep = (SelectOneStep) traversal.getStartStep();
-                final StartStep startStep = new StartStep(traversal);
-                startStep.addLabel(selectOneStep.getScopeKeys().iterator().next());
-                TraversalHelper.replaceStep(selectOneStep, startStep, traversal);
-            }
-            if (traversal.getEndStep() instanceof IsStep && ((IsStep) traversal.getEndStep()).getPredicate() instanceof ScopeP) {
-                final String key = ((ScopeP) ((IsStep) traversal.getEndStep()).getPredicate()).getKey();
-                traversal.removeStep(traversal.getEndStep());
-                traversal.getEndStep().addLabel(key);
-            }
-        }
-    }
-
 }

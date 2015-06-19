@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -43,6 +44,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -181,6 +184,30 @@ public class GryoMessageSerializerV1d0Test {
         assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.outVertex().label());
         assertEquals(v2.id(), deserializedEdge.inVertex().id());
         assertEquals(Vertex.DEFAULT_LABEL, deserializedEdge.inVertex().label());
+    }
+
+    @Test
+    public void serializeTree() throws Exception {
+        final Graph g = TinkerFactory.createModern();
+        final Tree t = g.traversal().V().out().out().tree().by("name").next();
+
+        final ResponseMessage response = convertBinary(t);
+        assertCommon(response);
+
+        final Tree deserialized = (Tree) response.getResult().getData();
+        assertEquals(t, deserialized);
+
+        assertThat(deserialized.containsKey("marko"), is(true));
+        assertEquals(1, deserialized.size());
+
+        final Tree markoChildren = (Tree) deserialized.get("marko");
+        assertThat(markoChildren.containsKey("josh"), is(true));
+        assertEquals(1, markoChildren.size());
+
+        final Tree joshChildren = (Tree) markoChildren.get("josh");
+        assertThat(joshChildren.containsKey("lop"), is(true));
+        assertThat(joshChildren.containsKey("ripple"), is(true));
+        assertEquals(2, joshChildren.size());
     }
 
     @Test

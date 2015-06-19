@@ -31,7 +31,7 @@ interface ImmutablePathImpl extends Path {
     @Override
     public default <A> A getSingle(final Pop pop, final String label) {
         // Delegate to the non-throwing, optimized head/tail calculations.
-        final A single = Pop.tail == pop ? this.getSingleTail(label) : this.getSingleHead(label);
+        final A single = Pop.first == pop ? this.getSingleTail(label) : this.getSingleHead(label);
         // Throw if we didn't find the label.
         if (null == single)
             throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
@@ -45,7 +45,7 @@ interface ImmutablePathImpl extends Path {
      * @param <A>   the type of the object associated with the label
      * @return the object associated with the label of the path or null if the path does not contain the label
      */
-    public <A> A getSingleHead(String label);
+    public <A> A getSingleHead(final String label);
 
     /**
      * Get the object most recently associated with the particular label of the path.
@@ -54,5 +54,5 @@ interface ImmutablePathImpl extends Path {
      * @param <A>   the type of the object associated with the label
      * @return the object associated with the label of the path or null if the path does not contain the label
      */
-    public <A> A getSingleTail(String label);
+    public <A> A getSingleTail(final String label);
 }

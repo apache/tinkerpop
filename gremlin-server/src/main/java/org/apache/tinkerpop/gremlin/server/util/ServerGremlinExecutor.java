@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.server.util;
 
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
-import org.apache.tinkerpop.gremlin.server.Graphs;
+import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
     private static final Logger logger = LoggerFactory.getLogger(ServerGremlinExecutor.class);
 
-    private final Graphs graphs;
+    private final GraphManager graphManager;
     private final Settings settings;
     private final List<LifeCycleHook> hooks;
 
@@ -91,18 +91,18 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         }
 
         // initialize graphs from configuration
-        graphs = new Graphs(settings);
+        graphManager = new GraphManager(settings);
 
         logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
 
         final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
                 .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
-                .afterFailure((b, e) -> graphs.rollbackAll())
-                .afterSuccess(b -> graphs.commitAll())
-                .beforeEval(b -> graphs.rollbackAll())
-                .afterTimeout(b -> graphs.rollbackAll())
+                .afterFailure((b, e) -> graphManager.rollbackAll())
+                .afterSuccess(b -> graphManager.commitAll())
+                .beforeEval(b -> graphManager.rollbackAll())
+                .afterTimeout(b -> graphManager.rollbackAll())
                 .enabledPlugins(new HashSet<>(settings.plugins))
-                .globalBindings(graphs.getAsBindings())
+                .globalBindings(graphManager.getAsBindings())
                 .promoteBindings(kv -> kv.getValue() instanceof Graph
                         || kv.getValue() instanceof TraversalSource
                         || kv.getValue() instanceof LifeCycleHook)
@@ -123,14 +123,14 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         // re-apply those references back
         gremlinExecutor.getGlobalBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof Graph)
-                .forEach(kv -> graphs.getGraphs().put(kv.getKey(), (Graph) kv.getValue()));
+                .forEach(kv -> graphManager.getGraphs().put(kv.getKey(), (Graph) kv.getValue()));
 
         // script engine init may have constructed the TraversalSource bindings - store them in Graphs object
         gremlinExecutor.getGlobalBindings().entrySet().stream()
                 .filter(kv -> kv.getValue() instanceof TraversalSource)
                 .forEach(kv -> {
                     logger.info("A {} is now bound to [{}] with {}", kv.getValue().getClass().getSimpleName(), kv.getKey(), kv.getValue());
-                    graphs.getTraversalSources().put(kv.getKey(), (TraversalSource) kv.getValue());
+                    graphManager.getTraversalSources().put(kv.getKey(), (TraversalSource) kv.getValue());
                 });
 
         // determine if the initialization scripts introduced LifeCycleHook objects - if so we need to gather them
@@ -153,8 +153,8 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         return gremlinExecutorService;
     }
 
-    public Graphs getGraphs() {
-        return graphs;
+    public GraphManager getGraphManager() {
+        return graphManager;
     }
 
     public Settings getSettings() {

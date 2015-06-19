@@ -22,10 +22,11 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +39,9 @@ import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.not;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.not;
 import static org.junit.Assert.*;
 
 /**
@@ -81,11 +84,15 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     // complex and/or functionality
 
-    public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select();
 
-    public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX();
+    public abstract Traversal<Vertex, String> get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX();
 
-    public abstract Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_select();
+
+    public abstract Traversal<Vertex, Map<String,Object>> get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select();
 
     // multi-labels
 
@@ -268,62 +275,54 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX() {
-        Traversal<Vertex,Map<String,String>> traversal = get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX();
+    public void g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select() {
+        Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select();
         printTraversalForm(traversal);
-        int counter = 0;
-        while(traversal.hasNext()) {
-            final Map<String,String> map = traversal.next();
-            assertEquals(2,map.size());
-            assertEquals("marko",map.get("a"));
-            assertTrue(map.get("b").equals("josh") || map.get("b").equals("vadas"));
-            counter++;
-        }
-        assertEquals(2,counter);
+        checkResults(makeMapList(2,
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"),
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "vadas")), traversal);
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX() {
-        Traversal<Vertex,Map<String,String>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX();
+    public void g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_selectXaX_byXnameX() {
+        Traversal<Vertex, String> traversal = get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX();
         printTraversalForm(traversal);
-        int counter = 0;
-        while(traversal.hasNext()) {
-            final Map<String,String> map = traversal.next();
-            assertEquals(3,map.size());
-            assertEquals("marko",map.get("a"));
-            assertEquals("lop",map.get("b"));
-            assertEquals("marko", map.get("c"));
-            counter++;
-        }
-        assertEquals(1,counter);
+        checkResults(Arrays.asList("marko", "josh"), traversal);
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX() {
-        Traversal<Vertex,Map<String,String>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX();
+    public void g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select() {
+        Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select();
         printTraversalForm(traversal);
-        int counter = 0;
-        while(traversal.hasNext()) {
-            final Map<String,String> map = traversal.next();
-            assertEquals(2,map.size());
-            assertTrue(map.get("a").equals("marko") || map.get("a").equals("peter"));
-            assertEquals("lop", map.get("b"));
-            counter++;
-        }
-        assertEquals(2,counter);
+        checkResults(makeMapList(2,
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "peter"), "b", convertToVertex(graph, "lop")), traversal);
     }
 
-
-    // multi-labels
-   /* @Test
+    @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name() {
-        final Traversal<Vertex, String> traversal = get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name();
-        checkResults(Arrays.asList("josh"), traversal);
-    } */
+    public void g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_select() {
+        Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_select();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(4,
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop"), "c", convertToVertex(graph, "josh"), "d", convertToVertex(graph, "vadas"),
+                "a", convertToVertex(graph, "peter"), "b", convertToVertex(graph, "lop"), "c", convertToVertex(graph, "josh"), "d", convertToVertex(graph, "vadas")), traversal);
+    }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER) // TODO --- something fishy here.
+    public void g_V_asXaX_out_asXbX_whereXasXbX_in_count_isXeqX3XX_or_whereXasXbX_outXcreatedX_and_asXbX_hasXlabel_personXXX_select()  {
+        final Traversal<Vertex, Map<String,Object>> traversal = get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(2,
+                "a",convertToVertex(graph,"marko"),"b",convertToVertex(graph,"josh"),
+                "a",convertToVertex(graph,"marko"),"b",convertToVertex(graph,"lop"),
+                "a",convertToVertex(graph,"peter"),"b",convertToVertex(graph,"lop"),
+                "a",convertToVertex(graph,"josh"),"b",convertToVertex(graph,"lop")),traversal);
+    }
 
     public static class Traversals extends WhereTest {
 
@@ -358,7 +357,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Object> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_asXbX_whereXasXbX_outXcreatedX_hasXname_rippleXX_valuesXage_nameX(final Object v1Id) {
-            return g.V(v1Id).as("a").out("created").in("created").as("b").where(__.as("b").out("created").has("name", "ripple")).values("age", "name");
+            return g.V(v1Id).as("a").out("created").in("created").as("b").where(as("b").out("created").has("name", "ripple")).values("age", "name");
         }
 
         // except/retain functionality
@@ -385,38 +384,42 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Path> get_g_VX1X_repeatXbothEXcreatedX_whereXwithoutXeXX_aggregateXeX_otherVX_emit_path(final Object v1Id) {
-            return g.V(v1Id).repeat(__.bothE("created").where(without("e")).aggregate("e").otherV()).emit().path();
+            return g.V(v1Id).repeat(bothE("created").where(without("e")).aggregate("e").otherV()).emit().path();
         }
 
         // hasNot functionality
 
         @Override
         public Traversal<Vertex, String> get_g_V_whereXnotXoutXcreatedXXX_name() {
-            return g.V().where(not(__.out("created"))).values("name");
+            return g.V().where(not(out("created"))).values("name");
         }
 
         // complex and/or functionality
 
         @Override
-        public Traversal<Vertex,Map<String,String>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select_byXnameX() {
-              return g.V().as("a").out().as("b").where(and(as("a").out("knows").as("b"),or(as("b").out("created").has("name","ripple"),as("b").in("knows").count().is(not(eq(0)))))).<String>select().by("name");
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_select() {
+            return g.V().as("a").out().as("b").where(and(as("a").out("knows").as("b"), or(as("b").out("created").has("name", "ripple"), as("b").in("knows").count().is(not(eq(0)))))).select();
         }
 
         @Override
-        public Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_in_asXcX_whereXa__eqXcX_andXasXaX_outXknowsXXX_select_byXnameX() {
-            return g.V().as("a").out("created").as("b").in().as("c").where("a",eq("c").and(__.as("a").out("knows"))).<String>select().by("name");
+        public Traversal<Vertex, String> get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX() {
+            return g.V().where(out("created").and().out("knows").or().in("knows")).values("name");
         }
 
         @Override
-        public Traversal<Vertex,Map<String,String>> get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select_byXnameX() {
-            return g.V().as("a").out("created").as("b").where(and(as("b").in(),not(as("a").out("created").has("name","ripple")))).<String>select().by("name");
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_select() {
+            return g.V().as("a").out("created").as("b").where(and(as("b").in(), not(as("a").out("created").has("name", "ripple")))).select();
         }
 
-        // multi-labels
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_select() {
+            return g.V().as("a").out("created").as("b").in("created").as("c").both("knows").both("knows").as("d").where("c", P.not(P.eq("a").or(P.eq("d")))).select();
+        }
 
-       /* @Override
-        public Traversal<Vertex, String> get_g_V_asXaX_outXknowsX_asXbX_whereXasXa__bX_outXcreatedX_hasXname__rippleX_name() {
-            return g.V().as("a").out("knows").as("b").where(as("a", "b").out("created").has("name", "ripple")).values("name");
-        }*/
+        @Override
+        public Traversal<Vertex, Map<String,Object>> get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select() {
+            // TODO: if you put 'b' in the where() it selects from path and you can't get path object metadata...damn.
+            return g.V().as("a").out().as("b").where(as("b").in().count().is(eq(3)).or().where(as("b").out("created").and().as("b").has(T.label, "person"))).select();
+        }
     }
 }

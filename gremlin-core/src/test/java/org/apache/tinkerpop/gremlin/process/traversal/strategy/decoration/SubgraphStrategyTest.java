@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
@@ -42,8 +42,8 @@ public class SubgraphStrategyTest {
         final Traversal t = __.inV();
         strategy.apply(t.asAdmin());
         final EdgeVertexStep edgeVertexStep = (EdgeVertexStep) t.asAdmin().getStartStep();
-        assertEquals(WhereStep.class, edgeVertexStep.getNextStep().getClass());
-        final WhereStep h = (WhereStep) t.asAdmin().getEndStep();
+        assertEquals(TraversalFilterStep.class, edgeVertexStep.getNextStep().getClass());
+        final TraversalFilterStep h = (TraversalFilterStep) t.asAdmin().getEndStep();
         assertEquals(1, h.getLocalChildren().size());
         assertThat(((DefaultGraphTraversal) h.getLocalChildren().get(0)).getEndStep(), CoreMatchers.instanceOf(IdentityStep.class));
     }
@@ -54,8 +54,8 @@ public class SubgraphStrategyTest {
         final Traversal t = __.inE();
         strategy.apply(t.asAdmin());
         final VertexStep vertexStep = (VertexStep) t.asAdmin().getStartStep();
-        assertEquals(WhereStep.class, vertexStep.getNextStep().getClass());
-        final WhereStep h = (WhereStep) t.asAdmin().getEndStep();
+        assertEquals(TraversalFilterStep.class, vertexStep.getNextStep().getClass());
+        final TraversalFilterStep h = (TraversalFilterStep) t.asAdmin().getEndStep();
         assertEquals(1, h.getLocalChildren().size());
         assertThat(((DefaultGraphTraversal) h.getLocalChildren().get(0)).getEndStep(), CoreMatchers.instanceOf(IdentityStep.class));
     }
@@ -66,9 +66,9 @@ public class SubgraphStrategyTest {
         final Traversal t = __.inE();
         strategy.apply(t.asAdmin());
         final VertexStep vertexStep = (VertexStep) t.asAdmin().getStartStep();
-        assertEquals(WhereStep.class, vertexStep.getNextStep().getClass());
-        final WhereStep h = (WhereStep) t.asAdmin().getEndStep();
+        assertEquals(TraversalFilterStep.class, vertexStep.getNextStep().getClass());
+        final TraversalFilterStep h = (TraversalFilterStep) t.asAdmin().getEndStep();
         assertEquals(1, h.getLocalChildren().size());
-        assertThat(((DefaultGraphTraversal) h.getLocalChildren().get(0)).getEndStep(), CoreMatchers.instanceOf(WhereStep.class));
+        assertThat(((DefaultGraphTraversal) h.getLocalChildren().get(0)).getEndStep(), CoreMatchers.instanceOf(TraversalFilterStep.class));
     }
 }

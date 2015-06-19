@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
@@ -26,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.CoreMatchers;
@@ -37,6 +39,7 @@ import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 /**
@@ -59,6 +62,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXblahX();
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_hasXid_lt_3X(final Object v1Id, final Object v3Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2X(final Object v1Id, final Object v2Id);
 
@@ -162,20 +167,33 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_hasXid_2X() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_hasIdX2X(convertToVertexId("marko"), convertToVertexId("vadas"));
-        assert_g_VX1X_out_hasXid_2X(traversal);
+        assertVadasAsOnlyValueReturned(traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_USER_SUPPLIED_IDS)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+    public void g_VX1X_out_hasXid_lt_3X() {
+        // can only execute this on graphs with user supplied ids so that we can be assured of the lt op. it
+        // sort of assumes that ids increment, but there's no feature check for that.  graphs that don't work this
+        // way with numeric ids may need to optout
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_hasXid_lt_3X(convertToVertexId("marko"), convertToVertexId("lop"));
+        assertVadasAsOnlyValueReturned(traversal);
     }
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1AsStringX_out_hasXid_2AsStringX() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_hasIdX2X(convertToVertexId("marko").toString(), convertToVertexId("vadas").toString());
-        assert_g_VX1X_out_hasXid_2X(traversal);
+        assertVadasAsOnlyValueReturned(traversal);
     }
 
-    private void assert_g_VX1X_out_hasXid_2X(final Traversal<Vertex, Vertex> traversal) {
+    private void assertVadasAsOnlyValueReturned(final Traversal<Vertex, Vertex> traversal) {
         printTraversalForm(traversal);
-        assertTrue(traversal.hasNext());
+        assertThat(traversal.hasNext(), is(true));
         assertEquals(convertToVertexId("vadas"), traversal.next().id());
+        assertThat(traversal.hasNext(), is(false));
     }
 
     @Test
@@ -199,8 +217,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     protected void assert_g_VX1X_out_hasXid_2_3X(Object id2, Object id3, Traversal<Vertex, Vertex> traversal) {
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
-        assertThat(traversal.next().id(), CoreMatchers.anyOf(CoreMatchers.is(id2), CoreMatchers.is(id3)));
-        assertThat(traversal.next().id(), CoreMatchers.anyOf(CoreMatchers.is(id2), CoreMatchers.is(id3)));
+        assertThat(traversal.next().id(), CoreMatchers.anyOf(is(id2), is(id3)));
+        assertThat(traversal.next().id(), CoreMatchers.anyOf(is(id2), is(id3)));
         assertFalse(traversal.hasNext());
     }
 
@@ -365,6 +383,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id) {
             return g.V(v1Id).has("age", P.gt(30));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_hasXid_lt_3X(final Object v1Id, final Object v3Id) {
+            return g.V(v1Id).out().has(T.id, P.lt(v3Id));
         }
 
         @Override

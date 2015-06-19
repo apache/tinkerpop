@@ -80,5 +80,4 @@ public interface Scoping {
     public void setScope(final Scope scope);
 
     public Set<String> getScopeKeys();
-
 }
