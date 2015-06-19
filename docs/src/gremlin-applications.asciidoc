@@ -350,6 +350,9 @@ client.submit("[1,2,3,x]", params); <5>
 <4> Submit a script asynchronously without waiting for the request to be written to the server.
 <5> Parameterized request are considered the most efficient way to send Gremlin to the server as they can be cached, which will boost performance and reduce resources required on the server.
 
+Rebinding
+^^^^^^^^^
+
 Scripts submitted to Gremlin Server automatically have the globally configured `Graph` and `TraversalSource` instances made available to them.  Therefore, if Gremlin Server configures two `TraversalSource` instances called "g1" and "g2" a script can simply reference them directly as:
 
 [source,java]
@@ -365,6 +368,21 @@ g1Client.submit("g.V()")
 g2Client.submit("g.V()")
 
 The above code demonstrates how the `rebind` method can be used such that the script need only contain a reference to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
+
+Serialization
+^^^^^^^^^^^^^
+
+When using Gryo serialization (the default serializer for the driver), it is important that the client and server have the same serializers configured or else one or the other will experience serialization exceptions and fail to always communicate.  Discrepancy in serializer registration between client and server can happen fairly easily as graphs will automatically include serializers on the server-side, thus leaving the client to be configured manually.  This can be done manually as follows:
+
+[source,java]
+GryoMapper kryo = GryoMapper.build().addRegistry(TitanIoRegistry.INSTANCE).create();
+MessageSerializer serializer = new GryoMessageSerializerV1d0(kryo);
+Cluster cluster = Cluster.build()
+                .serializer(serializer)
+                .create();
+Client client = cluster.connect().init();
+
+The above code demonstrates using the `TitanIoRegistry` which is an `IoRegistry` instance.  It tells the serializer what classes (from Titan in this case) to auto-register during serialization.  Gremlin Server roughly uses this same approach when it configures it's serializers, so using this same model will ensure compatibility when making requests.
 
 Connecting via REST
 ~~~~~~~~~~~~~~~~~~~
