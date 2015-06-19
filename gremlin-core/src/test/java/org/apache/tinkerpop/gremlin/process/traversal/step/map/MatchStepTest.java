@@ -25,6 +25,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.junit.Test;
 
@@ -32,7 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -51,6 +54,66 @@ public class MatchStepTest extends StepTest {
                 __.match("a", as("a").where(out().as("b"))),
                 __.match(as("a").where(out().as("b")))
         );
+    }
+
+    @Test
+    public void shouldDoPreCompilationCorrectly() {
+        Traversal.Admin<?, ?> traversal = __.match("a", as("a").out().as("b"), as("c").path().as("d")).asAdmin();
+        MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
+        assertEquals(MatchStep.class, traversal.getStartStep().getClass());
+        assertEquals("a", matchStep.getStartKey().get());
+        assertEquals(2, matchStep.getGlobalChildren().size());
+        Traversal.Admin<Object, Object> pattern = matchStep.getGlobalChildren().get(0);
+        assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
+        assertEquals(VertexStep.class, pattern.getStartStep().getNextStep().getClass());
+        assertEquals("b", ((MatchStep.MatchEndStep) pattern.getEndStep()).getMatchKey().get());
+        //
+        pattern = matchStep.getGlobalChildren().get(1);
+        assertEquals("c", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
+        assertEquals(PathStep.class, pattern.getStartStep().getNextStep().getClass());
+        assertEquals("d", ((MatchStep.MatchEndStep) pattern.getEndStep()).getMatchKey().get());
+
+        ///////////////////
+
+        traversal = __.match("a", as("a").out().as("b"), or(as("c").path().as("d"), as("e").coin(0.5).as("f"))).asAdmin();
+        matchStep = (MatchStep<?, ?>) traversal.getStartStep();
+        assertEquals("a", matchStep.getStartKey().get());
+        assertEquals(2, matchStep.getGlobalChildren().size());
+        pattern = matchStep.getGlobalChildren().get(0);
+        assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
+        assertEquals(VertexStep.class, pattern.getStartStep().getNextStep().getClass());
+        assertEquals("b", ((MatchStep.MatchEndStep) pattern.getEndStep()).getMatchKey().get());
+        //
+        pattern = matchStep.getGlobalChildren().get(1);
+        assertTrue(pattern.getStartStep() instanceof MatchStep);
+        assertEquals(MatchStep.Conjunction.OR, ((MatchStep<?, ?>) pattern.getStartStep()).getConjunction());
+        assertEquals("c", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep()).getSelectKey().get());
+        assertEquals(PathStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep().getNextStep().getClass());
+        assertEquals("d", ((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getEndStep()).getMatchKey().get());
+        assertEquals("e", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep()).getSelectKey().get());
+        assertEquals(CoinStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep().getNextStep().getClass());
+        assertEquals("f", ((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getEndStep()).getMatchKey().get());
+
+        ///////////////////
+
+        traversal = __.match("a", out().as("b"), as("c").path().as("d").and().as("e").barrier()).asAdmin();
+        matchStep = (MatchStep<?, ?>) traversal.getStartStep();
+        assertEquals("a", matchStep.getStartKey().get());
+        assertEquals(2, matchStep.getGlobalChildren().size());
+        pattern = matchStep.getGlobalChildren().get(0);
+        assertFalse(((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().isPresent());
+        assertEquals(VertexStep.class, pattern.getStartStep().getNextStep().getClass());
+        assertEquals("b", ((MatchStep.MatchEndStep) pattern.getEndStep()).getMatchKey().get());
+        //
+        pattern = matchStep.getGlobalChildren().get(1);
+        assertTrue(pattern.getStartStep() instanceof MatchStep);
+        assertEquals(MatchStep.Conjunction.AND, ((MatchStep<?, ?>) pattern.getStartStep()).getConjunction());
+        assertEquals("c", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep()).getSelectKey().get());
+        assertEquals(PathStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep().getNextStep().getClass());
+        assertEquals("d", ((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getEndStep()).getMatchKey().get());
+        assertEquals("e", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep()).getSelectKey().get());
+        assertEquals(NoOpBarrierStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep().getNextStep().getClass());
+        assertFalse(((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getEndStep()).getMatchKey().isPresent());
     }
 
     @Test
