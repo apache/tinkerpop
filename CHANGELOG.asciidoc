@@ -27,6 +27,7 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 
 * Rewrote `MatchStep` where it now works on `GraphComputer`, solves more patterns, provides plugable execution plans, supports nested AND/OR, etc.
 * Renamed `Graphs` in Gremlin Server to `GraphManager`.
+* Fixed bug in Gremlin Driver where client-side serialization errors would not bubble up properly.
 * Fixed problem in Gremlin Server to ensure that a final `SUCCESS` or `NO_CONTENT` message assured that the transaction was successful in sessionless requests.
 * Arrow keys for cycling through command history now work in Gremlin Console when being used on Windows.
 * Added `NotStep` and `not(traversal)` for not'ing a traversal (integrates like `ConjunctionStep`).

@@ -82,6 +82,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                     throw new RuntimeException(ex);
                 }
                 break;
+            case "shouldFailWithBadClientSideSerialization":
+                final List<String> custom = Arrays.asList(
+                        JsonBuilder.class.getName() + ";" + JsonBuilderGryoSerializer.class.getName(),
+                        java.awt.Color.class.getName());
+                settings.serializers.stream().filter(s -> s.config.containsKey("custom"))
+                        .findFirst().get().config.put("custom", custom);
+                break;
             /*
             // todo: how do we do transactional testing without neo4j?
             case "shouldExecuteScriptInSessionOnTransactionalGraph":
@@ -92,6 +99,25 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldFailWithBadClientSideSerialization() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("java.awt.Color.RED");
+
+        try {
+            results.all().join();
+            fail();
+        } catch (Exception ex) {
+            final Throwable inner = ExceptionUtils.getRootCause(ex);
+            assertTrue(inner instanceof RuntimeException);
+            assertEquals("Error while processing results from channel - check client and server logs for more information", inner.getMessage());
+        }
+
+        cluster.close();
     }
 
     @Test
