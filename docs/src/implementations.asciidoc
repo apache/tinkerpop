@@ -477,12 +477,12 @@ The execution times for a vertex lookup by property is provided below for both n
 graph = TinkerGraph.open()
 g = graph.traversal()
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-clock(1000) {g.V().has('name','Garcia').next()} <1>
+clock(1000) {g.V().has('name','Garcia').iterate()} <1>
 graph = TinkerGraph.open()
 g = graph.traversal()
 graph.createIndex('name',Vertex.class)
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
-clock(1000){g.V().has('name','Garcia').next()} <2>
+clock(1000){g.V().has('name','Garcia').iterate()} <2>
 ----
 
 <1> Determine the average runtime of 1000 vertex lookups when no `name`-index is defined.
