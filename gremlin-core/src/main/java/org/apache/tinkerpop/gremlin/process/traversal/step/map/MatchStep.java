@@ -435,6 +435,10 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 throw new IllegalArgumentException("The provided start step must be a scoping step: " + startStep);
         }
 
+        public static boolean isWhereTraversal(final Traversal.Admin<Object, Object> traversal) {
+            return traversal.getStartStep() instanceof WhereStep || traversal.getStartStep().getNextStep() instanceof WhereStep;
+        }
+
         public boolean initialized();
 
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals);
@@ -484,10 +488,11 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     public static class CountMatchAlgorithm implements MatchAlgorithm {
 
-        private List<Traversal.Admin<Object, Object>> traversals;
-        private List<Integer[]> counts = new ArrayList<>();
-        private List<String> traversalLabels = new ArrayList<>();
-        private List<Set<String>> requiredLabels = new ArrayList<>();
+        protected List<Traversal.Admin<Object, Object>> traversals;
+        protected List<Integer[]> counts = new ArrayList<>();
+        protected List<String> traversalLabels = new ArrayList<>();
+        protected List<Set<String>> requiredLabels = new ArrayList<>();
+        protected Map<Traversal.Admin<Object, Object>, Boolean> whereTraversals = new HashMap<>();
         private boolean initialized = false;
 
         @Override
@@ -504,6 +509,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 this.traversalLabels.add(traversal.getStartStep().getId());
                 this.requiredLabels.add(MatchAlgorithm.getRequiredLabels(traversal));
                 this.counts.add(new Integer[]{i, 0});
+                this.whereTraversals.put(traversal, MatchAlgorithm.isWhereTraversal(traversal));
             }
         }
 
@@ -521,7 +527,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         public void recordEnd(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
             final int currentIndex = this.traversals.indexOf(traversal);
             this.counts.stream().filter(array -> currentIndex == array[0]).findAny().get()[1]++;
-            Collections.sort(this.counts, (a, b) -> a[1].compareTo(b[1]));
+            Collections.sort(this.counts, (a, b) -> this.whereTraversals.get(traversal) ? 1 : a[1].compareTo(b[1]));
         }
     }
 }
