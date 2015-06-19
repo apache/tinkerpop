@@ -46,7 +46,7 @@ public final class ScopingStrategy extends AbstractTraversalStrategy<TraversalSt
         final Set<String> pathLabels = TraversalHelper.getLabels(TraversalHelper.getRootTraversal(traversal));
         traversal.getSteps().stream().forEach(step -> {
             if (step instanceof Scoping) {
-                if (step.getPreviousStep() instanceof Scoping)
+                if (step.getPreviousStep() instanceof Scoping && !((Scoping)step.getPreviousStep()).getVariableLocations().contains(Scoping.Variable.NONE))
                     ((Scoping) step).setScope(((Scoping) step.getPreviousStep()).recommendNextScope());
                 else if (Scope.global == ((Scoping) step).getScope() && step != traversal.getStartStep()) { // for Match(Where())
                     final Set<String> keys = ((Scoping) step).getScopeKeys();

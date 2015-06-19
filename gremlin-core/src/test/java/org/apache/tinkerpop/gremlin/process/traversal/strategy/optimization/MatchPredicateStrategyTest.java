@@ -24,6 +24,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,8 +32,9 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -44,7 +46,7 @@ import static org.mockito.Mockito.when;
 public class MatchPredicateStrategyTest {
 
     @RunWith(Parameterized.class)
-    public static class StandardTest extends AbstractMatchWhereStrategyTest {
+    public static class StandardTest extends AbstractMatchPredicateStrategyTest {
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
@@ -70,7 +72,7 @@ public class MatchPredicateStrategyTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class ComputerTest extends AbstractMatchWhereStrategyTest {
+    public static class ComputerTest extends AbstractMatchPredicateStrategyTest {
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
@@ -95,18 +97,16 @@ public class MatchPredicateStrategyTest {
         }
     }
 
-    private static abstract class AbstractMatchWhereStrategyTest {
+    private static abstract class AbstractMatchPredicateStrategyTest {
 
         protected TraversalEngine traversalEngine;
 
         void applyMatchWhereStrategy(final Traversal traversal) {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
             strategies.addStrategies(MatchPredicateStrategy.instance(), IdentityRemovalStrategy.instance());
-
             traversal.asAdmin().setStrategies(strategies);
             traversal.asAdmin().setEngine(this.traversalEngine);
             traversal.asAdmin().applyStrategies();
-
         }
 
         public void doTest(final Traversal traversal, final Traversal optimized) {
@@ -116,12 +116,13 @@ public class MatchPredicateStrategyTest {
 
         static Iterable<Object[]> generateTestParameters() {
 
-            return new ArrayList<>();
-           /* return Arrays.asList(new Traversal[][]{
-                    {__.match("a", __.as("a").out().as("b")).where(__.as("b").out("knows")), __.match("a", __.as("a").out().as("b"), __.as("b").out("knows"))},
-                    {__.match("a", __.as("a").out().as("b")).select().where(__.as("b").out("knows")), __.match("a", __.as("a").out().as("b"), __.as("b").out("knows")).select()},
-                    {__.match("a", __.as("a").out().as("b")).select().as("x").where(__.as("b").out("knows")), __.match("a", __.as("a").out().as("b")).select().as("x").where(__.as("b").out("knows"))}
-            });*/
+            final Traversal.Admin<?, ?> traversal1 = __.out().as("a").has("name", "marko").match("a", as("a").out().as("b")).asAdmin();
+            traversal1.getSteps().get(1).removeLabel("a");
+
+            return Arrays.asList(new Traversal[][]{
+                    {__.out().match("a", as("a").has("name", "marko"), as("a").out().as("b")), traversal1},
+                    // {__.match("a", as("a").out().as("b")).where(as("b").out("knows").as("c")), __.match("a", as("a").out().as("b"), as("b").where(out("knows").as("c")))},
+            });
         }
     }
 }

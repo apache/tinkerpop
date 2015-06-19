@@ -92,7 +92,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_select();
 
-    public abstract Traversal<Vertex, Map<String,Object>> get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select();
 
     // multi-labels
 
@@ -313,15 +313,14 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER) // TODO --- something fishy here.
-    public void g_V_asXaX_out_asXbX_whereXasXbX_in_count_isXeqX3XX_or_whereXasXbX_outXcreatedX_and_asXbX_hasXlabel_personXXX_select()  {
-        final Traversal<Vertex, Map<String,Object>> traversal = get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select();
+    public void g_V_asXaX_out_asXbX_whereXasXbX_in_count_isXeqX3XX_or_whereXasXbX_outXcreatedX_and_asXbX_hasXlabel_personXXX_select() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select();
         printTraversalForm(traversal);
         checkResults(makeMapList(2,
-                "a",convertToVertex(graph,"marko"),"b",convertToVertex(graph,"josh"),
-                "a",convertToVertex(graph,"marko"),"b",convertToVertex(graph,"lop"),
-                "a",convertToVertex(graph,"peter"),"b",convertToVertex(graph,"lop"),
-                "a",convertToVertex(graph,"josh"),"b",convertToVertex(graph,"lop")),traversal);
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"),
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "peter"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "josh"), "b", convertToVertex(graph, "lop")), traversal);
     }
 
     public static class Traversals extends WhereTest {
@@ -417,8 +416,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String,Object>> get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select() {
-            // TODO: if you put 'b' in the where() it selects from path and you can't get path object metadata...damn.
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select() {
             return g.V().as("a").out().as("b").where(as("b").in().count().is(eq(3)).or().where(as("b").out("created").and().as("b").has(T.label, "person"))).select();
         }
     }

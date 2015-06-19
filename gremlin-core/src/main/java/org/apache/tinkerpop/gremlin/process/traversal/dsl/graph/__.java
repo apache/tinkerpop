@@ -68,7 +68,7 @@ public class __ {
         return __.<A>start().map(function);
     }
 
-    public static <A, B> GraphTraversal<A, B> map(final Traversal<A, B> mapTraversal) {
+    public static <A, B> GraphTraversal<A, B> map(final Traversal<?, B> mapTraversal) {
         return __.<A>start().map(mapTraversal);
     }
 
@@ -79,7 +79,7 @@ public class __ {
         return __.<A>start().flatMap(function);
     }
 
-    public static <A, B> GraphTraversal<A, B> flatMap(final Traversal<A, B> flatMapTraversal) {
+    public static <A, B> GraphTraversal<A, B> flatMap(final Traversal<?, B> flatMapTraversal) {
         return __.<A>start().flatMap(flatMapTraversal);
     }
 
@@ -491,7 +491,7 @@ public class __ {
         return __.<A>start().filter(predicate);
     }
 
-    public static <A> GraphTraversal<A, A> filter(final Traversal<A, ?> filterTraversal) {
+    public static <A> GraphTraversal<A, A> filter(final Traversal<?, ?> filterTraversal) {
         return __.<A>start().filter(filterTraversal);
     }
 
@@ -665,7 +665,7 @@ public class __ {
         return __.<A>start().sideEffect(consumer);
     }
 
-    public static <A> GraphTraversal<A, A> sideEffect(final Traversal<A, ?> sideEffectTraversal) {
+    public static <A> GraphTraversal<A, A> sideEffect(final Traversal<?, ?> sideEffectTraversal) {
         return __.<A>start().sideEffect(sideEffectTraversal);
     }
 

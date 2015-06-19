@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -34,6 +35,8 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface Scoping {
+
+    public static enum Variable {START, END, NONE}
 
     public default <S> S getScopeValueByKey(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
         if (traverser.getSideEffects().get(key).isPresent())
@@ -46,7 +49,7 @@ public interface Scoping {
                 else
                     throw new IllegalArgumentException("Neither the current map nor sideEffects have a " + key + "-key:" + this);
             } catch (final ClassCastException e) {
-                throw new IllegalStateException("The current step was compiled to an invalid local scope and this is a compilation error. Please report the query that yielded this exception: " + this);
+                throw new IllegalStateException("The current step was compiled to an invalid local scope and this is a compilation error. Please report the full traversal that yielded this exception: " + this);
             }
         } else {
             final Path path = traverser.path();
@@ -65,7 +68,7 @@ public interface Scoping {
             try {
                 return Optional.ofNullable(((Map<String, S>) traverser.get()).get(key));
             } catch (ClassCastException e) {
-                throw new IllegalStateException("The current step was compiled to an invalid local scope and this is a compilation error. Please report the query that yielded this exception: " + this);
+                throw new IllegalStateException("The current step was compiled to an invalid local scope and this is a compilation error. Please report the full traversal that yielded this exception: " + this);
             }
         } else {
             final Path path = traverser.path();
@@ -88,4 +91,8 @@ public interface Scoping {
     public void setScope(final Scope scope);
 
     public Set<String> getScopeKeys();
+
+    public default Set<Variable> getVariableLocations() {
+        return Collections.emptySet();
+    }
 }

@@ -184,7 +184,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LambdaMapStep<>(this.asAdmin(), function));
     }
 
-    public default <E2> GraphTraversal<S, E2> map(final Traversal<E, E2> mapTraversal) {
+    public default <E2> GraphTraversal<S, E2> map(final Traversal<?, E2> mapTraversal) {
         return this.asAdmin().addStep(new TraversalMapStep<>(this.asAdmin(), mapTraversal));
     }
 
@@ -200,7 +200,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LambdaFlatMapStep<>(this.asAdmin(), function));
     }
 
-    public default <E2> GraphTraversal<S, E2> flatMap(final Traversal<E, E2> flatMapTraversal) {
+    public default <E2> GraphTraversal<S, E2> flatMap(final Traversal<?, E2> flatMapTraversal) {
         return this.asAdmin().addStep(new TraversalFlatMapStep<>(this.asAdmin(), flatMapTraversal));
     }
 
@@ -628,8 +628,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LambdaFilterStep<>(this.asAdmin(), predicate));
     }
 
-    public default GraphTraversal<S, E> filter(final Traversal<E, ?> filterTraversal) {
-        return this.asAdmin().addStep(new TraversalFilterStep<>(this.asAdmin(), filterTraversal));
+    public default GraphTraversal<S, E> filter(final Traversal<?, ?> filterTraversal) {
+        return this.asAdmin().addStep(new TraversalFilterStep<>(this.asAdmin(), (Traversal) filterTraversal));
     }
 
     public default GraphTraversal<S, E> or(final Traversal<?, ?>... orTraversals) {
@@ -835,8 +835,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LambdaSideEffectStep<>(this.asAdmin(), consumer));
     }
 
-    public default GraphTraversal<S, E> sideEffect(final Traversal<E, ?> sideEffectTraversal) {
-        return this.asAdmin().addStep(new TraversalSideEffectStep<>(this.asAdmin(), sideEffectTraversal));
+    public default GraphTraversal<S, E> sideEffect(final Traversal<?, ?> sideEffectTraversal) {
+        return this.asAdmin().addStep(new TraversalSideEffectStep<>(this.asAdmin(), (Traversal) sideEffectTraversal));
     }
 
     public default <E2> GraphTraversal<S, E2> cap(final String sideEffectKey, final String... sideEffectKeys) {

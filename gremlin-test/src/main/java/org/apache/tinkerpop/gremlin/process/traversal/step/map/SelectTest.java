@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -71,7 +70,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_mapXbothE_label_groupCountX_asXrelationsX_select();
 
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_select();
 
@@ -106,6 +105,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_V_untilXout_outX_repeatXin_asXaXX_selectXaX_byXtailXlocalX_nameX();
 
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_untilXout_outX_repeatXin_asXaX_in_asXbXX_selectXa_bX_byXnameX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_whereXoutXknowsXX_selectXaX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -243,41 +244,34 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @Ignore("There is a HashMap to Element cast problem happening here for some reason in both OLTP and OLAP -- has to do with local barriers! -- thus, bad test.")
-    public void g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by();
+    public void g_V_hasLabelXpersonX_asXpersonX_mapXbothE_label_groupCountX_asXrelationsX_select() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXpersonX_asXpersonX_mapXbothE_label_groupCountX_asXrelationsX_select();
         printTraversalForm(traversal);
-        final Set<String> persons = new HashSet<>();
+        final Set<Object> persons = new HashSet<>();
         for (int i = 0; i < 4; i++) {
             assertTrue(traversal.hasNext());
             final Map<String, Object> map = traversal.next();
             assertEquals(2, map.size());
             assertTrue(map.containsKey("person"));
             assertTrue(map.containsKey("relations"));
-            assertTrue(persons.add((String) map.get("person")));
+            assertTrue(persons.add(map.get("person")));
             final Map<String, Long> relations = (Map<String, Long>) map.get("relations");
-            switch ((String) map.get("person")) {
-                case "marko":
-                    assertEquals(2, relations.size());
-                    assertEquals(1, relations.get("created").longValue());
-                    assertEquals(2, relations.get("knows").longValue());
-                    break;
-                case "vadas":
-                    assertEquals(1, relations.size());
-                    assertEquals(1, relations.get("knows").longValue());
-                    break;
-                case "josh":
-                    assertEquals(2, relations.size());
-                    assertEquals(2, relations.get("created").longValue());
-                    assertEquals(1, relations.get("knows").longValue());
-                    break;
-                case "peter":
-                    assertEquals(1, relations.size());
-                    assertEquals(1, relations.get("created").longValue());
-                    break;
-                default:
-                    assertTrue(false);
-                    break;
+            if (map.get("person").equals(convertToVertex(graph, "marko"))) {
+                assertEquals(2, relations.size());
+                assertEquals(1, relations.get("created").longValue());
+                assertEquals(2, relations.get("knows").longValue());
+            } else if (map.get("person").equals(convertToVertex(graph, "vadas"))) {
+                assertEquals(1, relations.size());
+                assertEquals(1, relations.get("knows").longValue());
+            } else if (map.get("person").equals(convertToVertex(graph, "josh"))) {
+                assertEquals(2, relations.size());
+                assertEquals(2, relations.get("created").longValue());
+                assertEquals(1, relations.get("knows").longValue());
+            } else if (map.get("person").equals(convertToVertex(graph, "peter"))) {
+                assertEquals(1, relations.size());
+                assertEquals(1, relations.get("created").longValue());
+            } else {
+                throw new IllegalStateException("Unknown vertex result: " + map.get("person"));
             }
         }
         assertFalse(traversal.hasNext());
@@ -499,6 +493,15 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_whereXoutXknowsXX_selectXaX_byXnameX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_asXaX_whereXoutXknowsXX_selectXaX();
+        printTraversalForm(traversal);
+        assertEquals(convertToVertex(graph, "marko"), traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends SelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
@@ -551,8 +554,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
-            return g.V().hasLabel("person").as("person").local(__.bothE().label().groupCount()).as("relations").select().by("name").by();
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_mapXbothE_label_groupCountX_asXrelationsX_select() {
+            return g.V().hasLabel("person").as("person").map(__.bothE().label().groupCount()).as("relations").select();
         }
 
         @Override
@@ -633,6 +636,11 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_untilXout_outX_repeatXin_asXaX_in_asXbXX_selectXa_bX_byXnameX() {
             return g.V().until(__.out().out()).repeat(__.in().as("a").in().as("b")).<String>select("a", "b").by("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_whereXoutXknowsXX_selectXaX() {
+            return g.V().as("a").where(__.out("knows")).<Vertex>select("a");
         }
     }
 }

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -84,13 +85,13 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_localXbothE_label_groupCountX_asXrelationsX_select_byXnameX_by() {
-            TraversalScriptHelper.compute("g.V().hasLabel('person').as('person').local(__.bothE().label().groupCount()).as('relations').select().by('name').by()", g)
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_mapXbothE_label_groupCountX_asXrelationsX_select() {
+            TraversalScriptHelper.compute("g.V.hasLabel('person').as('person').map(__.bothE.label.groupCount()).as('relations').select", g)
         }
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_select() {
-            TraversalScriptHelper.compute("g.V().choose(__.outE().count().is(0L), __.as('a'), __.as('b')).select()", g)
+            TraversalScriptHelper.compute("g.V.choose(__.outE().count().is(0L), __.as('a'), __.as('b')).select()", g)
         }
 
         @Override
@@ -169,7 +170,12 @@ public abstract class GroovySelectTest {
 
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_untilXout_outX_repeatXin_asXaX_in_asXbXX_selectXa_bX_byXnameX() {
-            TraversalScriptHelper.compute("g.V.until(__.out.out).repeat(__.in.as('a').in.as('b')).select('a','b').by('name')", g);
+            TraversalScriptHelper.compute("g.V.until(__.out.out).repeat(__.in.as('a').in.as('b')).select('a','b').by('name')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_asXaX_whereXoutXknowsXX_selectXaX() {
+            TraversalScriptHelper.compute("g.V().as('a').where(out('knows')).select('a')",g)
         }
     }
 }
