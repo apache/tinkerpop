@@ -275,15 +275,15 @@ public class __ {
     /**
      * @see {@link GraphTraversal#match(String, Traversal[])}
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startKey, final Traversal<?, ?>... andTraversals) {
-        return __.<A>start().match(startKey, andTraversals);
+    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startKey, final Traversal<?, ?>... matchTraversals) {
+        return __.<A>start().match(startKey, matchTraversals);
     }
 
     /**
      * @see {@link GraphTraversal#match(Traversal[])}
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> match(final Traversal<?, ?>... andTraversals) {
-        return __.<A>start().match(andTraversals);
+    public static <A, B> GraphTraversal<A, Map<String, B>> match(final Traversal<?, ?>... matchTraversals) {
+        return __.<A>start().match(matchTraversals);
     }
 
     /**

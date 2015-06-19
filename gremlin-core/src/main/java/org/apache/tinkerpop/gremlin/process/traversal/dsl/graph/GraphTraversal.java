@@ -475,12 +475,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PathStep<>(this.asAdmin()));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startKey, final Traversal<?, ?>... andTraversals) {
-        return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), startKey, MatchStep.Conjunction.AND, andTraversals));
+    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startKey, final Traversal<?, ?>... matchTraversals) {
+        return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), startKey, MatchStep.Conjunction.AND, matchTraversals));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... andTraversals) {
-        return this.match(null, andTraversals);
+    public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... matchTraversals) {
+        return this.match(null, matchTraversals);
     }
 
     /**
