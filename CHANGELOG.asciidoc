@@ -34,8 +34,9 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 * `has(key,traversal)` is now an alias for `filter(__.values(key).traversal)` using `TraversalFilterStep`.
 * Simplified `SubgraphStrategy` by using `TraversalFilterStep` instead of the more complex `WhereStep`.
 * Added `TraversalMapStep`, `TraversalFlatMapStep`, `TraversalFilterStep`, and `TraversalSideEffectStep` which all leverage an internal traversal.
-* Added `Path.getSingle(pop,label)` and `Path.getList(label)` as default helpers in `Path`.
-* Added `Pop.first` and `Pop.last` as enums for getting single items from a collection.* Changed `GremlinServer.start()` to return a `CompletableFuture` that contains the constructed `ServerGremlinExecutor`.
+* Added `Path.get(pop,label)` as default helpers in `Path`.
+* Added `Pop.first`, `Pop.last`, and `Pop.all` as enums for getting single items from a collection or a list of said items.
+* Changed `GremlinServer.start()` to return a `CompletableFuture` that contains the constructed `ServerGremlinExecutor`.
 * Restructured `IoTest` breaking it up into smaller and more logically grouped test cases.
 * Gremlin Server `Settings` now has sensible defaults thus allowing the server to be started with no additional configuration.
 * Fixed garbled characters in Gremlin Console that notably showed up in `:help`

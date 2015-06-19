@@ -76,6 +76,10 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
         return this.path().get(stepLabel);
     }
 
+    public default <A> A path(final Pop pop, final String stepLabel) {
+        return this.path().get(pop, stepLabel);
+    }
+
     /**
      * Return the number of times the traverser has gone through a looping section of a traversal.
      *

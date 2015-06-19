@@ -304,7 +304,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.matchTraversals.hashCode() ^ (null == this.startKey ? "null".hashCode() : this.startKey.hashCode());
+        return super.hashCode() ^ this.matchTraversals.hashCode() ^ this.conjunction.hashCode() ^ (null == this.startKey ? "null".hashCode() : this.startKey.hashCode());
     }
 
     @Override
@@ -330,7 +330,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             traverser.path().addLabel(this.getId());
             ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordStart(traverser, this.getTraversal());
             // TODO: sideEffect check?
-            return null == this.selectKey ? traverser : traverser.split(traverser.path().getSingle(Pop.last, this.selectKey), this);
+            return null == this.selectKey ? traverser : traverser.split(traverser.path().get(Pop.last, this.selectKey), this);
         }
 
         @Override
@@ -399,7 +399,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 // TODO: sideEffect check?
                 // path check
                 final Path path = traverser.path();
-                if (!path.hasLabel(this.matchKey) || traverser.get().equals(path.getSingle(Pop.first, this.matchKey))) {
+                if (!path.hasLabel(this.matchKey) || traverser.get().equals(path.get(Pop.first, this.matchKey))) {
                     if (this.traverserStepIdSetByChild)
                         traverser.setStepId(((MatchStep<?, ?>) this.getTraversal().getParent()).getId());
                     traverser.path().addLabel(this.matchKey);

@@ -21,22 +21,14 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 
+import java.util.List;
+
 /**
  * Internal interface used by ImmutablePath to provide more efficient implementation.
  *
  * @author Matt Frantz (http://github.com/mhfrantz)
  */
 interface ImmutablePathImpl extends Path {
-
-    @Override
-    public default <A> A getSingle(final Pop pop, final String label) {
-        // Delegate to the non-throwing, optimized head/tail calculations.
-        final A single = Pop.first == pop ? this.getSingleTail(label) : this.getSingleHead(label);
-        // Throw if we didn't find the label.
-        if (null == single)
-            throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
-        return single;
-    }
 
     /**
      * Get the object least recently associated with the particular label of the path.
