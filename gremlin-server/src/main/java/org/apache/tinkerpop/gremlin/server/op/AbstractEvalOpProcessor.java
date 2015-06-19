@@ -71,6 +71,8 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             T.label.getAccessor(), T.value.getAccessor());
     private static final String invalidBindingKeysJoined = String.join(",", invalidBindingsKeys);
 
+    protected boolean manageTransactions;
+
     /**
      * Provides an operation for evaluating a Gremlin script.
      */
@@ -191,10 +193,15 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final Settings settings = context.getSettings();
         boolean warnOnce = false;
 
-        if (!itty.hasNext())
+        // we have an empty iterator - happens on stuff like: g.V().iterate()
+        if (!itty.hasNext()) {
+            // as there is nothing left to iterate if we are transaction managed then we should execute a
+            // commit here before we send back a NO_CONTENT which implies success
+            if (manageTransactions) context.getGraphManager().commitAll();
             ctx.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.NO_CONTENT)
                     .create());
+        }
 
         // timer for the total serialization time
         final StopWatch stopWatch = new StopWatch();
@@ -212,6 +219,16 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             // the expected resultIterationBatchSize.  Total serialization time for the response remains in
             // effect so if the client is "slow" it may simply timeout.
             if (aggregate.size() < resultIterationBatchSize) aggregate.add(itty.next());
+
+            // if there's no more items in the iterator then we've aggregated everything and are thus ready to
+            // commit stuff if transaction management is on.  exceptions should bubble up and be handle in the normal
+            // manner of things.  a final SUCCESS message will not have been sent (below) and we ship back an error.
+            // if transaction management is not enabled, then returning SUCCESS below is OK as this is a different
+            // usage context.  without transaction management enabled, the user is responsible for maintaining
+            // the transaction and will want a SUCCESS to know their eval and iteration was ok.  they would then
+            // potentially have a failure on commit on the next request.
+            if (!itty.hasNext() && manageTransactions)
+                context.getGraphManager().commitAll();
 
             // send back a page of results if batch size is met or if it's the end of the results being iterated.
             // also check writeability of the channel to prevent OOME for slow clients.

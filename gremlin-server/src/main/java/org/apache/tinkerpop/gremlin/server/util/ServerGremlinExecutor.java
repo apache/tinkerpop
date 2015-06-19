@@ -98,7 +98,6 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
                 .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
                 .afterFailure((b, e) -> graphManager.rollbackAll())
-                .afterSuccess(b -> graphManager.commitAll())
                 .beforeEval(b -> graphManager.rollbackAll())
                 .afterTimeout(b -> graphManager.rollbackAll())
                 .enabledPlugins(new HashSet<>(settings.plugins))

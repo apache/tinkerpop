@@ -79,6 +79,10 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         }};
     }
 
+    public SessionOpProcessor() {
+        manageTransactions = false;
+    }
+
     @Override
     public String getName() {
         return OP_PROCESSOR_NAME;
