@@ -81,20 +81,32 @@ public class MutablePath implements Path, Serializable {
     }
 
     @Override
-    public <A> A getSingle(final Pop pop, final String label) {
-        // Override default to avoid building temporary list, and to stop looking when we find the label.
-        if (Pop.last == pop) {
-            for (int i = this.labels.size() - 1; i >= 0; i--) {
-                if (labels.get(i).contains(label))
-                    return (A) objects.get(i);
+    public <A> A get(final Pop pop, final String label) {
+        if(Pop.all == pop) {
+            if (this.hasLabel(label)) {
+                final Object object = this.get(label);
+                if (object instanceof List)
+                    return (A) object;
+                else
+                    return (A) Collections.singletonList(object);
+            } else {
+                return (A) Collections.emptyList();
             }
-        } else {
-            for (int i = 0; i != this.labels.size(); i++) {
-                if (labels.get(i).contains(label))
-                    return (A) objects.get(i);
+        }  else {
+            // Override default to avoid building temporary list, and to stop looking when we find the label.
+            if (Pop.last == pop) {
+                for (int i = this.labels.size() - 1; i >= 0; i--) {
+                    if (labels.get(i).contains(label))
+                        return (A) objects.get(i);
+                }
+            } else {
+                for (int i = 0; i != this.labels.size(); i++) {
+                    if (labels.get(i).contains(label))
+                        return (A) objects.get(i);
+                }
             }
+            throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
         }
-        throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
     }
 
     @Override

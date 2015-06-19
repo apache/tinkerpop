@@ -39,15 +39,19 @@ public interface Scoping {
         if (traverser.getSideEffects().get(key).isPresent())
             return traverser.getSideEffects().<S>get(key).get();
         if (Scope.local == this.getScope()) {
-            final S s = ((Map<String, S>) traverser.get()).get(key);
-            if (null != s)
-                return s;
-            else
-                throw new IllegalArgumentException("Neither the current map nor sideEffects have a " + key + "-key:" + this);
+            try {
+                final S s = ((Map<String, S>) traverser.get()).get(key);
+                if (null != s)
+                    return s;
+                else
+                    throw new IllegalArgumentException("Neither the current map nor sideEffects have a " + key + "-key:" + this);
+            } catch (final ClassCastException e) {
+                throw new IllegalStateException("The current step was compiled to an invalid local scope and this is a compilation error. Please report the query that yielded this exception: " + this);
+            }
         } else {
             final Path path = traverser.path();
             if (path.hasLabel(key))
-                return null == pop ? path.get(key) : path.getSingle(pop, key);
+                return null == pop ? path.get(key) : path.get(pop, key);
             else
                 throw new IllegalArgumentException("Neither the current path nor sideEffects have a " + key + "-key: " + this);
         }
@@ -58,10 +62,14 @@ public interface Scoping {
             return traverser.getSideEffects().<S>get(key);
 
         if (Scope.local == this.getScope()) {
-            return Optional.ofNullable(((Map<String, S>) traverser.get()).get(key));
+            try {
+                return Optional.ofNullable(((Map<String, S>) traverser.get()).get(key));
+            } catch (ClassCastException e) {
+                throw new IllegalStateException("The current step was compiled to an invalid local scope and this is a compilation error. Please report the query that yielded this exception: " + this);
+            }
         } else {
             final Path path = traverser.path();
-            return path.hasLabel(key) ? Optional.of(null == pop ? path.get(key) : path.getSingle(pop, key)) : Optional.<S>empty();
+            return path.hasLabel(key) ? Optional.of(null == pop ? path.get(key) : path.get(pop, key)) : Optional.<S>empty();
         }
     }
 

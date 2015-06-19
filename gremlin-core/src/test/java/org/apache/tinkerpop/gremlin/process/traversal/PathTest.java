@@ -1,25 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  * Licensed to the Apache Software Foundation (ASF) under one
+ *  * or more contributor license agreements.  See the NOTICE file
+ *  * distributed with this work for additional information
+ *  * regarding copyright ownership.  The ASF licenses this file
+ *  * to you under the Apache License, Version 2.0 (the
+ *  * "License"); you may not use this file except in compliance
+ *  * with the License.  You may obtain a copy of the License at
+ *  *
+ *  * http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing,
+ *  * software distributed under the License is distributed on an
+ *  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  * KIND, either express or implied.  See the License for the
+ *  * specific language governing permissions and limitations
+ *  * under the License.
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MutablePath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
@@ -33,13 +34,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PathTest extends AbstractGremlinProcessTest {
+public class PathTest {
 
     private final static List<Supplier<Path>> PATH_SUPPLIERS =
             Arrays.asList(MutablePath::make, ImmutablePath::make, DetachedPath::make, ReferencePath::make);
@@ -81,7 +81,6 @@ public class PathTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldHandleMultiLabelPaths() {
         PATH_SUPPLIERS.forEach(supplier -> {
             Path path = supplier.get();
@@ -98,16 +97,6 @@ public class PathTest extends AbstractGremlinProcessTest {
             assertTrue(path.<List<String>>get("a").contains("marko"));
             assertTrue(path.<List<String>>get("a").contains("matthias"));
         });
-
-        final Path path = g.V().as("x").repeat(out().as("y")).times(2).path().by("name").next();
-        assertEquals(3, path.size());
-        assertEquals(3, path.labels().size());
-        assertEquals(2, new HashSet<>(path.labels()).size());
-        assertTrue(path.get("x") instanceof String);
-        assertTrue(path.get("y") instanceof List);
-        assertEquals(2, path.<List<String>>get("y").size());
-        assertTrue(path.<List<String>>get("y").contains("josh"));
-        assertTrue(path.<List<String>>get("y").contains("ripple") || path.<List<String>>get("y").contains("lop"));
     }
 
     @Test
@@ -175,15 +164,15 @@ public class PathTest extends AbstractGremlinProcessTest {
             path = path.extend("stephen", "a", "c");
             path = path.extend("matthias", "c", "d");
             assertEquals(3, path.size());
-            assertEquals("marko", path.getSingle(Pop.first, "a"));
-            assertEquals("marko", path.getSingle(Pop.first, "b"));
-            assertEquals("stephen", path.getSingle(Pop.first, "c"));
-            assertEquals("matthias", path.getSingle(Pop.first, "d"));
+            assertEquals("marko", path.get(Pop.first, "a"));
+            assertEquals("marko", path.get(Pop.first, "b"));
+            assertEquals("stephen", path.get(Pop.first, "c"));
+            assertEquals("matthias", path.get(Pop.first, "d"));
             ///
-            assertEquals("marko", path.getSingle(Pop.last, "b"));
-            assertEquals("stephen", path.getSingle(Pop.last, "a"));
-            assertEquals("matthias", path.getSingle(Pop.last, "c"));
-            assertEquals("matthias", path.getSingle(Pop.last, "d"));
+            assertEquals("marko", path.get(Pop.last, "b"));
+            assertEquals("stephen", path.get(Pop.last, "a"));
+            assertEquals("matthias", path.get(Pop.last, "c"));
+            assertEquals("matthias", path.get(Pop.last, "d"));
         });
     }
 
@@ -195,18 +184,19 @@ public class PathTest extends AbstractGremlinProcessTest {
             path = path.extend("stephen", "a", "c");
             path = path.extend("matthias", "c", "d");
             assertEquals(3, path.size());
-            assertEquals(2, path.getList("a").size());
-            assertEquals("marko", path.getList("a").get(0));
-            assertEquals("stephen", path.getList("a").get(1));
-            assertEquals(1, path.getList("b").size());
-            assertEquals("marko", path.getList("b").get(0));
-            assertEquals(2, path.getList("c").size());
-            assertEquals("stephen", path.getList("c").get(0));
-            assertEquals("matthias", path.getList("c").get(1));
-            assertEquals(1, path.getList("d").size());
-            assertEquals("matthias", path.getList("d").get(0));
+            assertEquals(2, path.<List>get(Pop.all, "a").size());
+            assertEquals("marko", path.<List>get(Pop.all, "a").get(0));
+            assertEquals("stephen", path.<List>get(Pop.all, "a").get(1));
+            assertEquals(1, path.<List>get(Pop.all, "b").size());
+            assertEquals("marko", path.<List>get(Pop.all, "b").get(0));
+            assertEquals(2, path.<List>get(Pop.all, "c").size());
+            assertEquals("stephen", path.<List>get(Pop.all, "c").get(0));
+            assertEquals("matthias", path.<List>get(Pop.all, "c").get(1));
+            assertEquals(1, path.<List>get(Pop.all, "d").size());
+            assertEquals("matthias", path.<List>get(Pop.all, "d").get(0));
             ///
-            assertEquals(0,path.getList("noExist").size());
+            assertEquals(0, path.<List>get(Pop.all, "noExist").size());
         });
     }
+
 }
