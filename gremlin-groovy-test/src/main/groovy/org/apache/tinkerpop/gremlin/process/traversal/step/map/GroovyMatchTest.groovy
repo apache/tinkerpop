@@ -22,6 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -246,6 +249,22 @@ public abstract class GroovyMatchTest {
                     __.as('c').out('writtenBy').as('d'),
                     where('d', neq('a')))
             """, g)
+        }
+
+        @Override
+        public Traversal<Vertex,Map<String,Object>> get_g_V_matchXa__a_knows_b__andXa_created_c__b_created_c__andXb_created_count_d__a_knows_count_dXXX() {
+            TraversalScriptHelper.compute("""
+                g.V.match('a',
+                    __.as('a').out('knows').as('b'),
+                    and(
+                            __.as('a').out('created').as('c'),
+                            __.as('b').out('created').as('c'),
+                            and(
+                                    __.as('b').out('created').count.as('d'),
+                                    __.as('a').out('knows').count.as('d')
+                            )
+                    ))
+            """,g)
         }
     }
 

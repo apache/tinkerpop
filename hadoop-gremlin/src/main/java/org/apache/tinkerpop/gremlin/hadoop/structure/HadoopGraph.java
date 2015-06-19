@@ -73,7 +73,7 @@ import java.util.stream.Stream;
         method = "g_V_matchXa_created_b__c_created_bX_selectXnameX",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
         method = "g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(

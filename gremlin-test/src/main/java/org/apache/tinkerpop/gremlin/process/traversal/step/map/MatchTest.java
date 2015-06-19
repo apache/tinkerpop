@@ -110,6 +110,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // pulls out has container for index lookup and uses an where() with startKey and predicate
     public abstract Traversal<Vertex,Map<String,Vertex>> get_g_V_matchXa__a_hasXname_GarciaX__a_0writtenBy_b__b_followedBy_c__c_writtenBy_d__whereXd_neqXaXXX();
 
+    // nested and with oddly dependent end steps
+    public abstract Traversal<Vertex,Map<String,Object>> get_g_V_matchXa__a_knows_b__andXa_created_c__b_created_c__andXb_created_count_d__a_knows_count_dXXX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_out_bX() throws Exception {
@@ -357,6 +360,15 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 "a", convertToVertex(graph, "Garcia"), "b", convertToVertex(graph,"CRYPTICAL ENVELOPMENT"), "c", convertToVertex(graph,"DRUMS"), "d", convertToVertex(graph,"Grateful_Dead")), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa__a_knows_b__andXa_created_c__b_created_c__andXb_created_count_d__a_knows_count_dXXX() {
+        final Traversal<Vertex,Map<String,Object>> traversal = get_g_V_matchXa__a_knows_b__andXa_created_c__b_created_c__andXb_created_count_d__a_knows_count_dXXX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(4,
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph,"josh"), "c", convertToVertex(graph,"lop"), "d", 2l),traversal);
+    }
+
     public static class Traversals extends MatchTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {
@@ -533,6 +545,20 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     as("b").out("followedBy").as("c"),
                     as("c").out("writtenBy").as("d"),
                     where("d", P.neq("a")));
+        }
+
+        @Override
+        public Traversal<Vertex,Map<String,Object>> get_g_V_matchXa__a_knows_b__andXa_created_c__b_created_c__andXb_created_count_d__a_knows_count_dXXX() {
+          return g.V().match("a",
+                    as("a").out("knows").as("b"),
+                    and(
+                            as("a").out("created").as("c"),
+                            as("b").out("created").as("c"),
+                            and(
+                                as("b").out("created").count().as("d"),
+                                as("a").out("knows").count().as("d")
+                            )
+                    ));
         }
     }
 }

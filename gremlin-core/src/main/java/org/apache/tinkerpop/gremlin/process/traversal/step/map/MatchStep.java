@@ -97,7 +97,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         // START STEP to XMatchStep OR XMatchStartStep
         final Step<?, ?> startStep = conjunctionTraversal.getStartStep();
         if (startStep instanceof ConjunctionStep) {
-            final MatchStep matchStep = new MatchStep(conjunctionTraversal, this.startKey,
+            final MatchStep matchStep = new MatchStep(conjunctionTraversal, null,
                     startStep instanceof AndStep ? MatchStep.Conjunction.AND : MatchStep.Conjunction.OR,
                     ((ConjunctionStep<?>) startStep).getLocalChildren().toArray(new Traversal[((ConjunctionStep<?>) startStep).getLocalChildren().size()]));
             TraversalHelper.replaceStep(startStep, matchStep, conjunctionTraversal);
@@ -250,11 +250,13 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 return IteratorUtils.of(traverser.split(this.getBindings(traverser), this));
 
             if (this.conjunction == Conjunction.AND) {
-                this.getMatchAlgorithm().apply(traverser).addStart(traverser); // determine which sub-pattern the traverser should try next
-            } else {
+                final Traversal.Admin<Object, Object> conjunctionTraversal = this.getMatchAlgorithm().apply(traverser); // determine which sub-pattern the traverser should try next
+                traverser.path().addLabel(conjunctionTraversal.getStartStep().getId()); // so the and() path is no longer taken once returned
+                conjunctionTraversal.addStart(traverser); // determine which sub-pattern the traverser should try next
+            } else {  // OR
                 for (final Traversal.Admin<?, ?> conjunctionTraversal : this.conjunctionTraversals) {
                     final Traverser split = traverser.split();
-                    split.path().addLabel(conjunctionTraversal.getParent().asStep().getId());
+                    split.path().addLabel(conjunctionTraversal.getParent().asStep().getId());  // so the or() path is no longer taken once returned
                     conjunctionTraversal.addStart(split);
                 }
             }
@@ -271,13 +273,14 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
         if (this.conjunction == Conjunction.AND) {
             final Traversal.Admin<Object, Object> conjunctionTraversal = this.getMatchAlgorithm().apply(traverser); // determine which sub-pattern the traverser should try next
+            traverser.path().addLabel(conjunctionTraversal.getStartStep().getId()); // so the and() path is no longer taken once returned
             traverser.setStepId(conjunctionTraversal.getStartStep().getId()); // go down the traversal match sub-pattern
             return IteratorUtils.of(traverser);
-        } else {
+        } else { // OR
             final List<Traverser<Map<String, E>>> traversers = new ArrayList<>();
             this.conjunctionTraversals.forEach(conjunctionTraversal -> {
                 final Traverser.Admin split = traverser.split();
-                split.path().addLabel(conjunctionTraversal.getParent().asStep().getId());
+                split.path().addLabel(conjunctionTraversal.getParent().asStep().getId());  // so the or() path is no longer taken once returned
                 split.setStepId(conjunctionTraversal.getStartStep().getId());
                 traversers.add(split);
             });
