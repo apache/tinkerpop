@@ -698,6 +698,8 @@ Gremlin Server is capable of streaming results such that additional responses wi
 |599 |SERVER SERIALIZATION ERROR |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
 |=========================================================
 
+`SUCCESS` and `NO CONTENT` messages are terminating messages that indicate that a request was properly handled on the server and that there are no additional messages streaming in for that request.  When developing a driver, it is important to note the slight differences in semantics for these result codes when it comes to sessionless versus in-session requests.  For a sessionless request, which operates under automatic transaction management, Gremlin Server will only send one of these message types after result iteration and transaction `commit()`.  In other words, the driver could potentially expect to receive a number of "successful" `PARTIAL CONTENT` messages before ultimately ending in failure on `commit()`.  For in-session requests, the client is responsible for managing the transaction and therefore, a first request could receive multiple "success" related messages, only to fail on a future request that finally issues the `commit()`.
+
 OpProcessors Arguments
 ^^^^^^^^^^^^^^^^^^^^^^
 
