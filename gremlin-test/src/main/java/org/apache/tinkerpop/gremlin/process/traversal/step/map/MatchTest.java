@@ -113,6 +113,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // nested and with oddly dependent end steps
     public abstract Traversal<Vertex,Map<String,Object>> get_g_V_matchXa__a_knows_b__andXa_created_c__b_created_c__andXb_created_count_d__a_knows_count_dXXX();
 
+    // nested or with infix and and variable dependencies at different depths
+    public abstract Traversal<Vertex,Map<String,Object>> get_g_V_asXaX_out_asXbX_matchXa_out_count_c__orXa_knows_b__b_in_count_c__and__c_isXgtX2XXXX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_out_bX() throws Exception {
@@ -369,6 +372,18 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph,"josh"), "c", convertToVertex(graph,"lop"), "d", 2l),traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_out_asXbX_matchXa_out_count_c__orXa_knows_b__b_in_count_c__and__c_isXgtX2XXXX() {
+       final Traversal<Vertex,Map<String,Object>> traversal = get_g_V_asXaX_out_asXbX_matchXa_out_count_c__orXa_knows_b__b_in_count_c__and__c_isXgtX2XXXX();
+       printTraversalForm(traversal);
+        checkResults(makeMapList(3,
+                "a",convertToVertex(graph,"marko"),"b",convertToVertex(graph,"josh"),"c",3l,
+                "a",convertToVertex(graph,"marko"), "b", convertToVertex(graph,"vadas"),"c",3l,
+                "a",convertToVertex(graph,"marko"),"b",convertToVertex(graph,"lop"),"c",3l),traversal);
+
+    }
+
     public static class Traversals extends MatchTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {
@@ -555,10 +570,22 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                             as("a").out("created").as("c"),
                             as("b").out("created").as("c"),
                             and(
-                                as("b").out("created").count().as("d"),
-                                as("a").out("knows").count().as("d")
+                                    as("b").out("created").count().as("d"),
+                                    as("a").out("knows").count().as("d")
                             )
                     ));
+        }
+
+        @Override
+        public Traversal<Vertex,Map<String,Object>> get_g_V_asXaX_out_asXbX_matchXa_out_count_c__orXa_knows_b__b_in_count_c__and__c_isXgtX2XXXX() {
+           return g.V().as("a").out().as("b").
+                    match(
+                            as("a").out().count().as("c"),
+                            or(
+                                    as("a").out("knows").as("b"),
+                                    as("b").in().count().as("c").and().as("c").is(P.gt(2))
+                            )
+                    );
         }
     }
 }

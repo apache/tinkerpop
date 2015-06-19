@@ -706,7 +706,7 @@ WARNING: The anonymous traversal of `local()` processes the current object "loca
 Match Step
 ~~~~~~~~~~
 
-The `match()`-step (*map*) is introduced into TinkerPop3 to support a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative] form of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. Similar constructs were available in previous TinkerPop versions via the `table()`-step, but that has since been removed in favor of the `match().select()`-pattern. With MatchStep in TinkerPop, a query optimizer similar to the link:http://www.knowledgefrominformation.com/2011/04/16/budget-match-cost-effective-subgraph-matching-on-large-networks/[budget match algorithm] builds and revises query plans on the fly, while a query is in progress. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is advantageous to use `match()`, as an optimal plan will be determined automatically.  Furthermore, some queries are much easier to express via `match()` than with single-path traversals.
+The `match()`-step (*map*) provides a more link:http://en.wikipedia.org/wiki/Declarative_programming[declarative] form of graph querying based on the notion of link:http://en.wikipedia.org/wiki/Pattern_matching[pattern matching]. With `match()`, the user provides a collection of "traversal fragments," called patterns, that have variables defined that much hold true throughout the duration of the `match()`. When a traverser is in `match()`, a registered `MatchAlgorithm` analyzes the current state of the traverser (i.e. its history based on its <<path-data-structure,path data>>) and returns a traversal-pattern that the traverser should try next. The default `MatchAlgorithm` provided is called `CountMatchAlgorithm` and it dynamically revises the pattern execution plan to ensure that patterns that do the most filtering (i.e. largest set reduction) occur first. For very large graphs, where the developer is uncertain of the statistics of the graph (e.g. how many `knows`-edges vs. `worksFor`-edges exist in the graph), it is advantageous to use `match()`, as an optimal plan will be determined automatically. Furthermore, some queries are much easier to express via `match()` than with single-path traversals.
 
     "Who created a project named 'lop' that was also created by someone who is 29 years old? Return the two creators."
 
@@ -734,7 +734,7 @@ g.V().match('a',
 .Grateful Dead
 image::grateful-dead-schema.png[width=475]
 
-MatchStep brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. Like SPARQL, MatchStep conjoins a set of patterns applied to a graph.  For example, the following traversal finds exactly those songs which Jerry Garcia has both sung and written (using the Grateful Dead graph distributed in the `data/` directory):  
+`MatchStep` brings functionality similar to link:http://en.wikipedia.org/wiki/SPARQL[SPARQL] to Gremlin. Like SPARQL, MatchStep conjoins a set of patterns applied to a graph.  For example, the following traversal finds exactly those songs which Jerry Garcia has both sung and written (using the Grateful Dead graph distributed in the `data/` directory):
 
 [gremlin-groovy]
 ----
@@ -759,7 +759,7 @@ g.V().match('a',
 
 <1> *Patterns of arbitrary complexity*: `match()` is not restricted to triple patterns or property paths.
 <2> *Recursion support*: `match()` supports the branch-based steps within a pattern, including `repeat()`.
-<3> *Imperative/declarative hybrid*: Pre and prior to a `match()`, it is possible to leverage classic Gremlin imperative.
+<3> *Imperative/declarative hybrid*: Pre and prior to a `match()`, it is possible to leverage classic Gremlin traversals.
 
 To extend point #3, it is possible to support going from imperative, to declarative, to imperative, ad infinitum.
 
@@ -769,11 +769,13 @@ g.V().match('a',
         __.as('a').out('knows').as('b'),
         __.as('b').out('created').has('name','lop')).
         select('b').out('created').
-          match('a',
-            __.as('a').in('created').as('b'),
-            __.as('b').out('knows').as('c')).
-            select('c').values('name')
+          match('x',
+            __.as('x').in('created').as('y'),
+            __.as('y').out('knows').as('z')).
+            select('z').values('name')
 ----
+
+IMPORTANT: The `match()`-step is stateless where the variable bindings of the traversal patterns are stored in the path history of the traverser. As such, the variables used over all `match()`-steps within a traversal are globally unique. A benefit of this is that subsequent `where()`, `select()`, `match()`, etc. steps can leverage the same variables in their analysis.
 
 Like all other steps in Gremlin, `match()` is a function and thus, `match()` within `match()` is a natural consequence of Gremlin's functional foundation (i.e. recursive matching).
 
@@ -789,6 +791,33 @@ g.V().match('a',
         select('a','c').by('name')
 ----
 
+There are four types of `match()` traversal patterns.
+
+  . `as('a')...as('b')`: both the start and end of the traversal have a declared variable.
+  . `as('a')...`: only the start of the traversal has a declared variable.
+  . `...as('b')`: only the end of the traversal has a declared variable.
+  . `...`: there are no declared variables.
+
+If a variable is at the start of a traversal pattern it *must* exist as a label in the path history of the traverser else the traverser can not go down that path. If a variable is at the end of a traversal pattern then if the variable exists in the path history of the traverser, the traverser's current location must match (i.e. equal) its historic location at that same label. However, if the variable does not exist in the path history of the traverser, then the current location is labeled as the variable and thus, becomes a bound variable for subsequent traversal patterns. If a traversal pattern does not have an end label, then the traverser must simply "survive" the pattern to continue to the next pattern. If a traversal pattern does not have a start label, then the traverser can go down that path at any point, but will only go down that pattern once as a traversal pattern is executed once and only once for the history of the traverser. Typically, traversal patterns that do not have a start label are used in conjunction with `and()`, `or()`, and `where()`. Once the traverser has "survived" (i.e. not filtered) all the patterns (or at least one for `or()`), `match()`-step analyzes the traversers path history and emits a `Map<String,Object>` of the variable bindings to the next step in the traversal.
+
+[gremlin-groovy,modern]
+----
+g.V().as('a').out().as('b'). <1>
+    match( <2>
+        __.as('a').out().count().as('c'), <3>
+        or( <4>
+          __.as('a').out('knows').as('b'),
+          __.as('b').in().count().as('c').and().as('c').is(gt(2))  <5>
+        )
+    )
+----
+
+<1> A standard, labeled traversal can come prior to `match()`.
+<2> If the traverser's path prior to entering `match()` has the requisite variables, then no "start variable" is needed.
+<3> It is possible to use <<a-note-on-barrier-steps,barrier steps>> though they are computed locally to the pattern (as one would expect).
+<4> It is possible to nest `and()`- and `or()`-steps for conjunction matching.
+<5> Both infix and prefix conjunction notation is supported.
+
 [[using-where-with-match]]
 Using Where with Match
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -803,7 +832,7 @@ g.V().match('a',
           where('a', neq('c')).select('a','c').by('name')
 ----
 
-The `where()`-step can take either a `BiPredicate` (first example below) or a `Traversal` (second example below). Using `MatchWhereStrategy`, `where()`-clauses can be automatically folded into `match()` and thus, subject to `match()`-steps budget-match algorithm.
+The `where()`-step can take either a `P`-predicate (example above) or a `Traversal` (example below). Using `MatchWhereStrategy`, `where()`-clauses can be automatically folded into `match()` and thus, subject to the query optimizer within `match()`-step.
 
 [gremlin-groovy,modern]
 ----
