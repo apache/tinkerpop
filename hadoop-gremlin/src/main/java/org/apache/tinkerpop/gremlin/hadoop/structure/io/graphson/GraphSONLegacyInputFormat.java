@@ -20,7 +20,7 @@ public final class GraphSONLegacyInputFormat extends FileInputFormat<NullWritabl
 
     @Override
     public RecordReader<NullWritable, VertexWritable> createRecordReader(final InputSplit split, final TaskAttemptContext context) throws IOException, InterruptedException {
-        RecordReader<NullWritable, VertexWritable> reader = new GraphSONRecordReader();
+        RecordReader<NullWritable, VertexWritable> reader = new GraphSONLegacyRecordReader();
         reader.initialize(split, context);
         return reader;
     }
