@@ -38,9 +38,10 @@ import java.util.Set;
  * <p/>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  * @example <pre>
  * __.has("name","stephen").or().where(__.out("knows").has("name","stephen"))   // is replaced by __.or(__.has("name","stephen"), __.where(__.out("knows").has("name","stephen")))
- * __.out("a").out("b").and().out("c").or().out("d")                            // __.and(__.out("a").out("b"), __.or(__.out("c"), __.out("d")))
+ * __.out("a").out("b").and().out("c").or().out("d")                            // is replaced by __.or(__.and(__.out("a").out("b"), __.out("c")), __.out("d"))
  * __.as("a").out().as("b").and().as("c").in().as("d")                          // is replaced by __.and(__.as("a").out().as("b"), __.as("c").in().as("d"))
  * </pre>
  */
@@ -56,8 +57,8 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy<Travers
         if (!TraversalHelper.hasStepOfAssignableClass(ConjunctionStep.class, traversal))
             return;
 
-        processConjunctionMarker(AndStep.class, traversal);
         processConjunctionMarker(OrStep.class, traversal);
+        processConjunctionMarker(AndStep.class, traversal);
     }
 
 

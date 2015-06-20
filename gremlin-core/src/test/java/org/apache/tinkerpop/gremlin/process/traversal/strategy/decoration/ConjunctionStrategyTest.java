@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -35,8 +34,6 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -121,11 +118,11 @@ public class ConjunctionStrategyTest {
 
             return Arrays.asList(new Traversal[][]{
                     {__.has("name", "stephen").or().where(__.out("knows").has("name", "stephen")), __.or(__.has("name", "stephen"), __.where(__.out("knows").has("name", "stephen")))},
-                    {__.out("a").out("b").and().out("c").or().out("d"), __.and(__.out("a").out("b"), __.or(__.out("c"), __.out("d")))},
-                    {__.as("1").out("a").out("b").as("2").and().as("3").out("c").as("4").or().as("5").out("d").as("6"), __.and(__.as("1").out("a").out("b").as("2"), __.or(__.as("3").out("c").as("4"), __.as("5").out("d").as("6")))},
-                    {__.as("1").out("a").out("b").and().as("3").out("c").or().as("5").out("d"), __.and(__.as("1").out("a").out("b"), __.or(__.as("3").out("c"), __.as("5").out("d")))},
-                   // {__.as("1").out("a").out("b").or().as("3").out("c").and().as("5").out("d"), __.or(__.as("1").out("a").out("b"), __.and(__.as("3").out("c"), __.as("5").out("d")))},
-                    {__.as("a").out().as("b").and().as("c").in().as("d"), __.and(__.as("a").out().as("b"),__.as("c").in().as("d"))}
+                    {__.out("a").out("b").and().out("c").or().out("d"), __.or(__.and(__.out("a").out("b"), __.out("c")), __.out("d"))},
+                    {__.as("1").out("a").out("b").as("2").and().as("3").out("c").as("4").or().as("5").out("d").as("6"), __.or(__.and(__.as("1").out("a").out("b").as("2"), __.as("3").out("c").as("4")), __.as("5").out("d").as("6"))},
+                    {__.as("1").out("a").out("b").and().as("3").out("c").or().as("5").out("d"), __.or(__.and(__.as("1").out("a").out("b"), __.as("3").out("c")), __.as("5").out("d"))},
+                    {__.as("1").out("a").out("b").or().as("3").out("c").and().as("5").out("d"), __.or(__.as("1").out("a").out("b"), __.and(__.as("3").out("c"), __.as("5").out("d")))},
+                    {__.as("a").out().as("b").and().as("c").in().as("d"), __.and(__.as("a").out().as("b"), __.as("c").in().as("d"))}
             });
         }
     }
