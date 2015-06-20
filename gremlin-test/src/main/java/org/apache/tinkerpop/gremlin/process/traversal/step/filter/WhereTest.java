@@ -31,11 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
@@ -288,7 +284,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     public void g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_selectXaX_byXnameX() {
         Traversal<Vertex, String> traversal = get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX();
         printTraversalForm(traversal);
-        checkResults(Arrays.asList("marko", "josh"), traversal);
+        checkResults(Arrays.asList("marko", "vadas", "josh"), traversal);
     }
 
     @Test
