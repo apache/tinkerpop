@@ -66,7 +66,9 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
 
         TraversalHelper.getStepsOfClass(MatchStep.class, traversal).forEach(matchStep -> {
             Step<?, ?> nextStep = matchStep.getNextStep();
-            while (nextStep instanceof WhereStep || nextStep instanceof SelectStep || nextStep instanceof SelectOneStep) {   // match().select().where() --> match(where()).select()
+            while (nextStep instanceof WhereStep ||
+                    (nextStep instanceof SelectStep && ((SelectStep)nextStep).getLocalChildren().isEmpty()) ||
+                    nextStep instanceof SelectOneStep && ((SelectOneStep)nextStep).getLocalChildren().isEmpty()) {   // match().select().where() --> match(where()).select()
                 if (nextStep instanceof WhereStep) {
                     traversal.removeStep(nextStep);
                     matchStep.addGlobalChild(new DefaultTraversal<>().addStep(nextStep));

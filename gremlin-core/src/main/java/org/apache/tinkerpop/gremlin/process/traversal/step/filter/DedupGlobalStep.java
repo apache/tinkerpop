@@ -48,7 +48,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     protected boolean filter(final Traverser.Admin<S> traverser) {
         if (this.bypass) return true;
         traverser.setBulk(1);
-        return this.duplicateSet.add(null == this.dedupTraversal ? traverser.get() : TraversalUtil.apply(traverser, this.dedupTraversal));
+        return this.duplicateSet.add(TraversalUtil.applyNullable(traverser, this.dedupTraversal));
     }
 
 

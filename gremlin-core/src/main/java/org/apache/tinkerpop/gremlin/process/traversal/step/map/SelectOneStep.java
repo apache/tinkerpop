@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -43,7 +42,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     private Scope scope;
     private final Pop pop;
     private final String selectLabel;
-    private Traversal.Admin<S, E> selectTraversal = new IdentityTraversal<>();
+    private Traversal.Admin<S, E> selectTraversal = null;
 
     public SelectOneStep(final Traversal.Admin traversal, final Scope scope, Pop pop, final String selectLabel) {
         super(traversal);
@@ -59,7 +58,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
         final Optional<S> optional = this.getOptionalScopeValueByKey(this.pop, this.selectLabel, traverser);
-        return optional.isPresent() ? TraversalUtil.apply(optional.get(), this.selectTraversal) : null;
+        return optional.isPresent() ? TraversalUtil.applyNullable(optional.get(), this.selectTraversal) : null;
     }
 
     @Override
@@ -70,18 +69,19 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     @Override
     public SelectOneStep<S, E> clone() {
         final SelectOneStep<S, E> clone = (SelectOneStep<S, E>) super.clone();
-        clone.selectTraversal = this.selectTraversal.clone();
+        if (null != this.selectTraversal)
+            clone.selectTraversal = clone.integrateChild(this.selectTraversal.clone());
         return clone;
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.scope.hashCode() ^ this.selectLabel.hashCode() ^ this.selectTraversal.hashCode();
+        return super.hashCode() ^ this.scope.hashCode() ^ this.selectLabel.hashCode() ^ (null == this.selectTraversal ? "null".hashCode() : this.selectTraversal.hashCode());
     }
 
     @Override
     public List<Traversal.Admin<S, E>> getLocalChildren() {
-        return Collections.singletonList(this.selectTraversal);
+        return null == this.selectTraversal ? Collections.emptyList() : Collections.singletonList(this.selectTraversal);
     }
 
     @Override
@@ -93,7 +93,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
     public Set<TraverserRequirement> getRequirements() {
         return this.getSelfAndChildRequirements(Scope.local == this.scope ?
                 new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS} :
-                new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS});
+                new TraverserRequirement[]{TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS});
     }
 
     @Override
