@@ -658,11 +658,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupGlobalStep<>(this.asAdmin()) : new DedupLocalStep(this.asAdmin()));
     }
 
-    public default GraphTraversal<S, E> where(final Scope scope, final String startKey, final P<?> predicate) {
+    public default GraphTraversal<S, E> where(final Scope scope, final String startKey, final P<String> predicate) {
         return this.asAdmin().addStep(new WhereStep<>(this.asAdmin(), scope, Optional.ofNullable(startKey), predicate));
     }
 
-    public default GraphTraversal<S, E> where(final Scope scope, final P<?> predicate) {
+    public default GraphTraversal<S, E> where(final Scope scope, final P<String> predicate) {
         return this.where(scope, null, predicate);
     }
 
@@ -672,11 +672,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 this.asAdmin().addStep(new WhereStep(this.asAdmin(), scope, whereTraversal));
     }
 
-    public default GraphTraversal<S, E> where(final String startKey, final P<?> predicate) {
+    public default GraphTraversal<S, E> where(final String startKey, final P<String> predicate) {
         return this.where(Scope.global, startKey, predicate);
     }
 
-    public default GraphTraversal<S, E> where(final P<?> predicate) {
+    public default GraphTraversal<S, E> where(final P<String> predicate) {
         return this.where(Scope.global, null, predicate);
     }
 

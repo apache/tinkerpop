@@ -57,7 +57,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     protected final Set<String> scopeKeys = new HashSet<>();
     protected final Set<Variable> variables = new HashSet<>();
 
-    public WhereStep(final Traversal.Admin whereTraversal, final Scope scope, final Optional<String> startKey, final P<?> predicate) {
+    public WhereStep(final Traversal.Admin whereTraversal, final Scope scope, final Optional<String> startKey, final P<String> predicate) {
         super(whereTraversal);
         this.scope = scope;
         this.startKey = startKey.orElse(null);
@@ -79,6 +79,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         this.predicate = null;
         this.selectKeys = null;
         this.whereTraversal = whereTraversal.asAdmin();
+        if(TraversalHelper.getVariableLocations(this.whereTraversal).isEmpty())
+            throw new IllegalArgumentException("A where()-traversal must have at least a start or end label (i.e. variable): " + whereTraversal);
         this.configureStartAndEndSteps(this.whereTraversal);
         this.whereTraversal = this.integrateChild(this.whereTraversal);
     }
@@ -98,8 +100,6 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
             this.variables.add(Variable.START);
         } else if (!whereTraversal.getEndStep().getLabels().isEmpty()) {                    // ...out().as("a") traversals
             TraversalHelper.insertBeforeStep(new WhereStartStep(whereTraversal, null), (Step) startStep, whereTraversal);
-        } else {
-            this.variables.add(Variable.NONE);
         }
         //// END STEP to WhereEndStep
         final Step<?, ?> endStep = whereTraversal.getEndStep();

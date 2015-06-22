@@ -567,11 +567,11 @@ public class __ {
         return __.<A>start().hasValue(values);
     }
 
-    public static <A> GraphTraversal<A, A> where(final Scope scope, final String startKey, final P<?> predicate) {
+    public static <A> GraphTraversal<A, A> where(final Scope scope, final String startKey, final P<String> predicate) {
         return __.<A>start().where(scope, startKey, predicate);
     }
 
-    public static <A> GraphTraversal<A, A> where(final Scope scope, final P<?> predicate) {
+    public static <A> GraphTraversal<A, A> where(final Scope scope, final P<String> predicate) {
         return __.<A>start().where(scope, predicate);
     }
 
@@ -579,11 +579,11 @@ public class __ {
         return __.<A>start().where(scope, whereTraversal);
     }
 
-    public static <A> GraphTraversal<A, A> where(final String startKey, final P<?> predicate) {
+    public static <A> GraphTraversal<A, A> where(final String startKey, final P<String> predicate) {
         return __.<A>start().where(startKey, predicate);
     }
 
-    public static <A> GraphTraversal<A, A> where(final P<?> predicate) {
+    public static <A> GraphTraversal<A, A> where(final P<String> predicate) {
         return __.<A>start().where(predicate);
     }
 

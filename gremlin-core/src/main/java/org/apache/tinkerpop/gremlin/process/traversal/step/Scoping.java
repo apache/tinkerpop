@@ -36,7 +36,7 @@ import java.util.Set;
  */
 public interface Scoping {
 
-    public static enum Variable {START, END, NONE}
+    public static enum Variable {START, END}
 
     public default <S> S getScopeValueByKey(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
         if (traverser.getSideEffects().get(key).isPresent())
