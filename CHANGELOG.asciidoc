@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `Traversal.toStream()` to turn the `Traversal<S,E>` into a `Stream<E>`.
 * Added `Scoping.Variable` enum of `START` and `END` which allows the `Scoping` step to specify where its bindings are.
 * `ComputerVerificationStrategy` is smart about not allowed `WhereStep` with a start-variable to run in OLAP as it selects the value from the path.
 * Rewrote `MatchStep` where it now works on `GraphComputer`, solves more patterns, provides plugable execution plans, supports nested AND/OR, not-patterns, etc.
