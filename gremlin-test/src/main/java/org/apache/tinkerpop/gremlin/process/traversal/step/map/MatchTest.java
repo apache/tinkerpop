@@ -51,8 +51,6 @@ import static org.junit.Assert.*;
 @RunWith(GremlinProcessRunner.class)
 public abstract class MatchTest extends AbstractGremlinProcessTest {
 
-    private static final Random RANDOM = new Random();
-
     // very basic query
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX();
 
@@ -120,16 +118,6 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     // nested or with infix and and variable dependencies at different depths
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_matchXa_out_count_c__orXa_knows_b__b_in_count_c__and__c_isXgtX2XXXX();
-
-    ////////////////
-    @Before
-    public void setupTest() { // test different provided match algorithms
-        super.setupTest();
-        if (RANDOM.nextBoolean())
-            g = graphProvider.traversal(graph, MatchAlgorithmStrategy.build().algorithm(MatchStep.GreedyMatchAlgorithm.class).create());
-    }
-    ////////////////
-
 
     @Test
     @LoadGraphWith(MODERN)
@@ -395,7 +383,23 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     }
 
-    public static class Traversals extends MatchTest {
+    public static class GreedyMatchTraversals extends Traversals {
+        @Before
+        public void setupTest() {
+            super.setupTest();
+            g = graphProvider.traversal(graph, MatchAlgorithmStrategy.build().algorithm(MatchStep.GreedyMatchAlgorithm.class).create());
+        }
+    }
+
+    public static class CountMatchTraversals extends Traversals {
+        @Before
+        public void setupTest() {
+            super.setupTest();
+            g = graphProvider.traversal(graph, MatchAlgorithmStrategy.build().algorithm(MatchStep.CountMatchAlgorithm.class).create());
+        }
+    }
+
+    public abstract static class Traversals extends MatchTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {
             return g.V().match("a", as("a").out().as("b"));

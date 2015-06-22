@@ -19,15 +19,33 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.MatchAlgorithmStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
+import org.junit.Before
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class GroovyMatchTest {
 
-    public static class Traversals extends MatchTest {
+    public static class GreedyMatchTraversals extends Traversals {
+        @Before
+        public void setupTest() {
+            super.setupTest();
+            g = graphProvider.traversal(graph, MatchAlgorithmStrategy.build().algorithm(MatchStep.GreedyMatchAlgorithm.class).create());
+        }
+    }
+
+    public static class CountMatchTraversals extends Traversals {
+        @Before
+        public void setupTest() {
+            super.setupTest();
+            g = graphProvider.traversal(graph, MatchAlgorithmStrategy.build().algorithm(MatchStep.CountMatchAlgorithm.class).create());
+        }
+    }
+
+    public abstract static class Traversals extends MatchTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {
