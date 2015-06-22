@@ -264,6 +264,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_whereXnotXoutXcreatedXXX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_whereXnotXoutXcreatedXXX_name();
+        printTraversalForm(traversal);
         checkResults(Arrays.asList("vadas", "lop", "ripple"), traversal);
     }
 

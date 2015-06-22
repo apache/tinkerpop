@@ -21,11 +21,15 @@ package org.apache.tinkerpop.gremlin.process.traversal.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -312,7 +316,7 @@ public final class TraversalHelper {
     }
 
     public static Set<String> getLabels(final Traversal.Admin<?, ?> traversal) {
-        return getLabels(new HashSet<>(), traversal);
+        return TraversalHelper.getLabels(new HashSet<>(), traversal);
     }
 
     private static Set<String> getLabels(final Set<String> labels, final Traversal.Admin<?, ?> traversal) {
@@ -325,4 +329,24 @@ public final class TraversalHelper {
         }
         return labels;
     }
+
+    public static Set<Scoping.Variable> getVariableLocations(final Traversal.Admin<?, ?> traversal) {
+        return TraversalHelper.getVariableLocations(new HashSet<>(), traversal);
+    }
+
+    private static Set<Scoping.Variable> getVariableLocations(final Set<Scoping.Variable> variables, final Traversal.Admin<?, ?> traversal) {
+        if (variables.size() == 2) return variables;
+        final Step<?, ?> startStep = traversal.getStartStep();
+        if (startStep instanceof StartStep && !startStep.getLabels().isEmpty())
+            variables.add(Scoping.Variable.START);
+        else if (startStep instanceof ConjunctionStep || startStep instanceof NotStep)
+            ((TraversalParent) startStep).getLocalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
+        ///
+        final Step<?, ?> endStep = traversal.getEndStep();
+        if (!endStep.getLabels().isEmpty())
+            variables.add(Scoping.Variable.END);
+        ///
+        return variables;
+    }
+
 }

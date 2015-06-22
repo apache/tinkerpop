@@ -23,7 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
@@ -46,12 +48,12 @@ import java.util.Set;
  *
  * @author Daniel Kuppitz (http://gremlin.guru)
  * @example <pre>
- * __.out().count()          // is replaced by __.outE().count()
- * __.in().limit(3).count()  // is replaced by __.inE().limit(3).count()
- * __.values("name").count() // is replaced by __.properties("name").count()
- * __.has(__.out())          // is replaced by __.has(__.outE())
- * __.has(__.values())       // is replaced by __.has(__.properties())
- * __.and(__.in(), __.out()) // is replaced by __.and(__.inE(), __.outE())
+ * __.out().count()            // is replaced by __.outE().count()
+ * __.in().limit(3).count()    // is replaced by __.inE().limit(3).count()
+ * __.values("name").count()   // is replaced by __.properties("name").count()
+ * __.where(__.out())          // is replaced by __.where(__.outE())
+ * __.where(__.values())       // is replaced by __.where(__.properties())
+ * __.and(__.in(), __.out())   // is replaced by __.and(__.inE(), __.outE())
  * </pre>
  */
 public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy>
@@ -72,7 +74,7 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
             final Step curr = steps.get(i);
             if (i == size && isOptimizable(curr)) {
                 final TraversalParent parent = curr.getTraversal().getParent();
-                if (parent instanceof WhereStep || parent instanceof ConjunctionStep) {
+                if (parent instanceof NotStep || parent instanceof TraversalFilterStep || parent instanceof WhereStep || parent instanceof ConjunctionStep) {
                     optimizeStep(traversal, curr);
                 }
             } else if (isOptimizable(prev)) {

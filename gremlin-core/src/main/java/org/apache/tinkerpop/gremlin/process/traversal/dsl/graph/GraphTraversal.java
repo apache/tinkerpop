@@ -123,6 +123,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -666,7 +667,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> where(final Scope scope, final Traversal<?, ?> whereTraversal) {
-        return this.asAdmin().addStep(new WhereStep(this.asAdmin(), scope, whereTraversal));
+        return TraversalHelper.getVariableLocations(whereTraversal.asAdmin()).isEmpty() ?
+                this.filter(whereTraversal) :
+                this.asAdmin().addStep(new WhereStep(this.asAdmin(), scope, whereTraversal));
     }
 
     public default GraphTraversal<S, E> where(final String startKey, final P<?> predicate) {
