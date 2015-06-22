@@ -599,7 +599,7 @@ public class __ {
         return __.<A>start().is(value);
     }
 
-    public static <A> GraphTraversal<A, A> not(final Traversal<A, ?> notTraversal) {
+    public static <A> GraphTraversal<A, A> not(final Traversal<?, ?> notTraversal) {
         return __.<A>start().not(notTraversal);
     }
 

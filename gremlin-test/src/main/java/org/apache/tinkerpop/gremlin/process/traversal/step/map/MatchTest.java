@@ -36,10 +36,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.neq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.*;
@@ -66,7 +66,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // a tree with three leaves
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXd_0knows_a__d_hasXname_vadasX__a_knows_b__b_created_cX();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXab_nameX();
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXa_bX();
 
     // illustrates early deduplication in "predicate" traversals
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_lop_b__b_0created_29_c__c_whereXrepeatXoutX_timesX2XXX();
@@ -82,7 +82,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__c_knows_bX();
 
     // nested match()
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX();
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_select();
 
     // contains a pair of traversals which connect the same labels, together with a predicate traversal
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX();
@@ -96,7 +96,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_0sungBy_b__a_0writtenBy_c__b_writtenBy_dX_whereXc_sungBy_dX_whereXd_hasXname_GarciaXX();
 
     // inclusion of where
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_c_nameX();
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_cX();
 
     //TODO: with Traversal.reverse()
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_select_byXnameX();
@@ -121,6 +121,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     // uses a not traversal pattern
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__a_out_b__notXa_created_bXX();
+
+    // uses 'out of order' conjunction nested where()
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__whereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_b__whereXb_inXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -193,16 +196,16 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXab_nameX() throws Exception {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXab_nameX();
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXa_bX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         checkResults(makeMapList(2,
-                "a", "marko", "b", "lop"), traversal);
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop")), traversal);
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_selectXnameX() throws Exception {
+    public void g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_select() throws Exception {
         final List<Traversal<Vertex, Map<String, String>>> traversals = Arrays.asList(
                 get_g_V_matchXa_created_lop_b__b_0created_29_c__c_whereXrepeatXoutX_timesX2XXX(),
                 get_g_V_matchXa_created_lop_b__b_0created_29_cX_whereXc_repeatXoutX_timesX2XX_select());
@@ -251,13 +254,13 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX() throws Exception {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX();
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_select();
         printTraversalForm(traversal);
         checkResults(makeMapList(3,
-                "a", "marko", "b", "josh", "c", "josh",
-                "a", "marko", "b", "josh", "c", "josh", // expected duplicate: two paths to this solution
-                "a", "marko", "b", "josh", "c", "marko",
-                "a", "marko", "b", "josh", "c", "peter"), traversal);
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"), "c", convertToVertex(graph, "josh"),
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"), "c", convertToVertex(graph, "josh"), // expected duplicate: two paths to this solution
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"), "c", convertToVertex(graph, "marko"),
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"), "c", convertToVertex(graph, "peter")), traversal);
     }
 
     // TODO: this test requires Traversal.reverse()
@@ -304,14 +307,14 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_c_nameX() throws Exception {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_c_nameX();
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_cX();
         checkResults(makeMapList(2,
-                "a", "marko", "c", "josh",
-                "a", "marko", "c", "peter",
-                "a", "josh", "c", "marko",
-                "a", "josh", "c", "peter",
-                "a", "peter", "c", "marko",
-                "a", "peter", "c", "josh"), traversal);
+                "a", convertToVertex(graph, "marko"), "c", convertToVertex(graph, "josh"),
+                "a", convertToVertex(graph, "marko"), "c", convertToVertex(graph, "peter"),
+                "a", convertToVertex(graph, "josh"), "c", convertToVertex(graph, "marko"),
+                "a", convertToVertex(graph, "josh"), "c", convertToVertex(graph, "peter"),
+                "a", convertToVertex(graph, "peter"), "c", convertToVertex(graph, "marko"),
+                "a", convertToVertex(graph, "peter"), "c", convertToVertex(graph, "josh")), traversal);
     }
 
 
@@ -396,6 +399,17 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "vadas")), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa__whereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_bX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_matchXa__whereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_b__whereXb_inXX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(2,
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "josh"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "peter"), "b", convertToVertex(graph, "lop")), traversal);
+    }
+
     public static class GreedyMatchTraversals extends Traversals {
         @Before
         public void setupTest() {
@@ -448,10 +462,10 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXab_nameX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXa_bX() {
             return g.V().match("a",
                     as("a").out("created").as("b"),
-                    __.<Vertex>as("a").repeat(out()).times(2).as("b")).<String>select("a", "b").by("name");
+                    __.<Vertex>as("a").repeat(out()).times(2).as("b")).<Vertex>select("a", "b");
         }
 
         @Override
@@ -491,13 +505,13 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_select() {
             return g.V().match("a",
                     as("a").out("knows").as("b"),
                     as("b").out("created").has("name", "lop"),
                     as("b").match("a1",
                             as("a1").out("created").as("b1"),
-                            as("b1").in("created").as("c1")).select("c1").as("c")).<String>select().by("name");
+                            as("b1").in("created").as("c1")).select("c1").as("c")).<Vertex>select();
         }
 
         @Override
@@ -540,12 +554,12 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_c_nameX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_cX() {
             return g.V().match("a",
                     as("a").out("created").as("b"),
                     as("b").in("created").as("c"))
                     .where("a", neq("c"))
-                    .<String>select("a", "c").by("name");
+                    .<Vertex>select("a", "c");
         }
 
         @Override
@@ -622,6 +636,16 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match("a",
                     as("a").out().as("b"),
                     not(as("a").out("created").as("b")));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__whereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_b__whereXb_inXX() {
+            return g.V().match("a",
+                    where(and(
+                            as("a").out("created").as("b"),
+                            as("b").in("created").count().is(eq(3)))),
+                    as("a").both().as("b"),
+                    where(as("b").in()));
         }
     }
 }

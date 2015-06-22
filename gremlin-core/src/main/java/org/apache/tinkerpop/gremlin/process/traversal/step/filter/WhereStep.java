@@ -137,6 +137,14 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         return Optional.ofNullable(this.startKey);
     }
 
+    public boolean isPredicateBased() {
+        return this.predicate != null;
+    }
+
+    public boolean isTraversalBased() {
+        return this.whereTraversal != null;
+    }
+
     public void removeStartKey() {
         this.selectKeys.remove(this.startKey);
         this.startKey = null;
@@ -203,11 +211,6 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     @Override
     public Scope recommendNextScope() {
         return this.scope;
-    }
-
-    @Override
-    public Set<Variable> getVariableLocations() {
-        return this.variables;
     }
 
     //////////////////////////////
@@ -307,7 +310,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
         @Override
         public void setScope(Scope scope) {
-            //this.scope = scope;
+            // this.scope = scope;
         }
 
         @Override

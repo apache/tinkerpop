@@ -91,8 +91,4 @@ public interface Scoping {
     public void setScope(final Scope scope);
 
     public Set<String> getScopeKeys();
-
-    public default Set<Variable> getVariableLocations() {
-        return Collections.emptySet();
-    }
 }

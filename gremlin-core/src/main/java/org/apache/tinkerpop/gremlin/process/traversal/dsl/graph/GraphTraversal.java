@@ -751,8 +751,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.is(value instanceof P ? (P<E>) value : P.eq((E) value));
     }
 
-    public default GraphTraversal<S, E> not(final Traversal<E, ?> notTraversal) {
-        return this.asAdmin().addStep(new NotStep<>(this.asAdmin(), notTraversal));
+    public default GraphTraversal<S, E> not(final Traversal<?, ?> notTraversal) {
+        return this.asAdmin().addStep(new NotStep<>(this.asAdmin(), (Traversal<E,?>)notTraversal));
     }
 
     /**

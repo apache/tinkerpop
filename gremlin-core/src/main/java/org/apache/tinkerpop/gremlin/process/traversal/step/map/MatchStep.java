@@ -217,7 +217,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.matchAlgorithmClass.getSimpleName(), this.startKey, this.conjunction, this.matchTraversals);
+        //this.matchAlgorithmClass.getSimpleName()
+        return StringFactory.stepString(this, this.startKey, this.conjunction, this.matchTraversals);
     }
 
     @Override
@@ -404,7 +405,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 });
             }
             return this.scopeKeys;
-            // return Collections.singleton(this.selectKey) TODO: why not work?
+            // return null == this.selectKey ? Collections.emptySet() : Collections.singleton(this.selectKey);
         }
     }
 
