@@ -30,9 +30,20 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * A {@link Traversal} represents a directed walk over a {@link Graph}.
@@ -108,6 +119,15 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
      */
     public default BulkSet<E> toBulkSet() {
         return this.fill(new BulkSet<>());
+    }
+
+    /**
+     * Return the traversal as a {@link Stream}.
+     *
+     * @return the traversal as a stream.
+     */
+    public default Stream<E> toStream() {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this, Spliterator.IMMUTABLE | Spliterator.SIZED), false);
     }
 
     /**
