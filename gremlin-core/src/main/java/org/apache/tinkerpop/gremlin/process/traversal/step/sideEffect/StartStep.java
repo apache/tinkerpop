@@ -71,7 +71,7 @@ public class StartStep<S> extends AbstractStep<S, S> {
     public StartStep<S> clone() {
         final StartStep<S> clone = (StartStep<S>) super.clone();
         clone.first = true;
-        clone.start = null;
+        clone.start = null; // TODO: is this good?
         return clone;
     }
 
@@ -91,5 +91,9 @@ public class StartStep<S> extends AbstractStep<S, S> {
             result ^= this.start.hashCode();
         }
         return result;
+    }
+
+    public boolean isVariableStartStep() {
+        return null == this.start && this.getClass().equals(StartStep.class) && this.getLabels().size() == 1;
     }
 }

@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
@@ -61,8 +60,7 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy<Travers
     }
 
     private static boolean legalCurrentStep(final Step<?, ?> step) {
-        return !(step instanceof EmptyStep || step instanceof GraphStep || step instanceof ComputerAwareStep.EndStep ||
-                (step instanceof StartStep && (null != ((StartStep) step).getStart() || step.getLabels().isEmpty())));
+        return !(step instanceof EmptyStep || step instanceof ComputerAwareStep.EndStep || (step instanceof StartStep && !((StartStep) step).isVariableStartStep()));
     }
 
     private static void processConjunctionMarkers(final Traversal.Admin<?, ?> traversal) {

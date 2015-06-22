@@ -91,10 +91,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         final Step<?, ?> startStep = whereTraversal.getStartStep();
         if (startStep instanceof ConjunctionStep || startStep instanceof NotStep) {       // for conjunction- and not-steps
             ((TraversalParent) startStep).getLocalChildren().forEach(this::configureStartAndEndSteps);
-        } else if (startStep instanceof StartStep && !startStep.getLabels().isEmpty()) {  // as("a").out()... traversals
-            if (startStep.getLabels().size() > 1)
-                throw new IllegalArgumentException("The start step of a where()-traversal can only have one label: " + startStep);
-            final String label = startStep.getLabels().iterator().next();
+        } else if (startStep instanceof StartStep && ((StartStep) startStep).isVariableStartStep()) {  // as("a").out()... traversals
+           final String label = startStep.getLabels().iterator().next();
             this.scopeKeys.add(label);
             TraversalHelper.replaceStep(startStep, new WhereStartStep(whereTraversal, label), whereTraversal);
             this.variables.add(Variable.START);

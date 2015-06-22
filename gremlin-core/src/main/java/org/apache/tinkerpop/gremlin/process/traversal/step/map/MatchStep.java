@@ -80,7 +80,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         this.conjunction = conjunction;
         this.startKey = startKey;
         if (null != this.startKey) {
-            if (this.traversal.getEndStep() instanceof StartStep)  // in case a match() is after the start step
+            if (this.traversal.getEndStep() instanceof StartStep && ((StartStep) this.traversal.getEndStep()).isVariableStartStep())  // in case a match() is after the start step
                 this.traversal.addStep(new IdentityStep<>(this.traversal));
             this.traversal.getEndStep().addLabel(this.startKey);
         }
@@ -100,9 +100,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             TraversalHelper.replaceStep(startStep, matchStep, matchTraversal);
             this.matchStartLabels.addAll(matchStep.matchStartLabels);
             this.matchEndLabels.addAll(matchStep.matchEndLabels);
-        } else if (startStep instanceof StartStep) {
-            if (startStep.getLabels().size() != 1)
-                throw new IllegalArgumentException("The start step of a match()-traversal must have one and only one label: " + startStep);
+        } else if (startStep instanceof StartStep && ((StartStep) startStep).isVariableStartStep()) {
             final String label = startStep.getLabels().iterator().next();
             this.matchStartLabels.add(label);
             TraversalHelper.replaceStep((Step) matchTraversal.getStartStep(), new MatchStartStep(matchTraversal, label), matchTraversal);
@@ -119,7 +117,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 }
             }
         } else {
-            throw new IllegalArgumentException("All match()-traversals must have a start label (i.e. variable): " + matchTraversal);
+            throw new IllegalArgumentException("All match()-traversals must have a single start label (i.e. variable): " + matchTraversal);
         }
         // END STEP to XMatchEndStep
         final Step<?, ?> endStep = matchTraversal.getEndStep();
