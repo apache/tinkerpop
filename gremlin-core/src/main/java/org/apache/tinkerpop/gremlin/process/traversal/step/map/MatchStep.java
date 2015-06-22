@@ -85,11 +85,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 this.traversal.addStep(new IdentityStep<>(this.traversal));
             this.traversal.getEndStep().addLabel(this.startKey);
         }
-        this.matchTraversals = (List) Stream.of(matchTraversals).map(Traversal::asAdmin).filter(t -> {
-            if (!TraversalHelper.getVariableLocations(t).contains(Variable.START))
-                throw new IllegalArgumentException("All match()-traversals must have a start label (i.e. variable): " + t);
-            return true;
-        }).collect(Collectors.toList());
+        this.matchTraversals = (List) Stream.of(matchTraversals).map(Traversal::asAdmin).collect(Collectors.toList());
         this.matchTraversals.forEach(this::configureStartAndEndSteps); // recursively convert to MatchStep, MatchStartStep, or MatchEndStep
         this.matchTraversals.forEach(this::integrateChild);
     }
@@ -124,7 +120,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 }
             }
         } else {
-            TraversalHelper.insertBeforeStep(new MatchStartStep(matchTraversal, null), (Step) matchTraversal.getStartStep(), matchTraversal);
+            throw new IllegalArgumentException("All match()-traversals must have a start label (i.e. variable): " + matchTraversal);
         }
         // END STEP to XMatchEndStep
         final Step<?, ?> endStep = matchTraversal.getEndStep();
