@@ -81,8 +81,8 @@ public abstract class GroovyWhereTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXwithoutXaXX(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).out.aggregate('x').out.where(without('x'))", g, "v1Id", v1Id)
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX(final Object v1Id) {
+            TraversalScriptHelper.compute("g.V(v1Id).out.aggregate('x').out.where(not(within('x')))", g, "v1Id", v1Id)
         }
 
         @Override

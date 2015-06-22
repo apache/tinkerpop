@@ -25,25 +25,27 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `Scoping.Variable` enum of `START`, `END`, `NONE` which allows the `Scoping` step to specify where its bindings are.
+* `ComputerVerificationStrategy` is smart about not allowed `WhereStep` with a start-variable to run in OLAP as it selects the value from the path.
 * Rewrote `MatchStep` where it now works on `GraphComputer`, solves more patterns, provides plugable execution plans, supports nested AND/OR, etc.
 * Renamed `Graphs` in Gremlin Server to `GraphManager`.
+* Fixed bug in Gremlin Driver where client-side serialization errors would not bubble up properly.
+* Fixed problem in Gremlin Server to ensure that a final `SUCCESS` or `NO_CONTENT` message assured that the transaction was successful in sessionless requests.
 * Arrow keys for cycling through command history now work in Gremlin Console when being used on Windows.
 * Added `NotStep` and `not(traversal)` for not'ing a traversal (integrates like `ConjunctionStep`).
 * Removed `TraversalP`. Traversals and `P`-predicates are completely separate concepts.
 * `has(key,traversal)` is now an alias for `filter(__.values(key).traversal)` using `TraversalFilterStep`.
 * Simplified `SubgraphStrategy` by using `TraversalFilterStep` instead of the more complex `WhereStep`.
 * Added `TraversalMapStep`, `TraversalFlatMapStep`, `TraversalFilterStep`, and `TraversalSideEffectStep` which all leverage an internal traversal.
-* Added `Path.getSingle(pop,label)` and `Path.getList(label)` as default helpers in `Path`.
-* Added `Pop.first` and `Pop.last` as enums for getting single items from a collection.* Changed `GremlinServer.start()` to return a `CompletableFuture` that contains the constructed `ServerGremlinExecutor`.
+* Added `Path.get(pop,label)` as default helpers in `Path`.
+* Added `Pop.first`, `Pop.last`, and `Pop.all` as enums for getting single items from a collection or a list of said items.
+* Changed `GremlinServer.start()` to return a `CompletableFuture` that contains the constructed `ServerGremlinExecutor`.
 * Restructured `IoTest` breaking it up into smaller and more logically grouped test cases.
 * Gremlin Server `Settings` now has sensible defaults thus allowing the server to be started with no additional configuration.
 * Fixed garbled characters in Gremlin Console that notably showed up in `:help`
-* `GraphTraversal.and()` (and `or()`) now take `Object...` composed of `P` predicates or `Traversals` to be converted to `TraversalP`.
 * Replaced dependency on `groovy-all` with individual Groovy dependencies as needed.
 * Bumped `org.gperfutils:gbench` to the `0.4.3` and a version explicitly compatible with Groovy 2.4.x.
 * Added `ScopeP` which wraps a predicate and is bound by the `Traverser` and `Scoping` step.
-* `WhereStep` only operates on `Traversals`. Provided predicates are translated to `__.as('a').is(eq('b'))` or `__.is(eq('a'))`.
-* `WhereStep` now uses a `SelectOneStep` for `as('a').out()...` and `IsStep` for `...as('b')` as this ensures `Traverser` (and metadata) propagation.
 * Renamed `KeyStep` to `PropertyKeyStep` to be consistent with `PropertyValueStep`.
 * Added `Gremlin-Lib-Paths` to modify paths in plugin `lib` directory.
 * Modified the capabilities of `Gremlin-Plugin-Paths` to delete paths that have no value on the right-hand-side of the equals sign.

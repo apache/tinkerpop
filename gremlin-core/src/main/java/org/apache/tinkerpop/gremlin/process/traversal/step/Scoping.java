@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -35,19 +36,25 @@ import java.util.Set;
  */
 public interface Scoping {
 
+    public static enum Variable {START, END}
+
     public default <S> S getScopeValueByKey(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
         if (traverser.getSideEffects().get(key).isPresent())
             return traverser.getSideEffects().<S>get(key).get();
         if (Scope.local == this.getScope()) {
-            final S s = ((Map<String, S>) traverser.get()).get(key);
-            if (null != s)
-                return s;
-            else
-                throw new IllegalArgumentException("Neither the current map nor sideEffects have a " + key + "-key:" + this);
+            try {
+                final S s = ((Map<String, S>) traverser.get()).get(key);
+                if (null != s)
+                    return s;
+                else
+                    throw new IllegalArgumentException("Neither the current map nor sideEffects have a " + key + "-key:" + this);
+            } catch (final ClassCastException e) {
+                throw new IllegalStateException("The current step was compiled to an invalid local scope and this is a compilation error. Please report the full traversal that yielded this exception: " + this);
+            }
         } else {
             final Path path = traverser.path();
             if (path.hasLabel(key))
-                return null == pop ? path.get(key) : path.getSingle(pop, key);
+                return null == pop ? path.get(key) : path.get(pop, key);
             else
                 throw new IllegalArgumentException("Neither the current path nor sideEffects have a " + key + "-key: " + this);
         }
@@ -58,10 +65,14 @@ public interface Scoping {
             return traverser.getSideEffects().<S>get(key);
 
         if (Scope.local == this.getScope()) {
-            return Optional.ofNullable(((Map<String, S>) traverser.get()).get(key));
+            try {
+                return Optional.ofNullable(((Map<String, S>) traverser.get()).get(key));
+            } catch (ClassCastException e) {
+                throw new IllegalStateException("The current step was compiled to an invalid local scope and this is a compilation error. Please report the full traversal that yielded this exception: " + this);
+            }
         } else {
             final Path path = traverser.path();
-            return path.hasLabel(key) ? Optional.of(null == pop ? path.get(key) : path.getSingle(pop, key)) : Optional.<S>empty();
+            return path.hasLabel(key) ? Optional.of(null == pop ? path.get(key) : path.get(pop, key)) : Optional.<S>empty();
         }
     }
 
@@ -80,4 +91,8 @@ public interface Scoping {
     public void setScope(final Scope scope);
 
     public Set<String> getScopeKeys();
+
+    public default Set<Variable> getVariableLocations() {
+        return Collections.emptySet();
+    }
 }

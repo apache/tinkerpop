@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.ReferenceCountUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,6 +43,7 @@ final class Handler {
      * as the {@link ResponseMessage} objects are deserialized.
      */
     static class GremlinResponseHandler extends SimpleChannelInboundHandler<ResponseMessage> {
+        private static final Logger logger = LoggerFactory.getLogger(GremlinResponseHandler.class);
         private final ConcurrentMap<UUID, ResultQueue> pending;
 
         public GremlinResponseHandler(final ConcurrentMap<UUID, ResultQueue> pending) {
@@ -76,6 +79,15 @@ final class Handler {
                 // error handling is at play.
                 ReferenceCountUtil.release(response);
             }
+        }
+
+        @Override
+        public void exceptionCaught(final ChannelHandlerContext ctx, final Throwable cause) throws Exception {
+            // if this happens enough times (like the client is unable to deserialize a response) the pending
+            // messages queue will not clear.  wonder if there is some way to cope with that.  of course, if
+            // there are that many failures someone would take notice and hopefully stop the client.
+            logger.error("Could not process the response - correct the problem and restart the driver.", cause);
+            ctx.close();
         }
     }
 

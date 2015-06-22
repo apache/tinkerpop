@@ -33,5 +33,9 @@ public enum Pop {
     /**
      * The last item in an ordered collection (i.e. <code>collection[collection.size()-1]</code>)
      */
-    last
+    last,
+    /**
+     * Get all the items and return them as a list
+     */
+    all
 }

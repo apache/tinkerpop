@@ -31,11 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.*;
@@ -72,7 +68,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_name(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXwithoutXaXX(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(final Object v1Id, final Object v2Id);
 
@@ -92,7 +88,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_select();
 
-    public abstract Traversal<Vertex, Map<String,Object>> get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select();
 
     // multi-labels
 
@@ -225,7 +221,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_aggregateXxX_out_whereXwithout_xX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_aggregateXxX_out_whereXwithoutXaXX(convertToVertexId("marko"));
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertEquals("ripple", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
@@ -268,6 +264,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_whereXnotXoutXcreatedXXX_name() {
         final Traversal<Vertex, String> traversal = get_g_V_whereXnotXoutXcreatedXXX_name();
+        printTraversalForm(traversal);
         checkResults(Arrays.asList("vadas", "lop", "ripple"), traversal);
     }
 
@@ -288,7 +285,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     public void g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_selectXaX_byXnameX() {
         Traversal<Vertex, String> traversal = get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX();
         printTraversalForm(traversal);
-        checkResults(Arrays.asList("marko", "josh"), traversal);
+        checkResults(Arrays.asList("marko", "vadas", "josh"), traversal);
     }
 
     @Test
@@ -313,15 +310,14 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER) // TODO --- something fishy here.
-    public void g_V_asXaX_out_asXbX_whereXasXbX_in_count_isXeqX3XX_or_whereXasXbX_outXcreatedX_and_asXbX_hasXlabel_personXXX_select()  {
-        final Traversal<Vertex, Map<String,Object>> traversal = get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select();
+    public void g_V_asXaX_out_asXbX_whereXasXbX_in_count_isXeqX3XX_or_whereXasXbX_outXcreatedX_and_asXbX_hasXlabel_personXXX_select() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select();
         printTraversalForm(traversal);
         checkResults(makeMapList(2,
-                "a",convertToVertex(graph,"marko"),"b",convertToVertex(graph,"josh"),
-                "a",convertToVertex(graph,"marko"),"b",convertToVertex(graph,"lop"),
-                "a",convertToVertex(graph,"peter"),"b",convertToVertex(graph,"lop"),
-                "a",convertToVertex(graph,"josh"),"b",convertToVertex(graph,"lop")),traversal);
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"),
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "peter"), "b", convertToVertex(graph, "lop"),
+                "a", convertToVertex(graph, "josh"), "b", convertToVertex(graph, "lop")), traversal);
     }
 
     public static class Traversals extends WhereTest {
@@ -373,8 +369,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXwithoutXaXX(final Object v1Id) {
-            return g.V(v1Id).out().aggregate("x").out().where(without("x"));
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX(final Object v1Id) {
+            return g.V(v1Id).out().aggregate("x").out().where(not(within("x")));
         }
 
         @Override
@@ -417,8 +413,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String,Object>> get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select() {
-            // TODO: if you put 'b' in the where() it selects from path and you can't get path object metadata...damn.
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_whereXin_count_isXeqX3XX_or_whereXoutXcreatedX_and_hasXlabel_personXXX_select() {
             return g.V().as("a").out().as("b").where(as("b").in().count().is(eq(3)).or().where(as("b").out("created").and().as("b").has(T.label, "person"))).select();
         }
     }

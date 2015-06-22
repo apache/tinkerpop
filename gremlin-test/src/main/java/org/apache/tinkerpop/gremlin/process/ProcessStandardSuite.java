@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
 import org.apache.tinkerpop.gremlin.process.traversal.CoreTraversalTest;
-import org.apache.tinkerpop.gremlin.process.traversal.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffectsTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchTest;
@@ -54,6 +53,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumTest;
@@ -128,13 +128,14 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             CountTest.Traversals.class,
             FoldTest.Traversals.class,
             MapTest.Traversals.class,
-            MatchTest.Traversals.class,
+            MatchTest.CountMatchTraversals.class,
+            MatchTest.GreedyMatchTraversals.class,
             MaxTest.Traversals.class,
             MeanTest.Traversals.class,
             MinTest.Traversals.class,
             SumTest.Traversals.class,
             OrderTest.Traversals.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest.Traversals.class,
+            PathTest.Traversals.class,
             PropertiesTest.Traversals.class,
             SelectTest.Traversals.class,
             VertexTest.Traversals.class,
@@ -156,7 +157,6 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // util
             TraversalSideEffectsTest.Traversals.class,
-            PathTest.class,
 
             // compliance
             CoreTraversalTest.class,
@@ -216,7 +216,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
             MinTest.class,
             SumTest.class,
             OrderTest.class,
-            org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest.class,   // note that there are two PathTest in this suite - only one is enforce
+            PathTest.class,
             PropertiesTest.class,
             SelectTest.class,
             VertexTest.class,

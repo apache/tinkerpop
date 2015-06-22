@@ -350,6 +350,9 @@ client.submit("[1,2,3,x]", params); <5>
 <4> Submit a script asynchronously without waiting for the request to be written to the server.
 <5> Parameterized request are considered the most efficient way to send Gremlin to the server as they can be cached, which will boost performance and reduce resources required on the server.
 
+Rebinding
+^^^^^^^^^
+
 Scripts submitted to Gremlin Server automatically have the globally configured `Graph` and `TraversalSource` instances made available to them.  Therefore, if Gremlin Server configures two `TraversalSource` instances called "g1" and "g2" a script can simply reference them directly as:
 
 [source,java]
@@ -365,6 +368,21 @@ g1Client.submit("g.V()")
 g2Client.submit("g.V()")
 
 The above code demonstrates how the `rebind` method can be used such that the script need only contain a reference to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
+
+Serialization
+^^^^^^^^^^^^^
+
+When using Gryo serialization (the default serializer for the driver), it is important that the client and server have the same serializers configured or else one or the other will experience serialization exceptions and fail to always communicate.  Discrepancy in serializer registration between client and server can happen fairly easily as graphs will automatically include serializers on the server-side, thus leaving the client to be configured manually.  This can be done manually as follows:
+
+[source,java]
+GryoMapper kryo = GryoMapper.build().addRegistry(TitanIoRegistry.INSTANCE).create();
+MessageSerializer serializer = new GryoMessageSerializerV1d0(kryo);
+Cluster cluster = Cluster.build()
+                .serializer(serializer)
+                .create();
+Client client = cluster.connect().init();
+
+The above code demonstrates using the `TitanIoRegistry` which is an `IoRegistry` instance.  It tells the serializer what classes (from Titan in this case) to auto-register during serialization.  Gremlin Server roughly uses this same approach when it configures it's serializers, so using this same model will ensure compatibility when making requests.
 
 Connecting via REST
 ~~~~~~~~~~~~~~~~~~~
@@ -688,7 +706,7 @@ Gremlin Server is capable of streaming results such that additional responses wi
 |=========================================================
 |Code |Name |Description
 |200 |SUCCESS | The server successfully processed a request to completion - there are no messages remaining in this stream.
-|204 |NO CONTENT | The server processed the request but there is no result to return (e.g. an {@link Iterator} with no elements).
+|204 |NO CONTENT | The server processed the request but there is no result to return (e.g. an `Iterator` with no elements).
 |206 |PARTIAL CONTENT | The server successfully returned some content, but there is more in the stream to arrive - wait for a `SUCCESS` to signify the end of the stream.
 |498 |MALFORMED REQUEST | The request message was not properly formatted which means it could not be parsed at all or the "op" code was not recognized such that Gremlin Server could properly route it for processing.  Check the message format and retry the request.
 |499 |INVALID REQUEST ARGUMENTS |The request message was parseable, but the arguments supplied in the message were in conflict or incomplete. Check the message format and retry the request.
@@ -697,6 +715,8 @@ Gremlin Server is capable of streaming results such that additional responses wi
 |598 |SERVER TIMEOUT |The server exceeded one of the timeout settings for the request and could therefore only partially responded or did not respond at all.
 |599 |SERVER SERIALIZATION ERROR |The server was not capable of serializing an object that was returned from the script supplied on the request. Either transform the object into something Gremlin Server can process within the script or install mapper serialization classes to Gremlin Server.
 |=========================================================
+
+`SUCCESS` and `NO CONTENT` messages are terminating messages that indicate that a request was properly handled on the server and that there are no additional messages streaming in for that request.  When developing a driver, it is important to note the slight differences in semantics for these result codes when it comes to sessionless versus in-session requests.  For a sessionless request, which operates under automatic transaction management, Gremlin Server will only send one of these message types after result iteration and transaction `commit()`.  In other words, the driver could potentially expect to receive a number of "successful" `PARTIAL CONTENT` messages before ultimately ending in failure on `commit()`.  For in-session requests, the client is responsible for managing the transaction and therefore, a first request could receive multiple "success" related messages, only to fail on a future request that finally issues the `commit()`.
 
 OpProcessors Arguments
 ^^^^^^^^^^^^^^^^^^^^^^

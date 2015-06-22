@@ -78,7 +78,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     @Override
     public int hashCode() {
-        return this.biPredicate.hashCode() ^ (null == this.value ? "null".hashCode() : this.value.hashCode());
+        return this.biPredicate.hashCode() ^ (null == this.originalValue ? "null".hashCode() : this.originalValue.hashCode());
     }
 
     @Override
@@ -86,17 +86,17 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return other instanceof P &&
                 ((P) other).getClass().equals(this.getClass()) &&
                 ((P) other).getBiPredicate().equals(this.biPredicate) &&
-                ((((P) other).getValue() == null && this.value == null) || ((P) other).getValue().equals(this.value));
+                ((((P) other).getOriginalValue() == null && this.originalValue == null) || ((P) other).getOriginalValue().equals(this.originalValue));
     }
 
     @Override
     public String toString() {
-        return null == this.value ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.value + ")";
+        return null == this.originalValue ? this.biPredicate.toString() : this.biPredicate.toString() + "(" + this.originalValue + ")";
     }
 
     @Override
     public P<V> negate() {
-        return new P<>(this.biPredicate.negate(), this.value);
+        return new P<>(this.biPredicate.negate(), this.originalValue);
     }
 
     @Override

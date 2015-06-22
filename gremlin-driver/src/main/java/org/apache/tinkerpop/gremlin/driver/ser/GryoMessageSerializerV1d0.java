@@ -117,39 +117,34 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                     config.getOrDefault(TOKEN_CUSTOM, ""), TOKEN_CUSTOM, this.getClass().getName()), ex);
         }
 
-        if (!classNameList.isEmpty()) {
-            final List<Pair<Class, Function<Kryo, Serializer>>> classList = classNameList.stream().map(serializerDefinition -> {
-                String className;
-                Optional<String> serializerName;
-                if (serializerDefinition.contains(";")) {
-                    final String[] split = serializerDefinition.split(";");
-                    if (split.length != 2)
-                        throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>;<serializer-class>", serializerDefinition));
+        classNameList.stream().forEach(serializerDefinition -> {
+            String className;
+            Optional<String> serializerName;
+            if (serializerDefinition.contains(";")) {
+                final String[] split = serializerDefinition.split(";");
+                if (split.length != 2)
+                    throw new IllegalStateException(String.format("Invalid format for serializer definition [%s] - expected <class>;<serializer-class>", serializerDefinition));
 
-                    className = split[0];
-                    serializerName = Optional.of(split[1]);
-                } else {
-                    serializerName = Optional.empty();
-                    className = serializerDefinition;
-                }
+                className = split[0];
+                serializerName = Optional.of(split[1]);
+            } else {
+                serializerName = Optional.empty();
+                className = serializerDefinition;
+            }
 
-                try {
-                    final Class clazz = Class.forName(className);
-                    final Serializer serializer;
-                    if (serializerName.isPresent()) {
-                        final Class serializerClazz = Class.forName(serializerName.get());
-                        serializer = (Serializer) serializerClazz.newInstance();
-                    } else
-                        serializer = null;
-
-                    return Pair.<Class, Function<Kryo, Serializer>>with(clazz, kryo -> serializer);
-                } catch (Exception ex) {
-                    throw new IllegalStateException("Class could not be found", ex);
-                }
-            }).collect(Collectors.toList());
-
-            classList.forEach(c -> builder.addCustom(c.getValue0(), (Function) c.getValue1()));
-        }
+            try {
+                final Class clazz = Class.forName(className);
+                final Serializer serializer;
+                if (serializerName.isPresent()) {
+                    final Class serializerClazz = Class.forName(serializerName.get());
+                    serializer = (Serializer) serializerClazz.newInstance();
+                    builder.addCustom(clazz, kryo -> serializer);
+                } else
+                    builder.addCustom(clazz);
+            } catch (Exception ex) {
+                throw new IllegalStateException("Class could not be found", ex);
+            }
+        });
 
         this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
 

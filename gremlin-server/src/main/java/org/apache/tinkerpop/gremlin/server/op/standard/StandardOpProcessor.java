@@ -47,6 +47,10 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(StandardOpProcessor.class);
     public static final String OP_PROCESSOR_NAME = "";
 
+    public StandardOpProcessor() {
+        manageTransactions = true;
+    }
+
     @Override
     public String getName() {
         return OP_PROCESSOR_NAME;

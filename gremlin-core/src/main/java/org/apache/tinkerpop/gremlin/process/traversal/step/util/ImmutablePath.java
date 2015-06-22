@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -76,16 +77,6 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
     }
 
     @Override
-    public <A> List<A> getList(final String label) {
-        // Recursively build the list to avoid building objects/labels collections.
-        final List<A> list = this.previousPath.getList(label);
-        // Add our object, if our step labels match.
-        if (this.currentLabels.contains(label))
-            list.add((A) currentObject);
-        return list;
-    }
-
-    @Override
     public <A> A getSingleHead(final String label) {
         // Recursively search for the single value to avoid building throwaway collections, and to stop looking when we
         // find it.
@@ -112,6 +103,25 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
             }
         }
         return single;
+    }
+
+    @Override
+    public <A> A get(final Pop pop, final String label) {
+        if (Pop.all == pop) {
+            // Recursively build the list to avoid building objects/labels collections.
+            final List<A> list = this.previousPath.get(Pop.all, label);
+            // Add our object, if our step labels match.
+            if (this.currentLabels.contains(label))
+                list.add((A) currentObject);
+            return (A) list;
+        } else {
+            // Delegate to the non-throwing, optimized head/tail calculations.
+            final A single = Pop.first == pop ? this.getSingleTail(label) : this.getSingleHead(label);
+            // Throw if we didn't find the label.
+            if (null == single)
+                throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
+            return single;
+        }
     }
 
     @Override
@@ -172,10 +182,10 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
             return (A) Collections.emptyList().get(index);
         }
 
+
         @Override
-        public <A> List<A> getList(final String label) {
-            // Provide an empty, modifiable list as a seed for ImmutablePath.getList.
-            return new ArrayList<A>();
+        public <A> A get(final Pop pop, final String label) {
+            return pop == Pop.all ? (A) new ArrayList<>() : null;
         }
 
         @Override

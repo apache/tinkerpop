@@ -278,9 +278,9 @@ limitations under the License.
                             <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-core:1.2.1
                             </Gremlin-Plugin-Dependencies>
                             <!-- deletes the servlet-api jar from the path after install - causes conflicts -->
-                            <Gremlin-Plugin-Paths>servlet-api-2.5-6.1.14.jar=
+                            <Gremlin-Plugin-Paths>servlet-api-2.5-6.1.14.jar=;servlet-api-2.5-20081211.jar=
                             </Gremlin-Plugin-Paths>
-                            <Gremlin-Lib-Paths>servlet-api-2.5-6.1.14.jar=
+                            <Gremlin-Lib-Paths>servlet-api-2.5-6.1.14.jar=;servlet-api-2.5-20081211.jar=
                             </Gremlin-Lib-Paths>
                         </manifestEntries>
                     </archive>
