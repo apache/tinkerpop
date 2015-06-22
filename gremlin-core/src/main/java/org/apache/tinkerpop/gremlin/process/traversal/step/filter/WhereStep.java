@@ -57,8 +57,8 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     protected final Set<String> scopeKeys = new HashSet<>();
     protected final Set<Variable> variables = new HashSet<>();
 
-    public WhereStep(final Traversal.Admin whereTraversal, final Scope scope, final Optional<String> startKey, final P<String> predicate) {
-        super(whereTraversal);
+    public WhereStep(final Traversal.Admin traversal, final Scope scope, final Optional<String> startKey, final P<String> predicate) {
+        super(traversal);
         this.scope = scope;
         this.startKey = startKey.orElse(null);
         if (null != this.startKey) {
@@ -79,9 +79,9 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         this.predicate = null;
         this.selectKeys = null;
         this.whereTraversal = whereTraversal.asAdmin();
-        if(TraversalHelper.getVariableLocations(this.whereTraversal).isEmpty())
-            throw new IllegalArgumentException("A where()-traversal must have at least a start or end label (i.e. variable): " + whereTraversal);
         this.configureStartAndEndSteps(this.whereTraversal);
+        if (this.variables.isEmpty())
+            throw new IllegalArgumentException("A where()-traversal must have at least a start or end label (i.e. variable): " + whereTraversal);
         this.whereTraversal = this.integrateChild(this.whereTraversal);
     }
 
@@ -92,7 +92,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         if (startStep instanceof ConjunctionStep || startStep instanceof NotStep) {       // for conjunction- and not-steps
             ((TraversalParent) startStep).getLocalChildren().forEach(this::configureStartAndEndSteps);
         } else if (startStep instanceof StartStep && ((StartStep) startStep).isVariableStartStep()) {  // as("a").out()... traversals
-           final String label = startStep.getLabels().iterator().next();
+            final String label = startStep.getLabels().iterator().next();
             this.scopeKeys.add(label);
             TraversalHelper.replaceStep(startStep, new WhereStartStep(whereTraversal, label), whereTraversal);
             this.variables.add(Variable.START);

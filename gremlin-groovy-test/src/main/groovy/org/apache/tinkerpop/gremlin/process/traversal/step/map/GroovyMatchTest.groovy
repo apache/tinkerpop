@@ -294,5 +294,14 @@ public abstract class GroovyMatchTest {
                     )
             """, g)
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__a_out_b__notXa_created_bXX() {
+            TraversalScriptHelper.compute("""
+            g.V.match('a',
+                    __.as('a').out.as('b'),
+                    __.not(__.as('a').out('created').as('b')));
+            """,g)
+        }
     }
 }

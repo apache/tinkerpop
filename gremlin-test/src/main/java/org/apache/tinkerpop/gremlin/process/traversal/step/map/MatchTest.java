@@ -119,6 +119,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // nested or with infix and and variable dependencies at different depths
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_out_asXbX_matchXa_out_count_c__orXa_knows_b__b_in_count_c__and__c_isXgtX2XXXX();
 
+    // uses a not traversal pattern
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__a_out_b__notXa_created_bXX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_out_bX() throws Exception {
@@ -383,6 +386,16 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa__a_out_b__notXa_created_bXX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_matchXa__a_out_b__notXa_created_bXX();
+        printTraversalForm(traversal);
+        checkResults(makeMapList(2,
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"),
+                "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "vadas")), traversal);
+    }
+
     public static class GreedyMatchTraversals extends Traversals {
         @Before
         public void setupTest() {
@@ -392,11 +405,12 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     }
 
     public static class CountMatchTraversals extends Traversals {
-        @Before
+        // make sure default works -- i.e. CountMatchAlgorithm
+        /*@Before
         public void setupTest() {
             super.setupTest();
             g = graphProvider.traversal(graph, MatchAlgorithmStrategy.build().algorithm(MatchStep.CountMatchAlgorithm.class).create());
-        }
+        }*/
     }
 
     public abstract static class Traversals extends MatchTest {
@@ -601,6 +615,13 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                                     as("b").in().count().as("c").and().as("c").is(P.gt(2))
                             )
                     );
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__a_out_b__notXa_created_bXX() {
+            return g.V().match("a",
+                    as("a").out().as("b"),
+                    not(as("a").out("created").as("b")));
         }
     }
 }

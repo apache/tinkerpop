@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
@@ -89,6 +90,27 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         this.matchTraversals.forEach(this::integrateChild);
     }
 
+    //////////////////
+    private String pullOutVariableStartStepToParent(final WhereStep<?> whereStep) {
+        final Set<String> selectKeys = this.pullOutVariableStartStepToParent(new HashSet<>(), whereStep.getLocalChildren().get(0), true);
+        if (selectKeys.size() != 1)
+            return null;
+        else
+            return pullOutVariableStartStepToParent(new HashSet<>(), whereStep.getLocalChildren().get(0), false).iterator().next();
+    }
+
+    private Set<String> pullOutVariableStartStepToParent(final Set<String> selectKeys, final Traversal.Admin<?, ?> traversal, boolean testRun) {
+        final Step<?, ?> startStep = traversal.getStartStep();
+        if (startStep instanceof WhereStep.WhereStartStep && !((WhereStep.WhereStartStep) startStep).getScopeKeys().isEmpty()) {
+            selectKeys.addAll(((WhereStep.WhereStartStep<?>) startStep).getScopeKeys());
+            if (!testRun) ((WhereStep.WhereStartStep) startStep).removeScopeKey();
+        } else if (startStep instanceof ConjunctionStep || startStep instanceof NotStep) {
+            ((TraversalParent) startStep).getLocalChildren().forEach(child -> this.pullOutVariableStartStepToParent(selectKeys, child, testRun));
+        }
+        return selectKeys;
+    }
+    //////////////////
+
     private void configureStartAndEndSteps(final Traversal.Admin<?, ?> matchTraversal) {
         ConjunctionStrategy.instance().apply(matchTraversal);
         // START STEP to XMatchStep OR XMatchStartStep
@@ -100,24 +122,25 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             TraversalHelper.replaceStep(startStep, matchStep, matchTraversal);
             this.matchStartLabels.addAll(matchStep.matchStartLabels);
             this.matchEndLabels.addAll(matchStep.matchEndLabels);
+        } else if (startStep instanceof NotStep) {
+            final DefaultTraversal notTraversal = new DefaultTraversal<>();
+            TraversalHelper.removeToTraversal(startStep, startStep.getNextStep(), notTraversal);
+            matchTraversal.addStep(0, new WhereStep<>(matchTraversal, Scope.global, notTraversal));
+            this.configureStartAndEndSteps(matchTraversal);
         } else if (startStep instanceof StartStep && ((StartStep) startStep).isVariableStartStep()) {
             final String label = startStep.getLabels().iterator().next();
             this.matchStartLabels.add(label);
             TraversalHelper.replaceStep((Step) matchTraversal.getStartStep(), new MatchStartStep(matchTraversal, label), matchTraversal);
-        } else if (startStep instanceof WhereStep) {
+        } else if (startStep instanceof WhereStep) {  // necessary for GraphComputer so the projection is not select'd from a path
             final WhereStep<?> whereStep = (WhereStep<?>) startStep;
             if (whereStep.getStartKey().isPresent()) {           // where('a',eq('b')) --> as('a').where(eq('b'))
                 TraversalHelper.insertBeforeStep(new MatchStartStep(matchTraversal, whereStep.getStartKey().get()), (Step) whereStep, matchTraversal);
                 whereStep.removeStartKey();
             } else if (!whereStep.getLocalChildren().isEmpty()) { // where(as('a').out()) -> as('a').where(out())
-                final Traversal.Admin<?, ?> whereTraversal = whereStep.getLocalChildren().get(0);
-                if (whereTraversal.getStartStep() instanceof WhereStep.WhereStartStep && !((WhereStep.WhereStartStep) whereTraversal.getStartStep()).getScopeKeys().isEmpty()) {
-                    TraversalHelper.insertBeforeStep(new MatchStartStep(matchTraversal, ((WhereStep.WhereStartStep<?>) whereTraversal.getStartStep()).getScopeKeys().iterator().next()), (Step) whereStep, matchTraversal);
-                    ((WhereStep.WhereStartStep) whereTraversal.getStartStep()).removeScopeKey();
-                }
+                TraversalHelper.insertBeforeStep(new MatchStartStep(matchTraversal, this.pullOutVariableStartStepToParent(whereStep)), (Step) whereStep, matchTraversal);
+            } else {
+                throw new IllegalArgumentException("All match()-traversals must have a single start label (i.e. variable): " + matchTraversal);
             }
-        } else {
-            throw new IllegalArgumentException("All match()-traversals must have a single start label (i.e. variable): " + matchTraversal);
         }
         // END STEP to XMatchEndStep
         final Step<?, ?> endStep = matchTraversal.getEndStep();
@@ -337,7 +360,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             traverser.path().addLabel(this.getId());
             ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordStart(traverser, this.getTraversal());
             // TODO: sideEffect check?
-            return traverser.split(traverser.path().get(Pop.last, this.selectKey), this);
+            return null == this.selectKey ? traverser : traverser.split(traverser.path().get(Pop.last, this.selectKey), this);
         }
 
         @Override
@@ -347,7 +370,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
         @Override
         public int hashCode() {
-            return super.hashCode() ^ this.selectKey.hashCode();
+            return super.hashCode() ^ (null == this.selectKey ? "null".hashCode() : this.selectKey.hashCode());
         }
 
         @Override
@@ -365,15 +388,16 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
         }
 
-        public String getSelectKey() {
-            return this.selectKey;
+        public Optional<String> getSelectKey() {
+            return Optional.ofNullable(this.selectKey);
         }
 
         @Override
         public Set<String> getScopeKeys() {
             if (null == this.scopeKeys) {
                 this.scopeKeys = new HashSet<>();
-                this.scopeKeys.add(this.selectKey);
+                if (null != this.selectKey)
+                    this.scopeKeys.add(this.selectKey);
                 this.getTraversal().getSteps().forEach(step -> {
                     if (step instanceof MatchStep || step instanceof WhereStep)
                         this.scopeKeys.addAll(((Scoping) step).getScopeKeys());
