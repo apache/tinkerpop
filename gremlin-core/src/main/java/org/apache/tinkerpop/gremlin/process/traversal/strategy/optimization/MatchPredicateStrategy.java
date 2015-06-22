@@ -67,8 +67,8 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
         TraversalHelper.getStepsOfClass(MatchStep.class, traversal).forEach(matchStep -> {
             Step<?, ?> nextStep = matchStep.getNextStep();
             while (nextStep instanceof WhereStep ||
-                    (nextStep instanceof SelectStep && ((SelectStep)nextStep).getLocalChildren().isEmpty()) ||
-                    nextStep instanceof SelectOneStep && ((SelectOneStep)nextStep).getLocalChildren().isEmpty()) {   // match().select().where() --> match(where()).select()
+                    (nextStep instanceof SelectStep && ((SelectStep) nextStep).getLocalChildren().isEmpty()) ||
+                    nextStep instanceof SelectOneStep && ((SelectOneStep) nextStep).getLocalChildren().isEmpty()) {   // match().select().where() --> match(where()).select()
                 if (nextStep instanceof WhereStep) {
                     traversal.removeStep(nextStep);
                     matchStep.addGlobalChild(new DefaultTraversal<>().addStep(nextStep));
@@ -79,23 +79,20 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
                     break;
             }
             if (matchStep.getStartKey().isPresent()) {
-                ((MatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(matchTraversal -> {   // match('a',has(key,value)) --> as('a').has(key,value).match()
-                    if (matchTraversal.getStartStep() instanceof MatchStep.MatchStartStep) {
-                        ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().ifPresent(selectKey -> {
-                            if (selectKey.equals(matchStep.getStartKey().get()) &&
-                                    !(matchStep.getPreviousStep() instanceof EmptyStep) &&
-                                    !matchTraversal.getSteps().stream()
-                                            .filter(step -> !(step instanceof MatchStep.MatchStartStep) &&
-                                                    !(step instanceof MatchStep.MatchEndStep) &&
-                                                    !(step instanceof HasStep))
-                                            .findAny()
-                                            .isPresent()) {
-                                matchStep.removeGlobalChild(matchTraversal);
-                                matchTraversal.removeStep(0);                                     // remove XMatchStartStep
-                                matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove XMatchEndStep
-                                TraversalHelper.insertTraversal(matchStep.getPreviousStep(), matchTraversal, traversal);
-                            }
-                        });
+                ((MatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(matchTraversal -> {   // match('a',as('a').has(key,value),...) --> as('a').has(key,value).match('a',...)
+                    if (matchTraversal.getStartStep() instanceof MatchStep.MatchStartStep &&
+                            ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().equals(matchStep.getStartKey().get()) &&
+                            !(matchStep.getPreviousStep() instanceof EmptyStep) &&
+                            !matchTraversal.getSteps().stream()
+                                    .filter(step -> !(step instanceof MatchStep.MatchStartStep) &&
+                                            !(step instanceof MatchStep.MatchEndStep) &&
+                                            !(step instanceof HasStep))
+                                    .findAny()
+                                    .isPresent()) {
+                        matchStep.removeGlobalChild(matchTraversal);
+                        matchTraversal.removeStep(0);                                     // remove XMatchStartStep
+                        matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove XMatchEndStep
+                        TraversalHelper.insertTraversal(matchStep.getPreviousStep(), matchTraversal, traversal);
                     }
                 });
             }

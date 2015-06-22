@@ -339,6 +339,8 @@ public final class TraversalHelper {
         final Step<?, ?> startStep = traversal.getStartStep();
         if (startStep instanceof StartStep && !startStep.getLabels().isEmpty())
             variables.add(Scoping.Variable.START);
+        else if(startStep instanceof Scoping)
+            variables.addAll(((Scoping) startStep).getVariableLocations());
         else if (startStep instanceof ConjunctionStep || startStep instanceof NotStep)
             ((TraversalParent) startStep).getLocalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
         ///

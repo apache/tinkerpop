@@ -35,6 +35,8 @@ import java.util.stream.Stream;
  */
 public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements TraversalParent {
 
+    public enum Conjunction {AND, OR}
+
     protected List<Traversal.Admin<S, ?>> traversals;
 
     public ConjunctionStep(final Traversal.Admin traversal, final Traversal<S, ?>... traversals) {
@@ -76,5 +78,4 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
     public int hashCode() {
         return super.hashCode() ^ this.traversals.hashCode();
     }
-
 }

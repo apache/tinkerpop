@@ -791,11 +791,10 @@ g.V().match('a',
         select('a','c').by('name')
 ----
 
-There are four types of `match()` traversal patterns.
+There are three types of `match()` traversal patterns.
 
   . `as('a')...as('b')`: both the start and end of the traversal have a declared variable.
   . `as('a')...`: only the start of the traversal has a declared variable.
-  . `...as('b')`: only the end of the traversal has a declared variable.
   . `...`: there are no declared variables.
 
 If a variable is at the start of a traversal pattern it *must* exist as a label in the path history of the traverser else the traverser can not go down that path. If a variable is at the end of a traversal pattern then if the variable exists in the path history of the traverser, the traverser's current location *must* match (i.e. equal) its historic location at that same label. However, if the variable does not exist in the path history of the traverser, then the current location is labeled as the variable and thus, becomes a bound variable for subsequent traversal patterns. If a traversal pattern does not have an end label, then the traverser must simply "survive" the pattern (i.e. not be filtered) to continue to the next pattern. If a traversal pattern does not have a start label, then the traverser can go down that path at any point, but will only go down that pattern once as a traversal pattern is executed once and only once for the history of the traverser. Typically, traversal patterns that do not have a start and end label are used in conjunction with `and()`, `or()`, and `where()`. Once the traverser has "survived" all the patterns (or at least one for `or()`), `match()`-step analyzes the traverser's path history and emits a `Map<String,Object>` of the variable bindings to the next step in the traversal.
