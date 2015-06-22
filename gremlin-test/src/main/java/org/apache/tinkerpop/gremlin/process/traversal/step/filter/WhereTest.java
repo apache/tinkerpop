@@ -68,7 +68,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_VX1X_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_name(final Object v1Id);
 
-    public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXwithoutXaXX(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_withSideEffectXa_graph_verticesX2XX_VX1X_out_whereXneqXaXX(final Object v1Id, final Object v2Id);
 
@@ -221,7 +221,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_aggregateXxX_out_whereXwithout_xX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_aggregateXxX_out_whereXwithoutXaXX(convertToVertexId("marko"));
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertEquals("ripple", traversal.next().<String>value("name"));
         assertFalse(traversal.hasNext());
@@ -369,8 +369,8 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXwithoutXaXX(final Object v1Id) {
-            return g.V(v1Id).out().aggregate("x").out().where(without("x"));
+        public Traversal<Vertex, Vertex> get_g_VX1X_out_aggregateXxX_out_whereXnotXwithinXaXXX(final Object v1Id) {
+            return g.V(v1Id).out().aggregate("x").out().where(not(within("x")));
         }
 
         @Override
