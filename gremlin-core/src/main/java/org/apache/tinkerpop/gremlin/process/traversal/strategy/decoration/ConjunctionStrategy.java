@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
@@ -54,49 +55,57 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy<Travers
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfAssignableClass(ConjunctionStep.class, traversal))
-            return;
+        if (TraversalHelper.hasStepOfAssignableClass(ConjunctionStep.class, traversal)) {
+            processConjunctionMarkers(traversal);
+        }
+    }
 
+    private static boolean legalCurrentStep(final Step<?, ?> step) {
+        return !(step instanceof EmptyStep || step instanceof GraphStep || step instanceof ComputerAwareStep.EndStep ||
+                (step instanceof StartStep && (null != ((StartStep) step).getStart() || step.getLabels().isEmpty())));
+    }
+
+    private static void processConjunctionMarkers(final Traversal.Admin<?, ?> traversal) {
         processConjunctionMarker(OrStep.class, traversal);
         processConjunctionMarker(AndStep.class, traversal);
     }
 
+    private static void processConjunctionMarker(final Class<? extends ConjunctionStep> markerClass, final Traversal.Admin<?, ?> traversal) {
 
-    private static final boolean legalCurrentStep(final Step<?, ?> step) {
-        return !(step instanceof EmptyStep || step instanceof GraphStep || (step instanceof StartStep && (null != ((StartStep) step).getStart() || step.getLabels().isEmpty())));
-    }
-
-    private static final void processConjunctionMarker(final Class<? extends ConjunctionStep> markerClass, final Traversal.Admin<?, ?> traversal) {
         TraversalHelper.getStepsOfClass(markerClass, traversal).stream()
                 .filter(conjunctionStep -> conjunctionStep.getLocalChildren().isEmpty())
-                .forEach(conjunctionStep -> {
-                    Step<?, ?> currentStep = conjunctionStep.getNextStep();
-                    final Traversal.Admin<?, ?> rightTraversal = __.start().asAdmin();
-                    if (!conjunctionStep.getLabels().isEmpty()) {
-                        final StartStep<?> startStep = new StartStep<>(rightTraversal);
-                        final Set<String> conjunctionLabels = ((Step<?, ?>) conjunctionStep).getLabels();
-                        conjunctionLabels.forEach(startStep::addLabel);
-                        conjunctionLabels.forEach(label -> conjunctionStep.removeLabel(label));
-                        rightTraversal.addStep(startStep);
-                    }
-                    while (legalCurrentStep(currentStep)) {
-                        final Step<?, ?> nextStep = currentStep.getNextStep();
-                        rightTraversal.addStep(currentStep);
-                        traversal.removeStep(currentStep);
-                        currentStep = nextStep;
-                    }
+                .findFirst().ifPresent(conjunctionStep -> {
 
-                    currentStep = conjunctionStep.getPreviousStep();
-                    final Traversal.Admin<?, ?> leftTraversal = __.start().asAdmin();
-                    while (legalCurrentStep(currentStep)) {
-                        final Step<?, ?> previousStep = currentStep.getPreviousStep();
-                        leftTraversal.addStep(0, currentStep);
-                        traversal.removeStep(currentStep);
-                        currentStep = previousStep;
-                    }
-                    conjunctionStep.addLocalChild(leftTraversal);
-                    conjunctionStep.addLocalChild(rightTraversal);
-                });
+            Step<?, ?> currentStep = conjunctionStep.getNextStep();
+            final Traversal.Admin<?, ?> rightTraversal = __.start().asAdmin();
+            if (!conjunctionStep.getLabels().isEmpty()) {
+                final StartStep<?> startStep = new StartStep<>(rightTraversal);
+                final Set<String> conjunctionLabels = ((Step<?, ?>) conjunctionStep).getLabels();
+                conjunctionLabels.forEach(startStep::addLabel);
+                conjunctionLabels.forEach(label -> conjunctionStep.removeLabel(label));
+                rightTraversal.addStep(startStep);
+            }
+            while (legalCurrentStep(currentStep)) {
+                final Step<?, ?> nextStep = currentStep.getNextStep();
+                rightTraversal.addStep(currentStep);
+                traversal.removeStep(currentStep);
+                currentStep = nextStep;
+            }
+            processConjunctionMarkers(rightTraversal);
+
+            currentStep = conjunctionStep.getPreviousStep();
+            final Traversal.Admin<?, ?> leftTraversal = __.start().asAdmin();
+            while (legalCurrentStep(currentStep)) {
+                final Step<?, ?> previousStep = currentStep.getPreviousStep();
+                leftTraversal.addStep(0, currentStep);
+                traversal.removeStep(currentStep);
+                currentStep = previousStep;
+            }
+            processConjunctionMarkers(leftTraversal);
+
+            conjunctionStep.addLocalChild(leftTraversal);
+            conjunctionStep.addLocalChild(rightTraversal);
+        });
     }
 
     public static ConjunctionStrategy instance() {
