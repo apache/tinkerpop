@@ -61,8 +61,8 @@ public final class SubgraphStrategy extends AbstractTraversalStrategy<TraversalS
         if (null == vertexCriterion) {
             this.edgeCriterion = edgeCriterion;
         } else {
-            final Traversal<Object, Vertex> inVertexPredicate = __.inV().where(vertexCriterion);
-            final Traversal<Object, Vertex> outVertexPredicate = __.outV().where(vertexCriterion);
+            final Traversal<Object, Vertex> inVertexPredicate = __.inV().filter(vertexCriterion);
+            final Traversal<Object, Vertex> outVertexPredicate = __.outV().filter(vertexCriterion);
 
             // if there is a vertex predicate then there is an implied edge filter on vertices even if there is no
             // edge predicate provided by the user.
