@@ -554,7 +554,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             final Bundle bundle = this.getBundle(traversal);
             bundle.endsCount++;
             bundle.calculateSelectivity();
-            Collections.sort(this.traversalBundles, Comparator.<Bundle>comparingInt(r -> r.traversalType.ordinal()).thenComparingDouble(r -> r.selectivity));
+            Collections.sort(this.traversalBundles, Comparator.<Bundle>comparingInt(r -> r.traversalType.ordinal()).thenComparingDouble(r -> r.multiplicity));
         }
 
         protected Bundle getBundle(final Traversal.Admin<Object, Object> traversal) {
@@ -571,7 +571,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             public Type traversalType;
             public long startsCount;
             public long endsCount;
-            public double selectivity;
+            public double multiplicity;
 
             public static Bundle of(final Traversal.Admin<Object, Object> traversal) {
                 final Bundle bundle = new Bundle();
@@ -582,12 +582,12 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 //bundle.bindingLabel = MatchAlgorithm.getBindingLabel(traversal).orElse(null);
                 bundle.startsCount = 0l;
                 bundle.endsCount = 0l;
-                bundle.selectivity = 0.0d;
+                bundle.multiplicity = 0.0d;
                 return bundle;
             }
 
             public final void calculateSelectivity() {
-                this.selectivity = (double) this.endsCount / (double) this.startsCount;
+                this.multiplicity = (double) this.endsCount / (double) this.startsCount;
             }
         }
     }

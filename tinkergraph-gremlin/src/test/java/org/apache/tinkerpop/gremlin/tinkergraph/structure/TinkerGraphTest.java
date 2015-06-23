@@ -227,18 +227,6 @@ public class TinkerGraphTest {
         graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
         GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
 
-        /*final Supplier<Traversal<?, ?>> traversal = () ->
-                g.V().match("a",
-                        where("a", P.neq("c")),
-                        as("a").out("created").as("b"),
-                        or(
-                                as("a").out("knows").has("name", "vadas"),
-                                as("a").in("knows").and().as("a").has(T.label, "person")
-                        ),
-                        as("b").in("created").as("c"),
-                        as("b").in("created").count().is(P.gt(1)))
-                        .select(); */
-
         final Supplier<Traversal<?,?>> traversal = () ->
                 g.V().match("a",
                         as("a").has("name", "Garcia"),
@@ -247,17 +235,11 @@ public class TinkerGraphTest {
                         as("c").out("writtenBy").as("d"),
                         as("d").where(P.neq("a"))).select().by("name");
 
-       /*final Supplier<Traversal<?,?>> traversal = () ->
-                g.V().as("a").out().as("b").where(
-                        not(in("knows").as("a")).and().as("b").in().count().is(P.gt(1))
-                ).select().by("name"); */
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());
         traversal.get().forEachRemaining(System.out::println);
 
-        //System.out.println(g.V().and(out("created"),or(out("knows"),out("created").has("name","ripple"))).values("name").iterate());
-        //g.V().and(out("created"),or(out("knows"),out("created").has("name","ripple"))).values("name").forEachRemaining(System.out::println);
     }
 
     @Test
