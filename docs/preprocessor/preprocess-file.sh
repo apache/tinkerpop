@@ -35,7 +35,7 @@ fi
 
 trap cleanup INT
 
-function cleanup() {
+function cleanup {
   rm -rf ${output}
   exit 255
 }
@@ -68,6 +68,10 @@ if [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
     ec=${ps[i]}
     [ ${ec} -eq 0 ] || break
   done
+
+  if [ ${ec} -eq 0 ]; then
+    processed
+  fi
 
   echo
   popd > /dev/null

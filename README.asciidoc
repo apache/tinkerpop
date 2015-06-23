@@ -68,6 +68,8 @@ Note that it maybe be necessary to re-execute these steps if the `gremlin-shaded
 
 Developers working on the `neo4j-gremlin` module should enabled the `include-neo4j` Maven profile in Intellij.  This will ensure that tests will properly execute within the IDE.
 
+If Intellij complains about "duplicate sources" for the Groovy files when attempting to compile/run tests, then install the link:http://plugins.jetbrains.com/plugin/7442?pr=idea[GMavenPlus Intellij plugin].
+
 Get Started
 ~~~~~~~~~~~
 

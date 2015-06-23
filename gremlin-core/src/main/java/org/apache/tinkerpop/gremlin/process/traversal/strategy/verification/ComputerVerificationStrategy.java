@@ -34,7 +34,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
@@ -107,8 +106,10 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                     throw new ComputerVerificationException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get(), traversal);
             }
 
-            if (step instanceof WhereStep && !(traversal.getParent() instanceof MatchStep) && ((WhereStep) step).getVariableLocations().contains(Scoping.Variable.START))
-                throw new ComputerVerificationException("Scoping steps not within a global child can not have start variables: " + step, traversal);
+            if (step instanceof WhereStep &&
+                    ((((WhereStep) step).isPredicateBased() && ((WhereStep) step).getStartKey().isPresent()) ||
+                            (((WhereStep) step).isTraversalBased() && TraversalHelper.getVariableLocations(((WhereStep<?>) step).getLocalChildren().get(0)).contains(Scoping.Variable.START))))
+                throw new ComputerVerificationException("A where()-step that has a start variable is not allowed because the variable value is retrieved from the path: " + step, traversal);
 
             if (UNSUPPORTED_STEPS.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())
                 throw new ComputerVerificationException("The following step is currently not supported by GraphComputer traversals: " + step, traversal);

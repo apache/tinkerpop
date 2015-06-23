@@ -81,7 +81,8 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
             if (matchStep.getStartKey().isPresent()) {
                 ((MatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(matchTraversal -> {   // match('a',as('a').has(key,value),...) --> as('a').has(key,value).match('a',...)
                     if (matchTraversal.getStartStep() instanceof MatchStep.MatchStartStep &&
-                            ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().equals(matchStep.getStartKey().get()) &&
+                            ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().isPresent() &&
+                            ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().get().equals(matchStep.getStartKey().get()) &&
                             !(matchStep.getPreviousStep() instanceof EmptyStep) &&
                             !matchTraversal.getSteps().stream()
                                     .filter(step -> !(step instanceof MatchStep.MatchStartStep) &&
@@ -90,8 +91,8 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
                                     .findAny()
                                     .isPresent()) {
                         matchStep.removeGlobalChild(matchTraversal);
-                        matchTraversal.removeStep(0);                                     // remove XMatchStartStep
-                        matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove XMatchEndStep
+                        matchTraversal.removeStep(0);                                     // remove MatchStartStep
+                        matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove MatchEndStep
                         TraversalHelper.insertTraversal(matchStep.getPreviousStep(), matchTraversal, traversal);
                     }
                 });

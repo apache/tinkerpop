@@ -24,6 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Before
 
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -87,11 +91,11 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXab_nameX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_created_b__a_repeatXoutX_timesX2XX_selectXa_bX() {
             TraversalScriptHelper.compute("""
                 g.V.match('a',
                     __.as('a').out('created').as('b'),
-                    __.as('a').repeat(__.out).times(2).as('b')).select('a', 'b').by('name')
+                    __.as('a').repeat(__.out).times(2).as('b')).select('a', 'b')
             """, g)
         }
 
@@ -133,14 +137,14 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_selectXnameX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_knows_b__b_created_lop__b_matchXa1_created_b1__b1_0created_c1X_selectXc1X_cX_select() {
             TraversalScriptHelper.compute("""
                 g.V.match('a',
                     __.as('a').out('knows').as('b'),
                     __.as('b').out('created').has('name', 'lop'),
                     __.as('b').match('a1',
                             __.as('a1').out('created').as('b1'),
-                            __.as('b1').in('created').as('c1')).select('c1').as('c')).select.by('name')
+                            __.as('b1').in('created').as('c1')).select('c1').as('c')).select
             """, g)
         }
 
@@ -203,13 +207,13 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_c_nameX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_created_b__b_0created_cX_whereXa_neq_cX_selectXa_cX() {
             TraversalScriptHelper.compute("""
                 g.V.match('a',
                     __.as('a').out('created').as('b'),
                     __.as('b').in('created').as('c'))
                     .where('a', neq('c'))
-                    .select('a', 'c').by('name')
+                    .select('a', 'c')
             """, g)
         }
 
@@ -293,6 +297,27 @@ public abstract class GroovyMatchTest {
                             )
                     )
             """, g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__a_out_b__notXa_created_bXX() {
+            TraversalScriptHelper.compute("""
+            g.V.match('a',
+                    __.as('a').out.as('b'),
+                    __.not(__.as('a').out('created').as('b')));
+            """,g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__whereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_b__whereXb_inXX() {
+            TraversalScriptHelper.compute("""
+             g.V.match('a',
+                    where(and(
+                            __.as('a').out('created').as('b'),
+                            __.as('b').in('created').count.is(eq(3)))),
+                    __.as('a').both.as('b'),
+                    where(__.as('b').in()));
+            """,g)
         }
     }
 }
