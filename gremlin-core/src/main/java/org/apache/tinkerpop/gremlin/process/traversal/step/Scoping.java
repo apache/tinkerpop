@@ -43,7 +43,10 @@ public interface Scoping {
             return traverser.getSideEffects().<S>get(key).get();
         if (Scope.local == this.getScope()) {
             try {
-                final S s = ((Map<String, S>) traverser.get()).get(key);
+                Object object = traverser.get();
+                if (!(object instanceof Map))
+                    object = Collections.emptyMap();
+                final S s = ((Map<String, S>) object).get(key);
                 if (null != s)
                     return s;
                 else
@@ -65,11 +68,10 @@ public interface Scoping {
             return traverser.getSideEffects().<S>get(key);
 
         if (Scope.local == this.getScope()) {
-            try {
-                return Optional.ofNullable(((Map<String, S>) traverser.get()).get(key));
-            } catch (ClassCastException e) {
-                throw new IllegalStateException("The current step was compiled to an invalid local scope and this is a compilation error. Please report the full traversal that yielded this exception: " + this);
-            }
+                Object object = traverser.get();
+                if (!(object instanceof Map))
+                    object = Collections.emptyMap();
+                return Optional.ofNullable(((Map<String, S>) object).get(key));
         } else {
             final Path path = traverser.path();
             return path.hasLabel(key) ? Optional.of(null == pop ? path.get(key) : path.get(pop, key)) : Optional.<S>empty();
