@@ -19,11 +19,29 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson;
 
-import junit.framework.TestCase;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.RecordReaderWriterTest;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 /**
- * Created by ebice on 6/18/2015.
+ * Created by Edi Bice on 6/18/2015.
  */
-public class GraphSONLegacyRecordReaderTest extends TestCase {
+public class GraphSONLegacyRecordReaderTest extends RecordReaderWriterTest {
 
+    @Override
+    protected String getInputFilename() {
+        return "graph-of-gods.json";
+    }
+
+    @Override
+    protected Class<? extends InputFormat<NullWritable, VertexWritable>> getInputFormat() {
+        return GraphSONLegacyInputFormat.class;
+    }
+
+    @Override
+    protected Class<? extends OutputFormat<NullWritable, VertexWritable>> getOutputFormat() {
+        return GraphSONOutputFormat.class;
+    }
 }

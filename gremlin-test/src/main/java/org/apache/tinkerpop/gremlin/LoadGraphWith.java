@@ -77,7 +77,12 @@ public @interface LoadGraphWith {
          * Loads the "grateful dead" graph which is a "large" graph which provides for the construction of more
          * complex traversals.
          */
-        GRATEFUL;
+        GRATEFUL,
+
+        /**
+         * Loads the "Graph of the Gods" graph which is a "toy" graph with 12 vertices and 17 edges.
+         */
+        GODS;
 
         private static final List<FeatureRequirement> featuresRequiredByClassic = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
@@ -102,6 +107,14 @@ public @interface LoadGraphWith {
         private static final List<FeatureRequirement> featuresRequiredByGrateful = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
+        }};
+
+        private static final List<FeatureRequirement> featuresRequiredByGods = new ArrayList<FeatureRequirement>() {{
+            add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_BOOLEAN_VALUES, VertexPropertyFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_META_PROPERTIES, Graph.Features.VertexFeatures.class));
+            add(FeatureRequirement.Factory.create(FEATURE_MULTI_PROPERTIES, Graph.Features.VertexFeatures.class));
         }};
 
         public String location() {
@@ -129,6 +142,8 @@ public @interface LoadGraphWith {
                     return featuresRequiredByModern;
                 case GRATEFUL:
                     return featuresRequiredByGrateful;
+                case GODS:
+                    return featuresRequiredByGods;
             }
 
             throw new RuntimeException("No features for this GraphData type");

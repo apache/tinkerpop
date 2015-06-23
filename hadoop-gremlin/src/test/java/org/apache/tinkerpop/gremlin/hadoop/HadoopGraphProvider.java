@@ -20,16 +20,10 @@ package org.apache.tinkerpop.gremlin.hadoop;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConstants;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopElement;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
+import org.apache.tinkerpop.gremlin.hadoop.structure.*;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
@@ -38,13 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -82,7 +70,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
                     "tinkerpop-modern.json",
                     "grateful-dead.json",
                     "tinkerpop-classic.json",
-                    "tinkerpop-crew.json");
+                    "tinkerpop-crew.json",
+                    "graph-of-gods.json");
             for (final String fileName : graphsonResources) {
                 PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath());
             }
@@ -159,6 +148,8 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic." + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.GODS) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("graph-of-gods." + type));
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }
