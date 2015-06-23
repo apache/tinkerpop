@@ -27,8 +27,8 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 
 * Added `Traversal.toStream()` to turn the `Traversal<S,E>` into a `Stream<E>`.
 * Added `Scoping.Variable` enum of `START` and `END` which allows the `Scoping` step to specify where its bindings are.
-* `ComputerVerificationStrategy` is smart about not allowed `WhereStep` with a start-variable to run in OLAP as it selects the value from the path.
-* Rewrote `MatchStep` where it now works on `GraphComputer`, solves more patterns, provides plugable execution plans, supports nested AND/OR, not-patterns, etc.
+* `ComputerVerificationStrategy` is smart about not allowing `WhereStep` with a start-variable to run in OLAP as it selects the value from the path.
+* Rewrote `MatchStep` where it now works on `GraphComputer`, solves more patterns, provides plugable execution plans, supports nested AND/OR, `not()`-patterns, etc.
 * Renamed `Graphs` in Gremlin Server to `GraphManager`.
 * Fixed bug in Gremlin Driver where client-side serialization errors would not bubble up properly.
 * Fixed problem in Gremlin Server to ensure that a final `SUCCESS` or `NO_CONTENT` message assured that the transaction was successful in sessionless requests.
@@ -46,7 +46,6 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 * Fixed garbled characters in Gremlin Console that notably showed up in `:help`
 * Replaced dependency on `groovy-all` with individual Groovy dependencies as needed.
 * Bumped `org.gperfutils:gbench` to the `0.4.3` and a version explicitly compatible with Groovy 2.4.x.
-* Added `ScopeP` which wraps a predicate and is bound by the `Traverser` and `Scoping` step.
 * Renamed `KeyStep` to `PropertyKeyStep` to be consistent with `PropertyValueStep`.
 * Added `Gremlin-Lib-Paths` to modify paths in plugin `lib` directory.
 * Modified the capabilities of `Gremlin-Plugin-Paths` to delete paths that have no value on the right-hand-side of the equals sign.
