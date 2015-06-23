@@ -71,7 +71,11 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             T.label.getAccessor(), T.value.getAccessor());
     private static final String invalidBindingKeysJoined = String.join(",", invalidBindingsKeys);
 
-    protected boolean manageTransactions;
+    protected final boolean manageTransactions;
+
+    protected AbstractEvalOpProcessor(final boolean manageTransactions) {
+        this.manageTransactions = manageTransactions;
+    }
 
     /**
      * Provides an operation for evaluating a Gremlin script.

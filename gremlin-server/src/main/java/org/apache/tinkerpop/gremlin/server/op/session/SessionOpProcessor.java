@@ -80,7 +80,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     }
 
     public SessionOpProcessor() {
-        manageTransactions = false;
+        super(false);
     }
 
     @Override

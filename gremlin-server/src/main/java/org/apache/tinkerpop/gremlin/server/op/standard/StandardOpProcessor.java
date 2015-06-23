@@ -48,7 +48,7 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
     public static final String OP_PROCESSOR_NAME = "";
 
     public StandardOpProcessor() {
-        manageTransactions = true;
+       super(true);
     }
 
     @Override
