@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -44,8 +45,8 @@ import java.util.Set;
  */
 public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scoping, Mutating<Event.EdgeAddedEvent> {
 
-    private static final Set<TraverserRequirement> LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT);
-    private static final Set<TraverserRequirement> GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
+    private static final Set<TraverserRequirement> LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
+    private static final Set<TraverserRequirement> GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS, TraverserRequirement.PATH);
 
     private Scope scope;
     private final Direction direction;
@@ -67,7 +68,7 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
     }
 
     public Direction getDirection() {
-        return direction;
+        return this.direction;
     }
 
     public String getFirstVertexKey() {
@@ -75,7 +76,7 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
     }
 
     public String getEdgeLabel() {
-        return edgeLabel;
+        return this.edgeLabel;
     }
 
     public String getSecondVertexKey() {
@@ -88,8 +89,8 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
 
     @Override
     protected Iterator<Edge> flatMap(final Traverser.Admin<S> traverser) {
-        final Object firstVertex = null == this.firstVertexKey ? (Vertex) traverser.get() : this.getScopeValueByKey(this.firstVertexKey, traverser);
-        final Object secondVertex = null == this.secondVertexKey ? (Vertex) traverser.get() : this.getScopeValueByKey(this.secondVertexKey, traverser);
+        final Object firstVertex = null == this.firstVertexKey ? (Vertex) traverser.get() : this.getScopeValueByKey(Pop.last, this.firstVertexKey, traverser);
+        final Object secondVertex = null == this.secondVertexKey ? (Vertex) traverser.get() : this.getScopeValueByKey(Pop.last, this.secondVertexKey, traverser);
         final Object finalFirstVertex = firstVertex instanceof Iterable ? ((Iterable) firstVertex).iterator() : firstVertex;
         final Object finalSecondVertex = secondVertex instanceof Iterable ? ((Iterable) secondVertex).iterator() : secondVertex;
 

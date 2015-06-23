@@ -78,14 +78,6 @@ public interface Scoping {
         }
     }
 
-    public default <S> S getScopeValueByKey(final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
-        return this.getScopeValueByKey(null, key, traverser);
-    }
-
-    public default <S> Optional<S> getOptionalScopeValueByKey(final String key, final Traverser.Admin<?> traverser) {
-        return this.getOptionalScopeValueByKey(null, key, traverser);
-    }
-
     public Scope getScope();
 
     public Scope recommendNextScope();
