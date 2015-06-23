@@ -28,13 +28,26 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * Provides a method for selecting the host from a {@link Cluster}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface LoadBalancingStrategy extends Host.Listener {
+
+    /**
+     * Initialize the strategy with the {@link Cluster} instance and the expected host list.
+     */
     public void initialize(final Cluster cluster, final Collection<Host> hosts);
 
+    /**
+     * Provide an ordered list of hosts to send the the given {@link RequestMessage} to.
+     */
     public Iterator<Host> select(final RequestMessage msg);
 
+    /**
+     * A simple round-robin strategy that simply selects the next host in the {@link Cluster} to send the
+     * {@link RequestMessage} to.
+     */
     public static class RoundRobin implements LoadBalancingStrategy {
 
         private final CopyOnWriteArrayList<Host> availableHosts = new CopyOnWriteArrayList<>();
