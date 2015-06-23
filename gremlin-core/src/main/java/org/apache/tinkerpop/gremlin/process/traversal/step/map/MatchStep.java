@@ -32,7 +32,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -91,15 +92,15 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
 
     //////////////////
-    private String pullOutVariableStartStepToParent(final WhereStep<?> whereStep) {
+    private String pullOutVariableStartStepToParent(final WhereTraversalStep<?> whereStep) {
         return this.pullOutVariableStartStepToParent(new HashSet<>(), whereStep.getLocalChildren().get(0), true).size() != 1 ? null : pullOutVariableStartStepToParent(new HashSet<>(), whereStep.getLocalChildren().get(0), false).iterator().next();
     }
 
     private Set<String> pullOutVariableStartStepToParent(final Set<String> selectKeys, final Traversal.Admin<?, ?> traversal, boolean testRun) {
         final Step<?, ?> startStep = traversal.getStartStep();
-        if (startStep instanceof WhereStep.WhereStartStep && !((WhereStep.WhereStartStep) startStep).getScopeKeys().isEmpty()) {
-            selectKeys.addAll(((WhereStep.WhereStartStep<?>) startStep).getScopeKeys());
-            if (!testRun) ((WhereStep.WhereStartStep) startStep).removeScopeKey();
+        if (startStep instanceof WhereTraversalStep.WhereStartStep && !((WhereTraversalStep.WhereStartStep) startStep).getScopeKeys().isEmpty()) {
+            selectKeys.addAll(((WhereTraversalStep.WhereStartStep<?>) startStep).getScopeKeys());
+            if (!testRun) ((WhereTraversalStep.WhereStartStep) startStep).removeScopeKey();
         } else if (startStep instanceof ConjunctionStep || startStep instanceof NotStep) {
             ((TraversalParent) startStep).getLocalChildren().forEach(child -> this.pullOutVariableStartStepToParent(selectKeys, child, testRun));
         }
@@ -121,19 +122,19 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         } else if (startStep instanceof NotStep) {
             final DefaultTraversal notTraversal = new DefaultTraversal<>();
             TraversalHelper.removeToTraversal(startStep, startStep.getNextStep(), notTraversal);
-            matchTraversal.addStep(0, new WhereStep<>(matchTraversal, Scope.global, notTraversal));
+            matchTraversal.addStep(0, new WhereTraversalStep<>(matchTraversal, Scope.global, notTraversal));
             this.configureStartAndEndSteps(matchTraversal);
         } else if (startStep instanceof StartStep && ((StartStep) startStep).isVariableStartStep()) {
             final String label = startStep.getLabels().iterator().next();
             this.matchStartLabels.add(label);
             TraversalHelper.replaceStep((Step) matchTraversal.getStartStep(), new MatchStartStep(matchTraversal, label), matchTraversal);
-        } else if (startStep instanceof WhereStep) {  // necessary for GraphComputer so the projection is not select'd from a path
-            final WhereStep<?> whereStep = (WhereStep<?>) startStep;
-            if (whereStep.isPredicateBased()) {           // where('a',eq('b')) --> as('a').where(eq('b'))
-                TraversalHelper.insertBeforeStep(new MatchStartStep(matchTraversal, whereStep.getStartKey().orElse(null)), (Step) whereStep, matchTraversal);
-                whereStep.removeStartKey();
-            } else  // where(as('a').out()) -> as('a').where(out())
-                TraversalHelper.insertBeforeStep(new MatchStartStep(matchTraversal, this.pullOutVariableStartStepToParent(whereStep)), (Step) whereStep, matchTraversal);
+        } else if (startStep instanceof WhereTraversalStep) {  // necessary for GraphComputer so the projection is not select'd from a path
+            final WhereTraversalStep<?> whereStep = (WhereTraversalStep<?>) startStep;
+            TraversalHelper.insertBeforeStep(new MatchStartStep(matchTraversal, this.pullOutVariableStartStepToParent(whereStep)), (Step) whereStep, matchTraversal);             // where(as('a').out()) -> as('a').where(out())
+        } else if (startStep instanceof WherePredicateStep) {  // necessary for GraphComputer so the projection is not select'd from a path
+            final WherePredicateStep<?> whereStep = (WherePredicateStep<?>) startStep;
+            TraversalHelper.insertBeforeStep(new MatchStartStep(matchTraversal, whereStep.getStartKey().orElse(null)), (Step) whereStep, matchTraversal);   // where('a',eq('b')) --> as('a').where(eq('b'))
+            whereStep.removeStartKey();
         } else {
             throw new IllegalArgumentException("All match()-traversals must have a single start label (i.e. variable): " + matchTraversal);
         }
@@ -393,7 +394,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 if (null != this.selectKey)
                     this.scopeKeys.add(this.selectKey);
                 this.getTraversal().getSteps().forEach(step -> {
-                    if (step instanceof MatchStep || step instanceof WhereStep)
+                    if (step instanceof MatchStep || step instanceof WhereTraversalStep || step instanceof WherePredicateStep)
                         this.scopeKeys.addAll(((Scoping) step).getScopeKeys());
                 });
             }
@@ -525,7 +526,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 this.traversalLabels.add(traversal.getStartStep().getId());
                 this.requiredLabels.add(MatchAlgorithm.getRequiredLabels(traversal));
                 this.counts.add(new Integer[]{i, 0});
-                this.whereTraversals.put(traversal, traversal.getStartStep().getNextStep() instanceof WhereStep);
+                this.whereTraversals.put(traversal, traversal.getStartStep().getNextStep() instanceof WhereTraversalStep || traversal.getStartStep().getNextStep() instanceof WherePredicateStep);
             }
         }
 

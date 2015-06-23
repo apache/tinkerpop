@@ -22,7 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
@@ -37,7 +38,7 @@ import java.util.stream.Collectors;
 
 /**
  * MatchWhereStrategy will fold any post-<code>where()</code> step that maintains a traversal constraint into <code>match()</code>.
- * {@link MatchStep} is intelligent with traversal constraint applications and thus, can more efficiently use the constraint of {@link WhereStep}.
+ * {@link MatchStep} is intelligent with traversal constraint applications and thus, can more efficiently use the constraint of {@link WhereTraversalStep} or {@link WherePredicateStep}.
  * <p/>
  * <p/>
  *
@@ -66,10 +67,11 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
 
         TraversalHelper.getStepsOfClass(MatchStep.class, traversal).forEach(matchStep -> {
             Step<?, ?> nextStep = matchStep.getNextStep();
-            while (nextStep instanceof WhereStep ||
+            while (nextStep instanceof WherePredicateStep ||
+                    nextStep instanceof WhereTraversalStep ||
                     (nextStep instanceof SelectStep && ((SelectStep) nextStep).getLocalChildren().isEmpty()) ||
-                    nextStep instanceof SelectOneStep && ((SelectOneStep) nextStep).getLocalChildren().isEmpty()) {   // match().select().where() --> match(where()).select()
-                if (nextStep instanceof WhereStep) {
+                    (nextStep instanceof SelectOneStep && ((SelectOneStep) nextStep).getLocalChildren().isEmpty())) {   // match().select().where() --> match(where()).select()
+                if (nextStep instanceof WherePredicateStep || nextStep instanceof WhereTraversalStep) {
                     traversal.removeStep(nextStep);
                     matchStep.addGlobalChild(new DefaultTraversal<>().addStep(nextStep));
                     nextStep = matchStep.getNextStep();

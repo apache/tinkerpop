@@ -26,7 +26,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
@@ -341,8 +342,11 @@ public final class TraversalHelper {
         final Step<?, ?> startStep = traversal.getStartStep();
         if (startStep instanceof StartStep && ((StartStep) startStep).isVariableStartStep())
             variables.add(Scoping.Variable.START);
-        else if (startStep instanceof WhereStep.WhereStartStep) {
-            if (!((WhereStep.WhereStartStep) startStep).getScopeKeys().isEmpty())
+        else if (startStep instanceof WherePredicateStep) {
+            if (((WherePredicateStep) startStep).getStartKey().isPresent())
+                variables.add(Scoping.Variable.START);
+        } else if (startStep instanceof WhereTraversalStep.WhereStartStep) {
+            if (!((WhereTraversalStep.WhereStartStep) startStep).getScopeKeys().isEmpty())
                 variables.add(Scoping.Variable.START);
         } else if (startStep instanceof MatchStep.MatchStartStep) {
             if (((MatchStep.MatchStartStep) startStep).getSelectKey().isPresent())
@@ -352,12 +356,15 @@ public final class TraversalHelper {
                 variables.add(Scoping.Variable.START);
             else
                 ((MatchStep<?, ?>) startStep).getGlobalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
-        } else if (startStep instanceof ConjunctionStep || startStep instanceof NotStep || startStep instanceof WhereStep)
+        } else if (startStep instanceof ConjunctionStep || startStep instanceof NotStep || startStep instanceof WhereTraversalStep)
             ((TraversalParent) startStep).getLocalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
         ///
         final Step<?, ?> endStep = traversal.getEndStep();
-        if (endStep instanceof WhereStep.WhereEndStep) {
-            if (!((WhereStep.WhereEndStep) endStep).getScopeKeys().isEmpty())
+        if (endStep instanceof WherePredicateStep) {
+            if (((WherePredicateStep) endStep).getStartKey().isPresent())
+                variables.add(Scoping.Variable.END);
+        } else if (endStep instanceof WhereTraversalStep.WhereEndStep) {
+            if (!((WhereTraversalStep.WhereEndStep) endStep).getScopeKeys().isEmpty())
                 variables.add(Scoping.Variable.END);
         } else if (endStep instanceof MatchStep.MatchEndStep) {
             if (((MatchStep.MatchEndStep) endStep).getMatchKey().isPresent())

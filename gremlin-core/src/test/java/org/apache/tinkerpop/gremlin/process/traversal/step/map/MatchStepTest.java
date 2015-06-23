@@ -27,11 +27,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
@@ -57,9 +60,9 @@ public class MatchStepTest extends StepTest {
     }
 
     @Test
-    public void shouldDoPreCompilationCorrectly() {
-        Traversal.Admin<?, ?> traversal = __.match("a", as("a").out().as("b"), as("c").path().as("d")).asAdmin();
-        MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
+    public void testPreCompilationOfStartAndEnds() {
+        final Traversal.Admin<?, ?> traversal = __.match("a", as("a").out().as("b"), as("c").path().as("d")).asAdmin();
+        final MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
         assertEquals(MatchStep.class, traversal.getStartStep().getClass());
         assertEquals("a", matchStep.getStartKey().get());
         assertEquals(2, matchStep.getGlobalChildren().size());
@@ -72,48 +75,116 @@ public class MatchStepTest extends StepTest {
         assertEquals("c", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
         assertEquals(PathStep.class, pattern.getStartStep().getNextStep().getClass());
         assertEquals("d", ((MatchStep.MatchEndStep) pattern.getEndStep()).getMatchKey().get());
+    }
 
-        ///////////////////
+    @Test
+    public void testPreCompilationOfOr() {
+        final List<Traversal.Admin<?, ?>> traversals = Arrays.asList(
+                __.match("a", as("a").out().as("b"), or(as("c").path().as("d"), as("e").coin(0.5).as("f"))).asAdmin(),
+                __.match("a", as("a").out().as("b"), as("c").path().as("d").or().as("e").coin(0.5).as("f")).asAdmin());
+        assertEquals(1, new HashSet<>(traversals).size()); // the two patterns should pre-compile to the same traversal
+        traversals.forEach(traversal -> {
+            final MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
+            assertEquals("a", matchStep.getStartKey().get());
+            assertEquals(2, matchStep.getGlobalChildren().size());
+            Traversal.Admin<Object, Object> pattern = matchStep.getGlobalChildren().get(0);
+            assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
+            assertEquals(VertexStep.class, pattern.getStartStep().getNextStep().getClass());
+            assertEquals("b", ((MatchStep.MatchEndStep) pattern.getEndStep()).getMatchKey().get());
+            //
+            pattern = matchStep.getGlobalChildren().get(1);
+            assertEquals(MatchStep.class, pattern.getStartStep().getClass());
+            assertEquals(ConjunctionStep.Conjunction.OR, ((MatchStep<?, ?>) pattern.getStartStep()).getConjunction());
+            assertEquals("c", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep()).getSelectKey().get());
+            assertEquals(PathStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep().getNextStep().getClass());
+            assertEquals("d", ((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getEndStep()).getMatchKey().get());
+            assertEquals("e", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep()).getSelectKey().get());
+            assertEquals(CoinStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep().getNextStep().getClass());
+            assertEquals("f", ((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getEndStep()).getMatchKey().get());
+        });
+    }
 
-        traversal = __.match("a", as("a").out().as("b"), or(as("c").path().as("d"), as("e").coin(0.5).as("f"))).asAdmin();
-        matchStep = (MatchStep<?, ?>) traversal.getStartStep();
-        assertEquals("a", matchStep.getStartKey().get());
-        assertEquals(2, matchStep.getGlobalChildren().size());
-        pattern = matchStep.getGlobalChildren().get(0);
-        assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
-        assertEquals(VertexStep.class, pattern.getStartStep().getNextStep().getClass());
-        assertEquals("b", ((MatchStep.MatchEndStep) pattern.getEndStep()).getMatchKey().get());
-        //
-        pattern = matchStep.getGlobalChildren().get(1);
-        assertTrue(pattern.getStartStep() instanceof MatchStep);
-        assertEquals(ConjunctionStep.Conjunction.OR, ((MatchStep<?, ?>) pattern.getStartStep()).getConjunction());
-        assertEquals("c", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep()).getSelectKey().get());
-        assertEquals(PathStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep().getNextStep().getClass());
-        assertEquals("d", ((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getEndStep()).getMatchKey().get());
-        assertEquals("e", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep()).getSelectKey().get());
-        assertEquals(CoinStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep().getNextStep().getClass());
-        assertEquals("f", ((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getEndStep()).getMatchKey().get());
+    @Test
+    public void testPreCompilationOfAnd() {
+        final List<Traversal.Admin<?, ?>> traversals = Arrays.asList(
+                __.match("a", as("a").out().as("b"), and(as("c").path().as("d"), as("e").barrier())).asAdmin(),
+                __.match("a", as("a").out().as("b"), as("c").path().as("d").and().as("e").barrier()).asAdmin());
+        assertEquals(1, new HashSet<>(traversals).size());   // the two patterns should pre-compile to the same traversal
+        traversals.forEach(traversal -> {
+            MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
+            assertEquals("a", matchStep.getStartKey().get());
+            assertEquals(2, matchStep.getGlobalChildren().size());
+            Traversal.Admin<Object, Object> pattern = matchStep.getGlobalChildren().get(0);
+            assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
+            assertEquals(VertexStep.class, pattern.getStartStep().getNextStep().getClass());
+            assertEquals("b", ((MatchStep.MatchEndStep) pattern.getEndStep()).getMatchKey().get());
+            //
+            pattern = matchStep.getGlobalChildren().get(1);
+            assertEquals(MatchStep.class, pattern.getStartStep().getClass());
+            assertEquals(ConjunctionStep.Conjunction.AND, ((MatchStep<?, ?>) pattern.getStartStep()).getConjunction());
+            assertEquals("c", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep()).getSelectKey().get());
+            assertEquals(PathStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep().getNextStep().getClass());
+            assertEquals("d", ((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getEndStep()).getMatchKey().get());
+            assertEquals("e", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep()).getSelectKey().get());
+            assertEquals(NoOpBarrierStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep().getNextStep().getClass());
+            assertFalse(((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getEndStep()).getMatchKey().isPresent());
+        });
+    }
 
-        ///////////////////
+    @Test
+    public void testPreCompilationOfWhereTraversal() {
+        final List<Traversal.Admin<?, ?>> traversals = Arrays.asList(
+                __.match(as("a").out().as("b"), as("c").where(in().as("d"))).asAdmin(),
+                __.match(as("a").out().as("b"), where(as("c").in().as("d"))).asAdmin());
+        assertEquals(1, new HashSet<>(traversals).size()); // the two patterns should pre-compile to the same traversal
+        traversals.forEach(traversal -> {
+            MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
+            assertFalse(matchStep.getStartKey().isPresent());
+            assertEquals(2, matchStep.getGlobalChildren().size());
+            Traversal.Admin<Object, Object> pattern = matchStep.getGlobalChildren().get(0);
+            assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
+            assertEquals(VertexStep.class, pattern.getStartStep().getNextStep().getClass());
+            assertEquals("b", ((MatchStep.MatchEndStep) pattern.getEndStep()).getMatchKey().get());
+            //
+            pattern = matchStep.getGlobalChildren().get(1);
+            assertEquals(MatchStep.MatchStartStep.class, pattern.getStartStep().getClass());
+            assertEquals("c", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
+            assertEquals(WhereTraversalStep.class, pattern.getStartStep().getNextStep().getClass());
+            assertEquals(MatchStep.MatchEndStep.class, pattern.getStartStep().getNextStep().getNextStep().getClass());
+            assertEquals(1, ((WhereTraversalStep<?>) pattern.getStartStep().getNextStep()).getLocalChildren().size());
+            Traversal.Admin<?, ?> whereTraversal = ((WhereTraversalStep<?>) pattern.getStartStep().getNextStep()).getLocalChildren().get(0);
+            assertEquals(WhereTraversalStep.WhereStartStep.class, whereTraversal.getStartStep().getClass());
+            assertTrue(((WhereTraversalStep.WhereStartStep) whereTraversal.getStartStep()).getScopeKeys().isEmpty());
+            assertEquals(VertexStep.class, whereTraversal.getStartStep().getNextStep().getClass());
+            assertEquals(WhereTraversalStep.WhereEndStep.class, whereTraversal.getStartStep().getNextStep().getNextStep().getClass());
+            assertEquals(1, ((WhereTraversalStep.WhereEndStep) whereTraversal.getStartStep().getNextStep().getNextStep()).getScopeKeys().size());
+            assertEquals("d", ((WhereTraversalStep.WhereEndStep) whereTraversal.getStartStep().getNextStep().getNextStep()).getScopeKeys().iterator().next());
+        });
+    }
 
-        traversal = __.match("a", as("a").out().as("b"), as("c").path().as("d").and().as("e").barrier()).asAdmin();
-        matchStep = (MatchStep<?, ?>) traversal.getStartStep();
-        assertEquals("a", matchStep.getStartKey().get());
-        assertEquals(2, matchStep.getGlobalChildren().size());
-        pattern = matchStep.getGlobalChildren().get(0);
-        assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
-        assertEquals(VertexStep.class, pattern.getStartStep().getNextStep().getClass());
-        assertEquals("b", ((MatchStep.MatchEndStep) pattern.getEndStep()).getMatchKey().get());
-        //
-        pattern = matchStep.getGlobalChildren().get(1);
-        assertTrue(pattern.getStartStep() instanceof MatchStep);
-        assertEquals(ConjunctionStep.Conjunction.AND, ((MatchStep<?, ?>) pattern.getStartStep()).getConjunction());
-        assertEquals("c", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep()).getSelectKey().get());
-        assertEquals(PathStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep().getNextStep().getClass());
-        assertEquals("d", ((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getEndStep()).getMatchKey().get());
-        assertEquals("e", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep()).getSelectKey().get());
-        assertEquals(NoOpBarrierStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getStartStep().getNextStep().getClass());
-        assertFalse(((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(1).getEndStep()).getMatchKey().isPresent());
+    @Test
+    public void testPreCompilationOfWherePredicate() {
+        final List<Traversal.Admin<?, ?>> traversals = Arrays.asList(
+                __.match(as("a").out().as("b"), as("c").where(P.neq("d"))).asAdmin(),
+                __.match(as("a").out().as("b"), where("c", P.neq("d"))).asAdmin());
+        assertEquals(1, new HashSet<>(traversals).size()); // the two patterns should pre-compile to the same traversal
+        traversals.forEach(traversal -> {
+            MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
+            assertFalse(matchStep.getStartKey().isPresent());
+            assertEquals(2, matchStep.getGlobalChildren().size());
+            Traversal.Admin<Object, Object> pattern = matchStep.getGlobalChildren().get(0);
+            assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
+            assertEquals(VertexStep.class, pattern.getStartStep().getNextStep().getClass());
+            assertEquals("b", ((MatchStep.MatchEndStep) pattern.getEndStep()).getMatchKey().get());
+            //
+            pattern = matchStep.getGlobalChildren().get(1);
+            assertEquals(MatchStep.MatchStartStep.class, pattern.getStartStep().getClass());
+            assertEquals("c", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
+            assertEquals(WherePredicateStep.class, pattern.getStartStep().getNextStep().getClass());
+            assertEquals(MatchStep.MatchEndStep.class, pattern.getStartStep().getNextStep().getNextStep().getClass());
+            assertFalse(((WherePredicateStep<?>) pattern.getStartStep().getNextStep()).getStartKey().isPresent());
+            assertEquals("d", ((WherePredicateStep<?>) pattern.getStartStep().getNextStep()).getPredicate().get().getOriginalValue());
+        });
     }
 
     @Test

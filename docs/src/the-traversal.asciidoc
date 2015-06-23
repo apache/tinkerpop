@@ -804,19 +804,21 @@ If a variable is at the start of a traversal pattern it *must* exist as a label 
 g.V().as('a').out().as('b'). <1>
     match( <2>
         __.as('a').out().count().as('c'), <3>
-        or( <4>
+        __.not(__.as('a').in().as('b')), <4>
+        or( <5>
           __.as('a').out('knows').as('b'),
-          __.as('b').in().count().as('c').and().as('c').is(gt(2))  <5>
+          __.as('b').in().count().as('c').and().as('c').is(gt(2))  <6>
         )
-    ).select('a','b','c').by('name').by('name').by() <6>
+    ).select('a','b','c').by('name').by('name').by() <7>
 ----
 
 <1> A standard, step-labeled traversal can come prior to `match()`.
 <2> If the traverser's path prior to entering `match()` has the requisite variables, then no "start variable" is needed.
 <3> It is possible to use <<a-note-on-barrier-steps,barrier steps>> though they are computed locally to the pattern (as one would expect).
-<4> It is possible to nest `and()`- and `or()`-steps for conjunction matching.
-<5> Both infix and prefix conjunction notation is supported.
-<6> The bound values are of different types -- vertex ("a"), vertex ("b"), long ("c").
+<4> It is possible to `not()` a pattern.
+<5> It is possible to nest `and()`- and `or()`-steps for conjunction matching.
+<6> Both infix and prefix conjunction notation is supported.
+<7> The bound values are of different types -- vertex ("a"), vertex ("b"), long ("c").
 
 [[using-where-with-match]]
 Using Where with Match

@@ -58,7 +58,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
@@ -660,7 +661,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> where(final Scope scope, final String startKey, final P<String> predicate) {
-        return this.asAdmin().addStep(new WhereStep<>(this.asAdmin(), scope, Optional.ofNullable(startKey), predicate));
+        return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), scope, Optional.ofNullable(startKey), predicate));
     }
 
     public default GraphTraversal<S, E> where(final Scope scope, final P<String> predicate) {
@@ -670,7 +671,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     public default GraphTraversal<S, E> where(final Scope scope, final Traversal<?, ?> whereTraversal) {
         return TraversalHelper.getVariableLocations(whereTraversal.asAdmin()).isEmpty() ?
                 this.filter(whereTraversal) :
-                this.asAdmin().addStep(new WhereStep(this.asAdmin(), scope, whereTraversal));
+                this.asAdmin().addStep(new WhereTraversalStep<>(this.asAdmin(), scope, whereTraversal));
     }
 
     public default GraphTraversal<S, E> where(final String startKey, final P<String> predicate) {
@@ -752,7 +753,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> not(final Traversal<?, ?> notTraversal) {
-        return this.asAdmin().addStep(new NotStep<>(this.asAdmin(), (Traversal<E,?>)notTraversal));
+        return this.asAdmin().addStep(new NotStep<>(this.asAdmin(), (Traversal<E, ?>) notTraversal));
     }
 
     /**

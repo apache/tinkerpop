@@ -21,11 +21,9 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,26 +36,13 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
  */
 public class WhereStepTest extends StepTest {
 
-    @Test
-    public void shouldHaveProperPredicate() {
-        Traversal<?, ?> traversal = as("a").out().as("b").where(as("a").out());
-        WhereStep<?> whereStep = (WhereStep) traversal.asAdmin().getEndStep();
-        //assertEquals(TraversalP.class, whereStep.predicate.getClass());
-
-        traversal = as("a", "b").out().as("b", "c").where(as("a").out().as("b").and().as("c").out().as("d"));
-        traversal.asAdmin().setStrategies(TraversalStrategies.GlobalCache.getStrategies(Graph.class));
-        traversal.iterate();
-        whereStep = (WhereStep) traversal.asAdmin().getEndStep();
-        //System.out.println(traversal);
-        //System.out.println(whereStep.predicate);
-        // TODO: do something here
-    }
-
     @Override
     public List<Traversal> getTraversals() {
         return Arrays.asList(
                 as("a").out().as("b").where(as("a").out()),
-                as("a").out().as("b").where(as("a").out().as("b"))
+                as("a").out().as("b").where(as("a").out().as("b")),
+                as("a").out().as("b").where("a", P.neq("b")),
+                as("a").out().as("b").where("a", P.neq("c"))
         );
     }
 }

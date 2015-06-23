@@ -1,24 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *  * Licensed to the Apache Software Foundation (ASF) under one
+ *  * or more contributor license agreements.  See the NOTICE file
+ *  * distributed with this work for additional information
+ *  * regarding copyright ownership.  The ASF licenses this file
+ *  * to you under the Apache License, Version 2.0 (the
+ *  * "License"); you may not use this file except in compliance
+ *  * with the License.  You may obtain a copy of the License at
+ *  *
+ *  * http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing,
+ *  * software distributed under the License is distributed on an
+ *  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  * KIND, either express or implied.  See the License for the
+ *  * specific language governing permissions and limitations
+ *  * under the License.
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -30,50 +32,31 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ConjunctionP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class WhereStep<S> extends FilterStep<S> implements TraversalParent, Scoping {
+public final class WhereTraversalStep<S> extends FilterStep<S> implements TraversalParent, Scoping {
 
-    protected String startKey;
-    protected List<String> selectKeys;
-    protected P<Object> predicate;
+    private static final Set<TraverserRequirement> LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
+    private static final Set<TraverserRequirement> GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
+
     protected Traversal.Admin<?, ?> whereTraversal;
     protected Scope scope;
     protected final Set<String> scopeKeys = new HashSet<>();
 
-    public WhereStep(final Traversal.Admin traversal, final Scope scope, final Optional<String> startKey, final P<String> predicate) {
+    public WhereTraversalStep(final Traversal.Admin traversal, final Scope scope, final Traversal<?, ?> whereTraversal) {
         super(traversal);
         this.scope = scope;
-        this.startKey = startKey.orElse(null);
-        if (null != this.startKey)
-            this.scopeKeys.add(this.startKey);
-        this.predicate = (P) predicate;
-        this.selectKeys = new ArrayList<>();
-        this.whereTraversal = null;
-        this.configurePredicates(this.predicate);
-    }
-
-    public WhereStep(final Traversal.Admin traversal, final Scope scope, final Traversal<?, ?> whereTraversal) {
-        super(traversal);
-        this.scope = scope;
-        this.startKey = null;
-        this.predicate = null;
-        this.selectKeys = null;
         this.whereTraversal = whereTraversal.asAdmin();
         this.configureStartAndEndSteps(this.whereTraversal);
         if (this.scopeKeys.isEmpty())
@@ -106,52 +89,10 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
         }
     }
 
-    private void configurePredicates(final P<Object> predicate) {
-        if (predicate instanceof ConjunctionP)
-            ((ConjunctionP<Object>) predicate).getPredicates().forEach(this::configurePredicates);
-        else {
-            final String selectKey = (String) (predicate.getValue() instanceof Collection ? ((Collection) predicate.getValue()).iterator().next() : predicate.getValue()); // hack for within("x"))
-            this.selectKeys.add(selectKey);
-            this.scopeKeys.add(selectKey);
-        }
-    }
-
-    private void setPredicateValues(final P<Object> predicate, final Traverser.Admin<S> traverser, final Iterator<String> selectKeysIterator) {
-        if (predicate instanceof ConjunctionP)
-            ((ConjunctionP<Object>) predicate).getPredicates().forEach(p -> this.setPredicateValues(p, traverser, selectKeysIterator));
-        else
-            predicate.setValue(this.getScopeValueByKey(Pop.last, selectKeysIterator.next(), traverser));
-    }
-
-    public Optional<P<?>> getPredicate() {
-        return Optional.ofNullable(this.predicate);
-    }
-
-    public Optional<String> getStartKey() {
-        return Optional.ofNullable(this.startKey);
-    }
-
-    public boolean isPredicateBased() {
-        return this.predicate != null;
-    }
-
-    public boolean isTraversalBased() {
-        return this.whereTraversal != null;
-    }
-
-    public void removeStartKey() {
-        this.selectKeys.remove(this.startKey);
-        this.startKey = null;
-    }
 
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
-        if (null != this.whereTraversal)
-            return TraversalUtil.test((Traverser.Admin) traverser, this.whereTraversal);
-        else {
-            this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
-            return this.predicate.test(null == this.startKey ? traverser.get() : this.getScopeValueByKey(Pop.last, this.startKey, traverser));
-        }
+        return TraversalUtil.test((Traverser.Admin) traverser, this.whereTraversal);
     }
 
     @Override
@@ -161,8 +102,7 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
 
     @Override
     public String toString() {
-        // TODO: revert the predicates to their string form?
-        return StringFactory.stepString(this, this.scope, this.startKey, this.predicate, this.whereTraversal);
+        return StringFactory.stepString(this, this.scope, this.whereTraversal);
     }
 
     @Override
@@ -171,25 +111,20 @@ public final class WhereStep<S> extends FilterStep<S> implements TraversalParent
     }
 
     @Override
-    public WhereStep<S> clone() {
-        final WhereStep<S> clone = (WhereStep<S>) super.clone();
-        if (null != this.predicate)
-            clone.predicate = this.predicate.clone();
-        else
-            clone.whereTraversal = clone.integrateChild(this.whereTraversal.clone());
+    public WhereTraversalStep<S> clone() {
+        final WhereTraversalStep<S> clone = (WhereTraversalStep<S>) super.clone();
+        clone.whereTraversal = clone.integrateChild(this.whereTraversal.clone());
         return clone;
     }
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.scope.hashCode() ^ (null == this.startKey ? "null".hashCode() : this.startKey.hashCode()) ^ (null == this.predicate ? this.whereTraversal.hashCode() : this.predicate.hashCode());
+        return super.hashCode() ^ this.scope.hashCode() ^ this.whereTraversal.hashCode();
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(Scope.local == this.scope ?
-                new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS} :
-                new TraverserRequirement[]{TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS});
+        return Scope.local == this.scope ? LOCAL_REQUIREMENTS : GLOBAL_REQUIREMENTS;
     }
 
     @Override
