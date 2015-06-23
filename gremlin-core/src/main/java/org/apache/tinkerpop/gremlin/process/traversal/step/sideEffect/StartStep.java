@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
@@ -95,5 +96,9 @@ public class StartStep<S> extends AbstractStep<S, S> {
 
     public boolean isVariableStartStep() {
         return null == this.start && this.getClass().equals(StartStep.class) && this.getLabels().size() == 1;
+    }
+
+    public static boolean isVariableStartStep(final Step<?, ?> step) {
+        return step instanceof StartStep && ((StartStep) step).isVariableStartStep();
     }
 }

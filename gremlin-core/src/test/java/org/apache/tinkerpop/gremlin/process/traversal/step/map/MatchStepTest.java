@@ -193,63 +193,122 @@ public class MatchStepTest extends StepTest {
         Traversal.Admin<?, ?> traversal = __.match("a", as("a").out().as("b"), as("c").in().as("d")).asAdmin();
         MatchStep.CountMatchAlgorithm countMatchAlgorithm = new MatchStep.CountMatchAlgorithm();
         countMatchAlgorithm.initialize(((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren());
-        assertEquals(2, countMatchAlgorithm.counts.size());
-        countMatchAlgorithm.counts.stream().forEach(ints -> assertEquals(Integer.valueOf(0), ints[1]));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(0));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(0));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(1));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(1));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(1));
-        assertEquals(Integer.valueOf(0), countMatchAlgorithm.counts.get(0)[0]);
-        assertEquals(Integer.valueOf(2), countMatchAlgorithm.counts.get(0)[1]);
+        Traversal.Admin<Object, Object> firstPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(0);
+        Traversal.Admin<Object, Object> secondPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(1);
         //
-        assertEquals(Integer.valueOf(1), countMatchAlgorithm.counts.get(1)[0]);
-        assertEquals(Integer.valueOf(3), countMatchAlgorithm.counts.get(1)[1]);
+        assertEquals(2, countMatchAlgorithm.traversalBundles.size());
+        countMatchAlgorithm.traversalBundles.stream().forEach(bundle -> assertEquals(0.0d, bundle.selectivity, 0.0d));
+        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), firstPattern);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), firstPattern);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
+        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
+        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(firstPattern).traversalType);
+        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(secondPattern).traversalType);
+        assertEquals(2l, countMatchAlgorithm.getBundle(firstPattern).startsCount);
+        assertEquals(3l, countMatchAlgorithm.getBundle(secondPattern).startsCount);
+        assertEquals(0l, countMatchAlgorithm.getBundle(firstPattern).endsCount);
+        assertEquals(0l, countMatchAlgorithm.getBundle(secondPattern).endsCount);
+        ////
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), firstPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), secondPattern);
+        assertEquals(2l, countMatchAlgorithm.getBundle(firstPattern).startsCount);
+        assertEquals(3l, countMatchAlgorithm.getBundle(secondPattern).startsCount);
+        assertEquals(1l, countMatchAlgorithm.getBundle(firstPattern).endsCount);
+        assertEquals(3l, countMatchAlgorithm.getBundle(secondPattern).endsCount);
+        assertEquals(0.5d, countMatchAlgorithm.getBundle(firstPattern).selectivity, 0.01d);
+        assertEquals(1.0d, countMatchAlgorithm.getBundle(secondPattern).selectivity, 0.01d);
+        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
         // CHECK RE-SORTING AS MORE DATA COMES IN
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(0));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(0));
-        assertEquals(Integer.valueOf(1), countMatchAlgorithm.counts.get(0)[0]);
-        assertEquals(Integer.valueOf(3), countMatchAlgorithm.counts.get(0)[1]);
-        //
-        assertEquals(Integer.valueOf(0), countMatchAlgorithm.counts.get(1)[0]);
-        assertEquals(Integer.valueOf(4), countMatchAlgorithm.counts.get(1)[1]);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), firstPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), firstPattern);
+        assertEquals(1.5d, countMatchAlgorithm.getBundle(firstPattern).selectivity, 0.01d);
+        assertEquals(1.0d, countMatchAlgorithm.getBundle(secondPattern).selectivity, 0.01d);
+        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
+        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
 
 
         ///////  MAKE SURE WHERE PREDICATE TRAVERSALS ARE ALWAYS FIRST AS THEY ARE SIMPLY .hasNext() CHECKS
         traversal = __.match("a", as("a").out().as("b"), as("c").in().as("d"), where("a", P.eq("b"))).asAdmin();
         countMatchAlgorithm = new MatchStep.CountMatchAlgorithm();
         countMatchAlgorithm.initialize(((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren());
-        assertEquals(3, countMatchAlgorithm.counts.size());
-        countMatchAlgorithm.counts.stream().forEach(ints -> assertEquals(Integer.valueOf(0), ints[1]));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(0));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(1));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(1));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(2));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(2));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(2));
+        assertEquals(3, countMatchAlgorithm.traversalBundles.size());
+        firstPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(0);
+        secondPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(1);
+        Traversal.Admin<Object, Object> thirdPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(2);
+        ///
+        countMatchAlgorithm.traversalBundles.stream().forEach(bundle -> assertEquals(0.0d, bundle.selectivity, 0.0d));
+        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(firstPattern).traversalType);
+        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(secondPattern).traversalType);
+        assertEquals(MatchStep.MatchAlgorithm.Type.WHERE_PREDICATE, countMatchAlgorithm.getBundle(thirdPattern).traversalType);
+        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
+        assertEquals(thirdPattern, countMatchAlgorithm.traversalBundles.get(2).traversal);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), firstPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), firstPattern);
+        assertEquals(1l, countMatchAlgorithm.getBundle(firstPattern).startsCount);
+        assertEquals(0l, countMatchAlgorithm.getBundle(secondPattern).startsCount);
+        assertEquals(0l, countMatchAlgorithm.getBundle(thirdPattern).startsCount);
+        assertEquals(1l, countMatchAlgorithm.getBundle(firstPattern).endsCount);
+        assertEquals(0l, countMatchAlgorithm.getBundle(secondPattern).endsCount);
+        assertEquals(0l, countMatchAlgorithm.getBundle(thirdPattern).endsCount);
+        assertEquals(1.0d, countMatchAlgorithm.getBundle(firstPattern).selectivity, 0.01d);
+        assertEquals(0.0d, countMatchAlgorithm.getBundle(secondPattern).selectivity, 0.01d);
+        assertEquals(0.0d, countMatchAlgorithm.getBundle(thirdPattern).selectivity, 0.01d);
+        assertEquals(thirdPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
+        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(2).traversal);
         //
-        assertEquals(Integer.valueOf(2), countMatchAlgorithm.counts.get(0)[0]);
-        assertEquals(Integer.valueOf(3), countMatchAlgorithm.counts.get(0)[1]);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), thirdPattern);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), thirdPattern);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), thirdPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), thirdPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), thirdPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), thirdPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), thirdPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), thirdPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), thirdPattern);
+        assertEquals(1l, countMatchAlgorithm.getBundle(firstPattern).startsCount);
+        assertEquals(0l, countMatchAlgorithm.getBundle(secondPattern).startsCount);
+        assertEquals(3l, countMatchAlgorithm.getBundle(thirdPattern).startsCount);
+        assertEquals(1l, countMatchAlgorithm.getBundle(firstPattern).endsCount);
+        assertEquals(0l, countMatchAlgorithm.getBundle(secondPattern).endsCount);
+        assertEquals(6l, countMatchAlgorithm.getBundle(thirdPattern).endsCount);
+        assertEquals(1.0d, countMatchAlgorithm.getBundle(firstPattern).selectivity, 0.01d);
+        assertEquals(0.0d, countMatchAlgorithm.getBundle(secondPattern).selectivity, 0.01d);
+        assertEquals(2.0d, countMatchAlgorithm.getBundle(thirdPattern).selectivity, 0.01d);
+        assertEquals(thirdPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
+        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(2).traversal);
         //
-        assertEquals(Integer.valueOf(0), countMatchAlgorithm.counts.get(1)[0]);
-        assertEquals(Integer.valueOf(1), countMatchAlgorithm.counts.get(1)[1]);
-        //
-        assertEquals(Integer.valueOf(1), countMatchAlgorithm.counts.get(2)[0]);
-        assertEquals(Integer.valueOf(2), countMatchAlgorithm.counts.get(2)[1]);
-        //
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(2));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(2));
-        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), countMatchAlgorithm.traversals.get(2));
-        //
-        assertEquals(Integer.valueOf(2), countMatchAlgorithm.counts.get(0)[0]);
-        assertEquals(Integer.valueOf(6), countMatchAlgorithm.counts.get(0)[1]);
-        //
-        assertEquals(Integer.valueOf(0), countMatchAlgorithm.counts.get(1)[0]);
-        assertEquals(Integer.valueOf(1), countMatchAlgorithm.counts.get(1)[1]);
-        //
-        assertEquals(Integer.valueOf(1), countMatchAlgorithm.counts.get(2)[0]);
-        assertEquals(Integer.valueOf(2), countMatchAlgorithm.counts.get(2)[1]);
-        //
-
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), secondPattern);
+        countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), secondPattern);
+        assertEquals(1l, countMatchAlgorithm.getBundle(firstPattern).startsCount);
+        assertEquals(4l, countMatchAlgorithm.getBundle(secondPattern).startsCount);
+        assertEquals(3l, countMatchAlgorithm.getBundle(thirdPattern).startsCount);
+        assertEquals(1l, countMatchAlgorithm.getBundle(firstPattern).endsCount);
+        assertEquals(6l, countMatchAlgorithm.getBundle(secondPattern).endsCount);
+        assertEquals(6l, countMatchAlgorithm.getBundle(thirdPattern).endsCount);
+        assertEquals(1.0d, countMatchAlgorithm.getBundle(firstPattern).selectivity, 0.01d);
+        assertEquals(1.5d, countMatchAlgorithm.getBundle(secondPattern).selectivity, 0.01d);
+        assertEquals(2.0d, countMatchAlgorithm.getBundle(thirdPattern).selectivity, 0.01d);
+        assertEquals(thirdPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
+        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(2).traversal);
     }
 }

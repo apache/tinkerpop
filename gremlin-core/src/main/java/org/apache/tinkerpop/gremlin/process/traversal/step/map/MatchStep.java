@@ -50,6 +50,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -456,7 +457,14 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     public interface MatchAlgorithm extends Function<Traverser.Admin<Object>, Traversal.Admin<Object, Object>>, Serializable {
 
+        public static enum Type {WHERE_PREDICATE, WHERE_TRAVERSAL, MATCH_TRAVERSAL}
+
         public static Function<List<Traversal.Admin<Object, Object>>, IllegalStateException> UNMATCHABLE_PATTERN = traversals -> new IllegalStateException("The provided match pattern is unsolvable: " + traversals);
+
+        public static Optional<String> getBindingLabel(final Traversal.Admin<Object, Object> traversal) {
+            final Step<?, ?> endStep = traversal.getEndStep();
+            return endStep instanceof MatchEndStep ? ((MatchEndStep) endStep).getMatchKey() : Optional.empty();
+        }
 
         public static Set<String> getRequiredLabels(final Traversal.Admin<Object, Object> traversal) {
             final Step<?, ?> startStep = traversal.getStartStep();
@@ -464,6 +472,16 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 return ((Scoping) startStep).getScopeKeys();
             else
                 throw new IllegalArgumentException("The provided start step must be a scoping step: " + startStep);
+        }
+
+        public static Type getTraversalType(final Traversal.Admin<Object, Object> traversal) {
+            final Step<?, ?> startStep = traversal.getStartStep();
+            if (startStep.getNextStep() instanceof WherePredicateStep)
+                return Type.WHERE_PREDICATE;
+            else if (startStep.getNextStep() instanceof WhereTraversalStep)
+                return Type.WHERE_TRAVERSAL;
+            else
+                return Type.MATCH_TRAVERSAL;
         }
 
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals);
@@ -508,43 +526,69 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     public static class CountMatchAlgorithm implements MatchAlgorithm {
 
-        protected List<Traversal.Admin<Object, Object>> traversals;
-        protected List<Integer[]> counts;
-        protected List<String> traversalLabels;
-        protected List<Set<String>> requiredLabels;
-        protected Map<Traversal.Admin<Object, Object>, Boolean> whereTraversals;
+        protected List<Bundle> traversalBundles;
 
         @Override
         public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
-            this.traversals = traversals;
-            this.whereTraversals = new HashMap<>();
-            this.counts = new ArrayList<>();
-            this.traversalLabels = new ArrayList<>();
-            this.requiredLabels = new ArrayList<>();
-            for (int i = 0; i < this.traversals.size(); i++) {
-                final Traversal.Admin<Object, Object> traversal = this.traversals.get(i);
-                this.traversalLabels.add(traversal.getStartStep().getId());
-                this.requiredLabels.add(MatchAlgorithm.getRequiredLabels(traversal));
-                this.counts.add(new Integer[]{i, 0});
-                this.whereTraversals.put(traversal, traversal.getStartStep().getNextStep() instanceof WhereTraversalStep || traversal.getStartStep().getNextStep() instanceof WherePredicateStep);
-            }
+            this.traversalBundles = traversals.stream().map(Bundle::of).collect(Collectors.toList());
         }
 
         @Override
         public Traversal.Admin<Object, Object> apply(final Traverser.Admin<Object> traverser) {
             final Path path = traverser.path();
-            for (final Integer[] indexCounts : this.counts) {
-                if (!path.hasLabel(this.traversalLabels.get(indexCounts[0])) && !this.requiredLabels.get(indexCounts[0]).stream().filter(label -> !path.hasLabel(label)).findAny().isPresent()) {
-                    return this.traversals.get(indexCounts[0]);
+            for (final Bundle bundle : this.traversalBundles) {
+                if (!path.hasLabel(bundle.traversalLabel) && !bundle.requiredLabels.stream().filter(label -> !path.hasLabel(label)).findAny().isPresent()) {
+                    return bundle.traversal;
                 }
             }
-            throw UNMATCHABLE_PATTERN.apply(this.traversals);
+            throw UNMATCHABLE_PATTERN.apply(this.traversalBundles.stream().map(record -> record.traversal).collect(Collectors.toList()));
         }
 
+        @Override
+        public void recordStart(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
+            this.getBundle(traversal).startsCount++;
+        }
+
+        @Override
         public void recordEnd(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
-            final int currentIndex = this.traversals.indexOf(traversal);
-            this.counts.stream().filter(array -> currentIndex == array[0]).findAny().get()[1]++;
-            Collections.sort(this.counts, (a, b) -> this.whereTraversals.get(traversal) ? 1 : a[1].compareTo(b[1]));
+            final Bundle bundle = this.getBundle(traversal);
+            bundle.endsCount++;
+            bundle.calculateSelectivity();
+            Collections.sort(this.traversalBundles, Comparator.<Bundle>comparingInt(r -> r.traversalType.ordinal()).thenComparingDouble(r -> r.selectivity));
+        }
+
+        protected Bundle getBundle(final Traversal.Admin<Object, Object> traversal) {
+            return this.traversalBundles.stream().filter(b -> b.traversal == traversal).findAny().get();
+        }
+
+        ///////////
+
+        public static class Bundle {
+            public Traversal.Admin<Object, Object> traversal;
+            public String traversalLabel;
+            public Set<String> requiredLabels;
+            //public String bindingLabel;
+            public Type traversalType;
+            public long startsCount;
+            public long endsCount;
+            public double selectivity;
+
+            public static Bundle of(final Traversal.Admin<Object, Object> traversal) {
+                final Bundle bundle = new Bundle();
+                bundle.traversal = traversal;
+                bundle.traversalLabel = traversal.getStartStep().getId();
+                bundle.traversalType = MatchAlgorithm.getTraversalType(traversal);
+                bundle.requiredLabels = MatchAlgorithm.getRequiredLabels(traversal);
+                //bundle.bindingLabel = MatchAlgorithm.getBindingLabel(traversal).orElse(null);
+                bundle.startsCount = 0l;
+                bundle.endsCount = 0l;
+                bundle.selectivity = 0.0d;
+                return bundle;
+            }
+
+            public final void calculateSelectivity() {
+                this.selectivity = (double) this.endsCount / (double) this.startsCount;
+            }
         }
     }
 }
