@@ -72,14 +72,14 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
             Step<?, ?> nextStep = matchStep.getNextStep();
             while (nextStep instanceof WherePredicateStep ||
                     nextStep instanceof WhereTraversalStep ||
-                    (nextStep instanceof DedupGlobalStep && !((DedupGlobalStep) nextStep).getScopeKeys().isEmpty()) ||
+                    (nextStep instanceof DedupGlobalStep && !((DedupGlobalStep) nextStep).getScopeKeys().isEmpty() && ((DedupGlobalStep) nextStep).getLocalChildren().isEmpty()) ||
                     (nextStep instanceof SelectStep && ((SelectStep) nextStep).getLocalChildren().isEmpty()) ||
                     (nextStep instanceof SelectOneStep && ((SelectOneStep) nextStep).getLocalChildren().isEmpty())) {
                 if (nextStep instanceof WherePredicateStep || nextStep instanceof WhereTraversalStep) {
                     traversal.removeStep(nextStep);
                     matchStep.addGlobalChild(new DefaultTraversal<>().addStep(nextStep));
                     nextStep = matchStep.getNextStep();
-                } else if (nextStep instanceof DedupGlobalStep && !((DedupGlobalStep) nextStep).getScopeKeys().isEmpty()) {
+                } else if (nextStep instanceof DedupGlobalStep && !((DedupGlobalStep) nextStep).getScopeKeys().isEmpty() && ((DedupGlobalStep) nextStep).getLocalChildren().isEmpty()) {
                     traversal.removeStep(nextStep);
                     matchStep.setDedupLabels(((DedupGlobalStep<?>) nextStep).getScopeKeys());
                     nextStep = matchStep.getNextStep();
