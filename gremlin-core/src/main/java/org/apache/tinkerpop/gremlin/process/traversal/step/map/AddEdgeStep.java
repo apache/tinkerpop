@@ -89,8 +89,8 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
 
     @Override
     protected Iterator<Edge> flatMap(final Traverser.Admin<S> traverser) {
-        final Object firstVertex = null == this.firstVertexKey ? (Vertex) traverser.get() : this.getScopeValueByKey(Pop.last, this.firstVertexKey, traverser);
-        final Object secondVertex = null == this.secondVertexKey ? (Vertex) traverser.get() : this.getScopeValueByKey(Pop.last, this.secondVertexKey, traverser);
+        final Object firstVertex = null == this.firstVertexKey ? (Vertex) traverser.get() : this.getScopeValue(Pop.last, this.firstVertexKey, traverser);
+        final Object secondVertex = null == this.secondVertexKey ? (Vertex) traverser.get() : this.getScopeValue(Pop.last, this.secondVertexKey, traverser);
         final Object finalFirstVertex = firstVertex instanceof Iterable ? ((Iterable) firstVertex).iterator() : firstVertex;
         final Object finalSecondVertex = secondVertex instanceof Iterable ? ((Iterable) secondVertex).iterator() : secondVertex;
 

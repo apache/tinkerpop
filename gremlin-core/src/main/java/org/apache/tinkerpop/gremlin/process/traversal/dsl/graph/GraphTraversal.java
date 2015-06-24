@@ -478,8 +478,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PathStep<>(this.asAdmin()));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startKey, final Traversal<?, ?>... matchTraversals) {
-        return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), startKey, ConjunctionStep.Conjunction.AND, matchTraversals));
+    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startLabel, final Traversal<?, ?>... matchTraversals) {
+        return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), startLabel, ConjunctionStep.Conjunction.AND, matchTraversals));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... matchTraversals) {
@@ -496,36 +496,36 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Scope scope, final Pop pop, final String... stepLabels) {
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), scope, pop, stepLabels));
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Scope scope, final Pop pop, final String... selectLabels) {
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), scope, pop, selectLabels));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Scope scope, final String... stepLabels) {
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), scope, stepLabels));
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Scope scope, final String... selectLabels) {
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), scope, selectLabels));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String... stepLabels) {
-        return this.select(Scope.global, pop, stepLabels);
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String... selectLabels) {
+        return this.select(Scope.global, pop, selectLabels);
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final String... stepLabels) {
-        return this.select(Scope.global, stepLabels);
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final String... selectLabels) {
+        return this.select(Scope.global, selectLabels);
     }
 
-    public default <E2> GraphTraversal<S, E2> select(final Scope scope, final Pop pop, final String stepLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), scope, pop, stepLabel));
+    public default <E2> GraphTraversal<S, E2> select(final Scope scope, final Pop pop, final String selectLabel) {
+        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), scope, pop, selectLabel));
     }
 
-    public default <E2> GraphTraversal<S, E2> select(final Scope scope, final String stepLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), scope, stepLabel));
+    public default <E2> GraphTraversal<S, E2> select(final Scope scope, final String selectLabel) {
+        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), scope, selectLabel));
     }
 
-    public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String stepLabel) {
-        return this.select(Scope.global, pop, stepLabel);
+    public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectLabel) {
+        return this.select(Scope.global, pop, selectLabel);
     }
 
-    public default <E2> GraphTraversal<S, E2> select(final String stepLabel) {
-        return this.select(Scope.global, stepLabel);
+    public default <E2> GraphTraversal<S, E2> select(final String selectLabel) {
+        return this.select(Scope.global, selectLabel);
     }
 
     public default <E2> GraphTraversal<S, E2> unfold() {
@@ -650,19 +650,22 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Remove all duplicates in the traversal stream up to this point.
      *
+     * @param scope       whether the deduplication is on the stream (global) or the current object (local).
+     * @param dedupLabels if labels are provided, then the scope labels determine de-duplication. No labels implies current object.
      * @return the traversal with an appended {@link DedupGlobalStep}.
      */
-    public default GraphTraversal<S, E> dedup() {
-        return this.dedup(Scope.global);
+    public default GraphTraversal<S, E> dedup(final Scope scope, final String... dedupLabels) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupGlobalStep<>(this.asAdmin(), dedupLabels) : new DedupLocalStep(this.asAdmin()));
     }
 
-    public default GraphTraversal<S, E> dedup(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupGlobalStep<>(this.asAdmin()) : new DedupLocalStep(this.asAdmin()));
-    }
-
-    public default GraphTraversal<S, E> dedup(final String label, final String... labels) {
-        ((MatchStep<?, ?>) this.asAdmin().getEndStep()).setDedupLabels(label, labels);
-        return this;
+    /**
+     * Remove all duplicates in the traversal stream up to this point.
+     *
+     * @param dedupLabels if labels are provided, then the scoped object's labels determine de-duplication. No labels implies current object.
+     * @return the traversal with an appended {@link DedupGlobalStep}.
+     */
+    public default GraphTraversal<S, E> dedup(final String... dedupLabels) {
+        return this.dedup(Scope.global, dedupLabels);
     }
 
     public default GraphTraversal<S, E> where(final Scope scope, final String startKey, final P<String> predicate) {

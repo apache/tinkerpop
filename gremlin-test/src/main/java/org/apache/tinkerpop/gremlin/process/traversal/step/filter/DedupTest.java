@@ -61,6 +61,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX();
 
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_select();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_both_dedup_name() {
@@ -132,7 +134,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Vertex> traversal = get_g_V_both_both_dedup_byXlabelX();
         printTraversalForm(traversal);
         final List<Vertex> vertices = traversal.toList();
-        assertEquals(2,vertices.size());
+        assertEquals(2, vertices.size());
     }
 
     @Test
@@ -149,6 +151,31 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         assertEquals(4, map.get("person").size());
         assertEquals(new HashSet<>(Arrays.asList(0.2, 0.4, 1.0)), map.get("software"));
         assertEquals(new HashSet<>(Arrays.asList(0.2, 0.4, 0.5, 1.0)), map.get("person"));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_select() {
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_select();
+        printTraversalForm(traversal);
+        int personPersonCounter = 0;
+        int personSoftwareCounter = 0;
+        int softwarePersonCounter = 0;
+        while (traversal.hasNext()) {
+            final Map<String, Vertex> map = traversal.next();
+            assertEquals(2, map.size());
+            if (map.get("a").label().equals("person") && map.get("b").label().equals("person"))
+                personPersonCounter++;
+            else if (map.get("a").label().equals("person") && map.get("b").label().equals("software"))
+                personSoftwareCounter++;
+            else if (map.get("a").label().equals("software") && map.get("b").label().equals("person"))
+                softwarePersonCounter++;
+            else
+                fail("Bad result type: " + map);
+        }
+        assertEquals(1, personPersonCounter);
+        assertEquals(1, personSoftwareCounter);
+        assertEquals(1, softwarePersonCounter);
     }
 
 
@@ -186,6 +213,11 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
             return g.V().<String, Set<Double>>group().by(T.label).by(bothE().values("weight").fold()).by(dedup(Scope.local));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_select() {
+            return g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select();
         }
     }
 }

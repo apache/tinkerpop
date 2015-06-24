@@ -38,7 +38,7 @@ public interface Scoping {
 
     public static enum Variable {START, END}
 
-    public default <S> S getScopeValueByKey(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
+    public default <S> S getScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
         if (traverser.getSideEffects().get(key).isPresent())
             return traverser.getSideEffects().<S>get(key).get();
         if (Scope.local == this.getScope()) {
@@ -63,7 +63,7 @@ public interface Scoping {
         }
     }
 
-    public default <S> Optional<S> getOptionalScopeValueByKey(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
+    public default <S> Optional<S> getOptionalScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
         if (traverser.getSideEffects().get(key).isPresent())
             return traverser.getSideEffects().<S>get(key);
 
