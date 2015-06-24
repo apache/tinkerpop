@@ -365,7 +365,7 @@ final class ConnectionPool {
     }
 
     private void considerUnavailable() {
-        // called when a connection is "dead" right now such that a "dead" connection means the host is basically
+        // called when a connection is "dead" such that a "dead" connection means the host itself is basically
         // "dead".  that's probably ok for now, but this decision should likely be more flexible.
         host.makeUnavailable(this::tryReconnect);
 
@@ -378,7 +378,6 @@ final class ConnectionPool {
         logger.debug("Trying to re-establish connection on {}", host);
 
         try {
-
             connections.add(new Connection(host.getHostUri(), this, cluster, settings().maxInProcessPerConnection));
             this.open.set(connections.size());
 
