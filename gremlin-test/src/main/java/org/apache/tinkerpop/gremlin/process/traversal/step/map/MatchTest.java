@@ -125,6 +125,9 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // uses 'out of order' conjunction nested where()
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__whereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_b__whereXb_inXX();
 
+    // testing distinct key values
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa_out_bX() throws Exception {
@@ -410,6 +413,14 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                 "a", convertToVertex(graph, "peter"), "b", convertToVertex(graph, "lop")), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX();
+        printTraversalForm(traversal);
+        assertEquals(12, traversal.toList().size());
+    }
+
     public static class GreedyMatchTraversals extends Traversals {
         @Before
         public void setupTest() {
@@ -646,6 +657,13 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                             as("b").in("created").count().is(eq(3)))),
                     as("a").both().as("b"),
                     where(as("b").in()));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX() {
+            return g.V().match("a",
+                    as("a").both().as("b"),
+                    as("b").both().as("c")).dedup("a", "b");
         }
     }
 }

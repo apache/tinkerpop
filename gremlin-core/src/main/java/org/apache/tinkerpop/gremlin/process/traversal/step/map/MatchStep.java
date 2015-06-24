@@ -78,6 +78,9 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     private MatchAlgorithm matchAlgorithm;
     private Class<? extends MatchAlgorithm> matchAlgorithmClass = CountMatchAlgorithm.class; // default is CountMatchAlgorithm (use MatchAlgorithmStrategy to change)
 
+    private Set<List<Object>> dedups = null;
+    private List<String> dedupLabels = null;
+
     public MatchStep(final Traversal.Admin traversal, final String startKey, final ConjunctionStep.Conjunction conjunction, final Traversal... matchTraversals) {
         super(traversal);
         this.conjunction = conjunction;
@@ -238,8 +241,30 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         for (final Traversal.Admin<Object, Object> traversal : this.matchTraversals) {
             clone.matchTraversals.add(clone.integrateChild(traversal.clone()));
         }
+        if (this.dedups != null) clone.dedups = new HashSet<>();
         clone.initializeMatchAlgorithm();
         return clone;
+    }
+
+    public void setDedupLabels(final String label, final String... labels) {
+        this.dedups = new HashSet<>();
+        this.dedupLabels = new ArrayList<>(labels.length + 1);
+        this.dedupLabels.add(label);
+        Collections.addAll(this.dedupLabels, labels);
+    }
+
+    private boolean isDuplicate(final Traverser<S> traverser) {
+        if (null == this.dedups)
+            return false;
+        for (final String key : this.dedupLabels) {
+            if (!traverser.path().hasLabel(key))
+                return false;
+        }
+        final List<Object> objects = new ArrayList<>(this.dedupLabels.size());
+        for (final String key : this.dedupLabels) {
+            objects.add(traverser.path().get(Pop.last, key));
+        }
+        return this.dedups.contains(objects);
     }
 
     private boolean hasMatched(final ConjunctionStep.Conjunction conjunction, final Traverser<S> traverser) {
@@ -251,17 +276,34 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 counter++;
             }
         }
-        return this.matchTraversals.size() == counter;
+        boolean matched = this.matchTraversals.size() == counter;
+        if (matched && this.dedupLabels != null) {
+            final List<Object> objects = new ArrayList<>(this.dedupLabels.size());
+            for (final String key : this.dedupLabels) {
+                objects.add(traverser.path().get(Pop.last, key));
+            }
+            this.dedups.add(objects);
+        }
+        return matched;
     }
 
     private Map<String, E> getBindings(final Traverser<S> traverser) {
         final Map<String, E> bindings = new HashMap<>();
-        traverser.path().forEach((object, labels) -> {
-            for (final String label : labels) {
-                if (this.matchStartLabels.contains(label) || this.matchEndLabels.contains(label))
-                    bindings.put(label, (E) object);
-            }
-        });
+        if (null == this.dedupLabels) {
+            traverser.path().forEach((object, labels) -> {
+                for (final String label : labels) {
+                    if (this.matchStartLabels.contains(label) || this.matchEndLabels.contains(label))
+                        bindings.put(label, (E) object);
+                }
+            });
+        } else {
+            traverser.path().forEach((object, labels) -> {
+                for (final String label : labels) {
+                    if (this.dedupLabels.contains(label))
+                        bindings.put(label, (E) object);
+                }
+            });
+        }
         return bindings;
     }
 
@@ -292,14 +334,18 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             if (null == traverser) {
                 traverser = this.starts.next();
                 traverser.path().addLabel(this.getId()); // so the traverser never returns to this branch ever again
-            } else if (hasMatched(this.conjunction, traverser))
-                return IteratorUtils.of(traverser.split(this.getBindings(traverser), this));
+            }
 
-            if (this.conjunction == ConjunctionStep.Conjunction.AND) {
-                this.getMatchAlgorithm().apply(traverser).addStart(traverser); // determine which sub-pattern the traverser should try next
-            } else {  // OR
-                for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
-                    matchTraversal.addStart(traverser.split());
+            if (!this.isDuplicate(traverser)) {
+                if (hasMatched(this.conjunction, traverser))
+                    return IteratorUtils.of(traverser.split(this.getBindings(traverser), this));
+
+                if (this.conjunction == ConjunctionStep.Conjunction.AND) {
+                    this.getMatchAlgorithm().apply(traverser).addStart(traverser); // determine which sub-pattern the traverser should try next
+                } else {  // OR
+                    for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
+                        matchTraversal.addStart(traverser.split());
+                    }
                 }
             }
         }
@@ -307,25 +353,30 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     protected Iterator<Traverser<Map<String, E>>> computerAlgorithm() throws NoSuchElementException {
-        final Traverser.Admin traverser = this.starts.next();
-        if (!traverser.path().hasLabel(this.getId()))
-            traverser.path().addLabel(this.getId()); // so the traverser never returns to this branch ever again
-        if (hasMatched(this.conjunction, traverser)) {
-            traverser.setStepId(this.getNextStep().getId());
-            return IteratorUtils.of(traverser.split(this.getBindings(traverser), this));
-        }
-        if (this.conjunction == ConjunctionStep.Conjunction.AND) {
-            final Traversal.Admin<Object, Object> matchTraversal = this.getMatchAlgorithm().apply(traverser); // determine which sub-pattern the traverser should try next
-            traverser.setStepId(matchTraversal.getStartStep().getId()); // go down the traversal match sub-pattern
-            return IteratorUtils.of(traverser);
-        } else { // OR
-            final List<Traverser<Map<String, E>>> traversers = new ArrayList<>(this.matchTraversals.size());
-            this.matchTraversals.forEach(matchTraversal -> {
-                final Traverser.Admin split = traverser.split();
-                split.setStepId(matchTraversal.getStartStep().getId());
-                traversers.add(split);
-            });
-            return traversers.iterator();
+        while (true) {
+            final Traverser.Admin traverser = this.starts.next();
+            if (!traverser.path().hasLabel(this.getId()))
+                traverser.path().addLabel(this.getId()); // so the traverser never returns to this branch ever again
+
+            if (!this.isDuplicate(traverser)) {
+                if (hasMatched(this.conjunction, traverser)) {
+                    traverser.setStepId(this.getNextStep().getId());
+                    return IteratorUtils.of(traverser.split(this.getBindings(traverser), this));
+                }
+                if (this.conjunction == ConjunctionStep.Conjunction.AND) {
+                    final Traversal.Admin<Object, Object> matchTraversal = this.getMatchAlgorithm().apply(traverser); // determine which sub-pattern the traverser should try next
+                    traverser.setStepId(matchTraversal.getStartStep().getId()); // go down the traversal match sub-pattern
+                    return IteratorUtils.of(traverser);
+                } else { // OR
+                    final List<Traverser<Map<String, E>>> traversers = new ArrayList<>(this.matchTraversals.size());
+                    this.matchTraversals.forEach(matchTraversal -> {
+                        final Traverser.Admin split = traverser.split();
+                        split.setStepId(matchTraversal.getStartStep().getId());
+                        traversers.add(split);
+                    });
+                    return traversers.iterator();
+                }
+            }
         }
     }
 

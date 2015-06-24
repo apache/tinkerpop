@@ -660,6 +660,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupGlobalStep<>(this.asAdmin()) : new DedupLocalStep(this.asAdmin()));
     }
 
+    public default GraphTraversal<S, E> dedup(final String label, final String... labels) {
+        ((MatchStep<?, ?>) this.asAdmin().getEndStep()).setDedupLabels(label, labels);
+        return this;
+    }
+
     public default GraphTraversal<S, E> where(final Scope scope, final String startKey, final P<String> predicate) {
         return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), scope, Optional.ofNullable(startKey), predicate));
     }
