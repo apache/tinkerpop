@@ -196,19 +196,19 @@ public class MatchStepTest extends StepTest {
         Traversal.Admin<Object, Object> firstPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(0);
         Traversal.Admin<Object, Object> secondPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(1);
         //
-        assertEquals(2, countMatchAlgorithm.traversalBundles.size());
-        countMatchAlgorithm.traversalBundles.stream().forEach(bundle -> assertEquals(0.0d, bundle.multiplicity, 0.0d));
-        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
-        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
+        assertEquals(2, countMatchAlgorithm.bundles.size());
+        countMatchAlgorithm.bundles.stream().forEach(bundle -> assertEquals(0.0d, bundle.multiplicity, 0.0d));
+        assertEquals(firstPattern, countMatchAlgorithm.bundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.bundles.get(1).traversal);
         countMatchAlgorithm.recordStart(EmptyTraverser.instance(), firstPattern);
         countMatchAlgorithm.recordStart(EmptyTraverser.instance(), firstPattern);
         countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
         countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
         countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
-        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
-        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
-        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(firstPattern).traversalType);
-        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(secondPattern).traversalType);
+        assertEquals(firstPattern, countMatchAlgorithm.bundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.bundles.get(1).traversal);
+        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(firstPattern).type);
+        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(secondPattern).type);
         assertEquals(2l, countMatchAlgorithm.getBundle(firstPattern).startsCount);
         assertEquals(3l, countMatchAlgorithm.getBundle(secondPattern).startsCount);
         assertEquals(0l, countMatchAlgorithm.getBundle(firstPattern).endsCount);
@@ -224,33 +224,33 @@ public class MatchStepTest extends StepTest {
         assertEquals(3l, countMatchAlgorithm.getBundle(secondPattern).endsCount);
         assertEquals(0.5d, countMatchAlgorithm.getBundle(firstPattern).multiplicity, 0.01d);
         assertEquals(1.0d, countMatchAlgorithm.getBundle(secondPattern).multiplicity, 0.01d);
-        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
-        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
+        assertEquals(firstPattern, countMatchAlgorithm.bundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.bundles.get(1).traversal);
         // CHECK RE-SORTING AS MORE DATA COMES IN
         countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), firstPattern);
         countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), firstPattern);
         assertEquals(1.5d, countMatchAlgorithm.getBundle(firstPattern).multiplicity, 0.01d);
         assertEquals(1.0d, countMatchAlgorithm.getBundle(secondPattern).multiplicity, 0.01d);
-        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
-        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.bundles.get(0).traversal);
+        assertEquals(firstPattern, countMatchAlgorithm.bundles.get(1).traversal);
 
 
         ///////  MAKE SURE WHERE PREDICATE TRAVERSALS ARE ALWAYS FIRST AS THEY ARE SIMPLY .hasNext() CHECKS
         traversal = __.match("a", as("a").out().as("b"), as("c").in().as("d"), where("a", P.eq("b"))).asAdmin();
         countMatchAlgorithm = new MatchStep.CountMatchAlgorithm();
         countMatchAlgorithm.initialize(((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren());
-        assertEquals(3, countMatchAlgorithm.traversalBundles.size());
+        assertEquals(3, countMatchAlgorithm.bundles.size());
         firstPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(0);
         secondPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(1);
         Traversal.Admin<Object, Object> thirdPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(2);
         ///
-        countMatchAlgorithm.traversalBundles.stream().forEach(bundle -> assertEquals(0.0d, bundle.multiplicity, 0.0d));
-        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(firstPattern).traversalType);
-        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(secondPattern).traversalType);
-        assertEquals(MatchStep.MatchAlgorithm.Type.WHERE_PREDICATE, countMatchAlgorithm.getBundle(thirdPattern).traversalType);
-        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
-        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
-        assertEquals(thirdPattern, countMatchAlgorithm.traversalBundles.get(2).traversal);
+        countMatchAlgorithm.bundles.stream().forEach(bundle -> assertEquals(0.0d, bundle.multiplicity, 0.0d));
+        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(firstPattern).type);
+        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(secondPattern).type);
+        assertEquals(MatchStep.MatchAlgorithm.Type.WHERE_PREDICATE, countMatchAlgorithm.getBundle(thirdPattern).type);
+        assertEquals(firstPattern, countMatchAlgorithm.bundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.bundles.get(1).traversal);
+        assertEquals(thirdPattern, countMatchAlgorithm.bundles.get(2).traversal);
         countMatchAlgorithm.recordStart(EmptyTraverser.instance(), firstPattern);
         countMatchAlgorithm.recordEnd(EmptyTraverser.instance(), firstPattern);
         assertEquals(1l, countMatchAlgorithm.getBundle(firstPattern).startsCount);
@@ -262,9 +262,9 @@ public class MatchStepTest extends StepTest {
         assertEquals(1.0d, countMatchAlgorithm.getBundle(firstPattern).multiplicity, 0.01d);
         assertEquals(0.0d, countMatchAlgorithm.getBundle(secondPattern).multiplicity, 0.01d);
         assertEquals(0.0d, countMatchAlgorithm.getBundle(thirdPattern).multiplicity, 0.01d);
-        assertEquals(thirdPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
-        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
-        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(2).traversal);
+        assertEquals(thirdPattern, countMatchAlgorithm.bundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.bundles.get(1).traversal);
+        assertEquals(firstPattern, countMatchAlgorithm.bundles.get(2).traversal);
         //
         countMatchAlgorithm.recordStart(EmptyTraverser.instance(), thirdPattern);
         countMatchAlgorithm.recordStart(EmptyTraverser.instance(), thirdPattern);
@@ -284,9 +284,9 @@ public class MatchStepTest extends StepTest {
         assertEquals(1.0d, countMatchAlgorithm.getBundle(firstPattern).multiplicity, 0.01d);
         assertEquals(0.0d, countMatchAlgorithm.getBundle(secondPattern).multiplicity, 0.01d);
         assertEquals(2.0d, countMatchAlgorithm.getBundle(thirdPattern).multiplicity, 0.01d);
-        assertEquals(thirdPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
-        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
-        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(2).traversal);
+        assertEquals(thirdPattern, countMatchAlgorithm.bundles.get(0).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.bundles.get(1).traversal);
+        assertEquals(firstPattern, countMatchAlgorithm.bundles.get(2).traversal);
         //
         countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
         countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
@@ -307,8 +307,8 @@ public class MatchStepTest extends StepTest {
         assertEquals(1.0d, countMatchAlgorithm.getBundle(firstPattern).multiplicity, 0.01d);
         assertEquals(1.5d, countMatchAlgorithm.getBundle(secondPattern).multiplicity, 0.01d);
         assertEquals(2.0d, countMatchAlgorithm.getBundle(thirdPattern).multiplicity, 0.01d);
-        assertEquals(thirdPattern, countMatchAlgorithm.traversalBundles.get(0).traversal);
-        assertEquals(firstPattern, countMatchAlgorithm.traversalBundles.get(1).traversal);
-        assertEquals(secondPattern, countMatchAlgorithm.traversalBundles.get(2).traversal);
+        assertEquals(thirdPattern, countMatchAlgorithm.bundles.get(0).traversal);
+        assertEquals(firstPattern, countMatchAlgorithm.bundles.get(1).traversal);
+        assertEquals(secondPattern, countMatchAlgorithm.bundles.get(2).traversal);
     }
 }
