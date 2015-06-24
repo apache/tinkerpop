@@ -160,7 +160,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try (SimpleClient client = new WebSocketClient()) {
             final int resultCountToGenerate = 5000;
             final int batchSize = 2;
-            final String fatty = IntStream.range(0, 150).mapToObj(String::valueOf).collect(Collectors.joining());
+            final String fatty = IntStream.range(0, 175).mapToObj(String::valueOf).collect(Collectors.joining());
             final String fattyX = "['" + fatty + "'] * " + resultCountToGenerate;
 
             // don't allow the thread to proceed until all results are accounted for
