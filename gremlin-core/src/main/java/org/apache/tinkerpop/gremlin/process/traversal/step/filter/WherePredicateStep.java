@@ -80,7 +80,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
         if (predicate instanceof ConjunctionP)
             ((ConjunctionP<Object>) predicate).getPredicates().forEach(p -> this.setPredicateValues(p, traverser, selectKeysIterator));
         else
-            predicate.setValue(this.getScopeValueByKey(Pop.last, selectKeysIterator.next(), traverser));
+            predicate.setValue(this.getScopeValue(Pop.last, selectKeysIterator.next(), traverser));
     }
 
     public Optional<P<?>> getPredicate() {
@@ -99,7 +99,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     @Override
     protected boolean filter(final Traverser.Admin<S> traverser) {
         this.setPredicateValues(this.predicate, traverser, this.selectKeys.iterator());
-        return this.predicate.test(null == this.startKey ? traverser.get() : this.getScopeValueByKey(Pop.last, this.startKey, traverser));
+        return this.predicate.test(null == this.startKey ? traverser.get() : this.getScopeValue(Pop.last, this.startKey, traverser));
     }
 
     @Override

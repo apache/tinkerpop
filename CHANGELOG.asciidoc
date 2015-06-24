@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `dedup(string...)` which allows for the deduplication of a stream based on unique scope values.
 * Split `WhereStep` into `WherePredicateStep` and `WhereTraversalStep` to simplify internals.
 * Prevent the driver from attempting to reconnect on a dead host if the `Cluster.close()` method has been called.
 * Renamed the "deactivate" option on `:plugin` command to "unuse" to be symmetric with the "use" option.
@@ -79,7 +80,7 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 * `GraphComputerTest` extended with validation of the semantics of all `ResultGraph`/`Persist` combinations.
 * GiraphGraphComputer no longer requires an extra iteration and MapReduce job to derive the full `Memory` result.
 * SparkGraphComputer now supports `InputRDD` and `OutputRDD` to allow vendors/users to use a `SparkContext` to read/write the graph adjacency list.
-* Added `Scoping.getScopeValueByKey()` method so all "selecting" steps use the same pattern for map, path, and sideEffect data retrieval.
+* Added `Scoping.getScopeValue()` method so all "selecting" steps use the same pattern for map, path, and sideEffect data retrieval.
 
 TinkerPop 3.0.0.M9 (Release Date: May 26, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

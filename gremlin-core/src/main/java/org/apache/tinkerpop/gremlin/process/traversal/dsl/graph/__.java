@@ -275,8 +275,8 @@ public class __ {
     /**
      * @see {@link GraphTraversal#match(String, Traversal[])}
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startKey, final Traversal<?, ?>... matchTraversals) {
-        return __.<A>start().match(startKey, matchTraversals);
+    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startLabel, final Traversal<?, ?>... matchTraversals) {
+        return __.<A>start().match(startLabel, matchTraversals);
     }
 
     /**
@@ -294,48 +294,48 @@ public class __ {
     }
 
 
-    public static <A, B> GraphTraversal<A, B> select(final Scope scope, final Pop pop, final String stepLabel) {
-        return __.<A>start().select(scope, pop, stepLabel);
+    public static <A, B> GraphTraversal<A, B> select(final Scope scope, final Pop pop, final String selectLabel) {
+        return __.<A>start().select(scope, pop, selectLabel);
     }
 
     /**
      * @see {@link GraphTraversal#select(Scope, String)}
      */
-    public static <A, B> GraphTraversal<A, B> select(final Scope scope, final String stepLabel) {
-        return __.<A>start().select(scope, stepLabel);
+    public static <A, B> GraphTraversal<A, B> select(final Scope scope, final String selectLabel) {
+        return __.<A>start().select(scope, selectLabel);
     }
 
-    public static <A, B> GraphTraversal<A, B> select(final Pop pop, final String stepLabel) {
-        return __.<A>start().select(pop, stepLabel);
+    public static <A, B> GraphTraversal<A, B> select(final Pop pop, final String selectLabel) {
+        return __.<A>start().select(pop, selectLabel);
     }
 
     /**
      * @see {@link GraphTraversal#select(String)}
      */
-    public static <A, B> GraphTraversal<A, B> select(final String stepLabel) {
-        return __.<A>start().select(stepLabel);
+    public static <A, B> GraphTraversal<A, B> select(final String selectLabel) {
+        return __.<A>start().select(selectLabel);
     }
 
-    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Scope scope, final Pop pop, final String... stepLabels) {
-        return __.<A>start().select(scope, pop, stepLabels);
+    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Scope scope, final Pop pop, final String... selectLabels) {
+        return __.<A>start().select(scope, pop, selectLabels);
     }
 
     /**
      * @see {@link GraphTraversal#select(Scope, String...)}
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Scope scope, final String... stepLabels) {
-        return __.<A>start().select(scope, stepLabels);
+    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Scope scope, final String... selectLabels) {
+        return __.<A>start().select(scope, selectLabels);
     }
 
-    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Pop pop, final String... stepLabels) {
-        return __.<A>start().select(pop, stepLabels);
+    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Pop pop, final String... selectLabels) {
+        return __.<A>start().select(pop, selectLabels);
     }
 
     /**
      * @see {@link GraphTraversal#select(String...)}
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> select(final String... stepLabels) {
-        return __.<A>start().select(stepLabels);
+    public static <A, B> GraphTraversal<A, Map<String, B>> select(final String... selectLabels) {
+        return __.<A>start().select(selectLabels);
     }
 
     /**
@@ -507,16 +507,12 @@ public class __ {
         return __.<A>start().inject((A[]) injections);
     }
 
-    public static <A> GraphTraversal<A, A> dedup() {
-        return __.<A>start().dedup();
+    public static <A> GraphTraversal<A, A> dedup(final String... dedupLabels) {
+        return __.<A>start().dedup(dedupLabels);
     }
 
-    public static <A> GraphTraversal<A, A> dedup(final String label, final String... labels) {
-        return __.<A>start().dedup(label, labels);
-    }
-
-    public static <A> GraphTraversal<A, A> dedup(final Scope scope) {
-        return __.<A>start().dedup(scope);
+    public static <A> GraphTraversal<A, A> dedup(final Scope scope, final String... dedupLabels) {
+        return __.<A>start().dedup(scope, dedupLabels);
     }
 
     public static <A> GraphTraversal<A, A> has(final String key, final P<?> predicate) {

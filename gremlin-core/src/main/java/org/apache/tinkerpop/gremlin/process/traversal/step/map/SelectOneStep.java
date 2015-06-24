@@ -41,29 +41,29 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     private Scope scope;
     private final Pop pop;
-    private final String selectLabel;
+    private final String selectKey;
     private Traversal.Admin<S, E> selectTraversal = null;
 
-    public SelectOneStep(final Traversal.Admin traversal, final Scope scope, Pop pop, final String selectLabel) {
+    public SelectOneStep(final Traversal.Admin traversal, final Scope scope, Pop pop, final String selectKey) {
         super(traversal);
         this.scope = scope;
         this.pop = pop;
-        this.selectLabel = selectLabel;
+        this.selectKey = selectKey;
     }
 
-    public SelectOneStep(final Traversal.Admin traversal, final Scope scope, final String selectLabel) {
-        this(traversal, scope, null, selectLabel);
+    public SelectOneStep(final Traversal.Admin traversal, final Scope scope, final String selectKey) {
+        this(traversal, scope, null, selectKey);
     }
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        final Optional<S> optional = this.getOptionalScopeValueByKey(this.pop, this.selectLabel, traverser);
+        final Optional<S> optional = this.getOptionalScopeValue(this.pop, this.selectKey, traverser);
         return optional.isPresent() ? TraversalUtil.applyNullable(optional.get(), this.selectTraversal) : null;
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.scope, this.selectLabel, this.selectTraversal);
+        return StringFactory.stepString(this, this.scope, this.selectKey, this.selectTraversal);
     }
 
     @Override
@@ -76,7 +76,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.scope.hashCode() ^ this.selectLabel.hashCode() ^ (null == this.selectTraversal ? "null".hashCode() : this.selectTraversal.hashCode());
+        return super.hashCode() ^ this.scope.hashCode() ^ this.selectKey.hashCode() ^ (null == this.selectTraversal ? "null".hashCode() : this.selectTraversal.hashCode());
     }
 
     @Override
@@ -113,7 +113,7 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     public Set<String> getScopeKeys() {
-        return Collections.singleton(this.selectLabel);
+        return Collections.singleton(this.selectKey);
     }
 }
 
