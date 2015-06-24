@@ -449,9 +449,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Exception cause = (Exception) ex.getCause().getCause();
             assertTrue(cause instanceof ResponseException);
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
+        } finally {
+            cluster.close();
         }
-
-        cluster.close();
     }
 
     @Test
