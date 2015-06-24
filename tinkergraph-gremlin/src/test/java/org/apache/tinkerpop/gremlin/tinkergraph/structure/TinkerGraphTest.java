@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -149,11 +150,18 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        Traversal traversal = g.V().both().both().count();
+        Traversal traversal = g.V().where(out().and().in()).profile().cap(TraversalMetrics.METRICS_KEY);
         //traversal.forEachRemaining(System.out::println);
+        System.out.println(traversal.toString());
         traversal.asAdmin().applyStrategies();
         System.out.println(traversal.toString());
+        traversal.forEachRemaining(System.out::println);
+        traversal = g.V().where(and(out(), in())).profile().cap(TraversalMetrics.METRICS_KEY);
+        //traversal.forEachRemaining(System.out::println);
         System.out.println(traversal.toString());
+        traversal.asAdmin().applyStrategies();
+        System.out.println(traversal.toString());
+        //System.out.println(traversal.toString());
     }
 
     @Test
