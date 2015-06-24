@@ -42,6 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -154,6 +155,22 @@ public final class Cluster {
 
     public CompletableFuture<Void> closeAsync() {
         return manager.close();
+    }
+
+    /**
+     * Determines if the {@code Cluster} is in the process of closing given a call to {@link #close} or
+     * {@link #closeAsync()}.
+     */
+    public boolean isClosing() {
+        return manager.isClosing();
+    }
+
+    /**
+     * Determines if the {@code Cluster} has completed its closing process after a call to {@link #close} or
+     * {@link #closeAsync()}.
+     */
+    public boolean isClosed() {
+        return manager.isClosing() && manager.close().isDone();
     }
 
     public List<URI> availableHosts() {
@@ -454,6 +471,8 @@ public final class Cluster {
 
         private final ScheduledExecutorService executor;
 
+        private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
+
         private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
                         final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings,
                         final LoadBalancingStrategy loadBalancingStrategy) {
@@ -489,12 +508,24 @@ public final class Cluster {
             return hosts.values();
         }
 
-        CompletableFuture<Void> close() {
+        synchronized CompletableFuture<Void> close() {
             // this method is exposed publicly in both blocking and non-blocking forms.
-            return CompletableFuture.supplyAsync(() -> {
-                this.factory.shutdown();
-                return null;
-            }, executor());
+            if (closeFuture.get() != null)
+                return closeFuture.get();
+
+            final CompletableFuture<Void> closeIt = new CompletableFuture<>();
+            closeFuture.set(closeIt);
+
+            executor().submit(() -> {
+                factory.shutdown();
+                closeIt.complete(null);
+            });
+
+            return closeIt;
+        }
+
+        boolean isClosing() {
+            return closeFuture.get() != null;
         }
 
         @Override

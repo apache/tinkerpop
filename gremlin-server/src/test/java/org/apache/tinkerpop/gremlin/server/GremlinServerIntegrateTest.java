@@ -158,8 +158,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         // the highwatermark should get exceeded on the server and thus pause the writes, but have no problem catching
         // itself up
         try (SimpleClient client = new WebSocketClient()) {
-            final int resultCountToGenerate = 5000;
-            final int batchSize = 2;
+            final int resultCountToGenerate = 6000;
+            final int batchSize = 3;
             final String fatty = IntStream.range(0, 175).mapToObj(String::valueOf).collect(Collectors.joining());
             final String fattyX = "['" + fatty + "'] * " + resultCountToGenerate;
 
@@ -449,9 +449,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Exception cause = (Exception) ex.getCause().getCause();
             assertTrue(cause instanceof ResponseException);
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
+        } finally {
+            cluster.close();
         }
-
-        cluster.close();
     }
 
     @Test

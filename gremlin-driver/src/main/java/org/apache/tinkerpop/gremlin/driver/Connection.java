@@ -80,6 +80,8 @@ final class Connection {
 
         connectionLabel = String.format("Connection{host=%s}", pool.host);
 
+        if (cluster.isClosing()) throw new IllegalStateException("Cannot open a connection while the cluster after close() is called");
+
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
         final Channelizer channelizer = new Channelizer.WebSocketChannelizer();
         channelizer.init(this);

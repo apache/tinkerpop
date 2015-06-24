@@ -74,21 +74,21 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     private Set<String> matchEndLabels = new HashSet<>();
     private Set<String> scopeKeys = null;
     private final ConjunctionStep.Conjunction conjunction;
-    private final String startKey;
+    private final String startLabel;
     private MatchAlgorithm matchAlgorithm;
     private Class<? extends MatchAlgorithm> matchAlgorithmClass = CountMatchAlgorithm.class; // default is CountMatchAlgorithm (use MatchAlgorithmStrategy to change)
 
     private Set<List<Object>> dedups = null;
-    private List<String> dedupLabels = null;
+    private Set<String> dedupLabels = null;
 
-    public MatchStep(final Traversal.Admin traversal, final String startKey, final ConjunctionStep.Conjunction conjunction, final Traversal... matchTraversals) {
+    public MatchStep(final Traversal.Admin traversal, final String startLabel, final ConjunctionStep.Conjunction conjunction, final Traversal... matchTraversals) {
         super(traversal);
         this.conjunction = conjunction;
-        this.startKey = startKey;
-        if (null != this.startKey) {
+        this.startLabel = startLabel;
+        if (null != this.startLabel) {
             if (StartStep.isVariableStartStep(this.traversal.getEndStep()))  // in case a match() is after the start step
                 this.traversal.addStep(new IdentityStep<>(this.traversal));
-            this.traversal.getEndStep().addLabel(this.startKey);
+            this.traversal.getEndStep().addLabel(this.startLabel);
         }
         this.matchTraversals = (List) Stream.of(matchTraversals).map(Traversal::asAdmin).collect(Collectors.toList());
         this.matchTraversals.forEach(this::configureStartAndEndSteps); // recursively convert to MatchStep, MatchStartStep, or MatchEndStep
@@ -194,8 +194,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     }
 
-    public Optional<String> getStartKey() {
-        return Optional.ofNullable(this.startKey);
+    public Optional<String> getStartLabel() {
+        return Optional.ofNullable(this.startLabel);
     }
 
     @Override
@@ -209,7 +209,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                     this.scopeKeys.addAll(((Scoping) traversal.getEndStep()).getScopeKeys());
             });
             this.scopeKeys.removeAll(this.matchEndLabels);
-            this.scopeKeys.remove(this.startKey);
+            this.scopeKeys.remove(this.startLabel);
             this.scopeKeys = Collections.unmodifiableSet(this.scopeKeys);
         }
         return this.scopeKeys;
@@ -217,7 +217,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.startKey, this.conjunction, this.matchTraversals);
+        return StringFactory.stepString(this, this.startLabel, this.dedupLabels, this.conjunction, this.matchTraversals);
     }
 
     @Override
@@ -246,23 +246,23 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return clone;
     }
 
-    public void setDedupLabels(final String label, final String... labels) {
-        this.dedups = new HashSet<>();
-        this.dedupLabels = new ArrayList<>(labels.length + 1);
-        this.dedupLabels.add(label);
-        Collections.addAll(this.dedupLabels, labels);
+    public void setDedupLabels(final Set<String> labels) {
+        if (!labels.isEmpty()) {
+            this.dedups = new HashSet<>();
+            this.dedupLabels = new HashSet<>(labels);
+        }
     }
 
     private boolean isDuplicate(final Traverser<S> traverser) {
         if (null == this.dedups)
             return false;
-        for (final String key : this.dedupLabels) {
-            if (!traverser.path().hasLabel(key))
+        for (final String label : this.dedupLabels) {
+            if (!traverser.path().hasLabel(label))
                 return false;
         }
         final List<Object> objects = new ArrayList<>(this.dedupLabels.size());
-        for (final String key : this.dedupLabels) {
-            objects.add(traverser.path().get(Pop.last, key));
+        for (final String label : this.dedupLabels) {
+            objects.add(traverser.path().get(Pop.last, label));
         }
         return this.dedups.contains(objects);
     }
@@ -270,17 +270,22 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     private boolean hasMatched(final ConjunctionStep.Conjunction conjunction, final Traverser<S> traverser) {
         final Path path = traverser.path();
         int counter = 0;
+        boolean matched = false;
         for (final Traversal.Admin<Object, Object> matchTraversal : this.matchTraversals) {
             if (path.hasLabel(matchTraversal.getStartStep().getId())) {
-                if (conjunction == ConjunctionStep.Conjunction.OR) return true;
+                if (conjunction == ConjunctionStep.Conjunction.OR) {
+                    matched = true;
+                    break;
+                }
                 counter++;
             }
         }
-        boolean matched = this.matchTraversals.size() == counter;
+        if (!matched)
+            matched = this.matchTraversals.size() == counter;
         if (matched && this.dedupLabels != null) {
             final List<Object> objects = new ArrayList<>(this.dedupLabels.size());
-            for (final String key : this.dedupLabels) {
-                objects.add(traverser.path().get(Pop.last, key));
+            for (final String label : this.dedupLabels) {
+                objects.add(traverser.path().get(Pop.last, label));
             }
             this.dedups.add(objects);
         }
@@ -289,21 +294,12 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     private Map<String, E> getBindings(final Traverser<S> traverser) {
         final Map<String, E> bindings = new HashMap<>();
-        if (null == this.dedupLabels) {
-            traverser.path().forEach((object, labels) -> {
-                for (final String label : labels) {
-                    if (this.matchStartLabels.contains(label) || this.matchEndLabels.contains(label))
-                        bindings.put(label, (E) object);
-                }
-            });
-        } else {
-            traverser.path().forEach((object, labels) -> {
-                for (final String label : labels) {
-                    if (this.dedupLabels.contains(label))
-                        bindings.put(label, (E) object);
-                }
-            });
-        }
+        traverser.path().forEach((object, labels) -> {
+            for (final String label : labels) {
+                if (this.matchStartLabels.contains(label) || this.matchEndLabels.contains(label))
+                    bindings.put(label, (E) object);
+            }
+        });
         return bindings;
     }
 
@@ -382,7 +378,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.matchTraversals.hashCode() ^ this.conjunction.hashCode() ^ (null == this.startKey ? "null".hashCode() : this.startKey.hashCode());
+        return super.hashCode() ^ this.matchTraversals.hashCode() ^ this.conjunction.hashCode() ^ (null == this.startLabel ? "null".hashCode() : this.startLabel.hashCode());
     }
 
     @Override

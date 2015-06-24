@@ -47,17 +47,17 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     private TraversalRing<Object, E> traversalRing = new TraversalRing<>();
     private final Pop pop;
     private Scope scope;
-    private final List<String> selectLabels;
+    private final List<String> selectKeys;
 
-    public SelectStep(final Traversal.Admin traversal, final Scope scope, final Pop pop, final String... selectLabels) {
+    public SelectStep(final Traversal.Admin traversal, final Scope scope, final Pop pop, final String... selectKeys) {
         super(traversal);
         this.scope = scope;
         this.pop = pop;
-        this.selectLabels = Arrays.asList(selectLabels);
+        this.selectKeys = Arrays.asList(selectKeys);
     }
 
-    public SelectStep(final Traversal.Admin traversal, final Scope scope, final String... selectLabels) {
-        this(traversal, scope, null, selectLabels);
+    public SelectStep(final Traversal.Admin traversal, final Scope scope, final String... selectKeys) {
+        this(traversal, scope, null, selectKeys);
     }
 
     @Override
@@ -65,7 +65,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         final S start = traverser.get();
         final Map<String, E> bindings = new LinkedHashMap<>();
 
-        if (this.selectLabels.isEmpty()) {
+        if (this.selectKeys.isEmpty()) {
             if (Scope.local == this.scope)
                 ((Map<String, Object>) start).forEach((key, value) -> bindings.put(key, (E) TraversalUtil.apply(value, this.traversalRing.next())));
             else {
@@ -73,8 +73,8 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
                 path.labels().stream().flatMap(Set::stream).distinct().forEach(label -> bindings.put(label, (E) TraversalUtil.apply(null == this.pop ? path.<Object>get(label) : path.get(this.pop, label), this.traversalRing.next())));
             }
         } else {
-            for (final String label : this.selectLabels) {
-                final Optional<E> optional = this.getOptionalScopeValueByKey(this.pop, label, traverser);
+            for (final String label : this.selectKeys) {
+                final Optional<E> optional = this.getOptionalScopeValue(this.pop, label, traverser);
                 if (optional.isPresent())
                     bindings.put(label, TraversalUtil.apply(optional.get(), this.traversalRing.next()));
                 else {
@@ -95,7 +95,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.scope, this.selectLabels, this.traversalRing);
+        return StringFactory.stepString(this, this.scope, this.selectKeys, this.traversalRing);
     }
 
     @Override
@@ -109,7 +109,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     @Override
     public int hashCode() {
         int result = super.hashCode() ^ this.scope.hashCode() ^ this.traversalRing.hashCode();
-        for (final String selectLabel : this.selectLabels) {
+        for (final String selectLabel : this.selectKeys) {
             result ^= selectLabel.hashCode();
         }
         return result;
@@ -149,6 +149,6 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public Set<String> getScopeKeys() {
-        return new HashSet<>(this.selectLabels);
+        return new HashSet<>(this.selectKeys);
     }
 }
