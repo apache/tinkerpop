@@ -45,6 +45,7 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     private Set<Object> duplicateSet = new HashSet<>();
     private boolean bypass = false;
     private final Set<String> dedupLabels;
+    private Scope recommendedScope = Scope.global; // pass through
 
     public DedupGlobalStep(final Traversal.Admin traversal, final String... dedupLabels) {
         super(traversal);
@@ -121,12 +122,12 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
 
     @Override
     public Scope recommendNextScope() {
-        return Scope.global;
+        return this.recommendedScope;
     }
 
     @Override
     public void setScope(final Scope scope) {
-
+        this.recommendedScope = scope;
     }
 
     @Override
