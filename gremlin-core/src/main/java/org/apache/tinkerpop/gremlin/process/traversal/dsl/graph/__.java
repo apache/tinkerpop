@@ -511,6 +511,10 @@ public class __ {
         return __.<A>start().dedup();
     }
 
+    public static <A> GraphTraversal<A, A> dedup(final String label, final String... labels) {
+        return __.<A>start().dedup(label, labels);
+    }
+
     public static <A> GraphTraversal<A, A> dedup(final Scope scope) {
         return __.<A>start().dedup(scope);
     }

@@ -24,10 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.Before
 
-import static org.apache.tinkerpop.gremlin.process.traversal.P.eq
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.and
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.where
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -305,7 +301,7 @@ public abstract class GroovyMatchTest {
             g.V.match('a',
                     __.as('a').out.as('b'),
                     __.not(__.as('a').out('created').as('b')));
-            """,g)
+            """, g)
         }
 
         @Override
@@ -317,7 +313,16 @@ public abstract class GroovyMatchTest {
                             __.as('b').in('created').count.is(eq(3)))),
                     __.as('a').both.as('b'),
                     where(__.as('b').in()));
-            """,g)
+            """, g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX() {
+            TraversalScriptHelper.compute("""
+             g.V.match('a',
+                    __.as('a').both.as('b'),
+                    __.as('b').both.as('c')).dedup('a','b')
+            """, g)
         }
     }
 }

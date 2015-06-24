@@ -70,7 +70,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
         final Step<?, ?> startStep = whereTraversal.getStartStep();
         if (startStep instanceof ConjunctionStep || startStep instanceof NotStep) {       // for conjunction- and not-steps
             ((TraversalParent) startStep).getLocalChildren().forEach(this::configureStartAndEndSteps);
-        } else if (startStep instanceof StartStep && ((StartStep) startStep).isVariableStartStep()) {  // as("a").out()... traversals
+        } else if (StartStep.isVariableStartStep(startStep)) {  // as("a").out()... traversals
             final String label = startStep.getLabels().iterator().next();
             this.scopeKeys.add(label);
             TraversalHelper.replaceStep(startStep, new WhereStartStep(whereTraversal, label), whereTraversal);

@@ -94,11 +94,7 @@ public class StartStep<S> extends AbstractStep<S, S> {
         return result;
     }
 
-    public boolean isVariableStartStep() {
-        return null == this.start && this.getClass().equals(StartStep.class) && this.getLabels().size() == 1;
-    }
-
     public static boolean isVariableStartStep(final Step<?, ?> step) {
-        return step instanceof StartStep && ((StartStep) step).isVariableStartStep();
+        return step.getClass().equals(StartStep.class) && null == ((StartStep) step).start && ((StartStep) step).labels.size() == 1;
     }
 }
