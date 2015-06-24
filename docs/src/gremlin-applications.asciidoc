@@ -882,8 +882,8 @@ Consider the following traversal:
 ----
 g = graph.traversal()
 g.V(2).in().out('knows').
-      has('age',gt,30).outE('created').
-      has('weight',gt,0.5d).inV()
+      has('age',gt(30)).outE('created').
+      has('weight',gt(0.5d)).inV()
 ----
 
 To visualize it insert the appropriately named `store('n')` steps where `n` is an integer, and the vertices will be highlighted in ascending store step order.
@@ -892,23 +892,22 @@ To visualize it insert the appropriately named `store('n')` steps where `n` is a
 ----
 gremlin> g = graph.traversal()
 ==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
-gremlin> g.V(2).in('knows').out('knows').has('age',gt,30).
-               outE('created').has('weight',gt,0.5d).inV().values('name')
+gremlin> g.V(2).in('knows').out('knows').has('age',gt(30)).
+               outE('created').has('weight',gt(0.5d)).inV().values('name')
 ==>ripple
-gremlin> traversal = g.V(2).store('1').
-                           in('knows').store('2').
-                           out('knows').has('age',gt,30).store('3').
-                           outE('created').has('weight',gt,0.5d).inV().store('4')
-==>{v[5]=1}
-gremlin> traversal.getSideEffects().get('1')
-==>v[2]
-gremlin> traversal.getSideEffects().get('2')
-==>v[1]
-gremlin> traversal.getSideEffects().get('3')
-==>v[4]
-gremlin> traversal.getSideEffects().get('4')
+gremlin> traversal = g.V(2).store('1')
+gremlin>                    .in('knows').store('2')
+gremlin>                    .out('knows').has('age',gt(30)).store('3')
+gremlin>                    .outE('created').has('weight',gt(0.5d)).inV().store('4')
 ==>v[5]
-gremlin> 
+gremlin> traversal.getSideEffects().get('1')
+==>Optional[{v[2]=1}]
+gremlin> traversal.getSideEffects().get('2')
+==>Optional[{v[1]=1}]
+gremlin> traversal.getSideEffects().get('3')
+==>Optional[{v[4]=1}]
+gremlin> traversal.getSideEffects().get('4')
+==>Optional[{v[5]=1}]
 gremlin> :> traversal
 Visualizing vertices at step: 1... visited: 1
 Visualizing vertices at step: 2... visited: 1
