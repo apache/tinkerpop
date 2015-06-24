@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -62,6 +63,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX();
 
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_select();
+
+    public abstract Traversal<Vertex, Path> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -178,6 +181,23 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         assertEquals(1, softwarePersonCounter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path() {
+        final Traversal<Vertex, Path> traversal = get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path();
+        printTraversalForm(traversal);
+        int counter = 0;
+        final Set<List<Vertex>> results = new HashSet<>();
+        while (traversal.hasNext()) {
+            final Path path = traversal.next();
+            assertEquals(3, path.size());
+            assertTrue(results.add(Arrays.asList(path.get("a"), path.get("b"))));
+            counter++;
+        }
+        assertEquals(4, counter);
+        assertEquals(4, results.size());
+    }
+
 
     public static class Traversals extends DedupTest {
         @Override
@@ -218,6 +238,11 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_select() {
             return g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select();
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path() {
+            return g.V().as("a").out("created").as("b").in("created").as("c").dedup("a", "b").path();
         }
     }
 }

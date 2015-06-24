@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -37,7 +38,7 @@ public abstract class GroovyDedupTest {
 
         @Override
         public Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
-            TraversalScriptHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold()).by(dedup(Scope.local))", g);
+            TraversalScriptHelper.compute("g.V.group.by(label).by(bothE.weight.fold).by(dedup(local))", g);
         }
 
         @Override
@@ -68,6 +69,11 @@ public abstract class GroovyDedupTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_select() {
             TraversalScriptHelper.compute("g.V.as('a').both.as('b').dedup('a', 'b').by(label).select", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path() {
+            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').in('created').as('c').dedup('a','b').path", g)
         }
     }
 }
