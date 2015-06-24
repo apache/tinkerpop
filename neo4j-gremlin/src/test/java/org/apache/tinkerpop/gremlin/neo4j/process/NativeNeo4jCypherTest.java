@@ -153,7 +153,7 @@ public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
                         as("d").out("sungBy").as("e"),
                         as("e").in("sungBy").count().as("b"),
                         where("a", P.neq("e"))).select("a", "e").by("name"),
-                () -> n.cypher("MATCH (a)<-[:sungBy]-(b) WITH a, COUNT(b) as bc MATCH (a)<-[:sungBy]-(c), (c)-[:followedBy]->(d), (d)-[:sungBy]->(e), (e)<-[:sungBy]-(f) WITH a, e, bc, COUNT(f) as fc WHERE a <> e AND bc = fc RETURN a, e").select("a", "e").by("name"),
+                () -> n.cypher("MATCH (a)<-[:sungBy]-()-[:followedBy]->()-[:sungBy]->(e) WHERE a <> e WITH a, e MATCH (a)<-[:sungBy]-(b) WITH a, e, COUNT(DISTINCT b) as bc MATCH (e)<-[:sungBy]-(f) WITH a, e, bc, COUNT(DISTINCT f) as fc WHERE bc = fc RETURN a, e").select("a", "e").by("name"),
                 ///
                 () -> g.V().match("a",
                         as("a").in("followedBy").as("b"),
