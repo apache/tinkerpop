@@ -86,15 +86,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         Metrics metrics = traversalMetrics.getMetrics(traversalMetrics.getMetrics().size() - 1);
         assertEquals(2, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
         assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
-        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) >= 0);
-        assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) >= 0);
-
-        // Ensure durations sum to 100
-        double totalPercentDuration = 0;
-        for (Metrics m : traversalMetrics.getMetrics()) {
-            totalPercentDuration += (Double) m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
-        }
-        assertEquals(100, totalPercentDuration, 0.000001);
     }
 
 
@@ -118,20 +109,10 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         metrics = traversalMetrics.getMetrics(1);
         assertEquals(6, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
         assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
-        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) >= 0);
-        assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) >= 0);
 
         metrics = traversalMetrics.getMetrics(2);
         assertEquals(2, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
         assertNotEquals(0, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
-        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) >= 0);
-        assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) >= 0);
-
-        double totalPercentDuration = 0;
-        for (Metrics m : traversalMetrics.getMetrics()) {
-            totalPercentDuration += (Double) m.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY);
-        }
-        assertEquals(100, totalPercentDuration, 0.000001);
     }
 
 
@@ -189,15 +170,11 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         // 6 elements w/ a 10ms sleep each = 60ms with 10ms for other computation.
         assertTrue("Duration should be at least the length of the sleep (59ms): " + metrics.getDuration(TimeUnit.MILLISECONDS),
                 metrics.getDuration(TimeUnit.MILLISECONDS) >= 59);
-        //assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
-        //        metrics.getDuration(TimeUnit.MILLISECONDS) < 130);
 
         // 6 elements w/ a 5ms sleep each = 30ms plus 20ms for other computation
         metrics = traversalMetrics.getMetrics(2);
         assertTrue("Duration should be at least the length of the sleep (29ms): " + metrics.getDuration(TimeUnit.MILLISECONDS),
                 metrics.getDuration(TimeUnit.MILLISECONDS) >= 29);
-        //assertTrue("Check that duration is within tolerant range: " + metrics.getDuration(TimeUnit.MILLISECONDS),
-        //        metrics.getDuration(TimeUnit.MILLISECONDS) < 70);
 
         double totalPercentDuration = 0;
         for (Metrics m : traversalMetrics.getMetrics()) {
@@ -221,8 +198,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         Metrics metrics = traversalMetrics.getMetrics(0);
         assertEquals(6, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
         assertEquals(6, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
-        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) >= 0);
-        assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) >= 0);
 
         metrics = traversalMetrics.getMetrics(1);
         assertEquals(72, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
