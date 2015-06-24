@@ -60,7 +60,7 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy<Travers
     }
 
     private static boolean legalCurrentStep(final Step<?, ?> step) {
-        return !(step instanceof EmptyStep || step instanceof ComputerAwareStep.EndStep || (step instanceof StartStep && !((StartStep) step).isVariableStartStep()));
+        return !(step instanceof EmptyStep || step instanceof ComputerAwareStep.EndStep || (step instanceof StartStep && !StartStep.isVariableStartStep(step)));
     }
 
     private static void processConjunctionMarkers(final Traversal.Admin<?, ?> traversal) {

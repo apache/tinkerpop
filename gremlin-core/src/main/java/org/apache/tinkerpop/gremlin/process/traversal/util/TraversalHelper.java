@@ -340,7 +340,7 @@ public final class TraversalHelper {
     private static Set<Scoping.Variable> getVariableLocations(final Set<Scoping.Variable> variables, final Traversal.Admin<?, ?> traversal) {
         if (variables.size() == 2) return variables;    // has both START and END so no need to compute further
         final Step<?, ?> startStep = traversal.getStartStep();
-        if (startStep instanceof StartStep && ((StartStep) startStep).isVariableStartStep())
+        if (StartStep.isVariableStartStep(startStep))
             variables.add(Scoping.Variable.START);
         else if (startStep instanceof WherePredicateStep) {
             if (((WherePredicateStep) startStep).getStartKey().isPresent())

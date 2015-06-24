@@ -83,7 +83,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         this.conjunction = conjunction;
         this.startKey = startKey;
         if (null != this.startKey) {
-            if (this.traversal.getEndStep() instanceof StartStep && ((StartStep) this.traversal.getEndStep()).isVariableStartStep())  // in case a match() is after the start step
+            if (StartStep.isVariableStartStep(this.traversal.getEndStep()))  // in case a match() is after the start step
                 this.traversal.addStep(new IdentityStep<>(this.traversal));
             this.traversal.getEndStep().addLabel(this.startKey);
         }
@@ -125,7 +125,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             TraversalHelper.removeToTraversal(startStep, startStep.getNextStep(), notTraversal);
             matchTraversal.addStep(0, new WhereTraversalStep<>(matchTraversal, Scope.global, notTraversal));
             this.configureStartAndEndSteps(matchTraversal);
-        } else if (startStep instanceof StartStep && ((StartStep) startStep).isVariableStartStep()) {
+        } else if (StartStep.isVariableStartStep(startStep)) {
             final String label = startStep.getLabels().iterator().next();
             this.matchStartLabels.add(label);
             TraversalHelper.replaceStep((Step) matchTraversal.getStartStep(), new MatchStartStep(matchTraversal, label), matchTraversal);
