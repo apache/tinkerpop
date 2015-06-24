@@ -205,7 +205,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
                     int visitedCount = 0
 
                     if (traversal.getSideEffects().keys().contains(stepKey)) {
-                        traversal.getSideEffects().get(stepKey).each { element ->
+                        traversal.getSideEffects().get(stepKey).get().each { element ->
                             visitVertexToGephi((Vertex) element)
                             visitedCount++
                         }
