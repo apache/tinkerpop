@@ -26,6 +26,7 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Split `WhereStep` into `WherePredicateStep` and `WhereTraversalStep` to simplify internals.
+* Renamed the "deactivate" option on `:plugin` command to "unuse" to be symmetric with the "use" option.
 * Added `Traversal.toStream()` to turn the `Traversal<S,E>` into a `Stream<E>`.
 * Added `Scoping.Variable` enum of `START` and `END` which allows the `Scoping` step to specify where its bindings are.
 * `ComputerVerificationStrategy` is smart about not allowing `WhereXXXStep` with a start-variable to run in OLAP as it selects the value from the path.
