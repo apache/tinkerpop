@@ -27,9 +27,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
@@ -126,6 +132,7 @@ public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
     }
 
     @Test
+    @Ignore
     @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
     public void benchmarkCypherAndMatch() throws Exception {
         final Neo4jGraph n = (Neo4jGraph) graph;
@@ -194,7 +201,7 @@ public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
         for (final Supplier<GraphTraversal<?, ?>> traversal : traversals) {
             System.out.println("pre-strategy:  " + traversal.get());
             System.out.println("post-strategy: " + traversal.get().iterate());
-            System.out.println(TimeUtil.clockWithResult(50, () -> traversal.get().count().next()));
+            System.out.println(TimeUtil.clockWithResult(25, () -> traversal.get().count().next()));
             if (++counter % 2 == 0)
                 System.out.println("------------------");
         }

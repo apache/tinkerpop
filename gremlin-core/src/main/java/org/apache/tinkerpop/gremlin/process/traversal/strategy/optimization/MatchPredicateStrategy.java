@@ -79,7 +79,7 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
                     traversal.removeStep(nextStep);
                     matchStep.addGlobalChild(new DefaultTraversal<>().addStep(nextStep));
                     nextStep = matchStep.getNextStep();
-                } else if (nextStep instanceof DedupGlobalStep && !((DedupGlobalStep) nextStep).getScopeKeys().isEmpty() && ((DedupGlobalStep) nextStep).getLocalChildren().isEmpty()) {
+                } else if (nextStep instanceof DedupGlobalStep && !((DedupGlobalStep) nextStep).getScopeKeys().isEmpty() && ((DedupGlobalStep) nextStep).getLocalChildren().isEmpty() && !traversal.getEngine().isComputer()) {
                     traversal.removeStep(nextStep);
                     matchStep.setDedupLabels(((DedupGlobalStep<?>) nextStep).getScopeKeys());
                     nextStep = matchStep.getNextStep();

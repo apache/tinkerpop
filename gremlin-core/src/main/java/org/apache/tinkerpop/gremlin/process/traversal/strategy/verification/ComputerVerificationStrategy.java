@@ -90,6 +90,8 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             ///
             if (endStep instanceof RangeGlobalStep || endStep instanceof TailGlobalStep || endStep instanceof DedupGlobalStep)
                 ((Bypassing) endStep).setBypass(true);
+            if (endStep instanceof DedupGlobalStep && !((DedupGlobalStep) endStep).getScopeKeys().isEmpty())
+                throw new ComputerVerificationException("Path history de-duplication is not possible in GraphComputer:" + endStep, traversal);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {

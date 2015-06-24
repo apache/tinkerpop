@@ -317,11 +317,20 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX() {
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX() {
             TraversalScriptHelper.compute("""
              g.V.match('a',
                     __.as('a').both.as('b'),
                     __.as('b').both.as('c')).dedup('a','b')
+            """, g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX_byXlabelX() {
+            TraversalScriptHelper.compute("""
+             g.V.match('a',
+                    __.as('a').both.as('b'),
+                    __.as('b').both.as('c')).dedup('a','b').by(label)
             """, g)
         }
     }

@@ -253,6 +253,10 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
     }
 
+    public boolean isDeduping() {
+        return this.dedupLabels != null;
+    }
+
     private boolean isDuplicate(final Traverser<S> traverser) {
         if (null == this.dedups)
             return false;

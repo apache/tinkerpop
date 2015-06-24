@@ -476,6 +476,16 @@ g.V().valueMap(true, 'name')
 g.V().dedup().by(label).values('name')
 ----
 
+Finally, if `dedup()` is provided an array of strings, then it will ensure that the de-duplication is not with respect to the current traverser object, but to the path history of the traverser.
+
+[gremlin-groovy,modern]
+----
+g.V().as('a').out('created').as('b').in('created').as('c').select()
+g.V().as('a').out('created').as('b').in('created').as('c').dedup('a','b').select() <1>
+----
+
+<1> If the current `a` and `b` combination has been seen previously, then filter the traverser.
+
 [[drop-step]]
 Drop Step
 ~~~~~~~~~
@@ -809,7 +819,8 @@ g.V().as('a').out().as('b'). <1>
           __.as('a').out('knows').as('b'),
           __.as('b').in().count().as('c').and().as('c').is(gt(2))  <6>
         )
-    ).select('a','b','c').by('name').by('name').by() <7>
+    ).dedup('a','c') <7>
+    .select('a','b','c').by('name').by('name').by() <8>
 ----
 
 <1> A standard, step-labeled traversal can come prior to `match()`.
@@ -818,7 +829,8 @@ g.V().as('a').out().as('b'). <1>
 <4> It is possible to `not()` a pattern.
 <5> It is possible to nest `and()`- and `or()`-steps for conjunction matching.
 <6> Both infix and prefix conjunction notation is supported.
-<7> The bound values are of different types -- vertex ("a"), vertex ("b"), long ("c").
+<7> It is possible to "distinct" the specified label combination.
+<8> The bound values are of different types -- vertex ("a"), vertex ("b"), long ("c").
 
 [[using-where-with-match]]
 Using Where with Match

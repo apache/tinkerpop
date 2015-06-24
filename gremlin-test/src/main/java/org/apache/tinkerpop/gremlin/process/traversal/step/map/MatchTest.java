@@ -34,8 +34,10 @@ import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -125,8 +127,11 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     // uses 'out of order' conjunction nested where()
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__whereXandXa_created_b__b_0created_count_isXeqX3XXXX__a_both_b__whereXb_inXX();
 
-    // testing distinct key values
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX();
+    // distinct values
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX();
+
+    // distinct values with by()-modulation
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX_byXlabelX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -416,9 +421,35 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX();
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX();
         printTraversalForm(traversal);
-        assertEquals(12, traversal.toList().size());
+        int counter = 0;
+        final Set<List<Vertex>> results = new HashSet<>();
+        while (traversal.hasNext()) {
+            final Map<String, Vertex> map = traversal.next();
+            assertEquals(3, map.size());
+            assertTrue(results.add(Arrays.asList(map.get("a"), map.get("b"))));
+            counter++;
+        }
+        assertEquals(12, counter);
+        assertEquals(results.size(), counter);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX_byXlabelX() {
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX_byXlabelX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        final Set<List<String>> results = new HashSet<>();
+        while (traversal.hasNext()) {
+            final Map<String, Vertex> map = traversal.next();
+            assertEquals(3, map.size());
+            assertTrue(results.add(Arrays.asList(map.get("a").label(), map.get("b").label())));
+            counter++;
+        }
+        assertEquals(3, counter);
+        assertEquals(results.size(), counter);
     }
 
     public static class GreedyMatchTraversals extends Traversals {
@@ -660,10 +691,17 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX() {
-            return g.V().match("a",
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX() {
+            return g.V().<Vertex>match("a",
                     as("a").both().as("b"),
                     as("b").both().as("c")).dedup("a", "b");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa__a_both_b__b_both_cX_dedupXa_bX_byXlabelX() {
+            return g.V().<Vertex>match("a",
+                    as("a").both().as("b"),
+                    as("b").both().as("c")).dedup("a", "b").by(T.label);
         }
     }
 }
