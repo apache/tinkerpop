@@ -23,7 +23,7 @@ import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 
 /**
- * Activate a plugin.
+ * Activate and manage a plugin.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -31,7 +31,7 @@ class PluginCommand extends ComplexCommandSupport {
     private final Mediator mediator
 
     public PluginCommand(final Groovysh shell, final Mediator mediator) {
-        super(shell, ":plugin", ":pin", ["use", "list", "deactivate"], "use")
+        super(shell, ":plugin", ":pin", ["use", "list", "unuse"], "use")
         this.mediator = mediator
     }
 
@@ -50,7 +50,7 @@ class PluginCommand extends ComplexCommandSupport {
         return "$pluginName activated"
     }
 
-    def Object do_deactivate = { List<String> arguments ->
+    def Object do_unuse = { List<String> arguments ->
         final pluginName = arguments.size() == 1 ? arguments[0] : null
         if (pluginName == null || pluginName.isEmpty()) return "Specify the name of the plugin to deactivate"
 
