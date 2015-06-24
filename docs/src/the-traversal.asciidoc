@@ -819,8 +819,8 @@ g.V().as('a').out().as('b'). <1>
           __.as('a').out('knows').as('b'),
           __.as('b').in().count().as('c').and().as('c').is(gt(2))  <6>
         )
-    ).dedup('a','c') <7>
-    .select('a','b','c').by('name').by('name').by() <8>
+    ).dedup('a','c'). <7>
+    select('a','b','c').by('name').by('name').by() <8>
 ----
 
 <1> A standard, step-labeled traversal can come prior to `match()`.
