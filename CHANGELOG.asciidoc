@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `AbstractStep` now guarantees that bulk-less and null-valued traversers are never propagated.
 * Added `dedup(string...)` which allows for the deduplication of a stream based on unique scope values.
 * Fixed multiple bugs in the Gephi Plugin related to refactoring of traversal side-effects.
 * Split `WhereStep` into `WherePredicateStep` and `WhereTraversalStep` to simplify internals.
