@@ -176,39 +176,39 @@ public class TinkerGraphTest {
                 /*() -> g.V().xmatch("a",
                         as("a").in("sungBy").as("b"),
                         not(as("a").in("writtenBy").as("b"))).select().by("name"),*/
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").in("sungBy").as("b"),
                         as("a").in("writtenBy").as("b")).select().by("name"),
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").out("followedBy").as("b"),
                         as("b").out("followedBy").as("a")).select().by("name"),
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").out("followedBy").count().as("b"),
                         as("a").in("followedBy").count().as("b"),
                         as("b").is(P.gt(10))).select("a").by("name"),
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").in("sungBy").count().as("b"),
                         as("a").in("sungBy").as("c"),
                         as("c").out("followedBy").as("d"),
                         as("d").out("sungBy").as("e"),
                         as("e").in("sungBy").count().as("b"),
                         where("a",P.neq("e"))).select("a","e").by("name"),
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").in("followedBy").as("b"),
                         as("a").out("sungBy").as("c"),
                         as("a").out("writtenBy").as("d")).select().by("name"),
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").in("followedBy").as("b"),
                         as("a").out("sungBy").as("c"),
                         as("a").out("writtenBy").as("d"),
                         where("c", P.neq("d"))).select().by("name"),
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").in("sungBy").as("b"),
                         as("a").in("writtenBy").as("b"),
                         as("b").out("followedBy").as("c"),
                         as("c").out("sungBy").as("a"),
                         as("c").out("writtenBy").as("a")).select().by("name"),
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").has("name", "Garcia"),
                         as("a").in("writtenBy").as("b"),
                         as("b").out("followedBy").as("c"),
@@ -236,7 +236,7 @@ public class TinkerGraphTest {
         GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
 
         final Supplier<Traversal<?,?>> traversal = () ->
-                g.V().match("a",
+                g.V().match(
                         as("a").has("name", "Garcia"),
                         as("a").in("writtenBy").as("b"),
                         as("b").out("followedBy").as("c"),
@@ -266,7 +266,7 @@ public class TinkerGraphTest {
             });
         });
         graph.vertices(50).next().addEdge("uncle", graph.vertices(70).next());
-        System.out.println(TimeUtil.clockWithResult(500, () -> g.V().match("a", as("a").out("knows").as("b"), as("a").out("uncle").as("b")).toList()));
+        System.out.println(TimeUtil.clockWithResult(500, () -> g.V().match(as("a").out("knows").as("b"), as("a").out("uncle").as("b")).toList()));
     }
 
     @Test

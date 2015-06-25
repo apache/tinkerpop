@@ -116,11 +116,8 @@ public class MatchPredicateStrategyTest {
 
         static Iterable<Object[]> generateTestParameters() {
 
-            final Traversal.Admin<?, ?> traversal1 = __.out().as("a").has("name", "marko").match("a", as("a").out().as("b")).asAdmin();
-            traversal1.getSteps().get(1).removeLabel("a");
-
             return Arrays.asList(new Traversal[][]{
-                    {__.out().match("a", as("a").has("name", "marko"), as("a").out().as("b")), traversal1},
+                    {__.out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").match(as("a").out().as("b"))},
                     // {__.match("a", as("a").out().as("b")).where(as("b").out("knows").as("c")), __.match("a", as("a").out().as("b"), as("b").where(out("knows").as("c")))},
             });
         }
