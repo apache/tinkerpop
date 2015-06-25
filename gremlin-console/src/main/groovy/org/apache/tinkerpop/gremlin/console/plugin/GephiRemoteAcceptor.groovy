@@ -185,6 +185,12 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     @CompileStatic
     Object submit(final List<String> args) throws RemoteException {
         final String line = String.join(" ", args)
+        if (line.trim() == "clear") {
+            clearGraph()
+            io.out.println("Gephi workspace cleared")
+            return
+        }
+
         final Object o = shell.execute(line)
         if (o instanceof Graph) {
             clearGraph()
