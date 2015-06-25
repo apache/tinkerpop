@@ -128,7 +128,7 @@ public class TinkerMapEmitter<K, V> implements MapReduce.MapEmitter<K, V> {
     }
 
     protected void complete(final MapReduce<K, V, ?, ?, ?> mapReduce) {
-        if (!this.doReduce && mapReduce.getMapKeySort().isPresent()) {
+        if (!this.doReduce && mapReduce.getMapKeySort().isPresent()) { <4>
             final Comparator<K> comparator = mapReduce.getMapKeySort().get();
             final List<KeyValue<K, V>> list = new ArrayList<>(this.mapQueue);
             Collections.sort(list, Comparator.comparing(KeyValue::getKey, comparator));
