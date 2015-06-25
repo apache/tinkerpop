@@ -30,9 +30,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 /**
+ * Identifies a server within the {@link Cluster} at a specific address.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-final class Host {
+public final class Host {
     private static final Logger logger = LoggerFactory.getLogger(Host.class);
     private final InetSocketAddress address;
     private final URI hostUri;
@@ -42,7 +44,7 @@ final class Host {
 
     final AtomicReference<ScheduledFuture<?>> reconnectionAttempt = new AtomicReference<>(null);
 
-    public Host(final InetSocketAddress address, final Cluster cluster) {
+    Host(final InetSocketAddress address, final Cluster cluster) {
         this.cluster = cluster;
         this.address = address;
         this.hostUri = makeUriFromAddress(address, cluster.connectionPoolSettings().enableSsl);
