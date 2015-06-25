@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -79,6 +80,11 @@ final class ResultQueue {
         if (error.get() != null) throw new RuntimeException(error.get());
 
         return result;
+    }
+
+    public void drainTo(final Collection<Result> collection) {
+        if (error.get() != null) throw new RuntimeException(error.get());
+        resultLinkedBlockingQueue.drainTo(collection);
     }
 
     public Status getStatus() {

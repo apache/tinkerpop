@@ -37,6 +37,11 @@ import java.util.stream.StreamSupport;
  * therefore may not be available immediately.  As such, {@code ResultSet} provides access to a a number
  * of functions that help to work with the asynchronous nature of the data streaming back.  Data from results
  * is stored in an {@link Result} which can be used to retrieve the item once it is on the client side.
+ * <p/>
+ * Note that a {@code ResultSet} is a forward-only stream only so depending on how the methods are called and
+ * interacted with, it is possible to return partial bits of total response (e.g. calling {@link #one()} followed
+ * by {@link #all()} will make it so that the {@link List} of results returned from {@link #all()} have one
+ * {@link Result} missing from the total set as it was already retrieved by {@link #one}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -46,19 +51,23 @@ public final class ResultSet implements Iterable<Result> {
     private final Channel channel;
     private final Supplier<Void> onChannelError;
 
+    private final CompletableFuture<Void> readCompleted;
+
     public ResultSet(final ResultQueue resultQueue, final ExecutorService executor,
-                     final Channel channel, final Supplier<Void> onChannelError) {
+                     final Channel channel, final Supplier<Void> onChannelError,
+                     final CompletableFuture<Void> readCompleted) {
         this.executor = executor;
         this.resultQueue = resultQueue;
         this.channel = channel;
         this.onChannelError = onChannelError;
+        this.readCompleted = readCompleted;
     }
 
     /**
      * Determines if all items have been returned to the client.
      */
     public boolean allItemsAvailable() {
-        return resultQueue.getStatus() == ResultQueue.Status.COMPLETE;
+        return readCompleted.isDone();
     }
 
     /**
@@ -110,16 +119,15 @@ public final class ResultSet implements Iterable<Result> {
     }
 
     /**
-     * Wait for all items to be available on the client exhausting the stream.
+     * The returned {@link CompletableFuture} completes when all reads are complete for this request and the
+     * entire result has been accounted for on the client. While this method is named "all" it really refers to
+     * retrieving all remaining items in the set.  For large result sets it is preferred to use
+     * {@link Iterator} or {@link Stream} options, as the results will be held in memory at once.
      */
     public CompletableFuture<List<Result>> all() {
-        return CompletableFuture.supplyAsync(() -> {
+        return readCompleted.thenApplyAsync(it -> {
             final List<Result> list = new ArrayList<>();
-            while (!isExhausted()) {
-                final Result result = resultQueue.poll();
-                if (result != null)
-                    list.add(result);
-            }
+            resultQueue.drainTo(list);
             return list;
         }, executor);
     }

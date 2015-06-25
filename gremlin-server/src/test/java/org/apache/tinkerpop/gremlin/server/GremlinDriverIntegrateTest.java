@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 
 /**
@@ -114,7 +115,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception ex) {
             final Throwable inner = ExceptionUtils.getRootCause(ex);
             assertTrue(inner instanceof RuntimeException);
-            assertEquals("Error while processing results from channel - check client and server logs for more information", inner.getMessage());
+            assertThat(inner.getMessage(), startsWith("Encountered unregistered class ID:"));
         }
 
         cluster.close();
@@ -385,10 +386,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("'" + fatty + "'").all().get();
             fail("Should throw an exception.");
         } catch (Exception re) {
-            // can't seem to catch the server side exception - as the channel is basically closed on this error
-            // can only detect a closed channel and react to that.  in some ways this is a good general piece of
-            // code to have in place, but kinda stinky when you want something specific about why all went bad
-            assertTrue(re.getCause().getMessage().equals("Error while processing results from channel - check client and server logs for more information"));
+            Throwable root = ExceptionUtils.getRootCause(re);
+            assertTrue(root.getMessage().equals("Max frame length of 1 has been exceeded."));
         } finally {
             cluster.close();
         }
