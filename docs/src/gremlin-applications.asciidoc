@@ -872,6 +872,8 @@ The above Gremlin session activates the Gephi plugin, creates the "modern" `Tink
 
 image::gephi-graph-submit.png[width=800]
 
+NOTE: Issuing `:> graph` again will clear the Gephi workspace and then re-write the graph.  To manually empty the workspace do `:> clear`.
+
 Now that the graph is visualized in Gephi, it is possible to link:https://gephi.github.io/users/tutorial-layouts/[apply a layout algorithm], change the size and/or color of vertices and edges, and display labels/properties of interest.  Further information can be found in Gephi's tutorial on link:https://gephi.github.io/users/tutorial-visualization/[Visualization].  After applying the Fruchterman Reingold layout, increasing the node size, decreasing the edge scale, and displaying the id, name, and weight attributes the graph looks as displayed in the right image above.
 
 NOTE: It's recommended to choose a continuously running layout algorithm like Fruchterman Reingold or Force Atlas, because every update to color the visited vertices causes their positions to be reset, so these layouts will constantly adjust to account for these changes and make visualization of the traversals.  This also explains why the graph seems to rotate each store step in the screenshots below.
