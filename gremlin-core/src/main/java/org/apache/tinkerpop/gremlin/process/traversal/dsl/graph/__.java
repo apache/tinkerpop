@@ -273,13 +273,6 @@ public class __ {
     }
 
     /**
-     * @see {@link GraphTraversal#match(String, Traversal[])}
-     */
-    public static <A, B> GraphTraversal<A, Map<String, B>> match(final String startLabel, final Traversal<?, ?>... matchTraversals) {
-        return __.<A>start().match(startLabel, matchTraversals);
-    }
-
-    /**
      * @see {@link GraphTraversal#match(Traversal[])}
      */
     public static <A, B> GraphTraversal<A, Map<String, B>> match(final Traversal<?, ?>... matchTraversals) {
