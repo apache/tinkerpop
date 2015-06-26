@@ -1601,7 +1601,7 @@ The `where()`-step filters the current object based on either the object itself 
 [gremlin-groovy,modern]
 ----
 g.V(1).as('a').out('created').in('created').where(neq('a')) <1>
-g.withSideEffect('a'){['josh','peter']}.V(1).out('created').in('created').values('name').where(within('a')) <2>
+g.withSideEffect('a',['josh','peter']).V(1).out('created').in('created').values('name').where(within('a')) <2>
 g.V(1).out('created').in('created').where(out('created').count().is(gt(1))).values('name') <3>
 ----
 
@@ -1620,6 +1620,7 @@ g.V().out('knows').where(out('created')).values('name') <2>
 g.V().where(out('created').count().is(gte(2))).values('name') <3>
 g.V().where(out('knows').where(out('created'))).values('name') <4>
 g.V().where(__.not(out('created'))).where(__.in('knows')).values('name') <5>
+g.V().where(__.not(out('created')).and().in('knows')).values('name') <6>
 ----
 
 <1> What are the names of the people who have created a project?
@@ -1627,9 +1628,61 @@ g.V().where(__.not(out('created'))).where(__.in('knows')).values('name') <5>
 <3> What are the names of the people how have created two or more projects?
 <4> What are the names of the people who know someone that has created a project? (This only works in OLTP -- see the `WARNING` below)
 <5> What are the names of the people who have not created anything, but are known by someone?
-
+<6> The concatenation of `where()`-steps is the same as a single `where()`-step with an and'd clause.
 
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
+
+[[a-note-on-predicates]]
+A Note on Predicates
+--------------------
+
+A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step, <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
+
+[width="100%",cols="3,15",options="header"]
+|=========================================================
+| Predicate | Description
+| `eq(object)` | Is the incoming object equal to the provided object?
+| `neq(object)` | Is the incoming object not equal to the provided object?
+| `lt(number)` | Is the incoming number less than the provided number?
+| `lte(number)` | Is the incoming number less than or equal to the provided number?
+| `gt(number)` | Is the incoming number greater than the provided number?
+| `gte(number)` | Is the incoming number greater than or equal to the provided number?
+| `inside(number,number)` | Is the incoming number greater than the first provided number and less than the second?
+| `outside(number,number)` | Is the incoming number less than the first provided number and greater than the second?
+| `between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
+| `within(objects...)` | Is the incoming object in the array of provided objects?
+| `without(objects...)` | Is the incoming object not in the array of the provided objects?
+|=========================================================
+
+[gremlin-groovy]
+----
+eq(2)
+not(neq(2)) <1>
+not(within('a','b','c'))
+not(within('a','b','c')).test('d') <2>
+not(within('a','b','c')).test('a')
+within(1,2,3).and(not(eq(2))).test(3) <3>
+inside(1,4).or(eq(5)).test(3) <4>
+inside(1,4).or(eq(5)).test(5)
+between(1,2) <5>
+not(between(1,2))
+----
+
+<1> The `not()` of a `P`-predicate is another `P`-predicate.
+<2> `P`-predicates are arguments to various steps which internally `test()` the incoming value.
+<3> `P`-predicates can be and'd together.
+<4> `P`-predicates can be or' together.
+<5> `and()` is a `P`-predicate and thus, a `P`-predicate can be composed of multiple `P`-predicates.
+
+Finally, note that <<where-step,`where()`>>-step takes a `P<String>`. The provided string value refers to a variable binding, not to the explicit string value.
+
+[gremlin-groovy,modern]
+----
+g.V().as('a').both().both().as('b').count()
+g.V().as('a').both().both().as('b').where('a',neq('b')).count()
+----
+
+NOTE: It is possible for vendors and users to extend `P` and provide new predicates. For instance, a `regex(pattern)` could be a vendor-specific `P`.
 
 [[a-note-on-barrier-steps]]
 A Note on Barrier Steps
