@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -31,7 +32,7 @@ import static org.junit.Assert.assertEquals;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ResultTest {
-    private final Graph g = TinkerFactory.createClassic();
+    private final Graph g = TinkerFactory.createModern();
 
     @Test
     public void shouldGetString() {
@@ -117,5 +118,14 @@ public class ResultTest {
         assertEquals(e, result.get(Edge.class));
         assertEquals(e, result.getElement());
         assertEquals(e, result.get(Element.class));
+    }
+
+    @Test
+    public void shouldGetPath() {
+        final Path p = g.traversal().V().out().path().next();
+        final Result result = new Result(p);
+
+        assertEquals(p, result.getPath());
+        assertEquals(p, result.get(Path.class));
     }
 }

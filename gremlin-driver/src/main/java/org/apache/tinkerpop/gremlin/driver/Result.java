@@ -19,12 +19,16 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.message.ResponseResult;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Iterator;
+
 /**
- * An {@code Item} represents an result value from the server.
+ * A {@code Result} represents an result value from the server (i.e. one item from the server-side {@link Iterator}
+ * of results.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -84,6 +88,10 @@ public final class Result {
 
     public Element getElement() {
         return (Element) resultObject;
+    }
+
+    public Path getPath() {
+        return (Path) resultObject;
     }
 
     public <T> T get(final Class<? extends T> clazz) {

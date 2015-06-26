@@ -214,28 +214,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldHandleNullResult() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        final ResultSet results = client.submit("g.V().drop().iterate();null");
-        assertNull(results.all().get().get(0).getObject());
-
-        cluster.close();
-    }
-
-    @Test
-    public void shouldHandleEmptyResult() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        final ResultSet results = client.submit("g.V(100,1000,1000)");
-        assertEquals(0, results.all().get().size());
-
-        cluster.close();
-    }
-
-    @Test
     public void shouldCloseWithServerDown() throws Exception {
         final Cluster cluster = Cluster.open();
         cluster.connect();
