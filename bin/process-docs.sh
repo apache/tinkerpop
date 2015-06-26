@@ -21,5 +21,5 @@
 pushd "$(dirname $0)/.." > /dev/null
 nc -z localhost 8080 || bin/gephi.mock > /dev/null 2>&1 &
 docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc && docs/postprocessor/postprocess.sh
-pgrep gephi.mock | xargs -I {} pstree {} -p -a -l | cut -d , -f2 | awk '{print $1}' | xargs kill -PIPE > /dev/null
+pgrep gephi.mock | xargs -I {} pstree {} -p -a -l | cut -d , -f2 | awk '{print $1}' | xargs -r kill -PIPE > /dev/null
 popd > /dev/null
