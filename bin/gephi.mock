@@ -18,7 +18,17 @@
 # under the License.
 #
 
+PID=
+
+function cleanup {
+  [ ${PID} ] && kill ${PID}
+}
+
+trap cleanup EXIT
+
 while true
 do
-  echo -e "HTTP/1.1 200 OK\nConnection: close\n\n{}" | nc -l 8080
+  echo -e "HTTP/1.1 200 OK\nConnection: close\n\n{}" | nc -l 8080 &
+  PID=$!
+  wait ${PID}
 done

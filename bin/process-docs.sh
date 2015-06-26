@@ -19,7 +19,16 @@
 #
 
 pushd "$(dirname $0)/.." > /dev/null
-nc -z localhost 8080 || bin/gephi.mock > /dev/null 2>&1 &
+
+if [ ! `nc -z localhost 8080` ]; then
+  bin/gephi.mock > /dev/null 2>&1 &
+  GEPHI_MOCK=$!
+fi
+
 docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc && docs/postprocessor/postprocess.sh
-pgrep gephi.mock | xargs -I {} pstree {} -p -a -l | cut -d , -f2 | awk '{print $1}' | xargs -r kill -PIPE > /dev/null
+
+if [ "${GEPHI_MOCK}" ]; then
+  kill ${GEPHI_MOCK}
+fi
+
 popd > /dev/null
