@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseResult;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Iterator;
 
@@ -92,6 +94,14 @@ public final class Result {
 
     public Path getPath() {
         return (Path) resultObject;
+    }
+
+    public <V> Property<V> getProperty() {
+        return (Property<V>) resultObject;
+    }
+
+    public <V> VertexProperty<V> getVertexProperty() {
+        return (VertexProperty<V>) resultObject;
     }
 
     public <T> T get(final Class<? extends T> clazz) {

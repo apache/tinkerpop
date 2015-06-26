@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.junit.Test;
 
@@ -110,6 +112,17 @@ public class ResultTest {
     }
 
     @Test
+    public void shouldGetVertexProperty() {
+        final VertexProperty<String> v = g.vertices(1).next().property("name");
+        final Result result = new Result(v);
+
+        assertEquals(v, result.getVertexProperty());
+        assertEquals(v, result.get(VertexProperty.class));
+        assertEquals(v, result.getElement());
+        assertEquals(v, result.get(Element.class));
+    }
+
+    @Test
     public void shouldGetEdge() {
         final Edge e = g.edges(11).next();
         final Result result = new Result(e);
@@ -118,6 +131,15 @@ public class ResultTest {
         assertEquals(e, result.get(Edge.class));
         assertEquals(e, result.getElement());
         assertEquals(e, result.get(Element.class));
+    }
+
+    @Test
+    public void shouldGetProperty() {
+        final Property<Double> p = g.edges(11).next().property("weight");
+        final Result result = new Result(p);
+
+        assertEquals(p, result.getProperty());
+        assertEquals(p, result.get(Property.class));
     }
 
     @Test

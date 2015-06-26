@@ -23,10 +23,14 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,10 +87,24 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
+    public void shouldHandleVertexPropertyResult() throws Exception {
+        final ResultSet results = client.submit("g.V().properties('name').next()");
+        final VertexProperty<String> v = results.all().get().get(0).getVertexProperty();
+        assertThat(v, instanceOf(DetachedVertexProperty.class));
+    }
+
+    @Test
     public void shouldHandleEdgeResult() throws Exception {
         final ResultSet results = client.submit("g.E().next()");
         final Edge e = results.all().get().get(0).getEdge();
         assertThat(e, instanceOf(DetachedEdge.class));
+    }
+
+    @Test
+    public void shouldHandlePropertyResult() throws Exception {
+        final ResultSet results = client.submit("g.E().properties('weight').next()");
+        final Property<Double> p = results.all().get().get(0).getProperty();
+        assertThat(p, instanceOf(DetachedProperty.class));
     }
 
     @Test
