@@ -30,8 +30,10 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -51,6 +53,8 @@ import static org.junit.Assert.assertThat;
  */
 public class GephiRemoteAcceptorIntegrateTest {
     private static final Groovysh groovysh = new GremlinGroovysh();
+    private static int port = pickOpenPort();
+
     private GephiRemoteAcceptor acceptor;
 
     private final InputStream inputStream  = new NullInputStream(0);
@@ -59,16 +63,17 @@ public class GephiRemoteAcceptorIntegrateTest {
     private final IO io = new IO(inputStream, outputStream, errorStream);
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(8080);
+    public WireMockRule wireMockRule = new WireMockRule(port);
 
     @Before
     public void before() throws Exception {
         acceptor = new GephiRemoteAcceptor(groovysh, io);
+        acceptor.configure(Arrays.asList("port", String.valueOf(port)));
     }
 
     @Test
     public void shouldConnectWithDefaults() throws RemoteException {
-        assertThat(acceptor.connect(Collections.emptyList()).toString(), startsWith("Connection to Gephi - http://localhost:8080/workspace0"));
+        assertThat(acceptor.connect(Collections.emptyList()).toString(), startsWith("Connection to Gephi - http://localhost:" + port + "/workspace0"));
     }
 
     @Test
@@ -104,5 +109,13 @@ public class GephiRemoteAcceptorIntegrateTest {
                 "traversal"));
 
         wireMockRule.verify(10, postRequestedFor(urlPathEqualTo("/workspace0")));
+    }
+
+    private static int pickOpenPort() {
+        try (final ServerSocket socket = new ServerSocket(0)) {
+            return socket.getLocalPort();
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
     }
 }
