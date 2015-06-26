@@ -62,9 +62,13 @@ public interface Transaction extends Closeable {
     public <R> Workload<R> submit(final Function<Graph, R> work);
 
     /**
-     * Creates a transaction that can be executed across multiple threads.
+     * Creates a transaction that can be executed across multiple threads. The {@link Graph} returned from this
+     * method is not meant to represent some form of child transaction that can be committed from this object.
+     * A threaded transaction is a {@link Graph} instance that has a transaction context that enables multiple
+     * threads to collaborate on the same transaction.  A standard transactional context tied to a {@link Graph}
+     * that supports transactions will typically bind a transaction to a single thread via {@link ThreadLocal}.
      */
-    public <G extends Graph> G create();
+    public <G extends Graph> G createThreadedTx();
 
     /**
      * Determines if a transaction is currently open.

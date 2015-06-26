@@ -26,6 +26,7 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * `MatchStep` and `match()` no longer have a "start label" parameter -- it is computed if the incoming traverser does not have requisite labels.
+* Renamed `Transaction.create()` to `Transaction.createThreadedTx()`.
 * Added `TraversalParent.removeGlobalChild()` and `TraversalParent.removeLocalChild()`.
 * Add a `clear` option to the Gephi Plugin to empty the Gephi workspace.
 * `AbstractStep` now guarantees that bulk-less and null-valued traversers are never propagated.
