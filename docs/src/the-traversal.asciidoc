@@ -724,20 +724,22 @@ image::match-step.png[width=500]
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('created').as('b'),
         __.as('b').has('name', 'lop'),
         __.as('b').in('created').as('c'),
-        __.as('c').has('age', 29)).select('a','c').by('name')
+        __.as('c').has('age', 29)).
+      select('a','c').by('name')
 ----
 
 Note that the above can also be more concisely written as below which demonstrates that standard inner-traversals can be arbitrarily defined.
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('created').has('name', 'lop').as('b'),
-        __.as('b').in('created').has('age', 29).as('c')).select('a','c').by('name')
+        __.as('b').in('created').has('age', 29).as('c')).
+      select('a','c').by('name')
 ----
 
 [[grateful-dead]]
@@ -750,17 +752,18 @@ image::grateful-dead-schema.png[width=475]
 ----
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal(standard())
-g.V().match('a',
+g.V().match(
         __.as('a').has('name', 'Garcia'),
         __.as('a').in('writtenBy').as('b'),
-        __.as('a').in('sungBy').as('b')).select('b').values('name')
+        __.as('a').in('sungBy').as('b')).
+      select('b').values('name')
 ----
 
 Among the features which differentiate `match()` from SPARQL are:
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('created').has('name','lop').as('b'), <1>
         __.as('b').in('created').has('age', 29).as('c'),
         __.as('c').repeat(out()).times(2)). <2>
@@ -775,14 +778,14 @@ To extend point #3, it is possible to support going from imperative, to declarat
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('knows').as('b'),
         __.as('b').out('created').has('name','lop')).
-        select('b').out('created').
-          match('x',
+      select('b').out('created').
+          match(
             __.as('x').in('created').as('y'),
             __.as('y').out('knows').as('z')).
-            select('z').values('name')
+          select('z').values('name')
 ----
 
 IMPORTANT: The `match()`-step is stateless. The variable bindings of the traversal patterns are stored in the path history of the traverser. As such, the variables used over all `match()`-steps within a traversal are globally unique. A benefit of this is that subsequent `where()`, `select()`, `match()`, etc. steps can leverage the same variables in their analysis.
@@ -791,14 +794,25 @@ Like all other steps in Gremlin, `match()` is a function and thus, `match()` wit
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('knows').as('b'),
         __.as('b').out('created').has('name','lop'),
-        __.as('b').match('x',
-                 __.as('x').out('created').as('y'),
-                 __.as('y').has('name','ripple')).
-                 select('y').as('c')).
-        select('a','c').by('name')
+        __.as('b').match(
+                     __.as('b').out('created').as('c'),
+                     __.as('c').has('name','ripple')).
+                  select('c').as('c')).
+      select('a','c').by('name')
+----
+
+If an extended, step-labeled traversal proceeds the `match()`-step and the traverser entering the `match()` is destined to bind to a particular variable, then the previous step should be labeled accordingly.
+
+[gremlin-groovy,modern]
+----
+g.V().as('a').out('knows').as('b')
+  match(
+    __.as('b').out('created').as('c'),
+    __.not(__.as('c').in('created').as('a'))).
+  select().by('name')
 ----
 
 There are three types of `match()` traversal patterns.
@@ -824,7 +838,7 @@ g.V().as('a').out().as('b'). <1>
 ----
 
 <1> A standard, step-labeled traversal can come prior to `match()`.
-<2> If the traverser's path prior to entering `match()` has the requisite variables, then no "start variable" is needed.
+<2> If the traverser's path prior to entering `match()` has requisite label values, then those historic values are bound.
 <3> It is possible to use <<a-note-on-barrier-steps,barrier steps>> though they are computed locally to the pattern (as one would expect).
 <4> It is possible to `not()` a pattern.
 <5> It is possible to nest `and()`- and `or()`-steps for conjunction matching.
@@ -840,7 +854,7 @@ Match is typically used in conjunction with both `select()` (demonstrated previo
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('created').as('b'),
         __.as('b').in('created').as('c')).
           where('a', neq('c')).select('a','c').by('name')
@@ -850,7 +864,7 @@ The `where()`-step can take either a `P`-predicate (example above) or a `Travers
 
 [gremlin-groovy,modern]
 ----
-traversal = g.V().match('a',
+traversal = g.V().match(
                     __.as('a').has(label,'person'), <1>
                     __.as('a').out('created').as('b'),
                     __.as('b').in('created').as('c')).

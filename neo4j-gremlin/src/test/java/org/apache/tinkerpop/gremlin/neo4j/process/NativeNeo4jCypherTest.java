@@ -137,23 +137,23 @@ public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
     public void benchmarkCypherAndMatch() throws Exception {
         final Neo4jGraph n = (Neo4jGraph) graph;
         final List<Supplier<GraphTraversal<?, ?>>> traversals = Arrays.asList(
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").in("sungBy").as("b"),
                         as("a").in("writtenBy").as("b")).select().by("name"),
                 () -> n.cypher("MATCH (a)<-[:sungBy]-(b), (a)<-[:writtenBy]-(b) RETURN a, b").select().by("name"),
                 ///
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").out("followedBy").as("b"),
                         as("b").out("followedBy").as("a")).select().by("name"),
                 () -> n.cypher("MATCH (a)-[:followedBy]->(b), (b)-[:followedBy]->(a) RETURN a, b").select().by("name"),
                 ///
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").out("followedBy").count().as("b"),
                         as("a").in("followedBy").count().as("b"),
                         as("b").is(P.gt(10))).select("a").by("name"),
                 () -> n.cypher("MATCH (a)-[:followedBy]->(b) WITH a, COUNT(b) AS bc WHERE bc > 10 MATCH (a)<-[:followedBy]-(c) WITH a, bc, COUNT(c) AS cc WHERE bc = cc RETURN a").select("a").by("name"),
                 ///
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").in("sungBy").count().as("b"),
                         as("a").in("sungBy").as("c"),
                         as("c").out("followedBy").as("d"),
@@ -162,20 +162,20 @@ public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
                         where("a", P.neq("e"))).select("a", "e").by("name"),
                 () -> n.cypher("MATCH (a)<-[:sungBy]-()-[:followedBy]->()-[:sungBy]->(e) WHERE a <> e WITH a, e MATCH (a)<-[:sungBy]-(b) WITH a, e, COUNT(DISTINCT b) as bc MATCH (e)<-[:sungBy]-(f) WITH a, e, bc, COUNT(DISTINCT f) as fc WHERE bc = fc RETURN a, e").select("a", "e").by("name"),
                 ///
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").in("followedBy").as("b"),
                         as("a").out("sungBy").as("c"),
                         as("a").out("writtenBy").as("d")).select().by("name"),
                 () -> n.cypher("MATCH (a)<-[:followedBy]-(b), (a)-[:sungBy]->(c), (a)-[:writtenBy]->(d) RETURN a, b, c, d").select().by("name"),
                 ///
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").in("followedBy").as("b"),
                         as("a").out("sungBy").as("c"),
                         as("a").out("writtenBy").as("d"),
                         where("c", P.neq("d"))).select().by("name"),
                 () -> n.cypher("MATCH (a)<-[:followedBy]-(b), (a)-[:sungBy]->(c), (a)-[:writtenBy]->(d) WHERE c <> d RETURN a, b, c, d").select().by("name"),
                 ///
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").in("sungBy").as("b"),
                         as("a").in("writtenBy").as("b"),
                         as("b").out("followedBy").as("c"),
@@ -183,7 +183,7 @@ public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
                         as("c").out("writtenBy").as("a")).select().by("name"),
                 () -> n.cypher("MATCH (a)<-[:sungBy]-(b), (a)<-[:writtenBy]-(b), (b)-[:followedBy]->(c), (c)-[:sungBy]->(a), (c)-[:writtenBy]->(a) RETURN a, b, c").select().by("name"),
                 ///
-                () -> g.V().match("a",
+                () -> g.V().match(
                         as("a").has("name", "Garcia").has(T.label, "artist"),
                         as("a").in("writtenBy").as("b"),
                         as("b").out("followedBy").as("c"),

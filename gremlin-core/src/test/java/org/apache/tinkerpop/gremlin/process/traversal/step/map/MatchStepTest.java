@@ -31,12 +31,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicate
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.NoOpBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.P.eq;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.*;
 
@@ -47,21 +49,17 @@ public class MatchStepTest extends StepTest {
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
-                __.match("a", as("a").out("knows").as("b")),
                 __.match(as("a").out("knows").as("b")),
-                __.match("a", as("a").out().as("b")),
                 __.match(as("a").out().as("b")),
                 ////
-                __.match("a", where(as("a").out("knows").as("b"))),
                 __.match(where(as("a").out("knows").as("b"))),
-                __.match("a", as("a").where(out().as("b"))),
                 __.match(as("a").where(out().as("b")))
         );
     }
 
     @Test
     public void testPreCompilationOfStartAndEnds() {
-        final Traversal.Admin<?, ?> traversal = __.match("a", as("a").out().as("b"), as("c").path().as("d")).asAdmin();
+        final Traversal.Admin<?, ?> traversal = __.match(as("a").out().as("b"), as("c").path().as("d")).asAdmin();
         final MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
         assertEquals(MatchStep.class, traversal.getStartStep().getClass());
         assertEquals("a", matchStep.getStartLabel().get());
@@ -80,8 +78,8 @@ public class MatchStepTest extends StepTest {
     @Test
     public void testPreCompilationOfOr() {
         final List<Traversal.Admin<?, ?>> traversals = Arrays.asList(
-                __.match("a", as("a").out().as("b"), or(as("c").path().as("d"), as("e").coin(0.5).as("f"))).asAdmin(),
-                __.match("a", as("a").out().as("b"), as("c").path().as("d").or().as("e").coin(0.5).as("f")).asAdmin());
+                __.match(as("a").out().as("b"), or(as("c").path().as("d"), as("e").coin(0.5).as("f"))).asAdmin(),
+                __.match(as("a").out().as("b"), as("c").path().as("d").or().as("e").coin(0.5).as("f")).asAdmin());
         assertEquals(1, new HashSet<>(traversals).size()); // the two patterns should pre-compile to the same traversal
         traversals.forEach(traversal -> {
             final MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
@@ -107,8 +105,8 @@ public class MatchStepTest extends StepTest {
     @Test
     public void testPreCompilationOfAnd() {
         final List<Traversal.Admin<?, ?>> traversals = Arrays.asList(
-                __.match("a", as("a").out().as("b"), and(as("c").path().as("d"), as("e").barrier())).asAdmin(),
-                __.match("a", as("a").out().as("b"), as("c").path().as("d").and().as("e").barrier()).asAdmin());
+                __.match(as("a").out().as("b"), and(as("c").path().as("d"), as("e").barrier())).asAdmin(),
+                __.match(as("a").out().as("b"), as("c").path().as("d").and().as("e").barrier()).asAdmin());
         assertEquals(1, new HashSet<>(traversals).size());   // the two patterns should pre-compile to the same traversal
         traversals.forEach(traversal -> {
             MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
@@ -139,7 +137,7 @@ public class MatchStepTest extends StepTest {
         assertEquals(1, new HashSet<>(traversals).size()); // the two patterns should pre-compile to the same traversal
         traversals.forEach(traversal -> {
             MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
-            assertFalse(matchStep.getStartLabel().isPresent());
+            //assertFalse(matchStep.getStartLabel().isPresent());
             assertEquals(2, matchStep.getGlobalChildren().size());
             Traversal.Admin<Object, Object> pattern = matchStep.getGlobalChildren().get(0);
             assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
@@ -170,7 +168,7 @@ public class MatchStepTest extends StepTest {
         assertEquals(1, new HashSet<>(traversals).size()); // the two patterns should pre-compile to the same traversal
         traversals.forEach(traversal -> {
             MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
-            assertFalse(matchStep.getStartLabel().isPresent());
+            //assertFalse(matchStep.getStartLabel().isPresent());
             assertEquals(2, matchStep.getGlobalChildren().size());
             Traversal.Admin<Object, Object> pattern = matchStep.getGlobalChildren().get(0);
             assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
@@ -190,7 +188,7 @@ public class MatchStepTest extends StepTest {
     @Test
     public void testCountMatchAlgorithm() {
         // MAKE SURE THE SORT ORDER CHANGES AS MORE RESULTS ARE RETURNED BY ONE OR THE OTHER TRAVERSAL
-        Traversal.Admin<?, ?> traversal = __.match("a", as("a").out().as("b"), as("c").in().as("d")).asAdmin();
+        Traversal.Admin<?, ?> traversal = __.match(as("a").out().as("b"), as("c").in().as("d")).asAdmin();
         MatchStep.CountMatchAlgorithm countMatchAlgorithm = new MatchStep.CountMatchAlgorithm();
         countMatchAlgorithm.initialize(((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren());
         Traversal.Admin<Object, Object> firstPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(0);
@@ -207,8 +205,8 @@ public class MatchStepTest extends StepTest {
         countMatchAlgorithm.recordStart(EmptyTraverser.instance(), secondPattern);
         assertEquals(firstPattern, countMatchAlgorithm.bundles.get(0).traversal);
         assertEquals(secondPattern, countMatchAlgorithm.bundles.get(1).traversal);
-        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(firstPattern).type);
-        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(secondPattern).type);
+        assertEquals(MatchStep.TraversalType.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(firstPattern).traversalType);
+        assertEquals(MatchStep.TraversalType.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(secondPattern).traversalType);
         assertEquals(2l, countMatchAlgorithm.getBundle(firstPattern).startsCount);
         assertEquals(3l, countMatchAlgorithm.getBundle(secondPattern).startsCount);
         assertEquals(0l, countMatchAlgorithm.getBundle(firstPattern).endsCount);
@@ -236,7 +234,7 @@ public class MatchStepTest extends StepTest {
 
 
         ///////  MAKE SURE WHERE PREDICATE TRAVERSALS ARE ALWAYS FIRST AS THEY ARE SIMPLY .hasNext() CHECKS
-        traversal = __.match("a", as("a").out().as("b"), as("c").in().as("d"), where("a", P.eq("b"))).asAdmin();
+        traversal = __.match(as("a").out().as("b"), as("c").in().as("d"), where("a", P.eq("b"))).asAdmin();
         countMatchAlgorithm = new MatchStep.CountMatchAlgorithm();
         countMatchAlgorithm.initialize(((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren());
         assertEquals(3, countMatchAlgorithm.bundles.size());
@@ -245,9 +243,9 @@ public class MatchStepTest extends StepTest {
         Traversal.Admin<Object, Object> thirdPattern = ((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren().get(2);
         ///
         countMatchAlgorithm.bundles.stream().forEach(bundle -> assertEquals(0.0d, bundle.multiplicity, 0.0d));
-        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(firstPattern).type);
-        assertEquals(MatchStep.MatchAlgorithm.Type.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(secondPattern).type);
-        assertEquals(MatchStep.MatchAlgorithm.Type.WHERE_PREDICATE, countMatchAlgorithm.getBundle(thirdPattern).type);
+        assertEquals(MatchStep.TraversalType.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(firstPattern).traversalType);
+        assertEquals(MatchStep.TraversalType.MATCH_TRAVERSAL, countMatchAlgorithm.getBundle(secondPattern).traversalType);
+        assertEquals(MatchStep.TraversalType.WHERE_PREDICATE, countMatchAlgorithm.getBundle(thirdPattern).traversalType);
         assertEquals(firstPattern, countMatchAlgorithm.bundles.get(0).traversal);
         assertEquals(secondPattern, countMatchAlgorithm.bundles.get(1).traversal);
         assertEquals(thirdPattern, countMatchAlgorithm.bundles.get(2).traversal);
@@ -310,5 +308,27 @@ public class MatchStepTest extends StepTest {
         assertEquals(thirdPattern, countMatchAlgorithm.bundles.get(0).traversal);
         assertEquals(firstPattern, countMatchAlgorithm.bundles.get(1).traversal);
         assertEquals(secondPattern, countMatchAlgorithm.bundles.get(2).traversal);
+    }
+
+    @Test
+    public void shouldCalculateStartLabelCorrectly() {
+        Traversal.Admin<?, ?> traversal = match(
+                where(and(
+                        as("a").out("created").as("b"),
+                        as("b").in("created").count().is(eq(3)))),
+                as("a").both().as("b"),
+                where(as("b").in())).asAdmin();
+        assertEquals("a", MatchStep.Helper.computeStartLabel(((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren()));
+        /////
+        traversal = match(
+                where("a", P.neq("c")),
+                as("a").out("created").as("b"),
+                or(
+                        as("a").out("knows").has("name", "vadas"),
+                        as("a").in("knows").and().as("a").has(T.label, "person")
+                ),
+                as("b").in("created").as("c"),
+                as("b").in("created").count().is(P.gt(1))).asAdmin();
+        assertEquals("a", MatchStep.Helper.computeStartLabel(((MatchStep<?, ?>) traversal.getStartStep()).getGlobalChildren()));
     }
 }

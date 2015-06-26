@@ -88,8 +88,8 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
                 } else
                     break;
             }
-            // match('a',as('a').has(key,value),...) --> as('a').has(key,value).match('a',...)
-            if (matchStep.getStartLabel().isPresent()) {
+            // match(as('a').has(key,value),...) --> as('a').has(key,value).match(...)
+            if (matchStep.getStartLabel().isPresent() && (matchStep.getPreviousStep().getLabels().isEmpty() || matchStep.getPreviousStep().getLabels().contains(matchStep.getStartLabel()))) {
                 ((MatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(matchTraversal -> {
                     if (matchTraversal.getStartStep() instanceof MatchStep.MatchStartStep &&
                             ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().isPresent() &&
@@ -104,6 +104,7 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
                         matchStep.removeGlobalChild(matchTraversal);
                         matchTraversal.removeStep(0);                                     // remove MatchStartStep
                         matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove MatchEndStep
+                        matchStep.getPreviousStep().addLabel((String)matchStep.getStartLabel().get());
                         TraversalHelper.insertTraversal(matchStep.getPreviousStep(), matchTraversal, traversal);
                     }
                 });

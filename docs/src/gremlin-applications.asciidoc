@@ -858,15 +858,13 @@ image::gephi-start-server.png[width=800]
 
 Start the xref:gremlin-console[Gremlin Console] and activate the Gephi plugin:
 
-[source,groovy]
-gremlin> :plugin use tinkerpop.gephi
-==>tinkerpop.gephi activated
-gremlin> graph = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> :remote connect tinkerpop.gephi
-==>Connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 1.0, 0.5], colorToFade:g, colorFadeRate:0.7
-gremlin> :> graph
-==>tinkergraph[vertices:6 edges:6]
+[gremlin-groovy]
+----
+:plugin use tinkerpop.gephi
+graph = TinkerFactory.createModern()
+:remote connect tinkerpop.gephi
+:> graph
+----
 
 The above Gremlin session activates the Gephi plugin, creates the "modern" `TinkerGraph`, uses the `:remote` command to setup a connection to the Graph Streaming server in Gephi (with default parameters that will be explained below), and then uses `:submit` which sends the vertices and edges of the graph to the Gephi Streaming Server. The resulting graph appears in Gephi as displayed in the left image below.
 
@@ -890,32 +888,20 @@ g.V(2).in().out('knows').
 
 To visualize it insert the appropriately named `store('n')` steps where `n` is an integer, and the vertices will be highlighted in ascending store step order.
 
-[source,groovy]
+[gremlin-groovy,modern]
 ----
-gremlin> g = graph.traversal()
-==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
-gremlin> g.V(2).in('knows').out('knows').has('age',gt(30)).
-               outE('created').has('weight',gt(0.5d)).inV().values('name')
-==>ripple
-gremlin> traversal = g.V(2).store('1')
-gremlin>                    .in('knows').store('2')
-gremlin>                    .out('knows').has('age',gt(30)).store('3')
-gremlin>                    .outE('created').has('weight',gt(0.5d)).inV().store('4')
-==>v[5]
-gremlin> traversal.getSideEffects().get('1')
-==>Optional[{v[2]=1}]
-gremlin> traversal.getSideEffects().get('2')
-==>Optional[{v[1]=1}]
-gremlin> traversal.getSideEffects().get('3')
-==>Optional[{v[4]=1}]
-gremlin> traversal.getSideEffects().get('4')
-==>Optional[{v[5]=1}]
-gremlin> :> traversal
-Visualizing vertices at step: 1... visited: 1
-Visualizing vertices at step: 2... visited: 1
-Visualizing vertices at step: 3... visited: 1
-Visualizing vertices at step: 4... visited: 1
-gremlin>
+g = graph.traversal()
+g.V(2).in('knows').out('knows').has('age',gt(30)).
+       outE('created').has('weight',gt(0.5d)).inV().values('name')
+traversal = g.V(2).store('1').
+       in('knows').store('2').
+       out('knows').has('age',gt(30)).store('3').
+       outE('created').has('weight',gt(0.5d)).inV().store('4')
+traversal.getSideEffects().get('1')
+traversal.getSideEffects().get('2')
+traversal.getSideEffects().get('3')
+traversal.getSideEffects().get('4')
+:> traversal
 ----
 
 When `:> traversal` is called, it iterates through the sideEffects of the traversal accessing the vertices stored at each corresponding step. It then updates the vertices' color with `startRGBColor`, which in this case is a lime-green blue: [0.0,1.0,0.5]. After the first step visualization, it sleeps for the configured `stepDelay` in milliseconds. On the second step, it decays the configured `colorToFade` of all the previously visited vertices in prior steps, by multiplying the current `colorToFade` value for each vertex with the `colorFadeRate`.  To avoid color decay on prior steps, then provide a `colorFadeRate` value of `1.0`.  The screenshots below show how the visualization evolves over the 4 steps:
@@ -924,19 +910,13 @@ image::gephi-traversal.png[width=1200]
 
 Once a traversal visualization has executed, clear the colors in Gephi by selecting the grey square icon under the magnifying glass icon on the lower left tool bar next to the graph canvas.  Run another traversal against the same graph and it will update the appropriate vertices.  To get a sense of how the visualization configuration parameters affect the output, see the example below:
 
-[source,groovy]
-gremlin> :remote config startRGBColor [0.0,0.3,1.0]
-==>Connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:g, colorFadeRate:0.7
-gremlin> :remote config colorToFade b
-==>Connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:b, colorFadeRate:0.7
-gremlin> :remote config colorFadeRate 0.5
-==>Connection to Gephi - http://localhost:8080/workspace0 with stepDelay:1000, startRGBColor:[0.0, 0.3, 1.0], colorToFade:b, colorFadeRate:0.5
-gremlin> :> traversal
-Visualizing vertices at step: 1... visited: 1
-Visualizing vertices at step: 2... visited: 1
-Visualizing vertices at step: 3... visited: 1
-Visualizing vertices at step: 4... visited: 1
-gremlin>
+[gremlin-groovy,modern]
+----
+:remote config startRGBColor [0.0,0.3,1.0]
+:remote config colorToFade b
+:remote config colorFadeRate 0.5
+:> traversal
+----
 
 image::gephi-traversal-config.png[width=400]
 
