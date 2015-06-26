@@ -223,11 +223,11 @@ public abstract class GroovyMatchTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_out_out_hasXname_rippleX_matchXa__b_created_a__c_knows_bX_selectXcX_outXknowsX_name() {
+        public Traversal<Vertex, String> get_g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX() {
             TraversalScriptHelper.compute("""
-                g.V.out.out.as('b').match(
-                    __.as('b').out('created').as('a'),
-                    __.as('c').out('knows').as('b')).select('c').out('knows').name
+                g.V().out().as("c").match(
+                    as("b").out("knows").as("a"),
+                    as("c").out("created").as("e")).select("c")
             """, g)
         }
 

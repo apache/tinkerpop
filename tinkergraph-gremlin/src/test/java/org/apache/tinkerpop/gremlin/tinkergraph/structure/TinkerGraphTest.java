@@ -167,57 +167,17 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay7() throws Exception {
-        TinkerGraph graph = TinkerGraph.open();
+        /*TinkerGraph graph = TinkerGraph.open();
         graph.createIndex("name",Vertex.class);
-        graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");*/
         //System.out.println(g.V().properties().key().groupCount().next());
+        TinkerGraph graph = TinkerFactory.createModern();
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
         final List<Supplier<GraphTraversal<?,?>>> traversals = Arrays.asList(
-                /*() -> g.V().xmatch("a",
-                        as("a").in("sungBy").as("b"),
-                        not(as("a").in("writtenBy").as("b"))).select().by("name"),*/
-                () -> g.V().match(
-                        as("a").in("sungBy").as("b"),
-                        as("a").in("writtenBy").as("b")).select().by("name"),
-                () -> g.V().match(
-                        as("a").out("followedBy").as("b"),
-                        as("b").out("followedBy").as("a")).select().by("name"),
-                () -> g.V().match(
-                        as("a").out("followedBy").count().as("b"),
-                        as("a").in("followedBy").count().as("b"),
-                        as("b").is(P.gt(10))).select("a").by("name"),
-                () -> g.V().match(
-                        as("a").in("sungBy").count().as("b"),
-                        as("a").in("sungBy").as("c"),
-                        as("c").out("followedBy").as("d"),
-                        as("d").out("sungBy").as("e"),
-                        as("e").in("sungBy").count().as("b"),
-                        where("a",P.neq("e"))).select("a","e").by("name"),
-                () -> g.V().match(
-                        as("a").in("followedBy").as("b"),
-                        as("a").out("sungBy").as("c"),
-                        as("a").out("writtenBy").as("d")).select().by("name"),
-                () -> g.V().match(
-                        as("a").in("followedBy").as("b"),
-                        as("a").out("sungBy").as("c"),
-                        as("a").out("writtenBy").as("d"),
-                        where("c", P.neq("d"))).select().by("name"),
-                () -> g.V().match(
-                        as("a").in("sungBy").as("b"),
-                        as("a").in("writtenBy").as("b"),
-                        as("b").out("followedBy").as("c"),
-                        as("c").out("sungBy").as("a"),
-                        as("c").out("writtenBy").as("a")).select().by("name"),
-                () -> g.V().match(
-                        as("a").has("name", "Garcia"),
-                        as("a").in("writtenBy").as("b"),
-                        as("b").out("followedBy").as("c"),
-                        as("c").out("writtenBy").as("d"),
-                        as("d").where(P.neq("a"))).select().by("name"),
-                () -> g.V().as("a").out("followedBy").as("b").match(
-                        as("a").and(has(T.label,"song"),has("performances",P.gt(10))),
-                        as("a").out("writtenBy").as("c"),
-                        as("b").out("writtenBy").as("c")).select().by("name"));
+                () -> g.V().out().as("c").match(
+                        as("b").out("knows").as("a"),
+                        as("c").out("created").as("e")).select("c").out("knows").values("name")
+        );
 
         traversals.forEach(traversal -> {
             System.out.println("pre-strategy:  " + traversal.get());

@@ -103,7 +103,7 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
                                     .findAny()
                                     .isPresent()) {
                         matchStep.removeGlobalChild(matchTraversal);
-                        matchTraversal.removeStep(0);                                     // remove MatchStartStep
+                        matchTraversal.removeStep(0);                                       // remove MatchStartStep
                         matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove MatchEndStep
                         matchStep.getPreviousStep().addLabel(startLabel);
                         TraversalHelper.insertTraversal(matchStep.getPreviousStep(), matchTraversal, traversal);
@@ -119,7 +119,7 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
         else {
             final String startLabel = MatchStep.Helper.computeStartLabel(matchStep.getGlobalChildren());
             Step<?, ?> previousStep = matchStep.getPreviousStep();
-            if(previousStep.getLabels().contains(startLabel))
+            if (previousStep.getLabels().contains(startLabel))
                 return startLabel;
             while (!(previousStep instanceof EmptyStep)) {
                 if (!previousStep.getLabels().isEmpty())

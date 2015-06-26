@@ -21,6 +21,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -122,7 +123,12 @@ public class MatchPredicateStrategyTest {
                     {__.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b"))}, // no has() pull out
                     {__.map(__.match(as("a").has("name", "marko"), as("a").out().as("b"))), __.map(__.match(as("a").has("name", "marko"), as("a").out().as("b")))}, // no has() pull out
                     {__.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b"))}, // no has() pull out
-                    //{__.match(as("a").out().as("b")).where(as("b").out("knows").as("c")), __.match(as("a").out().as("b"), as("b").where(__.out("knows").as("c")))},
+                    /////////
+                    {__.match(as("a").out().as("b"), __.where(as("b").out("knows").as("c"))), __.match(as("a").out().as("b"), as("b").where(__.out("knows").as("c")))}, // make as().where()
+                    {__.match(as("a").out().as("b"), __.where("a", P.gt("b"))), __.match(as("a").out().as("b"), __.as("a").where(P.gt("b")))},  // make as().where()
+                    /////////
+                    //{__.match(as("a").out().as("b")).where(as("b").out("knows").as("c")), __.match(as("a").out().as("b"), as("b").where(__.out("knows").as("c")))}, // make as().where()
+                    //{__.match(as("a").out().as("b")).where("a", P.gt("b")), __.match(as("a").out().as("b"), __.as("a").where(P.gt("b")))},  // make as().where()
             });
         }
     }
