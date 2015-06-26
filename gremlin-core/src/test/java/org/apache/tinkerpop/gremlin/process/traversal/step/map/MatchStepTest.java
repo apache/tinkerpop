@@ -62,7 +62,6 @@ public class MatchStepTest extends StepTest {
         final Traversal.Admin<?, ?> traversal = __.match(as("a").out().as("b"), as("c").path().as("d")).asAdmin();
         final MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
         assertEquals(MatchStep.class, traversal.getStartStep().getClass());
-        assertEquals("a", matchStep.getStartLabel().get());
         assertEquals(2, matchStep.getGlobalChildren().size());
         Traversal.Admin<Object, Object> pattern = matchStep.getGlobalChildren().get(0);
         assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
@@ -83,7 +82,6 @@ public class MatchStepTest extends StepTest {
         assertEquals(1, new HashSet<>(traversals).size()); // the two patterns should pre-compile to the same traversal
         traversals.forEach(traversal -> {
             final MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
-            assertEquals("a", matchStep.getStartLabel().get());
             assertEquals(2, matchStep.getGlobalChildren().size());
             Traversal.Admin<Object, Object> pattern = matchStep.getGlobalChildren().get(0);
             assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());
@@ -110,7 +108,6 @@ public class MatchStepTest extends StepTest {
         assertEquals(1, new HashSet<>(traversals).size());   // the two patterns should pre-compile to the same traversal
         traversals.forEach(traversal -> {
             MatchStep<?, ?> matchStep = (MatchStep<?, ?>) traversal.getStartStep();
-            assertEquals("a", matchStep.getStartLabel().get());
             assertEquals(2, matchStep.getGlobalChildren().size());
             Traversal.Admin<Object, Object> pattern = matchStep.getGlobalChildren().get(0);
             assertEquals("a", ((MatchStep.MatchStartStep) pattern.getStartStep()).getSelectKey().get());

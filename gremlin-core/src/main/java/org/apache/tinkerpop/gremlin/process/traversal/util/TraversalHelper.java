@@ -352,10 +352,7 @@ public final class TraversalHelper {
             if (((MatchStep.MatchStartStep) startStep).getSelectKey().isPresent())
                 variables.add(Scoping.Variable.START);
         } else if (startStep instanceof MatchStep) {
-            if (((MatchStep) startStep).getStartLabel().isPresent())
-                variables.add(Scoping.Variable.START);
-            else
-                ((MatchStep<?, ?>) startStep).getGlobalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
+            ((MatchStep<?, ?>) startStep).getGlobalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
         } else if (startStep instanceof ConjunctionStep || startStep instanceof NotStep || startStep instanceof WhereTraversalStep)
             ((TraversalParent) startStep).getLocalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
         ///

@@ -104,8 +104,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
     //TODO: with Traversal.reverse()
     public abstract Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_select_byXnameX();
 
-    //TODO: with Traversal.reverse()
-    public abstract Traversal<Vertex, String> get_g_V_out_out_hasXname_rippleX_matchXa__b_created_a__c_knows_bX_selectXcX_outXknowsX_name();
+    public abstract Traversal<Vertex, String> get_g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX();
 
     // nested or/and with patterns in order that won't execute serially
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_matchXa_whereXa_neqXcXX__a_created_b__orXa_knows_vadas__a_0knows_and_a_hasXlabel_personXX__b_0created_c__b_0created_count_isXgtX1XXX_select_byXidX();
@@ -281,12 +280,10 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         traversal.iterate();
     }
 
-    // TODO: this test requires Traversal.reverse()
     @Test(expected = IllegalStateException.class)
-    @Ignore
     @LoadGraphWith(MODERN)
-    public void g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name() throws Exception {
-        final Traversal<Vertex, String> traversal = get_g_V_out_out_hasXname_rippleX_matchXa__b_created_a__c_knows_bX_selectXcX_outXknowsX_name();
+    public void g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX() throws Exception {
+        final Traversal<Vertex, String> traversal = get_g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX();
         printTraversalForm(traversal);
         traversal.iterate();
     }
@@ -614,10 +611,10 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_out_out_hasXname_rippleX_matchXa__b_created_a__c_knows_bX_selectXcX_outXknowsX_name() {
-            return g.V().out().out().as("b").match(
-                    as("b").out("created").as("a"),
-                    as("c").out("knows").as("b")).select("c").out("knows").values("name");
+        public Traversal<Vertex, String> get_g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX() {
+            return g.V().out().as("c").match(
+                    as("b").out("knows").as("a"),
+                    as("c").out("created").as("e")).select("c");
         }
 
         @Override

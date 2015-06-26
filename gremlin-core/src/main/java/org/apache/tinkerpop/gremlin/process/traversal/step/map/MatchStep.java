@@ -190,10 +190,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     }
 
-    public Optional<String> getStartLabel() {
-        return Optional.ofNullable(this.computedStartLabel);
-    }
-
     @Override
     public Set<String> getScopeKeys() {
         if (null == this.scopeKeys) {
@@ -331,10 +327,10 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 traverser = this.starts.next();
                 final Path path = traverser.path();
                 if (!this.matchStartLabels.stream().filter(path::hasLabel).findAny().isPresent())
-                        path.addLabel(this.computedStartLabel);
+                        path.addLabel(this.computedStartLabel); // if the traverser doesn't have a legal start, then provide it the pre-computed one
                 path.addLabel(this.getId()); // so the traverser never returns to this branch ever again
             }
-
+            ///
             if (!this.isDuplicate(traverser)) {
                 if (hasMatched(this.conjunction, traverser))
                     return IteratorUtils.of(traverser.split(this.getBindings(traverser), this));
@@ -356,10 +352,10 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             final Traverser.Admin traverser = this.starts.next();
             final Path path = traverser.path();
             if (!this.matchStartLabels.stream().filter(path::hasLabel).findAny().isPresent())
-                path.addLabel(this.computedStartLabel);
+                path.addLabel(this.computedStartLabel); // if the traverser doesn't have a legal start, then provide it the pre-computed one
             if (!path.hasLabel(this.getId()))
                 path.addLabel(this.getId()); // so the traverser never returns to this branch ever again
-
+            ///
             if (!this.isDuplicate(traverser)) {
                 if (hasMatched(this.conjunction, traverser)) {
                     traverser.setStepId(this.getNextStep().getId());
@@ -674,10 +670,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             public final void incrementEndCount() {
                 this.multiplicity = (double) ++this.endsCount / (double) this.startsCount;
             }
-
-            /*public String toString() {
-                return this.multiplicity + "--" + this.traversal;
-            }*/
         }
     }
 
