@@ -25,6 +25,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `MatchStep` and `match()` no longer have a "start label" parameter -- it is computed if the incoming traverser does not have requisite labels.
+* Added `TraversalParent.removeGlobalChild()` and `TraversalParent.removeLocalChild()`.
 * Add a `clear` option to the Gephi Plugin to empty the Gephi workspace.
 * `AbstractStep` now guarantees that bulk-less and null-valued traversers are never propagated.
 * Added `dedup(string...)` which allows for the deduplication of a stream based on unique scope values.

@@ -800,15 +800,15 @@ g.V().match(
         __.as('b').match(
                      __.as('b').out('created').as('c'),
                      __.as('c').has('name','ripple')).
-                  select('c').as('c')).
+                   select('c').as('c')).
       select('a','c').by('name')
 ----
 
-If an extended, step-labeled traversal proceeds the `match()`-step and the traverser entering the `match()` is destined to bind to a particular variable, then the previous step should be labeled accordingly.
+If a step-labeled traversal proceeds the `match()`-step and the traverser entering the `match()` is destined to bind to a particular variable, then the previous step should be labeled accordingly.
 
 [gremlin-groovy,modern]
 ----
-g.V().as('a').out('knows').as('b')
+g.V().as('a').out('knows').as('b').
   match(
     __.as('b').out('created').as('c'),
     __.not(__.as('c').in('created').as('a'))).
@@ -827,13 +827,12 @@ If a variable is at the start of a traversal pattern it *must* exist as a label 
 ----
 g.V().as('a').out().as('b'). <1>
     match( <2>
-        __.as('a').out().count().as('c'), <3>
-        __.not(__.as('a').in().as('b')), <4>
-        or( <5>
-          __.as('a').out('knows').as('b'),
-          __.as('b').in().count().as('c').and().as('c').is(gt(2))  <6>
-        )
-    ).dedup('a','c'). <7>
+      __.as('a').out().count().as('c'), <3>
+      __.not(__.as('a').in().as('b')), <4>
+      or( <5>
+        __.as('a').out('knows').as('b'),
+        __.as('b').in().count().as('c').and().as('c').is(gt(2)))).  <6>
+    dedup('a','c'). <7>
     select('a','b','c').by('name').by('name').by() <8>
 ----
 
@@ -857,7 +856,8 @@ Match is typically used in conjunction with both `select()` (demonstrated previo
 g.V().match(
         __.as('a').out('created').as('b'),
         __.as('b').in('created').as('c')).
-          where('a', neq('c')).select('a','c').by('name')
+        where('a', neq('c')).
+      select('a','c').by('name')
 ----
 
 The `where()`-step can take either a `P`-predicate (example above) or a `Traversal` (example below). Using `MatchPredicateStrategy`, `where()`-clauses are automatically folded into `match()` and thus, subject to the query optimizer within `match()`-step.
@@ -868,8 +868,8 @@ traversal = g.V().match(
                     __.as('a').has(label,'person'), <1>
                     __.as('a').out('created').as('b'),
                     __.as('b').in('created').as('c')).
-                      where(__.as('a').out('knows').as('c')). <2>
-                      select('a','c').by('name'); null <3>
+                    where(__.as('a').out('knows').as('c')). <2>
+                  select('a','c').by('name'); null <3>
 traversal.toString() <4>
 traversal <5> <6>
 traversal.toString() <7>

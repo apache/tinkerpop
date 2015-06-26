@@ -89,11 +89,12 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
                     break;
             }
             // match(as('a').has(key,value),...) --> as('a').has(key,value).match(...)
-            if (matchStep.getStartLabel().isPresent() && (matchStep.getPreviousStep().getLabels().isEmpty() || matchStep.getPreviousStep().getLabels().contains(matchStep.getStartLabel()))) {
+            final String startLabel = this.determineStartLabelForHasPullOut(matchStep);
+            if (null != startLabel) {
                 ((MatchStep<?, ?>) matchStep).getGlobalChildren().stream().collect(Collectors.toList()).forEach(matchTraversal -> {
                     if (matchTraversal.getStartStep() instanceof MatchStep.MatchStartStep &&
                             ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().isPresent() &&
-                            ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().get().equals(matchStep.getStartLabel().get()) &&
+                            ((MatchStep.MatchStartStep) matchTraversal.getStartStep()).getSelectKey().get().equals(startLabel) &&
                             !(matchStep.getPreviousStep() instanceof EmptyStep) &&
                             !matchTraversal.getSteps().stream()
                                     .filter(step -> !(step instanceof MatchStep.MatchStartStep) &&
@@ -104,12 +105,29 @@ public final class MatchPredicateStrategy extends AbstractTraversalStrategy<Trav
                         matchStep.removeGlobalChild(matchTraversal);
                         matchTraversal.removeStep(0);                                     // remove MatchStartStep
                         matchTraversal.removeStep(matchTraversal.getSteps().size() - 1);    // remove MatchEndStep
-                        matchStep.getPreviousStep().addLabel((String)matchStep.getStartLabel().get());
+                        matchStep.getPreviousStep().addLabel(startLabel);
                         TraversalHelper.insertTraversal(matchStep.getPreviousStep(), matchTraversal, traversal);
                     }
                 });
             }
         });
+    }
+
+    private String determineStartLabelForHasPullOut(final MatchStep<?, ?> matchStep) {
+        if (!(matchStep.getTraversal().getParent() instanceof EmptyStep))
+            return null;
+        else {
+            final String startLabel = MatchStep.Helper.computeStartLabel(matchStep.getGlobalChildren());
+            Step<?, ?> previousStep = matchStep.getPreviousStep();
+            if(previousStep.getLabels().contains(startLabel))
+                return startLabel;
+            while (!(previousStep instanceof EmptyStep)) {
+                if (!previousStep.getLabels().isEmpty())
+                    return null;
+                previousStep = previousStep.getPreviousStep();
+            }
+            return startLabel;
+        }
     }
 
     public static MatchPredicateStrategy instance() {

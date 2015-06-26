@@ -117,8 +117,12 @@ public class MatchPredicateStrategyTest {
         static Iterable<Object[]> generateTestParameters() {
 
             return Arrays.asList(new Traversal[][]{
-                    {__.out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").match(as("a").out().as("b"))},
-                    // {__.match("a", as("a").out().as("b")).where(as("b").out("knows").as("c")), __.match("a", as("a").out().as("b"), as("b").where(out("knows").as("c")))},
+                    {__.out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").match(as("a").out().as("b"))}, // has() pull out
+                    {__.out().as("a").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").match(as("a").out().as("b"))}, // has() pull out
+                    {__.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b"))}, // no has() pull out
+                    {__.map(__.match(as("a").has("name", "marko"), as("a").out().as("b"))), __.map(__.match(as("a").has("name", "marko"), as("a").out().as("b")))}, // no has() pull out
+                    {__.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b"))}, // no has() pull out
+                    //{__.match(as("a").out().as("b")).where(as("b").out("knows").as("c")), __.match(as("a").out().as("b"), as("b").where(__.out("knows").as("c")))},
             });
         }
     }
