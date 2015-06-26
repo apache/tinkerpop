@@ -41,6 +41,7 @@ import org.junit.rules.TestName;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -53,6 +54,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 
@@ -170,6 +172,96 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
         final AtomicInteger counter = new AtomicInteger(0);
         results.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
+        assertEquals(9, counter.get());
+        assertThat(results.allItemsAvailable(), is(true));
+        assertThat(results.isExhausted(), is(true));
+
+        // cant stream it again
+        assertThat(results.stream().iterator().hasNext(), is(false));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldIterate() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+        final Iterator<Result> itty = results.iterator();
+        final AtomicInteger counter = new AtomicInteger(0);
+        while (itty.hasNext()) {
+            counter.incrementAndGet();
+            assertEquals(counter.get(), itty.next().getInt());
+        }
+
+        assertEquals(9, counter.get());
+        assertThat(results.allItemsAvailable(), is(true));
+        assertThat(results.isExhausted(), is(true));
+
+        // can't stream it again
+        assertThat(results.iterator().hasNext(), is(false));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldGetSomeThenSomeMore() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+        final CompletableFuture<List<Result>> batch1 = results.some(5);
+        final CompletableFuture<List<Result>> batch2 = results.some(5);
+        final CompletableFuture<List<Result>> batchNothingLeft = results.some(5);
+
+        assertEquals(5, batch1.get().size());
+        assertEquals(1, batch1.get().get(0).getInt());
+        assertEquals(2, batch1.get().get(1).getInt());
+        assertEquals(3, batch1.get().get(2).getInt());
+        assertEquals(4, batch1.get().get(3).getInt());
+        assertEquals(5, batch1.get().get(4).getInt());
+        assertThat(results.isExhausted(), is(false));
+
+        assertEquals(4, batch2.get().size());
+        assertEquals(6, batch2.get().get(0).getInt());
+        assertEquals(7, batch2.get().get(1).getInt());
+        assertEquals(8, batch2.get().get(2).getInt());
+        assertEquals(9, batch2.get().get(3).getInt());
+        assertThat(results.isExhausted(), is(true));
+
+        assertEquals(0, batchNothingLeft.get().size());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldGetOneThenSomeThenSomeMore() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+        final Result one = results.one();
+        final CompletableFuture<List<Result>> batch1 = results.some(4);
+        final CompletableFuture<List<Result>> batch2 = results.some(5);
+        final CompletableFuture<List<Result>> batchNothingLeft = results.some(5);
+
+        assertEquals(1, one.getInt());
+
+        assertEquals(4, batch1.get().size());
+        assertEquals(2, batch1.get().get(0).getInt());
+        assertEquals(3, batch1.get().get(1).getInt());
+        assertEquals(4, batch1.get().get(2).getInt());
+        assertEquals(5, batch1.get().get(3).getInt());
+
+        assertEquals(4, batch2.get().size());
+        assertEquals(6, batch2.get().get(0).getInt());
+        assertEquals(7, batch2.get().get(1).getInt());
+        assertEquals(8, batch2.get().get(2).getInt());
+        assertEquals(9, batch2.get().get(3).getInt());
+        assertThat(results.isExhausted(), is(true));
+
+        assertEquals(0, batchNothingLeft.get().size());
 
         cluster.close();
     }
@@ -177,10 +269,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     /**
      * This test arose from this issue: https://github.org/apache/tinkerpop/tinkerpop3/issues/515
      * <p/>
-     * ResultSet.all returns a CompleteableFuture that blocks on the worker pool until isExausted returns false.
-     * isExausted in turn needs a thread on the worker pool to even return. So its totally possible to consume all
+     * ResultSet.all returns a CompletableFuture that blocks on the worker pool until isExhausted returns false.
+     * isExhausted in turn needs a thread on the worker pool to even return. So its totally possible to consume all
      * threads on the worker pool waiting for .all to finish such that you can't even get one to wait for
-     * isExausted to run.
+     * isExhausted to run.
+     * <p/>
+     * Note that all() doesn't work as described above anymore.  It waits for callback on readComplete rather
+     * than blocking on isExhausted.
      */
     @Test
     public void shouldAvoidDeadlockOnCallToResultSetDotAll() throws Exception {
@@ -377,8 +472,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
-        final AtomicInteger counter = new AtomicInteger(0);
-        results1.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
+        assertEquals(9, results1.all().get().size());
+        assertThat(results1.isExhausted(), is(true));
 
         final ResultSet results2 = client.submit("x[0]+1");
         assertEquals(2, results2.all().get().get(0).getInt());

@@ -81,41 +81,23 @@ public final class ResultSet implements Iterable<Result> {
      * Determines if there are any remaining items being streamed to the client.
      */
     public boolean isExhausted() {
-        if (!resultQueue.isEmpty())
-            return false;
-
-        internalAwaitItems(1);
-
-        assert !resultQueue.isEmpty() || allItemsAvailable();
-        return resultQueue.isEmpty();
+        return !(!allItemsAvailable() || !resultQueue.isEmpty());
     }
 
     /**
      * Get the next {@link Result} from the stream, blocking until one is available.
      */
     public Result one() {
-        Result result = resultQueue.poll();
-        if (result != null)
-            return result;
-
-        internalAwaitItems(1);
-
-        result = resultQueue.poll();
-        if (result != null)
-            return result;
-        else
-            return null;
+        return some(1).join().get(0);
     }
 
     /**
-     * Wait for some number of items to be available on the client. The future will contain the number of items
-     * available which may or may not be the number the caller was waiting for.
+     * The returned {@link CompletableFuture} completes when the number of items specified are available.  The
+     * number returned will be equal to or less than that number.  They will only be less if the stream is
+     * completed and there are less than that number specified available.
      */
-    public CompletableFuture<Integer> awaitItems(final int items) {
-        if (allItemsAvailable())
-            CompletableFuture.completedFuture(getAvailableItemCount());
-
-        return CompletableFuture.supplyAsync(() -> internalAwaitItems(items), executor);
+    public CompletableFuture<List<Result>> some(final int items) {
+        return resultQueue.await(items);
     }
 
     /**
@@ -158,16 +140,5 @@ public final class ResultSet implements Iterable<Result> {
                 throw new UnsupportedOperationException();
             }
         };
-    }
-
-    private int internalAwaitItems(final int items) {
-        while (!allItemsAvailable() && getAvailableItemCount() < items) {
-            if (!channel.isOpen()) {
-                onChannelError.get();
-                throw new RuntimeException("Error while processing results from channel - check client and server logs for more information");
-            }
-        }
-
-        return getAvailableItemCount();
     }
 }
