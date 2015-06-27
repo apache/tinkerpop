@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env python
+#
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,17 +19,30 @@
 # under the License.
 #
 
-PID=
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
-function cleanup {
-  [ ${PID} ] && kill ${PID}
-}
+class GephiHandler(BaseHTTPRequestHandler):
 
-trap cleanup EXIT
+    def respond(self):
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/plain')
+        self.end_headers()
+        self.wfile.write("{}")
 
-while true
-do
-  echo -e "HTTP/1.1 200 OK\nConnection: close\n\n{}" | nc -l 8080 &
-  PID=$!
-  wait ${PID}
-done
+    def do_GET(self):
+        self.respond()
+
+    def do_POST(self):
+        self.respond()
+
+def main():
+    try:
+        server = HTTPServer(('', 8080), GephiHandler)
+        print 'listening on port 8080...'
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print '^C received, shutting down server'
+        server.socket.close()
+
+if __name__ == '__main__':
+    main()

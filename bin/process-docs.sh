@@ -20,15 +20,20 @@
 
 pushd "$(dirname $0)/.." > /dev/null
 
+GEPHI_MOCK=
+
+trap cleanup EXIT
+
+function cleanup() {
+  [ ${GEPHI_MOCK} ] && kill ${GEPHI_MOCK}
+}
+
+
 if [ ! `nc -z localhost 8080` ]; then
-  bin/gephi.mock > /dev/null 2>&1 &
+  bin/gephi-mock.py > /dev/null 2>&1 &
   GEPHI_MOCK=$!
 fi
 
 docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc && docs/postprocessor/postprocess.sh
-
-if [ "${GEPHI_MOCK}" ]; then
-  kill ${GEPHI_MOCK}
-fi
 
 popd > /dev/null
