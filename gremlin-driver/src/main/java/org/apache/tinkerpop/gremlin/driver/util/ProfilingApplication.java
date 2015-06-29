@@ -48,14 +48,17 @@ public class ProfilingApplication {
     private final Cluster cluster;
     private final int requests;
     private final String executionName;
+    private final String script;
 
     private final ExecutorService executor;
 
-    public ProfilingApplication(final String executionName, final Cluster cluster, final int requests, final ExecutorService executor) {
+    public ProfilingApplication(final String executionName, final Cluster cluster, final int requests, final ExecutorService executor,
+                                final String script) {
         this.executionName = executionName;
         this.cluster = cluster;
         this.requests = requests;
         this.executor = executor;
+        this.script = script;
     }
 
     public long execute() throws Exception {
@@ -69,7 +72,7 @@ public class ProfilingApplication {
 
             final long start = System.nanoTime();
             IntStream.range(0, requests).forEach(i ->
-                client.submitAsync("1+1").thenAcceptAsync(r -> {
+                client.submitAsync(script).thenAcceptAsync(r -> {
                     try {
                         r.all().get(125, TimeUnit.MILLISECONDS);
                     } catch (TimeoutException ex) {
@@ -96,7 +99,7 @@ public class ProfilingApplication {
             ex.printStackTrace();
             throw new RuntimeException(ex);
         } finally {
-            if (client != null) client.close();
+            client.close();
         }
     }
 
@@ -122,6 +125,8 @@ public class ProfilingApplication {
         final int minInProcessPerConnection = Integer.parseInt(options.getOrDefault("minInProcessPerConnection", "16").toString());
         final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "2").toString());
 
+        final String script = options.getOrDefault("script", "1+1").toString();
+
         final Cluster cluster = Cluster.build(host)
                 .minConnectionPoolSize(minConnectionPoolSize)
                 .maxConnectionPoolSize(maxConnectionPoolSize)
@@ -145,7 +150,7 @@ public class ProfilingApplication {
             final AtomicBoolean meetsRpsExpectation = new AtomicBoolean(true);
             System.out.println("---------------------------WARMUP CYCLE---------------------------");
             for (int ix = 0; ix < warmups && meetsRpsExpectation.get(); ix++) {
-                final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, 1000, executor).execute();
+                final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, 1000, executor, script).execute();
                 meetsRpsExpectation.set(averageRequestsPerSecond > minExpectedRps);
                 TimeUnit.SECONDS.sleep(1); // pause between executions
             }
@@ -158,7 +163,7 @@ public class ProfilingApplication {
                 final long start = System.nanoTime();
                 System.out.println("----------------------------TEST CYCLE----------------------------");
                 for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
-                    totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, requests, executor).execute();
+                    totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, requests, executor, script).execute();
                     exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
                     TimeUnit.SECONDS.sleep(1); // pause between executions
                 }
