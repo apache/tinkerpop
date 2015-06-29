@@ -49,16 +49,18 @@ public class ProfilingApplication {
     private final int requests;
     private final String executionName;
     private final String script;
+    private final int tooSlowThreshold;
 
     private final ExecutorService executor;
 
     public ProfilingApplication(final String executionName, final Cluster cluster, final int requests, final ExecutorService executor,
-                                final String script) {
+                                final String script, final int tooSlowThreshold) {
         this.executionName = executionName;
         this.cluster = cluster;
         this.requests = requests;
         this.executor = executor;
         this.script = script;
+        this.tooSlowThreshold = tooSlowThreshold;
     }
 
     public long execute() throws Exception {
@@ -74,7 +76,7 @@ public class ProfilingApplication {
             IntStream.range(0, requests).forEach(i ->
                 client.submitAsync(script).thenAcceptAsync(r -> {
                     try {
-                        r.all().get(125, TimeUnit.MILLISECONDS);
+                        r.all().get(tooSlowThreshold, TimeUnit.MILLISECONDS);
                     } catch (TimeoutException ex) {
                         tooSlow.incrementAndGet();
                     } catch (Exception ex) {
@@ -124,6 +126,7 @@ public class ProfilingApplication {
         final int maxInProcessPerConnection = Integer.parseInt(options.getOrDefault("maxInProcessPerConnection", "64").toString());
         final int minInProcessPerConnection = Integer.parseInt(options.getOrDefault("minInProcessPerConnection", "16").toString());
         final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "2").toString());
+        final int tooSlowThreshold = Integer.parseInt(options.getOrDefault("tooSlowThreshold", "125").toString());
 
         final String script = options.getOrDefault("script", "1+1").toString();
 
@@ -150,7 +153,7 @@ public class ProfilingApplication {
             final AtomicBoolean meetsRpsExpectation = new AtomicBoolean(true);
             System.out.println("---------------------------WARMUP CYCLE---------------------------");
             for (int ix = 0; ix < warmups && meetsRpsExpectation.get(); ix++) {
-                final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, 1000, executor, script).execute();
+                final long averageRequestsPerSecond = new ProfilingApplication("warmup-" + (ix + 1), cluster, 1000, executor, script, tooSlowThreshold).execute();
                 meetsRpsExpectation.set(averageRequestsPerSecond > minExpectedRps);
                 TimeUnit.SECONDS.sleep(1); // pause between executions
             }
@@ -163,7 +166,7 @@ public class ProfilingApplication {
                 final long start = System.nanoTime();
                 System.out.println("----------------------------TEST CYCLE----------------------------");
                 for (int ix = 0; ix < executions && !exceededTimeout.get(); ix++) {
-                    totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, requests, executor, script).execute();
+                    totalRequestsPerSecond += new ProfilingApplication("test-" + (ix + 1), cluster, requests, executor, script, tooSlowThreshold).execute();
                     exceededTimeout.set((System.nanoTime() - start) > TimeUnit.NANOSECONDS.convert(timeout, TimeUnit.MILLISECONDS));
                     TimeUnit.SECONDS.sleep(1); // pause between executions
                 }
