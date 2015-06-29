@@ -81,13 +81,13 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select() {
-            TraversalScriptHelper.compute("g.V().label().groupCount().as('x').select()", g)
+        public Traversal<Vertex, Map<String, Long>> get_g_V_label_groupCount_asXxX_selectXxX() {
+            TraversalScriptHelper.compute("g.V().label().groupCount().as('x').select('x')", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_mapXbothE_label_groupCountX_asXrelationsX_select() {
-            TraversalScriptHelper.compute("g.V.hasLabel('person').as('person').map(__.bothE.label.groupCount()).as('relations').select", g)
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX() {
+            TraversalScriptHelper.compute("g.V.hasLabel('person').as('p').map(__.bothE.label.groupCount()).as('r').select('p','r')", g)
         }
 
         @Override
@@ -186,39 +186,21 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXglobalX(final Pop pop) {
-            final String root = "g.V."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(global)" : "select(global, ${pop})"), g)
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_selectXglobal_aX(final Pop pop) {
-            final String root = "g.V."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(global, 'a')" : "select(global, ${pop}, 'a')"), g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXglobal_a_bX(final Pop pop) {
-            final String root = "g.V."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(global, 'a', 'b')" : "select(global, ${pop}, 'a', 'b')"), g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMapXaX_selectXlocalX(final Pop pop) {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMapXaX_selectXpopX(final Pop pop) {
             final String root = "g.V.valueMap('a')."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(local)" : "select(local, ${pop})"), g)
+            TraversalScriptHelper.compute(root + (null == pop ? "select()" : "select(${pop})"), g)
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_valueMap_selectXlocal_aX(final Pop pop) {
+        public Traversal<Vertex, Object> get_g_V_valueMap_selectXpop_aX(final Pop pop) {
             final String root = "g.V.valueMap."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(local, 'a')" : "select(local, ${pop}, 'a')"), g)
+            TraversalScriptHelper.compute(root + (null == pop ? "select('a')" : "select(${pop}, 'a')"), g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXlocal_a_bX(final Pop pop) {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXpop_a_bX(final Pop pop) {
             final String root = "g.V.valueMap."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(local, 'a', 'b')" : "select(local, ${pop}, 'a', 'b')"), g)
+            TraversalScriptHelper.compute(root + (null == pop ? "select('a', 'b')" : "select(${pop}, 'a', 'b')"), g)
         }
 
         // when labels don't exist

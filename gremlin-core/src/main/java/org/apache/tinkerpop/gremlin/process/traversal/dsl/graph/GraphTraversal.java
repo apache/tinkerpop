@@ -492,36 +492,20 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Scope scope, final Pop pop, final String... selectLabels) {
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), scope, pop, selectLabels));
-    }
-
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Scope scope, final String... selectLabels) {
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), scope, selectLabels));
-    }
-
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String... selectLabels) {
-        return this.select(Scope.global, pop, selectLabels);
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), pop, selectLabels));
     }
 
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final String... selectLabels) {
-        return this.select(Scope.global, selectLabels);
-    }
-
-    public default <E2> GraphTraversal<S, E2> select(final Scope scope, final Pop pop, final String selectLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), scope, pop, selectLabel));
-    }
-
-    public default <E2> GraphTraversal<S, E2> select(final Scope scope, final String selectLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), scope, selectLabel));
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), selectLabels));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectLabel) {
-        return this.select(Scope.global, pop, selectLabel);
+        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), pop, selectLabel));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String selectLabel) {
-        return this.select(Scope.global, selectLabel);
+        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), selectLabel));
     }
 
     public default <E2> GraphTraversal<S, E2> unfold() {
@@ -602,23 +586,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), keyValues));
     }
 
-    public default GraphTraversal<S, Edge> addE(final Scope scope, final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        if (propertyKeyValues.length % 2 == 0)
-            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), scope, direction, null, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues));
-        else
-            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), scope, direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, (String) propertyKeyValues[0], Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length)));
-    }
-
     public default GraphTraversal<S, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return this.addE(Scope.global, direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
+        if (propertyKeyValues.length % 2 == 0)
+            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), direction, null, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues));
+        else
+            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, (String) propertyKeyValues[0], Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length)));
     }
 
     public default GraphTraversal<S, Edge> addOutE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return this.addE(Scope.global, Direction.OUT, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
+        return this.addE(Direction.OUT, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
     public default GraphTraversal<S, Edge> addInE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return this.addE(Scope.global, Direction.IN, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
+        return this.addE(Direction.IN, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -664,30 +644,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.dedup(Scope.global, dedupLabels);
     }
 
-    public default GraphTraversal<S, E> where(final Scope scope, final String startKey, final P<String> predicate) {
-        return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), scope, Optional.ofNullable(startKey), predicate));
-    }
-
-    public default GraphTraversal<S, E> where(final Scope scope, final P<String> predicate) {
-        return this.where(scope, null, predicate);
-    }
-
-    public default GraphTraversal<S, E> where(final Scope scope, final Traversal<?, ?> whereTraversal) {
-        return TraversalHelper.getVariableLocations(whereTraversal.asAdmin()).isEmpty() ?
-                this.filter(whereTraversal) :
-                this.asAdmin().addStep(new WhereTraversalStep<>(this.asAdmin(), scope, whereTraversal));
-    }
-
     public default GraphTraversal<S, E> where(final String startKey, final P<String> predicate) {
-        return this.where(Scope.global, startKey, predicate);
+        return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), Optional.ofNullable(startKey), predicate));
     }
 
     public default GraphTraversal<S, E> where(final P<String> predicate) {
-        return this.where(Scope.global, null, predicate);
+        return this.where(null, predicate);
     }
 
     public default GraphTraversal<S, E> where(final Traversal<?, ?> whereTraversal) {
-        return this.where(Scope.global, whereTraversal);
+        return TraversalHelper.getVariableLocations(whereTraversal.asAdmin()).isEmpty() ?
+                this.filter(whereTraversal) :
+                this.asAdmin().addStep(new WhereTraversalStep<>(this.asAdmin(), whereTraversal));
     }
 
     public default GraphTraversal<S, E> has(final String key, final P<?> predicate) {

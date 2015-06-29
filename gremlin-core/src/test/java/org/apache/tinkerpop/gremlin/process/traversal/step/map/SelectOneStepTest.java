@@ -21,13 +21,17 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -37,12 +41,27 @@ public class SelectOneStepTest extends StepTest {
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
-                __.select(Scope.global, "x"),
-                __.select(Scope.global, "y"),
-                __.select(Scope.global, "x").by("name"),
-                __.select(Scope.local, "x"),
-                __.select(Scope.local, "y"),
-                __.select(Scope.local, "x").by("name")
+                __.select(Pop.all, "x"),
+                __.select(Pop.first, "x"),
+                __.select(Pop.last, "x"),
+                __.select("x"),
+                __.select(Pop.all, "x").by("name"),
+                __.select(Pop.first, "x").by("name"),
+                __.select(Pop.last, "x").by("name"),
+                __.select("x").by("name")
         );
+    }
+
+    @Test
+    public void shouldRequirePathsAccordingly() {
+        Object[][] traversalPaths = new Object[][]{
+                {false, __.select("x").asAdmin()},
+                {true, __.as("x").select("x").asAdmin()},
+                {false, __.local(__.select("x")).asAdmin()},
+                {true, __.as("x").local(__.select("x")).asAdmin()},
+        };
+        for (final Object[] traversalPath : traversalPaths) {
+            assertEquals(traversalPath[0], ((Traversal.Admin<?, ?>) traversalPath[1]).getTraverserRequirements().contains(TraverserRequirement.PATH));
+        }
     }
 }

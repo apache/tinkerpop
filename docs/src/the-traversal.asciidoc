@@ -680,7 +680,7 @@ The `limit()`-step can also be applied with `Scope.local`, in which case it oper
 
 [gremlin-groovy,theCrew]
 ----
-g.V().valueMap().select(local,'location').limit(local,2) <1>
+g.V().valueMap().select('location').limit(local,2) <1>
 g.V().valueMap().limit(local, 1) <2>
 ----
 
@@ -1105,7 +1105,7 @@ The next example uses the <<the-crew-toy-graph,The Crew>> toy data set.  It prod
 
 [gremlin-groovy,theCrew]
 ----
-g.V().valueMap().select(local,'location').range(local, 1, 3)
+g.V().valueMap().select('location').range(local, 1, 3)
 ----
 
 [[repeat-step]]
@@ -1270,21 +1270,6 @@ g.V().as('x').out().out().select('x')
 g.V().out().as('x').out().select('x')
 g.V().out().out().as('x').select('x') // pointless
 ----
-
-The second use case is best understood in terms of <<match-step,`match()`>>-step where the result of `match()` is a `Map<String,Object>` of variable bindings. However, any step that emits a `Map<String,Object>` can be selected. A contrived example is presented below.
-
-[gremlin-groovy,modern]
-----
-g.V().range(0, 2).map {[b:1,c:2]} <1>
-g.V().range(0, 2).map {[b:1,c:2]}.select(local) <2>
-g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(global) <3>
-g.V().range(0, 2).map {[b:1,c:2]}.select(local,'c') <4>
-----
-
-<1> A contrived example to create a `Map<String,Object>` flow as a foundation for the examples to follow.
-<2> Will select from the `Map<String,Object>` traverser object.
-<3> Will select from the `Path` (or sideEffects) of the traversal.
-<4> If a single selection is used, then the object is emitted not wrapped in a map. Useful for continuing the traversal process without having to do a map projection.
 
 NOTE: When executing a traversal with `select()` on a standard traversal engine (i.e. OLTP), `select()` will do its best to avoid calculating the path history and instead, will rely on a global data structure for storing the currently selected object. As such, if only a subset of the path walked is required, `select()` should be used over the more resource intensive <<path-step,`path()`>>-step.
 

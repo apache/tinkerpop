@@ -286,18 +286,6 @@ public class __ {
         return __.<A>start().sack();
     }
 
-
-    public static <A, B> GraphTraversal<A, B> select(final Scope scope, final Pop pop, final String selectLabel) {
-        return __.<A>start().select(scope, pop, selectLabel);
-    }
-
-    /**
-     * @see {@link GraphTraversal#select(Scope, String)}
-     */
-    public static <A, B> GraphTraversal<A, B> select(final Scope scope, final String selectLabel) {
-        return __.<A>start().select(scope, selectLabel);
-    }
-
     public static <A, B> GraphTraversal<A, B> select(final Pop pop, final String selectLabel) {
         return __.<A>start().select(pop, selectLabel);
     }
@@ -307,17 +295,6 @@ public class __ {
      */
     public static <A, B> GraphTraversal<A, B> select(final String selectLabel) {
         return __.<A>start().select(selectLabel);
-    }
-
-    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Scope scope, final Pop pop, final String... selectLabels) {
-        return __.<A>start().select(scope, pop, selectLabels);
-    }
-
-    /**
-     * @see {@link GraphTraversal#select(Scope, String...)}
-     */
-    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Scope scope, final String... selectLabels) {
-        return __.<A>start().select(scope, selectLabels);
     }
 
     public static <A, B> GraphTraversal<A, Map<String, B>> select(final Pop pop, final String... selectLabels) {
@@ -451,13 +428,6 @@ public class __ {
     }
 
     /**
-     * @see {@link GraphTraversal#addE(Scope, Direction, String, String, Object...)} (Scope, String)}
-     */
-    public static <A> GraphTraversal<A, Edge> addE(final Scope scope, final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return __.<A>start().addE(scope, direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
-    }
-
-    /**
      * @see {@link GraphTraversal#addE(Direction, String, String, Object...)}
      */
     public static <A> GraphTraversal<A, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
@@ -558,18 +528,6 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> hasValue(final Object... values) {
         return __.<A>start().hasValue(values);
-    }
-
-    public static <A> GraphTraversal<A, A> where(final Scope scope, final String startKey, final P<String> predicate) {
-        return __.<A>start().where(scope, startKey, predicate);
-    }
-
-    public static <A> GraphTraversal<A, A> where(final Scope scope, final P<String> predicate) {
-        return __.<A>start().where(scope, predicate);
-    }
-
-    public static <A> GraphTraversal<A, A> where(final Scope scope, final Traversal<?, ?> whereTraversal) {
-        return __.<A>start().where(scope, whereTraversal);
     }
 
     public static <A> GraphTraversal<A, A> where(final String startKey, final P<String> predicate) {

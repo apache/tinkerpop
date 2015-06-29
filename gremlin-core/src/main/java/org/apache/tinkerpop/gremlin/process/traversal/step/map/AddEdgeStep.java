@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
@@ -28,13 +27,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRe
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -45,10 +44,6 @@ import java.util.Set;
  */
 public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scoping, Mutating<Event.EdgeAddedEvent> {
 
-    private static final Set<TraverserRequirement> LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
-    private static final Set<TraverserRequirement> GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS, TraverserRequirement.PATH);
-
-    private Scope scope;
     private final Direction direction;
     private final String firstVertexKey;
     private final String edgeLabel;
@@ -57,9 +52,8 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
 
     private CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry;
 
-    public AddEdgeStep(final Traversal.Admin traversal, final Scope scope, final Direction direction, final String firstVertexKey, final String edgeLabel, final String secondVertexKey, final Object... propertyKeyValues) {
+    public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String firstVertexKey, final String edgeLabel, final String secondVertexKey, final Object... propertyKeyValues) {
         super(traversal);
-        this.scope = scope;
         this.direction = direction;
         this.firstVertexKey = firstVertexKey;
         this.edgeLabel = edgeLabel;
@@ -121,7 +115,9 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return Scope.local == this.scope ? LOCAL_REQUIREMENTS : GLOBAL_REQUIREMENTS;
+        return TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.getScopeKeys()::contains).findAny().isPresent() ?
+                TYPICAL_GLOBAL_REQUIREMENTS :
+                TYPICAL_LOCAL_REQUIREMENTS;
     }
 
     @Override
@@ -132,7 +128,7 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.scope.hashCode() ^ this.direction.hashCode() ^ this.edgeLabel.hashCode();
+        int result = super.hashCode() ^ this.direction.hashCode() ^ this.edgeLabel.hashCode();
         if (null != this.firstVertexKey)
             result ^= this.firstVertexKey.hashCode();
         if (null != this.secondVertexKey)
@@ -141,21 +137,6 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scopin
             result ^= object.hashCode();
         }
         return result;
-    }
-
-    @Override
-    public void setScope(final Scope scope) {
-        this.scope = scope;
-    }
-
-    @Override
-    public Scope recommendNextScope() {
-        return Scope.global;
-    }
-
-    @Override
-    public Scope getScope() {
-        return this.scope;
     }
 
     @Override

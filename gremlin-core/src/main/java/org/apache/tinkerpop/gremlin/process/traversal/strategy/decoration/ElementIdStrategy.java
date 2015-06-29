@@ -125,10 +125,10 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
 
         TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal).stream().forEach(s -> {
             if (ElementHelper.getIdValue(s.getPropertyKeyValues()).isPresent())
-                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getScope(), s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), ElementHelper.replaceKey(s.getPropertyKeyValues(), T.id, idPropertyKey)), traversal);
+                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), ElementHelper.replaceKey(s.getPropertyKeyValues(), T.id, idPropertyKey)), traversal);
             else {
                 final Object[] kvs = ElementHelper.getKeys(s.getPropertyKeyValues()).contains(idPropertyKey) ? s.getPropertyKeyValues() : ElementHelper.upsert(s.getPropertyKeyValues(), idPropertyKey, idMaker.get());
-                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getScope(), s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), kvs), traversal);
+                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), kvs), traversal);
             }
         });
     }

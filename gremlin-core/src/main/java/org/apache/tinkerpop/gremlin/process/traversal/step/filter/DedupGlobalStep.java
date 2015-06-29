@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
@@ -45,7 +44,6 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     private Set<Object> duplicateSet = new HashSet<>();
     private boolean bypass = false;
     private final Set<String> dedupLabels;
-    private Scope recommendedScope = Scope.global; // pass through
 
     public DedupGlobalStep(final Traversal.Admin traversal, final String... dedupLabels) {
         super(traversal);
@@ -113,21 +111,6 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     @Override
     public void setBypass(final boolean bypass) {
         this.bypass = bypass;
-    }
-
-    @Override
-    public Scope getScope() {
-        return Scope.global;
-    }
-
-    @Override
-    public Scope recommendNextScope() {
-        return this.recommendedScope;
-    }
-
-    @Override
-    public void setScope(final Scope scope) {
-        this.recommendedScope = scope;
     }
 
     @Override
