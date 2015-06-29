@@ -44,7 +44,6 @@ import org.junit.rules.TestName;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -157,36 +156,46 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldRespectHighWaterMarkSettingAndSucceed() throws Exception {
         // the highwatermark should get exceeded on the server and thus pause the writes, but have no problem catching
         // itself up
-        try (SimpleClient client = new WebSocketClient()) {
-            final int resultCountToGenerate = 6000;
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        try {
+            final int resultCountToGenerate = 1000;
             final int batchSize = 3;
             final String fatty = IntStream.range(0, 175).mapToObj(String::valueOf).collect(Collectors.joining());
             final String fattyX = "['" + fatty + "'] * " + resultCountToGenerate;
 
             // don't allow the thread to proceed until all results are accounted for
-            final CountDownLatch latch = new CountDownLatch(resultCountToGenerate / batchSize);
+            final CountDownLatch latch = new CountDownLatch(resultCountToGenerate);
             final AtomicBoolean expected = new AtomicBoolean(false);
+            final AtomicBoolean faulty = new AtomicBoolean(false);
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_BATCH_SIZE, batchSize)
                     .addArg(Tokens.ARGS_GREMLIN, fattyX).create();
-            client.submit(request, r -> {
-                try {
-                    if (r.getResult().getData() != null) {
-                        final List<Object> list = ((List<Object>) r.getResult().getData());
-                        final Object aFattyResult = list.get(0);
+
+            client.submitAsync(request).thenAcceptAsync(r -> {
+                r.stream().forEach(item -> {
+                    try {
+                        final String aFattyResult = item.getString();
                         expected.set(aFattyResult.equals(fatty));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        faulty.set(true);
+                    } finally {
+                        latch.countDown();
                     }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    latch.countDown();
-                }
+                });
             });
 
             assertTrue(latch.await(30000, TimeUnit.MILLISECONDS));
             assertEquals(0, latch.getCount());
+            assertFalse(faulty.get());
             assertTrue(expected.get());
             assertTrue(recordingAppender.getMessages().stream().anyMatch(m -> m.contains("Pausing response writing as writeBufferHighWaterMark exceeded on")));
+        } catch (Exception ex) {
+            fail("Shouldn't have tossed an exception");
+        } finally {
+            cluster.close();
         }
     }
 
