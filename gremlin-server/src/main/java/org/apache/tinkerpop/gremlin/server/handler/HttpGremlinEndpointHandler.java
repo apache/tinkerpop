@@ -210,7 +210,10 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                                     .code(ResponseStatusCode.SUCCESS)
                                     .result(IteratorUtils.asList(o)).create();
                             try {
-                                return (Object) Unpooled.wrappedBuffer(serializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
+                                Object wrappedBuffer = (Object) Unpooled.wrappedBuffer(serializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
+                                // http server is sessionless and must handle commit on transactions
+                                this.graphManager.commitAll();
+                                return wrappedBuffer;
                             } catch (Exception ex) {
                                 logger.warn(String.format("Error during serialization for %s", responseMessage), ex);
                                 throw ex;
