@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -55,8 +54,8 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
 
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
-        final Optional<S> optional = this.getOptionalScopeValue(this.pop, this.selectKey, traverser);
-        return optional.isPresent() ? TraversalUtil.applyNullable(optional.get(), this.selectTraversal) : null;
+        final E end = this.getNullableScopeValue(this.pop, this.selectKey, traverser);
+        return null != end ? TraversalUtil.applyNullable((S) end, this.selectTraversal) : null;
     }
 
     @Override
