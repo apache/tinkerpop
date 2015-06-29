@@ -425,6 +425,27 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldExecuteSessionlessScriptOnTransactionalGraph() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        final Vertex vertexRequest1 = client.submit("graph.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexRequest1.values("name").next());
+
+        final Vertex vertexRequest2 = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexRequest2.values("name").next());
+
+        final Vertex vertexRequest3 = client.submit("graph.addVertex(\"name\",\"marko\")").all().get().get(0).getVertex();
+        assertEquals("marko", vertexRequest3.values("name").next());
+
+        assertEquals(2, client.submit("g.V().count()").all().get().get(0).getLong());
+
+        cluster.close();
+    }
+
+    @Test
     public void shouldExecuteScriptInSessionWithBindingsSavedOnServerBetweenRequests() throws Exception {
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
