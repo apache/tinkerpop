@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.BufferedWriter;
@@ -127,6 +128,7 @@ public class ProfilingApplication {
         final int minInProcessPerConnection = Integer.parseInt(options.getOrDefault("minInProcessPerConnection", "16").toString());
         final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "2").toString());
         final int tooSlowThreshold = Integer.parseInt(options.getOrDefault("tooSlowThreshold", "125").toString());
+        final String serializer = options.getOrDefault("serializer", Serializers.GRYO_V1D0.getValue()).toString();
 
         final String script = options.getOrDefault("script", "1+1").toString();
 
@@ -138,6 +140,7 @@ public class ProfilingApplication {
                 .minInProcessPerConnection(minInProcessPerConnection)
                 .maxInProcessPerConnection(maxInProcessPerConnection)
                 .nioPoolSize(nioPoolSize)
+                .serializer(Serializers.valueOf(serializer))
                 .workerPoolSize(workerPoolSize).create();
 
         try {
