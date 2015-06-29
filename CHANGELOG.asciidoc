@@ -66,7 +66,6 @@ TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 * Added `LazyBarrierStrategy` which "stalls" a traversal of a particular form in order to gain a bulking optimization.
 * `CollectingBarrierStep` supports `maxBarrierSize` for "lazy barrier," memory conservation.
 * `Scoping` now has `getScopeKeys()` to get the keys desired by the scoping step.
-* `Scope.global` and `Scope.local` both account for traversal side-effects. The distinction is between path and map.
 * Refactored SSL support in the Gremlin Server/Driver.
 * Factored out `ServerGremlinExecutor` which contains the core elements of server-side script execution in Gremlin Server.
 * Bumped to netty 4.0.28.Final.
