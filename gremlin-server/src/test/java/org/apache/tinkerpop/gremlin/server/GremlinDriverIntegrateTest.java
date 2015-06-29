@@ -38,6 +38,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,7 +54,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Integration tests for gremlin-driver configurations and settings.
@@ -89,13 +92,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 settings.serializers.stream().filter(s -> s.config.containsKey("custom"))
                         .findFirst().get().config.put("custom", custom);
                 break;
-            /*
-            // todo: how do we do transactional testing without neo4j?
             case "shouldExecuteScriptInSessionOnTransactionalGraph":
                 deleteDirectory(new File("/tmp/neo4j"));
-                settings.graphs.put("g", "conf/neo4j-empty.properties");
+                settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
-                */
         }
 
         return settings;
@@ -402,8 +402,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @org.junit.Ignore("Dropping neo4j prevents us from doing transactional tests")
     public void shouldExecuteScriptInSessionOnTransactionalGraph() throws Exception {
+        assumeNeo4jIsPresent();
+
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
 
@@ -543,5 +544,16 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals("stephen", v.value("name"));
 
         cluster.close();
+    }
+
+    private static void assumeNeo4jIsPresent() {
+        boolean neo4jIncludedForTesting;
+        try {
+            Class.forName("org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl");
+            neo4jIncludedForTesting = true;
+        } catch (Exception ex) {
+            neo4jIncludedForTesting = false;
+        }
+        assumeThat("Neo4j implementation was not included for testing - run with -DincludeNeo4j", neo4jIncludedForTesting, is(true));
     }
 }

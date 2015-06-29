@@ -84,6 +84,12 @@ limitations under the License.
             <version>4.3.5</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.tinkerpop</groupId>
+            <artifactId>neo4j-gremlin</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>
@@ -140,4 +146,41 @@ limitations under the License.
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <!--
+              This profile will include neo4j for purposes of transactional testing within Gremlin Server.
+              Tests that require neo4j specifically will be "ignored" if this profile is not turned on.
+            -->
+            <id>include-neo4j</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>includeNeo4j</name>
+                </property>
+            </activation>
+            <dependencies>
+                <!-- TESTING -->
+                <!-- *** WARNING *** -->
+                <dependency>
+                    <groupId>org.neo4j</groupId>
+                    <artifactId>neo4j-tinkerpop-api-impl</artifactId>
+                    <version>0.1-2.2</version>
+                    <scope>test</scope>
+                </dependency>
+                <!-- *** WARNING *** -->
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
