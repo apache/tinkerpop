@@ -54,9 +54,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Integration tests for gremlin-driver configurations and settings.
@@ -110,7 +112,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             results.all().join();
-            fail();
+            fail("Should have thrown exception over bad serialization");
         } catch (Exception ex) {
             final Throwable inner = ExceptionUtils.getRootCause(ex);
             assertTrue(inner instanceof RuntimeException);
