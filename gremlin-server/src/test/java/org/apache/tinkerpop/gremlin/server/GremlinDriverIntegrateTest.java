@@ -95,6 +95,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                         .findFirst().get().config.put("custom", custom);
                 break;
             case "shouldExecuteScriptInSessionOnTransactionalGraph":
+            case "shouldExecuteSessionlessScriptOnTransactionalGraph":
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
