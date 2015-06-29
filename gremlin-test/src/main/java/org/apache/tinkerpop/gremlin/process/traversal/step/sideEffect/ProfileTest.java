@@ -104,8 +104,6 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         Metrics metrics = traversalMetrics.getMetrics(0);
         assertEquals(6, metrics.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
         assertEquals(6, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
-        assertTrue("Percent duration should be positive.", (Double) metrics.getAnnotation(TraversalMetrics.PERCENT_DURATION_KEY) >= 0);
-        assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) >= 0);
 
         metrics = traversalMetrics.getMetrics(1);
         assertEquals(6, metrics.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
