@@ -31,7 +31,7 @@ import java.util.function.Function;
  * A simple base class for {@link Transaction} that provides some common functionality and default behavior.  Vendors
  * can use this class as a starting point for their own implementations. Implementers should note that this
  * class assumes that threaded transactions are not enabled.  Vendors should explicitly override
- * {@link #create} to implement that functionality if required.
+ * {@link #createThreadedTx} to implement that functionality if required.
  * <p/>
  * Note that transaction listeners are registered in a {@link ThreadLocal} fashion which matches the pattern
  * expected of vendor implementations of a {@link Transaction}.
@@ -117,7 +117,7 @@ public abstract class AbstractTransaction implements Transaction {
     }
 
     @Override
-    public <G extends Graph> G create() {
+    public <G extends Graph> G createThreadedTx() {
         throw Transaction.Exceptions.threadedTransactionsNotSupported();
     }
 

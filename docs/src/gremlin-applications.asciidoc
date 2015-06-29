@@ -1032,14 +1032,13 @@ Benchmarking allows execution time comparisons of different pieces of code. Whil
 
 [gremlin-groovy,modern]
 ----
-:plugin use tinkerpop.sugar <1>
+:plugin use tinkerpop.sugar // Activate sugar plugin for use in benchmark
 benchmark{
  'sugar' {g.V(1).name.next()}
  'nosugar' {g.V(1).values('name').next()}
 }.prettyPrint()
+profile { g.V().iterate() }.prettyPrint()
 ----
-
-<1> Activate sugar plugin for use in benchmark
 
 [[describe-graph]]
 Describe Graph

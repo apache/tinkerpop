@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env python
+#
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,7 +19,30 @@
 # under the License.
 #
 
-while true
-do
-  echo -e "HTTP/1.1 200 OK\nConnection: close\n\n{}" | nc -l 8080
-done
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+
+class GephiHandler(BaseHTTPRequestHandler):
+
+    def respond(self):
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/plain')
+        self.end_headers()
+        self.wfile.write("{}")
+
+    def do_GET(self):
+        self.respond()
+
+    def do_POST(self):
+        self.respond()
+
+def main():
+    try:
+        server = HTTPServer(('', 8080), GephiHandler)
+        print 'listening on port 8080...'
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print '^C received, shutting down server'
+        server.socket.close()
+
+if __name__ == '__main__':
+    main()

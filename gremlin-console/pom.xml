@@ -75,7 +75,7 @@ limitations under the License.
         <dependency>
             <groupId>org.gperfutils</groupId>
             <artifactId>gprof</artifactId>
-            <version>0.3.0-groovy-2.3</version>
+            <version>0.3.1-groovy-2.4</version>
         </dependency>
         <!-- TESTING -->
         <dependency>
