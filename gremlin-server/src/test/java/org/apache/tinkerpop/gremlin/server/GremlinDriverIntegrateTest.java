@@ -546,14 +546,4 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         cluster.close();
     }
 
-    private static void assumeNeo4jIsPresent() {
-        boolean neo4jIncludedForTesting;
-        try {
-            Class.forName("org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl");
-            neo4jIncludedForTesting = true;
-        } catch (Exception ex) {
-            neo4jIncludedForTesting = false;
-        }
-        assumeThat("Neo4j implementation was not included for testing - run with -DincludeNeo4j", neo4jIncludedForTesting, is(true));
-    }
 }
