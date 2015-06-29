@@ -22,7 +22,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -37,7 +36,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,16 +45,11 @@ import java.util.Set;
  */
 public final class WhereTraversalStep<S> extends FilterStep<S> implements TraversalParent, Scoping {
 
-    private static final Set<TraverserRequirement> LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
-    private static final Set<TraverserRequirement> GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
-
     protected Traversal.Admin<?, ?> whereTraversal;
-    protected Scope scope;
     protected final Set<String> scopeKeys = new HashSet<>();
 
-    public WhereTraversalStep(final Traversal.Admin traversal, final Scope scope, final Traversal<?, ?> whereTraversal) {
+    public WhereTraversalStep(final Traversal.Admin traversal, final Traversal<?, ?> whereTraversal) {
         super(traversal);
-        this.scope = scope;
         this.whereTraversal = whereTraversal.asAdmin();
         this.configureStartAndEndSteps(this.whereTraversal);
         if (this.scopeKeys.isEmpty())
@@ -102,7 +95,7 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.scope, this.whereTraversal);
+        return StringFactory.stepString(this, this.whereTraversal);
     }
 
     @Override
@@ -119,27 +112,14 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.scope.hashCode() ^ this.whereTraversal.hashCode();
+        return super.hashCode() ^ this.whereTraversal.hashCode();
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return Scope.local == this.scope ? LOCAL_REQUIREMENTS : GLOBAL_REQUIREMENTS;
-    }
-
-    @Override
-    public void setScope(final Scope scope) {
-        this.scope = scope;
-    }
-
-    @Override
-    public Scope getScope() {
-        return this.scope;
-    }
-
-    @Override
-    public Scope recommendNextScope() {
-        return this.scope;
+        return TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.scopeKeys::contains).findAny().isPresent() ?
+                TYPICAL_GLOBAL_REQUIREMENTS :
+                TYPICAL_LOCAL_REQUIREMENTS;
     }
 
     //////////////////////////////
@@ -147,7 +127,6 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
     public static class WhereStartStep<S> extends MapStep<S, Object> implements Scoping {
 
         private String selectKey;
-        private Scope scope = Scope.global;
 
         public WhereStartStep(final Traversal.Admin traversal, final String selectKey) {
             super(traversal);
@@ -163,27 +142,12 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
         @Override
         public String toString() {
-            return StringFactory.stepString(this, this.scope, this.selectKey);
+            return StringFactory.stepString(this, this.selectKey);
         }
 
         @Override
         public int hashCode() {
-            return super.hashCode() ^ this.scope.hashCode() ^ (null == this.selectKey ? "null".hashCode() : this.selectKey.hashCode());
-        }
-
-        @Override
-        public Scope getScope() {
-            return this.scope;
-        }
-
-        @Override
-        public Scope recommendNextScope() {
-            return this.scope;
-        }
-
-        @Override
-        public void setScope(Scope scope) {
-            this.scope = scope;
+            return super.hashCode() ^ (null == this.selectKey ? "null".hashCode() : this.selectKey.hashCode());
         }
 
         public void removeScopeKey() {
@@ -200,7 +164,6 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
         private final String matchKey;
         private Object matchValue = null;
-        private Scope scope = Scope.global;
 
         public WhereEndStep(final Traversal.Admin traversal, final String matchKey) {
             super(traversal);
@@ -219,27 +182,12 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
 
         @Override
         public String toString() {
-            return StringFactory.stepString(this, this.scope, this.matchKey);
+            return StringFactory.stepString(this, this.matchKey);
         }
 
         @Override
         public int hashCode() {
-            return super.hashCode() ^ this.scope.hashCode() ^ (null == this.matchKey ? "null".hashCode() : this.matchKey.hashCode());
-        }
-
-        @Override
-        public Scope getScope() {
-            return this.scope;
-        }
-
-        @Override
-        public Scope recommendNextScope() {
-            return this.scope;
-        }
-
-        @Override
-        public void setScope(Scope scope) {
-            // this.scope = scope;
+            return super.hashCode() ^ (null == this.matchKey ? "null".hashCode() : this.matchKey.hashCode());
         }
 
         @Override

@@ -22,20 +22,16 @@
 package org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.neo4j.process.util.Neo4jCypherIterator;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class CypherStartStep extends StartStep<Map<String, Object>> implements Scoping {
+public final class CypherStartStep extends StartStep<Map<String, Object>> {
 
     private final String query;
 
@@ -44,25 +40,6 @@ public final class CypherStartStep extends StartStep<Map<String, Object>> implem
         this.query = query;
     }
 
-    @Override
-    public void setScope(final Scope scope) {
-
-    }
-
-    @Override
-    public Set<String> getScopeKeys() {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Scope recommendNextScope() {
-        return Scope.local;
-    }
-
-    @Override
-    public Scope getScope() {
-        return Scope.local;
-    }
 
     @Override
     public String toString() {

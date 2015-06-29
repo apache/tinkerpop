@@ -89,7 +89,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         // all write edge steps need to have partition keys tossed into the property key/value list after mutating steps
         TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal).forEach(s -> {
             final Object[] keyValues = injectPartitionInfo(s.getPropertyKeyValues());
-            TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getScope(), s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), keyValues), traversal);
+            TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), keyValues), traversal);
         });
 
         // all write vertex steps need to have partition keys tossed into the property key/value list after mutating steps

@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -36,6 +37,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -174,9 +176,9 @@ public class TinkerGraphTest {
         TinkerGraph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
         final List<Supplier<GraphTraversal<?,?>>> traversals = Arrays.asList(
-                () -> g.V().out().as("c").match(
-                        as("b").out("knows").as("a"),
-                        as("c").out("created").as("e")).select("c").out("knows").values("name")
+                () -> g.V().out().as("v").match(
+                        __.as("v").outE().count().as("outDegree"),
+                        __.as("v").inE().count().as("inDegree")).select("v","outDegree","inDegree").by(valueMap()).by().by().local(union(select("v"), select("inDegree", "outDegree")).unfold().fold())
         );
 
         traversals.forEach(traversal -> {

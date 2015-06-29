@@ -41,7 +41,6 @@ import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.Scope.global;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
 import static org.junit.Assert.*;
@@ -72,9 +71,9 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_label_groupCount_asXxX_selectXxX();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_mapXbothE_label_groupCountX_asXrelationsX_select();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX();
 
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_select();
 
@@ -112,17 +111,11 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_selectXa_bX(final Pop pop);
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_selectXglobalX(final Pop pop);
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMapXaX_selectXpopX(final Pop pop);
 
-    public abstract Traversal<Vertex, Object> get_g_V_selectXglobal_aX(final Pop pop);
+    public abstract Traversal<Vertex, Object> get_g_V_valueMap_selectXpop_aX(final Pop pop);
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_selectXglobal_a_bX(final Pop pop);
-
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMapXaX_selectXlocalX(final Pop pop);
-
-    public abstract Traversal<Vertex, Object> get_g_V_valueMap_selectXlocal_aX(final Pop pop);
-
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXlocal_a_bX(final Pop pop);
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXpop_a_bX(final Pop pop);
 
     // when labels don't exist
 
@@ -253,52 +246,49 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_label_groupCount_asXxX_select() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_label_groupCount_asXxX_select();
+    public void g_V_label_groupCount_asXxX_selectXxX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_label_groupCount_asXxX_selectXxX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
-        final Map<String, Object> map1 = traversal.next();
-        assertEquals(1, map1.size());
-        assertTrue(map1.containsKey("x"));
-        final Map<String, Long> map2 = (Map<String, Long>) map1.get("x");
-        assertEquals(2, map2.size());
-        assertTrue(map2.containsKey("person"));
-        assertTrue(map2.containsKey("software"));
-        assertEquals(2, map2.get("software").longValue());
-        assertEquals(4, map2.get("person").longValue());
+        final Map<String, Long> map1 = traversal.next();
+        assertEquals(2, map1.size());
+        assertTrue(map1.containsKey("person"));
+        assertTrue(map1.containsKey("software"));
+        assertEquals(2, map1.get("software").longValue());
+        assertEquals(4, map1.get("person").longValue());
         assertFalse(traversal.hasNext());
     }
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasLabelXpersonX_asXpersonX_mapXbothE_label_groupCountX_asXrelationsX_select() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXpersonX_asXpersonX_mapXbothE_label_groupCountX_asXrelationsX_select();
+    public void g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX();
         printTraversalForm(traversal);
         final Set<Object> persons = new HashSet<>();
         for (int i = 0; i < 4; i++) {
             assertTrue(traversal.hasNext());
             final Map<String, Object> map = traversal.next();
             assertEquals(2, map.size());
-            assertTrue(map.containsKey("person"));
-            assertTrue(map.containsKey("relations"));
-            assertTrue(persons.add(map.get("person")));
-            final Map<String, Long> relations = (Map<String, Long>) map.get("relations");
-            if (map.get("person").equals(convertToVertex(graph, "marko"))) {
+            assertTrue(map.containsKey("p"));
+            assertTrue(map.containsKey("r"));
+            assertTrue(persons.add(map.get("p")));
+            final Map<String, Long> relations = (Map<String, Long>) map.get("r");
+            if (map.get("p").equals(convertToVertex(graph, "marko"))) {
                 assertEquals(2, relations.size());
                 assertEquals(1, relations.get("created").longValue());
                 assertEquals(2, relations.get("knows").longValue());
-            } else if (map.get("person").equals(convertToVertex(graph, "vadas"))) {
+            } else if (map.get("p").equals(convertToVertex(graph, "vadas"))) {
                 assertEquals(1, relations.size());
                 assertEquals(1, relations.get("knows").longValue());
-            } else if (map.get("person").equals(convertToVertex(graph, "josh"))) {
+            } else if (map.get("p").equals(convertToVertex(graph, "josh"))) {
                 assertEquals(2, relations.size());
                 assertEquals(2, relations.get("created").longValue());
                 assertEquals(1, relations.get("knows").longValue());
-            } else if (map.get("person").equals(convertToVertex(graph, "peter"))) {
+            } else if (map.get("p").equals(convertToVertex(graph, "peter"))) {
                 assertEquals(1, relations.size());
                 assertEquals(1, relations.get("created").longValue());
             } else {
-                throw new IllegalStateException("Unknown vertex result: " + map.get("person"));
+                throw new IllegalStateException("Unknown vertex result: " + map.get("p"));
             }
         }
         assertFalse(traversal.hasNext());
@@ -533,9 +523,9 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_selectXglobalX() {
+    public void g_V_valueMapXaX_selectXpopX() {
         POPS.forEach(pop -> {
-                final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_selectXglobalX(pop);
+                final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMapXaX_selectXpopX(pop);
                 printTraversalForm(traversal);
                 // When there is nothing to select, empty map is produced
                 final List<Map<String, Object>> actual = traversal.toList();
@@ -546,9 +536,9 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_selectXglobal_aX() {
+    public void g_V_valueMap_selectXpop_aX() {
         POPS.forEach(pop -> {
-                final Traversal<Vertex, Object> traversal = get_g_V_selectXglobal_aX(pop);
+                final Traversal<Vertex, Object> traversal = get_g_V_valueMap_selectXpop_aX(pop);
                 printTraversalForm(traversal);
                 assertEquals(Collections.emptyList(), traversal.toList());
             });
@@ -556,42 +546,9 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_selectXglobal_a_bX() {
+    public void g_V_valueMap_selectXpop_a_bX() {
         POPS.forEach(pop -> {
-                final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_selectXglobal_a_bX(pop);
-                printTraversalForm(traversal);
-                assertEquals(Collections.emptyList(), traversal.toList());
-            });
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_valueMapXaX_selectXlocalX() {
-        POPS.forEach(pop -> {
-                final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMapXaX_selectXlocalX(pop);
-                printTraversalForm(traversal);
-                // When there is nothing to select, empty map is produced
-                final List<Map<String, Object>> actual = traversal.toList();
-                assertEquals(6, actual.size());
-                actual.stream().forEach(m -> assertEquals(0, m.size()));
-            });
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_valueMap_selectXlocal_aX() {
-        POPS.forEach(pop -> {
-                final Traversal<Vertex, Object> traversal = get_g_V_valueMap_selectXlocal_aX(pop);
-                printTraversalForm(traversal);
-                assertEquals(Collections.emptyList(), traversal.toList());
-            });
-    }
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_valueMap_selectXlocal_a_bX() {
-        POPS.forEach(pop -> {
-                final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMap_selectXlocal_a_bX(pop);
+                final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMap_selectXpop_a_bX(pop);
                 printTraversalForm(traversal);
                 assertEquals(Collections.emptyList(), traversal.toList());
             });
@@ -679,13 +636,13 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select() {
-            return g.V().label().groupCount().as("x").select();
+        public Traversal<Vertex, Map<String, Long>> get_g_V_label_groupCount_asXxX_selectXxX() {
+            return g.V().label().groupCount().as("x").select("x");
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_mapXbothE_label_groupCountX_asXrelationsX_select() {
-            return g.V().hasLabel("person").as("person").map(__.bothE().label().groupCount()).as("relations").select();
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX() {
+            return g.V().hasLabel("person").as("p").map(__.bothE().label().groupCount()).as("r").select("p","r");
         }
 
         @Override
@@ -779,39 +736,21 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXglobalX(final Pop pop) {
-            final GraphTraversal<Vertex, Vertex> root = g.V();
-            return null == pop ? root.select(global) : root.select(global, pop);
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_selectXglobal_aX(final Pop pop) {
-            final GraphTraversal<Vertex, Vertex> root = g.V();
-            return null == pop ? root.select(global, "a") : root.select(global, pop, "a");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXglobal_a_bX(final Pop pop) {
-            final GraphTraversal<Vertex, Vertex> root = g.V();
-            return null == pop ? root.select(global, "a", "b") : root.select(global, pop, "a", "b");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMapXaX_selectXlocalX(final Pop pop) {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMapXaX_selectXpopX(final Pop pop) {
             final GraphTraversal<Vertex, Map<String, Object>> root = g.V().valueMap("a");
-            return null == pop ? root.select(local) : root.select(local, pop);
+            return null == pop ? root.select() : root.select(pop);
         }
 
         @Override
-        public Traversal<Vertex, Object> get_g_V_valueMap_selectXlocal_aX(final Pop pop) {
+        public Traversal<Vertex, Object> get_g_V_valueMap_selectXpop_aX(final Pop pop) {
             final GraphTraversal<Vertex, Map<String, Object>> root = g.V().valueMap();
-            return null == pop ? root.select(local, "a") : root.select(local, pop, "a");
+            return null == pop ? root.select("a") : root.select(pop, "a");
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXlocal_a_bX(final Pop pop) {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXpop_a_bX(final Pop pop) {
             final GraphTraversal<Vertex, Map<String, Object>> root = g.V().valueMap();
-            return null == pop ? root.select(local, "a", "b") : root.select(local, pop, "a", "b");
+            return null == pop ? root.select("a", "b") : root.select(pop, "a", "b");
         }
 
         // when labels don't exist

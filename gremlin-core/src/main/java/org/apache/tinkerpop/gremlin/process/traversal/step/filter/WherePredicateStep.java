@@ -23,12 +23,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.ConjunctionP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.ArrayList;
@@ -52,12 +52,10 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     protected String startKey;
     protected List<String> selectKeys;
     protected P<Object> predicate;
-    protected Scope scope;
     protected final Set<String> scopeKeys = new HashSet<>();
 
-    public WherePredicateStep(final Traversal.Admin traversal, final Scope scope, final Optional<String> startKey, final P<String> predicate) {
+    public WherePredicateStep(final Traversal.Admin traversal, final Optional<String> startKey, final P<String> predicate) {
         super(traversal);
-        this.scope = scope;
         this.startKey = startKey.orElse(null);
         if (null != this.startKey)
             this.scopeKeys.add(this.startKey);
@@ -105,7 +103,7 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     @Override
     public String toString() {
         // TODO: revert the predicates to their string form?
-        return StringFactory.stepString(this, this.scope, this.startKey, this.predicate);
+        return StringFactory.stepString(this, this.startKey, this.predicate);
     }
 
     @Override
@@ -122,26 +120,13 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.scope.hashCode() ^ (null == this.startKey ? "null".hashCode() : this.startKey.hashCode()) ^ this.predicate.hashCode();
+        return super.hashCode() ^ (null == this.startKey ? "null".hashCode() : this.startKey.hashCode()) ^ this.predicate.hashCode();
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return Scope.local == this.scope ? LOCAL_REQUIREMENTS : GLOBAL_REQUIREMENTS;
-    }
-
-    @Override
-    public void setScope(final Scope scope) {
-        this.scope = scope;
-    }
-
-    @Override
-    public Scope getScope() {
-        return this.scope;
-    }
-
-    @Override
-    public Scope recommendNextScope() {
-        return this.scope;
+        return TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.scopeKeys::contains).findAny().isPresent() ?
+                TYPICAL_GLOBAL_REQUIREMENTS :
+                TYPICAL_LOCAL_REQUIREMENTS;
     }
 }

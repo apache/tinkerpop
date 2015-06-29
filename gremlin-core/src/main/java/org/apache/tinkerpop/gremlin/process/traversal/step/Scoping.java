@@ -23,10 +23,10 @@ package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 
-import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -38,51 +38,40 @@ public interface Scoping {
 
     public static enum Variable {START, END}
 
+    public static final Set<TraverserRequirement> TYPICAL_LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
+    public static final Set<TraverserRequirement> TYPICAL_GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
+    public static final TraverserRequirement[] TYPICAL_LOCAL_REQUIREMENTS_ARRAY = new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS};
+    public static final TraverserRequirement[] TYPICAL_GLOBAL_REQUIREMENTS_ARRAY = new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS};
+
     public default <S> S getScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
         if (traverser.getSideEffects().get(key).isPresent())
             return traverser.getSideEffects().<S>get(key).get();
-        if (Scope.local == this.getScope()) {
-            try {
-                Object object = traverser.get();
-                if (!(object instanceof Map))
-                    object = Collections.emptyMap();
-                final S s = ((Map<String, S>) object).get(key);
-                if (null != s)
-                    return s;
-                else
-                    throw new IllegalArgumentException("Neither the current map nor sideEffects have a " + key + "-key:" + this);
-            } catch (final ClassCastException e) {
-                throw new IllegalStateException("The current step was compiled to an invalid local scope and this is a compilation error. Please report the full traversal that yielded this exception: " + this);
-            }
-        } else {
-            final Path path = traverser.path();
-            if (path.hasLabel(key))
-                return null == pop ? path.get(key) : path.get(pop, key);
-            else
-                throw new IllegalArgumentException("Neither the current path nor sideEffects have a " + key + "-key: " + this);
-        }
+        ///
+        final Object object = traverser.get();
+        if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
+            return ((Map<String, S>) object).get(key);
+        ///
+        final Path path = traverser.path();
+        if (path.hasLabel(key))
+            return null == pop ? path.get(key) : path.get(pop, key);
+        ///
+        throw new IllegalArgumentException("Neither the sideEffects, map, or path has a " + key + "-key: " + this);
     }
 
     public default <S> Optional<S> getOptionalScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
         if (traverser.getSideEffects().get(key).isPresent())
-            return traverser.getSideEffects().<S>get(key);
-
-        if (Scope.local == this.getScope()) {
-                Object object = traverser.get();
-                if (!(object instanceof Map))
-                    object = Collections.emptyMap();
-                return Optional.ofNullable(((Map<String, S>) object).get(key));
-        } else {
-            final Path path = traverser.path();
-            return path.hasLabel(key) ? Optional.of(null == pop ? path.get(key) : path.get(pop, key)) : Optional.<S>empty();
-        }
+            return Optional.of(traverser.getSideEffects().<S>get(key).get());
+        ///
+        final Object object = traverser.get();
+        if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
+            return Optional.of(((Map<String, S>) object).get(key));
+        ///
+        final Path path = traverser.path();
+        if (path.hasLabel(key))
+            return Optional.of(null == pop ? path.get(key) : path.get(pop, key));
+        ///
+        return Optional.empty();
     }
-
-    public Scope getScope();
-
-    public Scope recommendNextScope();
-
-    public void setScope(final Scope scope);
 
     public Set<String> getScopeKeys();
 }

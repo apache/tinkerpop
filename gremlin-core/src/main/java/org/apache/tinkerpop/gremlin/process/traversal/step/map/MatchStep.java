@@ -122,7 +122,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         } else if (startStep instanceof NotStep) {
             final DefaultTraversal notTraversal = new DefaultTraversal<>();
             TraversalHelper.removeToTraversal(startStep, startStep.getNextStep(), notTraversal);
-            matchTraversal.addStep(0, new WhereTraversalStep<>(matchTraversal, Scope.global, notTraversal));
+            matchTraversal.addStep(0, new WhereTraversalStep<>(matchTraversal, notTraversal));
             this.configureStartAndEndSteps(matchTraversal);
         } else if (StartStep.isVariableStartStep(startStep)) {
             final String label = startStep.getLabels().iterator().next();
@@ -173,21 +173,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     @Override
     public List<Traversal.Admin<Object, Object>> getGlobalChildren() {
         return Collections.unmodifiableList(this.matchTraversals);
-    }
-
-    @Override
-    public Scope getScope() {
-        return Scope.global;
-    }
-
-    @Override
-    public Scope recommendNextScope() {
-        return Scope.local;
-    }
-
-    @Override
-    public void setScope(final Scope scope) {
-
     }
 
     @Override
@@ -417,21 +402,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         @Override
         public int hashCode() {
             return super.hashCode() ^ (null == this.selectKey ? "null".hashCode() : this.selectKey.hashCode());
-        }
-
-        @Override
-        public Scope getScope() {
-            return Scope.global;
-        }
-
-        @Override
-        public Scope recommendNextScope() {
-            return Scope.global;
-        }
-
-        @Override
-        public void setScope(final Scope scope) {
-
         }
 
         public Optional<String> getSelectKey() {
