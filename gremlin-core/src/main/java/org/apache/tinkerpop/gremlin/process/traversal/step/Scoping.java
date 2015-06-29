@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequire
 
 import java.util.EnumSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -55,22 +54,22 @@ public interface Scoping {
         if (path.hasLabel(key))
             return null == pop ? path.get(key) : path.get(pop, key);
         ///
-        throw new IllegalArgumentException("Neither the sideEffects, map, or path has a " + key + "-key: " + this);
+        throw new IllegalArgumentException("Neither the sideEffects, map, nor path has a " + key + "-key: " + this);
     }
 
-    public default <S> Optional<S> getOptionalScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
+    public default <S> S getNullableScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) {
         if (traverser.getSideEffects().get(key).isPresent())
-            return Optional.of(traverser.getSideEffects().<S>get(key).get());
+            return traverser.getSideEffects().<S>get(key).get();
         ///
         final Object object = traverser.get();
         if (object instanceof Map && ((Map<String, S>) object).containsKey(key))
-            return Optional.of(((Map<String, S>) object).get(key));
+            return ((Map<String, S>) object).get(key);
         ///
         final Path path = traverser.path();
         if (path.hasLabel(key))
-            return Optional.of(null == pop ? path.get(key) : path.get(pop, key));
+            return null == pop ? path.get(key) : path.get(pop, key);
         ///
-        return Optional.empty();
+        return null;
     }
 
     public Set<String> getScopeKeys();

@@ -184,7 +184,7 @@ public class TinkerGraphTest {
         traversals.forEach(traversal -> {
             System.out.println("pre-strategy:  " + traversal.get());
             System.out.println("post-strategy: " + traversal.get().iterate());
-            System.out.println(TimeUtil.clockWithResult(50, () -> traversal.get().count().next()));
+            System.out.println(TimeUtil.clockWithResult(50, () -> traversal.get().toList()));
         });
     }
 

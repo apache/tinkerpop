@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -72,9 +71,9 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
             }
         } else {
             for (final String selectKey : this.selectKeys) {
-                final Optional<E> optional = this.getOptionalScopeValue(this.pop, selectKey, traverser);
-                if (optional.isPresent())
-                    bindings.put(selectKey, TraversalUtil.apply(optional.get(), this.traversalRing.next()));
+                final E end = this.getNullableScopeValue(this.pop, selectKey, traverser);
+                if (null != end)
+                    bindings.put(selectKey, TraversalUtil.apply(end, this.traversalRing.next()));
                 else {
                     this.traversalRing.reset();
                     return null;
@@ -110,7 +109,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         for (final String selectLabel : this.selectKeys) {
             result ^= selectLabel.hashCode();
         }
-        if(null != this.pop)
+        if (null != this.pop)
             result ^= this.pop.hashCode();
         return result;
     }
