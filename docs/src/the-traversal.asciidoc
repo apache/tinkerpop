@@ -712,6 +712,43 @@ The two traversals above look nearly identical save the inclusion of `local()` w
 
 WARNING: The anonymous traversal of `local()` processes the current object "locally." In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
 
+[[mapkeys-step]]
+MapKeys Step
+~~~~~~~~~~~~
+ 
+The `mapKeys()`-step (*flatMap*) takes an incoming map and emits its keys. This is especially useful when you're only interested in the top N elements in a `groupCount()` ranking.
+ 
+[gremlin-groovy]
+----
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g = graph.traversal(standard())
+g.V().hasLabel("song").out("followedBy").groupCount().by("name").
+      order(local).by(valueDecr).limit(local, 5)
+g.V().hasLabel("song").out("followedBy").groupCount().by("name").
+      order(local).by(valueDecr).limit(local, 5).mapKeys()
+----
+
+[[mapvalues-step]]
+MapValues Step
+~~~~~~~~~~~~
+ 
+The `mapValues()`-step (*flatMap*) takes an incoming map and emits its values.
+ 
+[gremlin-groovy]
+----
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g = graph.traversal(standard())
+:set max-iteration 10
+g.V().hasLabel("song").out("sungBy").groupCount().by("name").next() <1>
+g.V().hasLabel("song").out("sungBy").groupCount().by("name").mapValues() <2>
+g.V().hasLabel("song").out("sungBy").groupCount().by("name").mapValues().groupCount().
+      order(local).by(valueDecr).limit(local, 3).mapValues() <3>
+----
+ 
+<1> Which artist sung how many songs?
+<2> Get an anonymized set of song repertoire sizes.
+<3> What are the 3 most common song repertoire sizes?
+
 [[match-step]]
 Match Step
 ~~~~~~~~~~
