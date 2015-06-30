@@ -521,39 +521,39 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map the {@link Traverser} to a {@link Map} projection of sideEffect values, map values, and/or path values.
      *
      * @param pop               if there are multiple objects referenced in the path, the {@link Pop} to use.
-     * @param selectLabel1      the first key to project
-     * @param selectLabel2      the second key to project
-     * @param otherSelectLabels the third+ keys to project
+     * @param selectKey1      the first key to project
+     * @param selectKey2      the second key to project
+     * @param otherSelectKeys the third+ keys to project
      * @param <E2>              the type of the objects projected
      * @return the traversal with an appended {@link SelectStep}.
      */
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String selectLabel1, final String selectLabel2, String... otherSelectLabels) {
-        final String[] selectLabels = new String[otherSelectLabels.length + 2];
-        selectLabels[0] = selectLabel1;
-        selectLabels[1] = selectLabel2;
-        System.arraycopy(otherSelectLabels, 0, selectLabels, 2, otherSelectLabels.length);
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), pop, selectLabels));
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String selectKey1, final String selectKey2, String... otherSelectKeys) {
+        final String[] selectKeys = new String[otherSelectKeys.length + 2];
+        selectKeys[0] = selectKey1;
+        selectKeys[1] = selectKey2;
+        System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), pop, selectKeys));
     }
 
     /**
      * Map the {@link Traverser} to a {@link Map} projection of sideEffect values, map values, and/or path values.
      *
-     * @param selectLabel1      the first key to project
-     * @param selectLabel2      the second key to project
-     * @param otherSelectLabels the third+ keys to project
+     * @param selectKey1      the first key to project
+     * @param selectKey2      the second key to project
+     * @param otherSelectKeys the third+ keys to project
      * @param <E2>              the type of the objects projected
      * @return the traversal with an appended {@link SelectStep}.
      */
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final String selectLabel1, final String selectLabel2, String... otherSelectLabels) {
-        return this.select(null, selectLabel1, selectLabel2, otherSelectLabels);
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final String selectKey1, final String selectKey2, String... otherSelectKeys) {
+        return this.select(null, selectKey1, selectKey2, otherSelectKeys);
     }
 
-    public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectLabel) {
-        return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), pop, selectLabel));
+    public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectKey) {
+        return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), pop, selectKey));
     }
 
-    public default <E2> GraphTraversal<S, E2> select(final String selectLabel) {
-        return this.select(null, selectLabel);
+    public default <E2> GraphTraversal<S, E2> select(final String selectKey) {
+        return this.select(null, selectKey);
     }
 
     public default <E2> GraphTraversal<S, E2> unfold() {
@@ -706,40 +706,40 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
                 this.asAdmin().addStep(new WhereTraversalStep<>(this.asAdmin(), whereTraversal));
     }
 
-    public default GraphTraversal<S, E> has(final String key, final P<?> predicate) {
-        return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(key, predicate)));
+    public default GraphTraversal<S, E> has(final String propertyKey, final P<?> predicate) {
+        return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(propertyKey, predicate)));
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {
         return this.has(accessor.getAccessor(), predicate);
     }
 
-    public default GraphTraversal<S, E> has(final String key, final Object value) {
-        return this.has(key, value instanceof P ? (P) value : P.eq(value));
+    public default GraphTraversal<S, E> has(final String propertyKey, final Object value) {
+        return this.has(propertyKey, value instanceof P ? (P) value : P.eq(value));
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
         return this.has(accessor.getAccessor(), value);
     }
 
-    public default GraphTraversal<S, E> has(final String label, final String key, final P<?> predicate) {
-        return this.has(T.label, label).has(key, predicate);
+    public default GraphTraversal<S, E> has(final String label, final String propertyKey, final P<?> predicate) {
+        return this.has(T.label, label).has(propertyKey, predicate);
     }
 
-    public default GraphTraversal<S, E> has(final String label, final String key, final Object value) {
-        return this.has(T.label, label).has(key, value);
+    public default GraphTraversal<S, E> has(final String label, final String propertyKey, final Object value) {
+        return this.has(T.label, label).has(propertyKey, value);
     }
 
-    public default GraphTraversal<S, E> has(final String key, final Traversal<?, ?> propertyTraversal) {
-        return this.filter(propertyTraversal.asAdmin().addStep(0, new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, key)));
+    public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
+        return this.filter(propertyTraversal.asAdmin().addStep(0, new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, propertyKey)));
     }
 
-    public default GraphTraversal<S, E> has(final String key) {
-        return this.filter(__.values(key));
+    public default GraphTraversal<S, E> has(final String propertyKey) {
+        return this.filter(__.values(propertyKey));
     }
 
-    public default GraphTraversal<S, E> hasNot(final String key) {
-        return this.not(__.values(key));
+    public default GraphTraversal<S, E> hasNot(final String propertyKey) {
+        return this.not(__.values(propertyKey));
     }
 
     public default GraphTraversal<S, E> hasLabel(final String... labels) {

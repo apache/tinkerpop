@@ -303,29 +303,29 @@ public class __ {
     /**
      * @see {@link GraphTraversal#select(Pop, String)}
      */
-    public static <A, B> GraphTraversal<A, B> select(final Pop pop, final String selectLabel) {
-        return __.<A>start().select(pop, selectLabel);
+    public static <A, B> GraphTraversal<A, B> select(final Pop pop, final String selectKey) {
+        return __.<A>start().select(pop, selectKey);
     }
 
     /**
      * @see {@link GraphTraversal#select(String)}
      */
-    public static <A, B> GraphTraversal<A, B> select(final String selectLabel) {
-        return __.<A>start().select(selectLabel);
+    public static <A, B> GraphTraversal<A, B> select(final String selectKey) {
+        return __.<A>start().select(selectKey);
     }
 
     /**
      * @see {@link GraphTraversal#select(Pop, String, String, String...)}
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Pop pop, final String selectLabel1, final String selectLabel2, final String... otherSelectLabels) {
-        return __.<A>start().select(pop, selectLabel1, selectLabel2, otherSelectLabels);
+    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Pop pop, final String selectKey1, final String selectKey2, final String... otherSelectKeys) {
+        return __.<A>start().select(pop, selectKey1, selectKey2, otherSelectKeys);
     }
 
     /**
      * @see {@link GraphTraversal#select(String, String, String...)}
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> select(final String selectLabel1, final String selectLabel2, final String... otherSelectLabels) {
-        return __.<A>start().select(selectLabel1, selectLabel2, otherSelectLabels);
+    public static <A, B> GraphTraversal<A, Map<String, B>> select(final String selectKey1, final String selectKey2, final String... otherSelectKeys) {
+        return __.<A>start().select(selectKey1, selectKey2, otherSelectKeys);
     }
 
     /**
@@ -498,40 +498,40 @@ public class __ {
         return __.<A>start().dedup(scope, dedupLabels);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String key, final P<?> predicate) {
-        return __.<A>start().has(key, predicate);
+    public static <A> GraphTraversal<A, A> has(final String propertyKey, final P<?> predicate) {
+        return __.<A>start().has(propertyKey, predicate);
     }
 
     public static <A> GraphTraversal<A, A> has(final T accessor, final P<?> predicate) {
         return __.<A>start().has(accessor, predicate);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String key, final Object value) {
-        return __.<A>start().has(key, value);
+    public static <A> GraphTraversal<A, A> has(final String propertyKey, final Object value) {
+        return __.<A>start().has(propertyKey, value);
     }
 
     public static <A> GraphTraversal<A, A> has(final T accessor, final Object value) {
         return __.<A>start().has(accessor, value);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String label, final String key, final Object value) {
-        return __.<A>start().has(label, key, value);
+    public static <A> GraphTraversal<A, A> has(final String label, final String propertyKey, final Object value) {
+        return __.<A>start().has(label, propertyKey, value);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String label, final String key, final P<?> predicate) {
-        return __.<A>start().has(label, key, predicate);
+    public static <A> GraphTraversal<A, A> has(final String label, final String propertyKey, final P<?> predicate) {
+        return __.<A>start().has(label, propertyKey, predicate);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String key, final Traversal<?, ?> propertyTraversal) {
-        return __.<A>start().has(key, propertyTraversal);
+    public static <A> GraphTraversal<A, A> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
+        return __.<A>start().has(propertyKey, propertyTraversal);
     }
 
-    public static <A> GraphTraversal<A, A> has(final String key) {
-        return __.<A>start().has(key);
+    public static <A> GraphTraversal<A, A> has(final String propertyKey) {
+        return __.<A>start().has(propertyKey);
     }
 
-    public static <A> GraphTraversal<A, A> hasNot(final String key) {
-        return __.<A>start().hasNot(key);
+    public static <A> GraphTraversal<A, A> hasNot(final String propertyKey) {
+        return __.<A>start().hasNot(propertyKey);
     }
 
     public static <A> GraphTraversal<A, A> hasLabel(final String... labels) {
