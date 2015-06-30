@@ -42,24 +42,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovySampleTe
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovySimplePathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyTailTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.GroovyWhereTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyAddEdgeTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCoalesceTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyConstantTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyCountTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyFoldTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMapTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMaxTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMeanTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMinTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyOrderTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPathTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyPropertiesTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovySelectTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovySumTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyUnfoldTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyValueMapTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyVertexTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyAggregateTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyGroupCountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroovyGroupTest;
@@ -123,6 +106,8 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyCountTest.Traversals.class,
             GroovyFoldTest.Traversals.class,
             GroovyMapTest.Traversals.class,
+            GroovyMapKeysTest.Traversals.class,
+            GroovyMapValuesTest.Traversals.class,
             GroovyMatchTest.CountMatchTraversals.class,
             GroovyMatchTest.GreedyMatchTraversals.class,
             GroovyMaxTest.Traversals.class,
