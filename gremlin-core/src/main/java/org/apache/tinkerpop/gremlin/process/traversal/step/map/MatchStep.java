@@ -366,7 +366,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     @Override
     public int hashCode() {
         int result = super.hashCode() ^ this.conjunction.hashCode();
-        for(final Traversal t : this.matchTraversals) {
+        for (final Traversal t : this.matchTraversals) {
             result ^= t.hashCode();
         }
         return result;
@@ -488,9 +488,10 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
         public static Optional<String> getEndLabel(final Traversal.Admin<Object, Object> traversal) {
-            return traversal.getEndStep() instanceof ProfileStep ?           // TOTAL HACK
-                    ((MatchEndStep) traversal.getEndStep().getPreviousStep()).getMatchKey() :
-                    ((MatchEndStep) traversal.getEndStep()).getMatchKey();
+            final Step<?, ?> endStep = traversal.getEndStep();
+            return endStep instanceof ProfileStep ?           // TOTAL HACK
+                    ((MatchEndStep) endStep.getPreviousStep()).getMatchKey() :
+                    ((MatchEndStep) endStep).getMatchKey();
         }
 
         public static Set<String> getStartLabels(final Traversal.Admin<Object, Object> traversal) {
