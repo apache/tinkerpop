@@ -76,6 +76,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapKeysStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapValuesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
@@ -457,6 +459,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, Map<String, E2>> valueMap(final boolean includeTokens, final String... propertyKeys) {
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), includeTokens, PropertyType.VALUE, propertyKeys));
+    }
+
+    public default <E2> GraphTraversal<S, E2> mapValues() {
+        return this.asAdmin().addStep(new MapValuesStep<>(this.asAdmin()));
+    }
+
+    public default <E2> GraphTraversal<S, E2> mapKeys() {
+        return this.asAdmin().addStep(new MapKeysStep<>(this.asAdmin()));
     }
 
     /**

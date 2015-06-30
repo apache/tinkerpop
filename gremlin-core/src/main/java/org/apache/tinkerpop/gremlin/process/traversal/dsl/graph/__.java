@@ -252,6 +252,20 @@ public class __ {
     }
 
     /**
+     * @see {@link GraphTraversal#mapValues()}
+     */
+    public static <A, B> GraphTraversal<A, B> mapValues() {
+        return __.<A>start().mapValues();
+    }
+
+    /**
+     * @see {@link GraphTraversal#mapKeys()}
+     */
+    public static <A, B> GraphTraversal<A, B> mapKeys() {
+        return __.<A>start().mapKeys();
+    }
+
+    /**
      * @see {@link GraphTraversal#key()}
      */
     public static <A> GraphTraversal<A, String> key() {
