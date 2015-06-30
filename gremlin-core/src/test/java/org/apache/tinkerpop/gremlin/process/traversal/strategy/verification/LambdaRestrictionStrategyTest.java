@@ -51,7 +51,7 @@ public class LambdaRestrictionStrategyTest {
                 {"sideEffect(x -> {int i = 1+1;})", __.sideEffect(x -> {
                     int i = 1 + 1;
                 })},
-                {"select().by(Object::toString)", __.select().by(Object::toString)},
+                {"select('a','b').by(Object::toString)", __.select("a","b").by(Object::toString)},
                 {"order().by((a,b)->a.compareTo(b))", __.order().by((a, b) -> ((Integer) a).compareTo((Integer) b))},
                 {"order(local).by((a,b)->a.compareTo(b))", __.order(Scope.local).by((a, b) -> ((Integer) a).compareTo((Integer) b))},
                 {"__.choose(v->v.toString().equals(\"marko\"),__.out(),__.in())", __.choose(v -> v.toString().equals("marko"), __.out(), __.in())},

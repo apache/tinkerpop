@@ -286,6 +286,9 @@ public class __ {
         return __.<A>start().sack();
     }
 
+    /**
+     * @see {@link GraphTraversal#select(Pop, String)}
+     */
     public static <A, B> GraphTraversal<A, B> select(final Pop pop, final String selectLabel) {
         return __.<A>start().select(pop, selectLabel);
     }
@@ -297,15 +300,18 @@ public class __ {
         return __.<A>start().select(selectLabel);
     }
 
-    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Pop pop, final String... selectLabels) {
-        return __.<A>start().select(pop, selectLabels);
+    /**
+     * @see {@link GraphTraversal#select(Pop, String, String, String...)}
+     */
+    public static <A, B> GraphTraversal<A, Map<String, B>> select(final Pop pop, final String selectLabel1, final String selectLabel2, final String... otherSelectLabels) {
+        return __.<A>start().select(pop, selectLabel1, selectLabel2, otherSelectLabels);
     }
 
     /**
-     * @see {@link GraphTraversal#select(String...)}
+     * @see {@link GraphTraversal#select(String, String, String...)}
      */
-    public static <A, B> GraphTraversal<A, Map<String, B>> select(final String... selectLabels) {
-        return __.<A>start().select(selectLabels);
+    public static <A, B> GraphTraversal<A, Map<String, B>> select(final String selectLabel1, final String selectLabel2, final String... otherSelectLabels) {
+        return __.<A>start().select(selectLabel1, selectLabel2, otherSelectLabels);
     }
 
     /**

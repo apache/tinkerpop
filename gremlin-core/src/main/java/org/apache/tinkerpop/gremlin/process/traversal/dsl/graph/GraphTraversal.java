@@ -492,12 +492,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String... selectLabels) {
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String selectLabel1, final String selectLabel2, String... otherSelectLabels) {
+        final String[] selectLabels = new String[otherSelectLabels.length + 2];
+        selectLabels[0] = selectLabel1;
+        selectLabels[1] = selectLabel2;
+        for (int i = 0; i < otherSelectLabels.length; i++) {
+            selectLabels[i + 2] = otherSelectLabels[i];
+        }
         return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), pop, selectLabels));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final String... selectLabels) {
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), selectLabels));
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final String selectLabel1, final String selectLabel2, String... otherSelectLabels) {
+        return this.select(null, selectLabel1, selectLabel2, otherSelectLabels);
     }
 
     public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectLabel) {
@@ -505,7 +511,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String selectLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), selectLabel));
+        return this.select(null, selectLabel);
     }
 
     public default <E2> GraphTraversal<S, E2> unfold() {

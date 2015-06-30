@@ -90,23 +90,23 @@ public abstract class GroovyRangeTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_2X() {
-            TraversalScriptHelper.compute("g.V.as('a').in.as('b').in.as('c').select.by('name').limit(local,2)", g)
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2X() {
+            TraversalScriptHelper.compute("g.V.as('a').in.as('b').in.as('c').select('a','b','c').by('name').limit(local,2)", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_1X() {
-            TraversalScriptHelper.compute("g.V.as('a').in.as('b').in.as('c').select.by('name').limit(local,1)", g)
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_1X() {
+            TraversalScriptHelper.compute("g.V.as('a').in.as('b').in.as('c').select('a','b','c').by('name').limit(local,1)", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_3X() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select.by('name').range(local,1,3)", g)
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_3X() {
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select('a','b','c').by('name').range(local,1,3)", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_2X() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select.by('name').range(local,1,2)", g)
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X() {
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select('a','b','c').by('name').range(local,1,2)", g)
         }
     }
 }

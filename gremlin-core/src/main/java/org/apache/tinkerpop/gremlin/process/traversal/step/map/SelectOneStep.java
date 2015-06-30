@@ -48,10 +48,6 @@ public final class SelectOneStep<S, E> extends MapStep<S, E> implements Traversa
         this.selectKey = selectKey;
     }
 
-    public SelectOneStep(final Traversal.Admin traversal, final String selectKey) {
-        this(traversal, null, selectKey);
-    }
-
     @Override
     protected E map(final Traverser.Admin<S> traverser) {
         final E end = this.getNullableScopeValue(this.pop, this.selectKey, traverser);
