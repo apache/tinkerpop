@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,11 +46,13 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
     private TraversalRing<Object, E> traversalRing = new TraversalRing<>();
     private final Pop pop;
     private final List<String> selectKeys;
+    private final Set<String> selectKeysSet;
 
     public SelectStep(final Traversal.Admin traversal, final Pop pop, final String... selectKeys) {
         super(traversal);
         this.pop = pop;
         this.selectKeys = Arrays.asList(selectKeys);
+        this.selectKeysSet = Collections.unmodifiableSet(new HashSet<>(this.selectKeys));
         if (this.selectKeys.size() < 2)
             throw new IllegalArgumentException("At least two select keys must be provided: " + this);
     }
@@ -116,6 +119,6 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public Set<String> getScopeKeys() {
-        return new HashSet<>(this.selectKeys);
+        return this.selectKeysSet;
     }
 }
