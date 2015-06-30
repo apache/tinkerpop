@@ -48,6 +48,7 @@ public class TinkerGraphStepStrategyTest {
         traversal.applyStrategies();
         assertEquals(1, traversal.getSteps().size());
         assertEquals(TinkerGraphStep.class, traversal.getStartStep().getClass());
+        assertEquals(TinkerGraphStep.class, traversal.getEndStep().getClass());
         assertEquals(1, ((TinkerGraphStep) traversal.getStartStep()).getHasContainers().size());
         assertEquals("name", ((TinkerGraphStep<?>) traversal.getStartStep()).getHasContainers().get(0).getKey());
         assertEquals("marko", ((TinkerGraphStep<?>) traversal.getStartStep()).getHasContainers().get(0).getValue());

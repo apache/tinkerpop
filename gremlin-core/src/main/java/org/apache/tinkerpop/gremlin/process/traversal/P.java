@@ -53,8 +53,6 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     /**
      * Gets the original value used at time of construction of the {@code P}. This value can change its type
      * in some cases.
-     *
-     * @see org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer
      */
     public V getOriginalValue() {
         return originalValue;
@@ -78,7 +76,10 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
 
     @Override
     public int hashCode() {
-        return this.biPredicate.hashCode() ^ (null == this.originalValue ? "null".hashCode() : this.originalValue.hashCode());
+        int result = this.biPredicate.hashCode();
+        if (null != this.originalValue)
+            result ^= this.originalValue.hashCode();
+        return result;
     }
 
     @Override

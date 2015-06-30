@@ -51,7 +51,7 @@ public final class Neo4jGraphStepStrategy extends AbstractTraversalStrategy<Trav
 
             Step<?, ?> currentStep = neo4jGraphStep.getNextStep();
             while (currentStep instanceof HasContainerHolder) {
-                neo4jGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
+                ((HasContainerHolder) currentStep).getHasContainers().forEach(neo4jGraphStep::addHasContainer);
                 currentStep.getLabels().forEach(neo4jGraphStep::addLabel);
                 traversal.removeStep(currentStep);
                 currentStep = currentStep.getNextStep();
