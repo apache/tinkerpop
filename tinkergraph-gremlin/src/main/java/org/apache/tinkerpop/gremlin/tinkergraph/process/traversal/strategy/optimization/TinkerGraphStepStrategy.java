@@ -49,14 +49,10 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
             TraversalHelper.replaceStep(startStep, (Step) tinkerGraphStep, traversal);
 
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
-            while (true) {
-                if (currentStep instanceof HasContainerHolder) {
-                    tinkerGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
-                    currentStep.getLabels().forEach(tinkerGraphStep::addLabel);
-                    traversal.removeStep(currentStep);
-                } else {
-                    break;
-                }
+            while (currentStep instanceof HasContainerHolder) {
+                tinkerGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
+                currentStep.getLabels().forEach(tinkerGraphStep::addLabel);
+                traversal.removeStep(currentStep);
                 currentStep = currentStep.getNextStep();
             }
         }
