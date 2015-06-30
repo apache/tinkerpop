@@ -40,7 +40,6 @@ public final class CypherStartStep extends StartStep<Map<String, Object>> {
         this.query = query;
     }
 
-
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.query);

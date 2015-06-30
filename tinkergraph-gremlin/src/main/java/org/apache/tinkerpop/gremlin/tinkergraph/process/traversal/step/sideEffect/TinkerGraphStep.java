@@ -18,10 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
-import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -42,7 +43,7 @@ import java.util.stream.Collectors;
  */
 public final class TinkerGraphStep<S extends Element> extends GraphStep<S> implements HasContainerHolder {
 
-    public final List<HasContainer> hasContainers = new ArrayList<>();
+    private final List<HasContainer> hasContainers = new ArrayList<>();
 
     public TinkerGraphStep(final GraphStep<S> originalGraphStep) {
         super(originalGraphStep.getTraversal(), originalGraphStep.getReturnClass(), originalGraphStep.getIds());
@@ -83,11 +84,12 @@ public final class TinkerGraphStep<S extends Element> extends GraphStep<S> imple
     private HasContainer getIndexKey(final Class<? extends Element> indexedClass) {
         final Set<String> indexedKeys = ((TinkerGraph) this.getTraversal().getGraph().get()).getIndexedKeys(indexedClass);
         return this.hasContainers.stream()
-                .filter(c -> indexedKeys.contains(c.getKey()) && c.getPredicate().getBiPredicate().equals(Compare.eq))
+                .filter(c -> indexedKeys.contains(c.getKey()) && c.getPredicate().getBiPredicate() == Compare.eq)
                 .findAny()
                 .orElseGet(() -> null);
     }
 
+    @Override
     public String toString() {
         if (this.hasContainers.isEmpty())
             return super.toString();
@@ -109,7 +111,7 @@ public final class TinkerGraphStep<S extends Element> extends GraphStep<S> imple
 
     @Override
     public List<HasContainer> getHasContainers() {
-        return this.hasContainers;
+        return Collections.unmodifiableList(this.hasContainers);
     }
 
     @Override
