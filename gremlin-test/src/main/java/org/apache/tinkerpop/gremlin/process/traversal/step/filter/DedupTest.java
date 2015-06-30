@@ -62,7 +62,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX();
 
-    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_select();
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_selectXa_bX();
 
     public abstract Traversal<Vertex, Path> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path();
 
@@ -158,8 +158,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_select() {
-        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_select();
+    public void g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_selectXa_bX() {
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_selectXa_bX();
         printTraversalForm(traversal);
         int personPersonCounter = 0;
         int personSoftwareCounter = 0;
@@ -236,8 +236,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_select() {
-            return g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select();
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_selectXa_bX() {
+            return g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a","b");
         }
 
         @Override

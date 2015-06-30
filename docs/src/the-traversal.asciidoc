@@ -125,7 +125,7 @@ image::addedge-step.png[width=450]
 ----
 g.V(1).as('a').out('created').in('created').where(neq('a')).addOutE('co-developer','a','year',2009) <1>
 g.withSideEffect('a',g.V(3,5).toList()).V(4).addInE('createdBy','a') <2>
-g.V().as('a').out('created').as('b').select().addOutE('b','createdBy','a','acl','public') <3>
+g.V().as('a').out('created').as('b').select('a','b').addOutE('b','createdBy','a','acl','public') <3>
 g.V(1).as('a').out('knows').addInE('livesNear','a','year',2009).inV().inE('livesNear').values('year') <4>
 ----
 
@@ -230,8 +230,8 @@ The `as()`-step is not a real step, but a "step modulator" similar to <<by-step,
 
 [gremlin-groovy,modern]
 ----
-g.V().as('a').out('created').as('b').select()            <1>
-g.V().as('a').out('created').as('b').select().by('name') <2>
+g.V().as('a').out('created').as('b').select('a','b')            <1>
+g.V().as('a').out('created').as('b').select('a','b').by('name') <2>
 ----
 
 <1> Select the objects labeled "a" and "b" from the path.
@@ -242,7 +242,7 @@ A step can have any number of labels associated with it. This is useful for refe
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('software').as('a','b','c').
-   select().
+   select('a','b','c').
      by('name').
      by('lang').
      by(__.in('created').values('name').fold())
@@ -480,8 +480,8 @@ Finally, if `dedup()` is provided an array of strings, then it will ensure that 
 
 [gremlin-groovy,modern]
 ----
-g.V().as('a').out('created').as('b').in('created').as('c').select()
-g.V().as('a').out('created').as('b').in('created').as('c').dedup('a','b').select() <1>
+g.V().as('a').out('created').as('b').in('created').as('c').select('a','b','c')
+g.V().as('a').out('created').as('b').in('created').as('c').dedup('a','b').select('a','b','c') <1>
 ----
 
 <1> If the current `a` and `b` combination has been seen previously, then filter the traverser.
@@ -698,11 +698,11 @@ A `GraphTraversal` operates on a continuous stream of objects. In many situation
 [gremlin-groovy,theCrew]
 ----
 g.V().as('person').
-      properties('location').order().by('startTime',incr).limit(2).
-      value().as('location').select().by('name').by() <1>
+      properties('location').order().by('startTime',incr).limit(2).value().as('location').
+      select('person','location').by('name').by() <1>
 g.V().as('person').
-      local(properties('location').order().by('startTime',incr).limit(2)).
-      value().as('location').select().by('name').by() <2>
+      local(properties('location').order().by('startTime',incr).limit(2)).value().as('location').
+      select('person','location').by('name').by() <2>
 ----
 
 <1> Get the first two people and their respective location according to the most historic location start time.
@@ -812,7 +812,7 @@ g.V().as('a').out('knows').as('b').
   match(
     __.as('b').out('created').as('c'),
     __.not(__.as('c').in('created').as('a'))).
-  select().by('name')
+  select('a','b','c').by('name')
 ----
 
 There are three types of `match()` traversal patterns.
@@ -1098,7 +1098,7 @@ The `range()`-step can also be applied with `Scope.local`, in which case it oper
 
 [gremlin-groovy,modern]
 ----
-g.V().as('a').out().as('b').in().as('c').select().by('name').range(local,1,2)
+g.V().as('a').out().as('b').in().as('c').select('a','b','c').by('name').range(local,1,2)
 ----
 
 The next example uses the <<the-crew-toy-graph,The Crew>> toy data set.  It produces a `List<String>` containing the second and third location for each vertex.
@@ -1252,7 +1252,7 @@ The first use case is demonstrated via example below.
 [gremlin-groovy,modern]
 ----
 g.V().as('a').out().as('b').out().as('c') // no select
-g.V().as('a').out().as('b').out().as('c').select()
+g.V().as('a').out().as('b').out().as('c').select('a','b','c')
 g.V().as('a').out().as('b').out().as('c').select('a','b')
 g.V().as('a').out().as('b').out().as('c').select('a','b').by('name')
 g.V().as('a').out().as('b').out().as('c').select('a') <1>
@@ -1281,14 +1281,14 @@ Finally, like <<match-step,`match()`>>-step, it is possible to use `where()`, as
 
 [gremlin-groovy,modern]
 ----
-g.V().as('a').out('created').in('created').as('b').select().by('name') <1>
+g.V().as('a').out('created').in('created').as('b').select('a','b').by('name') <1>
 g.V().as('a').out('created').in('created').as('b').
-      select().by('name').where('a',neq('b')) <2>
+      select('a','b').by('name').where('a',neq('b')) <2>
 g.V().as('a').out('created').in('created').as('b').
-      select(). <3>
+      select('a','b'). <3>
       where('a',neq('b')).
       where(__.as('a').out('knows').as('b')).
-      select().by('name')
+      select('a','b').by('name')
 ----
 
 <1> A standard `select()` that generates a `Map<String,Object>` of variables bindings in the path (i.e. `a` and `b`) for the sake of a running example.

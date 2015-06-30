@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `select()` no longer supports empty arguments. The user must specify the keys they are selecting.
 * `MatchStep` and `match()` no longer have a "start label" parameter -- it is computed if the incoming traverser does not have requisite labels.
 * Turned transactional testing back on in Gremlin Server using Neo4j.
 * Renamed `Transaction.create()` to `Transaction.createThreadedTx()`.

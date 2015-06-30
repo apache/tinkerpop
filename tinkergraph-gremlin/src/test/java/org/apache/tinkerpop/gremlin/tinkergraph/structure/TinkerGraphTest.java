@@ -203,7 +203,7 @@ public class TinkerGraphTest {
                         as("a").in("writtenBy").as("b"),
                         as("b").out("followedBy").as("c"),
                         as("c").out("writtenBy").as("d"),
-                        as("d").where(P.neq("a"))).select().by("name");
+                        as("d").where(P.neq("a"))).select("a","b","c","d").by("name");
 
 
         System.out.println(traversal.get());

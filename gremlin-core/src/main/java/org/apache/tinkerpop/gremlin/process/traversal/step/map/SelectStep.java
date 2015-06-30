@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -51,33 +50,20 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
         super(traversal);
         this.pop = pop;
         this.selectKeys = Arrays.asList(selectKeys);
-    }
-
-    public SelectStep(final Traversal.Admin traversal, final String... selectKeys) {
-        this(traversal, null, selectKeys);
+        if (this.selectKeys.size() < 2)
+            throw new IllegalArgumentException("At least two select keys must be provided: " + this);
     }
 
     @Override
     protected Map<String, E> map(final Traverser.Admin<S> traverser) {
-        final S start = traverser.get();
         final Map<String, E> bindings = new LinkedHashMap<>();
-
-        if (this.selectKeys.isEmpty()) {
-            if (start instanceof Map)
-                ((Map<String, Object>) start).forEach((key, value) -> bindings.put(key, (E) TraversalUtil.apply(value, this.traversalRing.next())));
+        for (final String selectKey : this.selectKeys) {
+            final E end = this.getNullableScopeValue(this.pop, selectKey, traverser);
+            if (null != end)
+                bindings.put(selectKey, TraversalUtil.apply(end, this.traversalRing.next()));
             else {
-                final Path path = traverser.path();
-                path.labels().stream().flatMap(Set::stream).distinct().forEach(label -> bindings.put(label, (E) TraversalUtil.apply(null == this.pop ? path.<Object>get(label) : path.get(this.pop, label), this.traversalRing.next())));
-            }
-        } else {
-            for (final String selectKey : this.selectKeys) {
-                final E end = this.getNullableScopeValue(this.pop, selectKey, traverser);
-                if (null != end)
-                    bindings.put(selectKey, TraversalUtil.apply(end, this.traversalRing.next()));
-                else {
-                    this.traversalRing.reset();
-                    return null;
-                }
+                this.traversalRing.reset();
+                return null;
             }
         }
         this.traversalRing.reset();
@@ -105,10 +91,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.traversalRing.hashCode();
-        for (final String selectLabel : this.selectKeys) {
-            result ^= selectLabel.hashCode();
-        }
+        int result = super.hashCode() ^ this.traversalRing.hashCode() ^ this.selectKeys.hashCode();
         if (null != this.pop)
             result ^= this.pop.hashCode();
         return result;
@@ -126,7 +109,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(this.selectKeys.isEmpty() || TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.selectKeys::contains).findAny().isPresent() ?
+        return this.getSelfAndChildRequirements(TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.selectKeys::contains).findAny().isPresent() ?
                 TYPICAL_GLOBAL_REQUIREMENTS_ARRAY :
                 TYPICAL_LOCAL_REQUIREMENTS_ARRAY);
     }
