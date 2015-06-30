@@ -126,6 +126,7 @@ public class ProfilingApplication {
         final int maxSimultaneousUsagePerConnection = Integer.parseInt(options.getOrDefault("maxSimultaneousUsagePerConnection", "32").toString());
         final int maxInProcessPerConnection = Integer.parseInt(options.getOrDefault("maxInProcessPerConnection", "64").toString());
         final int minInProcessPerConnection = Integer.parseInt(options.getOrDefault("minInProcessPerConnection", "16").toString());
+        final int maxWaitForConnection = Integer.parseInt(options.getOrDefault("maxWaitForConnection", "3000").toString());
         final int workerPoolSize = Integer.parseInt(options.getOrDefault("workerPoolSize", "2").toString());
         final int tooSlowThreshold = Integer.parseInt(options.getOrDefault("tooSlowThreshold", "125").toString());
         final String serializer = options.getOrDefault("serializer", Serializers.GRYO_V1D0.name()).toString();
@@ -140,6 +141,7 @@ public class ProfilingApplication {
                 .minInProcessPerConnection(minInProcessPerConnection)
                 .maxInProcessPerConnection(maxInProcessPerConnection)
                 .nioPoolSize(nioPoolSize)
+                .maxWaitForConnection(maxWaitForConnection)
                 .serializer(Serializers.valueOf(serializer))
                 .workerPoolSize(workerPoolSize).create();
 
