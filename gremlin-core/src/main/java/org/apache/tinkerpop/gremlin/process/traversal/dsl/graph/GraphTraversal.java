@@ -192,7 +192,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Map a traverser referencing an object of type <code>E</code> to an iterator of objects of type <code>E2</code>.
+     * Map a {@link Traverser} referencing an object of type <code>E</code> to an iterator of objects of type <code>E2</code>.
      * The resultant iterator is drained one-by-one before a new <code>E</code> object is pulled in for processing.
      *
      * @param function the lambda expression that does the functional mapping
@@ -203,6 +203,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LambdaFlatMapStep<>(this.asAdmin(), function));
     }
 
+    /**
+     * Map a {@link Traverser} referencing an object of type <code>E</code> to an iterator of objects of type <code>E2</code>.
+     * The internal traversal is drained one-by-one before a new <code>E</code> object is pulled in for processing.
+     *
+     * @param flatMapTraversal the traversal generating objects of type <code>E2</code>
+     * @param <E2>             the end type of the internal traversal
+     * @return the traversal with an appended {@link TraversalFlatMapStep}.
+     */
     public default <E2> GraphTraversal<S, E2> flatMap(final Traversal<?, E2> flatMapTraversal) {
         return this.asAdmin().addStep(new TraversalFlatMapStep<>(this.asAdmin(), flatMapTraversal));
     }
@@ -478,6 +486,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PathStep<>(this.asAdmin()));
     }
 
+    /**
+     * Map the {@link Traverser} to a {@link Map} of bindings as specified by the provided match traversals.
+     *
+     * @param matchTraversals the traversal that maintain variables which must hold for the life of the traverser
+     * @param <E2>            the type of the obejcts bound in the variables
+     * @return the traversal with an appended {@link MatchStep}.
+     */
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... matchTraversals) {
         return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), ConjunctionStep.Conjunction.AND, matchTraversals));
     }
@@ -492,22 +507,39 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
 
+    /**
+     * Map the {@link Traverser} to a {@link Map} projection of sideEffect values, map values, and/or path values.
+     *
+     * @param pop               if there are multiple objects referenced in the path, the {@link Pop} to use.
+     * @param selectLabel1      the first key to project
+     * @param selectLabel2      the second key to project
+     * @param otherSelectLabels the third+ keys to project
+     * @param <E2>              the type of the objects projected
+     * @return the traversal with an appended {@link SelectStep}.
+     */
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String selectLabel1, final String selectLabel2, String... otherSelectLabels) {
         final String[] selectLabels = new String[otherSelectLabels.length + 2];
         selectLabels[0] = selectLabel1;
         selectLabels[1] = selectLabel2;
-        for (int i = 0; i < otherSelectLabels.length; i++) {
-            selectLabels[i + 2] = otherSelectLabels[i];
-        }
+        System.arraycopy(otherSelectLabels, 0, selectLabels, 2, otherSelectLabels.length);
         return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), pop, selectLabels));
     }
 
+    /**
+     * Map the {@link Traverser} to a {@link Map} projection of sideEffect values, map values, and/or path values.
+     *
+     * @param selectLabel1      the first key to project
+     * @param selectLabel2      the second key to project
+     * @param otherSelectLabels the third+ keys to project
+     * @param <E2>              the type of the objects projected
+     * @return the traversal with an appended {@link SelectStep}.
+     */
     public default <E2> GraphTraversal<S, Map<String, E2>> select(final String selectLabel1, final String selectLabel2, String... otherSelectLabels) {
         return this.select(null, selectLabel1, selectLabel2, otherSelectLabels);
     }
 
     public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), pop, selectLabel));
+        return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), pop, selectLabel));
     }
 
     public default <E2> GraphTraversal<S, E2> select(final String selectLabel) {
@@ -781,6 +813,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
+     * Once the first {@link Traverser} hits this step, a count down is started. Once the time limit is up, all remaining traversers are filtered out.
+     *
+     * @param timeLimit the count down time
+     * @return the traversal with an appended {@link TimeLimitStep}
+     */
+    public default GraphTraversal<S, E> timeLimit(final long timeLimit) {
+        return this.asAdmin().addStep(new TimeLimitStep<E>(this.asAdmin(), timeLimit));
+    }
+
+    /**
      * Filter the <code>E</code> object if its {@link Traverser#path} is not {@link Path#isSimple}.
      *
      * @return the traversal with an appended {@link SimplePathStep}.
@@ -840,10 +882,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
         return this.asAdmin().addStep(new GroupCountSideEffectStep<>(this.asAdmin(), sideEffectKey));
-    }
-
-    public default GraphTraversal<S, E> timeLimit(final long timeLimit) {
-        return this.asAdmin().addStep(new TimeLimitStep<E>(this.asAdmin(), timeLimit));
     }
 
     public default GraphTraversal<S, E> tree(final String sideEffectKey) {
