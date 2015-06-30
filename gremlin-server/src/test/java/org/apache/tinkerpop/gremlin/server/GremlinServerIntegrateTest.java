@@ -62,9 +62,6 @@ import static org.junit.Assert.*;
  */
 public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
-    @Rule
-    public TestName name = new TestName();
-
     private Log4jRecordingAppender recordingAppender = null;
 
     @Before

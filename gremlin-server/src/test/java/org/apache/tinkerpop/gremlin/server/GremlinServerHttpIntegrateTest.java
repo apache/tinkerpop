@@ -47,9 +47,6 @@ import static org.junit.Assert.assertEquals;
 public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegrationTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
-    @Rule
-    public TestName name = new TestName();
-
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */

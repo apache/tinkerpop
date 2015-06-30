@@ -70,9 +70,6 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
  */
 public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
-    @Rule
-    public TestName name = new TestName();
-
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */
