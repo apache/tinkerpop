@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -41,13 +41,18 @@ public abstract class GroovyProfileTest {
         }
 
         @Override
-        Traversal<Vertex, StandardTraversalMetrics> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
+        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
             TraversalScriptHelper.compute("g.V().where(__.in('created').count().is(1l)).values('name').profile()", g);
         }
 
         @Override
-        Traversal<Vertex, StandardTraversalMetrics> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
+        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile() {
             TraversalScriptHelper.compute("g.V().sideEffect{Thread.sleep(10)}.sideEffect{Thread.sleep(5)}.profile()", g)
+        }
+
+        @Override
+        public Traversal<Vertex, StandardTraversalMetrics> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile() {
+            TraversalScriptHelper.compute("g.V.match(__.as('a').out('created').as('b'), __.as('b').in.count.is(eq(1))).select('a', 'b').by('name').profile", g)
         }
     }
 }

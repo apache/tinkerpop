@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -61,6 +62,8 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile();
 
     public abstract Traversal<Vertex, StandardTraversalMetrics> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile();
+
+    public abstract Traversal<Vertex,StandardTraversalMetrics> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile();
 
     /**
      * Many of the tests in this class are coupled to not-totally-generic vendor behavior. However, this test is intended to provide
@@ -297,6 +300,14 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         }
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile() {
+        final Traversal<Vertex,StandardTraversalMetrics> traversal = get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile();
+        printTraversalForm(traversal);
+        traversal.iterate();
+    }
+
     /**
      * Traversals
      */
@@ -332,6 +343,11 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, StandardTraversalMetrics> get_g_V_whereXinXcreatedX_count_isX1XX_valuesXnameX_profile() {
             return (Traversal) g.V().where(__.in("created").count().is(1l)).values("name").profile();
+        }
+
+        @Override
+        public Traversal<Vertex,StandardTraversalMetrics> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile() {
+            return (Traversal) g.V().match(__.as("a").out("created").as("b"), __.as("b").in().count().is(P.eq(1))).select("a", "b").by("name").profile();
         }
     }
 }
