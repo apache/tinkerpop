@@ -26,7 +26,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
@@ -339,25 +340,28 @@ public final class TraversalHelper {
     private static Set<Scoping.Variable> getVariableLocations(final Set<Scoping.Variable> variables, final Traversal.Admin<?, ?> traversal) {
         if (variables.size() == 2) return variables;    // has both START and END so no need to compute further
         final Step<?, ?> startStep = traversal.getStartStep();
-        if (startStep instanceof StartStep && ((StartStep) startStep).isVariableStartStep())
+        if (StartStep.isVariableStartStep(startStep))
             variables.add(Scoping.Variable.START);
-        else if (startStep instanceof WhereStep.WhereStartStep) {
-            if (!((WhereStep.WhereStartStep) startStep).getScopeKeys().isEmpty())
+        else if (startStep instanceof WherePredicateStep) {
+            if (((WherePredicateStep) startStep).getStartKey().isPresent())
+                variables.add(Scoping.Variable.START);
+        } else if (startStep instanceof WhereTraversalStep.WhereStartStep) {
+            if (!((WhereTraversalStep.WhereStartStep) startStep).getScopeKeys().isEmpty())
                 variables.add(Scoping.Variable.START);
         } else if (startStep instanceof MatchStep.MatchStartStep) {
             if (((MatchStep.MatchStartStep) startStep).getSelectKey().isPresent())
                 variables.add(Scoping.Variable.START);
         } else if (startStep instanceof MatchStep) {
-            if (((MatchStep) startStep).getStartKey().isPresent())
-                variables.add(Scoping.Variable.START);
-            else
-                ((MatchStep<?, ?>) startStep).getGlobalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
-        } else if (startStep instanceof ConjunctionStep || startStep instanceof NotStep || startStep instanceof WhereStep)
+            ((MatchStep<?, ?>) startStep).getGlobalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
+        } else if (startStep instanceof ConjunctionStep || startStep instanceof NotStep || startStep instanceof WhereTraversalStep)
             ((TraversalParent) startStep).getLocalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
         ///
         final Step<?, ?> endStep = traversal.getEndStep();
-        if (endStep instanceof WhereStep.WhereEndStep) {
-            if (!((WhereStep.WhereEndStep) endStep).getScopeKeys().isEmpty())
+        if (endStep instanceof WherePredicateStep) {
+            if (((WherePredicateStep) endStep).getStartKey().isPresent())
+                variables.add(Scoping.Variable.END);
+        } else if (endStep instanceof WhereTraversalStep.WhereEndStep) {
+            if (!((WhereTraversalStep.WhereEndStep) endStep).getScopeKeys().isEmpty())
                 variables.add(Scoping.Variable.END);
         } else if (endStep instanceof MatchStep.MatchEndStep) {
             if (((MatchStep.MatchEndStep) endStep).getMatchKey().isPresent())

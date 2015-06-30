@@ -125,7 +125,7 @@ image::addedge-step.png[width=450]
 ----
 g.V(1).as('a').out('created').in('created').where(neq('a')).addOutE('co-developer','a','year',2009) <1>
 g.withSideEffect('a',g.V(3,5).toList()).V(4).addInE('createdBy','a') <2>
-g.V().as('a').out('created').as('b').select().addOutE('b','createdBy','a','acl','public') <3>
+g.V().as('a').out('created').as('b').select('a','b').addOutE('b','createdBy','a','acl','public') <3>
 g.V(1).as('a').out('knows').addInE('livesNear','a','year',2009).inV().inE('livesNear').values('year') <4>
 ----
 
@@ -230,8 +230,8 @@ The `as()`-step is not a real step, but a "step modulator" similar to <<by-step,
 
 [gremlin-groovy,modern]
 ----
-g.V().as('a').out('created').as('b').select()            <1>
-g.V().as('a').out('created').as('b').select().by('name') <2>
+g.V().as('a').out('created').as('b').select('a','b')            <1>
+g.V().as('a').out('created').as('b').select('a','b').by('name') <2>
 ----
 
 <1> Select the objects labeled "a" and "b" from the path.
@@ -242,7 +242,7 @@ A step can have any number of labels associated with it. This is useful for refe
 [gremlin-groovy,modern]
 ----
 g.V().hasLabel('software').as('a','b','c').
-   select().
+   select('a','b','c').
      by('name').
      by('lang').
      by(__.in('created').values('name').fold())
@@ -476,6 +476,16 @@ g.V().valueMap(true, 'name')
 g.V().dedup().by(label).values('name')
 ----
 
+Finally, if `dedup()` is provided an array of strings, then it will ensure that the de-duplication is not with respect to the current traverser object, but to the path history of the traverser.
+
+[gremlin-groovy,modern]
+----
+g.V().as('a').out('created').as('b').in('created').as('c').select('a','b','c')
+g.V().as('a').out('created').as('b').in('created').as('c').dedup('a','b').select('a','b','c') <1>
+----
+
+<1> If the current `a` and `b` combination has been seen previously, then filter the traverser.
+
 [[drop-step]]
 Drop Step
 ~~~~~~~~~
@@ -670,7 +680,7 @@ The `limit()`-step can also be applied with `Scope.local`, in which case it oper
 
 [gremlin-groovy,theCrew]
 ----
-g.V().valueMap().select(local,'location').limit(local,2) <1>
+g.V().valueMap().select('location').limit(local,2) <1>
 g.V().valueMap().limit(local, 1) <2>
 ----
 
@@ -688,11 +698,11 @@ A `GraphTraversal` operates on a continuous stream of objects. In many situation
 [gremlin-groovy,theCrew]
 ----
 g.V().as('person').
-      properties('location').order().by('startTime',incr).limit(2).
-      value().as('location').select().by('name').by() <1>
+      properties('location').order().by('startTime',incr).limit(2).value().as('location').
+      select('person','location').by('name').by() <1>
 g.V().as('person').
-      local(properties('location').order().by('startTime',incr).limit(2)).
-      value().as('location').select().by('name').by() <2>
+      local(properties('location').order().by('startTime',incr).limit(2)).value().as('location').
+      select('person','location').by('name').by() <2>
 ----
 
 <1> Get the first two people and their respective location according to the most historic location start time.
@@ -714,20 +724,22 @@ image::match-step.png[width=500]
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('created').as('b'),
         __.as('b').has('name', 'lop'),
         __.as('b').in('created').as('c'),
-        __.as('c').has('age', 29)).select('a','c').by('name')
+        __.as('c').has('age', 29)).
+      select('a','c').by('name')
 ----
 
 Note that the above can also be more concisely written as below which demonstrates that standard inner-traversals can be arbitrarily defined.
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('created').has('name', 'lop').as('b'),
-        __.as('b').in('created').has('age', 29).as('c')).select('a','c').by('name')
+        __.as('b').in('created').has('age', 29).as('c')).
+      select('a','c').by('name')
 ----
 
 [[grateful-dead]]
@@ -740,17 +752,18 @@ image::grateful-dead-schema.png[width=475]
 ----
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal(standard())
-g.V().match('a',
+g.V().match(
         __.as('a').has('name', 'Garcia'),
         __.as('a').in('writtenBy').as('b'),
-        __.as('a').in('sungBy').as('b')).select('b').values('name')
+        __.as('a').in('sungBy').as('b')).
+      select('b').values('name')
 ----
 
 Among the features which differentiate `match()` from SPARQL are:
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('created').has('name','lop').as('b'), <1>
         __.as('b').in('created').has('age', 29).as('c'),
         __.as('c').repeat(out()).times(2)). <2>
@@ -765,14 +778,14 @@ To extend point #3, it is possible to support going from imperative, to declarat
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('knows').as('b'),
         __.as('b').out('created').has('name','lop')).
-        select('b').out('created').
-          match('x',
+      select('b').out('created').
+          match(
             __.as('x').in('created').as('y'),
             __.as('y').out('knows').as('z')).
-            select('z').values('name')
+          select('z').values('name')
 ----
 
 IMPORTANT: The `match()`-step is stateless. The variable bindings of the traversal patterns are stored in the path history of the traverser. As such, the variables used over all `match()`-steps within a traversal are globally unique. A benefit of this is that subsequent `where()`, `select()`, `match()`, etc. steps can leverage the same variables in their analysis.
@@ -781,14 +794,25 @@ Like all other steps in Gremlin, `match()` is a function and thus, `match()` wit
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('knows').as('b'),
         __.as('b').out('created').has('name','lop'),
-        __.as('b').match('x',
-                 __.as('x').out('created').as('y'),
-                 __.as('y').has('name','ripple')).
-                 select('y').as('c')).
-        select('a','c').by('name')
+        __.as('b').match(
+                     __.as('b').out('created').as('c'),
+                     __.as('c').has('name','ripple')).
+                   select('c').as('c')).
+      select('a','c').by('name')
+----
+
+If a step-labeled traversal proceeds the `match()`-step and the traverser entering the `match()` is destined to bind to a particular variable, then the previous step should be labeled accordingly.
+
+[gremlin-groovy,modern]
+----
+g.V().as('a').out('knows').as('b').
+  match(
+    __.as('b').out('created').as('c'),
+    __.not(__.as('c').in('created').as('a'))).
+  select('a','b','c').by('name')
 ----
 
 There are three types of `match()` traversal patterns.
@@ -803,20 +827,23 @@ If a variable is at the start of a traversal pattern it *must* exist as a label 
 ----
 g.V().as('a').out().as('b'). <1>
     match( <2>
-        __.as('a').out().count().as('c'), <3>
-        or( <4>
-          __.as('a').out('knows').as('b'),
-          __.as('b').in().count().as('c').and().as('c').is(gt(2))  <5>
-        )
-    ).select('a','b','c').by('name').by('name').by() <6>
+      __.as('a').out().count().as('c'), <3>
+      __.not(__.as('a').in().as('b')), <4>
+      or( <5>
+        __.as('a').out('knows').as('b'),
+        __.as('b').in().count().as('c').and().as('c').is(gt(2)))).  <6>
+    dedup('a','c'). <7>
+    select('a','b','c').by('name').by('name').by() <8>
 ----
 
 <1> A standard, step-labeled traversal can come prior to `match()`.
-<2> If the traverser's path prior to entering `match()` has the requisite variables, then no "start variable" is needed.
+<2> If the traverser's path prior to entering `match()` has requisite label values, then those historic values are bound.
 <3> It is possible to use <<a-note-on-barrier-steps,barrier steps>> though they are computed locally to the pattern (as one would expect).
-<4> It is possible to nest `and()`- and `or()`-steps for conjunction matching.
-<5> Both infix and prefix conjunction notation is supported.
-<6> The bound values are of different types -- vertex ("a"), vertex ("b"), long ("c").
+<4> It is possible to `not()` a pattern.
+<5> It is possible to nest `and()`- and `or()`-steps for conjunction matching.
+<6> Both infix and prefix conjunction notation is supported.
+<7> It is possible to "distinct" the specified label combination.
+<8> The bound values are of different types -- vertex ("a"), vertex ("b"), long ("c").
 
 [[using-where-with-match]]
 Using Where with Match
@@ -826,22 +853,23 @@ Match is typically used in conjunction with both `select()` (demonstrated previo
 
 [gremlin-groovy,modern]
 ----
-g.V().match('a',
+g.V().match(
         __.as('a').out('created').as('b'),
         __.as('b').in('created').as('c')).
-          where('a', neq('c')).select('a','c').by('name')
+        where('a', neq('c')).
+      select('a','c').by('name')
 ----
 
 The `where()`-step can take either a `P`-predicate (example above) or a `Traversal` (example below). Using `MatchPredicateStrategy`, `where()`-clauses are automatically folded into `match()` and thus, subject to the query optimizer within `match()`-step.
 
 [gremlin-groovy,modern]
 ----
-traversal = g.V().match('a',
+traversal = g.V().match(
                     __.as('a').has(label,'person'), <1>
                     __.as('a').out('created').as('b'),
                     __.as('b').in('created').as('c')).
-                      where(__.as('a').out('knows').as('c')). <2>
-                      select('a','c').by('name'); null <3>
+                    where(__.as('a').out('knows').as('c')). <2>
+                  select('a','c').by('name'); null <3>
 traversal.toString() <4>
 traversal <5> <6>
 traversal.toString() <7>
@@ -1070,14 +1098,14 @@ The `range()`-step can also be applied with `Scope.local`, in which case it oper
 
 [gremlin-groovy,modern]
 ----
-g.V().as('a').out().as('b').in().as('c').select().by('name').range(local,1,2)
+g.V().as('a').out().as('b').in().as('c').select('a','b','c').by('name').range(local,1,2)
 ----
 
 The next example uses the <<the-crew-toy-graph,The Crew>> toy data set.  It produces a `List<String>` containing the second and third location for each vertex.
 
 [gremlin-groovy,theCrew]
 ----
-g.V().valueMap().select(local,'location').range(local, 1, 3)
+g.V().valueMap().select('location').range(local, 1, 3)
 ----
 
 [[repeat-step]]
@@ -1224,7 +1252,7 @@ The first use case is demonstrated via example below.
 [gremlin-groovy,modern]
 ----
 g.V().as('a').out().as('b').out().as('c') // no select
-g.V().as('a').out().as('b').out().as('c').select()
+g.V().as('a').out().as('b').out().as('c').select('a','b','c')
 g.V().as('a').out().as('b').out().as('c').select('a','b')
 g.V().as('a').out().as('b').out().as('c').select('a','b').by('name')
 g.V().as('a').out().as('b').out().as('c').select('a') <1>
@@ -1243,21 +1271,6 @@ g.V().out().as('x').out().select('x')
 g.V().out().out().as('x').select('x') // pointless
 ----
 
-The second use case is best understood in terms of <<match-step,`match()`>>-step where the result of `match()` is a `Map<String,Object>` of variable bindings. However, any step that emits a `Map<String,Object>` can be selected. A contrived example is presented below.
-
-[gremlin-groovy,modern]
-----
-g.V().range(0, 2).map {[b:1,c:2]} <1>
-g.V().range(0, 2).map {[b:1,c:2]}.select(local) <2>
-g.V().range(0, 2).as('a').map {[b:1,c:2]}.select(global) <3>
-g.V().range(0, 2).map {[b:1,c:2]}.select(local,'c') <4>
-----
-
-<1> A contrived example to create a `Map<String,Object>` flow as a foundation for the examples to follow.
-<2> Will select from the `Map<String,Object>` traverser object.
-<3> Will select from the `Path` (or sideEffects) of the traversal.
-<4> If a single selection is used, then the object is emitted not wrapped in a map. Useful for continuing the traversal process without having to do a map projection.
-
 NOTE: When executing a traversal with `select()` on a standard traversal engine (i.e. OLTP), `select()` will do its best to avoid calculating the path history and instead, will rely on a global data structure for storing the currently selected object. As such, if only a subset of the path walked is required, `select()` should be used over the more resource intensive <<path-step,`path()`>>-step.
 
 [[using-where-with-select]]
@@ -1268,14 +1281,14 @@ Finally, like <<match-step,`match()`>>-step, it is possible to use `where()`, as
 
 [gremlin-groovy,modern]
 ----
-g.V().as('a').out('created').in('created').as('b').select().by('name') <1>
+g.V().as('a').out('created').in('created').as('b').select('a','b').by('name') <1>
 g.V().as('a').out('created').in('created').as('b').
-      select().by('name').where('a',neq('b')) <2>
+      select('a','b').by('name').where('a',neq('b')) <2>
 g.V().as('a').out('created').in('created').as('b').
-      select(). <3>
+      select('a','b'). <3>
       where('a',neq('b')).
       where(__.as('a').out('knows').as('b')).
-      select().by('name')
+      select('a','b').by('name')
 ----
 
 <1> A standard `select()` that generates a `Map<String,Object>` of variables bindings in the path (i.e. `a` and `b`) for the sake of a running example.
@@ -1573,7 +1586,7 @@ The `where()`-step filters the current object based on either the object itself 
 [gremlin-groovy,modern]
 ----
 g.V(1).as('a').out('created').in('created').where(neq('a')) <1>
-g.withSideEffect('a'){['josh','peter']}.V(1).out('created').in('created').values('name').where(within('a')) <2>
+g.withSideEffect('a',['josh','peter']).V(1).out('created').in('created').values('name').where(within('a')) <2>
 g.V(1).out('created').in('created').where(out('created').count().is(gt(1))).values('name') <3>
 ----
 
@@ -1592,6 +1605,7 @@ g.V().out('knows').where(out('created')).values('name') <2>
 g.V().where(out('created').count().is(gte(2))).values('name') <3>
 g.V().where(out('knows').where(out('created'))).values('name') <4>
 g.V().where(__.not(out('created'))).where(__.in('knows')).values('name') <5>
+g.V().where(__.not(out('created')).and().in('knows')).values('name') <6>
 ----
 
 <1> What are the names of the people who have created a project?
@@ -1599,9 +1613,61 @@ g.V().where(__.not(out('created'))).where(__.in('knows')).values('name') <5>
 <3> What are the names of the people how have created two or more projects?
 <4> What are the names of the people who know someone that has created a project? (This only works in OLTP -- see the `WARNING` below)
 <5> What are the names of the people who have not created anything, but are known by someone?
-
+<6> The concatenation of `where()`-steps is the same as a single `where()`-step with an and'd clause.
 
 WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
+
+[[a-note-on-predicates]]
+A Note on Predicates
+--------------------
+
+A `P` is a predicate of the form `Function<Object,Boolean>`. That is, given some object, return true or false. The provided predicates are outlined in the table below and are used in various steps such as <<has-step,`has()`>>-step, <<where-step,`where()`>>-step, <<is-step,`is()`>>-step, etc.
+
+[width="100%",cols="3,15",options="header"]
+|=========================================================
+| Predicate | Description
+| `eq(object)` | Is the incoming object equal to the provided object?
+| `neq(object)` | Is the incoming object not equal to the provided object?
+| `lt(number)` | Is the incoming number less than the provided number?
+| `lte(number)` | Is the incoming number less than or equal to the provided number?
+| `gt(number)` | Is the incoming number greater than the provided number?
+| `gte(number)` | Is the incoming number greater than or equal to the provided number?
+| `inside(number,number)` | Is the incoming number greater than the first provided number and less than the second?
+| `outside(number,number)` | Is the incoming number less than the first provided number and greater than the second?
+| `between(number,number)` | Is the incoming number greater than or equal to the first provided number and less than the second?
+| `within(objects...)` | Is the incoming object in the array of provided objects?
+| `without(objects...)` | Is the incoming object not in the array of the provided objects?
+|=========================================================
+
+[gremlin-groovy]
+----
+eq(2)
+not(neq(2)) <1>
+not(within('a','b','c'))
+not(within('a','b','c')).test('d') <2>
+not(within('a','b','c')).test('a')
+within(1,2,3).and(not(eq(2))).test(3) <3>
+inside(1,4).or(eq(5)).test(3) <4>
+inside(1,4).or(eq(5)).test(5)
+between(1,2) <5>
+not(between(1,2))
+----
+
+<1> The `not()` of a `P`-predicate is another `P`-predicate.
+<2> `P`-predicates are arguments to various steps which internally `test()` the incoming value.
+<3> `P`-predicates can be and'd together.
+<4> `P`-predicates can be or' together.
+<5> `and()` is a `P`-predicate and thus, a `P`-predicate can be composed of multiple `P`-predicates.
+
+Finally, note that <<where-step,`where()`>>-step takes a `P<String>`. The provided string value refers to a variable binding, not to the explicit string value.
+
+[gremlin-groovy,modern]
+----
+g.V().as('a').both().both().as('b').count()
+g.V().as('a').both().both().as('b').where('a',neq('b')).count()
+----
+
+NOTE: It is possible for vendors and users to extend `P` and provide new predicates. For instance, a `regex(pattern)` could be a vendor-specific `P`.
 
 [[a-note-on-barrier-steps]]
 A Note on Barrier Steps

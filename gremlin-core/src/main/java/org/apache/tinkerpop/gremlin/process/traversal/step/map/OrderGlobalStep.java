@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
@@ -26,7 +27,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrie
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
 
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  */
 public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implements ComparatorHolder<S>, TraversalParent {
 
-    private final List<Comparator<S>> comparators = new ArrayList<>();
+    private List<Comparator<S>> comparators = new ArrayList<>();
 
     public OrderGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -96,6 +96,21 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> localChildTraversal) {
         throw new UnsupportedOperationException("Use OrderGlobalStep.addComparator(" + TraversalComparator.class.getSimpleName() + ") to add a local child traversal:" + this);
+    }
+
+    @Override
+    public OrderGlobalStep<S> clone() {
+        final OrderGlobalStep<S> clone = (OrderGlobalStep<S>) super.clone();
+        clone.comparators = new ArrayList<>();
+        for (final Comparator<S> comparator : this.comparators) {
+            if (comparator instanceof TraversalComparator) {
+                final TraversalComparator<S, ?> clonedTraversalComparator = ((TraversalComparator<S, ?>) comparator).clone();
+                clone.integrateChild(clonedTraversalComparator.getTraversal());
+                clone.comparators.add(clonedTraversalComparator);
+            } else
+                clone.comparators.add(comparator);
+        }
+        return clone;
     }
 
 

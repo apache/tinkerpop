@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
 import org.apache.tinkerpop.gremlin.process.traversal.Pop
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -34,14 +33,14 @@ public abstract class GroovySelectTest {
     public static class Traversals extends SelectTest {
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_select(final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('knows').as('b').select()", g, "v1Id", v1Id)
+        public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX(final Object v1Id) {
+            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('knows').as('b').select('a','b')", g, "v1Id", v1Id)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_select_byXnameX(
+        public Traversal<Vertex, Map<String, String>> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX_byXnameX(
                 final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('knows').as('b').select.by('name')", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('knows').as('b').select('a','b').by('name')", g, "v1Id", v1Id)
         }
 
         @Override
@@ -56,48 +55,43 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_select_byXnameX() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('b').select.by('name')", g)
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_selectXa_bX_byXnameX() {
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').select('a','b').by('name')", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregateXxX_asXbX_select_byXnameX() {
-            TraversalScriptHelper.compute("g.V.as('a').out.aggregate('x').as('b').select.by('name')", g)
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_aggregateXxX_asXbX_selectXa_bX_byXnameX() {
+            TraversalScriptHelper.compute("g.V.as('a').out.aggregate('x').as('b').select('a','b').by('name')", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_select_byXnameX_by_XitX() {
-            TraversalScriptHelper.compute("g.V().as('a').name.order().as('b').select.by('name').by", g)
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_name_order_asXbX_selectXa_bX_byXnameX_by_XitX() {
+            TraversalScriptHelper.compute("g.V().as('a').name.order().as('b').select('a','b').by('name').by", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_select_byXskillX_byXnameX() {
-            TraversalScriptHelper.compute("g.V.has('name', 'gremlin').inE('uses').order.by('skill', Order.incr).as('a').outV.as('b').select.by('skill').by('name')", g)
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_gremlinX_inEXusesX_order_byXskill_incrX_asXaX_outV_asXbX_selectXa_bX_byXskillX_byXnameX() {
+            TraversalScriptHelper.compute("g.V.has('name', 'gremlin').inE('uses').order.by('skill', Order.incr).as('a').outV.as('b').select('a','b').by('skill').by('name')", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasXname_isXmarkoXX_asXaX_select() {
-            TraversalScriptHelper.compute("g.V.has('name',__.is('marko')).as('a').select", g)
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_isXmarkoXX_asXaX_selectXaX() {
+            TraversalScriptHelper.compute("g.V.has('name',__.is('marko')).as('a').select('a')", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_label_groupCount_asXxX_select() {
-            TraversalScriptHelper.compute("g.V().label().groupCount().as('x').select()", g)
+        public Traversal<Vertex, Map<String, Long>> get_g_V_label_groupCount_asXxX_selectXxX() {
+            TraversalScriptHelper.compute("g.V().label().groupCount().as('x').select('x')", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpersonX_mapXbothE_label_groupCountX_asXrelationsX_select() {
-            TraversalScriptHelper.compute("g.V.hasLabel('person').as('person').map(__.bothE.label.groupCount()).as('relations').select", g)
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXpersonX_asXpX_mapXbothE_label_groupCountX_asXrX_selectXp_rX() {
+            TraversalScriptHelper.compute("g.V.hasLabel('person').as('p').map(__.bothE.label.groupCount()).as('r').select('p','r')", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_select() {
-            TraversalScriptHelper.compute("g.V.choose(__.outE().count().is(0L), __.as('a'), __.as('b')).select()", g)
-        }
-
-        @Override
-        Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_asXaX_outXcreatedX_asXaX_select() {
-            TraversalScriptHelper.compute("g.V.as('a').out('created').as('a').select", g)
+        public Traversal<Vertex, Vertex> get_g_V_chooseXoutE_count_isX0X__asXaX__asXbXX_chooseXselectXaX__selectXaX__selectXbXX() {
+            TraversalScriptHelper.compute("g.V.choose(__.outE().count().is(0L), __.as('a'), __.as('b')).choose(select('a'),select('a'),select('b'))", g)
         }
 
         // below are original back()-tests
@@ -155,23 +149,17 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_select_by_byXnameX_byXageX() {
-            TraversalScriptHelper.compute("g.V.as('a').has('name', 'marko').as('b').as('c').select().by().by('name').by('age')", g)
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_selectXa_b_cX_by_byXnameX_byXageX() {
+            TraversalScriptHelper.compute("g.V.as('a').has('name', 'marko').as('b').as('c').select('a','b','c').by().by('name').by('age')", g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_select_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
-            TraversalScriptHelper.compute("""g.V.hasLabel('software').as('name').as('language').as('creators').select().by('name').by('lang').
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
+            TraversalScriptHelper.compute("""g.V.hasLabel('software').as('name').as('language').as('creators').select('name','language','creators').by('name').by('lang').
                     by(__.in('created').values('name').fold().order(local))""", g)
         }
 
         // TINKERPOP3-619: select should not throw
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_select(final Pop pop) {
-            final String root = "g.V."
-            TraversalScriptHelper.compute(root + (null == pop ? "select" : "select(${pop})"), g)
-        }
 
         @Override
         public Traversal<Vertex, Object> get_g_V_selectXaX(final Pop pop) {
@@ -186,39 +174,15 @@ public abstract class GroovySelectTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXglobalX(final Pop pop) {
-            final String root = "g.V."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(global)" : "select(global, ${pop})"), g)
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_selectXglobal_aX(final Pop pop) {
-            final String root = "g.V."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(global, 'a')" : "select(global, ${pop}, 'a')"), g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_selectXglobal_a_bX(final Pop pop) {
-            final String root = "g.V."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(global, 'a', 'b')" : "select(global, ${pop}, 'a', 'b')"), g)
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMapXaX_selectXlocalX(final Pop pop) {
-            final String root = "g.V.valueMap('a')."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(local)" : "select(local, ${pop})"), g)
-        }
-
-        @Override
-        public Traversal<Vertex, Object> get_g_V_valueMap_selectXlocal_aX(final Pop pop) {
+        public Traversal<Vertex, Object> get_g_V_valueMap_selectXpop_aX(final Pop pop) {
             final String root = "g.V.valueMap."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(local, 'a')" : "select(local, ${pop}, 'a')"), g)
+            TraversalScriptHelper.compute(root + (null == pop ? "select('a')" : "select(${pop}, 'a')"), g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXlocal_a_bX(final Pop pop) {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_selectXpop_a_bX(final Pop pop) {
             final String root = "g.V.valueMap."
-            TraversalScriptHelper.compute(root + (null == pop ? "select(local, 'a', 'b')" : "select(local, ${pop}, 'a', 'b')"), g)
+            TraversalScriptHelper.compute(root + (null == pop ? "select('a', 'b')" : "select(${pop}, 'a', 'b')"), g)
         }
 
         // when labels don't exist

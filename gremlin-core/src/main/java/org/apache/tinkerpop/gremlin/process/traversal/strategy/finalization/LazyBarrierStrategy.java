@@ -54,9 +54,7 @@ public final class LazyBarrierStrategy extends AbstractTraversalStrategy<Travers
     protected static final int MAX_BARRIER_SIZE = 10000;
 
     static {
-        PRIORS.add(ScopingStrategy.class);
-        //
-        POSTS.add(ProfileStrategy.class);
+       POSTS.add(ProfileStrategy.class);
     }
 
 

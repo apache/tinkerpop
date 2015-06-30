@@ -85,13 +85,13 @@ public abstract class GroovyTailTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_2X() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select.by('name').tail(local, 2)",g)
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_2X() {
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select('a','b','c').by('name').tail(local, 2)",g)
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_1X() {
-            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select.by('name').tail(local, 1)",g)
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_1X() {
+            TraversalScriptHelper.compute("g.V.as('a').out.as('b').out.as('c').select('a','b','c').by('name').tail(local, 1)",g)
         }
     }
 }

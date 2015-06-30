@@ -38,9 +38,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -53,7 +55,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 
 /**
  * Integration tests for gremlin-driver configurations and settings.
@@ -89,13 +97,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 settings.serializers.stream().filter(s -> s.config.containsKey("custom"))
                         .findFirst().get().config.put("custom", custom);
                 break;
-            /*
-            // todo: how do we do transactional testing without neo4j?
             case "shouldExecuteScriptInSessionOnTransactionalGraph":
+            case "shouldExecuteSessionlessScriptOnTransactionalGraph":
                 deleteDirectory(new File("/tmp/neo4j"));
-                settings.graphs.put("g", "conf/neo4j-empty.properties");
+                settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
-                */
         }
 
         return settings;
@@ -110,11 +116,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         try {
             results.all().join();
-            fail();
+            fail("Should have thrown exception over bad serialization");
         } catch (Exception ex) {
             final Throwable inner = ExceptionUtils.getRootCause(ex);
             assertTrue(inner instanceof RuntimeException);
-            assertEquals("Error while processing results from channel - check client and server logs for more information", inner.getMessage());
+            assertThat(inner.getMessage(), startsWith("Encountered unregistered class ID:"));
         }
 
         cluster.close();
@@ -169,6 +175,96 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
         final AtomicInteger counter = new AtomicInteger(0);
         results.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
+        assertEquals(9, counter.get());
+        assertThat(results.allItemsAvailable(), is(true));
+        assertThat(results.isExhausted(), is(true));
+
+        // cant stream it again
+        assertThat(results.stream().iterator().hasNext(), is(false));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldIterate() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+        final Iterator<Result> itty = results.iterator();
+        final AtomicInteger counter = new AtomicInteger(0);
+        while (itty.hasNext()) {
+            counter.incrementAndGet();
+            assertEquals(counter.get(), itty.next().getInt());
+        }
+
+        assertEquals(9, counter.get());
+        assertThat(results.allItemsAvailable(), is(true));
+        assertThat(results.isExhausted(), is(true));
+
+        // can't stream it again
+        assertThat(results.iterator().hasNext(), is(false));
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldGetSomeThenSomeMore() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+        final CompletableFuture<List<Result>> batch1 = results.some(5);
+        final CompletableFuture<List<Result>> batch2 = results.some(5);
+        final CompletableFuture<List<Result>> batchNothingLeft = results.some(5);
+
+        assertEquals(5, batch1.get().size());
+        assertEquals(1, batch1.get().get(0).getInt());
+        assertEquals(2, batch1.get().get(1).getInt());
+        assertEquals(3, batch1.get().get(2).getInt());
+        assertEquals(4, batch1.get().get(3).getInt());
+        assertEquals(5, batch1.get().get(4).getInt());
+        assertThat(results.isExhausted(), is(false));
+
+        assertEquals(4, batch2.get().size());
+        assertEquals(6, batch2.get().get(0).getInt());
+        assertEquals(7, batch2.get().get(1).getInt());
+        assertEquals(8, batch2.get().get(2).getInt());
+        assertEquals(9, batch2.get().get(3).getInt());
+        assertThat(results.isExhausted(), is(true));
+
+        assertEquals(0, batchNothingLeft.get().size());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldGetOneThenSomeThenSomeMore() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+        final Result one = results.one();
+        final CompletableFuture<List<Result>> batch1 = results.some(4);
+        final CompletableFuture<List<Result>> batch2 = results.some(5);
+        final CompletableFuture<List<Result>> batchNothingLeft = results.some(5);
+
+        assertEquals(1, one.getInt());
+
+        assertEquals(4, batch1.get().size());
+        assertEquals(2, batch1.get().get(0).getInt());
+        assertEquals(3, batch1.get().get(1).getInt());
+        assertEquals(4, batch1.get().get(2).getInt());
+        assertEquals(5, batch1.get().get(3).getInt());
+
+        assertEquals(4, batch2.get().size());
+        assertEquals(6, batch2.get().get(0).getInt());
+        assertEquals(7, batch2.get().get(1).getInt());
+        assertEquals(8, batch2.get().get(2).getInt());
+        assertEquals(9, batch2.get().get(3).getInt());
+        assertThat(results.isExhausted(), is(true));
+
+        assertEquals(0, batchNothingLeft.get().size());
 
         cluster.close();
     }
@@ -176,10 +272,13 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     /**
      * This test arose from this issue: https://github.org/apache/tinkerpop/tinkerpop3/issues/515
      * <p/>
-     * ResultSet.all returns a CompleteableFuture that blocks on the worker pool until isExausted returns false.
-     * isExausted in turn needs a thread on the worker pool to even return. So its totally possible to consume all
+     * ResultSet.all returns a CompletableFuture that blocks on the worker pool until isExhausted returns false.
+     * isExhausted in turn needs a thread on the worker pool to even return. So its totally possible to consume all
      * threads on the worker pool waiting for .all to finish such that you can't even get one to wait for
-     * isExausted to run.
+     * isExhausted to run.
+     * <p/>
+     * Note that all() doesn't work as described above anymore.  It waits for callback on readComplete rather
+     * than blocking on isExhausted.
      */
     @Test
     public void shouldAvoidDeadlockOnCallToResultSetDotAll() throws Exception {
@@ -211,28 +310,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final List<Integer> expected = IntStream.range(1, 10).boxed().collect(Collectors.toList());
         IntStream.range(0, requests).forEach(r ->
                 assertTrue(expected.containsAll(((List<Result>) refs[r].get()).stream().map(resultItem -> new Integer(resultItem.getInt())).collect(Collectors.toList()))));
-    }
-
-    @Test
-    public void shouldHandleNullResult() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        final ResultSet results = client.submit("g.V().drop().iterate();null");
-        assertNull(results.all().get().get(0).getObject());
-
-        cluster.close();
-    }
-
-    @Test
-    public void shouldHandleEmptyResult() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        final ResultSet results = client.submit("g.V(100,1000,1000)");
-        assertEquals(0, results.all().get().size());
-
-        cluster.close();
     }
 
     @Test
@@ -385,10 +462,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("'" + fatty + "'").all().get();
             fail("Should throw an exception.");
         } catch (Exception re) {
-            // can't seem to catch the server side exception - as the channel is basically closed on this error
-            // can only detect a closed channel and react to that.  in some ways this is a good general piece of
-            // code to have in place, but kinda stinky when you want something specific about why all went bad
-            assertTrue(re.getCause().getMessage().equals("Error while processing results from channel - check client and server logs for more information"));
+            Throwable root = ExceptionUtils.getRootCause(re);
+            assertTrue(root.getMessage().equals("Max frame length of 1 has been exceeded."));
         } finally {
             cluster.close();
         }
@@ -400,8 +475,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Client client = cluster.connect(name.getMethodName());
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
-        final AtomicInteger counter = new AtomicInteger(0);
-        results1.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
+        assertEquals(9, results1.all().get().size());
+        assertThat(results1.isExhausted(), is(true));
 
         final ResultSet results2 = client.submit("x[0]+1");
         assertEquals(2, results2.all().get().get(0).getInt());
@@ -424,8 +499,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @org.junit.Ignore("Dropping neo4j prevents us from doing transactional tests")
     public void shouldExecuteScriptInSessionOnTransactionalGraph() throws Exception {
+        assumeNeo4jIsPresent();
+
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
 
@@ -441,6 +517,27 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Vertex vertexAfterTx = client.submit("v.property(\"color\",\"blue\"); graph.tx().commit(); v").all().get().get(0).getVertex();
         assertEquals("stephen", vertexAfterTx.values("name").next());
         assertEquals("blue", vertexAfterTx.values("color").next());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldExecuteSessionlessScriptOnTransactionalGraph() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        final Vertex vertexRequest1 = client.submit("graph.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexRequest1.values("name").next());
+
+        final Vertex vertexRequest2 = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexRequest2.values("name").next());
+
+        final Vertex vertexRequest3 = client.submit("graph.addVertex(\"name\",\"marko\")").all().get().get(0).getVertex();
+        assertEquals("marko", vertexRequest3.values("name").next());
+
+        assertEquals(2, client.submit("g.V().count()").all().get().get(0).getLong());
 
         cluster.close();
     }
@@ -566,4 +663,5 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         cluster.close();
     }
+
 }

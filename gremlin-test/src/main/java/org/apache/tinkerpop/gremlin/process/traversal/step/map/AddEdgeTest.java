@@ -48,7 +48,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_withSideEffectXx__g_V_toListX_addOutEXexistsWith_x_time_nowX();
 
-    public abstract Traversal<Vertex,Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_select_addInEXa_codeveloper_b_year_2009X();
+    public abstract Traversal<Vertex,Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_selectXa_bX_addInEXa_codeveloper_b_year_2009X();
 
     public abstract Traversal<Vertex,Edge> get_g_V_asXaX_inXcreatedX_addInEXcreatedBy_a_year_2009_acl_publicX();
 
@@ -118,8 +118,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
-    public void g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_select_addOutEXa_codeveloper_b_year_2009X() {
-        final Traversal<Vertex, Edge> traversal = get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_select_addInEXa_codeveloper_b_year_2009X();
+    public void g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_selectXa_bX_addInEXa_codeveloper_b_year_2009X() {
+        final Traversal<Vertex, Edge> traversal = get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_selectXa_bX_addInEXa_codeveloper_b_year_2009X();
         printTraversalForm(traversal);
         int count = 0;
         while (traversal.hasNext()) {
@@ -183,8 +183,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex,Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_select_addInEXa_codeveloper_b_year_2009X() {
-            return g.V().as("a").out("created").in("created").where(P.neq("a")).as("b").select().addInE("a", "co-developer", "b", "year", 2009);
+        public Traversal<Vertex,Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_selectXa_bX_addInEXa_codeveloper_b_year_2009X() {
+            return g.V().as("a").out("created").in("created").where(P.neq("a")).as("b").select("a","b").addInE("a", "co-developer", "b", "year", 2009);
         }
 
         @Override

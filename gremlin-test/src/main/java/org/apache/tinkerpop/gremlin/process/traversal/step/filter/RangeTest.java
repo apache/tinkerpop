@@ -22,8 +22,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,13 +71,13 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXunfold_valuesXnameX_foldX_rangeXlocal_4_5X();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_2X();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2X();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_1X();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_1X();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_3X();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_3X();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_2X();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -242,8 +240,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     /** Scenario: limit step, Scope.local, >1 item requested, Map input, Map output */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_2X() {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_2X();
+    public void g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2X() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2X();
         printTraversalForm(traversal);
         final Set<Map<String, String>> expected = new HashSet(makeMapList(2,
                 "a", "ripple", "b", "josh",
@@ -255,8 +253,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     /** Scenario: limit step, Scope.local, 1 item requested, Map input, Map output */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_1X() {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_1X();
+    public void g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_1X() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_1X();
         printTraversalForm(traversal);
         final Set<Map<String, String>> expected = new HashSet(makeMapList(1,
                  "a", "ripple",
@@ -268,8 +266,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     /** Scenario: range step, Scope.local, >1 item requested, Map input, Map output */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_3X() {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_3X();
+    public void g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_3X() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_3X();
         printTraversalForm(traversal);
         final Set<Map<String, String>> expected = new HashSet(makeMapList(2,
                  "b", "josh", "c", "ripple",
@@ -281,8 +279,8 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
     /** Scenario: range step, Scope.local, 1 item requested, Map input, Map output */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_2X() {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_2X();
+    public void g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X();
         printTraversalForm(traversal);
         // Since both of the tuples are identical, we count them.
         final Set<Map<String, String>> expected = new HashSet(makeMapList(1, "b", "josh"));
@@ -359,23 +357,23 @@ public abstract class RangeTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_2X() {
-            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select().by("name").limit(local, 2);
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_2X() {
+            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select("a","b","c").by("name").limit(local, 2);
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_select_byXnameX_limitXlocal_1X() {
-            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select().by("name").limit(local, 1);
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_in_asXbX_in_asXcX_selectXa_b_cX_byXnameX_limitXlocal_1X() {
+            return g.V().as("a").in().as("b").in().as("c").<Map<String, String>>select("a","b","c").by("name").limit(local, 1);
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_3X() {
-            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select().by("name").range(local, 1, 3);
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_3X() {
+            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select("a","b","c").by("name").range(local, 1, 3);
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_rangeXlocal_1_2X() {
-            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select().by("name").range(local, 1, 2);
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_rangeXlocal_1_2X() {
+            return g.V().as("a").out().as("b").out().as("c").<Map<String, String>>select("a","b","c").by("name").range(local, 1, 2);
         }
     }
 }

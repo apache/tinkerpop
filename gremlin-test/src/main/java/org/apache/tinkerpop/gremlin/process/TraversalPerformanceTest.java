@@ -115,7 +115,7 @@ public class TraversalPerformanceTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.GRATEFUL)
     @Test
     public void g_V_match_selectXbX_valuesXnameX() throws Exception {
-        g.V().match("a",
+        g.V().match(
                 __.as("a").has("name", "Garcia"),
                 __.as("a").in("writtenBy").as("b"),
                 __.as("a").in("sungBy").as("b")).select("b").values("name").iterate();

@@ -35,9 +35,8 @@ public abstract class FilterStep<S> extends AbstractStep<S, S> {
     protected Traverser<S> processNextStart() {
         while (true) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            if (this.filter(traverser)) {
+            if (this.filter(traverser))
                 return traverser;
-            }
         }
     }
 

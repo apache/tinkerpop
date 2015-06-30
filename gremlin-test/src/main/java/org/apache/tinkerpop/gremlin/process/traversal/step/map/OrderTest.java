@@ -56,7 +56,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_order_byXname_a1_b1X_byXname_b2_a2X_name();
 
-    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_select();
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX();
 
     public abstract Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(final Object v1Id);
 
@@ -142,8 +142,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_select() {
-        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_select();
+    public void g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX() {
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX();
         printTraversalForm(traversal);
         int counter = 0;
         int markoCounter = 0;
@@ -165,8 +165,6 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
             } else {
                 fail("This state should not have been reachable");
             }
-
-
         }
         assertEquals(4, markoCounter + joshCounter + peterCounter);
         assertEquals(1, markoCounter);
@@ -251,8 +249,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_select() {
-            return g.V().as("a").out("created").as("b").order().by(Order.shuffle).select();
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX() {
+            return g.V().as("a").out("created").as("b").order().by(Order.shuffle).select("a","b");
         }
 
         @Override

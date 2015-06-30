@@ -70,11 +70,11 @@ import java.util.stream.Stream;
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
-        method = "g_V_matchXa_created_b__c_created_bX_selectXnameX",
+        method = "g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
-        method = "g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name",
+        method = "g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
@@ -86,11 +86,11 @@ import java.util.stream.Stream;
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
-        method = "g_V_matchXa_created_b__c_created_bX_selectXnameX",
+        method = "g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
-        method = "g_V_out_out_hasXname_rippleX_matchXb_created_a__c_knows_bX_selectXcX_outXknowsX_name",
+        method = "g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",

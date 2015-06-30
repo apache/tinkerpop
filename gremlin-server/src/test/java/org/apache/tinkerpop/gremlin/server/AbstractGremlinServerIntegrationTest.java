@@ -24,6 +24,9 @@ import org.junit.Before;
 import java.io.File;
 import java.io.InputStream;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assume.assumeThat;
+
 /**
  * Starts and stops an instance for each executed test.
  *
@@ -77,5 +80,16 @@ public abstract class AbstractGremlinServerIntegrationTest {
         }
 
         return (directory.delete());
+    }
+
+    protected static void assumeNeo4jIsPresent() {
+        boolean neo4jIncludedForTesting;
+        try {
+            Class.forName("org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl");
+            neo4jIncludedForTesting = true;
+        } catch (Exception ex) {
+            neo4jIncludedForTesting = false;
+        }
+        assumeThat("Neo4j implementation was not included for testing - run with -DincludeNeo4j", neo4jIncludedForTesting, is(true));
     }
 }

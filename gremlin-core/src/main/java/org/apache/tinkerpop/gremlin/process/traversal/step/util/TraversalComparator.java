@@ -48,10 +48,14 @@ public final class TraversalComparator<S, E> implements Comparator<S>, Serializa
     }
 
     @Override
-    public TraversalComparator clone() throws CloneNotSupportedException {
-        final TraversalComparator clone = (TraversalComparator) super.clone();
-        clone.traversal = this.traversal.clone();
-        return clone;
+    public TraversalComparator clone() {
+        try {
+            final TraversalComparator clone = (TraversalComparator) super.clone();
+            clone.traversal = this.traversal.clone();
+            return clone;
+        } catch (final CloneNotSupportedException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     public Traversal.Admin<S, E> getTraversal() {

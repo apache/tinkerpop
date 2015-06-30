@@ -24,11 +24,18 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -49,10 +56,26 @@ import static org.junit.Assert.*;
 public class CoreTraversalTest extends AbstractGremlinProcessTest {
 
     @Test
+    @LoadGraphWith
+    public void shouldNeverPropagateANoBulkTraverser() {
+        assertFalse(g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).hasNext());
+        assertEquals(0, g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).toList().size());
+        g.V().dedup().sideEffect(t -> t.asAdmin().setBulk(0)).sideEffect(t -> fail("this should not have happened")).iterate();
+    }
+
+    @Test
+    @LoadGraphWith
+    public void shouldNeverPropagateANullValuedTraverser() {
+        assertFalse(g.V().map(t -> null).hasNext());
+        assertEquals(0, g.V().map(t -> null).toList().size());
+        g.V().map(t -> null).sideEffect(t -> fail("this should not have happened")).iterate();
+    }
+
+    @Test
     @LoadGraphWith(MODERN)
     public void shouldLoadVerticesViaIds() {
         final List<Vertex> vertices = g.V().toList();
-        final List<Object> ids = vertices.stream().map(v->v.id()).collect(Collectors.toList());
+        final List<Object> ids = vertices.stream().map(Vertex::id).collect(Collectors.toList());
         final List<Vertex> verticesReloaded = g.V(ids.toArray()).toList();
         assertEquals(vertices.size(), verticesReloaded.size());
         assertEquals(new HashSet<>(vertices), new HashSet<>(verticesReloaded));
@@ -62,7 +85,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldLoadEdgesViaIds() {
         final List<Edge> edges = g.E().toList();
-        final List<Object> ids = edges.stream().map(e->e.id()).collect(Collectors.toList());
+        final List<Object> ids = edges.stream().map(Edge::id).collect(Collectors.toList());
         final List<Edge> edgesReloaded = g.E(ids.toArray()).toList();
         assertEquals(edges.size(), edgesReloaded.size());
         assertEquals(new HashSet<>(edges), new HashSet<>(edgesReloaded));
@@ -153,7 +176,7 @@ public class CoreTraversalTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldHavePropertyForEachRemainingBehaviorEvenWithStrategyRewrite() {
-        final GraphTraversal<Vertex, Map<Object,Long>> traversal = g.V().out().groupCount();
+        final GraphTraversal<Vertex, Map<Object, Long>> traversal = g.V().out().groupCount();
         traversal.forEachRemaining(Map.class, map -> assertTrue(map instanceof Map));
     }
 

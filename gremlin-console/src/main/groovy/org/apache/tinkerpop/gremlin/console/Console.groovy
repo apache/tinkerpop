@@ -237,6 +237,7 @@ class Console {
     }
 
     private def handleError = { err ->
+        this.tempIterator = Collections.emptyIterator();
         if (err instanceof Throwable) {
             try {
                 final Throwable e = (Throwable) err

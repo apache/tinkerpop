@@ -52,6 +52,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`
 * Deploy JavaDocs/AsciiDocs: `bin/publish-docs.sh svn-username`
 * Integration Tests: `mvn verify -DskipIntegrationTests=false`
+** Execute with the `-DincludeNeo4j` option to include transactional tests.
 * Performance Tests: `mvn verify -DskipPerformanceTests=false`
 
 IDE Setup
@@ -103,7 +104,7 @@ Release Process
 ~~~~~~~~~~~~~~~
 
 . `mvn clean install`
-.. `mvn verify -DskipIntegrationTests=false`
+.. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
 .. `mvn verify -DskipPerformanceTests=false`
 . Perform manual tests:
 .. Execute `:remote connect conf/remote.yaml` and send some requests to a running Gremlin Server instance.

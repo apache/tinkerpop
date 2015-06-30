@@ -33,7 +33,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
@@ -89,6 +90,8 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
             ///
             if (endStep instanceof RangeGlobalStep || endStep instanceof TailGlobalStep || endStep instanceof DedupGlobalStep)
                 ((Bypassing) endStep).setBypass(true);
+            if (endStep instanceof DedupGlobalStep && !((DedupGlobalStep) endStep).getScopeKeys().isEmpty())
+                throw new ComputerVerificationException("Path history de-duplication is not possible in GraphComputer:" + endStep, traversal);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
@@ -106,9 +109,8 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                     throw new ComputerVerificationException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get(), traversal);
             }
 
-            if (step instanceof WhereStep &&
-                    ((((WhereStep) step).isPredicateBased() && ((WhereStep) step).getStartKey().isPresent()) ||
-                            (((WhereStep) step).isTraversalBased() && TraversalHelper.getVariableLocations(((WhereStep<?>) step).getLocalChildren().get(0)).contains(Scoping.Variable.START))))
+            if ((step instanceof WherePredicateStep && ((WherePredicateStep) step).getStartKey().isPresent()) ||
+                    (step instanceof WhereTraversalStep && TraversalHelper.getVariableLocations(((WhereTraversalStep<?>) step).getLocalChildren().get(0)).contains(Scoping.Variable.START)))
                 throw new ComputerVerificationException("A where()-step that has a start variable is not allowed because the variable value is retrieved from the path: " + step, traversal);
 
             if (UNSUPPORTED_STEPS.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())

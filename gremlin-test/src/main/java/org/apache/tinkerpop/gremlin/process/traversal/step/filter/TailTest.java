@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,9 +66,9 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_asXaX_out_asXaX_out_asXaX_selectXaX_byXlimitXlocal_0XX_tailXlocal_1X();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_2X();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_2X();
 
-    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_1X();
+    public abstract Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_1X();
 
     /** Scenario: Global scope */
     @Test
@@ -171,8 +170,8 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
     /** Scenario: Local scope, Map input, N>1 */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_2X() {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_2X();
+    public void g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_2X() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_2X();
         printTraversalForm(traversal);
         final Set<Map<String, String>> expected = new HashSet(makeMapList(2,
                  "b", "josh", "c", "ripple",
@@ -184,8 +183,8 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
     /** Scenario: Local scope, Map input, N=1 */
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_1X() {
-        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_1X();
+    public void g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_1X() {
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_1X();
         printTraversalForm(traversal);
         final Set<Map<String, String>> expected = new HashSet(makeMapList(1,
                  "c", "ripple",
@@ -242,13 +241,13 @@ public abstract class TailTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_2X() {
-            return g.V().as("a").out().as("b").out().as("c").<String>select().by("name").tail(local, 2);
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_2X() {
+            return g.V().as("a").out().as("b").out().as("c").<String>select("a","b","c").by("name").tail(local, 2);
         }
 
         @Override
-        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_select_byXnameX_tailXlocal_1X() {
-            return g.V().as("a").out().as("b").out().as("c").<String>select().by("name").tail(local, 1);
+        public Traversal<Vertex, Map<String, String>> get_g_V_asXaX_out_asXbX_out_asXcX_selectXa_b_cX_byXnameX_tailXlocal_1X() {
+            return g.V().as("a").out().as("b").out().as("c").<String>select("a","b","c").by("name").tail(local, 1);
         }
     }
 }

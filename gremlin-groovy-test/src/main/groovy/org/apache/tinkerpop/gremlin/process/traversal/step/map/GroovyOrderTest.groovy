@@ -60,8 +60,8 @@ public abstract class GroovyOrderTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_select() {
-            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').order.by(Order.shuffle).select()", g)
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX() {
+            TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').order.by(Order.shuffle).select('a','b')", g)
         }
 
         @Override

@@ -34,6 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import java.io.File;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
@@ -62,6 +63,10 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResultAndRebinding":
             case "should200OnGETWithGremlinQueryStringArgumentWithIteratorResultAndRebinding":
                 settings.scriptEngines.get("gremlin-groovy").scripts = Arrays.asList("scripts/generate-classic.groovy");
+                break;
+            case "should200OnPOSTTransactionalGraph":
+                deleteDirectory(new File("/tmp/neo4j"));
+                settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
         }
         return settings;
@@ -201,6 +206,40 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final JsonNode node = mapper.readTree(json);
             assertEquals(0, node.get("result").get("data").get(0).intValue());
         }
+    }
+
+    @Test
+    public void should200OnPOSTTransactionalGraph() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"graph.addVertex('name','stephen');g.V().count()\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(1, node.get("result").get("data").get(0).intValue());
+        }
+
+        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=g.V().count()");
+        httpget.addHeader("Accept", "application/json");
+
+        // execute this a bunch of times so that there's a good chance a different thread on the server processes
+        // the request
+        for (int ix = 0; ix < 100; ix++) {
+            try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+                assertEquals(200, response.getStatusLine().getStatusCode());
+                assertEquals("application/json", response.getEntity().getContentType().getValue());
+                final String json = EntityUtils.toString(response.getEntity());
+                final JsonNode node = mapper.readTree(json);
+                assertEquals(1, node.get("result").get("data").get(0).intValue());
+            }
+        }
+
     }
 
     @Test

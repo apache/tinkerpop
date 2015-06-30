@@ -559,7 +559,7 @@ public class TransactionTest extends AbstractGremlinTest {
         final int numberOfThreads = 10;
         final CountDownLatch latch = new CountDownLatch(numberOfThreads);
 
-        final Graph threadedG = g.tx().create();
+        final Graph threadedG = g.tx().createThreadedTx();
 
         for (int ix = 0; ix < numberOfThreads; ix++) {
             new Thread(() -> {

@@ -80,6 +80,8 @@ final class Connection {
 
         connectionLabel = String.format("Connection{host=%s}", pool.host);
 
+        if (cluster.isClosing()) throw new IllegalStateException("Cannot open a connection while the cluster after close() is called");
+
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
         final Channelizer channelizer = new Channelizer.WebSocketChannelizer();
         channelizer.init(this);
@@ -173,13 +175,14 @@ final class Connection {
                             if (isClosed() && pending.isEmpty())
                                 shutdown(closeFuture.get());
                         }, cluster.executor());
+
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
                         final ResultSet resultSet = new ResultSet(handler, cluster.executor(), channel,
                                 () -> {
                                     pending.remove(requestMessage.getRequestId());
                                     return null;
-                                });
+                                }, readCompleted);
                         future.complete(resultSet);
                     }
                 });

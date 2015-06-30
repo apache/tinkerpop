@@ -114,11 +114,11 @@ image::the-crew-graph.png[width=685]
 g.V().as('a').
       properties('location').as('b').
       hasNot('endTime').as('c').
-      select().by('name').by(value).by('startTime') // determine the current location of each person
+      select('a','b','c').by('name').by(value).by('startTime') // determine the current location of each person
 g.V().has('name','gremlin').inE('uses').
       order().by('skill',incr).as('a').
       outV().as('b').
-      select().by('skill').by('name') // rank the users of gremlin by their skill level
+      select('a','b').by('skill').by('name') // rank the users of gremlin by their skill level
 ----
 
 Graph Variables

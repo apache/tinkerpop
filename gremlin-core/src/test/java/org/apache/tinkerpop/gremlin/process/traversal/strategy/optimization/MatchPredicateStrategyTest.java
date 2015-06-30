@@ -21,6 +21,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
@@ -116,12 +117,18 @@ public class MatchPredicateStrategyTest {
 
         static Iterable<Object[]> generateTestParameters() {
 
-            final Traversal.Admin<?, ?> traversal1 = __.out().as("a").has("name", "marko").match("a", as("a").out().as("b")).asAdmin();
-            traversal1.getSteps().get(1).removeLabel("a");
-
             return Arrays.asList(new Traversal[][]{
-                    {__.out().match("a", as("a").has("name", "marko"), as("a").out().as("b")), traversal1},
-                    // {__.match("a", as("a").out().as("b")).where(as("b").out("knows").as("c")), __.match("a", as("a").out().as("b"), as("b").where(out("knows").as("c")))},
+                    {__.out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").match(as("a").out().as("b"))}, // has() pull out
+                    {__.out().as("a").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").has("name", "marko").match(as("a").out().as("b"))}, // has() pull out
+                    {__.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("a").out().match(as("a").has("name", "marko"), as("a").out().as("b"))}, // no has() pull out
+                    {__.map(__.match(as("a").has("name", "marko"), as("a").out().as("b"))), __.map(__.match(as("a").has("name", "marko"), as("a").out().as("b")))}, // no has() pull out
+                    {__.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b")), __.out().as("c").match(as("a").has("name", "marko"), as("a").out().as("b"))}, // no has() pull out
+                    /////////
+                    {__.match(as("a").out().as("b"), __.where(as("b").out("knows").as("c"))), __.match(as("a").out().as("b"), as("b").where(__.out("knows").as("c")))}, // make as().where()
+                    {__.match(as("a").out().as("b"), __.where("a", P.gt("b"))), __.match(as("a").out().as("b"), __.as("a").where(P.gt("b")))},  // make as().where()
+                    /////////
+                    //{__.match(as("a").out().as("b")).where(as("b").out("knows").as("c")), __.match(as("a").out().as("b"), as("b").where(__.out("knows").as("c")))}, // make as().where()
+                    //{__.match(as("a").out().as("b")).where("a", P.gt("b")), __.match(as("a").out().as("b"), __.as("a").where(P.gt("b")))},  // make as().where()
             });
         }
     }

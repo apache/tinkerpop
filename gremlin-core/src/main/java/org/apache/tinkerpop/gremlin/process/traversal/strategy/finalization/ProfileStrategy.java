@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -41,11 +40,6 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!(traversal.getParent() instanceof EmptyStep)) {
-            // This strategy is applied to the top-level traversal only
-            return;
-        }
-
         if (!TraversalHelper.hasStepOfClass(ProfileStep.class, traversal)) {
             // No ProfileStep present
             return;
@@ -76,10 +70,10 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
             // Handle nested traversal
             if (step instanceof TraversalParent) {
                 for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getLocalChildren()) {
-                    prepTraversalForProfiling(t);
+                    t.addStep(new ProfileStep(t));
                 }
                 for (Traversal.Admin<?, ?> t : ((TraversalParent) step).getGlobalChildren()) {
-                    prepTraversalForProfiling(t);
+                    t.addStep(new ProfileStep(t));
                 }
             }
         }

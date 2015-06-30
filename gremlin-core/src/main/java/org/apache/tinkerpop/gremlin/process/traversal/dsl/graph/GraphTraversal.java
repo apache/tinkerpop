@@ -58,7 +58,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
@@ -75,6 +76,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapKeysStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapValuesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
@@ -191,7 +194,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Map a traverser referencing an object of type <code>E</code> to an iterator of objects of type <code>E2</code>.
+     * Map a {@link Traverser} referencing an object of type <code>E</code> to an iterator of objects of type <code>E2</code>.
      * The resultant iterator is drained one-by-one before a new <code>E</code> object is pulled in for processing.
      *
      * @param function the lambda expression that does the functional mapping
@@ -202,6 +205,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new LambdaFlatMapStep<>(this.asAdmin(), function));
     }
 
+    /**
+     * Map a {@link Traverser} referencing an object of type <code>E</code> to an iterator of objects of type <code>E2</code>.
+     * The internal traversal is drained one-by-one before a new <code>E</code> object is pulled in for processing.
+     *
+     * @param flatMapTraversal the traversal generating objects of type <code>E2</code>
+     * @param <E2>             the end type of the internal traversal
+     * @return the traversal with an appended {@link TraversalFlatMapStep}.
+     */
     public default <E2> GraphTraversal<S, E2> flatMap(final Traversal<?, E2> flatMapTraversal) {
         return this.asAdmin().addStep(new TraversalFlatMapStep<>(this.asAdmin(), flatMapTraversal));
     }
@@ -450,6 +461,14 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), includeTokens, PropertyType.VALUE, propertyKeys));
     }
 
+    public default <E2> GraphTraversal<S, E2> mapValues() {
+        return this.asAdmin().addStep(new MapValuesStep<>(this.asAdmin()));
+    }
+
+    public default <E2> GraphTraversal<S, E2> mapKeys() {
+        return this.asAdmin().addStep(new MapKeysStep<>(this.asAdmin()));
+    }
+
     /**
      * Map the {@link Property} to its {@link Property#key}.
      *
@@ -477,12 +496,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PathStep<>(this.asAdmin()));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> match(final String startKey, final Traversal<?, ?>... matchTraversals) {
-        return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), startKey, ConjunctionStep.Conjunction.AND, matchTraversals));
-    }
-
+    /**
+     * Map the {@link Traverser} to a {@link Map} of bindings as specified by the provided match traversals.
+     *
+     * @param matchTraversals the traversal that maintain variables which must hold for the life of the traverser
+     * @param <E2>            the type of the obejcts bound in the variables
+     * @return the traversal with an appended {@link MatchStep}.
+     */
     public default <E2> GraphTraversal<S, Map<String, E2>> match(final Traversal<?, ?>... matchTraversals) {
-        return this.match(null, matchTraversals);
+        return this.asAdmin().addStep(new MatchStep<>(this.asAdmin(), ConjunctionStep.Conjunction.AND, matchTraversals));
     }
 
     /**
@@ -495,36 +517,43 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new SackStep<>(this.asAdmin()));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Scope scope, final Pop pop, final String... stepLabels) {
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), scope, pop, stepLabels));
+    /**
+     * Map the {@link Traverser} to a {@link Map} projection of sideEffect values, map values, and/or path values.
+     *
+     * @param pop               if there are multiple objects referenced in the path, the {@link Pop} to use.
+     * @param selectKey1      the first key to project
+     * @param selectKey2      the second key to project
+     * @param otherSelectKeys the third+ keys to project
+     * @param <E2>              the type of the objects projected
+     * @return the traversal with an appended {@link SelectStep}.
+     */
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String selectKey1, final String selectKey2, String... otherSelectKeys) {
+        final String[] selectKeys = new String[otherSelectKeys.length + 2];
+        selectKeys[0] = selectKey1;
+        selectKeys[1] = selectKey2;
+        System.arraycopy(otherSelectKeys, 0, selectKeys, 2, otherSelectKeys.length);
+        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), pop, selectKeys));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Scope scope, final String... stepLabels) {
-        return this.asAdmin().addStep(new SelectStep<>(this.asAdmin(), scope, stepLabels));
+    /**
+     * Map the {@link Traverser} to a {@link Map} projection of sideEffect values, map values, and/or path values.
+     *
+     * @param selectKey1      the first key to project
+     * @param selectKey2      the second key to project
+     * @param otherSelectKeys the third+ keys to project
+     * @param <E2>              the type of the objects projected
+     * @return the traversal with an appended {@link SelectStep}.
+     */
+    public default <E2> GraphTraversal<S, Map<String, E2>> select(final String selectKey1, final String selectKey2, String... otherSelectKeys) {
+        return this.select(null, selectKey1, selectKey2, otherSelectKeys);
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final Pop pop, final String... stepLabels) {
-        return this.select(Scope.global, pop, stepLabels);
+    public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String selectKey) {
+        return this.asAdmin().addStep(new SelectOneStep<>(this.asAdmin(), pop, selectKey));
     }
 
-    public default <E2> GraphTraversal<S, Map<String, E2>> select(final String... stepLabels) {
-        return this.select(Scope.global, stepLabels);
-    }
-
-    public default <E2> GraphTraversal<S, E2> select(final Scope scope, final Pop pop, final String stepLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), scope, pop, stepLabel));
-    }
-
-    public default <E2> GraphTraversal<S, E2> select(final Scope scope, final String stepLabel) {
-        return this.asAdmin().addStep(new SelectOneStep(this.asAdmin(), scope, stepLabel));
-    }
-
-    public default <E2> GraphTraversal<S, E2> select(final Pop pop, final String stepLabel) {
-        return this.select(Scope.global, pop, stepLabel);
-    }
-
-    public default <E2> GraphTraversal<S, E2> select(final String stepLabel) {
-        return this.select(Scope.global, stepLabel);
+    public default <E2> GraphTraversal<S, E2> select(final String selectKey) {
+        return this.select(null, selectKey);
     }
 
     public default <E2> GraphTraversal<S, E2> unfold() {
@@ -605,23 +634,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), keyValues));
     }
 
-    public default GraphTraversal<S, Edge> addE(final Scope scope, final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        if (propertyKeyValues.length % 2 == 0)
-            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), scope, direction, null, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues));
-        else
-            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), scope, direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, (String) propertyKeyValues[0], Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length)));
-    }
-
     public default GraphTraversal<S, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return this.addE(Scope.global, direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
+        if (propertyKeyValues.length % 2 == 0)
+            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), direction, null, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues));
+        else
+            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, (String) propertyKeyValues[0], Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length)));
     }
 
     public default GraphTraversal<S, Edge> addOutE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return this.addE(Scope.global, Direction.OUT, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
+        return this.addE(Direction.OUT, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
     public default GraphTraversal<S, Edge> addInE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        return this.addE(Scope.global, Direction.IN, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
+        return this.addE(Direction.IN, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -649,76 +674,72 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     /**
      * Remove all duplicates in the traversal stream up to this point.
      *
+     * @param scope       whether the deduplication is on the stream (global) or the current object (local).
+     * @param dedupLabels if labels are provided, then the scope labels determine de-duplication. No labels implies current object.
      * @return the traversal with an appended {@link DedupGlobalStep}.
      */
-    public default GraphTraversal<S, E> dedup() {
-        return this.dedup(Scope.global);
+    public default GraphTraversal<S, E> dedup(final Scope scope, final String... dedupLabels) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupGlobalStep<>(this.asAdmin(), dedupLabels) : new DedupLocalStep(this.asAdmin()));
     }
 
-    public default GraphTraversal<S, E> dedup(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new DedupGlobalStep<>(this.asAdmin()) : new DedupLocalStep(this.asAdmin()));
-    }
-
-    public default GraphTraversal<S, E> where(final Scope scope, final String startKey, final P<String> predicate) {
-        return this.asAdmin().addStep(new WhereStep<>(this.asAdmin(), scope, Optional.ofNullable(startKey), predicate));
-    }
-
-    public default GraphTraversal<S, E> where(final Scope scope, final P<String> predicate) {
-        return this.where(scope, null, predicate);
-    }
-
-    public default GraphTraversal<S, E> where(final Scope scope, final Traversal<?, ?> whereTraversal) {
-        return TraversalHelper.getVariableLocations(whereTraversal.asAdmin()).isEmpty() ?
-                this.filter(whereTraversal) :
-                this.asAdmin().addStep(new WhereStep(this.asAdmin(), scope, whereTraversal));
+    /**
+     * Remove all duplicates in the traversal stream up to this point.
+     *
+     * @param dedupLabels if labels are provided, then the scoped object's labels determine de-duplication. No labels implies current object.
+     * @return the traversal with an appended {@link DedupGlobalStep}.
+     */
+    public default GraphTraversal<S, E> dedup(final String... dedupLabels) {
+        return this.dedup(Scope.global, dedupLabels);
     }
 
     public default GraphTraversal<S, E> where(final String startKey, final P<String> predicate) {
-        return this.where(Scope.global, startKey, predicate);
+        return this.asAdmin().addStep(new WherePredicateStep<>(this.asAdmin(), Optional.ofNullable(startKey), predicate));
     }
 
     public default GraphTraversal<S, E> where(final P<String> predicate) {
-        return this.where(Scope.global, null, predicate);
+        return this.where(null, predicate);
     }
 
     public default GraphTraversal<S, E> where(final Traversal<?, ?> whereTraversal) {
-        return this.where(Scope.global, whereTraversal);
+        return TraversalHelper.getVariableLocations(whereTraversal.asAdmin()).isEmpty() ?
+                this.filter(whereTraversal) :
+                this.asAdmin().addStep(new WhereTraversalStep<>(this.asAdmin(), whereTraversal));
     }
 
-    public default GraphTraversal<S, E> has(final String key, final P<?> predicate) {
-        return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(key, predicate)));
+    public default GraphTraversal<S, E> has(final String propertyKey, final P<?> predicate) {
+        return this.asAdmin().addStep(new HasStep(this.asAdmin(), HasContainer.makeHasContainers(propertyKey, predicate)));
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final P<?> predicate) {
         return this.has(accessor.getAccessor(), predicate);
     }
 
-    public default GraphTraversal<S, E> has(final String key, final Object value) {
-        return this.has(key, value instanceof P ? (P) value : P.eq(value));
+    public default GraphTraversal<S, E> has(final String propertyKey, final Object value) {
+        return this.has(propertyKey, value instanceof P ? (P) value : P.eq(value));
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
         return this.has(accessor.getAccessor(), value);
     }
 
-    public default GraphTraversal<S, E> has(final String label, final String key, final P<?> predicate) {
-        return this.has(T.label, label).has(key, predicate);
+    public default GraphTraversal<S, E> has(final String label, final String propertyKey, final P<?> predicate) {
+        return this.has(T.label, label).has(propertyKey, predicate);
     }
 
-    public default GraphTraversal<S, E> has(final String label, final String key, final Object value) {
-        return this.has(T.label, label).has(key, value);
+    public default GraphTraversal<S, E> has(final String label, final String propertyKey, final Object value) {
+        return this.has(T.label, label).has(propertyKey, value);
     }
 
-    public default GraphTraversal<S, E> has(final String key, final Traversal<?, ?> propertyTraversal) {
-        return this.filter(propertyTraversal.asAdmin().addStep(0, new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, key)));
+    public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
+        return this.filter(propertyTraversal.asAdmin().addStep(0, new PropertiesStep(propertyTraversal.asAdmin(), PropertyType.VALUE, propertyKey)));
     }
 
-    public default GraphTraversal<S, E> has(final String key) {
-        return this.filter(__.values(key));
+    public default GraphTraversal<S, E> has(final String propertyKey) {
+        return this.filter(__.values(propertyKey));
     }
 
-    public default GraphTraversal<S, E> hasNot(final String key) {
-        return this.not(__.values(key));
+    public default GraphTraversal<S, E> hasNot(final String propertyKey) {
+        return this.not(__.values(propertyKey));
     }
 
     public default GraphTraversal<S, E> hasLabel(final String... labels) {
@@ -752,7 +773,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> not(final Traversal<?, ?> notTraversal) {
-        return this.asAdmin().addStep(new NotStep<>(this.asAdmin(), (Traversal<E,?>)notTraversal));
+        return this.asAdmin().addStep(new NotStep<>(this.asAdmin(), (Traversal<E, ?>) notTraversal));
     }
 
     /**
@@ -799,6 +820,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(scope.equals(Scope.global)
                 ? new TailGlobalStep<>(this.asAdmin(), limit)
                 : new TailLocalStep<>(this.asAdmin(), limit));
+    }
+
+    /**
+     * Once the first {@link Traverser} hits this step, a count down is started. Once the time limit is up, all remaining traversers are filtered out.
+     *
+     * @param timeLimit the count down time
+     * @return the traversal with an appended {@link TimeLimitStep}
+     */
+    public default GraphTraversal<S, E> timeLimit(final long timeLimit) {
+        return this.asAdmin().addStep(new TimeLimitStep<E>(this.asAdmin(), timeLimit));
     }
 
     /**
@@ -861,10 +892,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
         return this.asAdmin().addStep(new GroupCountSideEffectStep<>(this.asAdmin(), sideEffectKey));
-    }
-
-    public default GraphTraversal<S, E> timeLimit(final long timeLimit) {
-        return this.asAdmin().addStep(new TimeLimitStep<E>(this.asAdmin(), timeLimit));
     }
 
     public default GraphTraversal<S, E> tree(final String sideEffectKey) {

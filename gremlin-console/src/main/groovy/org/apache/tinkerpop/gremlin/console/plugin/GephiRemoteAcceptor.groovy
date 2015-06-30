@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.console.plugin
 
+import groovy.transform.CompileStatic
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
@@ -181,8 +182,15 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     @Override
+    @CompileStatic
     Object submit(final List<String> args) throws RemoteException {
         final String line = String.join(" ", args)
+        if (line.trim() == "clear") {
+            clearGraph()
+            io.out.println("Gephi workspace cleared")
+            return
+        }
+
         final Object o = shell.execute(line)
         if (o instanceof Graph) {
             clearGraph()
@@ -202,8 +210,8 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
                     updateVisitedVertices()
                     int visitedCount = 0
 
-                    if (traversal.getSideEffects().exists(stepKey)) {
-                        traversal.getSideEffects().get(stepKey).each { element ->
+                    if (traversal.getSideEffects().keys().contains(stepKey)) {
+                        traversal.getSideEffects().get(stepKey).get().each { element ->
                             visitVertexToGephi((Vertex) element)
                             visitedCount++
                         }
@@ -268,6 +276,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         }
     }
 
+    @CompileStatic
     def addEdgeToGephi(def GraphTraversalSource g, def Edge e) {
         def props = g.E(e).valueMap().next()
         props.put('label', e.label())

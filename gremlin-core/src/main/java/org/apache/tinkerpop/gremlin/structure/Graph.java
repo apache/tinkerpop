@@ -414,7 +414,7 @@ public interface Graph extends AutoCloseable, Host {
 
             /**
              * Determines if the {@code Graph} implementation supports threaded transactions which allow a transaction
-             * to be executed across multiple threads via {@link org.apache.tinkerpop.gremlin.structure.Transaction#create()}.
+             * to be executed across multiple threads via {@link org.apache.tinkerpop.gremlin.structure.Transaction#createThreadedTx()}.
              */
             @FeatureDescriptor(name = FEATURE_THREADED_TRANSACTIONS)
             public default boolean supportsThreadedTransactions() {

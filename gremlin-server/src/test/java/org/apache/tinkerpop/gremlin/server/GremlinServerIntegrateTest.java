@@ -44,7 +44,6 @@ import org.junit.rules.TestName;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -157,36 +156,46 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     public void shouldRespectHighWaterMarkSettingAndSucceed() throws Exception {
         // the highwatermark should get exceeded on the server and thus pause the writes, but have no problem catching
         // itself up
-        try (SimpleClient client = new WebSocketClient()) {
-            final int resultCountToGenerate = 5000;
-            final int batchSize = 2;
-            final String fatty = IntStream.range(0, 150).mapToObj(String::valueOf).collect(Collectors.joining());
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        try {
+            final int resultCountToGenerate = 1000;
+            final int batchSize = 3;
+            final String fatty = IntStream.range(0, 175).mapToObj(String::valueOf).collect(Collectors.joining());
             final String fattyX = "['" + fatty + "'] * " + resultCountToGenerate;
 
             // don't allow the thread to proceed until all results are accounted for
-            final CountDownLatch latch = new CountDownLatch(resultCountToGenerate / batchSize);
+            final CountDownLatch latch = new CountDownLatch(resultCountToGenerate);
             final AtomicBoolean expected = new AtomicBoolean(false);
+            final AtomicBoolean faulty = new AtomicBoolean(false);
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_BATCH_SIZE, batchSize)
                     .addArg(Tokens.ARGS_GREMLIN, fattyX).create();
-            client.submit(request, r -> {
-                try {
-                    if (r.getResult().getData() != null) {
-                        final List<Object> list = ((List<Object>) r.getResult().getData());
-                        final Object aFattyResult = list.get(0);
+
+            client.submitAsync(request).thenAcceptAsync(r -> {
+                r.stream().forEach(item -> {
+                    try {
+                        final String aFattyResult = item.getString();
                         expected.set(aFattyResult.equals(fatty));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        faulty.set(true);
+                    } finally {
+                        latch.countDown();
                     }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                } finally {
-                    latch.countDown();
-                }
+                });
             });
 
             assertTrue(latch.await(30000, TimeUnit.MILLISECONDS));
             assertEquals(0, latch.getCount());
+            assertFalse(faulty.get());
             assertTrue(expected.get());
             assertTrue(recordingAppender.getMessages().stream().anyMatch(m -> m.contains("Pausing response writing as writeBufferHighWaterMark exceeded on")));
+        } catch (Exception ex) {
+            fail("Shouldn't have tossed an exception");
+        } finally {
+            cluster.close();
         }
     }
 
@@ -396,10 +405,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             resultSet.all().get();
             fail("Should throw an exception.");
         } catch (Exception re) {
-            // can't seem to catch the server side exception - as the channel is basically closed on this error
-            // can only detect a closed channel and react to that.  in some ways this is a good general piece of
-            // code to have in place, but kinda stinky when you want something specific about why all went bad
-            assertTrue(re.getCause().getMessage().equals("Error while processing results from channel - check client and server logs for more information"));
+            Throwable root = ExceptionUtils.getRootCause(re);
+            assertEquals("Connection reset by peer", root.getMessage());
         } finally {
             cluster.close();
         }
@@ -449,9 +456,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Exception cause = (Exception) ex.getCause().getCause();
             assertTrue(cause instanceof ResponseException);
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
+        } finally {
+            cluster.close();
         }
-
-        cluster.close();
     }
 
     @Test

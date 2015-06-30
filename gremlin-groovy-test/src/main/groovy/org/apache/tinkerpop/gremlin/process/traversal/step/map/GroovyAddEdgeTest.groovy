@@ -47,8 +47,8 @@ public abstract class GroovyAddEdgeTest {
         }
 
         @Override
-        public Traversal<Vertex, Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_select_addInEXa_codeveloper_b_year_2009X() {
-            TraversalScriptHelper.compute("g.V.as('a').out('created').in('created').where(neq('a')).as('b').select.addInE('a', 'co-developer', 'b', 'year', 2009)", g)
+        public Traversal<Vertex, Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_selectXa_bX_addInEXa_codeveloper_b_year_2009X() {
+            TraversalScriptHelper.compute("g.V.as('a').out('created').in('created').where(neq('a')).as('b').select('a','b').addInE('a', 'co-developer', 'b', 'year', 2009)", g)
         }
 
         @Override

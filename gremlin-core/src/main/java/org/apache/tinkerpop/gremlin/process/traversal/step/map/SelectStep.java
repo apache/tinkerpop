@@ -18,25 +18,24 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalRing;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -46,41 +45,28 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     private TraversalRing<Object, E> traversalRing = new TraversalRing<>();
     private final Pop pop;
-    private Scope scope;
-    private final List<String> selectLabels;
+    private final List<String> selectKeys;
+    private final Set<String> selectKeysSet;
 
-    public SelectStep(final Traversal.Admin traversal, final Scope scope, final Pop pop, final String... selectLabels) {
+    public SelectStep(final Traversal.Admin traversal, final Pop pop, final String... selectKeys) {
         super(traversal);
-        this.scope = scope;
         this.pop = pop;
-        this.selectLabels = Arrays.asList(selectLabels);
-    }
-
-    public SelectStep(final Traversal.Admin traversal, final Scope scope, final String... selectLabels) {
-        this(traversal, scope, null, selectLabels);
+        this.selectKeys = Arrays.asList(selectKeys);
+        this.selectKeysSet = Collections.unmodifiableSet(new HashSet<>(this.selectKeys));
+        if (this.selectKeys.size() < 2)
+            throw new IllegalArgumentException("At least two select keys must be provided: " + this);
     }
 
     @Override
     protected Map<String, E> map(final Traverser.Admin<S> traverser) {
-        final S start = traverser.get();
         final Map<String, E> bindings = new LinkedHashMap<>();
-
-        if (this.selectLabels.isEmpty()) {
-            if (Scope.local == this.scope)
-                ((Map<String, Object>) start).forEach((key, value) -> bindings.put(key, (E) TraversalUtil.apply(value, this.traversalRing.next())));
+        for (final String selectKey : this.selectKeys) {
+            final E end = this.getNullableScopeValue(this.pop, selectKey, traverser);
+            if (null != end)
+                bindings.put(selectKey, TraversalUtil.apply(end, this.traversalRing.next()));
             else {
-                final Path path = traverser.path();
-                path.labels().stream().flatMap(Set::stream).distinct().forEach(label -> bindings.put(label, (E) TraversalUtil.apply(null == this.pop ? path.<Object>get(label) : path.get(this.pop, label), this.traversalRing.next())));
-            }
-        } else {
-            for (final String label : this.selectLabels) {
-                final Optional<E> optional = this.getOptionalScopeValueByKey(this.pop, label, traverser);
-                if (optional.isPresent())
-                    bindings.put(label, TraversalUtil.apply(optional.get(), this.traversalRing.next()));
-                else {
-                    this.traversalRing.reset();
-                    return null;
-                }
+                this.traversalRing.reset();
+                return null;
             }
         }
         this.traversalRing.reset();
@@ -95,7 +81,7 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.scope, this.selectLabels, this.traversalRing);
+        return StringFactory.stepString(this, this.pop, this.selectKeys, this.traversalRing);
     }
 
     @Override
@@ -108,10 +94,9 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.scope.hashCode() ^ this.traversalRing.hashCode();
-        for (final String selectLabel : this.selectLabels) {
-            result ^= selectLabel.hashCode();
-        }
+        int result = super.hashCode() ^ this.traversalRing.hashCode() ^ this.selectKeys.hashCode();
+        if (null != this.pop)
+            result ^= this.pop.hashCode();
         return result;
     }
 
@@ -127,28 +112,13 @@ public final class SelectStep<S, E> extends MapStep<S, Map<String, E>> implement
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(Scope.local == this.scope ?
-                new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS} :
-                new TraverserRequirement[]{TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS});
-    }
-
-    @Override
-    public void setScope(final Scope scope) {
-        this.scope = scope;
-    }
-
-    @Override
-    public Scope getScope() {
-        return this.scope;
-    }
-
-    @Override
-    public Scope recommendNextScope() {
-        return Scope.local;
+        return this.getSelfAndChildRequirements(TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.selectKeys::contains).findAny().isPresent() ?
+                TYPICAL_GLOBAL_REQUIREMENTS_ARRAY :
+                TYPICAL_LOCAL_REQUIREMENTS_ARRAY);
     }
 
     @Override
     public Set<String> getScopeKeys() {
-        return new HashSet<>(this.selectLabels);
+        return this.selectKeysSet;
     }
 }

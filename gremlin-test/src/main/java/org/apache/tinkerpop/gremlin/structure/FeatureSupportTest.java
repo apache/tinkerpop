@@ -138,7 +138,7 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = FEATURE_THREADED_TRANSACTIONS, supported = false)
         public void shouldThrowOnThreadedTransactionNotSupported() {
             try {
-                graph.tx().create();
+                graph.tx().createThreadedTx();
                 fail("An exception should be thrown since the threaded transaction feature is not supported");
             } catch (Exception e) {
                 validateException(Transaction.Exceptions.threadedTransactionsNotSupported(), e);
