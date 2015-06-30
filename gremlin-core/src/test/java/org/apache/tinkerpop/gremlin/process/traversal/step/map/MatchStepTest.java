@@ -53,7 +53,10 @@ public class MatchStepTest extends StepTest {
                 __.match(as("a").out().as("b")),
                 ////
                 __.match(where(as("a").out("knows").as("b"))),
-                __.match(as("a").where(out().as("b")))
+                __.match(as("a").where(out().as("b"))),
+                ///
+                match(__.as("a").out().as("b"), __.as("b").out().as("c")),
+                match(__.as("b").out().as("c"), __.as("a").out().as("d"))
         );
     }
 

@@ -365,7 +365,11 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.matchTraversals.hashCode() ^ this.conjunction.hashCode() ^ this.computedStartLabel.hashCode();
+        int result = super.hashCode() ^ this.conjunction.hashCode();
+        for(final Traversal t : this.matchTraversals) {
+            result ^= t.hashCode();
+        }
+        return result;
     }
 
     @Override
