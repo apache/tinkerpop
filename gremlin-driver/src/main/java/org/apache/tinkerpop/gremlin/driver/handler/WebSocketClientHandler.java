@@ -98,5 +98,6 @@ public final class WebSocketClientHandler extends SimpleChannelInboundHandler<Ob
         logger.warn("Exception caught during WebSocket processing - closing connection", cause);
         if (!handshakeFuture.isDone()) handshakeFuture.setFailure(cause);
         ctx.close();
+        ctx.fireExceptionCaught(cause);
     }
 }

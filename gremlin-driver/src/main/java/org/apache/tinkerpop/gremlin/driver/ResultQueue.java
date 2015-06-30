@@ -19,32 +19,40 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.javatuples.Pair;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A queue of incoming {@link ResponseMessage} objects.  The queue is updated by the
- * {@link Handler.GremlinResponseHandler} until a response terminator is identified.  At that point the fetch
- * status is changed to {@link Status#COMPLETE} and all results have made it client side.
+ * {@link Handler.GremlinResponseHandler} until a response terminator is identified.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 final class ResultQueue {
-    public enum Status {
-        FETCHING,
-        COMPLETE
-    }
 
     private final LinkedBlockingQueue<Result> resultLinkedBlockingQueue;
-
-    private volatile Status status = Status.FETCHING;
 
     private final AtomicReference<Throwable> error = new AtomicReference<>();
 
     private final CompletableFuture<Void> readComplete;
+
+    private final Queue<Pair<CompletableFuture<List<Result>>,Integer>> waiting = new ConcurrentLinkedQueue<>();
+
+    /**
+     * Tracks the state of the "waiting" queue and whether or not results have been drained through it on
+     * read complete.  If they are then no additional "waiting" is required.
+     */
+    private final AtomicBoolean flushed = new AtomicBoolean(false);
 
     public ResultQueue(final LinkedBlockingQueue<Result> resultLinkedBlockingQueue, final CompletableFuture<Void> readComplete) {
         this.resultLinkedBlockingQueue = resultLinkedBlockingQueue;
@@ -53,6 +61,38 @@ final class ResultQueue {
 
     public void add(final Result result) {
         this.resultLinkedBlockingQueue.offer(result);
+
+        final Pair<CompletableFuture<List<Result>>, Integer> nextWaiting = waiting.peek();
+        if (nextWaiting != null && (resultLinkedBlockingQueue.size() > nextWaiting.getValue1() || readComplete.isDone())) {
+            final List<Result> results = new ArrayList<>(nextWaiting.getValue1());
+            resultLinkedBlockingQueue.drainTo(results, nextWaiting.getValue1());
+            nextWaiting.getValue0().complete(results);
+            waiting.remove(nextWaiting);
+        }
+    }
+
+    public CompletableFuture<List<Result>> await(final int items) {
+        final CompletableFuture<List<Result>> result = new CompletableFuture<>();
+        if (size() > items || readComplete.isDone()) {
+            // items are present so just drain to requested size if possible then complete it
+            final List<Result> results = new ArrayList<>(items);
+            resultLinkedBlockingQueue.drainTo(results, items);
+            result.complete(results);
+        } else {
+            // not enough items in the result queue so save this for callback later when the results actually arrive.
+            // only necessary to "wait" if we're not in the act of flushing already, in which case, no more waiting
+            // for additional results should be allowed.
+            if (flushed.get()) {
+                // just drain since we've flushed already
+                final List<Result> results = new ArrayList<>(items);
+                resultLinkedBlockingQueue.drainTo(results, items);
+                result.complete(results);
+            } else {
+                waiting.add(Pair.with(result, items));
+            }
+        }
+
+        return result;
     }
 
     public int size() {
@@ -65,33 +105,30 @@ final class ResultQueue {
         return this.size() == 0;
     }
 
-    public Result poll() {
-        Result result = null;
-        do {
-            if (error.get() != null) throw new RuntimeException(error.get());
-            try {
-                result = resultLinkedBlockingQueue.poll(10, TimeUnit.MILLISECONDS);
-            } catch (InterruptedException ie) {
-                error.set(new RuntimeException(ie));
-            }
-        } while (null == result && status == Status.FETCHING);
-
+    public void drainTo(final Collection<Result> collection) {
         if (error.get() != null) throw new RuntimeException(error.get());
-
-        return result;
-    }
-
-    public Status getStatus() {
-        return status;
+        resultLinkedBlockingQueue.drainTo(collection);
     }
 
     void markComplete() {
-        this.status = Status.COMPLETE;
         this.readComplete.complete(null);
+        this.flushWaiting();
     }
 
     void markError(final Throwable throwable) {
         error.set(throwable);
         this.readComplete.complete(null);
+        this.flushWaiting();
+    }
+
+    private void flushWaiting() {
+        while (waiting.peek() != null) {
+            final Pair<CompletableFuture<List<Result>>, Integer> nextWaiting = waiting.poll();
+            final List<Result> results = new ArrayList<>(nextWaiting.getValue1());
+            resultLinkedBlockingQueue.drainTo(results, nextWaiting.getValue1());
+            nextWaiting.getValue0().complete(results);
+        }
+
+        flushed.set(true);
     }
 }

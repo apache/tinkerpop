@@ -405,10 +405,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             resultSet.all().get();
             fail("Should throw an exception.");
         } catch (Exception re) {
-            // can't seem to catch the server side exception - as the channel is basically closed on this error
-            // can only detect a closed channel and react to that.  in some ways this is a good general piece of
-            // code to have in place, but kinda stinky when you want something specific about why all went bad
-            assertTrue(re.getCause().getMessage().equals("Error while processing results from channel - check client and server logs for more information"));
+            Throwable root = ExceptionUtils.getRootCause(re);
+            assertEquals("Connection reset by peer", root.getMessage());
         } finally {
             cluster.close();
         }

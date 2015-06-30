@@ -87,6 +87,11 @@ final class Handler {
             // messages queue will not clear.  wonder if there is some way to cope with that.  of course, if
             // there are that many failures someone would take notice and hopefully stop the client.
             logger.error("Could not process the response - correct the problem and restart the driver.", cause);
+
+            // the channel is getting closed because of something pretty bad so release all the completeable
+            // futures out there
+            pending.entrySet().stream().forEach(kv -> kv.getValue().markError(cause));
+
             ctx.close();
         }
     }
