@@ -172,7 +172,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         results.stream().map(i -> i.get(Integer.class) * 2).forEach(i -> assertEquals(counter.incrementAndGet() * 2, Integer.parseInt(i.toString())));
         assertEquals(9, counter.get());
         assertThat(results.allItemsAvailable(), is(true));
-        assertThat(results.isExhausted(), is(true));
 
         // cant stream it again
         assertThat(results.stream().iterator().hasNext(), is(false));
@@ -195,7 +194,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         assertEquals(9, counter.get());
         assertThat(results.allItemsAvailable(), is(true));
-        assertThat(results.isExhausted(), is(true));
 
         // can't stream it again
         assertThat(results.iterator().hasNext(), is(false));
@@ -219,14 +217,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(3, batch1.get().get(2).getInt());
         assertEquals(4, batch1.get().get(3).getInt());
         assertEquals(5, batch1.get().get(4).getInt());
-        assertThat(results.isExhausted(), is(false));
 
         assertEquals(4, batch2.get().size());
         assertEquals(6, batch2.get().get(0).getInt());
         assertEquals(7, batch2.get().get(1).getInt());
         assertEquals(8, batch2.get().get(2).getInt());
         assertEquals(9, batch2.get().get(3).getInt());
-        assertThat(results.isExhausted(), is(true));
 
         assertEquals(0, batchNothingLeft.get().size());
 
@@ -257,7 +253,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(7, batch2.get().get(1).getInt());
         assertEquals(8, batch2.get().get(2).getInt());
         assertEquals(9, batch2.get().get(3).getInt());
-        assertThat(results.isExhausted(), is(true));
 
         assertEquals(0, batchNothingLeft.get().size());
 
@@ -471,7 +466,6 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
         assertEquals(9, results1.all().get().size());
-        assertThat(results1.isExhausted(), is(true));
 
         final ResultSet results2 = client.submit("x[0]+1");
         assertEquals(2, results2.all().get().get(0).getInt());

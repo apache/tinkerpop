@@ -70,17 +70,14 @@ public final class ResultSet implements Iterable<Result> {
     }
 
     /**
-     * Determines if there are any remaining items being streamed to the client.
-     */
-    public boolean isExhausted() {
-        return !(!allItemsAvailable() || !resultQueue.isEmpty());
-    }
-
-    /**
      * Get the next {@link Result} from the stream, blocking until one is available.
      */
     public Result one() {
-        return some(1).join().get(0);
+        final List<Result> results = some(1).join();
+
+        assert results.size() <= 1;
+
+        return results.size() == 1 ? results.get(0) : null;
     }
 
     /**
@@ -116,15 +113,21 @@ public final class ResultSet implements Iterable<Result> {
     @Override
     public Iterator<Result> iterator() {
         return new Iterator<Result>() {
+            private Result nextOne = null;
 
             @Override
             public boolean hasNext() {
-                return !isExhausted();
+                final List<Result> list = some(1).join();
+                assert list.size() <= 1;
+
+                nextOne = list.size() == 0 ? null : list.get(0);
+
+                return nextOne != null;
             }
 
             @Override
             public Result next() {
-                return ResultSet.this.one();
+                return nextOne;
             }
 
             @Override

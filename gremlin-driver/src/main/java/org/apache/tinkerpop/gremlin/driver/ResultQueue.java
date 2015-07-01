@@ -125,7 +125,8 @@ final class ResultQueue {
         flushed.set(true);
     }
 
-    private static void internalDrain(int items, CompletableFuture<List<Result>> result, LinkedBlockingQueue<Result> resultLinkedBlockingQueue) {
+    private static void internalDrain(final int items, final CompletableFuture<List<Result>> result,
+                                      final LinkedBlockingQueue<Result> resultLinkedBlockingQueue) {
         final List<Result> results = new ArrayList<>(items);
         resultLinkedBlockingQueue.drainTo(results, items);
         result.complete(results);

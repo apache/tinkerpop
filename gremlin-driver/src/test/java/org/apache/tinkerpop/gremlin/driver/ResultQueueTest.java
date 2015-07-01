@@ -18,16 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,18 +36,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ResultQueueTest {
-    private CompletableFuture<Void> readCompleted;
-    private ResultQueue resultQueue;
-
-    private final ExecutorService pool = Executors.newCachedThreadPool();
-
-    @Before
-    public void setup() {
-        LinkedBlockingQueue<Result> resultLinkedBlockingQueue = new LinkedBlockingQueue<>();
-        readCompleted = new CompletableFuture<>();
-        resultQueue = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
-    }
+public class ResultQueueTest extends AbstractResultQueueTest {
 
     @Test
     public void shouldGetSizeUntilError() throws Exception {
@@ -308,29 +293,5 @@ public class ResultQueueTest {
         } finally {
             t.interrupt();
         }
-    }
-
-    private Thread addToQueue(final int numberOfItemsToAdd, final long pauseBetweenItemsInMillis,
-                              final boolean start) throws Exception {
-        final Thread t = new Thread(() -> {
-            boolean done = false;
-            for (int ix = 0; ix < numberOfItemsToAdd && !done; ix++) {
-                try {
-                    if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
-                    final int currentIndex = ix;
-                    pool.submit(() -> {
-                        final Result result = new Result("test-" + currentIndex);
-                        resultQueue.add(result);
-                    });
-                    TimeUnit.MILLISECONDS.sleep(pauseBetweenItemsInMillis);
-                } catch (InterruptedException ie) {
-                    done = true;
-                }
-            }
-        }, "ResultQueueTest-job-submitter");
-
-        if (start) t.start();
-
-        return t;
     }
 }
