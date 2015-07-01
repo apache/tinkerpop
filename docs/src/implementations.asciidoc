@@ -272,7 +272,7 @@ IMPORTANT: Proper implementation of IO is critical to successful `Graph` operati
 Validating with Gremlin-Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-image:gremlin-edumacated.png[width=180]
+image:gremlin-edumacated.png[width=225]
 
 [source,xml]
 <dependency>
