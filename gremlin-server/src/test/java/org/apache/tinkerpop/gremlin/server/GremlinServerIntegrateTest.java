@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -407,6 +408,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             System.out.println("********** write completed");
             resultSet.all().get(10000, TimeUnit.MILLISECONDS);
             fail("Should throw an exception.");
+        } catch (TimeoutException te) {
+            fail("Request should not have timed out");
         } catch (Exception re) {
             final Throwable root = ExceptionUtils.getRootCause(re);
             assertEquals("Connection reset by peer", root.getMessage());
