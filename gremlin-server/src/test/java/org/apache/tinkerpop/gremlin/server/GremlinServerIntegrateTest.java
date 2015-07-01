@@ -403,7 +403,8 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try {
             final String fatty = IntStream.range(0, 1024).mapToObj(String::valueOf).collect(Collectors.joining());
             final CompletableFuture<ResultSet> result = client.submitAsync("'" + fatty + "';'test'");
-            final ResultSet resultSet = result.get();
+            final ResultSet resultSet = result.get(10000, TimeUnit.MILLISECONDS);
+            System.out.println("********** write completed");
             resultSet.all().get(10000, TimeUnit.MILLISECONDS);
             fail("Should throw an exception.");
         } catch (Exception re) {
