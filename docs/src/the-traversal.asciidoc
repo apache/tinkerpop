@@ -730,7 +730,7 @@ g.V().hasLabel("song").out("followedBy").groupCount().by("name").
 
 [[mapvalues-step]]
 MapValues Step
-~~~~~~~~~~~~
+~~~~~~~~~~~~~~
  
 The `mapValues()`-step (*flatMap*) takes an incoming map and emits its values.
  
@@ -742,12 +742,12 @@ g = graph.traversal(standard())
 g.V().hasLabel("song").out("sungBy").groupCount().by("name").next() <1>
 g.V().hasLabel("song").out("sungBy").groupCount().by("name").mapValues() <2>
 g.V().hasLabel("song").out("sungBy").groupCount().by("name").mapValues().groupCount().
-      order(local).by(valueDecr).limit(local, 3).mapValues() <3>
+      order(local).by(valueDecr).limit(local, 5).next() <3>
 ----
  
 <1> Which artist sung how many songs?
 <2> Get an anonymized set of song repertoire sizes.
-<3> What are the 3 most common song repertoire sizes?
+<3> What are the 5 most common song repertoire sizes?
 
 [[match-step]]
 Match Step
