@@ -24,10 +24,12 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -231,6 +233,81 @@ public class ResultQueueTest {
         assertEquals(1, results2.size());
 
         assertThat(resultQueue.isEmpty(), is(true));
+    }
+
+    @Test
+    public void shouldAwaitToExpectedValueAndDrainOnAwait() throws Exception {
+        resultQueue.add(new Result("test1"));
+        resultQueue.add(new Result("test2"));
+        resultQueue.add(new Result("test3"));
+
+        final CompletableFuture<List<Result>> future = resultQueue.await(3);
+        assertThat(future.isDone(), is(true));
+
+        final List<Result> results = future.get();
+        assertEquals("test1", results.get(0).getString());
+        assertEquals("test2", results.get(1).getString());
+        assertEquals("test3", results.get(2).getString());
+        assertEquals(3, results.size());
+
+        assertThat(resultQueue.isEmpty(), is(true));
+    }
+
+    @Test
+    public void shouldAwaitToReadCompletedAndDrainOnAwait() throws Exception {
+        resultQueue.add(new Result("test1"));
+        resultQueue.add(new Result("test2"));
+        resultQueue.add(new Result("test3"));
+
+        resultQueue.markComplete();
+
+        // you might want 30 but there are only three
+        final CompletableFuture<List<Result>> future = resultQueue.await(30);
+        assertThat(future.isDone(), is(true));
+
+        final List<Result> results = future.get();
+        assertEquals("test1", results.get(0).getString());
+        assertEquals("test2", results.get(1).getString());
+        assertEquals("test3", results.get(2).getString());
+        assertEquals(3, results.size());
+
+        assertThat(resultQueue.isEmpty(), is(true));
+    }
+
+    @Test
+    public void shouldDrainAsItemsArrive() throws Exception {
+        final Thread t = addToQueue(1000, 1, true);
+        try {
+            final AtomicInteger count1 = new AtomicInteger(0);
+            final AtomicInteger count2 = new AtomicInteger(0);
+            final AtomicInteger count3 = new AtomicInteger(0);
+            final CountDownLatch latch = new CountDownLatch(3);
+
+            resultQueue.await(500).thenAcceptAsync(r -> {
+                count1.set(r.size());
+                latch.countDown();
+            });
+
+            resultQueue.await(150).thenAcceptAsync(r -> {
+                count2.set(r.size());
+                latch.countDown();
+            });
+
+            resultQueue.await(350).thenAcceptAsync(r -> {
+                count3.set(r.size());
+                latch.countDown();
+            });
+
+            assertThat(latch.await(3000, TimeUnit.MILLISECONDS), is(true));
+
+            assertEquals(500, count1.get());
+            assertEquals(150, count2.get());
+            assertEquals(350, count3.get());
+
+            assertThat(resultQueue.isEmpty(), is(true));
+        } finally {
+            t.interrupt();
+        }
     }
 
     private Thread addToQueue(final int numberOfItemsToAdd, final long pauseBetweenItemsInMillis,

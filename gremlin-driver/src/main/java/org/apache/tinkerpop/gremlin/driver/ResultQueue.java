@@ -63,29 +63,23 @@ final class ResultQueue {
 
         final Pair<CompletableFuture<List<Result>>, Integer> nextWaiting = waiting.peek();
         if (nextWaiting != null && (resultLinkedBlockingQueue.size() >= nextWaiting.getValue1() || readComplete.isDone())) {
-            final List<Result> results = new ArrayList<>(nextWaiting.getValue1());
-            resultLinkedBlockingQueue.drainTo(results, nextWaiting.getValue1());
-            nextWaiting.getValue0().complete(results);
+            internalDrain(nextWaiting.getValue1(), nextWaiting.getValue0(), resultLinkedBlockingQueue);
             waiting.remove(nextWaiting);
         }
     }
 
     public CompletableFuture<List<Result>> await(final int items) {
         final CompletableFuture<List<Result>> result = new CompletableFuture<>();
-        if (size() > items || readComplete.isDone()) {
+        if (size() >= items || readComplete.isDone()) {
             // items are present so just drain to requested size if possible then complete it
-            final List<Result> results = new ArrayList<>(items);
-            resultLinkedBlockingQueue.drainTo(results, items);
-            result.complete(results);
+            internalDrain(items, result, resultLinkedBlockingQueue);
         } else {
             // not enough items in the result queue so save this for callback later when the results actually arrive.
             // only necessary to "wait" if we're not in the act of flushing already, in which case, no more waiting
             // for additional results should be allowed.
             if (flushed.get()) {
                 // just drain since we've flushed already
-                final List<Result> results = new ArrayList<>(items);
-                resultLinkedBlockingQueue.drainTo(results, items);
-                result.complete(results);
+                internalDrain(items, result, resultLinkedBlockingQueue);
             } else {
                 waiting.add(Pair.with(result, items));
             }
@@ -125,11 +119,15 @@ final class ResultQueue {
     private void flushWaiting() {
         while (waiting.peek() != null) {
             final Pair<CompletableFuture<List<Result>>, Integer> nextWaiting = waiting.poll();
-            final List<Result> results = new ArrayList<>(nextWaiting.getValue1());
-            resultLinkedBlockingQueue.drainTo(results, nextWaiting.getValue1());
-            nextWaiting.getValue0().complete(results);
+            internalDrain(nextWaiting.getValue1(), nextWaiting.getValue0(), resultLinkedBlockingQueue);
         }
 
         flushed.set(true);
+    }
+
+    private static void internalDrain(int items, CompletableFuture<List<Result>> result, LinkedBlockingQueue<Result> resultLinkedBlockingQueue) {
+        final List<Result> results = new ArrayList<>(items);
+        resultLinkedBlockingQueue.drainTo(results, items);
+        result.complete(results);
     }
 }
