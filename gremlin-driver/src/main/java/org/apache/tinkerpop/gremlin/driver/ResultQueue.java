@@ -62,7 +62,7 @@ final class ResultQueue {
         this.resultLinkedBlockingQueue.offer(result);
 
         final Pair<CompletableFuture<List<Result>>, Integer> nextWaiting = waiting.peek();
-        if (nextWaiting != null && (resultLinkedBlockingQueue.size() > nextWaiting.getValue1() || readComplete.isDone())) {
+        if (nextWaiting != null && (resultLinkedBlockingQueue.size() >= nextWaiting.getValue1() || readComplete.isDone())) {
             final List<Result> results = new ArrayList<>(nextWaiting.getValue1());
             resultLinkedBlockingQueue.drainTo(results, nextWaiting.getValue1());
             nextWaiting.getValue0().complete(results);
@@ -117,7 +117,7 @@ final class ResultQueue {
     void markError(final Throwable throwable) {
         error.set(throwable);
 
-        // todo: completeExceptionally???
+        // unsure if this should really complete exceptionally rather than just complete.
         this.readComplete.complete(null);
         this.flushWaiting();
     }
