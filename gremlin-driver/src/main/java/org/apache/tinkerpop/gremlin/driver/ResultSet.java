@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import io.netty.channel.Channel;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +25,6 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -48,18 +45,13 @@ import java.util.stream.StreamSupport;
 public final class ResultSet implements Iterable<Result> {
     private final ResultQueue resultQueue;
     private final ExecutorService executor;
-    private final Channel channel;
-    private final Supplier<Void> onChannelError;
 
     private final CompletableFuture<Void> readCompleted;
 
     public ResultSet(final ResultQueue resultQueue, final ExecutorService executor,
-                     final Channel channel, final Supplier<Void> onChannelError,
                      final CompletableFuture<Void> readCompleted) {
         this.executor = executor;
         this.resultQueue = resultQueue;
-        this.channel = channel;
-        this.onChannelError = onChannelError;
         this.readCompleted = readCompleted;
     }
 
