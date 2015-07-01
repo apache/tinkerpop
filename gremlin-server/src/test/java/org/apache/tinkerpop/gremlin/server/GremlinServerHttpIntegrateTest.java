@@ -30,9 +30,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
 
 import java.io.File;
 import java.util.Arrays;

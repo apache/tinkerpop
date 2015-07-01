@@ -38,9 +38,7 @@ import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
 
 import java.nio.channels.ClosedChannelException;
 import java.util.HashMap;
@@ -53,7 +51,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Integration tests for server-side settings and processing.
@@ -152,7 +152,11 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldRespectHighWaterMarkSettingAndSucceed() throws Exception {
         // the highwatermark should get exceeded on the server and thus pause the writes, but have no problem catching
-        // itself up
+        // itself up - this is a tricky tests to get passing on all environments so this assumption will deny the
+        // test for most cases
+        assumeThat("Set the 'assertNonDeterministic' property to true to execute this test",
+                System.getProperty("assertNonDeterministic"), is("true"));
+
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
@@ -188,6 +192,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(0, latch.getCount());
             assertFalse(faulty.get());
             assertTrue(expected.get());
+
             assertTrue(recordingAppender.getMessages().stream().anyMatch(m -> m.contains("Pausing response writing as writeBufferHighWaterMark exceeded on")));
         } catch (Exception ex) {
             fail("Shouldn't have tossed an exception");
