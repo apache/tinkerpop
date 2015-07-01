@@ -407,7 +407,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             resultSet.all().get();
             fail("Should throw an exception.");
         } catch (Exception re) {
-            Throwable root = ExceptionUtils.getRootCause(re);
+            final Throwable root = ExceptionUtils.getRootCause(re);
             assertEquals("Connection reset by peer", root.getMessage());
         } finally {
             cluster.close();

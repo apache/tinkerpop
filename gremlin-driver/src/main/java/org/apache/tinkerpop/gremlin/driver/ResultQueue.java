@@ -23,7 +23,6 @@ import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
@@ -117,6 +116,8 @@ final class ResultQueue {
 
     void markError(final Throwable throwable) {
         error.set(throwable);
+
+        // todo: completeExceptionally???
         this.readComplete.complete(null);
         this.flushWaiting();
     }
