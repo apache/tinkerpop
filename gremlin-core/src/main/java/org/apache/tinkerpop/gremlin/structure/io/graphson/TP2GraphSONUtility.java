@@ -440,8 +440,9 @@ public class TP2GraphSONUtility {
     }
 
     private static ObjectNode objectNodeFromElement(final Element element, final List<String> propertyKeys, final GraphSONMode mode) {
-        final TP2GraphSONUtility graphson = element instanceof Edge ? new TP2GraphSONUtility(mode, null, null, new HashSet<String>(propertyKeys))
-                : new TP2GraphSONUtility(mode, null, new HashSet<String>(propertyKeys), null);
+        Set<String> propKeySet = (propertyKeys!=null)? new HashSet<String>(propertyKeys) : null;
+        final TP2GraphSONUtility graphson = element instanceof Edge ? new TP2GraphSONUtility(mode, null, null, propKeySet)
+                : new TP2GraphSONUtility(mode, null, propKeySet, null);
         return graphson.objectNodeFromElement(element);
     }
 
@@ -692,7 +693,7 @@ public class TP2GraphSONUtility {
 
         if (propertyKeys == null) {
             for (String key : propertyKeyList) {
-                final Object valToPutInMap = element.property(key);
+                final Object valToPutInMap = element.property(key).value();
                 if (valToPutInMap != null) {
                     map.put(key, valToPutInMap);
                 }
@@ -700,7 +701,7 @@ public class TP2GraphSONUtility {
         } else {
             if (rule == ElementPropertiesRule.INCLUDE) {
                 for (String key : propertyKeys) {
-                    final Object valToPutInMap = element.property(key);
+                    final Object valToPutInMap = element.property(key).value();
                     if (valToPutInMap != null) {
                         map.put(key, valToPutInMap);
                     }
@@ -708,7 +709,7 @@ public class TP2GraphSONUtility {
             } else {
                 for (String key : propertyKeyList) {
                     if (!propertyKeys.contains(key)) {
-                        final Object valToPutInMap = element.property(key);
+                        final Object valToPutInMap = element.property(key).value();
                         if (valToPutInMap != null) {
                             map.put(key, valToPutInMap);
                         }

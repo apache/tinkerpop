@@ -115,7 +115,7 @@ public class GraphSONLegacyWriter {
         Iterable<Vertex> vertices;
         if (normalize) {
             vertices = new ArrayList<Vertex>();
-            Iterator<Vertex> viter = graph.vertices(null);
+            Iterator<Vertex> viter = graph.vertices();
             while (viter.hasNext()) {
                 ((Collection<Vertex>) vertices).add(viter.next());
             }
@@ -124,7 +124,7 @@ public class GraphSONLegacyWriter {
             vertices = new Iterable<Vertex>() {
                 @Override
                 public Iterator<Vertex> iterator() {
-                    return graph.vertices(null);
+                    return graph.vertices();
                 }
             };
         }
@@ -135,7 +135,7 @@ public class GraphSONLegacyWriter {
         Iterable<Edge> edges;
         if (normalize) {
             edges = new ArrayList<Edge>();
-            Iterator<Edge> eiter = graph.edges(null);
+            Iterator<Edge> eiter = graph.edges();
             while (eiter.hasNext()) {
                 ((Collection<Edge>) edges).add(eiter.next());
             }
@@ -144,7 +144,7 @@ public class GraphSONLegacyWriter {
             edges = new Iterable<Edge>() {
                 @Override
                 public Iterator<Edge> iterator() {
-                    return graph.edges(null);
+                    return graph.edges();
                 }
             };
         }
