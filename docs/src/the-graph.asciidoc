@@ -151,7 +151,16 @@ IMPORTANT: Graph variables are not intended to be subject to heavy, concurrent m
 Graph Transactions
 ------------------
 
-A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction] represents a unit of work to execute against the database.  Transactions are controlled by an implementation of the `Transaction` interface and that object can be obtained from the `Graph` interface using the `tx()` method.  Determining when a transaction starts is dependent upon the behavior assigned to the `Transaction`.  It is up to the `Graph` implementation to determine the default behavior and unless the implementation doesn't allow it, the behavior itself can be altered via these `Transaction` methods:
+image:gremlin-coins.png[width=100,float=right] A link:http://en.wikipedia.org/wiki/Database_transaction[database transaction] represents a unit of work to execute against the database.  Transactions are controlled by an implementation of the `Transaction` interface and that object can be obtained from the `Graph` interface using the `tx()` method.  It is important to note that the `Transaction` object does not represent a "transaction" itself.  It merely exposes the methods for working with transactions (e.g. committing, rolling back, etc).
+
+Most `Graph` implementations that `supportsTransactions` will implement an "automatic" `ThreadLocal` transaction, which means that when a read or write occurs after the `Graph` is instantiated a transaction is automatically started within that thread.  There is no need to manually call a method to "create" or "start" a transaction.  Simple modify the graph as required and call `graph.tx().commit()` to apply changes or `graph.tx().rollback()` to undo them.  When the next read or write action occurs against the graph, a new transaction will be started within that current thread of execution.
+
+When using transactions in this fashion, especially in web application (e.g. REST server), it is important to ensure that transaction do not leak from one request to the next.  In other words, unless a client is somehow bound via session to process every request on the same server thread, ever request must be committed or rolled back at the end of the request.  By ensuring that the request encapsulates a transaction, it ensures that a future request processed on a server thread is starting in a fresh transactional state and will not have access to the remains of one from an earlier request. A good strategy is to rollback a transaction at the start of a request, so that if it so happens that a transactional leak does occur between requests somehow, a fresh transaction is assured by the fresh request.
+
+Configuring
+~~~~~~~~~~~
+
+Determining when a transaction starts is dependent upon the behavior assigned to the `Transaction`.  It is up to the `Graph` implementation to determine the default behavior and unless the implementation doesn't allow it, the behavior itself can be altered via these `Transaction` methods:
 
 [source,java]
 ----
@@ -213,7 +222,12 @@ gremlin> graph.tx().commit()
 <7> Explicitly open a transaction.
 <8> Adding a vertex now succeeds as the transaction was manually opened.
 
-The `Transaction` object also exposes a method for executing automatic transaction retries:
+NOTE: It may be important to consult the documentation of the `Graph` implementation when it comes to the specifics of how transactions will behave.  TinkerPop allows some latitude in this area and implementations may not have the exact same behaviors and link:https://en.wikipedia.org/wiki/ACID[ACID] guarantees.
+
+Retries
+~~~~~~~
+
+There are times when transactions fail.  Failure may be indicative of some permanent condition, but other failures might simply require the transaction to be retried for possible future success. The `Transaction` object also exposes a method for executing automatic transaction retries:
 
 [gremlin-groovy]
 ----
@@ -224,6 +238,60 @@ graph.close()
 ----
 
 As shown above, the `submit` method takes a `Function<Graph, R>` which is the unit of work to execute and possibly retry on failure.  The method returns a `Transaction.Workload` object which has a number of default methods for common retry strategies.  It is also possible to supply a custom retry function if a default one does not suit the required purpose.
+
+Threaded Transactions
+~~~~~~~~~~~~~~~~~~~~~
+
+Most `Graph` implementations that support transactions do so in a `ThreadLocal` manner, where the current transaction is bound to the current thread of execution. Consider the following example to demonstrate:
+
+[source,java]
+----
+graph.addVertex("name","stephen");
+
+Thread t1 = new Thread(() -> {
+    graph.addVertex("name","josh");
+});
+
+Thread t2 = new Thread(() -> {
+    graph.addVertex("name","marko");
+});
+
+t1.start()
+t2.start()
+
+t1.join()
+t2.join()
+
+graph.tx().commit();
+----
+
+The above code shows three vertices added to `graph` in three different threads: the current thread, `t1` and `t2`.  One might expect that by the time this body of code finished executing that there would be three vertices persisted to the `Graph`.  However, given the `ThreadLocal` nature of transactions, there really were three separate transactions created in that body of code (i.e. one for each thread of execution) and the only one committed was the first call to `addVertex` in the primary thread of execution.  The other two calls to that method within `t1` and `t2` were never committed and thus orphaned.
+
+A `Graph` that `supportsThreadedTransactions` is one that allows for a `Graph` to operate outside of that constraint, thus allowing multiple threads to operate within the same transaction.  Therefore, if there was a need to have three different threads operating within the same transaction, the above code could be re-written as follows:
+
+[source,java]
+----
+Graph threaded = graph.tx().newThreadedTx();
+threaded.addVertex("name","stephen");
+
+Thread t1 = new Thread(() -> {
+    threaded.addVertex("name","josh");
+});
+
+Thread t2 = new Thread(() -> {
+    threaded.addVertex("name","marko");
+});
+
+t1.start()
+t2.start()
+
+t1.join()
+t2.join()
+
+threaded.tx().commit();
+----
+
+In the above case, the call to `graph.tx().newThreadedTx()` creates a new `Graph` instance that is unbound from the `ThreadLocal` transaction, thus allowing each thread to operate on it in the same context.  In this case, there would be three separate vertices persisted to the `Graph`.
 
 Gremlin I/O
 -----------
