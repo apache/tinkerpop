@@ -641,7 +641,7 @@ image::gremlin-server-flow.png[width=300,float=right]
 
 Gremlin Server is distributed with a configuration that utilizes link:http://en.wikipedia.org/wiki/WebSocket[WebSockets] with a custom sub-protocol.  Under this configuration, Gremlin Server accepts requests containing a Gremlin script, evaluates that script and then streams back the results.  The notion of "streaming" is depicted in the diagram to the right.
 
-The diagram shows an incoming request to process the Gremlin script of `g.V`.  Gremlin Server evaluates that script getting an `Iterator` of vertices as a result.  Gremlin Server recognizes that the `Iterator` and steps through each `Vertex` within it.  The vertices are batched together given the `resultIterationBatchSize` configuration.  In this case, that value must be `2` given that each "response" contains two vertices.  Each response is serialized given the requested serializer type (JSON is likely best for non-JVM languages) and written back to the requesting client immediately.  Gremlin Server does not wait for the entire result to be iterated, before sending back a response.  It will send the responses as they are realized.
+The diagram shows an incoming request to process the Gremlin script of `g.V`.  Gremlin Server evaluates that script, getting an `Iterator` of vertices as a result, and steps through each `Vertex` within it.  The vertices are batched together given the `resultIterationBatchSize` configuration.  In this case, that value must be `2` given that each "response" contains two vertices.  Each response is serialized given the requested serializer type (JSON is likely best for non-JVM languages) and written back to the requesting client immediately.  Gremlin Server does not wait for the entire result to be iterated, before sending back a response.  It will send the responses as they are realized.
 
 This approach allows for the processing of large result sets without having to serialize the entire result into memory for the response.  It places a bit of a burden on the developer of the driver however, because it becomes necessary to provide a way to reconstruct the entire result on the client side from all of the individual responses that Gremlin Server returns for a single request.  Again, this description of Gremlin Server's "flow" is related to the out-of-the-box configuration.  It is quite possible to construct other flows, that might be more amenable to a particular language or style of processing.
 
@@ -819,7 +819,7 @@ include::{basedir}/tinkergraph-gremlin/src/main/resources/META-INF/services/org.
 Once the plugin is packaged, there are two ways to test it out:
 
 . Copy the jar and its dependencies to the Gremlin Console path and start it.
-. Start Gremlin Console and try the `:install` command: `:install com.company my-plugin x.y.z`.
+. Start Gremlin Console and try the `:install` command: `:install com.company my-plugin 1.0.0`.
 
 In either case, once one of these two approaches is taken, the jars and their dependencies are available to the Console.  The next step is to "activate" the plugin by doing `:plugin use my-plugin`, where "my-plugin" refers to the name of the plugin to activate.
 

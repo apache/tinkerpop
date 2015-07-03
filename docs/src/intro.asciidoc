@@ -79,7 +79,7 @@ josh.addEdge("created", ripple, T.id, 10, "weight", 1.0f);
 josh.addEdge("created", lop, T.id, 11, "weight", 0.4f);
 peter.addEdge("created", lop, T.id, 12, "weight", 0.2f);
 
-<1> Create a new in-memory `TinkerGraph` and assign it to the variable `g`.
+<1> Create a new in-memory `TinkerGraph` and assign it to the variable `graph`.
 <2> Create a vertex along with a set of key/value pairs with `T.label` being the vertex label and `T.id` being the vertex id.
 <3> Create an edge along with a  set of key/value pairs with the edge label being specified as the first argument.
 
@@ -173,7 +173,7 @@ IMPORTANT: TinkerGraph is not a transactional graph. For more information on tra
 The Graph Process
 -----------------
 
-image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed are via graph traversals. The TinkerPop3 process API is focused on allowing users to create graph traversals in a syntacticly-friendly way over the structures defined in the previous section. A traversal is an algorithmic walk across the elements of a graph according to the referential structure explicit within the graph data structure. For example: _"What software does vertex 1's friends work on?"_ This English-statement can be represented in the following algorithmic/traversal fashion:
+image:gremlin-running.png[width=125,float=left] The primary way in which graphs are processed are via graph traversals. The TinkerPop3 process API is focused on allowing users to create graph traversals in a syntactically-friendly way over the structures defined in the previous section. A traversal is an algorithmic walk across the elements of a graph according to the referential structure explicit within the graph data structure. For example: _"What software does vertex 1's friends work on?"_ This English-statement can be represented in the following algorithmic/traversal fashion:
 
  . Start at vertex 1.
  . Walk the incident knows-edges to the respective adjacent friend vertices of 1.
@@ -263,7 +263,7 @@ CAUTION: A Traversal's result are never ordered unless explicitly by means of <<
 On Gremlin Language Variants
 ----------------------------
 
-Gremlin is written in Java8. There are various language variants of Gremlin such as Gremlin-Groovy (packaged with TinkerPop3), Gremlin-Scala, Gremlin-JavaScript, Gremlin-Clojure, etc. It is best to think of Gremlin as a style of graph traversing that is not bound to a particular programming language per se. Within a programming language familiar to the developer, there is a Gremlin variant that they can use that leverages the idioms of that language. At minimum, a programming language providing a Gremlin implementation must support link:http://en.wikipedia.org/wiki/Method_chaining[function chaining] (with link:http://en.wikipedia.org/wiki/Anonymous_function[lambdas/anonymous functions] being a "nice to have" if the variants wishes to offer arbitrary computations beyond the provided Gremlin steps).
+Gremlin is written in Java8. There are various language variants of Gremlin such as Gremlin-Groovy (packaged with TinkerPop3), link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala], Gremlin-JavaScript, Gremlin-Clojure (known as link:link:https://github.com/clojurewerkz/ogre[Ogre]), etc. It is best to think of Gremlin as a style of graph traversing that is not bound to a particular programming language per se. Within a programming language familiar to the developer, there is a Gremlin variant that they can use that leverages the idioms of that language. At minimum, a programming language providing a Gremlin implementation must support link:http://en.wikipedia.org/wiki/Method_chaining[function chaining] (with link:http://en.wikipedia.org/wiki/Anonymous_function[lambdas/anonymous functions] being a "nice to have" if the variants wishes to offer arbitrary computations beyond the provided Gremlin steps).
 
 Throughout the documentation, the examples provided are primarily written in Gremlin-Groovy. The reason for this is the <<gremlin-console,Gremlin Console>> whereby an interactive programming environment exists that does not require code compilation. For learning TinkerPop3 and interacting with a live graph system in an ad hoc manner, the Gremlin Console is invaluable. However, for developers interested in working with Gremlin-Java, a few Groovy-to-Java patterns are presented below.
 
