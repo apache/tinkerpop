@@ -195,8 +195,8 @@ Finally, `aggregate()`-step can be modulated via `by()`-projection.
 
 [gremlin-groovy,modern]
 ----
-g.V().out('knows').aggregate()
-g.V().out('knows').aggregate().by('name')
+g.V().out('knows').aggregate('x').cap('x')
+g.V().out('knows').aggregate('x').by('name').cap('x')
 ----
 
 [[and-step]]
