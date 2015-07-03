@@ -30,7 +30,7 @@ fi
 SVN_CMD="svn --no-auth-cache --username=${USERNAME}"
 VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep '<version>' | awk -F '>' '{print $2}' | awk -F '<' '{print $1}')
 
-rm -rf target
+rm -rf target/svn
 
 bin/process-docs.sh
 mvn process-resources -Djavadoc

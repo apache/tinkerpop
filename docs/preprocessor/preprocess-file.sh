@@ -70,6 +70,10 @@ if [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
   done
 
   if [ ${ec} -eq 0 ]; then
+    ec=`grep -c '\bpb([0-9][0-9]*);' ${output}`
+  fi
+
+  if [ ${ec} -eq 0 ]; then
     processed
   fi
 

@@ -36,6 +36,11 @@ do
   fi
 done
 
+nc -z localhost 2181 || (
+  echo "ZooKeeper is not running, be sure to start it before processing the docs."
+  exit 1
+)
+
 if [ -e /tmp/neo4j ]; then
   echo "The directory '/tmp/neo4j' is required by the pre-processor, be sure to delete it before processing the docs."
   exit 1
