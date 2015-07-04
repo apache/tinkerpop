@@ -1363,7 +1363,7 @@ It is interesting to note that there are three results in the `store()` side-eff
 
 [gremlin-groovy,modern]
 ----
-g.E().store().by('weight')
+g.E().store('x').by('weight').cap('x')
 ----
 
 [[subgraph-step]]
