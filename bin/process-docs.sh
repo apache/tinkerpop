@@ -35,5 +35,8 @@ nc -z localhost 8080 || (
 )
 
 docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc && docs/postprocessor/postprocess.sh
+ec=$?
 
 popd > /dev/null
+
+exit ${ec}

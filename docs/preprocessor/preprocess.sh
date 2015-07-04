@@ -85,6 +85,7 @@ function cleanup() {
   [ -f /tmp/${HISTORY_FILE} ] &&  mv /tmp/${HISTORY_FILE} ~/
   rm -rf ${TMP_DIR}
   [ ${GREMLIN_SERVER} -eq 0 ] && kill ${GREMLIN_SERVER_PID}
+  popd > /dev/null
 }
 
 mkdir -p ${TMP_DIR}
@@ -129,5 +130,3 @@ else
 fi
 
 cleanup
-
-popd > /dev/null
