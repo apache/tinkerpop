@@ -47,7 +47,7 @@ public abstract class GroovyDedupTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup() {
+        public Traversal<Vertex, String> get_g_V_both_name_order_byXa_bX_dedup_value() {
             TraversalScriptHelper.compute("g.V().both().properties('name').order.by { a, b -> a.value() <=> b.value() }.dedup.value", g);
         }
 

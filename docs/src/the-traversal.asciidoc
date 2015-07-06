@@ -27,7 +27,7 @@ At the most general level there is `Traversal<S,E>` which implements `Iterator<E
  . `TraversalSideEffects`: key/value pairs that can be used to store global information about the traversal.
  . `Traverser<T>`: the object propagating through the `Traversal` currently representing an object of type `T`. 
 
-The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal<S,E>`. GraphTraversal provides an interpretation of the graph data in terms of vertices, edges, etc. and thus, a graph traversal link:http://en.wikipedia.org/wiki/Domain-specific_language[DSL].
+The classic notion of a graph traversal is provided by `GraphTraversal<S,E>` which extends `Traversal<S,E>`. `GraphTraversal` provides an interpretation of the graph data in terms of vertices, edges, etc. and thus, a graph traversal link:http://en.wikipedia.org/wiki/Domain-specific_language[DSL].
 
 IMPORTANT: The underlying `Step` implementations provided by TinkerPop should encompass most of the functionality required by a DSL author. It is important that DSL authors leverage the provided steps as then the common optimization and decoration strategies can reason on the underlying traversal sequence. If new steps are introduced, then common traversal strategies may not function properly.
 
@@ -37,7 +37,7 @@ Graph Traversal Steps
 
 image::step-types.png[width=650]
 
-A `GraphTraversal<S,E>` can be spawned off of a Graph, Vertex, Edge, or VertexProperty. It can also be spawned anonymously (i.e. empty) via `__`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal` inherit from the more general forms diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
+A `GraphTraversal<S,E>` can be spawned off of a `Graph`, `Vertex`, `Edge`, or `VertexProperty`. It can also be spawned anonymously (i.e. empty) via `__`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal` inherit from the more general forms diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
 
 NOTE: To reduce the verbosity of the expression, it is good to `import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*`. This way, instead of doing `__.inE()` for an anonymous traversal, it is possible to simply write `inE()`. Be aware of language-specific reserved keywords when using anonymous traversals. For example, `in` and `as` are reserved keywords in Groovy, therefore you must use the verbose syntax `__.in()` and `__.as()` to avoid collisions.
 
@@ -117,7 +117,7 @@ g.V().choose(has('name','marko'),
 AddEdge Step
 ~~~~~~~~~~~~
 
-link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data was is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. To add edges via a traversal, there is a collection of `addE()`-steps (*map*/*sideEffect*).
+link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data what is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. To add edges via a traversal, there is a collection of `addE()`-steps (*map*/*sideEffect*).
 
 image::addedge-step.png[width=450]
 
@@ -195,8 +195,8 @@ Finally, `aggregate()`-step can be modulated via `by()`-projection.
 
 [gremlin-groovy,modern]
 ----
-g.V().out('knows').aggregate()
-g.V().out('knows').aggregate().by('name')
+g.V().out('knows').aggregate('x').cap('x')
+g.V().out('knows').aggregate('x').by('name').cap('x')
 ----
 
 [[and-step]]
@@ -712,6 +712,43 @@ The two traversals above look nearly identical save the inclusion of `local()` w
 
 WARNING: The anonymous traversal of `local()` processes the current object "locally." In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
 
+[[mapkeys-step]]
+MapKeys Step
+~~~~~~~~~~~~
+ 
+The `mapKeys()`-step (*flatMap*) takes an incoming map and emits its keys. This is especially useful when one is only interested in the top N elements in a `groupCount()` ranking.
+ 
+[gremlin-groovy]
+----
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g = graph.traversal(standard())
+g.V().hasLabel("song").out("followedBy").groupCount().by("name").
+      order(local).by(valueDecr).limit(local, 5)
+g.V().hasLabel("song").out("followedBy").groupCount().by("name").
+      order(local).by(valueDecr).limit(local, 5).mapKeys()
+----
+
+[[mapvalues-step]]
+MapValues Step
+~~~~~~~~~~~~~~
+ 
+The `mapValues()`-step (*flatMap*) takes an incoming map and emits its values.
+ 
+[gremlin-groovy]
+----
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g = graph.traversal(standard())
+:set max-iteration 10
+g.V().hasLabel("song").out("sungBy").groupCount().by("name").next() <1>
+g.V().hasLabel("song").out("sungBy").groupCount().by("name").mapValues() <2>
+g.V().hasLabel("song").out("sungBy").groupCount().by("name").mapValues().groupCount().
+      order(local).by(valueDecr).limit(local, 5).next() <3>
+----
+ 
+<1> Which artist sung how many songs?
+<2> Get an anonymized set of song repertoire sizes.
+<3> What are the 5 most common song repertoire sizes?
+
 [[match-step]]
 Match Step
 ~~~~~~~~~~
@@ -877,7 +914,7 @@ traversal.toString() <7>
 
 <1> Any `has()`-step traversal patterns that start with the match-key are pulled out of `match()` to enable the vendor to leverage the filter for index lookups.
 <2> A `where()`-step with a traversal containing variable bindings declared in `match()`.
-<3> A useful trick to ensure that that the traversal is not iterated by Gremlin Console.
+<3> A useful trick to ensure that the traversal is not iterated by Gremlin Console.
 <4> The string representation of the traversal prior to its strategies being applied.
 <5> The Gremlin Console will automatically iterate anything that is an iterator or is iterable.
 <6> Both marko and josh are co-developers and marko knows josh.
@@ -1094,7 +1131,7 @@ g.V().range(1,3)
 g.V().repeat(both()).times(1000000).emit().range(6,10)
 ----
 
-The `range()`-step can also be applied with `Scope.local`, in which case it operates on the incoming collection.  For example, you can produce a `Map<String, String>` for each traversed path, but containing only the second property value (the "b" step).
+The `range()`-step can also be applied with `Scope.local`, in which case it operates on the incoming collection.  For example, it is possible to produce a `Map<String, String>` for each traversed path, but containing only the second property value (the "b" step).
 
 [gremlin-groovy,modern]
 ----
@@ -1326,7 +1363,7 @@ It is interesting to note that there are three results in the `store()` side-eff
 
 [gremlin-groovy,modern]
 ----
-g.E().store().by('weight')
+g.E().store('x').by('weight').cap('x')
 ----
 
 [[subgraph-step]]
@@ -1813,7 +1850,7 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
 }
 ----
 
-The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to TinkerGraphStep to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied. Given that the strategy uses non-TinkerPop3 provided steps, it should go into the `VendorOptimizationStrategy` category to ensure the added step does not corrupt the `OptimizationStrategy` strategies.
+The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to `TinkerGraphStep` to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied. Given that the strategy uses non-TinkerPop3 provided steps, it should go into the `VendorOptimizationStrategy` category to ensure the added step does not corrupt the `OptimizationStrategy` strategies.
 
 [gremlin-groovy,modern]
 ----
@@ -1854,7 +1891,7 @@ IMPORTANT: The key that is used to store the assigned identifier should be index
 EventStrategy
 ~~~~~~~~~~~~~
 
-The purpose of the `EventStrategy` is to raise events to one or more `MutationListener` objects as changes to the underlying `Graph` occur within a `Traversal`. Such a strategy is useful for logging changes, triggering certain actions based on change, or any application that needs notification of some mutating operation during a `Traversal`.  Graphs that do not support transactions will generate events immediately upon mutation, while those graphs that support transactions will queue the mutations until that transaction is committed and will then raise the events.  If the transaction is rolled back, the event queue is reset.
+The purpose of the `EventStrategy` is to raise events to one or more `MutationListener` objects as changes to the underlying `Graph` occur within a `Traversal`. Such a strategy is useful for logging changes, triggering certain actions based on change, or any application that needs notification of some mutating operation during a `Traversal`.  If the transaction is rolled back, the event queue is reset.
 
 The following events are raised to the `MutationListener`:
 
@@ -1879,9 +1916,9 @@ g.addV('name','stephen')
 g.E().drop()
 ----
 
-The example above uses TinkerGraph which does not support transactions.  As mentioned previously, for these types of graph implementations events are raised as they occur within execution of a `Step`.  As such, the final line of Gremlin execution that drops all edges shows a bit of an inconsistent count, where the removed edge count is accounted for after the event is raised.
+By default, the `EventStrategy` is configured with an `EventQueue` that raises events as they occur within execution of a `Step`.  As such, the final line of Gremlin execution that drops all edges shows a bit of an inconsistent count, where the removed edge count is accounted for after the event is raised.  The strategy can also be configured with a `TransactionalEventQueue` that captures the changes within a transaction and does not allow them to fire until the transaction is committed.
 
-CAUTION: `EventStrategy` is not meant for usage in tracking global mutations across separate processes.  In other words, an mutation in what JVM process is not raised as an event in a different JVM process.  In addition, events are not raised when mutations occur outside of the `Traversal` context.
+CAUTION: `EventStrategy` is not meant for usage in tracking global mutations across separate processes.  In other words, a mutation in one JVM process is not raised as an event in a different JVM process.  In addition, events are not raised when mutations occur outside of the `Traversal` context.
 
 PartitionStrategy
 ~~~~~~~~~~~~~~~~~

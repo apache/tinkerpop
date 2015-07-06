@@ -178,12 +178,7 @@ final class Connection {
 
                         final ResultQueue handler = new ResultQueue(resultLinkedBlockingQueue, readCompleted);
                         pending.put(requestMessage.getRequestId(), handler);
-                        final ResultSet resultSet = new ResultSet(handler, cluster.executor(), channel,
-                                () -> {
-                                    pending.remove(requestMessage.getRequestId());
-                                    return null;
-                                }, readCompleted);
-                        future.complete(resultSet);
+                        future.complete(new ResultSet(handler, cluster.executor(), readCompleted));
                     }
                 });
         channel.writeAndFlush(requestMessage, promise);

@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
-import io.netty.channel.Channel;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +25,6 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -48,18 +45,13 @@ import java.util.stream.StreamSupport;
 public final class ResultSet implements Iterable<Result> {
     private final ResultQueue resultQueue;
     private final ExecutorService executor;
-    private final Channel channel;
-    private final Supplier<Void> onChannelError;
 
     private final CompletableFuture<Void> readCompleted;
 
     public ResultSet(final ResultQueue resultQueue, final ExecutorService executor,
-                     final Channel channel, final Supplier<Void> onChannelError,
                      final CompletableFuture<Void> readCompleted) {
         this.executor = executor;
         this.resultQueue = resultQueue;
-        this.channel = channel;
-        this.onChannelError = onChannelError;
         this.readCompleted = readCompleted;
     }
 
@@ -78,17 +70,14 @@ public final class ResultSet implements Iterable<Result> {
     }
 
     /**
-     * Determines if there are any remaining items being streamed to the client.
-     */
-    public boolean isExhausted() {
-        return !(!allItemsAvailable() || !resultQueue.isEmpty());
-    }
-
-    /**
      * Get the next {@link Result} from the stream, blocking until one is available.
      */
     public Result one() {
-        return some(1).join().get(0);
+        final List<Result> results = some(1).join();
+
+        assert results.size() <= 1;
+
+        return results.size() == 1 ? results.get(0) : null;
     }
 
     /**
@@ -124,15 +113,21 @@ public final class ResultSet implements Iterable<Result> {
     @Override
     public Iterator<Result> iterator() {
         return new Iterator<Result>() {
+            private Result nextOne = null;
 
             @Override
             public boolean hasNext() {
-                return !isExhausted();
+                final List<Result> list = some(1).join();
+                assert list.size() <= 1;
+
+                nextOne = list.size() == 0 ? null : list.get(0);
+
+                return nextOne != null;
             }
 
             @Override
             public Result next() {
-                return ResultSet.this.one();
+                return nextOne;
             }
 
             @Override

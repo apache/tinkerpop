@@ -16,18 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.process.groovy;
+package org.apache.tinkerpop.gremlin.driver;
 
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.runner.RunWith;
+import org.junit.Test;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
+
+import static org.junit.Assert.assertTrue;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@RunWith(GroovyProcessStandardSuite.class)
-@GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphGroovyProcessStandardTest {
+public class TokensTest {
+    @Test
+    public void shouldBeUtilityClass() throws Exception {
+        final Constructor constructor = Tokens.class.getDeclaredConstructor();
+        assertTrue(Modifier.isFinal(Tokens.class.getModifiers()));
+        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        constructor.newInstance();
+    }
 }

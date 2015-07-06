@@ -29,11 +29,14 @@ function cleanup() {
 }
 
 
-if [ ! `nc -z localhost 8080` ]; then
+nc -z localhost 8080 || (
   bin/gephi-mock.py > /dev/null 2>&1 &
   GEPHI_MOCK=$!
-fi
+)
 
 docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc && docs/postprocessor/postprocess.sh
+ec=$?
 
 popd > /dev/null
+
+exit ${ec}

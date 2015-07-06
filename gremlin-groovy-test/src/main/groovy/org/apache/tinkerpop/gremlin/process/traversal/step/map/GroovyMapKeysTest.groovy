@@ -16,18 +16,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.tinkergraph.process.groovy;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.process.GroovyProcessStandardSuite;
-import org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphProvider;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.runner.RunWith;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ *
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-@RunWith(GroovyProcessStandardSuite.class)
-@GraphProviderClass(provider = TinkerGraphProvider.class, graph = TinkerGraph.class)
-public class TinkerGraphGroovyProcessStandardTest {
+public abstract class GroovyMapKeysTest {
+
+    public static class Traversals extends MapKeysTest {
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_outE_valuesXweightX_groupCount_mapKeys() {
+            TraversalScriptHelper.compute("g.V.outE().weight.groupCount().mapKeys()", g)
+        }
+    }
 }

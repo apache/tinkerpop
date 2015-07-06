@@ -52,7 +52,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, String> get_g_V_both_hasXlabel_softwareX_dedup_byXlangX_name();
 
-    public abstract Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup();
+    public abstract Traversal<Vertex, String> get_g_V_both_name_order_byXa_bX_dedup_value();
 
     public abstract Traversal<Vertex, String> get_g_V_both_both_name_dedup();
 
@@ -95,8 +95,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_both_name_orderXa_bX_dedup() {
-        final Traversal<Vertex, String> traversal = get_g_V_both_name_orderXa_bX_dedup();
+    public void g_V_both_name_order_byXa_bX_dedup_value() {
+        final Traversal<Vertex, String> traversal = get_g_V_both_name_order_byXa_bX_dedup_value();
         printTraversalForm(traversal);
         final List<String> names = traversal.toList();
         assertEquals(6, names.size());
@@ -211,7 +211,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, String> get_g_V_both_name_orderXa_bX_dedup() {
+        public Traversal<Vertex, String> get_g_V_both_name_order_byXa_bX_dedup_value() {
             return g.V().both().<String>properties("name").order().by((a, b) -> a.value().compareTo(b.value())).dedup().value();
         }
 

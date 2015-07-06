@@ -36,6 +36,11 @@ do
   fi
 done
 
+nc -z localhost 2181 || (
+  echo "ZooKeeper is not running, be sure to start it before processing the docs."
+  exit 1
+)
+
 if [ -e /tmp/neo4j ]; then
   echo "The directory '/tmp/neo4j' is required by the pre-processor, be sure to delete it before processing the docs."
   exit 1
@@ -80,6 +85,7 @@ function cleanup() {
   [ -f /tmp/${HISTORY_FILE} ] &&  mv /tmp/${HISTORY_FILE} ~/
   rm -rf ${TMP_DIR}
   [ ${GREMLIN_SERVER} -eq 0 ] && kill ${GREMLIN_SERVER_PID}
+  popd > /dev/null
 }
 
 mkdir -p ${TMP_DIR}
@@ -124,5 +130,3 @@ else
 fi
 
 cleanup
-
-popd > /dev/null

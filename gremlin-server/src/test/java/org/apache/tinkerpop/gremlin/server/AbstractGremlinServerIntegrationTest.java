@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 
 import java.io.File;
 import java.io.InputStream;
@@ -35,6 +37,9 @@ import static org.junit.Assume.assumeThat;
 public abstract class AbstractGremlinServerIntegrationTest {
     private GremlinServer server;
 
+    @Rule
+    public TestName name = new TestName();
+
     public Settings overrideSettings(final Settings settings) {
         return settings;
     }
@@ -45,6 +50,8 @@ public abstract class AbstractGremlinServerIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
+        System.out.println("* Testing: " + name.getMethodName());
+
         final InputStream stream = getSettingsInputStream();
         final Settings settings = Settings.read(stream);
 

@@ -268,11 +268,13 @@ In this way, `Graph` implementations can pre-configure custom serializers for IO
 
 IMPORTANT: Proper implementation of IO is critical to successful `Graph` operations in Gremlin Server.  The Test Suite does have "serialization" tests that provide some assurance that an implementation is working properly, but those tests cannot make assertions against any specifics of a custom serializer.  It is the responsibility of the implementer to test the specifics of their custom serializers.
 
+TIP: Consider separating serializer code into its own module, if possible, so that clients that use the `Graph` implementation remotely don't need a full dependency on the entire `Graph` - just the IO components and related classes being serialized.
+
 [[validating-with-gremlin-test]]
 Validating with Gremlin-Test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-image:gremlin-edumacated.png[width=180]
+image:gremlin-edumacated.png[width=225]
 
 [source,xml]
 <dependency>

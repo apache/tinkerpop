@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
@@ -364,7 +365,11 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.matchTraversals.hashCode() ^ this.conjunction.hashCode() ^ this.computedStartLabel.hashCode();
+        int result = super.hashCode() ^ this.conjunction.hashCode();
+        for (final Traversal t : this.matchTraversals) {
+            result ^= t.hashCode();
+        }
+        return result;
     }
 
     @Override
@@ -483,7 +488,10 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
 
         public static Optional<String> getEndLabel(final Traversal.Admin<Object, Object> traversal) {
-            return ((MatchEndStep) traversal.getEndStep()).getMatchKey();
+            final Step<?, ?> endStep = traversal.getEndStep();
+            return endStep instanceof ProfileStep ?           // TOTAL HACK
+                    ((MatchEndStep) endStep.getPreviousStep()).getMatchKey() :
+                    ((MatchEndStep) endStep).getMatchKey();
         }
 
         public static Set<String> getStartLabels(final Traversal.Admin<Object, Object> traversal) {
