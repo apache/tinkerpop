@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.CompletableFuture;
@@ -110,6 +111,9 @@ public final class ResultSet implements Iterable<Result> {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), Spliterator.IMMUTABLE | Spliterator.SIZED), false);
     }
 
+    /**
+     * Returns a blocking iterator of the items streaming from the server to the client.
+     */
     @Override
     public Iterator<Result> iterator() {
         return new Iterator<Result>() {
@@ -127,7 +131,12 @@ public final class ResultSet implements Iterable<Result> {
 
             @Override
             public Result next() {
-                return nextOne;
+                if (null != nextOne || hasNext()) {
+                    final Result r = nextOne;
+                    nextOne = null;
+                    return r;
+                } else
+                    throw new NoSuchElementException();
             }
 
             @Override
