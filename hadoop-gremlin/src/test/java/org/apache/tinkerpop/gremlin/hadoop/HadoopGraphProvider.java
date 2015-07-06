@@ -68,10 +68,13 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
 
             final List<String> graphsonResources = Arrays.asList(
                     "tinkerpop-modern.json",
+                    "tinkerpop2-modern.json",
                     "grateful-dead.json",
+                    "grateful-dead-tp2.json",
                     "tinkerpop-classic.json",
+                    "tinkerpop2-classic.json",
                     "tinkerpop-crew.json",
-                    "graph-of-gods.json");
+                    "tinkerpop2-crew.json");
             for (final String fileName : graphsonResources) {
                 PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath());
             }
@@ -142,14 +145,20 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
 
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL_TP2) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead-tp2." + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-modern." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.MODERN_TP2) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop2-modern." + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC_TP2) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop2-classic." + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew." + type));
-        } else if (graphData.equals(LoadGraphWith.GraphData.GODS) && type.equals("json")) {
-            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("graph-of-gods." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.CREW_TP2) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop2-crew." + type));
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }

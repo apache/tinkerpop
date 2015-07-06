@@ -32,7 +32,7 @@ public class GraphSONLegacyRecordReaderTest extends RecordReaderWriterTest {
 
     @Override
     protected String getInputFilename() {
-        return "graph-of-gods.json";
+        return "grateful-dead-tp2.json";
     }
 
     @Override

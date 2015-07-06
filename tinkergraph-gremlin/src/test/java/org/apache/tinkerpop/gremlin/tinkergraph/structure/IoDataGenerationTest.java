@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.*;
@@ -110,6 +111,7 @@ public class IoDataGenerationTest {
     }
 
     /**
+     *
      * No assertions.  Just write out the graph for convenience.
      */
     @Test
@@ -162,6 +164,7 @@ public class IoDataGenerationTest {
     /**
      * No assertions.  Just write out the graph for convenience.
      */
+    @Ignore
     @Test
     public void shouldWriteCrewGraphAsTP2GraphSONNoTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop2-crew.json");

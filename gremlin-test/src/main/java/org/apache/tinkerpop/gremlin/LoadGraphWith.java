@@ -62,6 +62,11 @@ public @interface LoadGraphWith {
         CLASSIC,
 
         /**
+         * Classic in TinkerPop2 legacy format.
+         */
+        CLASSIC_TP2,
+
+        /**
          * Loads the "modern" TinkerPop toy graph which is like "classic", but with the "weight" value on edges stored
          * as double and labels added for vertices.  This should be the most commonly used graph instance for testing
          * as graphs that support string, double and int should comprise the largest number of implementations.
@@ -69,9 +74,19 @@ public @interface LoadGraphWith {
         MODERN,
 
         /**
+         * Modern in TinkerPop2 legacy format.
+         */
+        MODERN_TP2,
+
+        /**
          * Load "The Crew" TinkerPop3 toy graph which includes {@link org.apache.tinkerpop.gremlin.structure.VertexProperty} data.
          */
         CREW,
+
+        /**
+         * Crew in TinkerPop2 legacy format.
+         */
+        CREW_TP2,
 
         /**
          * Loads the "grateful dead" graph which is a "large" graph which provides for the construction of more
@@ -80,9 +95,9 @@ public @interface LoadGraphWith {
         GRATEFUL,
 
         /**
-         * Loads the "Graph of the Gods" graph which is a "toy" graph with 12 vertices and 17 edges.
+         * Grateful in TinkerPop2 legacy format.
          */
-        GODS;
+        GRATEFUL_TP2;
 
         private static final List<FeatureRequirement> featuresRequiredByClassic = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
@@ -109,14 +124,6 @@ public @interface LoadGraphWith {
             add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
         }};
 
-        private static final List<FeatureRequirement> featuresRequiredByGods = new ArrayList<FeatureRequirement>() {{
-            add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
-            add(FeatureRequirement.Factory.create(FEATURE_INTEGER_VALUES, VertexPropertyFeatures.class));
-            add(FeatureRequirement.Factory.create(FEATURE_BOOLEAN_VALUES, VertexPropertyFeatures.class));
-            add(FeatureRequirement.Factory.create(FEATURE_META_PROPERTIES, Graph.Features.VertexFeatures.class));
-            add(FeatureRequirement.Factory.create(FEATURE_MULTI_PROPERTIES, Graph.Features.VertexFeatures.class));
-        }};
-
         public String location() {
             switch (this) {
                 case CLASSIC:
@@ -136,14 +143,20 @@ public @interface LoadGraphWith {
             switch (this) {
                 case CLASSIC:
                     return featuresRequiredByClassic;
+                case CLASSIC_TP2:
+                    return featuresRequiredByClassic;
                 case CREW:
+                    return featuresRequiredByCrew;
+                case CREW_TP2:
                     return featuresRequiredByCrew;
                 case MODERN:
                     return featuresRequiredByModern;
+                case MODERN_TP2:
+                    return featuresRequiredByModern;
                 case GRATEFUL:
                     return featuresRequiredByGrateful;
-                case GODS:
-                    return featuresRequiredByGods;
+                case GRATEFUL_TP2:
+                    return featuresRequiredByGrateful;
             }
 
             throw new RuntimeException("No features for this GraphData type");
