@@ -127,7 +127,17 @@ public class IoDataGenerationTest {
     @Test
     public void shouldWriteClassicGraphAsTP2GraphSONNoTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop2-classic.json");
-        GraphSONLegacyWriter.outputGraph(TinkerFactory.createClassic(), os);
+        GraphSONLegacyWriter.outputGraph(TinkerFactory.createClassic(), os, false);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteClassicGraphAsTP2AdjGraphSONNoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop2adj-classic.json");
+        GraphSONLegacyWriter.outputGraph(TinkerFactory.createClassic(), os, true);
         os.close();
     }
 
@@ -147,7 +157,17 @@ public class IoDataGenerationTest {
     @Test
     public void shouldWriteModernGraphAsTP2GraphSONNoTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop2-modern.json");
-        GraphSONLegacyWriter.outputGraph(TinkerFactory.createModern(), os);
+        GraphSONLegacyWriter.outputGraph(TinkerFactory.createModern(), os, false);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Test
+    public void shouldWriteModernGraphAsTP2AdjGraphSONNoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop2adj-modern.json");
+        GraphSONLegacyWriter.outputGraph(TinkerFactory.createModern(), os, true);
         os.close();
     }
 
@@ -168,7 +188,18 @@ public class IoDataGenerationTest {
     @Test
     public void shouldWriteCrewGraphAsTP2GraphSONNoTypes() throws IOException {
         final OutputStream os = new FileOutputStream(tempPath + "tinkerpop2-crew.json");
-        GraphSONLegacyWriter.outputGraph(TinkerFactory.createTheCrew(), os);
+        GraphSONLegacyWriter.outputGraph(TinkerFactory.createTheCrew(), os, false);
+        os.close();
+    }
+
+    /**
+     * No assertions.  Just write out the graph for convenience.
+     */
+    @Ignore
+    @Test
+    public void shouldWriteCrewGraphAsTP2AdjGraphSONNoTypes() throws IOException {
+        final OutputStream os = new FileOutputStream(tempPath + "tinkerpop2adj-crew.json");
+        GraphSONLegacyWriter.outputGraph(TinkerFactory.createTheCrew(), os, true);
         os.close();
     }
 
@@ -306,7 +337,11 @@ public class IoDataGenerationTest {
         os4.close();
 
         final OutputStream os5 = new FileOutputStream(tempPath + "grateful-dead-tp2.json");
-        GraphSONLegacyWriter.outputGraph(g, os5);
+        GraphSONLegacyWriter.outputGraph(g, os5, false);
         os5.close();
+
+        final OutputStream os6 = new FileOutputStream(tempPath + "grateful-dead-tp2adj.json");
+        GraphSONLegacyWriter.outputGraph(g, os6, true);
+        os6.close();
     }
 }

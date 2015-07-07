@@ -68,12 +68,14 @@ public class GraphSONLegacyWriter {
      * @param vertexPropertyKeys the keys of the vertex elements to write to JSON
      * @param edgePropertyKeys   the keys of the edge elements to write to JSON
      * @param mode               determines the format of the GraphSON
+     * @param adjacencyListFormat whether to output in adjacency list or vertices/edges format
      * @throws IOException thrown if there is an error generating the JSON data
      */
     public void outputGraph(final String filename, final Set<String> vertexPropertyKeys,
-                            final Set<String> edgePropertyKeys, final GraphSONMode mode) throws IOException {
+                            final Set<String> edgePropertyKeys, final GraphSONMode mode,
+                            final boolean adjacencyListFormat) throws IOException {
         final FileOutputStream fos = new FileOutputStream(filename);
-        outputGraph(fos, vertexPropertyKeys, edgePropertyKeys, mode);
+        outputGraph(fos, vertexPropertyKeys, edgePropertyKeys, mode, adjacencyListFormat);
         fos.close();
     }
 
@@ -84,16 +86,17 @@ public class GraphSONLegacyWriter {
      * @param vertexPropertyKeys the keys of the vertex elements to write to JSON
      * @param edgePropertyKeys   the keys of the edge elements to write to JSON
      * @param mode               determines the format of the GraphSON
+     * @param adjacencyListFormat whether to output in adjacency list or vertices/edges format
      * @throws IOException thrown if there is an error generating the JSON data
      */
     public void outputGraph(final OutputStream jsonOutputStream, final Set<String> vertexPropertyKeys,
-                            final Set<String> edgePropertyKeys, final GraphSONMode mode) throws IOException {
-        outputGraph(jsonOutputStream, vertexPropertyKeys, edgePropertyKeys, mode, false);
+                            final Set<String> edgePropertyKeys, final GraphSONMode mode,
+                            final boolean adjacencyListFormat) throws IOException {
+        outputGraph(jsonOutputStream, vertexPropertyKeys, edgePropertyKeys, mode, false, adjacencyListFormat);
     }
 
-
-    public void outputGraph(final OutputStream jsonOutputStream, final Set<String> vertexPropertyKeys,
-                            final Set<String> edgePropertyKeys, final GraphSONMode mode, final boolean normalize) throws IOException {
+    private void outputVerticesEdgesGraph(final OutputStream jsonOutputStream, final Set<String> vertexPropertyKeys,
+                                          final Set<String> edgePropertyKeys, final GraphSONMode mode, final boolean normalize) throws IOException {
         final JsonGenerator jg = jsonFactory.createGenerator(jsonOutputStream);
 
         // don't let the JsonGenerator close the underlying stream...leave that to the client passing in the stream
@@ -127,6 +130,41 @@ public class GraphSONLegacyWriter {
 
         jg.flush();
         jg.close();
+
+    }
+
+    private void outputAdjListGraph(final OutputStream jsonOutputStream, final Set<String> vertexPropertyKeys,
+                                    final Set<String> edgePropertyKeys, final GraphSONMode mode, final boolean normalize) throws IOException {
+
+        final JsonGenerator jg = jsonFactory.createGenerator(jsonOutputStream);
+
+        // don't let the JsonGenerator close the underlying stream...leave that to the client passing in the stream
+        jg.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+
+        final TP2GraphSONUtility graphson = new TP2GraphSONUtility(mode, null,
+                ElementPropertyConfig.includeProperties(vertexPropertyKeys, edgePropertyKeys, normalize));
+
+        //jg.writeStartObject();
+
+        final Iterable<Vertex> vertices = vertices(normalize);
+        for (Vertex v : vertices) {
+            jg.writeTree(graphson.objectNodeFromElement(v));
+        }
+
+        //jg.writeEndObject();
+
+        jg.flush();
+        jg.close();
+    }
+
+    public void outputGraph(final OutputStream jsonOutputStream, final Set<String> vertexPropertyKeys,
+                            final Set<String> edgePropertyKeys, final GraphSONMode mode, final boolean normalize,
+                            final boolean adjacencyListFormat) throws IOException {
+        if (adjacencyListFormat) {
+            outputAdjListGraph(jsonOutputStream, vertexPropertyKeys, edgePropertyKeys, mode, normalize);
+        } else {
+            outputVerticesEdgesGraph(jsonOutputStream, vertexPropertyKeys, edgePropertyKeys, mode, normalize);
+        }
     }
 
     private Iterable<Vertex> vertices(boolean normalize) {
@@ -175,11 +213,12 @@ public class GraphSONLegacyWriter {
      *
      * @param graph            the graph to serialize to JSON
      * @param jsonOutputStream the JSON OutputStream to write the Graph data to
+     * @param adjacencyListFormat whether to output in adjacency list or vertices/edges format
      * @throws IOException thrown if there is an error generating the JSON data
      */
-    public static void outputGraph(final Graph graph, final OutputStream jsonOutputStream) throws IOException {
+    public static void outputGraph(final Graph graph, final OutputStream jsonOutputStream, final boolean adjacencyListFormat) throws IOException {
         final GraphSONLegacyWriter writer = new GraphSONLegacyWriter(graph);
-        writer.outputGraph(jsonOutputStream, null, null, GraphSONMode.NORMAL);
+        writer.outputGraph(jsonOutputStream, null, null, GraphSONMode.NORMAL, adjacencyListFormat);
     }
 
     /**
@@ -188,11 +227,12 @@ public class GraphSONLegacyWriter {
      *
      * @param graph    the graph to serialize to JSON
      * @param filename the JSON file to write the Graph data to
+     * @param adjacencyListFormat whether to output in adjacency list or vertices/edges format
      * @throws IOException thrown if there is an error generating the JSON data
      */
-    public static void outputGraph(final Graph graph, final String filename) throws IOException {
+    public static void outputGraph(final Graph graph, final String filename, final boolean adjacencyListFormat) throws IOException {
         final GraphSONLegacyWriter writer = new GraphSONLegacyWriter(graph);
-        writer.outputGraph(filename, null, null, GraphSONMode.NORMAL);
+        writer.outputGraph(filename, null, null, GraphSONMode.NORMAL, adjacencyListFormat);
     }
 
     /**
@@ -201,12 +241,13 @@ public class GraphSONLegacyWriter {
      * @param graph            the graph to serialize to JSON
      * @param jsonOutputStream the JSON OutputStream to write the Graph data to
      * @param mode             determines the format of the GraphSON
+     * @param adjacencyListFormat whether to output in adjacency list or vertices/edges format
      * @throws IOException thrown if there is an error generating the JSON data
      */
     public static void outputGraph(final Graph graph, final OutputStream jsonOutputStream,
-                                   final GraphSONMode mode) throws IOException {
+                                   final GraphSONMode mode, final boolean adjacencyListFormat) throws IOException {
         final GraphSONLegacyWriter writer = new GraphSONLegacyWriter(graph);
-        writer.outputGraph(jsonOutputStream, null, null, mode);
+        writer.outputGraph(jsonOutputStream, null, null, mode, adjacencyListFormat);
     }
 
     /**
@@ -215,12 +256,13 @@ public class GraphSONLegacyWriter {
      * @param graph    the graph to serialize to JSON
      * @param filename the JSON file to write the Graph data to
      * @param mode     determines the format of the GraphSON
+     * @param adjacencyListFormat whether to output in adjacency list or vertices/edges format
      * @throws IOException thrown if there is an error generating the JSON data
      */
     public static void outputGraph(final Graph graph, final String filename,
-                                   final GraphSONMode mode) throws IOException {
+                                   final GraphSONMode mode, final boolean adjacencyListFormat) throws IOException {
         final GraphSONLegacyWriter writer = new GraphSONLegacyWriter(graph);
-        writer.outputGraph(filename, null, null, mode);
+        writer.outputGraph(filename, null, null, mode, adjacencyListFormat);
     }
 
     /**
@@ -231,13 +273,14 @@ public class GraphSONLegacyWriter {
      * @param vertexPropertyKeys the keys of the vertex elements to write to JSON
      * @param edgePropertyKeys   the keys of the edge elements to write to JSON
      * @param mode               determines the format of the GraphSON
+     * @param adjacencyListFormat whether to output in adjacency list or vertices/edges format
      * @throws IOException thrown if there is an error generating the JSON data
      */
     public static void outputGraph(final Graph graph, final OutputStream jsonOutputStream,
                                    final Set<String> vertexPropertyKeys, final Set<String> edgePropertyKeys,
-                                   final GraphSONMode mode) throws IOException {
+                                   final GraphSONMode mode, final boolean adjacencyListFormat) throws IOException {
         final GraphSONLegacyWriter writer = new GraphSONLegacyWriter(graph);
-        writer.outputGraph(jsonOutputStream, vertexPropertyKeys, edgePropertyKeys, mode);
+        writer.outputGraph(jsonOutputStream, vertexPropertyKeys, edgePropertyKeys, mode, adjacencyListFormat);
     }
 
     /**
@@ -248,13 +291,14 @@ public class GraphSONLegacyWriter {
      * @param vertexPropertyKeys the keys of the vertex elements to write to JSON
      * @param edgePropertyKeys   the keys of the edge elements to write to JSON
      * @param mode               determines the format of the GraphSON
+     * @param adjacencyListFormat whether to output in adjacency list or vertices/edges format
      * @throws IOException thrown if there is an error generating the JSON data
      */
     public static void outputGraph(final Graph graph, final String filename,
                                    final Set<String> vertexPropertyKeys, final Set<String> edgePropertyKeys,
-                                   final GraphSONMode mode) throws IOException {
+                                   final GraphSONMode mode, final boolean adjacencyListFormat) throws IOException {
         final GraphSONLegacyWriter writer = new GraphSONLegacyWriter(graph);
-        writer.outputGraph(filename, vertexPropertyKeys, edgePropertyKeys, mode);
+        writer.outputGraph(filename, vertexPropertyKeys, edgePropertyKeys, mode, adjacencyListFormat);
     }
 
 }
