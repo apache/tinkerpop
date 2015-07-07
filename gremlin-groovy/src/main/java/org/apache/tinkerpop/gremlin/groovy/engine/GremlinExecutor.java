@@ -255,7 +255,7 @@ public class GremlinExecutor implements AutoCloseable {
                 if (withResult != null) withResult.accept(result);
 
                 afterSuccess.accept(bindings);
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 final Throwable root = null == ex.getCause() ? ex : ExceptionUtils.getRootCause(ex);
 
                 // thread interruptions will typically come as the result of a timeout, so in those cases,

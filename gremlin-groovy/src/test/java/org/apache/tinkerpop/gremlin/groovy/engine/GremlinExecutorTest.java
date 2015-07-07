@@ -44,11 +44,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -84,6 +86,26 @@ public class GremlinExecutorTest {
         final CompiledScript script = gremlinExecutor.compile("1+1").get();
         assertEquals(2, script.eval());
         gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldEvalSuccessfulAssertionScript() throws Exception {
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
+        assertNull(gremlinExecutor.eval("assert 1==1").get());
+        gremlinExecutor.close();
+    }
+
+    @Test
+    public void shouldEvalFailingAssertionScript() throws Exception {
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().create();
+        try {
+            gremlinExecutor.eval("assert 1==0").get();
+            fail("Should have thrown an exception");
+        } catch (Exception ex) {
+            assertThat(ex.getCause(), instanceOf(AssertionError.class));
+        } finally {
+            gremlinExecutor.close();
+        }
     }
 
     @Test

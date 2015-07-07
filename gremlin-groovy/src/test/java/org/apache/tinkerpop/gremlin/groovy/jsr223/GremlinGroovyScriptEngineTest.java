@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -64,6 +65,24 @@ public class GremlinGroovyScriptEngineTest {
         engine.reset();
 
         assertFalse(engine.isCached(script));
+    }
+
+    @Test
+    public void shouldEvalSimple() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        assertEquals(3, engine.eval("1+2"));
+    }
+
+    @Test
+    public void shouldEvalSuccessfulAssert() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        assertNull(engine.eval("assert 1==1"));
+    }
+
+    @Test(expected = AssertionError.class)
+    public void shouldEvalFailingAssert() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        engine.eval("assert 1==0");
     }
 
     @Test
