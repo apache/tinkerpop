@@ -35,14 +35,12 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutating<Event.VertexAddedEvent> {
 
     private final Object[] keyValues;
-    private final transient Graph graph;
 
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
 
     public AddVertexStep(final Traversal.Admin traversal, final Object... keyValues) {
         super(traversal);
         this.keyValues = keyValues;
-        this.graph = this.getTraversal().getGraph().get();
     }
 
     public Object[] getKeyValues() {
@@ -51,7 +49,7 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutati
 
     @Override
     protected Vertex map(final Traverser.Admin<S> traverser) {
-        final Vertex v = this.graph.addVertex(this.keyValues);
+        final Vertex v = this.getTraversal().getGraph().get().addVertex(this.keyValues);
         if (callbackRegistry != null) {
             final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(DetachedFactory.detach(v, true));
             callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
