@@ -314,6 +314,15 @@ public class GremlinGroovyScriptEngineTest {
         assertEquals(2, engine.eval("1+1"));
     }
 
+    @Test
+    public void shouldNotTimeoutStandaloneFunction() throws Exception {
+        // use a super fast timeout which should not prevent the call of a cached function
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, 1);
+        engine.eval("def addItUp(x,y) { x + y }");
+
+        assertEquals(3, engine.eval("addItUp(1,2)"));
+    }
+
     public static class DenyAll extends GroovyValueFilter {
         @Override
         public Object filter(final Object o) {

@@ -484,6 +484,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
             final Map<String, Object> timedInterruptAnnotationParams = new HashMap<>();
             timedInterruptAnnotationParams.put("value", scriptEvaluationTimeout);
             timedInterruptAnnotationParams.put("unit", GeneralUtils.propX(GeneralUtils.classX(TimeUnit.class), TimeUnit.MILLISECONDS.toString()));
+            timedInterruptAnnotationParams.put("checkOnMethodStart", false);
             conf.addCompilationCustomizers(new ASTTransformationCustomizer(timedInterruptAnnotationParams, TimedInterrupt.class));
         }
 
