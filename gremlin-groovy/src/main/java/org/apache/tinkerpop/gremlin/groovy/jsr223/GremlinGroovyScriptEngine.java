@@ -137,6 +137,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     private final Set<Artifact> artifactsToUse = new HashSet<>();
 
+    private final List<CompilerCustomizerProvider> customizerProviders;
+
     public GremlinGroovyScriptEngine() {
         this(new DefaultImportCustomizerProvider());
     }
@@ -160,6 +162,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 .filter(p -> p instanceof SecurityCustomizerProvider)
                 .map(p -> (SecurityCustomizerProvider) p)
                 .findFirst();
+
+        // remove used providers as the rest will be applied directly
+        providers.removeIf(p -> p instanceof SecurityCustomizerProvider || p instanceof ImportCustomizerProvider);
+        customizerProviders = providers;
 
         this.scriptEvaluationTimeout = scriptEvaluationTimeout;
         createClassLoader();
