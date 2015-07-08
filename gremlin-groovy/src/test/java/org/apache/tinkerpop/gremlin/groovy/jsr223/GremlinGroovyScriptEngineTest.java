@@ -334,6 +334,25 @@ public class GremlinGroovyScriptEngineTest {
     }
 
     @Test
+    public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, 50);
+
+        for (int ix = 0; ix < 10; ix++) {
+            Thread.sleep(60);
+            try {
+                engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 60) {}");
+                fail("This should have timed out");
+            } catch (ScriptException se) {
+                assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
+            }
+
+            assertEquals("test", engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 40) {};'test'"));
+        }
+
+        assertEquals(2, engine.eval("1+1"));
+    }
+
+    @Test
     public void shouldNotTimeoutStandaloneFunction() throws Exception {
         // use a super fast timeout which should not prevent the call of a cached function
         final ScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, 1);
