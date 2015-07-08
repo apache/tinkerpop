@@ -61,7 +61,7 @@ public final class ScriptRecordWriter extends RecordWriter<NullWritable, VertexW
     public ScriptRecordWriter(final DataOutputStream out, final TaskAttemptContext context) throws IOException {
         this.out = out;
         final Configuration configuration = context.getConfiguration();
-        this.engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, Integer.MAX_VALUE);
+        this.engine = new GremlinGroovyScriptEngine(Integer.MAX_VALUE, new DefaultImportCustomizerProvider());
         //this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);
         try {

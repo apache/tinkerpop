@@ -70,7 +70,7 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldLoadImports() throws Exception {
-        final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
         try {
             engineNoImports.eval("Vertex.class.getName()");
             fail("Should have thrown an exception because no imports were supplied");

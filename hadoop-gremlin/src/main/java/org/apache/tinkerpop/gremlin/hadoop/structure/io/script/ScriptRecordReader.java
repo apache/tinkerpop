@@ -64,7 +64,7 @@ public final class ScriptRecordReader extends RecordReader<NullWritable, VertexW
     public void initialize(final InputSplit genericSplit, final TaskAttemptContext context) throws IOException {
         this.lineRecordReader.initialize(genericSplit, context);
         final Configuration configuration = context.getConfiguration();
-        this.engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, Integer.MAX_VALUE);
+        this.engine = new GremlinGroovyScriptEngine(Integer.MAX_VALUE, new DefaultImportCustomizerProvider());
         //this.engine = ScriptEngineCache.get(configuration.get(SCRIPT_ENGINE, ScriptEngineCache.DEFAULT_SCRIPT_ENGINE));
         final FileSystem fs = FileSystem.get(configuration);
         try {

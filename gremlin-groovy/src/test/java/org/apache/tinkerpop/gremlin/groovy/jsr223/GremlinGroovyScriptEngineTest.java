@@ -87,7 +87,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldLoadImportsViaDependencyManagerInterface() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
         try {
             engine.eval("Vertex.class.getName()");
             fail("Should have thrown an exception because no imports were supplied");
@@ -101,7 +101,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldLoadImportsViaDependencyManagerInterfaceAdditively() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
         try {
             engine.eval("Vertex.class.getName()");
             fail("Should have thrown an exception because no imports were supplied");
@@ -133,7 +133,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldLoadImportsViaDependencyManagerFromDependencyGatheredByUse() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
         try {
             engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
             fail("Should have thrown an exception because no imports were supplied");
@@ -148,7 +148,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldAllowsUseToBeExecutedAfterImport() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
         try {
             engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
             fail("Should have thrown an exception because no imports were supplied");
@@ -310,7 +310,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldTimeoutScriptOnTimedWhile() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, 3000);
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(3000, new DefaultImportCustomizerProvider());
         try {
             engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
             fail("This should have timed out");
@@ -321,7 +321,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldTimeoutScriptOnTimedWhileOnceEngineHasBeenAliveForLongerThanTimeout() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, 3000);
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(3000, new DefaultImportCustomizerProvider());
         Thread.sleep(4000);
         try {
             engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
@@ -336,7 +336,7 @@ public class GremlinGroovyScriptEngineTest {
     @Test
     public void shouldNotTimeoutStandaloneFunction() throws Exception {
         // use a super fast timeout which should not prevent the call of a cached function
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, 1);
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(1, new DefaultImportCustomizerProvider());
         engine.eval("def addItUp(x,y) { x + y }");
 
         assertEquals(3, engine.eval("addItUp(1,2)"));

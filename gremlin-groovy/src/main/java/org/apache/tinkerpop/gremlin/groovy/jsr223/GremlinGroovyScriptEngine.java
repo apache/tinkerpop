@@ -19,9 +19,11 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import groovy.transform.ThreadInterrupt;
+import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
@@ -62,6 +64,7 @@ import java.io.Writer;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -138,21 +141,26 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         this(new DefaultImportCustomizerProvider());
     }
 
-    public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider) {
-        this(importCustomizerProvider, null);
+    public GremlinGroovyScriptEngine(final CompilerCustomizerProvider... compilerCustomizerProviders) {
+        this(DEFAULT_SCRIPT_EVALUATION_TIMEOUT, compilerCustomizerProviders);
     }
 
-    public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider,
-                                     final SecurityCustomizerProvider securityCustomizerProvider) {
-        this(importCustomizerProvider, securityCustomizerProvider, DEFAULT_SCRIPT_EVALUATION_TIMEOUT);
-    }
+    public GremlinGroovyScriptEngine(final long scriptEvaluationTimeout,
+                                     final CompilerCustomizerProvider... compilerCustomizerProviders) {
+        final List<CompilerCustomizerProvider> providers = Arrays.asList(compilerCustomizerProviders);
 
-    public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider,
-                                     final SecurityCustomizerProvider securityCustomizerProvider,
-                                     final long scriptEvaluationTimeout) {
         GremlinLoader.load();
-        this.importCustomizerProvider = importCustomizerProvider;
-        this.securityProvider = Optional.ofNullable(securityCustomizerProvider);
+
+        this.importCustomizerProvider = providers.stream()
+                .filter(p -> p instanceof ImportCustomizerProvider)
+                .map(p -> (ImportCustomizerProvider) p)
+                .findFirst().orElse(NoImportCustomizerProvider.INSTANCE);
+
+        this.securityProvider = providers.stream()
+                .filter(p -> p instanceof SecurityCustomizerProvider)
+                .map(p -> (SecurityCustomizerProvider) p)
+                .findFirst();
+
         this.scriptEvaluationTimeout = scriptEvaluationTimeout;
         createClassLoader();
     }

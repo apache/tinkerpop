@@ -29,7 +29,12 @@ import java.util.Set;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class NoImportCustomizerProvider implements ImportCustomizerProvider {
+public final class NoImportCustomizerProvider implements ImportCustomizerProvider {
+
+    public static final NoImportCustomizerProvider INSTANCE = new NoImportCustomizerProvider();
+
+    private NoImportCustomizerProvider() {}
+
     @Override
     public CompilationCustomizer getCompilationCustomizer() {
         return new ImportCustomizer();
