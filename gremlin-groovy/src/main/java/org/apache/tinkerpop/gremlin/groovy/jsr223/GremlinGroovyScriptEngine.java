@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import groovy.transform.ThreadInterrupt;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
@@ -40,7 +39,6 @@ import groovy.lang.Script;
 import groovy.lang.Tuple;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.jsr223.GroovyCompiledScript;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -322,10 +320,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
             return new GroovyCompiledScript(this, getScriptClass(scriptSource));
         } catch (SyntaxException e) {
             throw new ScriptException(e.getMessage(), e.getSourceLocator(), e.getLine());
-        } catch (IOException e) {
+        } catch (IOException | CompilationFailedException e) {
             throw new ScriptException(e);
-        } catch (CompilationFailedException ee) {
-            throw new ScriptException(ee);
         }
     }
 
@@ -526,7 +522,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
             if (c == groovy.lang.Script.class) {
                 return ctxtLoader;
             }
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException ignored) {
         }
         return groovy.lang.Script.class.getClassLoader();
     }
