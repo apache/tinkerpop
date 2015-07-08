@@ -55,7 +55,7 @@ public class EmptyImportCustomizerProvider extends DefaultImportCustomizerProvid
     }
 
     @Override
-    public CompilationCustomizer getCompilationCustomizer() {
+    public CompilationCustomizer create() {
         final ImportCustomizer ic = new ImportCustomizer();
 
         processImports(ic, extraImports);

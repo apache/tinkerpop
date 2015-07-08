@@ -36,7 +36,7 @@ public final class NoImportCustomizerProvider implements ImportCustomizerProvide
     private NoImportCustomizerProvider() {}
 
     @Override
-    public CompilationCustomizer getCompilationCustomizer() {
+    public CompilationCustomizer create() {
         return new ImportCustomizer();
     }
 

@@ -32,5 +32,5 @@ public interface CompilerCustomizerProvider {
     /**
      * Create a new instance of a {@code CompilationCustomizer} to add to the {@link GremlinGroovyScriptEngine}.
      */
-    public CompilationCustomizer getCompilationCustomizer();
+    public CompilationCustomizer create();
 }

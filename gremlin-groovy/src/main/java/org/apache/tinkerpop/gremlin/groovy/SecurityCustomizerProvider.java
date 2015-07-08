@@ -50,7 +50,7 @@ public class SecurityCustomizerProvider implements CompilerCustomizerProvider {
     }
 
     @Override
-    public CompilationCustomizer getCompilationCustomizer() {
+    public CompilationCustomizer create() {
         return new SandboxTransformer();
     }
 

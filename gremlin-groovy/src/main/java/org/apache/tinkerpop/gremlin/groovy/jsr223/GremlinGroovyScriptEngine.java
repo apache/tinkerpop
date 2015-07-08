@@ -75,6 +75,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * This {@code ScriptEngine} implementation is heavily adapted from the {@code GroovyScriptEngineImpl} to include
@@ -164,8 +165,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 .findFirst();
 
         // remove used providers as the rest will be applied directly
-        providers.removeIf(p -> p instanceof SecurityCustomizerProvider || p instanceof ImportCustomizerProvider);
-        customizerProviders = providers;
+        customizerProviders = providers.stream()
+                .filter(p -> !(p instanceof SecurityCustomizerProvider || p instanceof ImportCustomizerProvider))
+                .collect(Collectors.toList());
 
         this.scriptEvaluationTimeout = scriptEvaluationTimeout;
         createClassLoader();
@@ -489,10 +491,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     private synchronized void createClassLoader() {
         final CompilerConfiguration conf = new CompilerConfiguration();
-        conf.addCompilationCustomizers(this.importCustomizerProvider.getCompilationCustomizer());
+        conf.addCompilationCustomizers(this.importCustomizerProvider.create());
 
         if (this.securityProvider.isPresent())
-            conf.addCompilationCustomizers(this.securityProvider.get().getCompilationCustomizer());
+            conf.addCompilationCustomizers(this.securityProvider.get().create());
 
         if (scriptEvaluationTimeout > 0) {
             final Map<String, Object> timedInterruptAnnotationParams = new HashMap<>();
