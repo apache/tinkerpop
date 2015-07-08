@@ -166,7 +166,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         // remove used providers as the rest will be applied directly
         customizerProviders = providers.stream()
-                .filter(p -> !(p instanceof SecurityCustomizerProvider || p instanceof ImportCustomizerProvider))
+                .filter(p -> p != null && !(p instanceof SecurityCustomizerProvider || p instanceof ImportCustomizerProvider))
                 .collect(Collectors.toList());
 
         this.scriptEvaluationTimeout = scriptEvaluationTimeout;
@@ -505,6 +505,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         }
 
         conf.addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class));
+
+        customizerProviders.forEach(p -> conf.addCompilationCustomizers(p.create()));
 
         this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
         this.securityProvider.ifPresent(SecurityCustomizerProvider::registerInterceptors);
