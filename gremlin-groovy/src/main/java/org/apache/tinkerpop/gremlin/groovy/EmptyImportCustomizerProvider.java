@@ -26,8 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This {@link org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider} is empty and comes with no pre-defined imports
- * at all.
+ * This {@link ImportCustomizerProvider} is empty and comes with no pre-defined imports at all.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */

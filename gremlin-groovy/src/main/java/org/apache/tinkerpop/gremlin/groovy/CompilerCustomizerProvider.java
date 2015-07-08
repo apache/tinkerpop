@@ -18,11 +18,19 @@
  */
 package org.apache.tinkerpop.gremlin.groovy;
 
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
 /**
+ * Provides a way to plugin Groovy {@code CompilationCustomizer} implementations to the
+ * {@link GremlinGroovyScriptEngine}.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface CompilerCustomizerProvider {
+
+    /**
+     * Create a new instance of a {@code CompilationCustomizer} to add to the {@link GremlinGroovyScriptEngine}.
+     */
     public CompilationCustomizer getCompilationCustomizer();
 }
