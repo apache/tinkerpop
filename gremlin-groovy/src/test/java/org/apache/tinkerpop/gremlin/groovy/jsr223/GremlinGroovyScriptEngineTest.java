@@ -338,14 +338,15 @@ public class GremlinGroovyScriptEngineTest {
         final ScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, 50);
 
         for (int ix = 0; ix < 10; ix++) {
-            Thread.sleep(60);
             try {
+                // this script takes 10 ms longer than the interruptionTimeout
                 engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 60) {}");
                 fail("This should have timed out");
             } catch (ScriptException se) {
                 assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
             }
 
+            // this script takes 10 ms less than the interruptionTimeout
             assertEquals("test", engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 40) {};'test'"));
         }
 
