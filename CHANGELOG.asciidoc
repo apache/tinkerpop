@@ -25,6 +25,8 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Modified the `GremlinExecutor` to catch `Throwable` as opposed to `Exception` so as to properly handle `Error` based exceptions.
+* Modified the `GremlinGroovyScriptEngine` compilation configuration to prevent inappropriate script evaluation timeouts on standalone functions.
 * Added `mapKeys()` (`MapKeyStep`) and `mapValues()` (`MapValueStep`) to get the keys and values of a map, respectively.
 * `select()` no longer supports empty arguments. The user must specify the keys they are selecting.
 * `MatchStep` and `match()` no longer have a "start label" parameter -- it is computed if the incoming traverser does not have requisite labels.

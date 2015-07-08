@@ -188,10 +188,10 @@ Traversals in Gremlin are spawned from a `TraversalSource`. The `GraphTraversalS
 The return type of `V()` and `E()` is a `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of five general ways.
 
  . `map`: transform the incoming traverser's object to another object (S &rarr; E).
- . `flatMap`: transform the incoming traverser's object to an iterator of other objects (S &rarr; E^*^).
+ . `flatMap`: transform the incoming traverser's object to an iterator of other objects (S &rarr; E*).
  . `filter`: allow or disallow the traverser from proceeding to the next step (S &rarr; S &cup; &empty;).
  . `sideEffect`: allow the traverser to proceed unchanged, but yield some computational sideEffect in the process (S &rarrlp; S).
- . `branch`: split the traverser and send each to an arbitrary location in the traversal (S &rArr; S~1~, S~2~, ..., S~n~).
+ . `branch`: split the traverser and send each to an arbitrary location in the traversal (S &rarr; { S~1~ &rarr; E*, ..., S~n~ &rarr; E* } &rarr; E*).
 
 Nearly every step in GraphTraversal either extends `MapStep`, `FlatMapStep`, `FilterStep`, `SideEffectStep`, or `BranchStep`.
 

@@ -255,7 +255,7 @@ public class GremlinExecutor implements AutoCloseable {
                 if (withResult != null) withResult.accept(result);
 
                 afterSuccess.accept(bindings);
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 final Throwable root = null == ex.getCause() ? ex : ExceptionUtils.getRootCause(ex);
 
                 // thread interruptions will typically come as the result of a timeout, so in those cases,
@@ -277,7 +277,7 @@ public class GremlinExecutor implements AutoCloseable {
         if (scriptEvaluationTimeout > 0) {
             // Schedule a timeout in the thread pool for future execution
             final ScheduledFuture<?> sf = scheduledExecutorService.schedule(() -> {
-                logger.info("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
+                logger.warn("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
                 if (!f.isDone()) {
                     afterTimeout.accept(bindings);
                     f.cancel(true);

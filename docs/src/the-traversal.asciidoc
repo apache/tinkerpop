@@ -37,7 +37,7 @@ Graph Traversal Steps
 
 image::step-types.png[width=650]
 
-A `GraphTraversal<S,E>` can be spawned off of a `Graph`, `Vertex`, `Edge`, or `VertexProperty`. It can also be spawned anonymously (i.e. empty) via `__`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal` inherit from the more general forms diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
+A `GraphTraversal<S,E>` is spawned from a `GraphTraversalSource`. It can also be spawned anonymously (i.e. empty) via `__`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal` inherit from the more general forms diagrammed above. A list of all the steps (and their descriptions) are provided in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc]. The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
 
 NOTE: To reduce the verbosity of the expression, it is good to `import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*`. This way, instead of doing `__.inE()` for an anonymous traversal, it is possible to simply write `inE()`. Be aware of language-specific reserved keywords when using anonymous traversals. For example, `in` and `as` are reserved keywords in Groovy, therefore you must use the verbose syntax `__.in()` and `__.as()` to avoid collisions.
 
@@ -1831,14 +1831,10 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
             TraversalHelper.replaceStep(startStep, (Step) tinkerGraphStep, traversal);
 
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
-            while (true) {
-                if (currentStep instanceof HasContainerHolder) {
-                    tinkerGraphStep.hasContainers.addAll(((HasContainerHolder) currentStep).getHasContainers());
-                    currentStep.getLabels().forEach(tinkerGraphStep::addLabel);
-                    traversal.removeStep(currentStep);
-                } else {
-                    break;
-                }
+            while (currentStep instanceof HasContainerHolder) {
+                ((HasContainerHolder) currentStep).getHasContainers().forEach(tinkerGraphStep::addHasContainer);
+                currentStep.getLabels().forEach(tinkerGraphStep::addLabel);
+                traversal.removeStep(currentStep);
                 currentStep = currentStep.getNextStep();
             }
         }
