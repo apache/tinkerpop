@@ -86,7 +86,6 @@ import java.util.stream.Collectors;
  */
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager, AutoCloseable {
 
-    public static final long DEFAULT_SCRIPT_EVALUATION_TIMEOUT = 60000;
     public static final String KEY_REFERENCE_TYPE = "#jsr223.groovy.engine.keep.globals";
     public static final String REFERENCE_TYPE_PHANTOM = "phantom";
     public static final String REFERENCE_TYPE_WEAK = "weak";
@@ -131,11 +130,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private ImportCustomizerProvider importCustomizerProvider;
     private Optional<SecurityCustomizerProvider> securityProvider;
 
-    /**
-     * If this value is zero then no timeout is applied.
-     */
-    private final long scriptEvaluationTimeout;
-
     private final Set<Artifact> artifactsToUse = new HashSet<>();
 
     private final List<CompilerCustomizerProvider> customizerProviders;
@@ -145,11 +139,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     public GremlinGroovyScriptEngine(final CompilerCustomizerProvider... compilerCustomizerProviders) {
-        this(DEFAULT_SCRIPT_EVALUATION_TIMEOUT, compilerCustomizerProviders);
-    }
-
-    public GremlinGroovyScriptEngine(final long scriptEvaluationTimeout,
-                                     final CompilerCustomizerProvider... compilerCustomizerProviders) {
         final List<CompilerCustomizerProvider> providers = Arrays.asList(compilerCustomizerProviders);
 
         GremlinLoader.load();
@@ -169,7 +158,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 .filter(p -> p != null && !(p instanceof SecurityCustomizerProvider || p instanceof ImportCustomizerProvider))
                 .collect(Collectors.toList());
 
-        this.scriptEvaluationTimeout = scriptEvaluationTimeout;
         createClassLoader();
     }
 
@@ -495,14 +483,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         if (this.securityProvider.isPresent())
             conf.addCompilationCustomizers(this.securityProvider.get().create());
-
-        if (scriptEvaluationTimeout > 0) {
-            final Map<String, Object> timedInterruptAnnotationParams = new HashMap<>();
-            timedInterruptAnnotationParams.put("value", scriptEvaluationTimeout);
-            timedInterruptAnnotationParams.put("unit", GeneralUtils.propX(GeneralUtils.classX(TimeUnit.class), TimeUnit.MILLISECONDS.toString()));
-            timedInterruptAnnotationParams.put("checkOnMethodStart", false);
-            conf.addCompilationCustomizers(new ASTTransformationCustomizer(timedInterruptAnnotationParams, TimedInterrupt.class));
-        }
 
         conf.addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class));
 

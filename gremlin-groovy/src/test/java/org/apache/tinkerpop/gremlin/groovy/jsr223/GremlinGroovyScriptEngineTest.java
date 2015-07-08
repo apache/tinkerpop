@@ -23,6 +23,7 @@ import groovy.lang.Script;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
@@ -310,7 +311,8 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldTimeoutScriptOnTimedWhile() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(3000, new DefaultImportCustomizerProvider());
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(
+                new TimedInterruptCustomizerProvider(1000), new DefaultImportCustomizerProvider());
         try {
             engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
             fail("This should have timed out");
@@ -321,8 +323,9 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldTimeoutScriptOnTimedWhileOnceEngineHasBeenAliveForLongerThanTimeout() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(3000, new DefaultImportCustomizerProvider());
-        Thread.sleep(4000);
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(
+                new TimedInterruptCustomizerProvider(1000), new DefaultImportCustomizerProvider());
+        Thread.sleep(2000);
         try {
             engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
             fail("This should have timed out");
@@ -335,7 +338,8 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(50, new DefaultImportCustomizerProvider());
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(
+                new TimedInterruptCustomizerProvider(50), new DefaultImportCustomizerProvider());
 
         for (int ix = 0; ix < 10; ix++) {
             try {
@@ -356,7 +360,8 @@ public class GremlinGroovyScriptEngineTest {
     @Test
     public void shouldNotTimeoutStandaloneFunction() throws Exception {
         // use a super fast timeout which should not prevent the call of a cached function
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(1, new DefaultImportCustomizerProvider());
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(
+                new TimedInterruptCustomizerProvider(1), new DefaultImportCustomizerProvider());
         engine.eval("def addItUp(x,y) { x + y }");
 
         assertEquals(3, engine.eval("addItUp(1,2)"));

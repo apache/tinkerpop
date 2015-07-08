@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.engine;
 
+import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
@@ -329,24 +331,26 @@ public class ScriptEngines implements AutoCloseable {
         // generically with the DependencyManager interface, but going to wait to see how other ScriptEngines
         // develop for TinkerPop3 before committing too deeply here to any specific way of doing this.
         if (language.equals(gremlinGroovyScriptEngineFactory.getLanguageName())) {
+            final List<CompilerCustomizerProvider> providers = new ArrayList<>();
+            providers.add(new DefaultImportCustomizerProvider(imports, staticImports));
+
             final String clazz = (String) config.getOrDefault("sandbox", "");
-            SecurityCustomizerProvider securityCustomizerProvider = null;
             if (!clazz.isEmpty()) {
                 try {
                     final Class providerClass = Class.forName(clazz);
                     final GroovyInterceptor interceptor = (GroovyInterceptor) providerClass.newInstance();
-                    securityCustomizerProvider = new SecurityCustomizerProvider(interceptor);
+                    providers.add(new SecurityCustomizerProvider(interceptor));
                 } catch (Exception ex) {
                     logger.warn("Could not instantiate GroovyInterceptor implementation [%s] for the SecurityCustomizerProvider.  It will not be applied.", clazz);
-                    securityCustomizerProvider = null;
                 }
             }
 
             final long interruptionTimeout = ((Number) config.getOrDefault("interruptionTimeout",
-                    GremlinGroovyScriptEngine.DEFAULT_SCRIPT_EVALUATION_TIMEOUT)).longValue();
+                    TimedInterruptCustomizerProvider.DEFAULT_INTERRUPTION_TIMEOUT)).longValue();
+            if (interruptionTimeout > 0) providers.add(new TimedInterruptCustomizerProvider(interruptionTimeout));
 
-            return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(interruptionTimeout,
-                    new DefaultImportCustomizerProvider(imports, staticImports), securityCustomizerProvider));
+            final CompilerCustomizerProvider[] providerArray = new CompilerCustomizerProvider[providers.size()];
+            return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(providers.toArray(providerArray)));
         } else {
             return Optional.ofNullable(SCRIPT_ENGINE_MANAGER.getEngineByName(language));
         }
