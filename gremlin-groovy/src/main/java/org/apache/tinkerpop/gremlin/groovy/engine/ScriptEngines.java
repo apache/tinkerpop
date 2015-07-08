@@ -41,8 +41,10 @@ import javax.script.ScriptException;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +54,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Holds a batch of the configured {@code ScriptEngine} objects for the server.
@@ -342,16 +345,35 @@ public class ScriptEngines implements AutoCloseable {
                     final GroovyInterceptor interceptor = (GroovyInterceptor) providerClass.newInstance();
                     providers.add(new SecurityCustomizerProvider(interceptor));
                 } catch (Exception ex) {
-                    logger.warn("Could not instantiate GroovyInterceptor implementation [%s] for the SecurityCustomizerProvider.  It will not be applied.", clazz);
+                    logger.warn("Could not instantiate GroovyInterceptor implementation [{}] for the SecurityCustomizerProvider.  It will not be applied.", clazz);
                 }
             }
 
-            final long interruptionTimeout = ((Number) config.getOrDefault("interruptionTimeout",
-                    TimedInterruptCustomizerProvider.DEFAULT_INTERRUPTION_TIMEOUT)).longValue();
-            if (interruptionTimeout > 0) providers.add(new TimedInterruptCustomizerProvider(interruptionTimeout));
+            // the key to the config of the compilerCustomizerProvider is the fully qualified classname of a
+            // CompilerCustomizerProvider.  the value is a list of arguments to pass to an available constructor.
+            // the arguments must match in terms of type, so given that configuration typically comes from yaml
+            // or properties file, it is best to stick to primitive values when possible here for simplicity.
+            final Map<String,Object> compilerCustomizerProviders = (Map<String,Object>) config.getOrDefault(
+                    "compilerCustomizerProviders", Collections.emptyMap());
+            compilerCustomizerProviders.forEach((k,v) -> {
+                try {
+                    final Class providerClass = Class.forName(k);
+                    if (v != null && v instanceof List && ((List) v).size() > 0) {
+                        final List<Object> l = (List) v;
+                        final Object[] args = new Object[l.size()];
+                        l.toArray(args);
 
-            final boolean threadInterrupt = (boolean) config.getOrDefault("enableThreadInterrupt", true);
-            if (threadInterrupt) providers.add(new ThreadInterruptCustomizerProvider());
+                        final Class<?>[] argClasses = new Class<?>[args.length];
+                        Stream.of(args).map(a -> a.getClass()).collect(Collectors.toList()).toArray(argClasses);
+                        final Constructor constructor = providerClass.getConstructor(argClasses);
+                        providers.add((CompilerCustomizerProvider) constructor.newInstance(args));
+                    } else {
+                        providers.add((CompilerCustomizerProvider) providerClass.newInstance());
+                    }
+                } catch(Exception ex) {
+                    logger.warn("Could not instantiate CompilerCustomizerProvider implementation [{}].  It will not be applied.", clazz);
+                }
+            });
 
             final CompilerCustomizerProvider[] providerArray = new CompilerCustomizerProvider[providers.size()];
             return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(providers.toArray(providerArray)));

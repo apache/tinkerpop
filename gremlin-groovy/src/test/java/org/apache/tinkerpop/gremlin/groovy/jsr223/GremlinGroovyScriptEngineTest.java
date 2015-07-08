@@ -372,6 +372,7 @@ public class GremlinGroovyScriptEngineTest {
         });
 
         t.start();
+        Thread.sleep(100);
         t.interrupt();
         while(t.isAlive()) {}
 
@@ -394,6 +395,7 @@ public class GremlinGroovyScriptEngineTest {
         });
 
         t.start();
+        Thread.sleep(100);
         t.interrupt();
         while(t.isAlive()) {}
 

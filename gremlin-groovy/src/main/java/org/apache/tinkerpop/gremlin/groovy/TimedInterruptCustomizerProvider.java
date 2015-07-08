@@ -42,8 +42,12 @@ public class TimedInterruptCustomizerProvider implements CompilerCustomizerProvi
         this(DEFAULT_INTERRUPTION_TIMEOUT);
     }
 
-    public TimedInterruptCustomizerProvider(final long interruptionTimeout) {
+    public TimedInterruptCustomizerProvider(final Long interruptionTimeout) {
         this.interruptionTimeout = interruptionTimeout;
+    }
+
+    public TimedInterruptCustomizerProvider(final Integer interruptionTimeout) {
+        this.interruptionTimeout = interruptionTimeout.longValue();
     }
 
     @Override
