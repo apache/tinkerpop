@@ -345,9 +345,8 @@ public class ScriptEngines implements AutoCloseable {
             final long interruptionTimeout = ((Number) config.getOrDefault("interruptionTimeout",
                     GremlinGroovyScriptEngine.DEFAULT_SCRIPT_EVALUATION_TIMEOUT)).longValue();
 
-            return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(
-                    new DefaultImportCustomizerProvider(imports, staticImports), securityCustomizerProvider,
-                    interruptionTimeout));
+            return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(interruptionTimeout,
+                    new DefaultImportCustomizerProvider(imports, staticImports), securityCustomizerProvider));
         } else {
             return Optional.ofNullable(SCRIPT_ENGINE_MANAGER.getEngineByName(language));
         }

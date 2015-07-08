@@ -335,7 +335,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider(), null, 50);
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(50, new DefaultImportCustomizerProvider());
 
         for (int ix = 0; ix < 10; ix++) {
             try {
