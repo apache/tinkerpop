@@ -38,8 +38,6 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
-import groovy.transform.TimedInterrupt;
-import org.codehaus.groovy.ast.tools.GeneralUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
@@ -72,7 +70,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -483,8 +480,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         if (this.securityProvider.isPresent())
             conf.addCompilationCustomizers(this.securityProvider.get().create());
-
-        conf.addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class));
 
         customizerProviders.forEach(p -> conf.addCompilationCustomizers(p.create()));
 

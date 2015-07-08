@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.ThreadInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
@@ -348,6 +349,9 @@ public class ScriptEngines implements AutoCloseable {
             final long interruptionTimeout = ((Number) config.getOrDefault("interruptionTimeout",
                     TimedInterruptCustomizerProvider.DEFAULT_INTERRUPTION_TIMEOUT)).longValue();
             if (interruptionTimeout > 0) providers.add(new TimedInterruptCustomizerProvider(interruptionTimeout));
+
+            final boolean threadInterrupt = (boolean) config.getOrDefault("enableThreadInterrupt", true);
+            if (threadInterrupt) providers.add(new ThreadInterruptCustomizerProvider());
 
             final CompilerCustomizerProvider[] providerArray = new CompilerCustomizerProvider[providers.size()];
             return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(providers.toArray(providerArray)));

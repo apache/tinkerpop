@@ -23,6 +23,7 @@ import groovy.lang.Script;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.ThreadInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -355,6 +356,48 @@ public class GremlinGroovyScriptEngineTest {
         }
 
         assertEquals(2, engine.eval("1+1"));
+    }
+
+    @Test
+    public void shouldInterruptWhile() throws Exception {
+        final ScriptEngine engine = new GremlinGroovyScriptEngine(new ThreadInterruptCustomizerProvider());
+        final AtomicBoolean asserted = new AtomicBoolean(false);
+
+        final Thread t = new Thread(() -> {
+            try {
+                engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
+            } catch (ScriptException se) {
+                asserted.set(se.getCause().getCause() instanceof InterruptedException);
+            }
+        });
+
+        t.start();
+        t.interrupt();
+        while(t.isAlive()) {}
+
+        assertTrue(asserted.get());
+    }
+
+    @Test
+    public void shouldNotInterruptWhile() throws Exception {
+        // companion to shouldInterruptWhile                                 t
+        final ScriptEngine engine = new GremlinGroovyScriptEngine();
+        final AtomicBoolean exceptionFired = new AtomicBoolean(true);
+
+        final Thread t = new Thread(() -> {
+            try {
+                engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 2000) {};'test'");
+                exceptionFired.set(false);
+            } catch (ScriptException se) {
+                se.printStackTrace();
+            }
+        });
+
+        t.start();
+        t.interrupt();
+        while(t.isAlive()) {}
+
+        assertFalse(exceptionFired.get());
     }
 
     @Test
