@@ -37,6 +37,8 @@ import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.jsr223.GroovyCompiledScript;
@@ -81,6 +83,7 @@ import java.util.stream.Collectors;
  */
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager, AutoCloseable {
 
+    public static final String COMPILE_OPTIONS_VAR_TYPES = "sandbox.bindings";
     public static final String KEY_REFERENCE_TYPE = "#jsr223.groovy.engine.keep.globals";
     public static final String REFERENCE_TYPE_PHANTOM = "phantom";
     public static final String REFERENCE_TYPE_WEAK = "weak";
@@ -93,6 +96,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         @Override
         protected Boolean initialValue() {
             return false;
+        }
+    };
+
+    public static final ThreadLocal<Map<String, Object>> COMPILE_OPTIONS = new ThreadLocal<Map<String, Object>>(){
+        @Override
+        protected Map<String, Object> initialValue() {
+            return new HashMap<>();
         }
     };
 
@@ -287,6 +297,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         } catch (ClassCastException cce) { /*ignore.*/ }
 
         try {
+            registerBindingTypes(context);
             final Class clazz = getScriptClass(script);
             if (null == clazz) throw new ScriptException("Script class is null");
             return eval(clazz, context);
@@ -445,6 +456,23 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         } catch (Exception e) {
             throw new ScriptException(e);
         }
+    }
+
+    private void registerBindingTypes(final ScriptContext context) {
+        final Map<String,ClassNode> variableTypes = new HashMap<>();
+        clearVarTypes();
+        context.getBindings(ScriptContext.ENGINE_SCOPE).forEach((k, v) -> {
+            final Class clazz = v.getClass();
+            variableTypes.put(k, ClassHelper.make(clazz));
+        });
+
+        COMPILE_OPTIONS.get().put(COMPILE_OPTIONS_VAR_TYPES, variableTypes);
+    }
+
+    private static void clearVarTypes() {
+        final Map<String,Object> m = COMPILE_OPTIONS.get();
+        if (m.containsKey(COMPILE_OPTIONS_VAR_TYPES))
+            ((Map<String,ClassNode>) m.get(COMPILE_OPTIONS_VAR_TYPES)).clear();
     }
 
     private void ensureSandbox() {

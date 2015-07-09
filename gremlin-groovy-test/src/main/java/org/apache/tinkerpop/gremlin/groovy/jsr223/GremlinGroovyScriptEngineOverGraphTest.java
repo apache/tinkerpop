@@ -23,12 +23,15 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.groovy.CompileStaticCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.TypeCheckedCustomizerProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.config.YamlConfiguration;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -43,10 +46,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -145,7 +150,7 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
     public void shouldClearBindingsBetweenEvals() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine();
         engine.put("g", g);
-        Assert.assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()"));
+        assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()"));
 
         final Bindings bindings = engine.createBindings();
         bindings.put("g", g);
@@ -230,6 +235,142 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
             }.start();
         }
         latch.await();
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldEvalGraphTraversalSourceWithTypeChecked() throws Exception {
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine()) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("g", g);
+            assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()", bindings));
+        }
+
+        final TypeCheckedCustomizerProvider providerNoExtension = new TypeCheckedCustomizerProvider();
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(providerNoExtension)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("g", g);
+            engine.eval("g.V(" + convertToVertexId("marko") + ").next()", bindings);
+            fail("Type checking should have forced an error as 'g' is not defined");
+        } catch (Exception ex) {
+            assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
+            assertThat(ex.getMessage(), containsString("The variable [g] is undeclared."));
+        }
+
+        final TypeCheckedCustomizerProvider providerWithExtension = new TypeCheckedCustomizerProvider(
+                SandboxExtension.class.getName());
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(providerWithExtension)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("g", g);
+            assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()", bindings));
+            assertEquals(g.V(convertToVertexId("marko")).out("created").count().next(), engine.eval("g.V(" + convertToVertexId("marko") + ").out(\"created\").count().next()", bindings));
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldEvalGraphWithTypeChecked() throws Exception {
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine()) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("graph", graph);
+            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(" + convertToVertexId("marko") + ").next()", bindings));
+        }
+
+        final TypeCheckedCustomizerProvider providerNoExtension = new TypeCheckedCustomizerProvider();
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(providerNoExtension)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("graph", graph);
+            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(" + convertToVertexId("marko") + ").next()", bindings));
+            fail("Type checking should have forced an error as 'graph' is not defined");
+        } catch (Exception ex) {
+            assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
+            assertThat(ex.getMessage(), containsString("The variable [graph] is undeclared."));
+        }
+
+        final TypeCheckedCustomizerProvider providerWithExtension = new TypeCheckedCustomizerProvider(
+                SandboxExtension.class.getName());
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(providerWithExtension)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("graph", graph);
+            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(" + convertToVertexId("marko") + ").next()", bindings));
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldEvalGraphTraversalSourceWithCompileStatic() throws Exception {
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine()) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("g", g);
+            assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()", bindings));
+        }
+
+        final CompileStaticCustomizerProvider providerNoExtension = new CompileStaticCustomizerProvider();
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(providerNoExtension)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("g", g);
+            engine.eval("g.V(" + convertToVertexId("marko") + ").next()", bindings);
+            fail("Type checking should have forced an error as 'g' is not defined");
+        } catch (Exception ex) {
+            assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
+            assertThat(ex.getMessage(), containsString("The variable [g] is undeclared."));
+        }
+
+        final CompileStaticCustomizerProvider providerWithExtension = new CompileStaticCustomizerProvider(
+                SandboxExtension.class.getName());
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(providerWithExtension)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("g", g);
+            assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()", bindings));
+            assertEquals(g.V(convertToVertexId("marko")).out("created").count().next(), engine.eval("g.V(" + convertToVertexId("marko") + ").out(\"created\").count().next()", bindings));
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldEvalGraphWithCompileStatic() throws Exception {
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine()) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("graph", graph);
+            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(" + convertToVertexId("marko") + ").next()", bindings));
+        }
+
+        final CompileStaticCustomizerProvider providerNoExtension = new CompileStaticCustomizerProvider();
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(providerNoExtension)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("graph", graph);
+            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(" + convertToVertexId("marko") + ").next()", bindings));
+            fail("Type checking should have forced an error as 'graph' is not defined");
+        } catch (Exception ex) {
+            assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
+            assertThat(ex.getMessage(), containsString("The variable [graph] is undeclared."));
+        }
+
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(providerNoExtension)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("graph", graph);
+            bindings.put("x", convertToVertexId("marko"));
+            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(x).next()", bindings));
+            fail("Type checking should have forced an error as 'graph' is not defined");
+        } catch (Exception ex) {
+            assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
+            assertThat(ex.getMessage(), containsString("The variable [graph] is undeclared."));
+        }
+
+        final CompileStaticCustomizerProvider providerWithExtension = new CompileStaticCustomizerProvider(
+                SandboxExtension.class.getName());
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(providerWithExtension)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("graph", graph);
+            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(" + convertToVertexId("marko") + ").next()", bindings));
+        }
+
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(providerWithExtension)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("graph", graph);
+            bindings.put("x", convertToVertexId("marko"));
+            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(x).next()", bindings));
+        }
     }
 
     @Test
