@@ -24,7 +24,9 @@ import org.junit.Test;
 
 import javax.script.ScriptException;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 /**
@@ -55,12 +57,14 @@ public class GremlinGroovyScriptEngineCompileStaticTest {
             assertEquals(255, scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red"));
         }
 
-        final CompileStaticCustomizerProvider providerWithExtension = new CompileStaticCustomizerProvider("PreventColorUsageExtension.groovy");
+        final CompileStaticCustomizerProvider providerWithExtension = new CompileStaticCustomizerProvider(
+                PrecompiledExtensions.PreventColorUsageExtension.class.getName());
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerWithExtension)) {
             scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red");
             fail("Should have failed type checking");
         } catch (ScriptException se) {
             assertEquals(MultipleCompilationErrorsException.class, se.getCause().getClass());
+            assertThat(se.getMessage(), containsString("Method call is not allowed!"));
         }
     }
 
@@ -74,12 +78,14 @@ public class GremlinGroovyScriptEngineCompileStaticTest {
         }
 
         final CompileStaticCustomizerProvider providerWithExtension = new CompileStaticCustomizerProvider(
-                "PreventColorUsageExtension.groovy,PreventCountDownLatchUsageExtension.groovy");
+                PrecompiledExtensions.PreventColorUsageExtension.class.getName() +
+                        "," + PrecompiledExtensions.PreventCountDownLatchUsageExtension.class.getName());
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerWithExtension)) {
             scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red");
             fail("Should have failed type checking");
         } catch (ScriptException se) {
             assertEquals(MultipleCompilationErrorsException.class, se.getCause().getClass());
+            assertThat(se.getMessage(), containsString("Method call is not allowed!"));
         }
 
         try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerWithExtension)) {
@@ -87,6 +93,7 @@ public class GremlinGroovyScriptEngineCompileStaticTest {
             fail("Should have failed type checking");
         } catch (ScriptException se) {
             assertEquals(MultipleCompilationErrorsException.class, se.getCause().getClass());
+            assertThat(se.getMessage(), containsString("Method call is not allowed!"));
         }
     }
 }

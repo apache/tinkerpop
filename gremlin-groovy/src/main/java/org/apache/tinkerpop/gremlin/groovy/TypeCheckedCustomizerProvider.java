@@ -22,8 +22,11 @@ import groovy.transform.TypeChecked;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Injects the {@code TypeChecked} transformer to enable type validation on script execution.
@@ -38,14 +41,24 @@ public class TypeCheckedCustomizerProvider implements CompilerCustomizerProvider
         this(null);
     }
 
+    /**
+     * Configures the {@code TypeChecked} annotation to use optional extensions.  The argument should be one or more
+     * groovy scripts on the classpath or the fully qualified classname of a precompiled extension.  If there are
+     * multiple extensions then extensions should be comma separated.
+     */
     public TypeCheckedCustomizerProvider(final String extensions) {
         this.extensions = extensions;
     }
 
     @Override
     public CompilationCustomizer create() {
-        final Map<String, Object> timedInterruptAnnotationParams = new HashMap<>();
-        if (extensions != null && !extensions.isEmpty()) timedInterruptAnnotationParams.put("extensions", extensions);
-        return new ASTTransformationCustomizer(timedInterruptAnnotationParams, TypeChecked.class);
+        final Map<String, Object> annotationParams = new HashMap<>();
+        if (extensions != null && !extensions.isEmpty()) {
+            if (extensions.contains(","))
+                annotationParams.put("extensions", Stream.of(extensions.split(",")).collect(Collectors.toList()));
+            else
+                annotationParams.put("extensions", Collections.singletonList(extensions));
+        }
+        return new ASTTransformationCustomizer(annotationParams, TypeChecked.class);
     }
 }
