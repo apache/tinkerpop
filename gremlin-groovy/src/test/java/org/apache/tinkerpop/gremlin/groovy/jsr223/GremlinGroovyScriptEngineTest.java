@@ -309,64 +309,6 @@ public class GremlinGroovyScriptEngineTest {
         assertEquals("轉注", engine.eval("'轉注'"));
     }
 
-    @Test
-    public void shouldTimeoutScriptOnTimedWhile() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(
-                new TimedInterruptCustomizerProvider(1000), new DefaultImportCustomizerProvider());
-        try {
-            engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
-            fail("This should have timed out");
-        } catch (ScriptException se) {
-            assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
-        }
-    }
-
-    @Test
-    public void shouldTimeoutScriptOnTimedWhileOnceEngineHasBeenAliveForLongerThanTimeout() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(
-                new TimedInterruptCustomizerProvider(1000), new DefaultImportCustomizerProvider());
-        Thread.sleep(2000);
-        try {
-            engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}");
-            fail("This should have timed out");
-        } catch (ScriptException se) {
-            assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
-        }
-
-        assertEquals(2, engine.eval("1+1"));
-    }
-
-    @Test
-    public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(
-                new TimedInterruptCustomizerProvider(50), new DefaultImportCustomizerProvider());
-
-        for (int ix = 0; ix < 10; ix++) {
-            try {
-                // this script takes 10 ms longer than the interruptionTimeout
-                engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 60) {}");
-                fail("This should have timed out");
-            } catch (ScriptException se) {
-                assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
-            }
-
-            // this script takes 10 ms less than the interruptionTimeout
-            assertEquals("test", engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 40) {};'test'"));
-        }
-
-        assertEquals(2, engine.eval("1+1"));
-    }
-
-    @Test
-    public void shouldNotTimeoutStandaloneFunction() throws Exception {
-        // use a super fast timeout which should not prevent the call of a cached function
-        final ScriptEngine engine = new GremlinGroovyScriptEngine(
-                new TimedInterruptCustomizerProvider(1), new DefaultImportCustomizerProvider());
-        engine.eval("def addItUp(x,y) { x + y }");
-
-        assertEquals(3, engine.eval("addItUp(1,2)"));
-    }
-
     public static class DenyAll extends GroovyValueFilter {
         @Override
         public Object filter(final Object o) {
