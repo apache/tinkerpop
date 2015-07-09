@@ -26,10 +26,9 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.TP2GraphSONUtility.GraphSONMode;
+import org.codehaus.jettison.json.JSONException;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -135,26 +134,19 @@ public class GraphSONLegacyWriter {
 
     private void outputAdjListGraph(final OutputStream jsonOutputStream, final Set<String> vertexPropertyKeys,
                                     final Set<String> edgePropertyKeys, final GraphSONMode mode, final boolean normalize) throws IOException {
-
-        final JsonGenerator jg = jsonFactory.createGenerator(jsonOutputStream);
-
-        // don't let the JsonGenerator close the underlying stream...leave that to the client passing in the stream
-        jg.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
-
-        final TP2GraphSONUtility graphson = new TP2GraphSONUtility(mode, null,
-                ElementPropertyConfig.includeProperties(vertexPropertyKeys, edgePropertyKeys, normalize));
-
-        //jg.writeStartObject();
-
+        final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(jsonOutputStream));
         final Iterable<Vertex> vertices = vertices(normalize);
         for (Vertex v : vertices) {
-            jg.writeTree(graphson.objectNodeFromElement(v));
+            try {
+                FaunusGraphSONUtility.toJSON(v).write(writer);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                throw new IOException(e);
+            }
+            writer.newLine();
         }
-
-        //jg.writeEndObject();
-
-        jg.flush();
-        jg.close();
+        writer.flush();
+        writer.close();
     }
 
     public void outputGraph(final OutputStream jsonOutputStream, final Set<String> vertexPropertyKeys,

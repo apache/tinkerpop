@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -92,27 +110,31 @@ public class FaunusGraphSONUtility {
 
     public static JSONObject toJSON(final Vertex vertex) throws IOException {
         try {
-            final JSONObject object = TP2GraphSONUtility.jsonFromElement(vertex, getElementPropertyKeys(vertex, false), GraphSONMode.COMPACT);
+            //final JSONObject object = TP2GraphSONUtility.jsonFromElement(vertex, getElementPropertyKeys(vertex, false), GraphSONMode.COMPACT);
+            final JSONObject object = TP2GraphSONUtility.jsonFromElement(vertex, null, GraphSONMode.COMPACT);
 
             // force the ID to long.  with blueprints, most implementations will send back a long, but
             // some like TinkerGraph will return a string.  the same is done for edges below
             object.put(GraphSONTokensTP2._ID, Long.valueOf(object.remove(GraphSONTokensTP2._ID).toString()));
 
-            List<Edge> edges = (List<Edge>) vertex.edges(OUT);
+            List<Edge> edges =  new ArrayList<Edge>();
+            vertex.edges(OUT).forEachRemaining(edges::add);
             if (!edges.isEmpty()) {
                 final JSONArray outEdgesArray = new JSONArray();
                 for (final Edge outEdge : edges) {
-                    final JSONObject edgeObject = TP2GraphSONUtility.jsonFromElement(outEdge, getElementPropertyKeys(outEdge, true), GraphSONMode.COMPACT);
+                    //final JSONObject edgeObject = TP2GraphSONUtility.jsonFromElement(outEdge, getElementPropertyKeys(outEdge, true), GraphSONMode.COMPACT);
+                    final JSONObject edgeObject = TP2GraphSONUtility.jsonFromElement(outEdge, null, GraphSONMode.COMPACT);
                     outEdgesArray.put(edgeObject);
                 }
                 object.put(GraphSONTokensTP2._OUT_E, outEdgesArray);
             }
 
-            edges = (List<Edge>) vertex.edges(IN);
+            vertex.edges(IN).forEachRemaining(edges::add);
             if (!edges.isEmpty()) {
                 final JSONArray inEdgesArray = new JSONArray();
                 for (final Edge inEdge : edges) {
-                    final JSONObject edgeObject = TP2GraphSONUtility.jsonFromElement(inEdge, getElementPropertyKeys(inEdge, false), GraphSONMode.COMPACT);
+                    //final JSONObject edgeObject = TP2GraphSONUtility.jsonFromElement(inEdge, getElementPropertyKeys(inEdge, false), GraphSONMode.COMPACT);
+                    final JSONObject edgeObject = TP2GraphSONUtility.jsonFromElement(inEdge, null, GraphSONMode.COMPACT);
                     inEdgesArray.put(edgeObject);
                 }
                 object.put(GraphSONTokensTP2._IN_E, inEdgesArray);
@@ -126,21 +148,21 @@ public class FaunusGraphSONUtility {
 
     private static Set<String> getElementPropertyKeys(final Element element, final boolean edgeIn) {
         final Set<String> elementPropertyKeys = new HashSet<String>(element.keys()); // .getPropertyKeys());
-        elementPropertyKeys.add(GraphSONTokensTP2._ID);
+        // exclude reserved keys? not really properties?
+        /*elementPropertyKeys.add(GraphSONTokens.ID);
         if (element instanceof Edge) {
             if (edgeIn) {
-                elementPropertyKeys.add(GraphSONTokensTP2._IN_V);
+                elementPropertyKeys.add(GraphSONTokens.IN);
             } else {
-                elementPropertyKeys.add(GraphSONTokensTP2._OUT_V);
+                elementPropertyKeys.add(GraphSONTokens.OUT);
             }
 
-            elementPropertyKeys.add(GraphSONTokensTP2._LABEL);
-        }
-
+            elementPropertyKeys.add(GraphSONTokens.LABEL);
+        }*/
         return elementPropertyKeys;
     }
 
-    private static class MyElementFactory implements ElementFactory<Vertex, Edge> {
+    public static class MyElementFactory implements ElementFactory<Vertex, Edge> {
 
         @Override
         public Edge createEdge(final Object id, final Vertex out, final Vertex in, final String label) {

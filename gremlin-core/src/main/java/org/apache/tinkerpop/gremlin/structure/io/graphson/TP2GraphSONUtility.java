@@ -273,13 +273,13 @@ public class TP2GraphSONUtility {
 
         final ObjectNode jsonElement = createJSONMap(createPropertyMap(element, propertyKeys, elementPropertyConfig, normalized), propertyKeys, showTypes);
 
-        if ((isEdge && this.includeReservedEdgeId) || (!isEdge && this.includeReservedVertexId)) {
-            putObject(jsonElement, GraphSONTokensTP2._ID, element.id());
-        }
+        //if ((isEdge && this.includeReservedEdgeId) || (!isEdge && this.includeReservedVertexId)) {
+        //    putObject(jsonElement, GraphSONTokensTP2._ID, element.id());
+        //}
 
         // it's important to keep the order of these straight.  check Edge first and then Vertex because there
         // are graph implementations that have Edge extend from Vertex
-        if (element instanceof Edge) {
+        if (isEdge) { //element instanceof Edge) {
             final Edge edge = (Edge) element;
 
             if (this.includeReservedEdgeId) {
@@ -439,8 +439,9 @@ public class TP2GraphSONUtility {
      */
     public static JSONObject jsonFromElement(final Element element, final Set<String> propertyKeys,
                                              final GraphSONMode mode) throws JSONException {
-        final TP2GraphSONUtility graphson = element instanceof Edge ? new TP2GraphSONUtility(mode, null, null, propertyKeys)
-                : new TP2GraphSONUtility(mode, null, propertyKeys, null);
+        ElementFactory factory = new FaunusGraphSONUtility.MyElementFactory();
+        final TP2GraphSONUtility graphson = element instanceof Edge ? new TP2GraphSONUtility(mode, factory, null, propertyKeys)
+                : new TP2GraphSONUtility(mode, factory, propertyKeys, null);
         return graphson.jsonFromElement(element);
     }
 
@@ -452,15 +453,17 @@ public class TP2GraphSONUtility {
      * @param mode         The type of GraphSON to generate.
      */
     public static ObjectNode objectNodeFromElement(final Element element, final Set<String> propertyKeys, final GraphSONMode mode) {
-        final TP2GraphSONUtility graphson = element instanceof Edge ? new TP2GraphSONUtility(mode, null, null, propertyKeys)
-                : new TP2GraphSONUtility(mode, null, propertyKeys, null);
+        ElementFactory factory = new FaunusGraphSONUtility.MyElementFactory();
+        final TP2GraphSONUtility graphson = element instanceof Edge ? new TP2GraphSONUtility(mode, factory, null, propertyKeys)
+                : new TP2GraphSONUtility(mode, factory, propertyKeys, null);
         return graphson.objectNodeFromElement(element);
     }
 
     private static ObjectNode objectNodeFromElement(final Element element, final List<String> propertyKeys, final GraphSONMode mode) {
+        ElementFactory factory = new FaunusGraphSONUtility.MyElementFactory();
         Set<String> propKeySet = (propertyKeys!=null)? new HashSet<String>(propertyKeys) : null;
-        final TP2GraphSONUtility graphson = element instanceof Edge ? new TP2GraphSONUtility(mode, null, null, propKeySet)
-                : new TP2GraphSONUtility(mode, null, propKeySet, null);
+        final TP2GraphSONUtility graphson = element instanceof Edge ? new TP2GraphSONUtility(mode, factory, null, propKeySet)
+                : new TP2GraphSONUtility(mode, factory, propKeySet, null);
         return graphson.objectNodeFromElement(element);
     }
 
