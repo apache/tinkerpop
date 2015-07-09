@@ -63,4 +63,30 @@ public class GremlinGroovyScriptEngineTypeCheckedTest {
             assertEquals(MultipleCompilationErrorsException.class, se.getCause().getClass());
         }
     }
+
+    @Test
+    public void shouldTypeCheckWithMultipleExtension() throws Exception {
+        // with no type checking extension this should pass
+        final TypeCheckedCustomizerProvider providerNoExtension = new TypeCheckedCustomizerProvider();
+        try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerNoExtension)) {
+            assertEquals(255, scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red"));
+            assertEquals(1l, scriptEngine.eval("def c = new java.util.concurrent.CountDownLatch(1); c.count"));
+        }
+
+        final TypeCheckedCustomizerProvider providerWithExtension = new TypeCheckedCustomizerProvider(
+                "PreventColorUsageExtension.groovy,PreventCountDownLatchUsageExtension.groovy");
+        try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerWithExtension)) {
+            scriptEngine.eval("def c = new java.awt.Color(255, 255, 255); c.red");
+            fail("Should have failed type checking");
+        } catch (ScriptException se) {
+            assertEquals(MultipleCompilationErrorsException.class, se.getCause().getClass());
+        }
+
+        try (GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine(providerWithExtension)) {
+            scriptEngine.eval("def c = new java.util.concurrent.CountDownLatch(1); c.count");
+            fail("Should have failed type checking");
+        } catch (ScriptException se) {
+            assertEquals(MultipleCompilationErrorsException.class, se.getCause().getClass());
+        }
+    }
 }
