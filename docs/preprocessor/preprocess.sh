@@ -63,9 +63,11 @@ PLUGIN_DIR="${CONSOLE_HOME}/ext"
 TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -o 'version>[^<]*' | grep -o '>.*' | cut -d '>' -f2 | head -n1)
 TMP_DIR="/tmp/tp-docs-preprocessor"
 
+mkdir -p "${TMP_DIR}"
+
 HISTORY_FILE=`find . -name Console.groovy | xargs grep HISTORY_FILE | head -n1 | cut -d '=' -f2 | xargs echo`
 [ ${HISTORY_FILE} ] || HISTORY_FILE=".gremlin_groovy_history"
-[ -f ~/${HISTORY_FILE} ] && cp ~/${HISTORY_FILE} /tmp/
+[ -f ~/${HISTORY_FILE} ] && cp ~/${HISTORY_FILE} ${TMP_DIR}
 
 GREMLIN_SERVER=$(netstat -a | grep -o ':8182[0-9]*' | grep -cx ':8182')
 
@@ -76,19 +78,18 @@ if [ ${GREMLIN_SERVER} -eq 0 ]; then
   popd > /dev/null
 fi
 
-trap cleanup INT
-
 function cleanup() {
   echo -ne "\r\n\n"
   docs/preprocessor/uninstall-plugins.sh "${CONSOLE_HOME}" "${TMP_DIR}"
-  find "${TP_HOME}/docs/src/" -name "*.asciidoc.groovy" | xargs rm -f
-  [ -f /tmp/${HISTORY_FILE} ] &&  mv /tmp/${HISTORY_FILE} ~/
+  [ -f ${TMP_DIR}/plugins.txt.orig ] && mv ${TMP_DIR}/plugins.txt.orig ${CONSOLE_HOME}/ext/plugins.txt
+  find ${TP_HOME}/docs/src/ -name "*.asciidoc.groovy" | xargs rm -f
+  [ -f ${TMP_DIR}/${HISTORY_FILE} ] &&  mv ${TMP_DIR}/${HISTORY_FILE} ~/
   rm -rf ${TMP_DIR}
-  [ ${GREMLIN_SERVER} -eq 0 ] && kill ${GREMLIN_SERVER_PID}
-  popd > /dev/null
+  [ ${GREMLIN_SERVER} -eq 0 ] && kill ${GREMLIN_SERVER_PID} &> /dev/null
+  popd &> /dev/null
 }
 
-mkdir -p ${TMP_DIR}
+trap cleanup EXIT
 
 # install plugins
 echo
@@ -96,10 +97,10 @@ echo "=========================="
 echo "+   Installing Plugins   +"
 echo "=========================="
 echo
+cp ${CONSOLE_HOME}/ext/plugins.txt ${TMP_DIR}/plugins.txt.orig
 docs/preprocessor/install-plugins.sh "${CONSOLE_HOME}" "${TP_VERSION}" "${TMP_DIR}"
 
 if [ $? -ne 0 ]; then
-  cleanup
   exit 1
 else
   echo
@@ -123,10 +124,7 @@ for i in {0..7}; do
 done
 
 if [ ${ec} -ne 0 ]; then
-  cleanup
   exit 1
 else
   echo
 fi
-
-cleanup
