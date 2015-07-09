@@ -22,8 +22,8 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
-TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.0.0 (Release Date: July 9, 2015)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Modified the `GremlinExecutor` to catch `Throwable` as opposed to `Exception` so as to properly handle `Error` based exceptions.
 * Modified the `GremlinGroovyScriptEngine` compilation configuration to prevent inappropriate script evaluation timeouts on standalone functions.
