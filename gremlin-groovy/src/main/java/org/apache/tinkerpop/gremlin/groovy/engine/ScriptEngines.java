@@ -158,7 +158,8 @@ public class ScriptEngines implements AutoCloseable {
      * Reload a {@code ScriptEngine} with fresh imports.  Waits for any existing script evaluations to complete but
      * then blocks other operations until complete.
      */
-    public void reload(final String language, final Set<String> imports, final Set<String> staticImports, final Map<String, Object> config) {
+    public void reload(final String language, final Set<String> imports, final Set<String> staticImports,
+                       final Map<String, Object> config) {
         signalControlOp();
 
         try {
@@ -341,8 +342,12 @@ public class ScriptEngines implements AutoCloseable {
                 }
             }
 
+            final long interruptionTimeout = ((Number) config.getOrDefault("interruptionTimeout",
+                    GremlinGroovyScriptEngine.DEFAULT_SCRIPT_EVALUATION_TIMEOUT)).longValue();
+
             return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(
-                    new DefaultImportCustomizerProvider(imports, staticImports), securityCustomizerProvider));
+                    new DefaultImportCustomizerProvider(imports, staticImports), securityCustomizerProvider,
+                    interruptionTimeout));
         } else {
             return Optional.ofNullable(SCRIPT_ENGINE_MANAGER.getEngineByName(language));
         }

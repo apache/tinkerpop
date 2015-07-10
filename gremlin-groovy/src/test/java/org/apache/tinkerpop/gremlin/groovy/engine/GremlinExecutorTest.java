@@ -26,6 +26,7 @@ import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
+import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.util.Arrays;
 import java.util.Collections;
@@ -431,6 +432,36 @@ public class GremlinExecutorTest {
 
         gremlinExecutor.close();
     }
+
+    @Test
+    public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
+        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
+        final Map<String, Object> config = new HashMap<>();
+        config.put("interruptionTimeout", 50l);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
+                .addEngineSettings("gremlin-groovy",
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
+                        config)
+                .create();
+
+        for (int ix = 0; ix < 10; ix++) {
+            try {
+                // this script takes 10 ms longer than the interruptionTimeout
+                gremlinExecutor.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 60) {}").get();
+                fail("This should have timed out");
+            } catch (Exception se) {
+                assertEquals(TimeoutException.class, se.getCause().getClass());
+            }
+
+            // this script takes 10 ms less than the interruptionTimeout
+            assertEquals("test", gremlinExecutor.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 40) {};'test'").get());
+        }
+
+        gremlinExecutor.close();
+    }
+
 
     @Test
     public void shouldSecureAll() throws Exception {
