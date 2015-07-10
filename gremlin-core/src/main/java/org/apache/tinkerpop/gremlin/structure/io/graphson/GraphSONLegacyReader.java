@@ -20,29 +20,17 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
-import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
-import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.javatuples.Pair;
 
@@ -166,8 +154,10 @@ public final class GraphSONLegacyReader implements GraphReader {
         try (JsonParser parser = factory.createParser(inputStream)) {
 
             final JsonNode node = parser.readValueAsTree();
-            final Map<String, Object> vertexData = LegacyGraphSONUtility.readProperties(node);
-            starGraph.addVertex(T.id, vertexData.get(GraphSONTokensTP2._ID), T.label, vertexData.get(GraphSONTokensTP2._LABEL));
+            //final Map<String, Object> vertexData = LegacyGraphSONUtility.readProperties(node);
+            final Map<String, Object> vertexData = TP2GraphSONUtility.readProperties(node, false, false);
+            //starGraph.addVertex(T.id, vertexData.get(GraphSONTokensTP2._ID), T.label, vertexData.get(GraphSONTokensTP2._LABEL));
+            starGraph.addVertex(T.id, vertexData.get(GraphSONTokensTP2._ID)); //
             for (Map.Entry<String, Object> p : vertexData.entrySet()) {
                 if (LegacyGraphSONUtility.isReservedKey(p.getKey()))
                     continue;
@@ -176,10 +166,10 @@ public final class GraphSONLegacyReader implements GraphReader {
             if (vertexAttachMethod != null) vertexAttachMethod.apply(starGraph.getStarVertex());
 
             if (vertexData.containsKey(GraphSONTokensTP2._OUT_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.OUT))
-                readEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.OUT_E);
+                readEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokensTP2._OUT_E);
 
             if (vertexData.containsKey(GraphSONTokensTP2._IN_E) && (attachEdgesOfThisDirection == Direction.BOTH || attachEdgesOfThisDirection == Direction.IN))
-                readEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokens.IN_E);
+                readEdges(edgeAttachMethod, starGraph, vertexData, GraphSONTokensTP2._IN_E);
 
         } catch (Exception ex) {
             throw new IOException(ex);
@@ -192,22 +182,22 @@ public final class GraphSONLegacyReader implements GraphReader {
                                           final StarGraph starGraph,
                                           final Map<String, Object> vertexData,
                                           final String direction) throws IOException {
-        final Map<String, List<Map<String,Object>>> edgeDatas = (Map<String, List<Map<String,Object>>>) vertexData.get(direction);
-        for (Map.Entry<String, List<Map<String,Object>>> edgeData : edgeDatas.entrySet()) {
-            for (Map<String,Object> inner : edgeData.getValue()) {
+        //final Map<String, List<Map<String,Object>>> edgeDatas = (Map<String, List<Map<String,Object>>>) vertexData.get(direction);
+        final List<Map<String,Object>> edgeDatas = (List<Map<String,Object>>) vertexData.get(direction);
+        //for (Map.Entry<String, List<Map<String,Object>>> edgeData : edgeDatas.entrySet()) {
+            for (Map<String,Object> edgeData : edgeDatas) { //edgeData.getValue()) {
                 final StarGraph.StarEdge starEdge;
-                String edgeLabel = inner.get(GraphSONTokensTP2._LABEL).toString();
+                String edgeLabel = edgeData.get(GraphSONTokensTP2._LABEL).toString();
                 if (direction.equals(GraphSONTokens.OUT_E))
-                    starEdge = (StarGraph.StarEdge) starGraph.getStarVertex().addOutEdge(edgeLabel, starGraph.addVertex(T.id, inner.get(GraphSONTokensTP2._IN_V)), T.id, inner.get(GraphSONTokensTP2._ID));
+                    starEdge = (StarGraph.StarEdge) starGraph.getStarVertex().addOutEdge(edgeLabel, starGraph.addVertex(T.id, edgeData.get(GraphSONTokensTP2._IN_V)), T.id, edgeData.get(GraphSONTokensTP2._ID));
                 else
-                    starEdge = (StarGraph.StarEdge) starGraph.getStarVertex().addInEdge(edgeLabel, starGraph.addVertex(T.id, inner.get(GraphSONTokensTP2._OUT_V)), T.id, inner.get(GraphSONTokensTP2._ID));
-                for (Map.Entry<String, Object> epd : inner.entrySet()) {
+                    starEdge = (StarGraph.StarEdge) starGraph.getStarVertex().addInEdge(edgeLabel, starGraph.addVertex(T.id, edgeData.get(GraphSONTokensTP2._OUT_V)), T.id, edgeData.get(GraphSONTokensTP2._ID));
+                for (Map.Entry<String, Object> epd : edgeData.entrySet()) {
                     if (!LegacyGraphSONUtility.isReservedKey(epd.getKey()))
                         starEdge.property(epd.getKey(), epd.getValue());
                 }
                 if (edgeMaker != null) edgeMaker.apply(starEdge);
             }
-        }
     }
 
     /**

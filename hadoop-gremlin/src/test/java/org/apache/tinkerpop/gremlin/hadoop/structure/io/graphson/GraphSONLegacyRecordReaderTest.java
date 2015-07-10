@@ -32,7 +32,8 @@ public class GraphSONLegacyRecordReaderTest extends RecordReaderWriterTest {
 
     @Override
     protected String getInputFilename() {
-        return "tinkerpop2adj-classic.json";
+        return "grateful-dead-tp2adj.json";
+        //return "tinkerpop2adj-classic.json";
     }
 
     @Override

@@ -527,27 +527,27 @@ public class TP2GraphSONUtility {
         final Object propertyValue;
 
         if (hasEmbeddedTypes) {
-            if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_UNKNOWN)) {
+            if (node.get(GraphSONTokensTP2._TYPE).textValue().equals(GraphSONTokensTP2.TYPE_UNKNOWN)) {
                 propertyValue = null;
-            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_BOOLEAN)) {
+            } else if (node.get(GraphSONTokensTP2._TYPE).textValue().equals(GraphSONTokensTP2.TYPE_BOOLEAN)) {
                 propertyValue = node.get(GraphSONTokensTP2.VALUE).booleanValue();
-            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_FLOAT)) {
+            } else if (node.get(GraphSONTokensTP2._TYPE).textValue().equals(GraphSONTokensTP2.TYPE_FLOAT)) {
                 propertyValue = Float.parseFloat(node.get(GraphSONTokensTP2.VALUE).asText());
-            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_BYTE)) {
+            } else if (node.get(GraphSONTokensTP2._TYPE).textValue().equals(GraphSONTokensTP2.TYPE_BYTE)) {
                 propertyValue = Byte.parseByte(node.get(GraphSONTokensTP2.VALUE).asText());
-            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_SHORT)) {
+            } else if (node.get(GraphSONTokensTP2._TYPE).textValue().equals(GraphSONTokensTP2.TYPE_SHORT)) {
                 propertyValue = Short.parseShort(node.get(GraphSONTokensTP2.VALUE).asText());
-            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_DOUBLE)) {
+            } else if (node.get(GraphSONTokensTP2._TYPE).textValue().equals(GraphSONTokensTP2.TYPE_DOUBLE)) {
                 propertyValue = node.get(GraphSONTokensTP2.VALUE).doubleValue();
-            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_INTEGER)) {
+            } else if (node.get(GraphSONTokensTP2._TYPE).textValue().equals(GraphSONTokensTP2.TYPE_INTEGER)) {
                 propertyValue = node.get(GraphSONTokensTP2.VALUE).intValue();
-            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_LONG)) {
+            } else if (node.get(GraphSONTokensTP2._TYPE).textValue().equals(GraphSONTokensTP2.TYPE_LONG)) {
                 propertyValue = node.get(GraphSONTokensTP2.VALUE).longValue();
-            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_STRING)) {
+            } else if (node.get(GraphSONTokensTP2._TYPE).textValue().equals(GraphSONTokensTP2.TYPE_STRING)) {
                 propertyValue = node.get(GraphSONTokensTP2.VALUE).textValue();
-            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_LIST)) {
+            } else if (node.get(GraphSONTokensTP2._TYPE).textValue().equals(GraphSONTokensTP2.TYPE_LIST)) {
                 propertyValue = readProperties(node.get(GraphSONTokensTP2.VALUE).elements(), hasEmbeddedTypes);
-            } else if (node.get(GraphSONTokensTP2.TYPE).textValue().equals(GraphSONTokensTP2.TYPE_MAP)) {
+            } else if (node.get(GraphSONTokensTP2._TYPE).textValue().equals(GraphSONTokensTP2.TYPE_MAP)) {
                 propertyValue = readProperties(node.get(GraphSONTokensTP2.VALUE), false, hasEmbeddedTypes);
             } else {
                 propertyValue = node.textValue();

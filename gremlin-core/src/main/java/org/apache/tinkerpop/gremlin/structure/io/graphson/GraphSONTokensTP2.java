@@ -30,7 +30,7 @@ public final class GraphSONTokensTP2 {
     public static final String _OUT_E = "_outE";
     public static final String _IN_E = "_inE";
     public static final String VALUE = "value";
-    public static final String TYPE = "type";
+    //public static final String TYPE = "type";
     public static final String TYPE_LIST = "list";
     public static final String TYPE_STRING = "string";
     public static final String TYPE_DOUBLE = "double";
