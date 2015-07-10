@@ -25,21 +25,9 @@ import java.util.function.BiPredicate
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class TinkerPopSandboxExtension extends SandboxExtension {
-
-    TinkerPopSandboxExtension() {
-        gIsAlwaysGraphTraversalSource = false
-        graphIsAlwaysGraphInstance = false
-
-        def gremlinRoot = "org\\.apache\\.tinkerpop\\.gremlin"
-        def gremlinRootStructure = "$gremlinRoot\\.structure"
-        def gremlinRootProcess = "$gremlinRoot\\.process"
-        def methodWhiteList = ["java\\.util\\..*",
-                               "org\\.codehaus\\.groovy\\.runtime\\.DefaultGroovyMethods",
-                               "$gremlinRootStructure\\..*",
-                               "$gremlinRootProcess\\..*",
-                               "$gremlinRootProcess\\.traversal\\.dsl\\.graph\\..*"]
-
+class AllowColorSandboxExtension extends SandboxExtension {
+    AllowColorSandboxExtension() {
+        def methodWhiteList = ["java\\.awt\\.Color#<init>"]
         methodFilter = (BiPredicate<String, MethodNode>) { descriptor, method ->
             methodWhiteList.any { descriptor =~ it }
         }

@@ -20,13 +20,18 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.structure.Graph
+import org.codehaus.groovy.ast.ClassCodeVisitorSupport
+import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
-import org.codehaus.groovy.ast.expr.Expression
+import org.codehaus.groovy.ast.expr.PropertyExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
+import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.transform.sc.StaticCompilationMetadataKeys
 import org.codehaus.groovy.transform.stc.ExtensionMethodNode
 import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport
+import org.codehaus.groovy.transform.stc.StaticTypeCheckingSupport
 
 import java.util.function.BiPredicate
 
@@ -43,12 +48,12 @@ class SandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDS
 
     public static final BiPredicate<VariableExpression, Map<String,ClassNode>> VARIABLES_ALLOW_ALL = { var, types -> true }
 
-    public static final BiPredicate<VariableExpression, Map<String,ClassNode>> METHODS_ALLOW_ALL = { exp, method -> true }
+    public static final BiPredicate<String, MethodNode> METHODS_ALLOW_ALL = { exp, method -> true }
 
     protected boolean graphIsAlwaysGraphInstance = true
     protected boolean gIsAlwaysGraphTraversalSource = true
     protected BiPredicate<VariableExpression, Map<String,ClassNode>> variableFilter = VARIABLES_ALLOW_ALL
-    protected BiPredicate<Expression, MethodNode> methodFilter = METHODS_ALLOW_ALL
+    protected BiPredicate<String, MethodNode> methodFilter = METHODS_ALLOW_ALL
 
     @Override
     Object run() {
@@ -82,10 +87,15 @@ class SandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDS
         }
 
         onMethodSelection { expr, MethodNode methodNode ->
-            if (!methodFilter.test(expr, methodNode)) {
-                def descriptor = toMethodDescriptor(methodNode)
+            def descriptor = toMethodDescriptor(methodNode)
+            if (!methodFilter.test(descriptor,methodNode))
                 addStaticTypeError("Not authorized to call this method: $descriptor", expr)
-            }
+        }
+
+        // handles calls to properties
+        afterVisitMethod { methodNode ->
+            def visitor = new PropertyExpressionEvaluator(context.source)
+            visitor.visitMethod(methodNode)
         }
     }
 
@@ -114,4 +124,35 @@ class SandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDS
     static String prettyPrint(final ClassNode node) {
         node.isArray()?"${prettyPrint(node.componentType)}[]":node.toString(false)
     }
+
+    class PropertyExpressionEvaluator extends ClassCodeVisitorSupport {
+        private final SourceUnit unit
+        private final List<String> whiteList
+
+        public PropertyExpressionEvaluator(final SourceUnit unit) {
+            this.unit = unit
+            this.whiteList = whiteList
+        }
+
+        @Override
+        protected SourceUnit getSourceUnit() {
+            unit
+        }
+
+        @Override
+        void visitPropertyExpression(final PropertyExpression expression) {
+            super.visitPropertyExpression(expression)
+
+            ClassNode owner = expression.objectExpression.getNodeMetaData(StaticCompilationMetadataKeys.PROPERTY_OWNER)
+            if (owner) {
+                if (expression.spreadSafe && StaticTypeCheckingSupport.implementsInterfaceOrIsSubclassOf(owner, classNodeFor(Collection)))
+                    owner = typeCheckingVisitor.inferComponentType(owner, ClassHelper.int_TYPE)
+
+                def descriptor = "${prettyPrint(owner)}#${expression.propertyAsString}"
+                if (!methodFilter.test(descriptor, expression))
+                    addStaticTypeError("Not authorized to call this method: $descriptor", expression)
+            }
+        }
+    }
+
 }
