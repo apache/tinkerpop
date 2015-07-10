@@ -73,12 +73,13 @@ class SandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDS
 
             final Map<String,ClassNode> varTypes = (Map<String,ClassNode>) GremlinGroovyScriptEngine.COMPILE_OPTIONS.get()
                     .get(GremlinGroovyScriptEngine.COMPILE_OPTIONS_VAR_TYPES)
-            if (varTypes.containsKey(var.name) && variableFilter.test(var, varTypes)
-                || (var.name == "graph" && !graphIsAlwaysGraphInstance
-                     || var.name == "g" && !gIsAlwaysGraphTraversalSource)) {
-                storeType(var, varTypes.get(var.name))
-                handled = true
-                return
+            if (varTypes.containsKey(var.name) && variableFilter.test(var, varTypes))  {
+                if (!(var.name in ["graph",  "g"]) || (var.name == "graph" && !graphIsAlwaysGraphInstance
+                         || var.name == "g" && !gIsAlwaysGraphTraversalSource)) {
+                    storeType(var, varTypes.get(var.name))
+                    handled = true
+                    return
+                }
             }
         }
 

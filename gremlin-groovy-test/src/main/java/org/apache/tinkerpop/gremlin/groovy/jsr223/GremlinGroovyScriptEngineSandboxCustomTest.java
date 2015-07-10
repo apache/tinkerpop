@@ -37,7 +37,6 @@ import static org.junit.Assert.fail;
  */
 public class GremlinGroovyScriptEngineSandboxCustomTest extends AbstractGremlinTest {
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldEvalGVariableAsSomethingOtherThanGraphTraversalSource() throws Exception {
         final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(SandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
@@ -60,7 +59,6 @@ public class GremlinGroovyScriptEngineSandboxCustomTest extends AbstractGremlinT
     }
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldEvalGraphVariableAsSomethingOtherThanGraph() throws Exception {
         final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(SandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
@@ -75,6 +73,50 @@ public class GremlinGroovyScriptEngineSandboxCustomTest extends AbstractGremlinT
 
         final CompilerCustomizerProvider customSandbox = new CompileStaticCustomizerProvider(
                 RebindAllVariableTypesSandboxExtension.class.getName());
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(customSandbox)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("graph", 1);
+            assertEquals(2, engine.eval("graph+1", bindings));
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldNotEvalBecauseSandboxIsConfiguredToNotAcceptGraphInstances() throws Exception {
+        final CompilerCustomizerProvider customSandbox = new CompileStaticCustomizerProvider(
+                BlockSomeVariablesSandboxExtension.class.getName());
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(customSandbox)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("graph", graph);
+            engine.eval("graph.vertices()", bindings);
+            fail("Should have a compile error because sandbox does not allow Graph");
+        } catch (Exception ex) {
+            assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
+            assertThat(ex.getMessage(), containsString("The variable [graph] is undeclared."));
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldNotEvalBecauseSandboxIsConfiguredToNotAcceptShortVarNames() throws Exception {
+        final CompilerCustomizerProvider customSandbox = new CompileStaticCustomizerProvider(
+                BlockSomeVariablesSandboxExtension.class.getName());
+        try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(customSandbox)) {
+            final Bindings bindings = engine.createBindings();
+            bindings.put("g", 1);
+            engine.eval("g+1", bindings);
+            fail("Should have a compile error because sandbox wants names > 3");
+        } catch (Exception ex) {
+            assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
+            assertThat(ex.getMessage(), containsString("The variable [g] is undeclared."));
+        }
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldEvalAsVariableRequirementsAreInRangeOfSandbox() throws Exception {
+        final CompilerCustomizerProvider customSandbox = new CompileStaticCustomizerProvider(
+                BlockSomeVariablesSandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(customSandbox)) {
             final Bindings bindings = engine.createBindings();
             bindings.put("graph", 1);
