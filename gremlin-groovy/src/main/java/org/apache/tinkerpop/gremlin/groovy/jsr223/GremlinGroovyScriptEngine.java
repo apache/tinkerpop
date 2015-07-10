@@ -84,6 +84,7 @@ import java.util.stream.Collectors;
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager, AutoCloseable {
 
     public static final String COMPILE_OPTIONS_VAR_TYPES = "sandbox.bindings";
+    public static final String COMPILE_OPTIONS_WHITELIST = "sandbox.whitelist";
     public static final String KEY_REFERENCE_TYPE = "#jsr223.groovy.engine.keep.globals";
     public static final String REFERENCE_TYPE_PHANTOM = "phantom";
     public static final String REFERENCE_TYPE_WEAK = "weak";
@@ -148,12 +149,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         GremlinLoader.load();
 
-        this.importCustomizerProvider = providers.stream()
+        importCustomizerProvider = providers.stream()
                 .filter(p -> p instanceof ImportCustomizerProvider)
                 .map(p -> (ImportCustomizerProvider) p)
                 .findFirst().orElse(NoImportCustomizerProvider.INSTANCE);
 
-        this.securityProvider = providers.stream()
+        securityProvider = providers.stream()
                 .filter(p -> p instanceof SecurityCustomizerProvider)
                 .map(p -> (SecurityCustomizerProvider) p)
                 .findFirst();
@@ -238,8 +239,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
         // use the EmptyImportCustomizer because it doesn't come with static initializers containing
         // existing imports.
-        this.importCustomizerProvider = new EmptyImportCustomizerProvider(
-                this.importCustomizerProvider, imports, staticImports);
+        importCustomizerProvider = new EmptyImportCustomizerProvider(importCustomizerProvider, imports, staticImports);
         reset();
     }
 
@@ -249,25 +249,25 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     @Override
     public void close() throws Exception {
-        this.securityProvider.ifPresent(SecurityCustomizerProvider::unregisterInterceptors);
+        securityProvider.ifPresent(SecurityCustomizerProvider::unregisterInterceptors);
     }
 
     @Override
     public void reset() {
-        this.securityProvider.ifPresent(SecurityCustomizerProvider::unregisterInterceptors);
+        securityProvider.ifPresent(SecurityCustomizerProvider::unregisterInterceptors);
         createClassLoader();
 
         // must clear the local cache here because the the classloader has been reset.  therefore, classes previously
         // referenced before that might not have evaluated might cleanly evaluate now.
-        this.classMap.clear();
-        this.globalClosures.clear();
+        classMap.clear();
+        globalClosures.clear();
 
-        this.loadedPlugins.clear();
+        loadedPlugins.clear();
 
         final Set<Artifact> toReuse = new HashSet<>(artifactsToUse);
         toReuse.forEach(this::use);
 
-        this.getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
+        getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
     }
 
     private void use(final Artifact artifact) {
@@ -315,10 +315,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     @Override
     public ScriptEngineFactory getFactory() {
-        if (this.factory == null) {
+        if (factory == null) {
             synchronized (this) {
-                if (this.factory == null) {
-                    this.factory = new GremlinGroovyScriptEngineFactory();
+                if (factory == null) {
+                    factory = new GremlinGroovyScriptEngineFactory();
                 }
             }
         }
@@ -476,9 +476,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     private void ensureSandbox() {
-        if (securityProvider.isPresent() && !this.registeredSandbox.get()) {
-            this.securityProvider.get().registerInterceptors();
-            this.registeredSandbox.set(true);
+        if (securityProvider.isPresent() && !registeredSandbox.get()) {
+            securityProvider.get().registerInterceptors();
+            registeredSandbox.set(true);
         }
     }
 
