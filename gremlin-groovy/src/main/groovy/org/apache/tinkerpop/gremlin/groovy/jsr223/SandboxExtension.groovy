@@ -44,17 +44,11 @@ class SandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDS
     public static final BiPredicate<VariableExpression, Map<String,ClassNode>> VARIABLES_ALLOW_ALL = { var, types -> true }
 
     public static final BiPredicate<VariableExpression, Map<String,ClassNode>> METHODS_ALLOW_ALL = { exp, method -> true }
-    public static final BiPredicate<Expression, MethodNode> METHODS_REGEX_WHITELIST = { exp, method ->
-        def descriptor = toMethodDescriptor(method)
-        !methodList.any { descriptor =~ it }
-    }
-    public static final BiPredicate<Expression, MethodNode> METHODS_REGEX_BLACKLIST = { exp, method -> !METHODS_REGEX_WHITELIST.test(exp, method) }
 
     protected boolean graphIsAlwaysGraphInstance = true
     protected boolean gIsAlwaysGraphTraversalSource = true
     protected BiPredicate<VariableExpression, Map<String,ClassNode>> variableFilter = VARIABLES_ALLOW_ALL
     protected BiPredicate<Expression, MethodNode> methodFilter = METHODS_ALLOW_ALL
-    protected List<String> methodList = new ArrayList<String>();
 
     @Override
     Object run() {
@@ -73,6 +67,10 @@ class SandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDS
 
             final Map<String,ClassNode> varTypes = (Map<String,ClassNode>) GremlinGroovyScriptEngine.COMPILE_OPTIONS.get()
                     .get(GremlinGroovyScriptEngine.COMPILE_OPTIONS_VAR_TYPES)
+
+            // use the types of the bound variables.  filter as necessary and provide special treatment for
+            // "g" and "graph" as they are potentially handled above already and don't need to be bound
+            // implicitly by the binding variables
             if (varTypes.containsKey(var.name) && variableFilter.test(var, varTypes))  {
                 if (!(var.name in ["graph",  "g"]) || (var.name == "graph" && !graphIsAlwaysGraphInstance
                          || var.name == "g" && !gIsAlwaysGraphTraversalSource)) {
@@ -84,16 +82,17 @@ class SandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDS
         }
 
         onMethodSelection { expr, MethodNode methodNode ->
-            if (!methodFilter.test(expr, methodNode))
-                addStaticTypeError("Not authorized to call this method: $descr", expr)
+            if (!methodFilter.test(expr, methodNode)) {
+                def descriptor = toMethodDescriptor(methodNode)
+                addStaticTypeError("Not authorized to call this method: $descriptor", expr)
+            }
         }
     }
 
-    private static String prettyPrint(ClassNode node) {
-        node.isArray()?"${prettyPrint(node.componentType)}[]":node.toString(false)
-    }
-
-    private static String toMethodDescriptor(final MethodNode node) {
+    /**
+     * Helper method for those extending the sandbox and useful in turning methods into regex matchable strings.
+     */
+    static String toMethodDescriptor(final MethodNode node) {
         if (node instanceof ExtensionMethodNode)
             return toMethodDescriptor(node.extensionMethodNode)
 
@@ -107,5 +106,12 @@ class SandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDS
         }.join(','))
         sb.append(')')
         sb
+    }
+
+    /**
+     * Helper method for those extending the sandbox.
+     */
+    static String prettyPrint(final ClassNode node) {
+        node.isArray()?"${prettyPrint(node.componentType)}[]":node.toString(false)
     }
 }
