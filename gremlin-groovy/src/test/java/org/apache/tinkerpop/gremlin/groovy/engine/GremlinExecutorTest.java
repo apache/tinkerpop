@@ -22,13 +22,10 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.groovy.ThreadInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.TimedInterruptCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
 import org.junit.Test;
-import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
-import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -501,57 +498,6 @@ public class GremlinExecutorTest {
         while(t.isAlive()) {}
 
         assertTrue(asserted.get());
-    }
-
-    @Test
-    public void shouldSecureAll() throws Exception {
-        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
-        final Map<String, Object> config = new HashMap<>();
-        config.put("sandbox", GremlinGroovyScriptEngineTest.DenyAll.class.getName());
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("gremlin-groovy",
-                        Collections.emptyList(),
-                        Collections.emptyList(),
-                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
-                        config)
-                .create();
-        try {
-            gremlinExecutor.eval("c = new java.awt.Color(255, 255, 255)").get();
-            fail("Should have failed security");
-        } catch (Exception se) {
-            assertEquals(SecurityException.class, se.getCause().getClass());
-        } finally {
-            gremlinExecutor.close();
-        }
-    }
-
-    @Test
-    public void shouldSecureSome() throws Exception {
-        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
-        final Map<String, Object> config = new HashMap<>();
-        config.put("sandbox", GremlinGroovyScriptEngineTest.AllowSome.class.getName());
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("gremlin-groovy",
-                        Collections.emptyList(),
-                        Collections.emptyList(),
-                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
-                        config)
-                .create();
-        try {
-            gremlinExecutor.eval("c = 'new java.awt.Color(255, 255, 255)'").get();
-            fail("Should have failed security");
-        } catch (Exception se) {
-            assertEquals(SecurityException.class, se.getCause().getClass());
-        }
-
-        try {
-            final java.awt.Color c = (java.awt.Color) gremlinExecutor.eval("g = new java.awt.Color(255, 255, 255)").get();
-            assertEquals(java.awt.Color.class, c.getClass());
-        } catch (Exception ignored) {
-            fail("Should not have tossed an exception");
-        } finally {
-            gremlinExecutor.close();
-        }
     }
 
     @Test

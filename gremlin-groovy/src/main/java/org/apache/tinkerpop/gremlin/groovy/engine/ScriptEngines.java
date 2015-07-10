@@ -20,15 +20,11 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.ThreadInterruptCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.TimedInterruptCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
-import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -338,17 +334,6 @@ public class ScriptEngines implements AutoCloseable {
             final List<CompilerCustomizerProvider> providers = new ArrayList<>();
             providers.add(new DefaultImportCustomizerProvider(imports, staticImports));
 
-            final String clazz = (String) config.getOrDefault("sandbox", "");
-            if (!clazz.isEmpty()) {
-                try {
-                    final Class providerClass = Class.forName(clazz);
-                    final GroovyInterceptor interceptor = (GroovyInterceptor) providerClass.newInstance();
-                    providers.add(new SecurityCustomizerProvider(interceptor));
-                } catch (Exception ex) {
-                    logger.warn("Could not instantiate GroovyInterceptor implementation [{}] for the SecurityCustomizerProvider.  It will not be applied.", clazz);
-                }
-            }
-
             // the key to the config of the compilerCustomizerProvider is the fully qualified classname of a
             // CompilerCustomizerProvider.  the value is a list of arguments to pass to an available constructor.
             // the arguments must match in terms of type, so given that configuration typically comes from yaml
@@ -371,7 +356,7 @@ public class ScriptEngines implements AutoCloseable {
                         providers.add((CompilerCustomizerProvider) providerClass.newInstance());
                     }
                 } catch(Exception ex) {
-                    logger.warn("Could not instantiate CompilerCustomizerProvider implementation [{}].  It will not be applied.", clazz);
+                    logger.warn("Could not instantiate CompilerCustomizerProvider implementation [{}].  It will not be applied.", k);
                 }
             });
 

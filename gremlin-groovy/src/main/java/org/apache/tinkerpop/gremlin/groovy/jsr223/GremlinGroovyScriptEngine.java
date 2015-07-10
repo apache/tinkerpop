@@ -23,7 +23,6 @@ import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.EmptyImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
@@ -67,7 +66,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -84,7 +82,6 @@ import java.util.stream.Collectors;
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager, AutoCloseable {
 
     public static final String COMPILE_OPTIONS_VAR_TYPES = "sandbox.bindings";
-    public static final String COMPILE_OPTIONS_WHITELIST = "sandbox.whitelist";
     public static final String KEY_REFERENCE_TYPE = "#jsr223.groovy.engine.keep.globals";
     public static final String REFERENCE_TYPE_PHANTOM = "phantom";
     public static final String REFERENCE_TYPE_WEAK = "weak";
@@ -92,13 +89,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     public static final String REFERENCE_TYPE_HARD = "hard";
 
     private static final Pattern patternImportStatic = Pattern.compile("\\Aimport\\sstatic.*");
-
-    private ThreadLocal<Boolean> registeredSandbox = new ThreadLocal<Boolean>() {
-        @Override
-        protected Boolean initialValue() {
-            return false;
-        }
-    };
 
     public static final ThreadLocal<Map<String, Object>> COMPILE_OPTIONS = new ThreadLocal<Map<String, Object>>(){
         @Override
@@ -134,7 +124,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private static final String GROOVY_LANG_SCRIPT = "groovy.lang.Script";
 
     private ImportCustomizerProvider importCustomizerProvider;
-    private Optional<SecurityCustomizerProvider> securityProvider;
 
     private final Set<Artifact> artifactsToUse = new HashSet<>();
 
@@ -154,14 +143,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
                 .map(p -> (ImportCustomizerProvider) p)
                 .findFirst().orElse(NoImportCustomizerProvider.INSTANCE);
 
-        securityProvider = providers.stream()
-                .filter(p -> p instanceof SecurityCustomizerProvider)
-                .map(p -> (SecurityCustomizerProvider) p)
-                .findFirst();
-
         // remove used providers as the rest will be applied directly
         customizerProviders = providers.stream()
-                .filter(p -> p != null && !(p instanceof SecurityCustomizerProvider || p instanceof ImportCustomizerProvider))
+                .filter(p -> p != null && !(p instanceof ImportCustomizerProvider))
                 .collect(Collectors.toList());
 
         createClassLoader();
@@ -249,12 +233,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
 
     @Override
     public void close() throws Exception {
-        securityProvider.ifPresent(SecurityCustomizerProvider::unregisterInterceptors);
     }
 
     @Override
     public void reset() {
-        securityProvider.ifPresent(SecurityCustomizerProvider::unregisterInterceptors);
         createClassLoader();
 
         // must clear the local cache here because the the classloader has been reset.  therefore, classes previously
@@ -368,8 +350,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     Class getScriptClass(final String script) throws SyntaxException, CompilationFailedException, IOException {
-        ensureSandbox();
-
         Class clazz = classMap.get(script);
         if (clazz != null) return clazz;
 
@@ -383,8 +363,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     }
 
     Object eval(final Class scriptClass, final ScriptContext context) throws ScriptException {
-        ensureSandbox();
-
         context.setAttribute("context", context, ScriptContext.ENGINE_SCOPE);
         final Writer writer = context.getWriter();
         context.setAttribute("out", writer instanceof PrintWriter ? writer : new PrintWriter(writer), ScriptContext.ENGINE_SCOPE);
@@ -475,13 +453,6 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
             ((Map<String,ClassNode>) m.get(COMPILE_OPTIONS_VAR_TYPES)).clear();
     }
 
-    private void ensureSandbox() {
-        if (securityProvider.isPresent() && !registeredSandbox.get()) {
-            securityProvider.get().registerInterceptors();
-            registeredSandbox.set(true);
-        }
-    }
-
     private Object invokeImpl(final Object thiz, final String name, final Object args[]) throws ScriptException, NoSuchMethodException {
         if (name == null) {
             throw new NullPointerException("Method name can not be null");
@@ -502,13 +473,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         final CompilerConfiguration conf = new CompilerConfiguration();
         conf.addCompilationCustomizers(this.importCustomizerProvider.create());
 
-        if (this.securityProvider.isPresent())
-            conf.addCompilationCustomizers(this.securityProvider.get().create());
-
         customizerProviders.forEach(p -> conf.addCompilationCustomizers(p.create()));
 
         this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
-        this.securityProvider.ifPresent(SecurityCustomizerProvider::registerInterceptors);
     }
 
     private Object callGlobal(final String name, final Object args[]) {
