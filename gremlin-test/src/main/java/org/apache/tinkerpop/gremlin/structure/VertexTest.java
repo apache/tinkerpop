@@ -260,10 +260,10 @@ public class VertexTest {
         public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnEdge() {
             final Vertex v = graph.addVertex();
             final Object o = GraphManager.getGraphProvider().convertId("1", Edge.class);
-            v.addEdge("label", v, T.id, o);
+            v.addEdge("self", v, T.id, o);
 
             try {
-                v.addEdge("label", v, T.id, o);
+                v.addEdge("self", v, T.id, o);
                 fail("Assigning the same ID to an Element should throw an exception");
             } catch (Exception ex) {
                 validateException(Graph.Exceptions.edgeWithIdAlreadyExists(o), ex);
@@ -278,7 +278,7 @@ public class VertexTest {
         public void shouldHaveExceptionConsistencyWhenIdNotSupportedForAddEdge() throws Exception {
             try {
                 final Vertex v = this.graph.addVertex();
-                v.addEdge("label", v, T.id, "");
+                v.addEdge("self", v, T.id, "");
                 fail("Call to addEdge should have thrown an exception when ID was specified as it is not supported");
             } catch (Exception ex) {
                 validateException(Edge.Exceptions.userSuppliedIdsNotSupported(), ex);

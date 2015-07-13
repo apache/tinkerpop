@@ -584,7 +584,7 @@ public class FeatureSupportTest {
         public void shouldSupportRemovePropertyIfAPropertyCanBeRemoved() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                final Edge e = v.addEdge("label", v);
+                final Edge e = v.addEdge("self", v);
                 e.property("name").remove();
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, EdgeFeatures.class.getSimpleName(), EdgeFeatures.FEATURE_REMOVE_PROPERTY));
             } catch (Exception ex) {
@@ -891,7 +891,7 @@ public class FeatureSupportTest {
         public void shouldSupportMetaPropertyIfPropertiesCanBePutOnProperties() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
-                v.property(VertexProperty.Cardinality.single, "name", "stephen", "property", "on-property");
+                v.property(VertexProperty.Cardinality.single, "name", "stephen", "p", "on-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.metaPropertiesNotSupported(), ex);
@@ -906,7 +906,7 @@ public class FeatureSupportTest {
         public void shouldSupportMetaPropertyIfPropertiesCanBePutOnPropertiesViaVertexProperty() throws Exception {
             try {
                 final Vertex v = graph.addVertex("name", "stephen");
-                v.property("name").property("property", "on-property");
+                v.property("name").property("p", "on-property");
                 fail(String.format(INVALID_FEATURE_SPECIFICATION, VertexFeatures.class.getSimpleName(), VertexFeatures.FEATURE_META_PROPERTIES));
             } catch (Exception ex) {
                 validateException(VertexProperty.Exceptions.metaPropertiesNotSupported(), ex);
