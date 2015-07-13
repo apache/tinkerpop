@@ -750,12 +750,9 @@ limitations under the License.
                                     <destDir>full</destDir>
                                     <additionalparam>-Xdoclint:none</additionalparam>
                                     <quiet>true</quiet>
-                                    <includeDependencySources>true</includeDependencySources>
-                                    <dependencySourceIncludes>
-                                        <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
-                                    </dependencySourceIncludes>
-                                    <detectLinks>false</detectLinks>
-                                    <detectOfflineLinks>false</detectOfflineLinks>
+                                    <sourcepath>
+                                        hadoop-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:tinkergraph-gremlin/src/main/java
+                                    </sourcepath>
                                 </configuration>
                             </execution>
                             <execution>
@@ -769,62 +766,89 @@ limitations under the License.
                                     <destDir>core</destDir>
                                     <additionalparam>-Xdoclint:none</additionalparam>
                                     <quiet>true</quiet>
+                                    <sourcepath>
+                                        gremlin-core/src/main/java:gremlin-driver/src/main/java
+                                    </sourcepath>
                                     <sourceFileIncludes>
                                         <!-- structure -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/*.java
-                                        </sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/structure/*.java
+                                        </include>
                                         <!-- io -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/*.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/structure/io/*.java
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/structure/io/graphml/GraphMLReader.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/structure/io/graphml/GraphMLWriter.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONReader.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONWriter.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/structure/io/gryo/GryoReader.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/structure/io/gryo/GryoWriter.java
-                                        </sourceFileInclude>
+                                        </include>
                                         <!-- process -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/*.java
-                                        </sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/process/*.java
+                                        </include>
                                         <!-- computer -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/computer/*.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/process/computer/*.java
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/process/computer/clustering/peerpressure/PeerPressureVertexProgram.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/process/computer/ranking/pagerank/PageRankVertexProgram.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/process/computer/traversal/TraversalVertexProgram.java
-                                        </sourceFileInclude>
+                                        </include>
                                         <!-- traversal -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/traversal/*.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/process/traversal/*.java
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.java
-                                        </sourceFileInclude>
+                                        </include>
                                         <!-- driver -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/driver/*.java
-                                        </sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/driver/*.java
+                                        </include>
                                     </sourceFileIncludes>
-                                    <includeDependencySources>true</includeDependencySources>
-                                    <dependencySourceIncludes>
-                                        <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
-                                    </dependencySourceIncludes>
-                                    <detectLinks>false</detectLinks>
-                                    <detectOfflineLinks>false</detectOfflineLinks>
+                                    <!-- add dependencies as necessary here - not sure why this is necessary, but assume
+                                         it is related to the <sourceFileIncludes> as ERROR messages do not appear on
+                                         build for the "full" javadocs -->
+                                    <additionalDependencies>
+                                        <additionalDependency>
+                                            <groupId>commons-configuration</groupId>
+                                            <artifactId>commons-configuration</artifactId>
+                                            <version>1.10</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.javatuples</groupId>
+                                            <artifactId>javatuples</artifactId>
+                                            <version>1.2</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>com.fasterxml.jackson.core</groupId>
+                                            <artifactId>jackson-databind</artifactId>
+                                            <version>2.5.3</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>com.fasterxml.jackson.core</groupId>
+                                            <artifactId>jackson-core</artifactId>
+                                            <version>2.5.3</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.tinkerpop</groupId>
+                                            <artifactId>gremlin-shaded</artifactId>
+                                            <version>${project.version}</version>
+                                        </additionalDependency>
+                                    </additionalDependencies>
                                 </configuration>
                             </execution>
                         </executions>
