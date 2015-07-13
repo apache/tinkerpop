@@ -40,18 +40,33 @@ import java.util.function.BiPredicate
  * By default, this implementation ensures that the variable "graph" is always a {@link Graph} instance and the
  * variable "g" is always a {@link GraphTraversalSource}.
  * <p/>
- * Users should typically extend this class to modify features.
+ * Users should extend this class to modify features as it has some helper methods to make developing a
+ * sandbox extension a bit easier than starting from a base groovy type checking extension.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class SandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDSL {
 
+    /**
+     * When assigned to the {@code #variableFilter} all variables are allowed.
+     */
     public static final BiPredicate<VariableExpression, Map<String,ClassNode>> VARIABLES_ALLOW_ALL = { var, types -> true }
 
+    /**
+     * When assigned to the {@code methodFilter} all methods are allowed.
+     */
     public static final BiPredicate<String, MethodNode> METHODS_ALLOW_ALL = { exp, method -> true }
 
+    /**
+     * Forces any variable named "graph" to be of type {@link Graph}.
+     */
     protected boolean graphIsAlwaysGraphInstance = true
+
+    /**
+     * Forces any variable named "g" to be of type {@link GraphTraversalSource}.
+     */
     protected boolean gIsAlwaysGraphTraversalSource = true
+
     protected BiPredicate<VariableExpression, Map<String,ClassNode>> variableFilter = VARIABLES_ALLOW_ALL
     protected BiPredicate<String, MethodNode> methodFilter = METHODS_ALLOW_ALL
 
@@ -122,9 +137,12 @@ class SandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDS
      * Helper method for those extending the sandbox.
      */
     static String prettyPrint(final ClassNode node) {
-        node.isArray()?"${prettyPrint(node.componentType)}[]":node.toString(false)
+        node.isArray() ? "${prettyPrint(node.componentType)}[]" : node.toString(false)
     }
 
+    /**
+     * Evaluates methods selected by groovy property magic (i.e. {@code Person.name} -> {@code Person.getName()})
+     */
     class PropertyExpressionEvaluator extends ClassCodeVisitorSupport {
         private final SourceUnit unit
         private final List<String> whiteList
