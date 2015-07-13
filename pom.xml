@@ -200,14 +200,10 @@ limitations under the License.
                         <phase>site</phase>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
-                            <additionalDependencies>
-                                <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
-                                <additionalDependency>
-                                    <groupId>org.apache.hadoop</groupId>
-                                    <artifactId>hadoop-core</artifactId>
-                                    <version>1.2.1</version>
-                                </additionalDependency>
-                            </additionalDependencies>
+                            <includeDependencySources>true</includeDependencySources>
+                            <dependencySourceIncludes>
+                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
+                            </dependencySourceIncludes>
                         </configuration>
                     </execution>
                     <execution>
@@ -437,14 +433,10 @@ limitations under the License.
                         <id>non-aggregate</id>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
-                            <additionalDependencies>
-                                <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
-                                <additionalDependency>
-                                    <groupId>org.apache.hadoop</groupId>
-                                    <artifactId>hadoop-core</artifactId>
-                                    <version>1.2.1</version>
-                                </additionalDependency>
-                            </additionalDependencies>
+                            <includeDependencySources>true</includeDependencySources>
+                            <dependencySourceIncludes>
+                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
+                            </dependencySourceIncludes>
                         </configuration>
                         <reports>
                             <report>javadoc</report>
@@ -454,14 +446,10 @@ limitations under the License.
                         <id>aggregate</id>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
-                            <additionalDependencies>
-                                <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
-                                <additionalDependency>
-                                    <groupId>org.apache.hadoop</groupId>
-                                    <artifactId>hadoop-core</artifactId>
-                                    <version>1.2.1</version>
-                                </additionalDependency>
-                            </additionalDependencies>
+                            <includeDependencySources>true</includeDependencySources>
+                            <dependencySourceIncludes>
+                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
+                            </dependencySourceIncludes>
                         </configuration>
                         <reports>
                             <report>aggregate</report>
@@ -761,18 +749,13 @@ limitations under the License.
                                 <configuration>
                                     <destDir>full</destDir>
                                     <additionalparam>-Xdoclint:none</additionalparam>
-                                    <sourcepath>
-                                        hadoop-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:tinkergraph-gremlin/src/main/java
-                                    </sourcepath>
                                     <quiet>true</quiet>
-                                    <additionalDependencies>
-                                        <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
-                                        <additionalDependency>
-                                            <groupId>org.apache.hadoop</groupId>
-                                            <artifactId>hadoop-core</artifactId>
-                                            <version>1.2.1</version>
-                                        </additionalDependency>
-                                    </additionalDependencies>
+                                    <includeDependencySources>true</includeDependencySources>
+                                    <dependencySourceIncludes>
+                                        <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
+                                    </dependencySourceIncludes>
+                                    <detectLinks>false</detectLinks>
+                                    <detectOfflineLinks>false</detectOfflineLinks>
                                 </configuration>
                             </execution>
                             <execution>
@@ -785,9 +768,6 @@ limitations under the License.
                                 <configuration>
                                     <destDir>core</destDir>
                                     <additionalparam>-Xdoclint:none</additionalparam>
-                                    <sourcepath>
-                                        gremlin-core/src/main/java:gremlin-driver/src/main/java
-                                    </sourcepath>
                                     <quiet>true</quiet>
                                     <sourceFileIncludes>
                                         <!-- structure -->
@@ -806,13 +786,13 @@ limitations under the License.
                                             org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONReader.java
                                         </sourceFileInclude>
                                         <sourceFileInclude>
-                                            org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONWrtier.java
+                                            org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONWriter.java
                                         </sourceFileInclude>
                                         <sourceFileInclude>
                                             org/apache/tinkerpop/gremlin/structure/io/gryo/GryoReader.java
                                         </sourceFileInclude>
                                         <sourceFileInclude>
-                                            org/apache/tinkerpop/gremlin/structure/io/gryo/GryoWrtier.java
+                                            org/apache/tinkerpop/gremlin/structure/io/gryo/GryoWriter.java
                                         </sourceFileInclude>
                                         <!-- process -->
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/process/*.java
@@ -839,14 +819,12 @@ limitations under the License.
                                         <sourceFileInclude>org/apache/tinkerpop/gremlin/driver/*.java
                                         </sourceFileInclude>
                                     </sourceFileIncludes>
-                                    <additionalDependencies>
-                                        <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
-                                        <additionalDependency>
-                                            <groupId>org.apache.hadoop</groupId>
-                                            <artifactId>hadoop-core</artifactId>
-                                            <version>1.2.1</version>
-                                        </additionalDependency>
-                                    </additionalDependencies>
+                                    <includeDependencySources>true</includeDependencySources>
+                                    <dependencySourceIncludes>
+                                        <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
+                                    </dependencySourceIncludes>
+                                    <detectLinks>false</detectLinks>
+                                    <detectOfflineLinks>false</detectOfflineLinks>
                                 </configuration>
                             </execution>
                         </executions>
