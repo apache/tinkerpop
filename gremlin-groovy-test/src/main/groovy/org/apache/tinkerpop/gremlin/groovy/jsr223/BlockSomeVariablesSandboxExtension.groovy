@@ -16,21 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy;
+package org.apache.tinkerpop.gremlin.groovy.jsr223
 
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import org.codehaus.groovy.control.customizers.CompilationCustomizer;
+import org.apache.tinkerpop.gremlin.structure.Graph
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.expr.VariableExpression
+
+import java.util.function.BiPredicate
 
 /**
- * Provides a way to plugin Groovy {@code CompilationCustomizer} implementations to the
- * {@link GremlinGroovyScriptEngine}.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface CompilerCustomizerProvider {
+class BlockSomeVariablesSandboxExtension extends SandboxExtension {
+    BlockSomeVariablesSandboxExtension() {
+        gIsAlwaysGraphTraversalSource = false
+        graphIsAlwaysGraphInstance = false
 
-    /**
-     * Create a new instance of a {@code CompilationCustomizer} to add to the {@link GremlinGroovyScriptEngine}.
-     */
-    public CompilationCustomizer create();
+        // variable names must have a length of 3 and they can't be Graph instances
+        variableFilter = (BiPredicate<VariableExpression, Map<String,ClassNode>>) { v, m ->
+            def varType = m[v.name].getTypeClass()
+            v.name.length() > 3 && !Graph.isAssignableFrom(varType)
+        }
+    }
 }

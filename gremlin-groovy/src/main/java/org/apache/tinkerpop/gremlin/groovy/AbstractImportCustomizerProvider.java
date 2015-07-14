@@ -136,7 +136,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
     }
 
     @Override
-    public CompilationCustomizer getCompilationCustomizer() {
+    public CompilationCustomizer create() {
         final ImportCustomizer ic = new ImportCustomizer();
 
         processImports(ic, imports);

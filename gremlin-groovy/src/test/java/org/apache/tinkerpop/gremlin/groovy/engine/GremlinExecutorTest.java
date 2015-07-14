@@ -20,14 +20,14 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTest;
+import org.apache.tinkerpop.gremlin.groovy.ThreadInterruptCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.TimedInterruptCustomizerProvider;
 import org.junit.Test;
-import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 
 import javax.script.Bindings;
 import javax.script.CompiledScript;
-import javax.script.ScriptException;
 import javax.script.SimpleBindings;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -435,9 +435,14 @@ public class GremlinExecutorTest {
 
     @Test
     public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
-        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
+        final Map<String,List<Object>> compilerCustomizerConfig = new HashMap<>();
+        final List<Object> args = new ArrayList<>();
+        args.add(50);
+        compilerCustomizerConfig.put(TimedInterruptCustomizerProvider.class.getName(), args);
+
         final Map<String, Object> config = new HashMap<>();
-        config.put("interruptionTimeout", 50l);
+        config.put("compilerCustomizerProviders", compilerCustomizerConfig);
+
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
@@ -462,12 +467,14 @@ public class GremlinExecutorTest {
         gremlinExecutor.close();
     }
 
-
     @Test
-    public void shouldSecureAll() throws Exception {
-        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
+    public void shouldInterruptWhile() throws Exception {
+        final Map<String,List<Object>> compilerCustomizerConfig = new HashMap<>();
+        compilerCustomizerConfig.put(ThreadInterruptCustomizerProvider.class.getName(), new ArrayList<>());
+
         final Map<String, Object> config = new HashMap<>();
-        config.put("sandbox", GremlinGroovyScriptEngineTest.DenyAll.class.getName());
+        config.put("compilerCustomizerProviders", compilerCustomizerConfig);
+
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
@@ -475,43 +482,22 @@ public class GremlinExecutorTest {
                         Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
                         config)
                 .create();
-        try {
-            gremlinExecutor.eval("c = new java.awt.Color(255, 255, 255)").get();
-            fail("Should have failed security");
-        } catch (Exception se) {
-            assertEquals(SecurityException.class, se.getCause().getClass());
-        } finally {
-            gremlinExecutor.close();
-        }
-    }
+        final AtomicBoolean asserted = new AtomicBoolean(false);
 
-    @Test
-    public void shouldSecureSome() throws Exception {
-        GroovyInterceptor.getApplicableInterceptors().forEach(GroovyInterceptor::unregister);
-        final Map<String, Object> config = new HashMap<>();
-        config.put("sandbox", GremlinGroovyScriptEngineTest.AllowSome.class.getName());
-        final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
-                .addEngineSettings("gremlin-groovy",
-                        Collections.emptyList(),
-                        Collections.emptyList(),
-                        Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
-                        config)
-                .create();
-        try {
-            gremlinExecutor.eval("c = 'new java.awt.Color(255, 255, 255)'").get();
-            fail("Should have failed security");
-        } catch (Exception se) {
-            assertEquals(SecurityException.class, se.getCause().getClass());
-        }
+        final Thread t = new Thread(() -> {
+            try {
+                gremlinExecutor.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}").get();
+            } catch (Exception se) {
+                asserted.set(se instanceof InterruptedException);
+            }
+        });
 
-        try {
-            final java.awt.Color c = (java.awt.Color) gremlinExecutor.eval("g = new java.awt.Color(255, 255, 255)").get();
-            assertEquals(java.awt.Color.class, c.getClass());
-        } catch (Exception ignored) {
-            fail("Should not have tossed an exception");
-        } finally {
-            gremlinExecutor.close();
-        }
+        t.start();
+        Thread.sleep(100);
+        t.interrupt();
+        while(t.isAlive()) {}
+
+        assertTrue(asserted.get());
     }
 
     @Test
