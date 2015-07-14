@@ -170,7 +170,7 @@ public class PropertyTest {
         public void shouldThrowOnGraphAddEdge() throws Exception {
             try {
                 final Vertex v = this.graph.addVertex();
-                v.addEdge("label", v, arguments);
+                v.addEdge("self", v, arguments);
                 fail(String.format("Call to addVertex should have thrown an exception with these arguments [%s]", arguments));
             } catch (Exception ex) {
                 validateException(expectedException, ex);
@@ -205,7 +205,7 @@ public class PropertyTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = FEATURE_PROPERTIES)
         public void shouldGetValueThatIsNotPresentOnEdge() {
             final Vertex v = graph.addVertex();
-            final Edge e = v.addEdge("label", v);
+            final Edge e = v.addEdge("self", v);
             try {
                 e.value("does-not-exist");
                 fail("Call to Element.value() with a key that is not present should throw an exception");
@@ -274,7 +274,7 @@ public class PropertyTest {
         public void shouldThrowOnGraphEdgeSetPropertyStandard() throws Exception {
             try {
                 final Vertex v = this.graph.addVertex();
-                v.addEdge("label", v).property(key, val);
+                v.addEdge("self", v).property(key, val);
                 fail(String.format("Call to Edge.setProperty should have thrown an exception with these arguments [%s, %s]", key, val));
             } catch (Exception ex) {
                 validateException(expectedException, ex);
