@@ -139,6 +139,9 @@ limitations under the License.
         <skipPerformanceTests>true</skipPerformanceTests>
         <slf4j.version>1.7.12</slf4j.version>
         <hadoop.version>1.2.1</hadoop.version>
+        <commons.configuration.version>1.10</commons.configuration.version>
+        <java.tuples.version>1.2</java.tuples.version>
+        <jackson.version>2.5.3</jackson.version>
         <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
         <muteTestLogs>false</muteTestLogs>
     </properties>
@@ -465,7 +468,7 @@ limitations under the License.
             <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
-                <version>1.10</version>
+                <version>${commons.configuration.version}</version>
                 <exclusions>
                     <!-- self-conflict -->
                     <exclusion>
@@ -826,22 +829,22 @@ limitations under the License.
                                         <additionalDependency>
                                             <groupId>commons-configuration</groupId>
                                             <artifactId>commons-configuration</artifactId>
-                                            <version>1.10</version>
+                                            <version>${commons.configuration.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>org.javatuples</groupId>
                                             <artifactId>javatuples</artifactId>
-                                            <version>1.2</version>
+                                            <version>${java.tuples.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>com.fasterxml.jackson.core</groupId>
                                             <artifactId>jackson-databind</artifactId>
-                                            <version>2.5.3</version>
+                                            <version>${jackson.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>com.fasterxml.jackson.core</groupId>
                                             <artifactId>jackson-core</artifactId>
-                                            <version>2.5.3</version>
+                                            <version>${jackson.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>org.apache.tinkerpop</groupId>
