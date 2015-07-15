@@ -98,7 +98,6 @@ TinkerPop3 uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TI
 ** Everything else is an `improvement` in the sense that any other work is an enhancement to the current codebase.
 * The "component" should be representative of the primary area of code that it applies to and all issues should have this property set.
 * Issues are not assigned "labels".
-* Until there is an official release "affected version" should be left empty.
 
 Release Process
 ~~~~~~~~~~~~~~~

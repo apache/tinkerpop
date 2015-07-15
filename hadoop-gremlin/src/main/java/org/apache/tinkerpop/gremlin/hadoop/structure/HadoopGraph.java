@@ -67,15 +67,18 @@ import java.util.stream.Stream;
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
         method = "g_V_matchXa_knows_b__c_knows_bX",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
+        computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
         method = "g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
+        computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
         method = "g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
+        computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
         method = "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
@@ -83,15 +86,18 @@ import java.util.stream.Stream;
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
         method = "g_V_matchXa_knows_b__c_knows_bX",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
+        computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
         method = "g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
+        computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
         method = "g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
+        computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
         method = "g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
@@ -127,15 +133,18 @@ import java.util.stream.Stream;
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldNotAllowNullMemoryKeys",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
+        computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldNotAllowSettingUndeclaredMemoryKeys",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
+        computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldHaveConsistentMemoryVertexPropertiesAndExceptions",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
+        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.",
+        computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileTest$Traversals",
         method = "g_V_out_out_profile_grateful",

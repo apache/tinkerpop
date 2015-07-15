@@ -43,7 +43,7 @@ limitations under the License.
         <dependency>
             <groupId>org.javatuples</groupId>
             <artifactId>javatuples</artifactId>
-            <version>1.2</version>
+            <version>${java.tuples.version}</version>
         </dependency>
         <dependency>
             <groupId>com.carrotsearch</groupId>
@@ -53,7 +53,7 @@ limitations under the License.
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.5.3</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.jcabi</groupId>

@@ -28,13 +28,13 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class ManagedConcurrentValueMap<K, V> {
+class ManagedConcurrentValueMap<K, V> {
     private final ConcurrentHashMap<K, ManagedReference<V>> internalMap;
     private ReferenceBundle bundle;
 
     public ManagedConcurrentValueMap(final ReferenceBundle bundle) {
         this.bundle = bundle;
-        internalMap = new ConcurrentHashMap<K, ManagedReference<V>>();
+        internalMap = new ConcurrentHashMap<>();
     }
 
     /**
@@ -76,6 +76,9 @@ public class ManagedConcurrentValueMap<K, V> {
         internalMap.put(key, ref);
     }
 
+    /**
+     * Clear the map.
+     */
     public void clear() {
         internalMap.clear();
     }

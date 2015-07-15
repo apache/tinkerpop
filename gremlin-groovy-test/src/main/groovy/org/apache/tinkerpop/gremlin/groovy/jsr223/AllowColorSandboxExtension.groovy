@@ -16,21 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy;
+package org.apache.tinkerpop.gremlin.groovy.jsr223
 
-import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
-import org.codehaus.groovy.control.customizers.CompilationCustomizer;
+import org.codehaus.groovy.ast.MethodNode
+
+import java.util.function.BiPredicate
 
 /**
- * Provides a way to plugin Groovy {@code CompilationCustomizer} implementations to the
- * {@link GremlinGroovyScriptEngine}.
- *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface CompilerCustomizerProvider {
-
-    /**
-     * Create a new instance of a {@code CompilationCustomizer} to add to the {@link GremlinGroovyScriptEngine}.
-     */
-    public CompilationCustomizer create();
+class AllowColorSandboxExtension extends SandboxExtension {
+    AllowColorSandboxExtension() {
+        def methodWhiteList = ["java\\.awt\\.Color#<init>"]
+        methodFilter = (BiPredicate<String, MethodNode>) { descriptor, method ->
+            methodWhiteList.any { descriptor =~ it }
+        }
+    }
 }

@@ -14,13 +14,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-TinkerPop3 CHANGEGLOG
+TinkerPop3 CHANGELOG
 =====================
 
 TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------------------------------------
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
+
+TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Adjusted configuration for javadoc generation to eliminate error messages.
+* Removed "reserved" graph concept names from tests (e.g. "label", "edge", "value") to support the convention of avoiding these strings for property names.
+* Introduced `GraphProvider.Descriptor` which annotates a `GraphProvider` implementation to describe what `GraphComputer` implementation will be used.
+* Modified `OptOut` to include a `computers` attribute which allows the `Graph` to opt-out of computer-based tests for specific computation engines.
+* Added a `SandboxExtension` that can be plugged into `TypeCheckedCustomizerProvider` and `CompileStaticCustomizerProvider` to control classes and methods that can be used in the `GremlinGroovyScriptEngine`.
+* Added a number of new `ImportCustomizerProvider` implementations such as, `TimedInterruptCustomizerProvider`, `TypeCheckedCustomizerProvider` and others.
+* Refactored `GremlinGroovyScriptEngine` to make more general use of `ImportCustomizerProvider` implementations.
+* Removed dependency on `groovy-sandbox` from the `gremlin-groovy` module.
 
 TinkerPop 3.0.0 (Release Date: July 9, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
