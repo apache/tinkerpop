@@ -26,6 +26,7 @@ TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Adjust configuration for javadoc generation to eliminate error messages.
+* Removed "reserved" graph concept names from tests (e.g. "label", "edge", "value") to support the convention of avoiding these strings for property names.
 
 TinkerPop 3.0.0 (Release Date: July 9, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
