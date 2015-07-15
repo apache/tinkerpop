@@ -369,6 +369,7 @@ The above examples show how to ignore individual tests.  It is also possible to:
 
 * Ignore an entire test case (i.e. all the methods within the test) by setting the `method` to "*".
 * Ignore a "base" test class such that test that extend from those classes will all be ignored.  This style of ignoring is useful for Gremlin "process" tests that have bases classes that are extended by various Gremlin flavors (e.g. groovy).
+* Ignore a `GraphComputer` test based on the type of `GraphComputer` being used.  Specify the "computer" attribute on the `OptOut` (which is an array specification) which should have a value of the `GraphComputer` implementation class that should ignore that test. This attribute should be left empty for "standard" execution and by default all `GraphComputer` implementations will be included in the `OptOut` so if there are multiple implementations, explicitly specify the ones that should be excluded.
 
 Also note that some of the tests in the Gremlin Test Suite are parameterized tests and require an additional level of specificity to be properly ignored.  To ignore these types of tests, examine the name template of the parameterized tests.  It is defined by a Java annotation that looks like this:
 
