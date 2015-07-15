@@ -26,17 +26,17 @@ import org.junit.runner.Runner;
 import org.junit.runner.manipulation.Filter;
 import org.junit.runner.manipulation.NoTestsRemainException;
 import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
 
-import java.lang.annotation.*;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -82,10 +82,15 @@ public abstract class AbstractGremlinSuite extends Suite {
         // this class should be annotated with GraphProviderClass.  Failure to do so will toss an InitializationError
         final Pair<Class<? extends GraphProvider>, Class<? extends Graph>> pair = getGraphProviderClass(klass);
 
+        // the GraphProvider.Descriptor is only needed right now if the test if for a computer engine - an
+        // exception is thrown if it isn't present.
+        final Optional<GraphProvider.Descriptor> graphProviderDescriptor = getGraphProviderDescriptor(traversalEngineType, pair.getValue0());
+
         // validate public acknowledgement of the test suite and filter out tests ignored by the implementation
         validateOptInToSuite(pair.getValue1());
         validateOptInAndOutAnnotationsOnGraph(pair.getValue1());
-        registerOptOuts(pair.getValue1());
+
+        registerOptOuts(pair.getValue1(), graphProviderDescriptor, traversalEngineType);
 
         try {
             final GraphProvider graphProvider = pair.getValue0().newInstance();
@@ -94,6 +99,18 @@ public abstract class AbstractGremlinSuite extends Suite {
         } catch (Exception ex) {
             throw new InitializationError(ex);
         }
+    }
+
+    private Optional<GraphProvider.Descriptor> getGraphProviderDescriptor(final TraversalEngine.Type traversalEngineType,
+                                                                          final Class<? extends GraphProvider> klass) throws InitializationError {
+        final GraphProvider.Descriptor descriptorAnnotation = klass.getAnnotation(GraphProvider.Descriptor.class);
+        if (traversalEngineType == TraversalEngine.Type.COMPUTER) {
+            // can't be null if this is graph computer business
+            if (null == descriptorAnnotation)
+                throw new InitializationError(String.format("For 'computer' tests, '%s' must have a GraphProvider.Descriptor annotation", klass.getName()));
+        }
+
+        return Optional.ofNullable(descriptorAnnotation);
     }
 
     private void validateOptInToSuite(final Class<? extends Graph> klass) throws InitializationError {
@@ -105,8 +122,10 @@ public abstract class AbstractGremlinSuite extends Suite {
                 throw new InitializationError(String.format("The %s will not run for this Graph until it is publicly acknowledged with the @OptIn annotation on the Graph instance itself", this.getClass().getSimpleName()));
     }
 
-    private void registerOptOuts(final Class<? extends Graph> klass) throws InitializationError {
-        final Graph.OptOut[] optOuts = klass.getAnnotationsByType(Graph.OptOut.class);
+    private void registerOptOuts(final Class<? extends Graph> graphClass,
+                                 final Optional<GraphProvider.Descriptor> graphProviderDescriptor,
+                                 final TraversalEngine.Type traversalEngineType) throws InitializationError {
+        final Graph.OptOut[] optOuts = graphClass.getAnnotationsByType(Graph.OptOut.class);
 
         if (optOuts != null && optOuts.length > 0) {
             // validate annotation - test class and reason must be set
@@ -114,7 +133,7 @@ public abstract class AbstractGremlinSuite extends Suite {
                 throw new InitializationError("Check @IgnoreTest annotations - all must have a 'test' and 'reason' set");
 
             try {
-                filter(new OptOutTestFilter(optOuts));
+                filter(new OptOutTestFilter(optOuts, graphProviderDescriptor, traversalEngineType));
             } catch (NoTestsRemainException ex) {
                 throw new InitializationError(ex);
             }
@@ -144,7 +163,7 @@ public abstract class AbstractGremlinSuite extends Suite {
      * Filter a list of test classes through the GREMLIN_TESTS environment variable list.
      */
     private static Class<?>[] filterSpecifiedTests(final Class<?>[] allTests) {
-        if (null == allTests) return allTests;
+        if (null == allTests) return null;
 
         Class<?>[] filteredTests;
         final String override = System.getenv().getOrDefault("GREMLIN_TESTS", "");
@@ -226,36 +245,31 @@ public abstract class AbstractGremlinSuite extends Suite {
          */
         private final List<Graph.OptOut> entireTestCaseToIgnore;
 
-        public OptOutTestFilter(final Graph.OptOut[] optOuts) {
+        private final Optional<GraphProvider.Descriptor> graphProviderDescriptor;
+        private final TraversalEngine.Type traversalEngineType;
+
+        public OptOutTestFilter(final Graph.OptOut[] optOuts,
+                                final Optional<GraphProvider.Descriptor> graphProviderDescriptor,
+                                final TraversalEngine.Type traversalEngineType) {
+            this.graphProviderDescriptor = graphProviderDescriptor;
+            this.traversalEngineType = traversalEngineType;
+
             // split the tests to filter into two groups - true represents those that should ignore a whole
-            final Map<Boolean, List<Graph.OptOut>> split = Arrays.stream(optOuts).collect(
-                    Collectors.groupingBy(optOut -> optOut.method().equals("*")));
+            final Map<Boolean, List<Graph.OptOut>> split = Arrays.stream(optOuts)
+                    .filter(this::checkGraphProviderDescriptorForComputer)
+                    .collect(Collectors.groupingBy(optOut -> optOut.method().equals("*")));
 
             final List<Graph.OptOut> optOutsOfIndividualTests = split.getOrDefault(Boolean.FALSE, Collections.emptyList());
             individualSpecificTestsToIgnore = optOutsOfIndividualTests.stream()
                     .filter(ignoreTest -> !ignoreTest.method().equals("*"))
-                    .filter(ignoreTest -> {
-                        try {
-                            final Class testClass = Class.forName(ignoreTest.test());
-                            return !Modifier.isAbstract(testClass.getModifiers());
-                        } catch (Exception ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    })
+                    .filter(allowAbstractMethod(false))
                     .<Pair>map(ignoreTest -> Pair.with(ignoreTest.test(), ignoreTest.specific().isEmpty() ? ignoreTest.method() : String.format("%s[%s]", ignoreTest.method(), ignoreTest.specific())))
                     .<Description>map(p -> Description.createTestDescription(p.getValue0().toString(), p.getValue1().toString()))
                     .collect(Collectors.toList());
 
             testGroupToIgnore = optOutsOfIndividualTests.stream()
                     .filter(ignoreTest -> !ignoreTest.method().equals("*"))
-                    .filter(ignoreTest -> {
-                        try {
-                            final Class testClass = Class.forName(ignoreTest.test());
-                            return Modifier.isAbstract(testClass.getModifiers());
-                        } catch (Exception ex) {
-                            throw new RuntimeException(ex);
-                        }
-                    })
+                    .filter(allowAbstractMethod(true))
                     .<Pair>map(ignoreTest -> Pair.with(ignoreTest.test(), ignoreTest.specific().isEmpty() ? ignoreTest.method() : String.format("%s[%s]", ignoreTest.method(), ignoreTest.specific())))
                     .<Description>map(p -> Description.createTestDescription(p.getValue0().toString(), p.getValue1().toString()))
                     .collect(Collectors.toList());
@@ -295,6 +309,35 @@ public abstract class AbstractGremlinSuite extends Suite {
         public String describe() {
             return String.format("Method %s",
                     String.join(",", individualSpecificTestsToIgnore.stream().map(Description::getDisplayName).collect(Collectors.toList())));
+        }
+
+        private Predicate<Graph.OptOut> allowAbstractMethod(final boolean allow) {
+            return optOut -> {
+                try {
+                    // ignore those methods in process that are defined as abstract methods
+                    final Class testClass = Class.forName(optOut.test());
+                    if (allow)
+                        return Modifier.isAbstract(testClass.getModifiers());
+                    else
+                        return !Modifier.isAbstract(testClass.getModifiers());
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            };
+        }
+
+        private boolean checkGraphProviderDescriptorForComputer(final Graph.OptOut optOut) {
+            // immediately include the ignore if this is a standard tests suite (i.e. not computer)
+            // or if the OptOut doesn't specify any computers to filter
+            if (traversalEngineType == TraversalEngine.Type.STANDARD
+                    || optOut.computers().length == 0) {
+                return true;
+            }
+
+            // can assume that that GraphProvider.Descriptor is not null at this point.  a test should
+            // only opt out if it matches the expected computer
+            final boolean x = Stream.of(optOut.computers()).anyMatch(c -> c == graphProviderDescriptor.get().computer());
+            return Stream.of(optOut.computers()).anyMatch(c -> c == graphProviderDescriptor.get().computer());
         }
     }
 }

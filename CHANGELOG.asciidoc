@@ -25,8 +25,10 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Adjust configuration for javadoc generation to eliminate error messages.
+* Adjusted configuration for javadoc generation to eliminate error messages.
 * Removed "reserved" graph concept names from tests (e.g. "label", "edge", "value") to support the convention of avoiding these strings for property names.
+* Introduced `GraphProvider.Descriptor` which annotates a `GraphProvider` implementation to describe what `GraphComputer` implementation will be used.
+* Modified `OptOut` to include a `computers` attribute which allows the `Graph` to opt-out of computer-based tests for specific computation engines.
 
 TinkerPop 3.0.0 (Release Date: July 9, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

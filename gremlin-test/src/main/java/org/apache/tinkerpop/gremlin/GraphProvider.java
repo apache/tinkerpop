@@ -19,7 +19,9 @@
 package org.apache.tinkerpop.gremlin;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
@@ -39,6 +41,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -258,4 +265,22 @@ public interface GraphProvider {
      * by the vendor implementations.
      */
     public Set<Class> getImplementations();
+
+    /**
+     * An annotation to be applied to a {@code GraphProvider} implementation that provides additional information
+     * about its intentions. The {@code Descriptor} is required by those {@code GraphProvider} implementations
+     * that will be assigned to test suites that use {@link TraversalEngine.Type#COMPUTER}.
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @Inherited
+    public @interface Descriptor {
+
+        /**
+         * The {@link GraphComputer} implementation that the {@code GraphProvider} will use when it constructs
+         * a {@link Traversal} with {@link #traversal(Graph)} or {@link #traversal(Graph, TraversalStrategy[])}.
+         * This value should be null if a {@link GraphComputer} is not being used.
+         */
+        public Class<? extends GraphComputer> computer();
+    }
 }

@@ -18,7 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.process.computer.spark;
 
+import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -26,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@GraphProvider.Descriptor(computer = SparkGraphComputer.class)
 public final class HadoopSparkGraphProvider extends HadoopGraphProvider {
 
     public GraphTraversalSource traversal(final Graph graph) {

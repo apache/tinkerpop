@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
@@ -1121,6 +1122,15 @@ public interface Graph extends AutoCloseable, Host {
          * For parameterized tests specify the name of the test itself without its "square brackets".
          */
         public String specific() default "";
+
+        /**
+         * The list of {@link GraphComputer} implementations that a test should opt-out from using (i.e. other
+         * graph computers not in this list will execute the test).  This setting should only be included when
+         * the test is one that uses the {@link ComputerTraversalEngine} - it will otherwise be ignored.  By
+         * default, an empty array is assigned and it is thus assumed that all computers are excluded when an
+         * {@code OptOut} annotation is used, therefore this value must be overridden to be more specific.
+         */
+        public Class<? extends GraphComputer>[] computers() default { };
     }
 
     /**
