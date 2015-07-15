@@ -23,12 +23,15 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.groovy.CompileStaticCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.TypeCheckedCustomizerProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.config.YamlConfiguration;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -43,10 +46,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -70,7 +75,7 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldLoadImports() throws Exception {
-        final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
         try {
             engineNoImports.eval("Vertex.class.getName()");
             fail("Should have thrown an exception because no imports were supplied");
@@ -145,7 +150,7 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
     public void shouldClearBindingsBetweenEvals() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine();
         engine.put("g", g);
-        Assert.assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()"));
+        assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()"));
 
         final Bindings bindings = engine.createBindings();
         bindings.put("g", g);

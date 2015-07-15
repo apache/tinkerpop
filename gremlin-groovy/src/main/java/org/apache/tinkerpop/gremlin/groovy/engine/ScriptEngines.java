@@ -18,14 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.engine;
 
+import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.SecurityCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineFactory;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
-import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +37,10 @@ import javax.script.ScriptException;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Holds a batch of the configured {@code ScriptEngine} objects for the server.
@@ -329,25 +331,37 @@ public class ScriptEngines implements AutoCloseable {
         // generically with the DependencyManager interface, but going to wait to see how other ScriptEngines
         // develop for TinkerPop3 before committing too deeply here to any specific way of doing this.
         if (language.equals(gremlinGroovyScriptEngineFactory.getLanguageName())) {
-            final String clazz = (String) config.getOrDefault("sandbox", "");
-            SecurityCustomizerProvider securityCustomizerProvider = null;
-            if (!clazz.isEmpty()) {
+            final List<CompilerCustomizerProvider> providers = new ArrayList<>();
+            providers.add(new DefaultImportCustomizerProvider(imports, staticImports));
+
+            // the key to the config of the compilerCustomizerProvider is the fully qualified classname of a
+            // CompilerCustomizerProvider.  the value is a list of arguments to pass to an available constructor.
+            // the arguments must match in terms of type, so given that configuration typically comes from yaml
+            // or properties file, it is best to stick to primitive values when possible here for simplicity.
+            final Map<String,Object> compilerCustomizerProviders = (Map<String,Object>) config.getOrDefault(
+                    "compilerCustomizerProviders", Collections.emptyMap());
+            compilerCustomizerProviders.forEach((k,v) -> {
                 try {
-                    final Class providerClass = Class.forName(clazz);
-                    final GroovyInterceptor interceptor = (GroovyInterceptor) providerClass.newInstance();
-                    securityCustomizerProvider = new SecurityCustomizerProvider(interceptor);
-                } catch (Exception ex) {
-                    logger.warn("Could not instantiate GroovyInterceptor implementation [%s] for the SecurityCustomizerProvider.  It will not be applied.", clazz);
-                    securityCustomizerProvider = null;
+                    final Class providerClass = Class.forName(k);
+                    if (v != null && v instanceof List && ((List) v).size() > 0) {
+                        final List<Object> l = (List) v;
+                        final Object[] args = new Object[l.size()];
+                        l.toArray(args);
+
+                        final Class<?>[] argClasses = new Class<?>[args.length];
+                        Stream.of(args).map(a -> a.getClass()).collect(Collectors.toList()).toArray(argClasses);
+                        final Constructor constructor = providerClass.getConstructor(argClasses);
+                        providers.add((CompilerCustomizerProvider) constructor.newInstance(args));
+                    } else {
+                        providers.add((CompilerCustomizerProvider) providerClass.newInstance());
+                    }
+                } catch(Exception ex) {
+                    logger.warn("Could not instantiate CompilerCustomizerProvider implementation [{}].  It will not be applied.", k);
                 }
-            }
+            });
 
-            final long interruptionTimeout = ((Number) config.getOrDefault("interruptionTimeout",
-                    GremlinGroovyScriptEngine.DEFAULT_SCRIPT_EVALUATION_TIMEOUT)).longValue();
-
-            return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(
-                    new DefaultImportCustomizerProvider(imports, staticImports), securityCustomizerProvider,
-                    interruptionTimeout));
+            final CompilerCustomizerProvider[] providerArray = new CompilerCustomizerProvider[providers.size()];
+            return Optional.of((ScriptEngine) new GremlinGroovyScriptEngine(providers.toArray(providerArray)));
         } else {
             return Optional.ofNullable(SCRIPT_ENGINE_MANAGER.getEngineByName(language));
         }
