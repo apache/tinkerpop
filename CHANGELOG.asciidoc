@@ -22,6 +22,11 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
+TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Adjust configuration for javadoc generation to eliminate error messages.
+
 TinkerPop 3.0.0 (Release Date: July 9, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
