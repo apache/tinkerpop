@@ -446,17 +446,17 @@ public class GremlinExecutorTest {
                         config)
                 .create();
 
-        for (int ix = 0; ix < 10; ix++) {
+        for (int ix = 0; ix < 5; ix++) {
             try {
                 // this script takes 10 ms longer than the interruptionTimeout
-                gremlinExecutor.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 60) {}").get();
+                gremlinExecutor.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 100) {}").get();
                 fail("This should have timed out");
             } catch (Exception se) {
                 assertEquals(TimeoutException.class, se.getCause().getClass());
             }
 
             // this script takes 10 ms less than the interruptionTimeout
-            assertEquals("test", gremlinExecutor.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 40) {};'test'").get());
+            assertEquals("test", gremlinExecutor.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 20) {};'test'").get());
         }
 
         gremlinExecutor.close();
