@@ -277,7 +277,6 @@ MIT Licenses
 
 The Apache TinkerPop project bundles the following components under the MIT License:
 
-     Groovy Sandbox (org.kohsuke:groovy-sandbox - http://kohsuke.org/groovy-sandbox/)
      Mockito (org.mockito:mockito-all - http://www.mockito.org)
      JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j - http://www.slf4j.org)
      SLF4J API Module (org.slf4j:slf4j-api - http://www.slf4j.org)
