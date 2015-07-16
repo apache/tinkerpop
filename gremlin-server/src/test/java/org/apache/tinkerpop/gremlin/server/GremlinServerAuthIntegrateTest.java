@@ -47,7 +47,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         // use a credentials graph with one user in it: stephen/password
         final Map<String,Object> authConfig = new HashMap<>();
         authConfig.put("gremlin.graph", TinkerGraph.class.getName());
-        authConfig.put("gremlin.server.credentials", "data/credentials.kryo");
+        authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_LOCATION, "data/credentials.kryo");
 
         authSettings.config = authConfig;
         settings.authentication = authSettings;

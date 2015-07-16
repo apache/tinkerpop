@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class AllowAllAuthenticator implements Authenticator {
+public final class AllowAllAuthenticator implements Authenticator {
     private static final SaslNegotiator AUTHENTICATOR_INSTANCE = new Negotiator();
 
     public boolean requireAuthentication(){
@@ -40,7 +40,7 @@ public class AllowAllAuthenticator implements Authenticator {
 
     private static class Negotiator implements SaslNegotiator {
 
-        public byte[] evaluateResponse(byte[] clientResponse) throws AuthenticationException {
+        public byte[] evaluateResponse(final byte[] clientResponse) throws AuthenticationException {
             return null;
         }
 

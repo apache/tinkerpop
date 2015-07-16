@@ -46,6 +46,8 @@ public class SimpleAuthenticator implements Authenticator {
     private static final byte NUL = 0;
     private CredentialGraph credentialStore;
 
+    public static final String CONFIG_CREDENTIALS_LOCATION = "gremlin.server.credentials";
+
     @Override
     public boolean requireAuthentication() {
         return true;
@@ -54,25 +56,28 @@ public class SimpleAuthenticator implements Authenticator {
     @Override
     public void setup(final Map<String,Object> config) {
         if (null == config) {
-            throw new IllegalStateException(String.format(
+            throw new IllegalArgumentException(String.format(
                     "Could not configure a %s - provide a 'config' in the 'authentication' settings",
                     SimpleAuthenticator.class.getName()));
         }
 
         final Configuration conf = new MapConfiguration(config);
+        if (!config.containsKey(CONFIG_CREDENTIALS_LOCATION)) {
+            throw new IllegalStateException(String.format(
+                    "Credentials configuration for TinkerGraph should include %s key that points to a gryo file containing credentials data", CONFIG_CREDENTIALS_LOCATION));
+        }
+
         final Graph graph = GraphFactory.open(conf);
 
         if (graph instanceof TinkerGraph) {
             final TinkerGraph tinkerGraph = (TinkerGraph) graph;
             tinkerGraph.createIndex(PROPERTY_USERNAME, Vertex.class);
 
-            if (config.containsKey("gremlin.server.credentials")) {
-                final String location = (String) config.get("gremlin.server.credentials");
-                try {
-                    tinkerGraph.io(IoCore.gryo()).readGraph(location);
-                } catch (IOException e) {
-                    logger.warn("Could not read credentials graph from {} - authentication is enabled, but with an empty user database", location);
-                }
+            final String location = (String) config.get(CONFIG_CREDENTIALS_LOCATION);
+            try {
+                tinkerGraph.io(IoCore.gryo()).readGraph(location);
+            } catch (IOException e) {
+                logger.warn("Could not read credentials graph from {} - authentication is enabled, but with an empty user database", location);
             }
         }
 
