@@ -130,7 +130,8 @@ Release Process
 . Review and close the staging repository (Apache Nexus at link:https://repository.apache.org/[https://repository.apache.org/])
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/x.y.z`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/x.y.z`
-. `ls dev/x.y.z/ | grep '\-\(distribution\|source\-release\)\.zip' | sed -e 's/\(^[^ ]*\)-distribution\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-bin\2/' -e 's/\(^[^ ]*\)-source-release\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-src\2/' | /bin/sh`
+. `ls dev/x.y.z/ | grep '\-\(distribution\|source\-release\)\.zip' | sed -e 's/\(^[^ ]*\)-distribution\([^ ]*\)/cp dev\/x.y.z\/\1-distribution\2 release\/x.y.z\/\1-bin\2/' -e 's/\(^[^ ]*\)-source-release\([^ ]*\)/cp dev\/x.y.z\/\1-source-release\2 release\/x.y.z\/\1-src\2/' | /bin/sh`
+. `cp dev/x.y.z/KEYS release/x.y.z/KEYS`
 . `cd release; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
