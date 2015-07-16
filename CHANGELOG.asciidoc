@@ -17,6 +17,12 @@ limitations under the License.
 TinkerPop3 CHANGELOG
 =====================
 
+
+TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
+--------------------------------------------------
+
+image::http://www.tinkerpop.com/docs/current/images/gremlin-gangster.png[width=225]
+
 TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------------------------------------
 
