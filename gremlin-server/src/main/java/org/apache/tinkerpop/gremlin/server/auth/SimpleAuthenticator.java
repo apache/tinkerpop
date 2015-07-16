@@ -46,7 +46,8 @@ public class SimpleAuthenticator implements Authenticator {
     private static final byte NUL = 0;
     private CredentialGraph credentialStore;
 
-    public static final String CONFIG_CREDENTIALS_LOCATION = "gremlin.server.credentials";
+    public static final String CONFIG_CREDENTIALS_LOCATION = "credentialsDbLocation";
+    public static final String CONFIG_CREDENTIALS_DB = "credentialsDb";
 
     @Override
     public boolean requireAuthentication() {
@@ -61,15 +62,19 @@ public class SimpleAuthenticator implements Authenticator {
                     SimpleAuthenticator.class.getName()));
         }
 
-        final Configuration conf = new MapConfiguration(config);
-        if (!config.containsKey(CONFIG_CREDENTIALS_LOCATION)) {
+        if (!config.containsKey(CONFIG_CREDENTIALS_DB)) {
             throw new IllegalStateException(String.format(
-                    "Credentials configuration for TinkerGraph should include %s key that points to a gryo file containing credentials data", CONFIG_CREDENTIALS_LOCATION));
+                    "Credentials configuration missing the %s key that points to a graph config file", CONFIG_CREDENTIALS_DB));
         }
 
-        final Graph graph = GraphFactory.open(conf);
+        final Graph graph = GraphFactory.open((String) config.get(CONFIG_CREDENTIALS_DB));
 
         if (graph instanceof TinkerGraph) {
+            if (!config.containsKey(CONFIG_CREDENTIALS_LOCATION)) {
+                throw new IllegalStateException(String.format(
+                        "Credentials configuration for TinkerGraph missing the %s key that points to a gryo file containing credentials data", CONFIG_CREDENTIALS_LOCATION));
+            }
+
             final TinkerGraph tinkerGraph = (TinkerGraph) graph;
             tinkerGraph.createIndex(PROPERTY_USERNAME, Vertex.class);
 

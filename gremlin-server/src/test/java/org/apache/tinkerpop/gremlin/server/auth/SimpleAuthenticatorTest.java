@@ -63,7 +63,7 @@ public class SimpleAuthenticatorTest {
     @Test
     public void shouldUseTinkerGraphForCredentialsStoreAndSucceed() throws Exception {
         final Map<String,Object> config = new HashMap<>();
-        config.put("gremlin.graph", TinkerGraph.class.getName());
+        config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-empty.properties");
         config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_LOCATION, "data/credentials.kryo");
         authenticator.setup(config);
 
@@ -83,7 +83,7 @@ public class SimpleAuthenticatorTest {
     @Test(expected = AuthenticationException.class)
     public void shouldUseTinkerGraphForCredentialsStoreAndFail() throws Exception {
         final Map<String,Object> config = new HashMap<>();
-        config.put("gremlin.graph", TinkerGraph.class.getName());
+        config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-empty.properties");
         config.put(SimpleAuthenticator.CONFIG_CREDENTIALS_LOCATION, "data/credentials.kryo");
         authenticator.setup(config);
 
