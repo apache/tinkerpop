@@ -59,6 +59,8 @@ public enum ResponseStatusCode {
      */
     FORBIDDEN(403),
 
+    AUTHENTICATE(407),
+
     /**
      * The request message was not properly formatted which means it could not be parsed at all or the "op" code was
      * not recognized such that Gremlin Server could properly route it for processing.  Check the message format and
