@@ -46,6 +46,11 @@ limitations under the License.
             <artifactId>commons-collections</artifactId>
             <version>3.2.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.3m</version>
+        </dependency>
         <!-- METRICS -->
         <dependency>
             <groupId>com.codahale.metrics</groupId>

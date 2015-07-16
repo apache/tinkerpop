@@ -25,6 +25,9 @@ import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticationHandler;
+import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.handler.IteratorHandler;
 import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
 import org.apache.tinkerpop.gremlin.server.handler.OpSelectorHandler;
@@ -70,12 +73,15 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     protected static final String PIPELINE_OP_SELECTOR = "op-selector";
     protected static final String PIPELINE_RESULT_ITERATOR_HANDLER = "result-iterator-handler";
     protected static final String PIPELINE_OP_EXECUTOR = "op-executor";
+    protected static final String PIPELINE_AUTHENTICATOR = "authenticator";
 
     protected final Map<String, MessageSerializer> serializers = new HashMap<>();
 
     private OpSelectorHandler opSelectorHandler;
     private OpExecutorHandler opExecutorHandler;
     private IteratorHandler iteratorHandler;
+
+    private AuthenticationHandler authenticationHandler;
 
     /**
      * This method is called from within {@link #initChannel(io.netty.channel.socket.SocketChannel)} just after
@@ -93,11 +99,11 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
 
     @Override
     public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
-        this.settings = serverGremlinExecutor.getSettings();
-        this.gremlinExecutor = serverGremlinExecutor.getGremlinExecutor();
-        this.graphManager = serverGremlinExecutor.getGraphManager();
-        this.gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
-        this.scheduledExecutorService = serverGremlinExecutor.getScheduledExecutorService();
+        settings = serverGremlinExecutor.getSettings();
+        gremlinExecutor = serverGremlinExecutor.getGremlinExecutor();
+        graphManager = serverGremlinExecutor.getGraphManager();
+        gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
+        scheduledExecutorService = serverGremlinExecutor.getScheduledExecutorService();
 
         // instantiate and configure the serializers that gremlin server will use - could error out here
         // and fail the server startup
@@ -108,10 +114,15 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 Optional.ofNullable(createSSLContext(settings)) : Optional.empty();
         if (sslContext.isPresent()) logger.info("SSL enabled");
 
+        // configure authentication - null means don't bother to add authentication to the pipeline
+        final Authenticator authenticator = createAuthenticator(settings.authentication);
+        authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
+                null : new AuthenticationHandler(authenticator);
+
         // these handlers don't share any state and can thus be initialized once per pipeline
-        this.opSelectorHandler = new OpSelectorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
-        this.opExecutorHandler = new OpExecutorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
-        this.iteratorHandler = new IteratorHandler(settings);
+        opSelectorHandler = new OpSelectorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
+        opExecutorHandler = new OpExecutorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
+        iteratorHandler = new IteratorHandler(settings);
     }
 
     @Override
@@ -125,11 +136,26 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         // instance
         configure(pipeline);
 
+        if (authenticationHandler != null)
+            pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
+
         pipeline.addLast(PIPELINE_OP_SELECTOR, opSelectorHandler);
         pipeline.addLast(PIPELINE_RESULT_ITERATOR_HANDLER, iteratorHandler);
         pipeline.addLast(PIPELINE_OP_EXECUTOR, opExecutorHandler);
 
         finalize(pipeline);
+    }
+
+    private Authenticator createAuthenticator(final Settings.AuthenticationSettings config) {
+        try {
+            final Class<?> clazz = Class.forName(config.className);
+            final Authenticator authenticator = (Authenticator) clazz.newInstance();
+            authenticator.setup(config.config);
+            return authenticator;
+        } catch (Exception ex) {
+            logger.warn(ex.getMessage());
+            throw new IllegalStateException(String.format("Could not create/configure Authenticator %s", config.className), ex);
+        }
     }
 
     private void configureSerializers() {
