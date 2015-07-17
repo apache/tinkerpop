@@ -23,21 +23,29 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Iterator;
 import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class MapKeysStep<S> extends FlatMapStep<Map<S, ?>, S> {
+public final class MapKeysStep<S, E> extends FlatMapStep<S, E> {
 
     public MapKeysStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected Iterator<S> flatMap(final Traverser.Admin<Map<S, ?>> traverser) {
-        return traverser.get().keySet().iterator();
+    protected Iterator<E> flatMap(final Traverser.Admin<S> traverser) {
+        final S s = traverser.get();
+        if (s instanceof Map)
+            return ((Map) s).keySet().iterator();
+        if (s instanceof Map.Entry)
+            return IteratorUtils.asIterator(((Map.Entry) s).getKey());
+        return EmptyIterator.instance();
     }
 }

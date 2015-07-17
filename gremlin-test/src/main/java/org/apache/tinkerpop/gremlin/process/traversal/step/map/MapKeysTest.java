@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 
@@ -38,12 +39,18 @@ public abstract class MapKeysTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Double> get_g_V_outE_valuesXweightX_groupCount_mapKeys();
 
+    public abstract Traversal<Vertex, Double> get_g_V_outE_valuesXweightX_groupCount_unfold_mapKeys();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outE_valuesXweightX_groupCount_mapKeys() {
-        final Traversal<Vertex, Double> traversal = get_g_V_outE_valuesXweightX_groupCount_mapKeys();
-        printTraversalForm(traversal);
-        checkResults(Arrays.asList(0.2, 0.4, 0.5, 1.0), traversal);
+        final List<Traversal<Vertex, Double>> traversals = Arrays.asList(
+                get_g_V_outE_valuesXweightX_groupCount_mapKeys(),
+                get_g_V_outE_valuesXweightX_groupCount_unfold_mapKeys());
+        for (final Traversal<Vertex, Double> traversal : traversals) {
+            printTraversalForm(traversal);
+            checkResults(Arrays.asList(0.2, 0.4, 0.5, 1.0), traversal);
+        }
     }
 
     public static class Traversals extends MapKeysTest {
@@ -51,6 +58,11 @@ public abstract class MapKeysTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Double> get_g_V_outE_valuesXweightX_groupCount_mapKeys() {
             return g.V().outE().values("weight").groupCount().mapKeys();
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_outE_valuesXweightX_groupCount_unfold_mapKeys() {
+            return g.V().outE().values("weight").groupCount().unfold().mapKeys();
         }
     }
 }
