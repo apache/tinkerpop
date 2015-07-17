@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server.auth;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.configuration.MapConfiguration;
 import org.apache.tinkerpop.gremlin.server.auth.groovy.plugin.CredentialGraph;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -56,6 +54,8 @@ public class SimpleAuthenticator implements Authenticator {
 
     @Override
     public void setup(final Map<String,Object> config) {
+        logger.info("Initializing authentication with the {}", SimpleAuthenticator.class.getName());
+
         if (null == config) {
             throw new IllegalArgumentException(String.format(
                     "Could not configure a %s - provide a 'config' in the 'authentication' settings",
@@ -87,6 +87,7 @@ public class SimpleAuthenticator implements Authenticator {
         }
 
         credentialStore = CredentialGraph.credentials(graph);
+        logger.info("CredentialGraph initialized at {}", credentialStore);
     }
 
     @Override
