@@ -312,8 +312,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 traverser = this.starts.next();
                 final Path path = traverser.path();
                 if (!this.matchStartLabels.stream().filter(path::hasLabel).findAny().isPresent())
-                    path.addLabel(this.computedStartLabel); // if the traverser doesn't have a legal start, then provide it the pre-computed one
-                path.addLabel(this.getId()); // so the traverser never returns to this branch ever again
+                    traverser.addLabels(Collections.singleton(this.computedStartLabel)); // if the traverser doesn't have a legal start, then provide it the pre-computed one
+                traverser.addLabels(Collections.singleton(this.getId())); // so the traverser never returns to this branch ever again
             }
             ///
             if (!this.isDuplicate(traverser)) {
@@ -337,9 +337,9 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             final Traverser.Admin traverser = this.starts.next();
             final Path path = traverser.path();
             if (!this.matchStartLabels.stream().filter(path::hasLabel).findAny().isPresent())
-                path.addLabel(this.computedStartLabel); // if the traverser doesn't have a legal start, then provide it the pre-computed one
+                traverser.addLabels(Collections.singleton(this.computedStartLabel)); // if the traverser doesn't have a legal start, then provide it the pre-computed one
             if (!path.hasLabel(this.getId()))
-                path.addLabel(this.getId()); // so the traverser never returns to this branch ever again
+                traverser.addLabels(Collections.singleton(this.getId())); // so the traverser never returns to this branch ever again
             ///
             if (!this.isDuplicate(traverser)) {
                 if (hasMatched(this.conjunction, traverser)) {
@@ -392,7 +392,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         @Override
         protected Traverser<Object> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<Object> traverser = this.starts.next();
-            traverser.path().addLabel(this.getId());
+            traverser.addLabels(Collections.singleton(this.getId()));
             ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordStart(traverser, this.getTraversal());
             // TODO: sideEffect check?
             return null == this.selectKey ? traverser : traverser.split(traverser.path().get(Pop.last, this.selectKey), this);
@@ -455,7 +455,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 if (!path.hasLabel(this.matchKey) || traverser.get().equals(path.get(Pop.last, this.matchKey))) {
                     if (this.traverserStepIdSetByChild)
                         traverser.setStepId(((MatchStep<?, ?>) this.getTraversal().getParent()).getId());
-                    traverser.path().addLabel(this.matchKey);
+                    traverser.addLabels(Collections.singleton(this.matchKey));
                     ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
                     return traverser;
                 }

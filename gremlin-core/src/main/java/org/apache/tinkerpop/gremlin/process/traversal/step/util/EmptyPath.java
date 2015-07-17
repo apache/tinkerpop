@@ -47,6 +47,11 @@ public final class EmptyPath implements Path, Serializable {
     }
 
     @Override
+    public Path extend(final Set<String> labels) {
+        return this;
+    }
+
+    @Override
     public <A> A get(final String label) {
         throw Path.Exceptions.stepWithProvidedLabelDoesNotExist(label);
     }
@@ -59,11 +64,6 @@ public final class EmptyPath implements Path, Serializable {
     @Override
     public boolean hasLabel(final String label) {
         return false;
-    }
-
-    @Override
-    public void addLabel(final String label) {
-
     }
 
     @Override

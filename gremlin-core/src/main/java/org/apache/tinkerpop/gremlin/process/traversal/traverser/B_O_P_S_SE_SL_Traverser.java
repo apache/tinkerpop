@@ -23,9 +23,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -80,6 +80,11 @@ public class B_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
         clone.path = clone.path.clone().extend(r, step.getLabels());
         return clone;
 
+    }
+
+    @Override
+    public void addLabels(final Set<String> labels) {
+        this.path = this.path.extend(labels);
     }
 
     @Override

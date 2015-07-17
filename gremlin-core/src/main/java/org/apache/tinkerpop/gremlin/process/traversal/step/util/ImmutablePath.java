@@ -51,10 +51,6 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
         return this;
     }
 
-    private ImmutablePath(final Object currentObject, final Set<String> currentLabels) {
-        this(TailPath.instance(), currentObject, currentLabels);
-    }
-
     private ImmutablePath(final ImmutablePathImpl previousPath, final Object currentObject, final Set<String> currentLabels) {
         this.previousPath = previousPath;
         this.currentObject = currentObject;
@@ -69,6 +65,16 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
     @Override
     public Path extend(final Object object, final Set<String> labels) {
         return new ImmutablePath(this, object, labels);
+    }
+
+    @Override
+    public Path extend(final Set<String> labels) {
+        final Set<String> temp = new LinkedHashSet<>();
+        temp.addAll(this.currentLabels);
+        temp.addAll(labels);
+        return new ImmutablePath(this.previousPath,this.currentObject,temp);
+        //this.currentLabels.addAll(labels);
+        //return this;
     }
 
     @Override
@@ -130,11 +136,6 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
     }
 
     @Override
-    public void addLabel(final String label) {
-        this.currentLabels.add(label);
-    }
-
-    @Override
     public List<Object> objects() {
         final List<Object> objectPath = new ArrayList<>();
         objectPath.addAll(this.previousPath.objects());
@@ -169,7 +170,12 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
 
         @Override
         public Path extend(final Object object, final Set<String> labels) {
-            return new ImmutablePath(object, labels);
+            return new ImmutablePath(TailPath.instance(), object, labels);
+        }
+
+        @Override
+        public Path extend(final Set<String> labels) {
+            throw new UnsupportedOperationException("A head path can not have labels added to it");
         }
 
         @Override
@@ -203,11 +209,6 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
         @Override
         public boolean hasLabel(final String label) {
             return false;
-        }
-
-        @Override
-        public void addLabel(final String label) {
-            throw new UnsupportedOperationException("A head path can not have labels added to it");
         }
 
         @Override

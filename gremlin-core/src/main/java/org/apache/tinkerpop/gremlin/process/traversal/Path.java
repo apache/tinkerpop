@@ -53,13 +53,13 @@ public interface Path extends Cloneable, Iterable<Object> {
      */
     public Path extend(final Object object, final Set<String> labels);
 
-    public default Path extend(final Object object, final String... labels) {
-        final Path path = this.extend(object, Collections.emptySet());
-        for (final String label : labels) {
-            path.addLabel(label);
-        }
-        return path;
-    }
+    /**
+     * Add labels to the head of the path.
+     *
+     * @param labels the labels at the head of the path
+     * @return the path with added labels
+     */
+    public Path extend(final Set<String> labels);
 
     /**
      * Get the object associated with the particular label of the path.
@@ -142,13 +142,6 @@ public interface Path extends Cloneable, Iterable<Object> {
     public default boolean hasLabel(final String label) {
         return this.labels().stream().filter(labels -> labels.contains(label)).findAny().isPresent();
     }
-
-    /**
-     * Add label to the current head of the path.
-     *
-     * @param label the label to add to the head of the path
-     */
-    public void addLabel(final String label);
 
     /**
      * An ordered list of the objects in the path.

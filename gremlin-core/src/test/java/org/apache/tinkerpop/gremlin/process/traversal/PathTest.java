@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -57,7 +58,7 @@ public class PathTest {
             assertEquals(Integer.valueOf(1), path.get("a"));
             assertEquals(Integer.valueOf(2), path.get("b"));
             assertEquals(Integer.valueOf(3), path.get("c"));
-            path.addLabel("d");
+            path = path.extend(Collections.singleton("d"));
             assertEquals(3, path.size());
             assertEquals(Integer.valueOf(1), path.get("a"));
             assertEquals(Integer.valueOf(2), path.get("b"));
@@ -103,9 +104,9 @@ public class PathTest {
     public void shouldExcludeUnlabeledLabelsFromPath() {
         PATH_SUPPLIERS.forEach(supplier -> {
             Path path = supplier.get();
-            path = path.extend("marko", "a");
-            path = path.extend("stephen", "b");
-            path = path.extend("matthias", "c", "d");
+            path = path.extend("marko", Collections.singleton("a"));
+            path = path.extend("stephen", Collections.singleton("b"));
+            path = path.extend("matthias", new LinkedHashSet<>(Arrays.asList("c", "d")));
             assertEquals(3, path.size());
             assertEquals(3, path.objects().size());
             assertEquals(3, path.labels().size());
@@ -122,9 +123,9 @@ public class PathTest {
     public void shouldHaveOrderedPathLabels() {
         PATH_SUPPLIERS.forEach(supplier -> {
             Path path = supplier.get();
-            path = path.extend("marko", "a", "b");
-            path = path.extend("stephen", "c", "a");
-            path = path.extend("matthias", "a", "b");
+            path = path.extend("marko", new LinkedHashSet<>(Arrays.asList("a", "b")));
+            path = path.extend("stephen", new LinkedHashSet<>(Arrays.asList("c", "a")));
+            path = path.extend("matthias", new LinkedHashSet<>(Arrays.asList("a", "b")));
             assertEquals(3, path.size());
             assertEquals(3, path.objects().size());
             assertEquals(3, path.labels().size());
@@ -160,9 +161,9 @@ public class PathTest {
     public void shouldSelectSingleCorrectly() {
         PATH_SUPPLIERS.forEach(supplier -> {
             Path path = supplier.get();
-            path = path.extend("marko", "a", "b");
-            path = path.extend("stephen", "a", "c");
-            path = path.extend("matthias", "c", "d");
+            path = path.extend("marko", new LinkedHashSet<String>(Arrays.asList("a", "b")));
+            path = path.extend("stephen", new LinkedHashSet<>(Arrays.asList("a", "c")));
+            path = path.extend("matthias", new LinkedHashSet<>(Arrays.asList("c", "d")));
             assertEquals(3, path.size());
             assertEquals("marko", path.get(Pop.first, "a"));
             assertEquals("marko", path.get(Pop.first, "b"));
@@ -180,9 +181,9 @@ public class PathTest {
     public void shouldSelectListCorrectly() {
         PATH_SUPPLIERS.forEach(supplier -> {
             Path path = supplier.get();
-            path = path.extend("marko", "a", "b");
-            path = path.extend("stephen", "a", "c");
-            path = path.extend("matthias", "c", "d");
+            path = path.extend("marko", new LinkedHashSet<>(Arrays.asList("a", "b")));
+            path = path.extend("stephen", new LinkedHashSet<>(Arrays.asList("a", "c")));
+            path = path.extend("matthias", new LinkedHashSet<>(Arrays.asList("c", "d")));
             assertEquals(3, path.size());
             assertEquals(2, path.<List>get(Pop.all, "a").size());
             assertEquals("marko", path.<List>get(Pop.all, "a").get(0));

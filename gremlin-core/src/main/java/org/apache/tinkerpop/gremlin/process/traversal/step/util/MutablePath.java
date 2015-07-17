@@ -58,7 +58,9 @@ public class MutablePath implements Path, Serializable {
         clone.objects = new ArrayList<>();
         clone.labels = new ArrayList<>();*/
         clone.objects.addAll(this.objects);
-        clone.labels.addAll(this.labels);
+        for (final Set<String> labels : this.labels) {
+            clone.labels.add(new LinkedHashSet<>(labels));
+        }
         return clone;
     }
 
@@ -76,13 +78,19 @@ public class MutablePath implements Path, Serializable {
     }
 
     @Override
+    public Path extend(final Set<String> labels) {
+        this.labels.get(this.labels.size() - 1).addAll(labels);
+        return this;
+    }
+
+    @Override
     public <A> A get(int index) {
         return (A) this.objects.get(index);
     }
 
     @Override
     public <A> A get(final Pop pop, final String label) {
-        if(Pop.all == pop) {
+        if (Pop.all == pop) {
             if (this.hasLabel(label)) {
                 final Object object = this.get(label);
                 if (object instanceof List)
@@ -92,7 +100,7 @@ public class MutablePath implements Path, Serializable {
             } else {
                 return (A) Collections.emptyList();
             }
-        }  else {
+        } else {
             // Override default to avoid building temporary list, and to stop looking when we find the label.
             if (Pop.last == pop) {
                 for (int i = this.labels.size() - 1; i >= 0; i--) {
@@ -112,11 +120,6 @@ public class MutablePath implements Path, Serializable {
     @Override
     public boolean hasLabel(final String label) {
         return this.labels.stream().filter(l -> l.contains(label)).findAny().isPresent();
-    }
-
-    @Override
-    public void addLabel(final String label) {
-        this.labels.get(this.labels.size() - 1).add(label);
     }
 
     @Override
