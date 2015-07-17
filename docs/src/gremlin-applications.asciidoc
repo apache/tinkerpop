@@ -469,6 +469,8 @@ The following table describes the various configuration options that Gremlin Ser
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
+|authentication.className |The fully qualified classname of an `Authenticator` implementation to use.  If this setting is not present, then authentication is effectively disabled. |`AllowAllAuthenticator`
+|authentication.config |A `Map` of configuration settings to be passes to the `Authenticator` when it is constructed.  The settings available are dependent on the implementation. |_none_
 |channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. Websockets, Java NIO, etc.). |WebSocketChannelizer
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. |8
@@ -524,6 +526,34 @@ The following table describes the various configuration options that Gremlin Ser
 |=========================================================
 
 NOTE: Configuration of link:http://ganglia.sourceforge.net/[Ganglia] requires an additional library that is not packaged with Gremlin Server due to its LGPL licensing that conflicts with the TinkerPop's Apache 2.0 License.  To run Gremlin Server with Ganglia monitoring, download the `org.acplt:oncrpc` jar from link:http://repo1.maven.org/maven2/org/acplt/oncrpc/1.0.7/[here] and copy it to the Gremlin Server `/lib` directory before starting the server.
+
+Security
+^^^^^^^^
+
+Gremlin Server provides for several features that aid in the security of the graphs that it exposes.  It exposes built in SSL support and a pluggable authentication framework using link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL] (Simple Authentication and Security Layer).  SSL options are described in the configuration settings table above, so this section will focus on authentication.
+
+By default, Gremlin Server is configured to allow all requests to be processed (i.e. no authentication).  To turn this capability on, Gremlin Server must be configured with an `Authenticator` implementation in its YAML file.  Gremlin Server comes packaged with an implementation called `SimpleAuthenticator`.  The `SimpleAuthenticator` implements the `PLAIN` SASL mechanism (i.e. plain text) to authenticate a request.  It validates username/password pairs against a graph database, which must be provided to it as part of the configuration.
+
+[source,yaml]
+authentication: {
+  className: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
+  config: {
+    credentialsDb: conf/credential-graph.properties}}
+
+The "credential graph" schema is quite simple and it is up to the user to be sure that the graph given to `credentialsDb` matches that schema for the authentication process to work. The credentials graph stores users as vertices with the `label` of "user".  Each "user" vertex has two properties: `username` and `password`.  Naturally, these are both `String` values.
+
+IMPORTANT: Be sure to define an index on the `username` property, as this will be used for lookups.  If supported by the `Graph`, consider specifying a unique constraint as well.
+
+A quick way to get started with the `SimpleAuthenticator` is to use TinkerGraph for the "credentials graph".  Recall that TinkerGraph is an in-memory graph and therefore always starts as "empty" when opened by `GraphFactory`.  To allow TinkerGraph to be used in this "getting started" capacity, Gremlin Server allows for a TinkerGraph-only configuration option called `credentialsDbLocation`.
+
+[source,yaml]
+authentication: {
+  className: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
+  config: {
+    credentialsDb: conf/tinkergraph-empty.properties,
+    credentialsDbLocation: data/credentials.kryo}}
+
+This added configuration tells Gremlin Server to look for a gryo file at that location containing the data for the graph which it loads via standard `io` methods.  The limitation is that this read is only performed at the initialization of the server so therefore credentials remain static for the life of the server.
 
 Serialization
 ^^^^^^^^^^^^^
