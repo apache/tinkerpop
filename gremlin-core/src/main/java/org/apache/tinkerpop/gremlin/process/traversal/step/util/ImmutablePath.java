@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.structure.Element;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -72,9 +73,7 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
         final Set<String> temp = new LinkedHashSet<>();
         temp.addAll(this.currentLabels);
         temp.addAll(labels);
-        return new ImmutablePath(this.previousPath,this.currentObject,temp);
-        //this.currentLabels.addAll(labels);
-        //return this;
+        return new ImmutablePath(this.previousPath, this.currentObject, temp);
     }
 
     @Override
@@ -137,7 +136,7 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
 
     @Override
     public List<Object> objects() {
-        final List<Object> objectPath = new ArrayList<>();
+        final List<Object> objectPath = new ArrayList<>();    // TODO: optimize
         objectPath.addAll(this.previousPath.objects());
         objectPath.add(this.currentObject);
         return Collections.unmodifiableList(objectPath);
@@ -145,7 +144,7 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
 
     @Override
     public List<Set<String>> labels() {
-        final List<Set<String>> labelPath = new ArrayList<>();
+        final List<Set<String>> labelPath = new ArrayList<>();   // TODO: optimize
         labelPath.addAll(this.previousPath.labels());
         labelPath.add(this.currentLabels);
         return Collections.unmodifiableList(labelPath);
@@ -155,6 +154,28 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
     public String toString() {
         return this.objects().toString();
     }
+
+    @Override
+    public int hashCode() {
+        return this.objects().hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof Path))
+            return false;
+        final Path otherPath = (Path) other;
+        if (otherPath.size() != this.size())
+            return false;
+        for (int i = this.size() - 1; i >= 0; i--) {
+            if (!this.get(i).equals(otherPath.get(i)))
+                return false;
+            if (!this.labels().get(i).equals(otherPath.labels().get(i)))
+                return false;
+        }
+        return true;
+    }
+
 
     private static class TailPath implements Path, ImmutablePathImpl {
         private static final TailPath INSTANCE = new TailPath();
@@ -226,6 +247,7 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
             return true;
         }
 
+        @SuppressWarnings("CloneDoesntCallSuperClone,CloneDoesntDeclareCloneNotSupportedException")
         @Override
         public TailPath clone() {
             return this;
@@ -236,13 +258,18 @@ public class ImmutablePath implements Path, ImmutablePathImpl, Serializable, Clo
         }
 
         @Override
-        public boolean equals(final Object object) {
-            return object instanceof TailPath;
+        public String toString() {
+            return Collections.emptyList().toString();
         }
 
         @Override
-        public String toString() {
-            return Collections.emptyList().toString();
+        public int hashCode() {
+            return Collections.emptyList().hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object other) {
+            return other instanceof Path && ((Path) other).size() == 0;
         }
     }
 }

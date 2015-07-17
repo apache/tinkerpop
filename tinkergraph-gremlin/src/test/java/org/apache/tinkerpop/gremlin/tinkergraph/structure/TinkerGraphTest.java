@@ -191,25 +191,17 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay5() throws Exception {
-
         TinkerGraph graph = TinkerGraph.open();
         graph.createIndex("name",Vertex.class);
         graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
         GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
 
         final Supplier<Traversal<?,?>> traversal = () ->
-                g.V().match(
-                        as("a").has("name", "Garcia"),
-                        as("a").in("writtenBy").as("b"),
-                        as("b").out("followedBy").as("c"),
-                        as("c").out("writtenBy").as("d"),
-                        as("d").where(P.neq("a"))).select("a","b","c","d").by("name");
-
+                g.V().repeat(out()).times(5).as("a").out("writtenBy").as("b").select("a","b").count();
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());
-        traversal.get().forEachRemaining(System.out::println);
-
+        System.out.println(TimeUtil.clockWithResult(1,() -> traversal.get().next()));
     }
 
     @Test

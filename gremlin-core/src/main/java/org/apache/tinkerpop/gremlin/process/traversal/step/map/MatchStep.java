@@ -374,7 +374,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
+        return this.getSelfAndChildRequirements(TraverserRequirement.LABELED_PATH, TraverserRequirement.SIDE_EFFECTS);
     }
 
     //////////////////////////////

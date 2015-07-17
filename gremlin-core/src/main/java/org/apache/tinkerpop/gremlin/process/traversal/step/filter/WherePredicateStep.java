@@ -46,9 +46,6 @@ import java.util.Set;
  */
 public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping {
 
-    private static final Set<TraverserRequirement> LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
-    private static final Set<TraverserRequirement> GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
-
     protected String startKey;
     protected List<String> selectKeys;
     protected P<Object> predicate;

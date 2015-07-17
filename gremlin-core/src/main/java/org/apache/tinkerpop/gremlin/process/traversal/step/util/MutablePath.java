@@ -136,4 +136,25 @@ public class MutablePath implements Path, Serializable {
     public String toString() {
         return this.objects.toString();
     }
+
+    @Override
+    public int hashCode() {
+        return this.objects.hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (!(other instanceof Path))
+            return false;
+        final Path otherPath = (Path) other;
+        if (otherPath.size() != this.size())
+            return false;
+        for (int i = this.size() - 1; i >= 0; i--) {
+            if (!this.objects.get(i).equals(otherPath.get(i)))
+                return false;
+            if (!this.labels.get(i).equals(otherPath.labels().get(i)))
+                return false;
+        }
+        return true;
+    }
 }

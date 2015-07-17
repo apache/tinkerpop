@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -200,4 +201,61 @@ public class PathTest {
         });
     }
 
+    @Test
+    public void shouldHaveEquality() {
+        PATH_SUPPLIERS.forEach(supplier -> {
+            Path pathA1 = supplier.get();
+            Path pathA2 = supplier.get();
+            Path pathB1 = supplier.get();
+            Path pathB2 = supplier.get();
+            assertEquals(pathA1, pathA2);
+            assertEquals(pathA1.hashCode(), pathA2.hashCode());
+            assertEquals(pathA2, pathB1);
+            assertEquals(pathA2.hashCode(), pathB1.hashCode());
+            assertEquals(pathB1, pathB2);
+            assertEquals(pathB1.hashCode(), pathB2.hashCode());
+            ///
+            pathA1 = pathA1.extend("marko", Collections.singleton("a"));
+            pathA2 = pathA2.extend("marko", Collections.singleton("a"));
+            pathB1 = pathB1.extend("marko", Collections.singleton("b"));
+            pathB2 = pathB2.extend("marko", Collections.singleton("b"));
+            assertEquals(pathA1, pathA2);
+            assertEquals(pathA1.hashCode(), pathA2.hashCode());
+            assertNotEquals(pathA2, pathB1);
+            assertEquals(pathB1, pathB2);
+            assertEquals(pathB1.hashCode(), pathB2.hashCode());
+            ///
+            pathA1 = pathA1.extend("daniel", new LinkedHashSet<>(Arrays.asList("aa", "aaa")));
+            pathA2 = pathA2.extend("daniel", new LinkedHashSet<>(Arrays.asList("aa", "aaa")));
+            pathB1 = pathB1.extend("stephen", new LinkedHashSet<>(Arrays.asList("bb", "bbb")));
+            pathB2 = pathB2.extend("stephen", Collections.singleton("bb"));
+            assertEquals(pathA1, pathA2);
+            assertEquals(pathA1.hashCode(), pathA2.hashCode());
+            assertNotEquals(pathA2, pathB1);
+            assertNotEquals(pathB1, pathB2);
+            ///
+            pathA1 = pathA1.extend("matthias", new LinkedHashSet<>(Arrays.asList("aaaa", "aaaaa")));
+            pathA2 = pathA2.extend("bob", new LinkedHashSet<>(Arrays.asList("aaaa", "aaaaa")));
+            pathB1 = pathB1.extend("byn", Collections.singleton("bbbb"));
+            pathB2 = pathB2.extend("bryn", Collections.singleton("bbbb"));
+            assertNotEquals(pathA1, pathA2);
+            assertNotEquals(pathA2, pathB1);
+            assertNotEquals(pathB1, pathB2);
+        });
+    }
+
+    @Test
+    public void shouldHaveCrossTypeEquality() {
+        List<Path> paths = PATH_SUPPLIERS.stream()
+                .map(Supplier::get)
+                .map(path -> path.extend("marko", new LinkedHashSet<>(Arrays.asList("a", "aa"))))
+                .map(path -> path.extend("daniel", Collections.singleton("b")))
+                .collect(Collectors.toList());
+        for (final Path pathA : paths) {
+            for (final Path pathB : paths) {
+                assertEquals(pathA, pathB);
+                assertEquals(pathA.hashCode(), pathB.hashCode());
+            }
+        }
+    }
 }

@@ -38,9 +38,9 @@ public interface Scoping {
     public static enum Variable {START, END}
 
     public static final Set<TraverserRequirement> TYPICAL_LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
-    public static final Set<TraverserRequirement> TYPICAL_GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
+    public static final Set<TraverserRequirement> TYPICAL_GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.LABELED_PATH, TraverserRequirement.SIDE_EFFECTS);
     public static final TraverserRequirement[] TYPICAL_LOCAL_REQUIREMENTS_ARRAY = new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS};
-    public static final TraverserRequirement[] TYPICAL_GLOBAL_REQUIREMENTS_ARRAY = new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS};
+    public static final TraverserRequirement[] TYPICAL_GLOBAL_REQUIREMENTS_ARRAY = new TraverserRequirement[]{TraverserRequirement.OBJECT, TraverserRequirement.LABELED_PATH, TraverserRequirement.SIDE_EFFECTS};
 
     public default <S> S getScopeValue(final Pop pop, final String key, final Traverser.Admin<?> traverser) throws IllegalArgumentException {
         if (traverser.getSideEffects().get(key).isPresent())
