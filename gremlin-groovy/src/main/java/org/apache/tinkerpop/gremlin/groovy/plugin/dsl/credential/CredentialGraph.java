@@ -16,20 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server.auth.groovy.plugin;
+package org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.mindrot.jbcrypt.BCrypt;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.drop;
-import static org.apache.tinkerpop.gremlin.server.auth.groovy.plugin.CredentialGraphTokens.PROPERTY_PASSWORD;
-import static org.apache.tinkerpop.gremlin.server.auth.groovy.plugin.CredentialGraphTokens.PROPERTY_USERNAME;
-import static org.apache.tinkerpop.gremlin.server.auth.groovy.plugin.CredentialGraphTokens.VERTEX_LABEL_USER;
 
 /**
  * A DSL for managing a "credentials graph" used by Gremlin Server for simple authentication functions.  If the
@@ -56,7 +52,7 @@ public class CredentialGraph {
      */
     public Vertex findUser(final String username) {
         if (supportsTransactions) g.tx().rollback();
-        final GraphTraversal<Vertex,Vertex> t = g.V().has(PROPERTY_USERNAME, username);
+        final GraphTraversal<Vertex,Vertex> t = g.V().has(CredentialGraphTokens.PROPERTY_USERNAME, username);
         final Vertex v = t.hasNext() ? t.next() : null;
         if (t.hasNext()) throw new IllegalStateException(String.format("Multiple users with username %s", username));
         return v;
@@ -72,9 +68,9 @@ public class CredentialGraph {
         if (supportsTransactions) graph.tx().rollback();
 
         try {
-            final Vertex v =  graph.addVertex(T.label, VERTEX_LABEL_USER,
-                                              PROPERTY_USERNAME, username,
-                                              PROPERTY_PASSWORD, BCrypt.hashpw(password, BCrypt.gensalt()));
+            final Vertex v =  graph.addVertex(T.label, CredentialGraphTokens.VERTEX_LABEL_USER,
+                                              CredentialGraphTokens.PROPERTY_USERNAME, username,
+                                              CredentialGraphTokens.PROPERTY_PASSWORD, BCrypt.hashpw(password, BCrypt.gensalt()));
             if (supportsTransactions) graph.tx().commit();
             return v;
         } catch (Exception ex) {
@@ -91,7 +87,7 @@ public class CredentialGraph {
     public long removeUser(final String username) {
         if (supportsTransactions) graph.tx().rollback();
         try {
-            final long count = g.V().has(PROPERTY_USERNAME, username).sideEffect(drop()).count().next();
+            final long count = g.V().has(CredentialGraphTokens.PROPERTY_USERNAME, username).sideEffect(drop()).count().next();
             if (supportsTransactions) graph.tx().commit();
             return count;
         } catch (Exception ex) {
@@ -105,7 +101,7 @@ public class CredentialGraph {
      */
     public long countUsers() {
         if (supportsTransactions) graph.tx().rollback();
-        return g.V().hasLabel(VERTEX_LABEL_USER).count().next();
+        return g.V().hasLabel(CredentialGraphTokens.VERTEX_LABEL_USER).count().next();
     }
 
     @Override

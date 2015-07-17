@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server.auth.groovy.plugin;
+package org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

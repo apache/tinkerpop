@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server.auth.groovy.plugin;
+package org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential;
 
 import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
@@ -38,7 +38,7 @@ public class CredentialGraphGremlinPlugin extends AbstractGremlinPlugin {
 
     @Override
     public String getName() {
-        return "tinkerpop.server.credentials";
+        return "tinkerpop.credentials";
     }
 
     @Override

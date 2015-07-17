@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.auth;
 
-import org.apache.tinkerpop.gremlin.server.auth.groovy.plugin.CredentialGraph;
+import org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraph;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
@@ -33,8 +33,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
-import static org.apache.tinkerpop.gremlin.server.auth.groovy.plugin.CredentialGraphTokens.PROPERTY_PASSWORD;
-import static org.apache.tinkerpop.gremlin.server.auth.groovy.plugin.CredentialGraphTokens.PROPERTY_USERNAME;
+import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraphTokens.PROPERTY_PASSWORD;
+import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraphTokens.PROPERTY_USERNAME;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)

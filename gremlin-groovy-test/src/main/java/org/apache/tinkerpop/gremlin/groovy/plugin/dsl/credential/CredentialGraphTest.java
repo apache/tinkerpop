@@ -16,14 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server.auth.groovy.plugin;
+package org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential;
 
+import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.junit.Before;
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
-import static org.apache.tinkerpop.gremlin.server.auth.groovy.plugin.CredentialGraph.*;
+import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraph.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -34,14 +34,7 @@ import static org.junit.Assert.assertNull;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class CredentialGraphTest {
-    private TinkerGraph graph;
-
-    @Before
-    public void setup() {
-        graph = TinkerGraph.open();
-        graph.createIndex("username", Vertex.class);
-    }
+public class CredentialGraphTest extends AbstractGremlinTest {
 
     @Test
     public void shouldCreateUser() {
@@ -54,63 +47,63 @@ public class CredentialGraphTest {
 
     @Test
     public void shouldRemoveUser() {
-        assertThat(graph.vertices().hasNext(), is(false));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("stephen", "secret");
-        assertThat(graph.vertices().hasNext(), is(true));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(true));
 
         assertEquals(1, credentials(graph).removeUser("stephen"));
-        assertThat(graph.vertices().hasNext(), is(false));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
     }
 
     @Test
     public void shouldNotRemoveUser() {
-        assertThat(graph.vertices().hasNext(), is(false));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("stephen", "secret");
-        assertThat(graph.vertices().hasNext(), is(true));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(true));
 
         assertEquals(0, credentials(graph).removeUser("stephanie"));
-        assertThat(graph.vertices().hasNext(), is(true));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(true));
     }
 
     @Test
     public void shouldFindUser() {
-        assertThat(graph.vertices().hasNext(), is(false));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("marko", "secret");
         final Vertex stephen = credentials(graph).createUser("stephen", "secret");
         credentials(graph).createUser("daniel", "secret");
-        assertThat(graph.vertices().hasNext(), is(true));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(true));
 
         assertEquals(stephen, credentials(graph).findUser("stephen"));
     }
 
     @Test
     public void shouldNotFindUser() {
-        assertThat(graph.vertices().hasNext(), is(false));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("marko", "secret");
         credentials(graph).createUser("stephen", "secret");
         credentials(graph).createUser("daniel", "secret");
-        assertThat(graph.vertices().hasNext(), is(true));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(true));
 
         assertNull(credentials(graph).findUser("stephanie"));
     }
 
     @Test
     public void shouldCountUsers() {
-        assertThat(graph.vertices().hasNext(), is(false));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("marko", "secret");
         credentials(graph).createUser("stephen", "secret");
         credentials(graph).createUser("daniel", "secret");
-        assertThat(graph.vertices().hasNext(), is(true));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(true));
 
         assertEquals(3, credentials(graph).countUsers());
     }
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowIfFindingMultipleUsers() {
-        assertThat(graph.vertices().hasNext(), is(false));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(false));
         credentials(graph).createUser("stephen", "secret");
         credentials(graph).createUser("stephen", "secret");
-        assertThat(graph.vertices().hasNext(), is(true));
+        MatcherAssert.assertThat(graph.vertices().hasNext(), is(true));
 
         assertNull(credentials(graph).findUser("stephen"));
     }
