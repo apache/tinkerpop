@@ -25,14 +25,14 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.drop;
 import static org.apache.tinkerpop.gremlin.server.auth.groovy.plugin.CredentialGraphTokens.PROPERTY_PASSWORD;
 import static org.apache.tinkerpop.gremlin.server.auth.groovy.plugin.CredentialGraphTokens.PROPERTY_USERNAME;
 import static org.apache.tinkerpop.gremlin.server.auth.groovy.plugin.CredentialGraphTokens.VERTEX_LABEL_USER;
 
 /**
- * A DSL for managing a "credentials graph" used by Gremlin Server for simple authentication functions.
+ * A DSL for managing a "credentials graph" used by Gremlin Server for simple authentication functions.  If the
+ * {@link Graph} is transactional, new transactions will be started for each method call.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -40,10 +40,12 @@ public class CredentialGraph {
 
     private final Graph graph;
     private final GraphTraversalSource g;
+    private final boolean supportsTransactions;
 
     public CredentialGraph(final Graph graph) {
         this.graph = graph;
         g = graph.traversal();
+        supportsTransactions = graph.features().graph().supportsTransactions();
     }
 
     /**
@@ -52,6 +54,7 @@ public class CredentialGraph {
      * @throws IllegalStateException if there is more than one user with a particular username.
      */
     public Vertex findUser(final String username) {
+        if (supportsTransactions) g.tx().rollback();
         final GraphTraversal<Vertex,Vertex> t = g.V().has(PROPERTY_USERNAME, username);
         final Vertex v = t.hasNext() ? t.next() : null;
         if (t.hasNext()) throw new IllegalStateException(String.format("Multiple users with username %s", username));
@@ -65,9 +68,18 @@ public class CredentialGraph {
      */
     public Vertex createUser(final String username, final String password) {
         if (findUser(username) != null) throw new IllegalStateException("User with this name already exists");
-        return graph.addVertex(T.label, VERTEX_LABEL_USER,
-                               PROPERTY_USERNAME, username,
-                               PROPERTY_PASSWORD, BCrypt.hashpw(password, BCrypt.gensalt()));
+        if (supportsTransactions) graph.tx().rollback();
+
+        try {
+            final Vertex v =  graph.addVertex(T.label, VERTEX_LABEL_USER,
+                                              PROPERTY_USERNAME, username,
+                                              PROPERTY_PASSWORD, BCrypt.hashpw(password, BCrypt.gensalt()));
+            if (supportsTransactions) graph.tx().commit();
+            return v;
+        } catch (Exception ex) {
+            if (supportsTransactions) graph.tx().rollback();
+            throw new RuntimeException(ex);
+        }
     }
 
     /**
@@ -76,11 +88,20 @@ public class CredentialGraph {
      * @return the number of users removed (which should be one or zero)
      */
     public long removeUser(final String username) {
-        final AtomicInteger counter = new AtomicInteger(0);
-        g.V().has(PROPERTY_USERNAME, username).sideEffect(v -> counter.incrementAndGet()).drop().iterate();
-        return counter.get();
+        if (supportsTransactions) graph.tx().rollback();
+        try {
+            final long count = g.V().has(PROPERTY_USERNAME, username).sideEffect(drop()).count().next();
+            if (supportsTransactions) graph.tx().commit();
+            return count;
+        } catch (Exception ex) {
+            if (supportsTransactions) graph.tx().rollback();
+            throw new RuntimeException(ex);
+        }
     }
 
+    /**
+     * Wrap up any {@link Graph} instance in the {@code CredentialGraph} DSL.
+     */
     public static CredentialGraph credentials(final Graph graph) {
         return new CredentialGraph(graph);
     }
