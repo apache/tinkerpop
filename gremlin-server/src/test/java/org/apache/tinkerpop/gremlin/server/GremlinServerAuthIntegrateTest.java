@@ -95,6 +95,22 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
+    public void shouldFailAuthenticateWithPlainTextNoCredentials() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("1+1").all();
+        } catch(Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertEquals(ResponseException.class, root.getClass());
+            assertEquals("Username and/or password are incorrect", root.getMessage());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldFailAuthenticateWithPlainTextBadPassword() throws Exception {
         final Cluster cluster = Cluster.build().credentials("stephen", "bad").create();
         final Client client = cluster.connect();

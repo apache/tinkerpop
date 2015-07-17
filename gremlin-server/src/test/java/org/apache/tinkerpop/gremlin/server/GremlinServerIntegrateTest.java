@@ -105,6 +105,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 settings.channelizer = NioChannelizer.class.getName();
                 break;
             case "shouldEnableSsl":
+            case "shouldEnableSslButFailIfClientConnectsWithoutIt":
                 settings.ssl = new Settings.SslSettings();
                 settings.ssl.enabled = true;
                 break;
@@ -145,6 +146,23 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         try {
             // this should return "nothing" - there should be no exception
             assertEquals("test", client.submit("'test'").one().getString());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @org.junit.Ignore("This test hangs - not sure why")
+    @Test
+    public void shouldEnableSslButFailIfClientConnectsWithoutIt() {
+        // todo: need to get this to pass somehow - should just error out.
+        final Cluster cluster = Cluster.build().enableSsl(false).create();
+        final Client client = cluster.connect();
+
+        try {
+            // this should return "nothing" - there should be no exception
+            assertEquals("test", client.submit("'test'").one().getString());
+        } catch(Exception x) {
+            x.printStackTrace();
         } finally {
             cluster.close();
         }
