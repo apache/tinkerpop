@@ -41,7 +41,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected Traversal.Admin traversal;
     protected ExpandableStepIterator<S> starts;
     protected Traverser.Admin<E> nextEnd = null;
-    protected boolean traverserStepIdSetByChild = false;
+    protected boolean traverserStepIdAndLabelsSetByChild = false;
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
@@ -198,8 +198,10 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     }
 
     private final Traverser.Admin<E> prepareTraversalForNextStep(final Traverser.Admin<E> traverser) {
-        if (!this.traverserStepIdSetByChild) traverser.setStepId(this.nextStep.getId());
-        if (!this.labels.isEmpty()) traverser.addLabels(this.labels);
+        if (!this.traverserStepIdAndLabelsSetByChild) {
+            traverser.setStepId(this.nextStep.getId());
+            traverser.addLabels(this.labels);
+        }
         return traverser;
     }
 

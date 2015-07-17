@@ -194,7 +194,7 @@ public class TinkerGraphTest {
         TinkerGraph graph = TinkerGraph.open();
         graph.createIndex("name",Vertex.class);
         graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.computer());
 
         final Supplier<Traversal<?,?>> traversal = () ->
                 g.V().repeat(out()).times(5).as("a").out("writtenBy").as("b").select("a","b").count();

@@ -344,6 +344,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             if (!this.isDuplicate(traverser)) {
                 if (hasMatched(this.conjunction, traverser)) {
                     traverser.setStepId(this.getNextStep().getId());
+                    traverser.addLabels(this.labels);
                     return IteratorUtils.of(traverser.split(this.getBindings(traverser), this));
                 }
                 if (this.conjunction == ConjunctionStep.Conjunction.AND) {
@@ -444,7 +445,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 final Traverser.Admin traverser = this.starts.next();
                 // no end label
                 if (null == this.matchKey) {
-                    if (this.traverserStepIdSetByChild)
+                    if (this.traverserStepIdAndLabelsSetByChild)
                         traverser.setStepId(((MatchStep<?, ?>) this.getTraversal().getParent()).getId());
                     ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
                     return traverser;
@@ -453,7 +454,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 // path check
                 final Path path = traverser.path();
                 if (!path.hasLabel(this.matchKey) || traverser.get().equals(path.get(Pop.last, this.matchKey))) {
-                    if (this.traverserStepIdSetByChild)
+                    if (this.traverserStepIdAndLabelsSetByChild)
                         traverser.setStepId(((MatchStep<?, ?>) this.getTraversal().getParent()).getId());
                     traverser.addLabels(Collections.singleton(this.matchKey));
                     ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordEnd(traverser, this.getTraversal());

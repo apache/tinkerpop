@@ -103,7 +103,6 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
     }
 
     @Test
-    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     @LoadGraphWith(GRATEFUL)
     public void g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count() {
         final Traversal<Vertex, Long> traversal = get_g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count();
