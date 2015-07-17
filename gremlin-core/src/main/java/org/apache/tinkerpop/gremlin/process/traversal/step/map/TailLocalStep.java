@@ -23,8 +23,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -49,7 +49,7 @@ public final class TailLocalStep<S> extends MapStep<S, S> {
         final S start = traverser.get();
         final long high =
                 start instanceof Map ? ((Map) start).size() :
-                        start instanceof Collection ? ((Collection) start).size() :
+                        start instanceof Iterable ? IteratorUtils.count((Iterable) start) :
                                 this.limit;
         final long low = high - this.limit;
         final S result = RangeLocalStep.applyRange(start, low, high);
