@@ -540,10 +540,6 @@ authentication: {
   config: {
     credentialsDb: conf/credential-graph.properties}}
 
-The "credential graph" schema is quite simple and it is up to the user to be sure that the graph given to `credentialsDb` matches that schema for the authentication process to work. The credentials graph stores users as vertices with the `label` of "user".  Each "user" vertex has two properties: `username` and `password`.  Naturally, these are both `String` values.
-
-IMPORTANT: Be sure to define an index on the `username` property, as this will be used for lookups.  If supported by the `Graph`, consider specifying a unique constraint as well.
-
 Quick Start
 +++++++++++
 
@@ -583,6 +579,35 @@ Cluster cluster = Cluster.build().credentials("stephen", "password")
                                  .enableSsl(true).create();
 
 If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote script execution, use the provided `config/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and password as well as enablement of SSL from the client side.
+
+Credentials Graph DSL
++++++++++++++++++++++
+
+The "credentials graph", which has been mentioned in previous sections, is used by Gremlin Server to hold the list of users who can authenticate to the server.  It is possible to use virtually any `Graph` instance for this task as long as it complies to a defined schema. The credentials graph stores users as vertices with the `label` of "user".  Each "user" vertex has two properties: `username` and `password`.  Naturally, these are both `String` values.  The password must not be stored in plain text and should be hashed.
+
+IMPORTANT: Be sure to define an index on the `username` property, as this will be used for lookups.  If supported by the `Graph`, consider specifying a unique constraint as well.
+
+To aid with the management of a credentials graph, Gremlin Server provides a Gremlin Console plugin which can be used to add and remove users so as to ensure that the schema is adhered to, thus ensuring compatibility with Gremlin Server.  In addition, as it is a plugin, it works naturally in the Gremlin Console as an extension of its capabilities (though one could use it programmatically, if desired).  This plugin is distributed with the Gremlin Console so it does not have to be "installed".  It does however need to be activated:
+
+[source,groovy]
+gremlin> :plugin use tinkerpop.credentials
+==>tinkerpop.credentials activated
+
+Please see the example usage as follows:
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+graph.createIndex("username",Vertex.class)
+credentials = credentials(graph)
+credentials.createUser("stephen","password")
+credentials.createUser("daniel","better-password")
+credentials.createUser("marko","rainbow-dash")
+credentials.findUser("marko").properties()
+credentials.countUsers()
+credentials.removeUser("daniel")
+credentials.countUsers()
+----
 
 Serialization
 ^^^^^^^^^^^^^
