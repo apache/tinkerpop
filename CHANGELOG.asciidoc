@@ -23,6 +23,8 @@ TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 
 image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
+* Made `Path` iterable, so that it can be `unfold()`ed and used by local steps like `min(local)`, `max(local)`, etc..
+
 TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------------------------------------
 
