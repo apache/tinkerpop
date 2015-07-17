@@ -94,6 +94,17 @@ public class CredentialGraphTest {
         assertNull(credentials(graph).findUser("stephanie"));
     }
 
+    @Test
+    public void shouldCountUsers() {
+        assertThat(graph.vertices().hasNext(), is(false));
+        credentials(graph).createUser("marko", "secret");
+        credentials(graph).createUser("stephen", "secret");
+        credentials(graph).createUser("daniel", "secret");
+        assertThat(graph.vertices().hasNext(), is(true));
+
+        assertEquals(3, credentials(graph).countUsers());
+    }
+
     @Test(expected = IllegalStateException.class)
     public void shouldThrowIfFindingMultipleUsers() {
         assertThat(graph.vertices().hasNext(), is(false));

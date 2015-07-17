@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.mindrot.jbcrypt.BCrypt;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.drop;
@@ -97,6 +98,21 @@ public class CredentialGraph {
             if (supportsTransactions) graph.tx().rollback();
             throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * Get a count of the number of users in the database.
+     */
+    public long countUsers() {
+        if (supportsTransactions) graph.tx().rollback();
+        return g.V().hasLabel(VERTEX_LABEL_USER).count().next();
+    }
+
+    @Override
+    public String toString() {
+        return "CredentialGraph{" +
+                "graph=" + graph +
+                '}';
     }
 
     /**
