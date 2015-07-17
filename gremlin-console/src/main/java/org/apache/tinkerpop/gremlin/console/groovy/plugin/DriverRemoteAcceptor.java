@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
+import javax.security.sasl.SaslException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -102,6 +104,8 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             final List<Result> resultSet = send(line);
             this.shell.getInterp().getContext().setProperty(RESULT, resultSet);
             return resultSet.stream().map(result -> result.getObject()).iterator();
+        } catch (SaslException sasl) {
+            throw new RemoteException("Security error - check username/password and related settings", sasl);
         } catch (Exception ex) {
             final Optional<ResponseException> inner = findResponseException(ex);
             if (inner.isPresent()) {
@@ -127,12 +131,17 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
         if (this.currentCluster != null) this.currentCluster.close();
     }
 
-    private List<Result> send(final String gremlin) {
+    private List<Result> send(final String gremlin) throws SaslException {
         try {
             return this.currentClient.submit(gremlin).all().get(this.timeout, TimeUnit.MILLISECONDS);
-        } catch (TimeoutException ignored) {
+        } catch(TimeoutException ignored) {
             throw new IllegalStateException("Request timed out while processing - increase the timeout with the :remote command");
         } catch (Exception e) {
+            // handle security error as-is and unwrapped
+            final Optional<Throwable> throwable  = Stream.of(ExceptionUtils.getThrowables(e)).filter(t -> t instanceof SaslException).findFirst();
+            if (throwable.isPresent())
+                throw (SaslException) throwable.get();
+
             throw new IllegalStateException(e.getMessage(), e);
         }
     }

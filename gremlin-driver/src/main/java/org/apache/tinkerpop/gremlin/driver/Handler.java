@@ -80,9 +80,9 @@ final class Handler {
             // We are only interested in AUTHENTICATE responses here. Everything else can
             // get passed down the pipeline
             if (response.getStatus().getCode() == ResponseStatusCode.AUTHENTICATE) {
-                Attribute<SaslClient> saslClient = channelHandlerContext.attr(saslClientKey);
-                Attribute<Subject> subject = channelHandlerContext.attr(subjectKey);
-                byte[] saslResponse = null;
+                final Attribute<SaslClient> saslClient = channelHandlerContext.attr(saslClientKey);
+                final Attribute<Subject> subject = channelHandlerContext.attr(subjectKey);
+                byte[] saslResponse;
                 // First time through we don't have a sasl client
                 if (saslClient.get() == null) {
                     subject.set(login());
@@ -97,7 +97,7 @@ final class Handler {
             }
         }
 
-        public void handle(Callback[] callbacks) {
+        public void handle(final Callback[] callbacks) {
             for (Callback callback : callbacks) {
                 if (callback instanceof NameCallback) {
                     if (authProps.get(AuthProperties.Property.USERNAME) != null) {
@@ -121,11 +121,7 @@ final class Handler {
             } else {
                 // If we have a subject then run this as a privileged action using the subject
                 try {
-                    return Subject.doAs(subject.get(), new PrivilegedExceptionAction<byte[]>() {
-                        public byte[] run() throws SaslException {
-                            return saslClient.get().evaluateChallenge(challenge);
-                        }
-                    });
+                    return Subject.doAs(subject.get(), (PrivilegedExceptionAction<byte[]>) () -> saslClient.get().evaluateChallenge(challenge));
                 } catch (PrivilegedActionException e) {
                     throw (SaslException)e.getException();
                 }
