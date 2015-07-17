@@ -27,7 +27,7 @@ TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a bug in `Path` usage that required an API update: `Path.addLabel()` is now `Path.extend(Set<String>)` and `Traverser.addLabels(Set<String>)`.
-* Made `Path` iterable, so that it can be `unfold()`ed and used by local steps like `min(local)`, `max(local)`, etc.
+* Made `Path` iterable, so that it can be `unfold()` and used by local steps like `min(local)`, `max(local)`, etc.
 
 TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------------------------------------
