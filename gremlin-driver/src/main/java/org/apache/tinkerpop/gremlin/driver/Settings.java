@@ -47,6 +47,10 @@ final class Settings {
 
     public int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
 
+    public String username;
+
+    public String password;
+
     /**
      * Read configuration from a file into a new {@link Settings} object.
      *

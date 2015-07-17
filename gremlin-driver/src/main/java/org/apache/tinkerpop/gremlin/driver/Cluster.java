@@ -111,6 +111,7 @@ public final class Cluster {
 
         final Builder builder = new Builder(settings.hosts.get(0))
                 .port(settings.port)
+                .enableSsl(settings.connectionPool.enableSsl)
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .maxInProcessPerConnection(settings.connectionPool.maxInProcessPerConnection)
@@ -118,6 +119,9 @@ public final class Cluster {
                 .minSimultaneousUsagePerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
                 .minConnectionPoolSize(settings.connectionPool.minSize);
+
+        if (settings.username != null && settings.password != null)
+            builder.credentials(settings.username, settings.password);
 
         // the first address was added above in the constructor, so skip it if there are more
         if (addresses.size() > 1)
