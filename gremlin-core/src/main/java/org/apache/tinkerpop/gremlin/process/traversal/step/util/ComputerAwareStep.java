@@ -75,8 +75,10 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         @Override
         protected Traverser<S> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<S> start = this.starts.next();
-            if (this.traverserStepIdAndLabelsSetByChild)
-                start.setStepId(((ComputerAwareStep)this.getTraversal().getParent()).getNextStep().getId());
+            if (this.traverserStepIdAndLabelsSetByChild) {
+                start.setStepId(((ComputerAwareStep<?, ?>) this.getTraversal().getParent()).getNextStep().getId());
+                start.addLabels(((ComputerAwareStep<?, ?>) this.getTraversal().getParent()).getLabels());
+            }
             return start;
         }
 

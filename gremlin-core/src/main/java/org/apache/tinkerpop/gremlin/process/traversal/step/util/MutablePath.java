@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -130,6 +131,11 @@ public class MutablePath implements Path, Serializable {
     @Override
     public List<Set<String>> labels() {
         return Collections.unmodifiableList(this.labels);
+    }
+
+    @Override
+    public Iterator<Object> iterator() {
+        return this.objects.iterator();
     }
 
     @Override
