@@ -49,6 +49,11 @@ import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 /**
+ * A {@code StarGraph} is a form of {@link Attachable} (though the {@link Graph} implementation does not implement
+ * that interface itself).  It is a very limited {@link Graph} implementation that holds a single {@link Vertex}
+ * and its related properties and edges (and their properties).  It is designed to be an efficient memory
+ * representation of this data structure, thus making it good for network and disk-based serialization.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class StarGraph implements Graph, Serializable {
@@ -67,6 +72,9 @@ public final class StarGraph implements Graph, Serializable {
     private StarGraph() {
     }
 
+    /**
+     * Gets the {@link Vertex} representative of the {@link StarGraph}.
+     */
     public StarVertex getStarVertex() {
         return this.starVertex;
     }
@@ -172,10 +180,16 @@ public final class StarGraph implements Graph, Serializable {
         return StringFactory.graphString(this, "starOf:" + this.starVertex);
     }
 
+    /**
+     * Creates an empty {@link StarGraph}.
+     */
     public static StarGraph open() {
         return new StarGraph();
     }
 
+    /**
+     * Creates a new {@link StarGraph} from a {@link Vertex}.
+     */
     public static StarGraph of(final Vertex vertex) {
         if (vertex instanceof StarVertex) return (StarGraph) vertex.graph();
         // else convert to a star graph
