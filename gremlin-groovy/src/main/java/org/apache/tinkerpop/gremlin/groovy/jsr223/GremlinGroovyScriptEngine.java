@@ -439,10 +439,12 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private void registerBindingTypes(final ScriptContext context) {
         final Map<String,ClassNode> variableTypes = new HashMap<>();
         clearVarTypes();
-        context.getBindings(ScriptContext.ENGINE_SCOPE).forEach((k, v) -> {
-            final Class clazz = v.getClass();
-            variableTypes.put(k, ClassHelper.make(clazz));
-        });
+
+        // use null for the classtype if the binding value itself is null - not fully sure if that is
+        // a sound way to deal with that.  didn't see a class type for null - maybe it should just be
+        // unknown and be "Object".  at least null is properly being accounted for now.
+        context.getBindings(ScriptContext.ENGINE_SCOPE).forEach((k, v) ->
+            variableTypes.put(k, null == v ? null : ClassHelper.make(v.getClass())));
 
         COMPILE_OPTIONS.get().put(COMPILE_OPTIONS_VAR_TYPES, variableTypes);
     }

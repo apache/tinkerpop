@@ -28,6 +28,7 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -62,9 +63,25 @@ public class GremlinGroovyScriptEngineTest {
     }
 
     @Test
-    public void shouldEvalSimple() throws Exception {
+    public void shouldEvalWithNoBindings() throws Exception {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         assertEquals(3, engine.eval("1+2"));
+    }
+
+    @Test
+    public void shouldEvalWithBindings() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Bindings b = new SimpleBindings();
+        b.put("x", 2);
+        assertEquals(3, engine.eval("1+x", b));
+    }
+
+    @Test
+    public void shouldEvalWithNullInBindings() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
+        final Bindings b = new SimpleBindings();
+        b.put("x", null);
+        assertNull(engine.eval("x", b));
     }
 
     @Test

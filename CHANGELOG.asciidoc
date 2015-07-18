@@ -48,6 +48,7 @@ TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
 * Added a `SandboxExtension` that can be plugged into `TypeCheckedCustomizerProvider` and `CompileStaticCustomizerProvider` to control classes and methods that can be used in the `GremlinGroovyScriptEngine`.
 * Added a number of new `ImportCustomizerProvider` implementations such as, `TimedInterruptCustomizerProvider`, `TypeCheckedCustomizerProvider` and others.
 * Refactored `GremlinGroovyScriptEngine` to make more general use of `ImportCustomizerProvider` implementations.
+* Removed `SecurityCustomizerProvider` class and the "sandbox" configuration on the `ScriptEngines` class - this was an experimental feature and not meant for public use.
 * Removed dependency on `groovy-sandbox` from the `gremlin-groovy` module.
 
 TinkerPop 3.0.0 (Release Date: July 9, 2015)
