@@ -21,13 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +37,7 @@ import java.util.Set;
  * <p/>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  * @example <pre>
  * __.order().dedup()            // is replaced by __.dedup().order()
  * </pre>
@@ -45,7 +45,6 @@ import java.util.Set;
 public final class DedupBijectionStrategy extends AbstractTraversalStrategy<TraversalStrategy.OptimizationStrategy> implements TraversalStrategy.OptimizationStrategy {
 
     private static final DedupBijectionStrategy INSTANCE = new DedupBijectionStrategy();
-    private static final List<Class<? extends Step>> BIJECTIVE_PIPES = Collections.singletonList(OrderGlobalStep.class);
     private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>();
 
     static {
@@ -62,24 +61,19 @@ public final class DedupBijectionStrategy extends AbstractTraversalStrategy<Trav
         if (!TraversalHelper.hasStepOfClass(DedupGlobalStep.class, traversal))
             return;
 
-        boolean done = false;
-        while (!done) {
-            done = true;
-            for (int i = 0; i < traversal.getSteps().size(); i++) {
-                final Step step1 = traversal.getSteps().get(i);
-                if (step1 instanceof DedupGlobalStep && (((DedupGlobalStep) step1).getLocalChildren().isEmpty())) {
-                    for (int j = i; j >= 0; j--) {
-                        final Step step2 = traversal.getSteps().get(j);
-                        if (BIJECTIVE_PIPES.stream().filter(c -> c.isAssignableFrom(step2.getClass())).findAny().isPresent()) {
-                            traversal.removeStep(step1);
-                            traversal.addStep(j, step1);
-                            done = false;
-                            break;
-                        }
-                    }
+        final List<Step> steps = traversal.getSteps();
+        boolean exchangeable = false;
+        for (int i = steps.size() - 1; i >= 0; i--) {
+            final Step curr = steps.get(i);
+            if (exchangeable) {
+                if (curr instanceof OrderGlobalStep) {
+                    final Step next = curr.getNextStep();
+                    traversal.removeStep(next);
+                    traversal.addStep(i, next);
                 }
-                if (!done)
-                    break;
+                exchangeable = curr instanceof IdentityStep;
+            } else {
+                exchangeable = curr instanceof DedupGlobalStep && ((DedupGlobalStep) curr).getLocalChildren().isEmpty();
             }
         }
     }
