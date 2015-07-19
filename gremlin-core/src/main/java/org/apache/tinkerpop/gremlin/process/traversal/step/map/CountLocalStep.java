@@ -18,12 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -39,7 +41,9 @@ public final class CountLocalStep<S> extends MapStep<S, Long> {
     @Override
     protected Long map(final Traverser.Admin<S> traverser) {
         final S item = traverser.get();
-        return (item instanceof Iterable) ? IteratorUtils.count((Iterable) item) : 1L;
+        return (item instanceof Collection) ? ((Collection) item).size()
+                : (item instanceof Map) ? ((Map) item).size()
+                : (item instanceof Path) ? ((Path) item).size() : 1L;
     }
 
     @Override
