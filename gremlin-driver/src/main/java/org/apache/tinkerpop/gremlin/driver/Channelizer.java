@@ -74,6 +74,7 @@ public interface Channelizer extends ChannelHandler {
         protected Cluster cluster;
         private ConcurrentMap<UUID, ResultQueue> pending;
 
+        protected static final String PIPELINE_GREMLIN_SASL_HANDLER = "gremlin-sasl-handler";
         protected static final String PIPELINE_GREMLIN_HANDLER = "gremlin-handler";
 
         public boolean supportsSsl() {
@@ -120,6 +121,7 @@ public interface Channelizer extends ChannelHandler {
             }
 
             configure(pipeline);
+            pipeline.addLast(PIPELINE_GREMLIN_SASL_HANDLER, new Handler.GremlinSaslAuthenticationHandler(cluster.authProperties()));
             pipeline.addLast(PIPELINE_GREMLIN_HANDLER, new Handler.GremlinResponseHandler(pending));
         }
     }

@@ -57,8 +57,9 @@ public final class Cluster {
     private Cluster(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
                     final int nioPoolSize, final int workerPoolSize,
                     final Settings.ConnectionPoolSettings connectionPoolSettings,
-                    final LoadBalancingStrategy loadBalancingStrategy) {
-        this.manager = new Manager(contactPoints, serializer, nioPoolSize, workerPoolSize, connectionPoolSettings, loadBalancingStrategy);
+                    final LoadBalancingStrategy loadBalancingStrategy,
+                    final AuthProperties authProps) {
+        this.manager = new Manager(contactPoints, serializer, nioPoolSize, workerPoolSize, connectionPoolSettings, loadBalancingStrategy, authProps);
     }
 
     public synchronized void init() {
@@ -110,6 +111,7 @@ public final class Cluster {
 
         final Builder builder = new Builder(settings.hosts.get(0))
                 .port(settings.port)
+                .enableSsl(settings.connectionPool.enableSsl)
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .maxInProcessPerConnection(settings.connectionPool.maxInProcessPerConnection)
@@ -117,6 +119,9 @@ public final class Cluster {
                 .minSimultaneousUsagePerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
                 .minConnectionPoolSize(settings.connectionPool.minSize);
+
+        if (settings.username != null && settings.password != null)
+            builder.credentials(settings.username, settings.password);
 
         // the first address was added above in the constructor, so skip it if there are more
         if (addresses.size() > 1)
@@ -200,6 +205,10 @@ public final class Cluster {
         return manager.loadBalancingStrategy;
     }
 
+    AuthProperties authProperties() {
+        return manager.authProps;
+    }
+
     Collection<Host> allHosts() {
         return manager.allHosts();
     }
@@ -223,6 +232,7 @@ public final class Cluster {
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         private boolean enableSsl = false;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
+        private AuthProperties authProps = new AuthProperties();
 
         private Builder() {
             // empty to prevent direct instantiation
@@ -397,6 +407,26 @@ public final class Cluster {
             return this;
         }
 
+        public Builder authProperties(final AuthProperties authProps) {
+            this.authProps = authProps;
+            return this;
+        }
+
+        public Builder credentials(final String username, final String password) {
+            authProps = authProps.with(AuthProperties.Property.USERNAME, username).with(AuthProperties.Property.PASSWORD, password);
+            return this;
+        }
+
+        public Builder protocol(final String protocol) {
+            this.authProps = authProps.with(AuthProperties.Property.PROTOCOL, protocol);
+            return this;
+        }
+
+        public Builder jaasEntry(final String jaasEntry) {
+            this.authProps = authProps.with(AuthProperties.Property.JAAS_ENTRY, jaasEntry);
+            return this;
+        }
+
         public Builder addContactPoint(final String address) {
             try {
                 this.addresses.add(InetAddress.getByName(address));
@@ -437,7 +467,7 @@ public final class Cluster {
             connectionPoolSettings.resultIterationBatchSize = this.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = this.enableSsl;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
-                    connectionPoolSettings, loadBalancingStrategy);
+                    connectionPoolSettings, loadBalancingStrategy, authProps);
         }
     }
 
@@ -468,6 +498,7 @@ public final class Cluster {
         private final MessageSerializer serializer;
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
         private final LoadBalancingStrategy loadBalancingStrategy;
+        private final AuthProperties authProps;
 
         private final ScheduledExecutorService executor;
 
@@ -475,8 +506,10 @@ public final class Cluster {
 
         private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
                         final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings,
-                        final LoadBalancingStrategy loadBalancingStrategy) {
+                        final LoadBalancingStrategy loadBalancingStrategy,
+                        final AuthProperties authProps) {
             this.loadBalancingStrategy = loadBalancingStrategy;
+            this.authProps = authProps;
             this.contactPoints = contactPoints;
             this.connectionPoolSettings = connectionPoolSettings;
             this.factory = new Factory(nioPoolSize);

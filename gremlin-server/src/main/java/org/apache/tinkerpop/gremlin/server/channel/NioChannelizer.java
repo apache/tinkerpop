@@ -20,11 +20,13 @@ package org.apache.tinkerpop.gremlin.server.channel;
 
 import io.netty.channel.EventLoopGroup;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
+import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.NioGremlinBinaryRequestDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.NioGremlinResponseEncoder;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,11 +41,17 @@ public class NioChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(NioChannelizer.class);
 
     private NioGremlinBinaryRequestDecoder nioGremlinBinaryRequestDecoder;
+    private SaslAuthenticationHandler authenticationHandler;
 
     @Override
     public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
         nioGremlinBinaryRequestDecoder = new NioGremlinBinaryRequestDecoder(serializers);
+
+        // configure authentication - null means don't bother to add authentication to the pipeline
+        if (authenticator != null)
+            authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
+                    null : new SaslAuthenticationHandler(authenticator);
     }
 
     @Override
@@ -56,5 +64,8 @@ public class NioChannelizer extends AbstractChannelizer {
 
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-codec", LogLevel.DEBUG));
+
+        if (authenticationHandler != null)
+            pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
     }
 }

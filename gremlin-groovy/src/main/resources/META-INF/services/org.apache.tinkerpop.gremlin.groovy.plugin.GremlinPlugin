@@ -1,1 +1,2 @@
 org.apache.tinkerpop.gremlin.groovy.plugin.SugarGremlinPlugin
+org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraphGremlinPlugin

@@ -16,29 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential;
 
 /**
- * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact
-import org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber
+public final class CredentialGraphTokens {
+    public static final String PROPERTY_USERNAME = "username";
+    public static final String PROPERTY_PASSWORD = "password";
 
-installPlugin = { def artifact ->
-  def classLoader = new groovy.lang.GroovyClassLoader()
-  def extensionPath = System.getProperty("user.dir") + System.getProperty("file.separator") + "ext"
-  try {
-    System.err.print(" * ${artifact.getArtifact()} ... ")
-    new DependencyGrabber(classLoader, extensionPath).copyDependenciesToPath(artifact)
-    System.err.println("done")
-  } catch (Exception e) {
-    System.err.println("failed")
-    System.err.println()
-    System.err.println(e.getMessage())
-    e.printStackTrace()
-    System.exit(1)
-  }
+    public static final String VERTEX_LABEL_USER = "user";
+
+    private CredentialGraphTokens() {}
 }
-
-:plugin use tinkerpop.sugar
-:plugin use tinkerpop.credentials
-System.err.println("done")

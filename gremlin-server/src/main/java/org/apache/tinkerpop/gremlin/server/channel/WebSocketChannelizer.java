@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.server.channel;
 
 import io.netty.channel.EventLoopGroup;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
+import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
+import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinBinaryRequestDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinResponseEncoder;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinTextRequestDecoder;
@@ -46,6 +48,7 @@ public class WebSocketChannelizer extends AbstractChannelizer {
     private WsGremlinResponseEncoder wsGremlinResponseEncoder;
     private WsGremlinTextRequestDecoder wsGremlinTextRequestDecoder;
     private WsGremlinBinaryRequestDecoder wsGremlinBinaryRequestDecoder;
+    private SaslAuthenticationHandler authenticationHandler;
 
     @Override
     public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
@@ -54,6 +57,11 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         wsGremlinResponseEncoder = new WsGremlinResponseEncoder();
         wsGremlinTextRequestDecoder = new WsGremlinTextRequestDecoder(serializers);
         wsGremlinBinaryRequestDecoder = new WsGremlinBinaryRequestDecoder(serializers);
+
+        // configure authentication - null means don't bother to add authentication to the pipeline
+        if (authenticator != null)
+            authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
+                    null : new SaslAuthenticationHandler(authenticator);
     }
 
     @Override
@@ -89,5 +97,8 @@ public class WebSocketChannelizer extends AbstractChannelizer {
 
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
+
+        if (authenticationHandler != null)
+            pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
     }
 }

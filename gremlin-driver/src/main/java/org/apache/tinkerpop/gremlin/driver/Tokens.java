@@ -36,6 +36,7 @@ public final class Tokens {
     public static final String OPS_RESET = "reset";
     public static final String OPS_USE = "use";
     public static final String OPS_VERSION = "version";
+    public static final String OPS_AUTHENTICATION = "authentication";
 
     public static final String ARGS_BATCH_SIZE = "batchSize";
     public static final String ARGS_BINDINGS = "bindings";
@@ -46,6 +47,7 @@ public final class Tokens {
     public static final String ARGS_LANGUAGE = "language";
     public static final String ARGS_REBINDINGS = "rebindings";
     public static final String ARGS_SESSION = "session";
+    public static final String ARGS_SASL = "sasl";
 
     public static final String ARGS_COORDINATES_GROUP = "group";
     public static final String ARGS_COORDINATES_ARTIFACT = "artifact";

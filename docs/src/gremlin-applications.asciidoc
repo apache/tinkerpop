@@ -469,6 +469,8 @@ The following table describes the various configuration options that Gremlin Ser
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
+|authentication.className |The fully qualified classname of an `Authenticator` implementation to use.  If this setting is not present, then authentication is effectively disabled. |`AllowAllAuthenticator`
+|authentication.config |A `Map` of configuration settings to be passes to the `Authenticator` when it is constructed.  The settings available are dependent on the implementation. |_none_
 |channelizer |The fully qualified classname of the `Channelizer` implementation to use.  A `Channelizer` is a "channel initializer" which Gremlin Server uses to define the type of processing pipeline to use.  By allowing different `Channelizer` implementations, Gremlin Server can support different communication protocols (e.g. Websockets, Java NIO, etc.). |WebSocketChannelizer
 |graphs |A `Map` of `Graph` configuration files where the key of the `Map` becomes the name to which the `Graph` will be bound and the value is the file name of a `Graph` configuration file. |_none_
 |gremlinPool |The number of "Gremlin" threads available to execute actual scripts in a `ScriptEngine`. This pool represents the workers available to handle blocking operations in Gremlin Server. |8
@@ -524,6 +526,89 @@ The following table describes the various configuration options that Gremlin Ser
 |=========================================================
 
 NOTE: Configuration of link:http://ganglia.sourceforge.net/[Ganglia] requires an additional library that is not packaged with Gremlin Server due to its LGPL licensing that conflicts with the TinkerPop's Apache 2.0 License.  To run Gremlin Server with Ganglia monitoring, download the `org.acplt:oncrpc` jar from link:http://repo1.maven.org/maven2/org/acplt/oncrpc/1.0.7/[here] and copy it to the Gremlin Server `/lib` directory before starting the server.
+
+Security
+^^^^^^^^
+
+image:gremlin-server-secure.png[width=175,float=right] Gremlin Server provides for several features that aid in the security of the graphs that it exposes.  It has built in SSL support and a pluggable authentication framework using link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL] (Simple Authentication and Security Layer).  SSL options are described in the configuration settings table above, so this section will focus on authentication.
+
+By default, Gremlin Server is configured to allow all requests to be processed (i.e. no authentication).  To enable authentication, Gremlin Server must be configured with an `Authenticator` implementation in its YAML file.  Gremlin Server comes packaged with an implementation called `SimpleAuthenticator`.  The `SimpleAuthenticator` implements the `PLAIN` SASL mechanism (i.e. plain text) to authenticate a request.  It validates username/password pairs against a graph database, which must be provided to it as part of the configuration.
+
+[source,yaml]
+authentication: {
+  className: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
+  config: {
+    credentialsDb: conf/credential-graph.properties}}
+
+Quick Start
++++++++++++
+
+A quick way to get started with the `SimpleAuthenticator` is to use TinkerGraph for the "credentials graph" and the "sample" credential graph that is packaged with the server.  Recall that TinkerGraph is an in-memory graph and therefore always starts as "empty" when opened by `GraphFactory`.  To allow TinkerGraph to be used in this "getting started" capacity, Gremlin Server allows for a TinkerGraph-only configuration option called `credentialsDbLocation`.  The following snippet comes from the `conf/gremlin-server-secure.yaml` file packaged with the server:
+
+[source,yaml]
+authentication: {
+  className: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
+  config: {
+    credentialsDb: conf/tinkergraph-empty.properties,
+    credentialsDbLocation: data/credentials.kryo}}
+
+This added configuration tells Gremlin Server to look for a gryo file at that location containing the data for the graph which it loads via standard `io` methods.  The limitation is that this read is only performed at the initialization of the server so therefore credentials remain static for the life of the server.  In this case, `data/credentials.kryo` contains a single user named "stephen" with the imaginative password of "password".
+
+[source,text]
+----
+$ bin/gremlin-server.sh conf/gremlin-server-secure.yaml
+[INFO] GremlinServer -
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+
+[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-secure.yaml
+...
+[WARN] AbstractChannelizer - Enabling SSL with self-signed certificate (NOT SUITABLE FOR PRODUCTION)
+[INFO] AbstractChannelizer - SSL enabled
+[INFO] SimpleAuthenticator - Initializing authentication with the org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
+[INFO] SimpleAuthenticator - CredentialGraph initialized at CredentialGraph{graph=tinkergraph[vertices:1 edges:0]}
+[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
+[INFO] GremlinServer$1 - Channel started at port 8182.
+----
+
+In addition to configuring the authenticator, `gremlin-server-secure.yaml` also enables SSL with a self-signed certificate.  As SSL is enabled on the server it must also be enabled on the client when connecting.  To connect to Gremlin Server with `gremlin-driver`, set the `credentials` and `enableSsl` when constructing the `Cluster`.
+
+[source,java]
+Cluster cluster = Cluster.build().credentials("stephen", "password")
+                                 .enableSsl(true).create();
+
+If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote script execution, use the provided `config/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and password as well as enablement of SSL from the client side.
+
+[[credentials-dsl]]
+Credentials Graph DSL
++++++++++++++++++++++
+
+The "credentials graph", which has been mentioned in previous sections, is used by Gremlin Server to hold the list of users who can authenticate to the server.  It is possible to use virtually any `Graph` instance for this task as long as it complies to a defined schema. The credentials graph stores users as vertices with the `label` of "user".  Each "user" vertex has two properties: `username` and `password`.  Naturally, these are both `String` values.  The password must not be stored in plain text and should be hashed.
+
+IMPORTANT: Be sure to define an index on the `username` property, as this will be used for lookups.  If supported by the `Graph`, consider specifying a unique constraint as well.
+
+To aid with the management of a credentials graph, Gremlin Server provides a Gremlin Console plugin which can be used to add and remove users so as to ensure that the schema is adhered to, thus ensuring compatibility with Gremlin Server.  In addition, as it is a plugin, it works naturally in the Gremlin Console as an extension of its capabilities (though one could use it programmatically, if desired).  This plugin is distributed with the Gremlin Console so it does not have to be "installed".  It does however need to be activated:
+
+[source,groovy]
+gremlin> :plugin use tinkerpop.credentials
+==>tinkerpop.credentials activated
+
+Please see the example usage as follows:
+
+[gremlin-groovy]
+----
+graph = TinkerGraph.open()
+graph.createIndex("username",Vertex.class)
+credentials = credentials(graph)
+credentials.createUser("stephen","password")
+credentials.createUser("daniel","better-password")
+credentials.createUser("marko","rainbow-dash")
+credentials.findUser("marko").properties()
+credentials.countUsers()
+credentials.removeUser("daniel")
+credentials.countUsers()
+----
 
 Serialization
 ^^^^^^^^^^^^^
@@ -843,6 +928,18 @@ include::{basedir}/gremlin-groovy/src/main/java/org/apache/tinkerpop/gremlin/gro
 ----
 
 The `RemoteAcceptor` implementation ties to a `GremlinPlugin` and will only be executed when in use with the Gremlin Console plugin host.  Simply instantiate and return a `RemoteAcceptor` in the `GremlinPlugin.remoteAcceptor()` method of the plugin implementation.  Generally speaking, each call to `remoteAcceptor()` should produce a new instance of a `RemoteAcceptor`.  It will likely be necessary that you provide context from the `GremlinPlugin` to the `RemoteAcceptor` plugin.  For example, the `RemoteAcceptor` implementation might require an instance of `Groovysh` to provide a way to dynamically evaluate a script provided to it so that it can process the results in a different way.
+
+[[credentials-plugin]]
+Credentials Plugin
+~~~~~~~~~~~~~~~~~~
+
+image:gremlin-server.png[width=200,float=left] xref:gremlin-server[Gremlin Server] supports an authentication model where user credentials are stored inside of a `Graph` instance.  This database can be managed with the xref:credentials-dsl[Credentials DSL], which can be installed in the console via the Credentials Plugin.  This plugin is packaged with the console, but is not enabled by default.
+
+[source,groovy]
+gremlin> :plugin use tinkerpop.credentials
+==>tinkerpop.credentials activated
+
+This plugin imports the appropriate classes for managing the credentials graph.
 
 [[gephi-plugin]]
 Gephi Plugin
