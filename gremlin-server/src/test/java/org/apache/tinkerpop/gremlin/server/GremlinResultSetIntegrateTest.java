@@ -109,7 +109,7 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Test
     public void shouldHandlePathResult() throws Exception {
-        final ResultSet results = client.submit("g.V().out().path().next()");
+        final ResultSet results = client.submit("g.V().out().path()");
         final Path p = results.all().get().get(0).getPath();
         assertThat(p, instanceOf(DetachedPath.class));
     }
