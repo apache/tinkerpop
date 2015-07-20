@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.server.auth;
 import java.util.Map;
 
 /**
+ * Allows all requests to be authenticated.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class AllowAllAuthenticator implements Authenticator {

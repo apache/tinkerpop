@@ -26,6 +26,10 @@ import org.apache.tinkerpop.gremlin.server.Channelizer;
 import java.util.Map;
 
 /**
+ * Provides methods related to authentication of a request.  Implementations should provide a SASL based
+ * authentication method, but a handler can choose to use the {@link #authenticate(Map)} method directly if
+ * required for protocols that don't easily support SASL.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface Authenticator {
@@ -49,7 +53,8 @@ public interface Authenticator {
 
     /**
      * A "standard" authentication implementation that can be used more generically without SASL support.  This
-     * implementation is used when a particular {@link Channelizer} doesn't support SASL directly (like REST).
+     * implementation is used when a particular {@link Channelizer} doesn't support SASL directly (like basic
+     * HTTP authentication).
      */
     public AuthenticatedUser authenticate(final Map<String, String> credentials) throws AuthenticationException;
 

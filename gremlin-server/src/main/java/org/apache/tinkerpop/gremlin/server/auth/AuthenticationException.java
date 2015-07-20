@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.server.auth;
 
 /**
+ * An exception that occurs when during authentication such as a failed login.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class AuthenticationException extends Exception {

@@ -38,6 +38,9 @@ import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.Credenti
 import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraphTokens.PROPERTY_USERNAME;
 
 /**
+ * A simple implementation of an {@link Authenticator} that uses a {@link Graph} instance as a credential store.
+ * Management of the credential store can be handled through the {@link CredentialGraph} DSL.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class SimpleAuthenticator implements Authenticator {
