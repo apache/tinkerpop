@@ -59,14 +59,6 @@ public class B_LP_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
         return this;
     }
 
-    @Override
-    public T attach(final Function<Attachable<T>, T> method) {
-        // you do not want to attach a path because it will reference graph objects not at the current vertex
-        if (this.t instanceof Attachable && !(((Attachable) this.t).get() instanceof Path))
-            this.t = ((Attachable<T>) this.t).attach(method);
-        return this.t;
-    }
-
     /////////////////
 
     @Override
@@ -74,7 +66,13 @@ public class B_LP_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
         final B_LP_O_P_S_SE_SL_Traverser<R> clone = (B_LP_O_P_S_SE_SL_Traverser<R>) super.split(r, step);
         clone.path = clone.path.clone().extend(r, step.getLabels());
         return clone;
+    }
 
+    @Override
+    public Traverser.Admin<T> split() {
+        final B_LP_O_P_S_SE_SL_Traverser<T> clone = (B_LP_O_P_S_SE_SL_Traverser<T>) super.split();
+        clone.path = clone.path.clone();
+        return clone;
     }
 
     @Override
