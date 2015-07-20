@@ -30,7 +30,6 @@ import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.PrivilegedExceptionAction;
 import java.security.PrivilegedActionException;
@@ -45,7 +44,6 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.Sasl;
@@ -91,7 +89,7 @@ final class Handler {
                 } else {
                     saslResponse = evaluateChallenge(subject, saslClient, (byte[])response.getResult().getData());
                 }
-                channelHandlerContext.writeAndFlush(RequestMessage.build("authentication").addArg("sasl", saslResponse).create());
+                channelHandlerContext.writeAndFlush(RequestMessage.build(Tokens.OPS_AUTHENTICATION).addArg(Tokens.ARGS_SASL, saslResponse).create());
             } else {
                 channelHandlerContext.fireChannelRead(response);
             }

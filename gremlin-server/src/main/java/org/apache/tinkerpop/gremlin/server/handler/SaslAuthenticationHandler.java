@@ -23,6 +23,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
+import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -69,8 +70,8 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                         .code(ResponseStatusCode.AUTHENTICATE).create();
                 ctx.writeAndFlush(authenticate);
             } else {
-                if (requestMessage.getOp().equals("authentication") && requestMessage.getArgs().containsKey("sasl")) {
-                    final byte[] saslResponse = (byte[]) requestMessage.getArgs().get("sasl");
+                if (requestMessage.getOp().equals(Tokens.OPS_AUTHENTICATION) && requestMessage.getArgs().containsKey(Tokens.ARGS_SASL)) {
+                    final byte[] saslResponse = (byte[]) requestMessage.getArgs().get(Tokens.ARGS_SASL);
                     try {
                         byte[] saslMessage = negotiator.get().evaluateResponse(saslResponse);
                         if (negotiator.get().isComplete()) {
