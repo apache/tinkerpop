@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.server.auth;
 
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.server.auth;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.server.Channelizer;
 
 import java.util.Map;
 
@@ -45,6 +46,12 @@ public interface Authenticator {
      * attempt.)
      */
     public SaslNegotiator newSaslNegotiator();
+
+    /**
+     * A "standard" authentication implementation that can be used more generically without SASL support.  This
+     * implementation is used when a particular {@link Channelizer} doesn't support SASL directly (like REST).
+     */
+    public AuthenticatedUser authenticate(final Map<String, String> credentials) throws AuthenticationException;
 
     /**
      * Performs the actual SASL negotiation for a single authentication attempt.

@@ -34,6 +34,11 @@ public final class AllowAllAuthenticator implements Authenticator {
     public void setup(final Map<String,Object> config) {
     }
 
+    @Override
+    public AuthenticatedUser authenticate(final Map<String, String> credentials) throws AuthenticationException {
+        return AuthenticatedUser.ANONYMOUS_USER;
+    }
+
     public SaslNegotiator newSaslNegotiator() {
         return AUTHENTICATOR_INSTANCE;
     }

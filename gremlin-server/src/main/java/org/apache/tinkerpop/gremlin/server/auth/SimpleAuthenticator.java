@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraphTokens.PROPERTY_PASSWORD;
@@ -95,8 +96,13 @@ public class SimpleAuthenticator implements Authenticator {
         return new PlainTextSaslAuthenticator();
     }
 
-    private AuthenticatedUser authenticate(final String username, final String password) throws AuthenticationException {
+    public AuthenticatedUser authenticate(final Map<String, String> credentials) throws AuthenticationException {
         final Vertex user;
+        if (!credentials.containsKey(PROPERTY_USERNAME)) throw new IllegalArgumentException(String.format("Credentials must contain a %s", PROPERTY_USERNAME));
+        if (!credentials.containsKey(PROPERTY_PASSWORD)) throw new IllegalArgumentException(String.format("Credentials must contain a %s", PROPERTY_PASSWORD));
+
+        final String username = credentials.get(PROPERTY_USERNAME);
+        final String password = credentials.get(PROPERTY_PASSWORD);
         try {
             user = credentialStore.findUser(username);
         } catch (IllegalStateException ex) {
@@ -136,7 +142,10 @@ public class SimpleAuthenticator implements Authenticator {
         @Override
         public AuthenticatedUser getAuthenticatedUser() throws AuthenticationException {
             if (!complete) throw new AuthenticationException("SASL negotiation not complete");
-            return authenticate(username, password);
+            final Map<String,String> credentials = new HashMap<>();
+            credentials.put(PROPERTY_USERNAME, username);
+            credentials.put(PROPERTY_PASSWORD, password);
+            return authenticate(credentials);
         }
 
         /**
