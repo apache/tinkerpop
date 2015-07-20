@@ -120,7 +120,8 @@ public class DedupBijectionStrategyTest {
                     {__.dedup().order(), __.dedup().order()},
                     {__.order().dedup(), __.dedup().order()},
                     {__.identity().order().dedup(), __.dedup().order()},
-                    {__.order().identity().dedup(), __.dedup().order()}});
+                    {__.order().identity().dedup(), __.dedup().order()},
+                    {__.order().out().dedup(), __.order().out().dedup()}});
         }
     }
 }
