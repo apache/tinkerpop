@@ -25,8 +25,9 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Gremlin Server/Driver authentication support via SASL.
-* Gremlin Server plugin to help with "credential graph" management (used in conjunction with authentication features of Gremlin Server).
+* Added Gremlin Server/Driver authentication support via SASL.
+* Added Basic HTTP authentication support for REST in Gremlin Server.
+* Added Gremlin Server plugin to help with "credential graph" management (used in conjunction with authentication features of Gremlin Server).
 * Added "secure" Gremlin Server/Driver example configuration files.
 * Adjusted configuration for javadoc generation to eliminate error messages.
 * Removed "reserved" graph concept names from tests (e.g. "label", "edge", "value") to support the convention of avoiding these strings for property names.
