@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.server.auth;
+package org.apache.tinkerpop.gremlin.server.handler;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,6 +26,9 @@ import io.netty.util.AttributeKey;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticatedUser;
+import org.apache.tinkerpop.gremlin.server.auth.AuthenticationException;
+import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,15 +36,15 @@ import org.slf4j.LoggerFactory;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ChannelHandler.Sharable
-public class AuthenticationHandler extends ChannelInboundHandlerAdapter {
-    private static final Logger logger = LoggerFactory.getLogger(AuthenticationHandler.class);
+public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(SaslAuthenticationHandler.class);
 
     private static final AttributeKey<Authenticator.SaslNegotiator> negotiatorKey = AttributeKey.valueOf("negotiator");
     private static final AttributeKey<RequestMessage> requestKey = AttributeKey.valueOf("request");
 
     private final Authenticator authenticator;
 
-    public AuthenticationHandler(final Authenticator authenticator) {
+    public SaslAuthenticationHandler(final Authenticator authenticator) {
         this.authenticator = authenticator;
     }
 

@@ -20,6 +20,9 @@ package org.apache.tinkerpop.gremlin.server.channel;
 
 import io.netty.channel.EventLoopGroup;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
+import org.apache.tinkerpop.gremlin.server.Channelizer;
+import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
+import org.apache.tinkerpop.gremlin.server.handler.HttpBasicAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.HttpGremlinEndpointHandler;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -31,7 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Constructs a {@link org.apache.tinkerpop.gremlin.server.Channelizer} that exposes an HTTP/REST endpoint in Gremlin Server.
+ * Constructs a {@link Channelizer} that exposes an HTTP/REST endpoint in Gremlin Server.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -39,11 +42,17 @@ public class HttpChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(HttpChannelizer.class);
 
     private HttpGremlinEndpointHandler httpGremlinEndpointHandler;
+    private HttpBasicAuthenticationHandler authenticationHandler;
 
     @Override
     public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
         httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager);
+
+        // configure authentication - null means don't bother to add authentication to the pipeline
+        if (authenticator != null)
+            authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
+                    null : new HttpBasicAuthenticationHandler(authenticator);
     }
 
     @Override
@@ -57,6 +66,10 @@ public class HttpChannelizer extends AbstractChannelizer {
             pipeline.addLast(new LoggingHandler("http-io", LogLevel.DEBUG));
 
         pipeline.addLast(new HttpObjectAggregator(settings.maxContentLength));
+
+        if (authenticationHandler != null)
+            pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
+
         pipeline.addLast("http-gremlin-handler", httpGremlinEndpointHandler);
     }
 

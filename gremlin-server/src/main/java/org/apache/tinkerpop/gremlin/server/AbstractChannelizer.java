@@ -26,7 +26,7 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
-import org.apache.tinkerpop.gremlin.server.auth.AuthenticationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.handler.IteratorHandler;
 import org.apache.tinkerpop.gremlin.server.handler.OpExecutorHandler;
@@ -81,7 +81,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
     private OpExecutorHandler opExecutorHandler;
     private IteratorHandler iteratorHandler;
 
-    private AuthenticationHandler authenticationHandler;
+    protected Authenticator authenticator;
 
     /**
      * This method is called from within {@link #initChannel(io.netty.channel.socket.SocketChannel)} just after
@@ -114,10 +114,7 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
                 Optional.ofNullable(createSSLContext(settings)) : Optional.empty();
         if (sslContext.isPresent()) logger.info("SSL enabled");
 
-        // configure authentication - null means don't bother to add authentication to the pipeline
-        final Authenticator authenticator = createAuthenticator(settings.authentication);
-        authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
-                null : new AuthenticationHandler(authenticator);
+        authenticator = createAuthenticator(settings.authentication);
 
         // these handlers don't share any state and can thus be initialized once per pipeline
         opSelectorHandler = new OpSelectorHandler(settings, graphManager, gremlinExecutor, scheduledExecutorService);
@@ -135,9 +132,6 @@ public abstract class AbstractChannelizer extends ChannelInitializer<SocketChann
         // pipeline must decode to an incoming RequestMessage instances and encode to a outgoing ResponseMessage
         // instance
         configure(pipeline);
-
-        if (authenticationHandler != null)
-            pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
 
         pipeline.addLast(PIPELINE_OP_SELECTOR, opSelectorHandler);
         pipeline.addLast(PIPELINE_RESULT_ITERATOR_HANDLER, iteratorHandler);

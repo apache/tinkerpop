@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.server.channel.HttpChannelizer;
 import org.apache.http.Consts;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -34,6 +35,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -44,6 +48,8 @@ import static org.junit.Assert.assertEquals;
  */
 public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegrationTest {
     private final ObjectMapper mapper = new ObjectMapper();
+
+    private final Base64.Encoder encoder = Base64.getUrlEncoder();
 
     /**
      * Configure specific Gremlin Server settings for specific tests.
@@ -63,8 +69,133 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
+            case "should401OnGETWithNoAuthorizationHeader":
+            case "should401OnPOSTWithNoAuthorizationHeader":
+            case "should401OnGETWithBadAuthorizationHeader":
+            case "should401OnPOSTWithBadAuthorizationHeader":
+            case "should401OnGETWithInvalidPasswordAuthorizationHeader":
+            case "should401OnPOSTWithInvalidPasswordAuthorizationHeader":
+            case "should200OnGETWithAuthorizationHeader":
+            case "should200OnPOSTWithAuthorizationHeader":
+                configureForAuthentication(settings);
+                break;
         }
         return settings;
+    }
+
+    private void configureForAuthentication(final Settings settings) {
+        final Settings.AuthenticationSettings authSettings = new Settings.AuthenticationSettings();
+        authSettings.className = SimpleAuthenticator.class.getName();
+
+        // use a credentials graph with one user in it: stephen/password
+        final Map<String,Object> authConfig = new HashMap<>();
+        authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-empty.properties");
+        authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_LOCATION, "data/credentials.kryo");
+
+        authSettings.config = authConfig;
+        settings.authentication = authSettings;
+    }
+
+    @Test
+    public void should401OnGETWithNoAuthorizationHeader() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
+    public void should401OnPOSTWithNoAuthorizationHeader() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
+    public void should401OnGETWithBadAuthorizationHeader() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        httpget.addHeader("Authorization", "not-base-64-encoded");
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
+    public void should401OnPOSTWithBadAuthorizationHeader() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.addHeader("Authorization", "not-base-64-encoded");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
+    public void should401OnGETWithInvalidPasswordAuthorizationHeader() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        httpget.addHeader("Authorization", encoder.encodeToString("stephen:not-my-password".getBytes()));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
+    public void should401OnPOSTWithInvalidPasswordAuthorizationHeader() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.addHeader("Authorization", encoder.encodeToString("stephen:not-my-password".getBytes()));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
+    public void should200OnGETWithAuthorizationHeader() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        httpget.addHeader("Authorization", encoder.encodeToString("stephen:password".getBytes()));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(0, node.get("result").get("data").get(0).intValue());
+        }
+    }
+
+    @Test
+    public void should200OnPOSTWithAuthorizationHeader() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.addHeader("Authorization", encoder.encodeToString("stephen:password".getBytes()));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(0, node.get("result").get("data").get(0).intValue());
+        }
     }
 
     @Test
