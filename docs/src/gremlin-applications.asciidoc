@@ -580,6 +580,7 @@ Cluster cluster = Cluster.build().credentials("stephen", "password")
 
 If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote script execution, use the provided `config/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and password as well as enablement of SSL from the client side.
 
+[[credentials-dsl]]
 Credentials Graph DSL
 +++++++++++++++++++++
 
@@ -927,6 +928,18 @@ include::{basedir}/gremlin-groovy/src/main/java/org/apache/tinkerpop/gremlin/gro
 ----
 
 The `RemoteAcceptor` implementation ties to a `GremlinPlugin` and will only be executed when in use with the Gremlin Console plugin host.  Simply instantiate and return a `RemoteAcceptor` in the `GremlinPlugin.remoteAcceptor()` method of the plugin implementation.  Generally speaking, each call to `remoteAcceptor()` should produce a new instance of a `RemoteAcceptor`.  It will likely be necessary that you provide context from the `GremlinPlugin` to the `RemoteAcceptor` plugin.  For example, the `RemoteAcceptor` implementation might require an instance of `Groovysh` to provide a way to dynamically evaluate a script provided to it so that it can process the results in a different way.
+
+[[credentials-plugin]]
+Credentials Plugin
+~~~~~~~~~~~~~~~~~~
+
+image:gremlin-server.png[width=200,float=left] xref:gremlin-server[Gremlin Server] supports an authentication model where user credentials are stored inside of a `Graph` instance.  This database can be managed with the xref:credentials-dsl[Credentials DSL], which can be installed in the console via the Credentials Plugin.  This plugin is packaged with the console, but is not enabled by default.
+
+[source,groovy]
+gremlin> :plugin use tinkerpop.credentials
+==>tinkerpop.credentials activated
+
+This plugin imports the appropriate classes for managing the credentials graph.
 
 [[gephi-plugin]]
 Gephi Plugin
