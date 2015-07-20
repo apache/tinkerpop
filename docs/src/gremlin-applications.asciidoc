@@ -530,7 +530,7 @@ NOTE: Configuration of link:http://ganglia.sourceforge.net/[Ganglia] requires an
 Security
 ^^^^^^^^
 
-Gremlin Server provides for several features that aid in the security of the graphs that it exposes.  It has built in SSL support and a pluggable authentication framework using link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL] (Simple Authentication and Security Layer).  SSL options are described in the configuration settings table above, so this section will focus on authentication.
+image:gremlin-server-secure.png[width=175,float=right] Gremlin Server provides for several features that aid in the security of the graphs that it exposes.  It has built in SSL support and a pluggable authentication framework using link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL] (Simple Authentication and Security Layer).  SSL options are described in the configuration settings table above, so this section will focus on authentication.
 
 By default, Gremlin Server is configured to allow all requests to be processed (i.e. no authentication).  To enable authentication, Gremlin Server must be configured with an `Authenticator` implementation in its YAML file.  Gremlin Server comes packaged with an implementation called `SimpleAuthenticator`.  The `SimpleAuthenticator` implements the `PLAIN` SASL mechanism (i.e. plain text) to authenticate a request.  It validates username/password pairs against a graph database, which must be provided to it as part of the configuration.
 
@@ -572,7 +572,7 @@ $ bin/gremlin-server.sh conf/gremlin-server-secure.yaml
 [INFO] GremlinServer$1 - Channel started at port 8182.
 ----
 
-To connect to Gremlin Server with `gremlin-driver`, set the `credentials` and `enableSsl` when constructing the `Cluster`.
+In addition to configuring the authenticator, `gremlin-server-secure.yaml` also enables SSL with a self-signed certificate.  As SSL is enabled on the server it must also be enabled on the client when connecting.  To connect to Gremlin Server with `gremlin-driver`, set the `credentials` and `enableSsl` when constructing the `Cluster`.
 
 [source,java]
 Cluster cluster = Cluster.build().credentials("stephen", "password")
