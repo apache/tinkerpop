@@ -18,7 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.structure.util.wrapped;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
 /**
+ * {@link Graph} implementations that don't natively implement the TinkerPop interfaces should implement the
+ * "wrapped" classes to provide a standard way for users to get the vendor's "raw" object that represents their
+ * graph.  This provides the users with access to the underlying API.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface WrappedGraph<G> {
