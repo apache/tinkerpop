@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Replaced `DedupBijectionStrategy` with the more effective `FilterRankingStrategy`.
 * `ComputerAwareSteps` must not only handle step ids, but also step labels.
 * Renamed `B_O_P_SE_SL_Traverser` to `B_LP_O_P_SE_SL_Traverser` as it now supports `TraverserRequirement.LABELED_PATH`.
 * Added `B_LP_O_S_SE_SL_Traverser` in support of `TraverserRequirement.LABELED_PATH`.

@@ -152,18 +152,10 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        Traversal traversal = g.V().where(out().and().in()).profile().cap(TraversalMetrics.METRICS_KEY);
-        //traversal.forEachRemaining(System.out::println);
+        Traversal traversal = g.V().dedup().filter(__.out()).has("age", P.gt(0));
         System.out.println(traversal.toString());
-        traversal.asAdmin().applyStrategies();
-        System.out.println(traversal.toString());
-        traversal.forEachRemaining(System.out::println);
-        traversal = g.V().where(and(out(), in())).profile().cap(TraversalMetrics.METRICS_KEY);
-        //traversal.forEachRemaining(System.out::println);
-        System.out.println(traversal.toString());
-        traversal.asAdmin().applyStrategies();
-        System.out.println(traversal.toString());
-        //System.out.println(traversal.toString());
+        //traversal.asAdmin().applyStrategies();
+        System.out.println(traversal.iterate().toString());
     }
 
     @Test
