@@ -25,6 +25,7 @@ image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `wrapAdjacencyList and `unwrapAdjacencyList` options to `GraphSONWriter` and `GraphSONReader` respectively, thus allowing valid JSON to be written/read if the user desires.
 * Added Gremlin Server/Driver authentication support via SASL.
 * Added Basic HTTP authentication support for REST in Gremlin Server.
 * Added Gremlin Server plugin to help with "credential graph" management (used in conjunction with authentication features of Gremlin Server).
