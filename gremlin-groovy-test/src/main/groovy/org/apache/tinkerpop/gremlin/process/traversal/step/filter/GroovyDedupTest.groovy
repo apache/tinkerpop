@@ -75,5 +75,10 @@ public abstract class GroovyDedupTest {
         public Traversal<Vertex, Path> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path() {
             TraversalScriptHelper.compute("g.V.as('a').out('created').as('b').in('created').as('c').dedup('a','b').path", g)
         }
+
+        @Override
+        Traversal<Vertex, String> get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup() {
+            TraversalScriptHelper.compute("g.V.outE.as('e').inV.as('v').select('e').order.by('weight', incr).select('v').values('name').dedup", g)
+        }
     }
 }
