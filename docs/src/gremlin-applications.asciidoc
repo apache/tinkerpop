@@ -833,8 +833,8 @@ The "standard" `OpProcessor` handles requests for the primary function of Gremli
 |op |[width="100%",cols="3,10",options="header"]
 !=========================================================
 !Key !Description
-!`authentication` !a request that contains the response to a server challenge for authentication
-!`eval` !evaluate a Gremlin script provided as a `String`
+!`authentication` !A request that contains the response to a server challenge for authentication.
+!`eval` !Evaluate a Gremlin script provided as a `String`
 !=========================================================
 |=========================================================
 
@@ -868,8 +868,8 @@ The "session" `OpProcessor` handles requests for the primary function of Gremlin
 [cols="3,10",options="header"]
 !=========================================================
 !Key !Description
-!`authentication` !a request that contains the response to a server challenge for authentication
-!`eval` !evaluate a Gremlin script
+!`authentication` !A request that contains the response to a server challenge for authentication
+!`eval` !Evaluate a Gremlin script provided as a `String`
 !=========================================================
 |=========================================================
 
@@ -889,6 +889,15 @@ The "session" `OpProcessor` handles requests for the primary function of Gremlin
 |bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script
 |language |String |The flavor used (e.g. `gremlin-groovy`)
 |=========================================================
+
+Authentication
+^^^^^^^^^^^^^^
+
+Gremlin Server supports link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL-based] authentication.  A SASL implementation provides a series of challenges and responses that a driver must comply with in order to authenticate.  By default, Gremlin Server only supports the "PLAIN" SASL mechanism, which is a cleartext password system.  When authentication is enabled, an incoming request is intercepted before it is evaluated by the `ScriptEngine`.  The request is saved on the server and a `AUTHENTICATE` challenge response (status code `407`) is returned to the client.
+
+The client will detect the `AUTHENTICATE` and respond with an `authentication` for the `op` and an `arg` named `sasl` that contains the password.  The password should be an encoded sequence of UTF-8 bytes, delimited by 0 (US-ASCII NUL), where the form is : `<NUL>username<NUL>password`.  Should Gremlin Server be able to authenticate with the provided credentials, the server will return the results of the original request as it normally does without authentication.  If it cannot authenticate given the challenge response from the client, it will return `UNAUTHORIZED` (status code `401`).
+
+NOTE: Gremlin Server does not support the "authorization identity" as described in link:https://tools.ietf.org/html/rfc4616[RFC4616].
 
 [[gremlin-plugins]]
 Gremlin Plugins
