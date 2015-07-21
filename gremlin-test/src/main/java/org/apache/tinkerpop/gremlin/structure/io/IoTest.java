@@ -235,6 +235,30 @@ public class IoTest {
             }
         }
 
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldReadWriteModernWrappedInJsonObject() throws Exception {
+            try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                final GraphWriter writer = graph.io(graphson()).writer().wrapAdjacencyList(true).create();
+                writer.writeGraph(os, graph);
+
+                final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
+                graphProvider.clear(configuration);
+                final Graph g1 = graphProvider.openTestGraph(configuration);
+                final GraphReader reader = graph.io(graphson()).reader().unwrapAdjacencyList(true).create();
+                try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                    reader.readGraph(bais, g1);
+                }
+
+                // modern uses double natively so always assert as such
+                IoTest.assertModernGraph(g1, true, true);
+
+                graphProvider.clear(g1, configuration);
+            }
+        }
+
         /**
          * This is just a serialization check for JSON.
          */

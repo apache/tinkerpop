@@ -48,7 +48,7 @@ public enum ResponseStatusCode {
     PARTIAL_CONTENT(206),
 
     /**
-     * The server could not authenticate the request.  This code is for future use.
+     * The server could not authenticate the request or the client requested a resource it did not have access to.
      */
     UNAUTHORIZED(401),
 
@@ -59,6 +59,9 @@ public enum ResponseStatusCode {
      */
     FORBIDDEN(403),
 
+    /**
+     * A challenge from the server for the client to authenticate its request.
+     */
     AUTHENTICATE(407),
 
     /**

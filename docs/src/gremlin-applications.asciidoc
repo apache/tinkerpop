@@ -790,9 +790,11 @@ Gremlin Server is capable of streaming results such that additional responses wi
 [width="100%",cols="2,2,9",options="header"]
 |=========================================================
 |Code |Name |Description
-|200 |SUCCESS | The server successfully processed a request to completion - there are no messages remaining in this stream.
-|204 |NO CONTENT | The server processed the request but there is no result to return (e.g. an `Iterator` with no elements).
-|206 |PARTIAL CONTENT | The server successfully returned some content, but there is more in the stream to arrive - wait for a `SUCCESS` to signify the end of the stream.
+|200 |SUCCESS |The server successfully processed a request to completion - there are no messages remaining in this stream.
+|204 |NO CONTENT |The server processed the request but there is no result to return (e.g. an `Iterator` with no elements).
+|206 |PARTIAL CONTENT |The server successfully returned some content, but there is more in the stream to arrive - wait for a `SUCCESS` to signify the end of the stream.
+|401 |UNAUTHORIZED |The request attempted to access resources that the requesting user did not have access to.
+|407 |AUTHENTICATE |A challenge from the server for the client to authenticate its request.
 |498 |MALFORMED REQUEST | The request message was not properly formatted which means it could not be parsed at all or the "op" code was not recognized such that Gremlin Server could properly route it for processing.  Check the message format and retry the request.
 |499 |INVALID REQUEST ARGUMENTS |The request message was parseable, but the arguments supplied in the message were in conflict or incomplete. Check the message format and retry the request.
 |500 |SERVER ERROR |A general server error occurred that prevented the request from being processed.
@@ -831,8 +833,16 @@ The "standard" `OpProcessor` handles requests for the primary function of Gremli
 |op |[width="100%",cols="3,10",options="header"]
 !=========================================================
 !Key !Description
+!`authentication` !a request that contains the response to a server challenge for authentication
 !`eval` !evaluate a Gremlin script provided as a `String`
 !=========================================================
+|=========================================================
+
+'`authentication` operation arguments'
+[width="100%",cols="2,2,9",options="header"]
+|=========================================================
+|Key |Type |Description
+|sasl |byte[] | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server.
 |=========================================================
 
 '`eval` operation arguments'
@@ -858,8 +868,16 @@ The "session" `OpProcessor` handles requests for the primary function of Gremlin
 [cols="3,10",options="header"]
 !=========================================================
 !Key !Description
+!`authentication` !a request that contains the response to a server challenge for authentication
 !`eval` !evaluate a Gremlin script
 !=========================================================
+|=========================================================
+
+'`authentication` operation arguments'
+[width="100%",cols="2,2,9",options="header"]
+|=========================================================
+|Key |Type |Description
+|sasl |byte[] | *Required* The response to the server authentication challenge.  This value is dependent on the SASL authentication mechanism required by the server.
 |=========================================================
 
 '`eval` operation arguments'
