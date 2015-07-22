@@ -122,7 +122,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             if (!(graphVar instanceof Graph))
                 throw new RemoteException("Invalid argument to 'visualTraversal' - first parameter must be a Graph instance")
 
-            def gVar = args.size() == 3 ? args[2] : "g"
+            def gVar = args.size() == 3 ? args[2] : "vg"
             def theG = GraphTraversalSource.build().with(new GephiTraversalVisualizationStrategy(this)).create(graphVar)
             shell.interp.context.setVariable(gVar, theG)
         } else

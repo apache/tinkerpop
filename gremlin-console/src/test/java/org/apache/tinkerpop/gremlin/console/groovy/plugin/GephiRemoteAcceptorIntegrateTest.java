@@ -41,8 +41,10 @@ import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -116,7 +118,7 @@ public class GephiRemoteAcceptorIntegrateTest {
 
         // call iterate() as groovysh isn't rigged to auto-iterate
         acceptor.submit(Arrays.asList(
-                "g.V(2).in('knows').out('knows').has('age',org.apache.tinkerpop.gremlin.process.traversal.P.gt(30)).outE('created').has('weight',org.apache.tinkerpop.gremlin.process.traversal.P.gt(0.5d)).inV().iterate()"));
+                "vg.V(2).in('knows').out('knows').has('age',org.apache.tinkerpop.gremlin.process.traversal.P.gt(30)).outE('created').has('weight',org.apache.tinkerpop.gremlin.process.traversal.P.gt(0.5d)).inV().iterate()"));
 
         wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
@@ -150,9 +152,23 @@ public class GephiRemoteAcceptorIntegrateTest {
 
         // call iterate() as groovysh isn't rigged to auto-iterate
         acceptor.submit(Arrays.asList(
-                "g.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().out()).times(2).iterate()"));
+                "vg.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().out()).times(2).iterate()"));
 
         wireMockRule.verify(21, postRequestedFor(urlPathEqualTo("/workspace0")));
+    }
+
+    @Test
+    public void shouldClearGraph() throws RemoteException {
+        stubFor(post(urlPathEqualTo("/workspace0"))
+                .withQueryParam("format", equalTo("JSON"))
+                .withQueryParam("operation", equalTo("updateGraph"))
+                .withRequestBody(equalToJson("{\"dn\":{\"filter\":\"ALL\"}}"))
+                .willReturn(aResponse()
+                        .withStatus(200)));
+
+        acceptor.submit(Arrays.asList("clear"));
+
+        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
     private static int pickOpenPort() {
