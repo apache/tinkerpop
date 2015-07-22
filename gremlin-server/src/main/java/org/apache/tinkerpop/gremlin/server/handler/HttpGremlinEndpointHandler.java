@@ -129,6 +129,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof FullHttpRequest) {
             final FullHttpRequest req = (FullHttpRequest) msg;
 
+            if ("/favicon.ico".equals(req.getUri())) {
+                sendError(ctx, NOT_FOUND, "Gremlin Server doesn't have a favicon.ico");
+                ReferenceCountUtil.release(msg);
+                return;
+            }
+
             if (is100ContinueExpected(req)) {
                 ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
             }
