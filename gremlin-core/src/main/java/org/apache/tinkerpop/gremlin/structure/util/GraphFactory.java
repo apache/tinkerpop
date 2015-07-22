@@ -27,12 +27,11 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 
 import java.io.File;
-import java.lang.annotation.Annotation;
 import java.util.Map;
 
 /**
  * Factory to construct new {@link org.apache.tinkerpop.gremlin.structure.Graph} instances from a
- * {@link org.apache.commons.configuration.Configuration} object or properties file.
+ * {@code Configuration} object or properties file.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -41,11 +40,11 @@ public final class GraphFactory {
     private GraphFactory() {}
 
     /**
-     * Open a graph.  See each {@link org.apache.tinkerpop.gremlin.structure.Graph} instance for its configuration options.
+     * Open a graph.  See each {@link Graph} instance for its configuration options.
      *
      * @param configuration A configuration object that specifies the minimally required properties for a                        I
-     *                      {@link org.apache.tinkerpop.gremlin.structure.Graph} instance. This minimum is determined by the
-     *                      {@link org.apache.tinkerpop.gremlin.structure.Graph} instance itself.
+     *                      {@link Graph} instance. This minimum is determined by the
+     *                      {@link Graph} instance itself.
      * @return A {@link org.apache.tinkerpop.gremlin.structure.Graph} instance.
      * @throws IllegalArgumentException if {@code configuration}
      */
@@ -57,26 +56,21 @@ public final class GraphFactory {
         if (null == clazz)
             throw new RuntimeException(String.format("Configuration must contain a valid '%s' setting", Graph.GRAPH));
 
-        Class<?> graphClass;
+        final Class<?> graphClass;
         try {
             graphClass = Class.forName(clazz);
         } catch (final ClassNotFoundException e) {
             throw new RuntimeException(String.format("GraphFactory could not find [%s] - Ensure that the jar is in the classpath", clazz));
         }
 
-        //If the graph class specifies a factory class then use that instead.
-        Class<?> factoryClass = graphClass;
-        GraphFactoryClass factoryAnnotation = graphClass.getAnnotation(GraphFactoryClass.class);
-        if(factoryAnnotation != null) {
-            factoryClass = factoryAnnotation.value();
-        }
-
+        // If the graph class specifies a factory class then use that instead of the specified class.
+        final GraphFactoryClass factoryAnnotation = graphClass.getAnnotation(GraphFactoryClass.class);
+        final Class<?> factoryClass = factoryAnnotation != null ? factoryAnnotation.value() : graphClass;
 
         return open(configuration, factoryClass);
-
     }
 
-    private static Graph open(Configuration configuration, Class<?> graphFactoryClass)
+    private static Graph open(final Configuration configuration, final Class<?> graphFactoryClass)
     {
         final Graph g;
         try {
