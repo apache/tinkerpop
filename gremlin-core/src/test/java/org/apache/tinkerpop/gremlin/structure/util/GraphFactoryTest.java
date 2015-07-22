@@ -212,6 +212,34 @@ public class GraphFactoryTest {
         assertEquals("it", g.getConf().getString("keep"));
     }
 
+    @Test
+    public void shouldOpenWithFactoryViaConcreteClass() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(Graph.GRAPH, MockGraphWithFactory.class.getName());
+        GraphFactory.open(conf);
+        final MockGraphWithFactory g = (MockGraphWithFactory) GraphFactory.open(conf);
+        assertEquals(conf, g.getConf());
+    }
+
+
+    @Test
+    public void shouldOpenWithFactoryViaConcreteInterface() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(Graph.GRAPH, MockGraphInterface.class.getName());
+        GraphFactory.open(conf);
+        final MockGraphInterface g = (MockGraphInterface) GraphFactory.open(conf);
+        assertEquals(conf, g.getConf());
+    }
+
+
+    @Test(expected = RuntimeException.class)
+    public void shouldThrowExceptionIfFactoryDoesNotHaveOpenMethodViaConfiguration() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(Graph.GRAPH, MockGraphWithFactoryWithoutOpen.class.getName());
+        GraphFactory.open(conf);
+    }
+
+
     public static class MockGraphWithoutOpen implements Graph {
         @Override
         public Vertex addVertex(final Object... keyValues) {
@@ -319,5 +347,140 @@ public class GraphFactoryTest {
         public void close() throws Exception {
 
         }
+    }
+
+    public static class MockFactory {
+        public static Graph open(final Configuration conf) {
+            if (conf.containsKey("throw")) throw new RuntimeException("you said to throw me");
+            return new MockGraphWithFactory(conf);
+        }
+    }
+
+    @GraphFactoryClass(MockFactory.class)
+    public static class MockGraphWithFactory implements MockGraphInterface {
+
+        private final Configuration conf;
+
+        MockGraphWithFactory(final Configuration conf) {
+            this.conf = conf;
+        }
+
+        public Configuration getConf() {
+            return conf;
+        }
+
+        @Override
+        public Vertex addVertex(Object... keyValues) {
+            return null;
+        }
+
+        @Override
+        public <C extends GraphComputer> C compute(Class<C> graphComputerClass) throws IllegalArgumentException {
+            return null;
+        }
+
+        @Override
+        public GraphComputer compute() throws IllegalArgumentException {
+            return null;
+        }
+
+        @Override
+        public Iterator<Vertex> vertices(Object... vertexIds) {
+            return null;
+        }
+
+        @Override
+        public Iterator<Edge> edges(Object... edgeIds) {
+            return null;
+        }
+
+        @Override
+        public Transaction tx() {
+            return null;
+        }
+
+        @Override
+        public Variables variables() {
+            return null;
+        }
+
+        @Override
+        public Configuration configuration() {
+            return null;
+        }
+
+        @Override
+        public void close() throws Exception {
+
+        }
+    }
+
+
+    public static class MockFactoryWithOutOpen {
+
+    }
+
+    @GraphFactoryClass(MockFactoryWithOutOpen.class)
+    public static class MockGraphWithFactoryWithoutOpen implements Graph {
+
+        private final Configuration conf;
+
+        MockGraphWithFactoryWithoutOpen(final Configuration conf) {
+            this.conf = conf;
+        }
+
+        public Configuration getConf() {
+            return conf;
+        }
+
+        @Override
+        public Vertex addVertex(Object... keyValues) {
+            return null;
+        }
+
+        @Override
+        public <C extends GraphComputer> C compute(Class<C> graphComputerClass) throws IllegalArgumentException {
+            return null;
+        }
+
+        @Override
+        public GraphComputer compute() throws IllegalArgumentException {
+            return null;
+        }
+
+        @Override
+        public Iterator<Vertex> vertices(Object... vertexIds) {
+            return null;
+        }
+
+        @Override
+        public Iterator<Edge> edges(Object... edgeIds) {
+            return null;
+        }
+
+        @Override
+        public Transaction tx() {
+            return null;
+        }
+
+        @Override
+        public Variables variables() {
+            return null;
+        }
+
+        @Override
+        public Configuration configuration() {
+            return null;
+        }
+
+        @Override
+        public void close() throws Exception {
+
+        }
+    }
+
+    @GraphFactoryClass(MockFactory.class)
+    public interface MockGraphInterface extends Graph {
+        Configuration getConf();
     }
 }

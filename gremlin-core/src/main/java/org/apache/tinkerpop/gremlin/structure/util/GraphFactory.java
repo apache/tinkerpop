@@ -27,6 +27,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.util.Map;
 
 /**
@@ -56,24 +57,36 @@ public final class GraphFactory {
         if (null == clazz)
             throw new RuntimeException(String.format("Configuration must contain a valid '%s' setting", Graph.GRAPH));
 
-        final Class graphClass;
+        Class<?> graphClass;
         try {
             graphClass = Class.forName(clazz);
         } catch (final ClassNotFoundException e) {
             throw new RuntimeException(String.format("GraphFactory could not find [%s] - Ensure that the jar is in the classpath", clazz));
         }
 
-        final Graph g;
-        try {
-            // will basically use Graph.open(Configuration c) to instantiate, but could
-            // technically use any method on any class with the same signature.
-            g = (Graph) graphClass.getMethod("open", Configuration.class).invoke(null, configuration);
-        } catch (final NoSuchMethodException e1) {
-            throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument - [%s] does not seem to have one", clazz));
-        } catch (final Exception e2) {
-            throw new RuntimeException(String.format("GraphFactory could not instantiate this Graph implementation [%s]", clazz), e2);
+        //If the graph class specifies a factory class then use that instead.
+        Class<?> factoryClass = graphClass;
+        GraphFactoryClass factoryAnnotation = graphClass.getAnnotation(GraphFactoryClass.class);
+        if(factoryAnnotation != null) {
+            factoryClass = factoryAnnotation.value();
         }
 
+
+        return open(configuration, factoryClass);
+
+    }
+
+    private static Graph open(Configuration configuration, Class<?> graphFactoryClass)
+    {
+        final Graph g;
+        try {
+            // will use open(Configuration c) to instantiate
+            g = (Graph) graphFactoryClass.getMethod("open", Configuration.class).invoke(null, configuration);
+        } catch (final NoSuchMethodException e1) {
+            throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument - [%s] does not seem to have one", graphFactoryClass));
+        } catch (final Exception e2) {
+            throw new RuntimeException(String.format("GraphFactory could not instantiate this Graph implementation [%s]", graphFactoryClass), e2);
+        }
         return g;
     }
 
