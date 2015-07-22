@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.NoOpBarrierStep
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
@@ -68,14 +69,13 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
             addAfter.addAll(vertexSteps.stream().filter { it.returnsVertex() }.collect(Collectors.toList()))
 
             addAfter.each { Step s ->
-                // add steps in reverse order as they will then appear as: vertex -> fold -> lambda -> unfold
-                TraversalHelper.insertAfterStep(new UnfoldStep(traversal), s, traversal)
+                // add steps in reverse order as they will then appear as: vertex -> barrier -> sideEffect
                 TraversalHelper.insertAfterStep(new LambdaSideEffectStep(traversal, { Traverser traverser ->
                     acceptor.updateVisitedVertices()
                     traverser.get().each { Vertex v -> acceptor.visitVertexToGephi(v) }
                     Thread.sleep(acceptor.vizStepDelay)
                 }), s, traversal)
-                TraversalHelper.insertAfterStep(new FoldStep(traversal), s, traversal)
+                TraversalHelper.insertAfterStep(new NoOpBarrierStep(traversal), s, traversal)
             }
         }
     }

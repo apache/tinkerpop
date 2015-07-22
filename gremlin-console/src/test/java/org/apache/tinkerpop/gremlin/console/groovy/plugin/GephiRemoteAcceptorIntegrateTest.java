@@ -118,7 +118,7 @@ public class GephiRemoteAcceptorIntegrateTest {
         acceptor.submit(Arrays.asList(
                 "g.V(2).in('knows').out('knows').has('age',org.apache.tinkerpop.gremlin.process.traversal.P.gt(30)).outE('created').has('weight',org.apache.tinkerpop.gremlin.process.traversal.P.gt(0.5d)).inV().iterate()"));
 
-        wireMockRule.verify(11, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
     @Test
@@ -135,7 +135,7 @@ public class GephiRemoteAcceptorIntegrateTest {
         acceptor.submit(Arrays.asList(
                 "x.V(2).in('knows').out('knows').has('age',org.apache.tinkerpop.gremlin.process.traversal.P.gt(30)).outE('created').has('weight',org.apache.tinkerpop.gremlin.process.traversal.P.gt(0.5d)).inV().iterate()"));
 
-        wireMockRule.verify(11, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
     @Test
@@ -150,9 +150,9 @@ public class GephiRemoteAcceptorIntegrateTest {
 
         // call iterate() as groovysh isn't rigged to auto-iterate
         acceptor.submit(Arrays.asList(
-                "t=g.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().out()).times(2);t.iterate();t.toString()"));
+                "g.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().out()).times(2).iterate()"));
 
-        wireMockRule.verify(4, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(21, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
     private static int pickOpenPort() {
