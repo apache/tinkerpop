@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.console.plugin
 import groovy.transform.CompileStatic
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Graph
@@ -47,11 +45,14 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     private final Groovysh shell
     private final IO io
 
-    private long vizStepDelay
+    boolean traversalSubmittedForViz = false
+    long vizStepDelay
     private float[] vizStartRGBColor
     private char vizColorToFade
     private float vizColorFadeRate
-    private Map<String, Float> fadingVertexColors;
+    private float vizStartSize
+    private float vizSizeDecrementRate
+    private Map vertexAttributes = [:]
 
     public GephiRemoteAcceptor(final Groovysh shell, final IO io) {
         this.shell = shell
@@ -62,6 +63,8 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         vizStartRGBColor = [0.0f, 1.0f, 0.5f]  // light aqua green
         vizColorToFade = 'g'                 // will fade so blue is strongest
         vizColorFadeRate = 0.7               // the multiplicative rate to fade visited vertices
+        vizStartSize = 20
+        vizSizeDecrementRate = 0.33f
     }
 
     @Override
@@ -80,25 +83,17 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             }
         }
 
-        String vizConfig = " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
-                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
-        if (args.size() >= 4) {
-            if (args.size() > 7) {
-                vizConfig = configVizOptions(args.subList(3, 6))
-            } else {
-                vizConfig = configVizOptions(args.subList(3, args.size()))
-            }
-        }
+        def vizConfig = " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
+                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate, startSize:$vizStartSize," +
+                "sizeDecrementRate:$vizSizeDecrementRate"
 
         return "Connection to Gephi - http://$host:$port/$workspace" + vizConfig
     }
 
     @Override
     Object configure(final List<String> args) throws RemoteException {
-        if (args.size() != 2)
-            throw new RemoteException("Expects [host <hostname>|port <port number>|workspace <name>|" +
-                    "stepDelay <milliseconds>|startRGBColor <RGB array of floats>|" +
-                    "colorToFade: <char r|g|b>]|colorFadeRate: <float>")
+        if (args.size() < 2)
+            throw new RemoteException("Invalid config arguments - check syntax")
 
         if (args[0] == "host")
             host = args[1]
@@ -118,67 +113,25 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             parseVizColorToFade(args[1])
         else if (args[0] == "colorFadeRate")
             parseVizColorFadeRate(args[1])
-        else
-            throw new RemoteException("Expects [host <hostname>|port <port number>|workspace <name>|" +
-                    "stepDelay <milliseconds>|startRGBColor <RGB array of floats>|" +
-                    "colorToFade: <char r|g|b>]|colorFadeRate: <float>")
+        else if (args[0] == "sizeDecrementRate")
+            parseVizSizeDecrementRate(args[1])
+        else if (args[0] == "startSize")
+            parseVizStartSize(args[1])
+        else if (args[0] == "visualTraversal") {
+            def graphVar = shell.interp.context.getVariable(args[1])
+            if (!(graphVar instanceof Graph))
+                throw new RemoteException("Invalid argument to 'visualTraversal' - first parameter must be a Graph instance")
+
+            def gVar = args.size() == 3 ? args[2] : "g"
+            def theG = GraphTraversalSource.build().with(new GephiTraversalVisualizationStrategy(this)).create(graphVar)
+            shell.interp.context.setVariable(gVar, theG)
+        } else
+            throw new RemoteException("Invalid config arguments - check syntax")
 
         return "Connection to Gephi - http://$host:$port/$workspace" +
                 " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
-                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
-    }
-
-
-    private Object configVizOptions(final List<String> vizConfigArgs) {
-        if (vizConfigArgs.size() >= 1)
-            parseVizStepDelay(vizConfigArgs[0])
-
-        if (vizConfigArgs.size() >= 2)
-            parseVizStartRGBColor(vizConfigArgs[1])
-
-        if (vizConfigArgs.size() >= 3)
-            parseVizColorToFade(vizConfigArgs[2])
-
-        if (vizConfigArgs.size() >= 4)
-            parseVizColorFadeRate(vizConfigArgs[3])
-
-
-        return " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
-                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
-    }
-
-    private void parseVizStepDelay(String arg) {
-        try {
-            vizStepDelay = Long.parseLong(arg)
-        } catch (Exception ignored) {
-            throw new RemoteException("The stepDelay must be a long value")
-        }
-    }
-
-    private void parseVizStartRGBColor(String arg) {
-        try {
-            vizStartRGBColor = arg[1..-2].tokenize(',')*.toFloat()
-            assert (vizStartRGBColor.length == 3)
-        } catch (Exception ignored) {
-            throw new RemoteException("The vizStartRGBColor must be an array of 3 float values, e.g. [0.0,1.0,0.5]")
-        }
-    }
-
-    private void parseVizColorToFade(String arg) {
-        try {
-            vizColorToFade = arg.charAt(0).toLowerCase();
-            assert (vizColorToFade == 'r' || vizColorToFade == 'g' || vizColorToFade == 'b')
-        } catch (Exception ignored) {
-            throw new RemoteException("The vizColorToFade must be one character value among: r, g, b, R, G, B")
-        }
-    }
-
-    private void parseVizColorFadeRate(String arg) {
-        try {
-            vizColorFadeRate = Float.parseFloat(arg)
-        } catch (Exception ignored) {
-            throw new RemoteException("The colorFadeRate must be a float value")
-        }
+                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate, startSize:$vizStartSize," +
+                "sizeDecrementRate:$vizSizeDecrementRate"
     }
 
     @Override
@@ -191,36 +144,22 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             return
         }
 
+        // need to clear the vertex attributes
+        vertexAttributes.clear()
+
+        // this tells the GraphTraversalVisualizationStrategy that if the line eval's to a traversal it should
+        // try to visualize it
+        traversalSubmittedForViz = true
+
         final Object o = shell.execute(line)
         if (o instanceof Graph) {
             clearGraph()
             def graph = (Graph) o
             def g = graph.traversal()
             g.V().sideEffect { addVertexToGephi(g, it.get()) }.iterate()
-        } else if (o instanceof Traversal.Admin) {
-            fadingVertexColors = [:]
-            def traversal = (Traversal.Admin) o
-            def memKeys = traversal.getSideEffects().keys()
-            def memSize = memKeys.size()
-            // assumes user called store("1")...store("n") in ascension
-            for (int i = 1; i <= memSize; i++) {
-                def stepKey = Integer.toString(i)
-                if (memKeys.contains(stepKey)) {
-                    io.out.print("Visualizing vertices at step: $stepKey... ")
-                    updateVisitedVertices()
-                    int visitedCount = 0
-
-                    if (traversal.getSideEffects().keys().contains(stepKey)) {
-                        traversal.getSideEffects().get(stepKey).get().each { element ->
-                            visitVertexToGephi((Vertex) element)
-                            visitedCount++
-                        }
-                    }
-                    io.out.println("Visited: $visitedCount")
-                }
-                sleep(vizStepDelay)
-            }
         }
+
+        traversalSubmittedForViz = false
     }
 
     @Override
@@ -228,27 +167,40 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
     }
 
+    /**
+     * Visits the last set of vertices traversed and degrades their color and size.
+     */
     def updateVisitedVertices() {
-        fadingVertexColors.keySet().each { vertex ->
-            def currentColor = fadingVertexColors.get(vertex)
+        vertexAttributes.keySet().each { vertex ->
+            def attrs = vertexAttributes[vertex]
+            def currentColor = attrs.color
             currentColor *= vizColorFadeRate
-            fadingVertexColors.put(vertex, currentColor)
+            vertexAttributes.get(vertex).color = currentColor
+
+            def currentSize = attrs.size
+            currentSize = Math.max(1, currentSize - (currentSize * vizSizeDecrementRate))
+            vertexAttributes.get(vertex).size = currentSize
+
             def props = [:]
             props.put(vizColorToFade.toString(), currentColor)
+            props.put("size", currentSize)
             updateGephiGraph([cn: [(vertex): props]])
         }
     }
 
+    /**
+     * Visit a vertex traversed and initialize its color and size.
+     */
     def visitVertexToGephi(def Vertex v) {
         def props = [:]
         props.put('r', vizStartRGBColor[0])
         props.put('g', vizStartRGBColor[1])
         props.put('b', vizStartRGBColor[2])
-        props.put('x', 1)
+        props.put('size', vizStartSize)
 
         updateGephiGraph([cn: [(v.id().toString()): props]])
 
-        fadingVertexColors.put(v.id().toString(), vizStartRGBColor[fadeColorIndex()])
+        vertexAttributes[v.id().toString()] = [color: vizStartRGBColor[fadeColorIndex()], size: vizStartSize]
     }
 
     def fadeColorIndex() {
@@ -310,5 +262,60 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     def updateGephiGraph(def Map postBody) {
         def http = new HTTPBuilder("http://$host:$port/")
         http.post(path: "/$workspace", requestContentType: JSON, body: postBody, query: [format: "JSON", operation: "updateGraph"])
+    }
+
+    @Override
+    public String toString() {
+        return "Gephi - [$workspace]"
+    }
+
+    private void parseVizStepDelay(String arg) {
+        try {
+            vizStepDelay = Long.parseLong(arg)
+        } catch (Exception ignored) {
+            throw new RemoteException("The stepDelay must be a long value")
+        }
+    }
+
+    private void parseVizStartRGBColor(String arg) {
+        try {
+            vizStartRGBColor = arg[1..-2].tokenize(',')*.toFloat()
+            assert (vizStartRGBColor.length == 3)
+        } catch (Exception ignored) {
+            throw new RemoteException("The vizStartRGBColor must be an array of 3 float values, e.g. [0.0,1.0,0.5]")
+        }
+    }
+
+    private void parseVizColorToFade(String arg) {
+        try {
+            vizColorToFade = arg.charAt(0).toLowerCase();
+            assert (vizColorToFade == 'r' || vizColorToFade == 'g' || vizColorToFade == 'b')
+        } catch (Exception ignored) {
+            throw new RemoteException("The vizColorToFade must be one character value among: r, g, b, R, G, B")
+        }
+    }
+
+    private void parseVizColorFadeRate(String arg) {
+        try {
+            vizColorFadeRate = Float.parseFloat(arg)
+        } catch (Exception ignored) {
+            throw new RemoteException("The colorFadeRate must be a float value")
+        }
+    }
+
+    private void parseVizSizeDecrementRate(String arg) {
+        try {
+            vizSizeDecrementRate = Float.parseFloat(arg)
+        } catch (Exception ignored) {
+            throw new RemoteException("The sizeDecrementRate must be a float value")
+        }
+    }
+
+    private void parseVizStartSize(String arg) {
+        try {
+            vizStartSize = Float.parseFloat(arg)
+        } catch (Exception ignored) {
+            throw new RemoteException("The startSize must be a float value")
+        }
     }
 }
