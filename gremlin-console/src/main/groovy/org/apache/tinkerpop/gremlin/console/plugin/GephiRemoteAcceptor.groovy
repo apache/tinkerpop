@@ -21,14 +21,20 @@ package org.apache.tinkerpop.gremlin.console.plugin
 import groovy.transform.CompileStatic
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
+import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
+import org.apache.tinkerpop.gremlin.structure.Direction
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import groovy.json.JsonSlurper
 import groovyx.net.http.HTTPBuilder
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
+import org.javatuples.Pair
+
+import java.util.stream.Collectors
 
 import static groovyx.net.http.ContentType.JSON
 
@@ -48,6 +54,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     boolean traversalSubmittedForViz = false
     long vizStepDelay
     private float[] vizStartRGBColor
+    private float[] vizDefaultRGBColor
     private char vizColorToFade
     private float vizColorFadeRate
     private float vizStartSize
@@ -61,6 +68,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         // traversal visualization defaults
         vizStepDelay = 1000;                 // 1 second pause between viz of steps
         vizStartRGBColor = [0.0f, 1.0f, 0.5f]  // light aqua green
+        vizDefaultRGBColor = [0.6f, 0.6f, 0.6f]  // light grey
         vizColorToFade = 'g'                 // will fade so blue is strongest
         vizColorFadeRate = 0.7               // the multiplicative rate to fade visited vertices
         vizStartSize = 20
@@ -151,12 +159,36 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         // try to visualize it
         traversalSubmittedForViz = true
 
+        // get the colors/sizes back to basics before trying visualize
+        resetColorsSizes()
+
         final Object o = shell.execute(line)
         if (o instanceof Graph) {
             clearGraph()
             def graph = (Graph) o
             def g = graph.traversal()
             g.V().sideEffect { addVertexToGephi(g, it.get()) }.iterate()
+        } else if (o instanceof Path) {
+            // paths get returned as iterators - so basically any Iterator that has vertices in it will have
+            // their path highlighted
+            final Path path = (Path) o
+            final List<Vertex> verticesInPath = path.stream().map{Pair pair -> pair.getValue0()}
+                    .filter{Object e -> e instanceof Vertex}.collect(Collectors.toList())
+
+            for (int ix = 0; ix < verticesInPath.size(); ix++) {
+                final Vertex v = (Vertex) verticesInPath.get(ix)
+                visitVertexInGephi(v)
+                if (ix > 0) {
+                    final Vertex previous = (Vertex) verticesInPath.get(ix - 1)
+                    v.edges(Direction.BOTH).findAll { Edge edge ->
+                        edge.bothVertices().any{Vertex vertex -> vertex == previous}
+                    }.each { Object edge ->
+                        visitEdgeInGephi((Edge) edge)
+                    }
+                }
+
+                sleep(vizStepDelay)
+            }
         }
 
         traversalSubmittedForViz = false
@@ -191,16 +223,28 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     /**
      * Visit a vertex traversed and initialize its color and size.
      */
-    def visitVertexToGephi(def Vertex v) {
+    def visitVertexInGephi(def Vertex v) {
         def props = [:]
         props.put('r', vizStartRGBColor[0])
         props.put('g', vizStartRGBColor[1])
         props.put('b', vizStartRGBColor[2])
         props.put('size', vizStartSize)
+        props.put('visited', 1)
 
         updateGephiGraph([cn: [(v.id().toString()): props]])
 
         vertexAttributes[v.id().toString()] = [color: vizStartRGBColor[fadeColorIndex()], size: vizStartSize]
+    }
+
+    def visitEdgeInGephi(def Edge e) {
+        def props = [:]
+        props.put('r', vizStartRGBColor[0])
+        props.put('g', vizStartRGBColor[1])
+        props.put('b', vizStartRGBColor[2])
+        props.put('size', vizStartSize)
+        props.put('visited', 1)
+
+        updateGephiGraph([ce: [(e.id().toString()): props]])
     }
 
     def fadeColorIndex() {
@@ -216,6 +260,10 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         // grab the first property value from the strategies of values
         def props = g.V(v).valueMap().next().collectEntries { kv -> [(kv.key): kv.value[0]] }
         props << [label: v.label()]
+        props.put('r', vizDefaultRGBColor[0])
+        props.put('g', vizDefaultRGBColor[1])
+        props.put('b', vizDefaultRGBColor[2])
+        props.put('visited', 0)
 
         // only add if it does not exist in graph already
         if (!getFromGephiGraph([operation: "getNode", id: v.id().toString()]).isPresent())
@@ -235,6 +283,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         props.put('source', e.outVertex().id().toString())
         props.put('target', e.inVertex().id().toString())
         props.put('directed', true)
+        props.put('visited', 0)
 
         // make sure the in vertex is there but don't add its edges - that will happen later as we are looping
         // all vertices in the graph
@@ -246,6 +295,13 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
     def clearGraph() {
         updateGephiGraph([dn: [filter: "ALL"]])
+    }
+
+    def resetColorsSizes() {
+        updateGephiGraph([cn: [filter: [nodeAttribute: [attribute: "visited", value: 1]],
+                               attributes: [size: 1, r: vizDefaultRGBColor[0], g: vizDefaultRGBColor[1], b: vizDefaultRGBColor[2]]]])
+        updateGephiGraph([ce: [filter: [edgeAttribute: [attribute: "visited", value: 1]],
+                               attributes: [size: 1, r: vizDefaultRGBColor[0], g: vizDefaultRGBColor[1], b: vizDefaultRGBColor[2]]]])
     }
 
     def getFromGephiGraph(def Map queryArgs) {

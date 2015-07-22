@@ -107,6 +107,20 @@ public class GephiRemoteAcceptorIntegrateTest {
     }
 
     @Test
+    public void shouldSubmitPath() throws RemoteException {
+        stubFor(post(urlPathEqualTo("/workspace0"))
+                .withQueryParam("format", equalTo("JSON"))
+                .withQueryParam("operation", equalTo("updateGraph"))
+                .willReturn(aResponse()
+                        .withStatus(200)));
+
+        acceptor.submit(Arrays.asList(
+                "g = graph.traversal();g.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().both().dedup()).until(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().hasId(3)).path().next()"));
+
+        wireMockRule.verify(3, postRequestedFor(urlPathEqualTo("/workspace0")));
+    }
+
+    @Test
     public void shouldSubmitTraversalAfterConfigWithDefaultG() throws RemoteException {
         stubFor(post(urlPathEqualTo("/workspace0"))
                 .withQueryParam("format", equalTo("JSON"))

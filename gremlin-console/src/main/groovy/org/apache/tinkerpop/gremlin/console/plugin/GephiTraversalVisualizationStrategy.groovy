@@ -25,8 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep
@@ -72,7 +70,7 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
                 // add steps in reverse order as they will then appear as: vertex -> barrier -> sideEffect
                 TraversalHelper.insertAfterStep(new LambdaSideEffectStep(traversal, { Traverser traverser ->
                     acceptor.updateVisitedVertices()
-                    traverser.get().each { Vertex v -> acceptor.visitVertexToGephi(v) }
+                    traverser.get().each { Vertex v -> acceptor.visitVertexInGephi(v) }
                     Thread.sleep(acceptor.vizStepDelay)
                 }), s, traversal)
                 TraversalHelper.insertAfterStep(new NoOpBarrierStep(traversal), s, traversal)
