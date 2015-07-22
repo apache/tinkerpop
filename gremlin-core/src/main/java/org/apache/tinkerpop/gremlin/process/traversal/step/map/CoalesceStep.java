@@ -60,7 +60,7 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
     }
 
     @Override
-    public List<Traversal.Admin<S, E>> getLocalChildren() {
+    public List<Traversal.Admin<S, E>> getGlobalChildren() {
         return Collections.unmodifiableList(this.coalesceTraversals);
     }
 
