@@ -23,13 +23,20 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.NoOpBarrierStep
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -44,10 +51,18 @@ import java.util.stream.Collectors
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @CompileStatic
-class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy>
-        implements TraversalStrategy.DecorationStrategy {
+class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<TraversalStrategy.FinalizationStrategy>
+        implements TraversalStrategy.FinalizationStrategy {
+
+    private static final Set<Class<? extends TraversalStrategy.FinalizationStrategy>> POSTS = new HashSet<>();
+
+    static {
+        POSTS.add(ProfileStrategy.class);
+    }
 
     private final GephiRemoteAcceptor acceptor
+
+    private final String sideEffectKey = "viz-" + UUID.randomUUID()
 
     GephiTraversalVisualizationStrategy(final GephiRemoteAcceptor acceptor) {
         this.acceptor = acceptor
@@ -55,6 +70,9 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
 
     @Override
     void apply(final Traversal.Admin<?, ?> traversal) {
+        if (traversal.getEngine().isComputer())
+            return
+
         // only apply these strategies if the traversal was :submit to the acceptor - otherwise process as usual
         if (acceptor.traversalSubmittedForViz) {
             final List<GraphStep> graphSteps = TraversalHelper.getStepsOfAssignableClass(GraphStep.class, traversal)
@@ -63,18 +81,27 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
             def List<Step> addAfter = new ArrayList<>()
             addAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeOtherVertexStep.class, traversal))
             addAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeVertexStep.class, traversal))
-            addAfter.addAll(graphSteps.stream().filter { it.returnsVertex() }.collect(Collectors.toList()))
             addAfter.addAll(vertexSteps.stream().filter { it.returnsVertex() }.collect(Collectors.toList()))
+            addAfter.addAll(graphSteps.stream().filter { it.returnsVertex() }.collect(Collectors.toList()))
 
             addAfter.each { Step s ->
-                // add steps in reverse order as they will then appear as: vertex -> barrier -> sideEffect
+                // todo: this should be s simple as vertex -> fold -> sideEffect -> unfold TINKERPOP3-780
                 TraversalHelper.insertAfterStep(new LambdaSideEffectStep(traversal, { Traverser traverser ->
-                    acceptor.updateVisitedVertices()
-                    traverser.get().each { Vertex v -> acceptor.visitVertexInGephi(v) }
-                    Thread.sleep(acceptor.vizStepDelay)
+                    final BulkSet<Vertex> vertices = ((BulkSet<Vertex>) traverser.sideEffects(sideEffectKey))
+                    if (!vertices.isEmpty()) {
+                        acceptor.updateVisitedVertices()
+                        vertices.forEach { Vertex v, Long l -> acceptor.visitVertexInGephi(v) }
+                        vertices.clear()
+                        Thread.sleep(acceptor.vizStepDelay)
+                    }
                 }), s, traversal)
-                TraversalHelper.insertAfterStep(new NoOpBarrierStep(traversal), s, traversal)
+                TraversalHelper.insertAfterStep(new AggregateStep(traversal, sideEffectKey), s, traversal)
             }
         }
+    }
+
+    @Override
+    public Set<Class<? extends TraversalStrategy.FinalizationStrategy>> applyPost() {
+        return POSTS;
     }
 }
