@@ -102,7 +102,7 @@ public class GephiRemoteAcceptorIntegrateTest {
 
         acceptor.submit(Arrays.asList("g = org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph.open();g.addVertex();g"));
 
-        wireMockRule.verify(2, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(4, postRequestedFor(urlPathEqualTo("/workspace0")));
         wireMockRule.verify(1, getRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
@@ -117,7 +117,7 @@ public class GephiRemoteAcceptorIntegrateTest {
         acceptor.submit(Arrays.asList(
                 "g = graph.traversal();g.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().both().dedup()).until(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().hasId(3)).path().next()"));
 
-        wireMockRule.verify(3, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(5, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
     @Test
@@ -134,7 +134,7 @@ public class GephiRemoteAcceptorIntegrateTest {
         acceptor.submit(Arrays.asList(
                 "vg.V(2).in('knows').out('knows').has('age',org.apache.tinkerpop.gremlin.process.traversal.P.gt(30)).outE('created').has('weight',org.apache.tinkerpop.gremlin.process.traversal.P.gt(0.5d)).inV().iterate()"));
 
-        wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(18, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
     @Test
@@ -151,7 +151,7 @@ public class GephiRemoteAcceptorIntegrateTest {
         acceptor.submit(Arrays.asList(
                 "x.V(2).in('knows').out('knows').has('age',org.apache.tinkerpop.gremlin.process.traversal.P.gt(30)).outE('created').has('weight',org.apache.tinkerpop.gremlin.process.traversal.P.gt(0.5d)).inV().iterate()"));
 
-        wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(18, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
     @Test
@@ -168,7 +168,7 @@ public class GephiRemoteAcceptorIntegrateTest {
         acceptor.submit(Arrays.asList(
                 "vg.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().out()).times(2).iterate()"));
 
-        wireMockRule.verify(21, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
     @Test
