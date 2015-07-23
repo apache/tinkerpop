@@ -83,7 +83,10 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
         if (callbackRegistry != null) {
             final Element currentElement = traverser.get();
             final Property currentProperty = traverser.get().property(key);
-            final boolean newProperty = asVertex ? currentProperty == VertexProperty.empty() : currentProperty == Property.empty();
+
+            // todo: have to do a runtime check until TINKERPOP3-783 is done - asVertex is not reliable
+            final boolean runtimeAsVertex = currentElement instanceof Vertex;
+            final boolean newProperty = runtimeAsVertex ? currentProperty == VertexProperty.empty() : currentProperty == Property.empty();
 
             Event.ElementPropertyChangedEvent evt;
             if (currentElement instanceof Vertex)

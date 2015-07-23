@@ -166,6 +166,33 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final Vertex vSome = graph.addVertex("some", "thing");
         vSome.property(VertexProperty.Cardinality.single, "that", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
+        gts.V().addV().property("this", "thing").next();
+
+        tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("this", "thing"))));
+
+        assertEquals(1, listener1.addVertexEventRecorded());
+        assertEquals(1, listener2.addVertexEventRecorded());
+        assertEquals(1, listener2.vertexPropertyChangedEventRecorded());
+        assertEquals(1, listener1.vertexPropertyChangedEventRecorded());
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    public void shouldTriggerAddVertexWithPropertyThenPropertyAdded() {
+        final StubMutationListener listener1 = new StubMutationListener();
+        final StubMutationListener listener2 = new StubMutationListener();
+        final EventStrategy.Builder builder = EventStrategy.build()
+                .addListener(listener1)
+                .addListener(listener2);
+
+        if (graph.features().graph().supportsTransactions())
+            builder.eventQueue(new EventStrategy.TransactionalEventQueue(graph));
+
+        final EventStrategy eventStrategy = builder.create();
+
+        final Vertex vSome = graph.addVertex("some", "thing");
+        vSome.property(VertexProperty.Cardinality.single, "that", "thing");
+        final GraphTraversalSource gts = create(eventStrategy);
         gts.V().addV("any", "thing").property(VertexProperty.Cardinality.single, "this", "thing").next();
 
         tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("this", "thing"))));
