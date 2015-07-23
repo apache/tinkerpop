@@ -85,7 +85,6 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
             addAfter.addAll(graphSteps.stream().filter { it.returnsVertex() }.collect(Collectors.toList()))
 
             addAfter.each { Step s ->
-                // todo: this should be s simple as vertex -> fold -> sideEffect -> unfold TINKERPOP3-780
                 TraversalHelper.insertAfterStep(new LambdaSideEffectStep(traversal, { Traverser traverser ->
                     final BulkSet<Vertex> vertices = ((BulkSet<Vertex>) traverser.sideEffects(sideEffectKey))
                     if (!vertices.isEmpty()) {
