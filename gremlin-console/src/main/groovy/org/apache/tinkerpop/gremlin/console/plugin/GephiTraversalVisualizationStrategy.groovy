@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep
@@ -84,6 +85,7 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
             addAfter.addAll(vertexSteps.stream().filter { it.returnsVertex() }.collect(Collectors.toList()))
             addAfter.addAll(graphSteps.stream().filter { it.returnsVertex() }.collect(Collectors.toList()))
 
+            // decay all vertices and visit each one to update their colors to the brightest
             addAfter.each { Step s ->
                 TraversalHelper.insertAfterStep(new LambdaSideEffectStep(traversal, { Traverser traverser ->
                     final BulkSet<Vertex> vertices = ((BulkSet<Vertex>) traverser.sideEffects(sideEffectKey))
@@ -91,6 +93,22 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
                         acceptor.updateVisitedVertices()
                         vertices.forEach { Vertex v, Long l -> acceptor.visitVertexInGephi(v) }
                         vertices.clear()
+                        Thread.sleep(acceptor.vizStepDelay)
+                    }
+                }), s, traversal)
+                TraversalHelper.insertAfterStep(new AggregateStep(traversal, sideEffectKey), s, traversal)
+            }
+
+            // decay all vertices except those that made it through the filter - "this way you can watch
+            // the Gremlins dying" - said daniel kuppitz
+            TraversalHelper.getStepsOfAssignableClass(FilterStep.class, traversal).each { FilterStep s ->
+                TraversalHelper.insertAfterStep(new LambdaSideEffectStep(traversal, { Traverser traverser ->
+                    final BulkSet<Object> objects = ((BulkSet<Object>) traverser.sideEffects(sideEffectKey))
+                    if (!objects.isEmpty()) {
+                        final List<String> vertices = objects.findAll{ Object o -> o instanceof Vertex}
+                                .collect { Object o -> ((Vertex) o).id().toString() }
+                        acceptor.updateVisitedVertices(vertices)
+                        objects.clear()
                         Thread.sleep(acceptor.vizStepDelay)
                     }
                 }), s, traversal)

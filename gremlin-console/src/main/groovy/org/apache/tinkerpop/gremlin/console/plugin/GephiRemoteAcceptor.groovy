@@ -202,8 +202,8 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     /**
      * Visits the last set of vertices traversed and degrades their color and size.
      */
-    def updateVisitedVertices() {
-        vertexAttributes.keySet().each { vertex ->
+    def updateVisitedVertices(def List except = []) {
+        vertexAttributes.keySet().findAll{ vertex -> !except.contains(vertex) }.each { vertex ->
             def attrs = vertexAttributes[vertex]
             def currentColor = attrs.color
             currentColor *= vizColorFadeRate
