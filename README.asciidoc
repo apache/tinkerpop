@@ -46,7 +46,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 ** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
 * Check license headers are present: `mvn apache-rat:check`
 * Build AsciiDocs (Hadoop and ZooKeeper must be running): `bin/process-docs.sh`
-* Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
+** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
 ** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-gremlin-console-*-standalone `pwd`/docs/src/xyz.asciidoc]+
 * Build JavaDocs: `mvn process-resources -Djavadoc`
 * Check for Apache License headers: `mvn apache-rat:check`
@@ -99,6 +99,7 @@ TinkerPop3 uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TI
 ** Everything else is an `improvement` in the sense that any other work is an enhancement to the current codebase.
 * The "component" should be representative of the primary area of code that it applies to and all issues should have this property set.
 * Issues are not assigned "labels".
+* The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on which that particular issue will completed.
 
 Release Process
 ~~~~~~~~~~~~~~~
