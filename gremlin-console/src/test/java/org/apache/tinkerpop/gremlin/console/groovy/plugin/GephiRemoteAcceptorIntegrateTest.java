@@ -22,7 +22,11 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.tinkerpop.gremlin.console.GremlinGroovysh;
 import org.apache.tinkerpop.gremlin.console.plugin.GephiRemoteAcceptor;
+import org.apache.tinkerpop.gremlin.console.plugin.GephiTraversalVisualizationStrategy;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.junit.Before;
@@ -37,8 +41,10 @@ import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -64,6 +70,11 @@ public class GephiRemoteAcceptorIntegrateTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(port);
+
+    static {
+        final Graph graph = TinkerFactory.createModern();
+        groovysh.getInterp().getContext().setProperty("graph", graph);
+    }
 
     @Before
     public void before() throws Exception {
@@ -96,19 +107,82 @@ public class GephiRemoteAcceptorIntegrateTest {
     }
 
     @Test
-    public void shouldSubmitTraversal() throws RemoteException {
+    public void shouldSubmitPath() throws RemoteException {
         stubFor(post(urlPathEqualTo("/workspace0"))
                 .withQueryParam("format", equalTo("JSON"))
                 .withQueryParam("operation", equalTo("updateGraph"))
                 .willReturn(aResponse()
                         .withStatus(200)));
 
-        acceptor.submit(Arrays.asList("g = org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.createModern().traversal();" +
-                "traversal = g.V(2).store('1').in('knows').store('2').out('knows').has('age',org.apache.tinkerpop.gremlin.process.traversal.P.gt(30)).store('3').outE('created').has('weight',org.apache.tinkerpop.gremlin.process.traversal.P.gt(0.5d)).inV().store('4');" +
-                "traversal.iterate();" +
-                "traversal"));
+        acceptor.submit(Arrays.asList(
+                "g = graph.traversal();g.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().both().dedup()).until(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().hasId(3)).path().next()"));
 
-        wireMockRule.verify(10, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(3, postRequestedFor(urlPathEqualTo("/workspace0")));
+    }
+
+    @Test
+    public void shouldSubmitTraversalAfterConfigWithDefaultG() throws RemoteException {
+        stubFor(post(urlPathEqualTo("/workspace0"))
+                .withQueryParam("format", equalTo("JSON"))
+                .withQueryParam("operation", equalTo("updateGraph"))
+                .willReturn(aResponse()
+                        .withStatus(200)));
+
+        acceptor.configure(Arrays.asList("visualTraversal", "graph"));
+
+        // call iterate() as groovysh isn't rigged to auto-iterate
+        acceptor.submit(Arrays.asList(
+                "vg.V(2).in('knows').out('knows').has('age',org.apache.tinkerpop.gremlin.process.traversal.P.gt(30)).outE('created').has('weight',org.apache.tinkerpop.gremlin.process.traversal.P.gt(0.5d)).inV().iterate()"));
+
+        wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace0")));
+    }
+
+    @Test
+    public void shouldSubmitTraversalAfterConfigWithDefinedG() throws RemoteException {
+        stubFor(post(urlPathEqualTo("/workspace0"))
+                .withQueryParam("format", equalTo("JSON"))
+                .withQueryParam("operation", equalTo("updateGraph"))
+                .willReturn(aResponse()
+                        .withStatus(200)));
+
+        acceptor.configure(Arrays.asList("visualTraversal", "graph", "x"));
+
+        // call iterate() as groovysh isn't rigged to auto-iterate
+        acceptor.submit(Arrays.asList(
+                "x.V(2).in('knows').out('knows').has('age',org.apache.tinkerpop.gremlin.process.traversal.P.gt(30)).outE('created').has('weight',org.apache.tinkerpop.gremlin.process.traversal.P.gt(0.5d)).inV().iterate()"));
+
+        wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace0")));
+    }
+
+    @Test
+    public void shouldSubmitTraversalOverRepeat() throws RemoteException {
+        stubFor(post(urlPathEqualTo("/workspace0"))
+                .withQueryParam("format", equalTo("JSON"))
+                .withQueryParam("operation", equalTo("updateGraph"))
+                .willReturn(aResponse()
+                        .withStatus(200)));
+
+        acceptor.configure(Arrays.asList("visualTraversal", "graph"));
+
+        // call iterate() as groovysh isn't rigged to auto-iterate
+        acceptor.submit(Arrays.asList(
+                "vg.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().out()).times(2).iterate()"));
+
+        wireMockRule.verify(21, postRequestedFor(urlPathEqualTo("/workspace0")));
+    }
+
+    @Test
+    public void shouldClearGraph() throws RemoteException {
+        stubFor(post(urlPathEqualTo("/workspace0"))
+                .withQueryParam("format", equalTo("JSON"))
+                .withQueryParam("operation", equalTo("updateGraph"))
+                .withRequestBody(equalToJson("{\"dn\":{\"filter\":\"ALL\"}}"))
+                .willReturn(aResponse()
+                        .withStatus(200)));
+
+        acceptor.submit(Arrays.asList("clear"));
+
+        wireMockRule.verify(1, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
     private static int pickOpenPort() {
