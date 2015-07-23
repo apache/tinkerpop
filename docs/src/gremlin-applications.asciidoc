@@ -1012,9 +1012,9 @@ Visualization of a `Traversal` has a different approach as the visualization occ
 [gremlin-groovy,modern]
 ----
 :remote config visualTraversal graph                   <1>
-traversal = vg.V(2).in().out('knows')
-                   .has('age',gt(30)).outE('created')
-                   .has('weight',gt(0.5d)).inV()
+traversal = vg.V(2).in().out('knows').
+                    has('age',gt(30)).outE('created').
+                    has('weight',gt(0.5d)).inV()
 :> traversal                                           <2>
 ----
 
