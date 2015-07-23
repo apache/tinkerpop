@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.select;
+
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -52,6 +54,11 @@ public abstract class GroovyMapTest {
         @Override
         public Traversal<Vertex, String> get_g_withPath_V_asXaX_out_out_mapXa_name_it_nameX() {
             TraversalScriptHelper.compute("g.withPath().V().as('a').out.out().map { v -> v.path('a').name + v.name }", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_mapXselectXaXX() {
+            TraversalScriptHelper.compute("g.V.as('a').map(select('a'))", g);
         }
     }
 }
