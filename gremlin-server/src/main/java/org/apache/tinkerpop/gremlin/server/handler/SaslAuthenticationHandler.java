@@ -73,7 +73,7 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                 if (requestMessage.getOp().equals(Tokens.OPS_AUTHENTICATION) && requestMessage.getArgs().containsKey(Tokens.ARGS_SASL)) {
                     final byte[] saslResponse = (byte[]) requestMessage.getArgs().get(Tokens.ARGS_SASL);
                     try {
-                        byte[] saslMessage = negotiator.get().evaluateResponse(saslResponse);
+                        final byte[] saslMessage = negotiator.get().evaluateResponse(saslResponse);
                         if (negotiator.get().isComplete()) {
                             // todo: do something with this user
                             final AuthenticatedUser user = negotiator.get().getAuthenticatedUser();

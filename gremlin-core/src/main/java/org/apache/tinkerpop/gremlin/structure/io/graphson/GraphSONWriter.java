@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -31,22 +32,25 @@ import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSeriali
 
 import java.io.*;
 import java.util.Iterator;
+import java.util.function.Function;
 
 /**
  * A @{link GraphWriter} that writes a graph and its elements to a JSON-based representation. This implementation
  * only supports JSON data types and is therefore lossy with respect to data types (e.g. a float will become a double).
  * Further note that serialized {@code Map} objects do not support complex types for keys.  {@link Edge} and
  * {@link Vertex} objects are serialized to {@code Map} instances. If an
- * {@link org.apache.tinkerpop.gremlin.structure.Element} is used as a key, it is coerced to its identifier.  Other complex
+ * {@link Element} is used as a key, it is coerced to its identifier.  Other complex
  * objects are converted via {@link Object#toString()} unless a mapper serializer is supplied.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class GraphSONWriter implements GraphWriter {
     private final ObjectMapper mapper;
+    private final boolean wrapAdjacencyList;
 
-    private GraphSONWriter(final GraphSONMapper mapper) {
-        this.mapper = mapper.createMapper();
+    private GraphSONWriter(final Builder builder) {
+        mapper = builder.mapper.createMapper();
+        wrapAdjacencyList = builder.wrapAdjacencyList;
     }
 
     /**
@@ -95,12 +99,19 @@ public final class GraphSONWriter implements GraphWriter {
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            if (wrapAdjacencyList) writer.write("{\"vertices\":[");
             while (vertexIterator.hasNext()) {
                 writeVertex(baos, vertexIterator.next(), direction);
                 writer.write(new String(baos.toByteArray()));
-                writer.newLine();
+                if (wrapAdjacencyList) {
+                    if (vertexIterator.hasNext())
+                        writer.write(",");
+                } else {
+                    writer.newLine();
+                }
                 baos.reset();
             }
+            if (wrapAdjacencyList) writer.write("]}");
         }
 
         writer.flush();
@@ -174,9 +185,9 @@ public final class GraphSONWriter implements GraphWriter {
     public static class Builder implements WriterBuilder<GraphSONWriter> {
 
         private GraphSONMapper mapper = GraphSONMapper.build().create();
+        private boolean wrapAdjacencyList = false;
 
-        private Builder() {
-        }
+        private Builder() { }
 
         /**
          * Override all of the builder options with this mapper.  If this value is set to something other than
@@ -187,8 +198,26 @@ public final class GraphSONWriter implements GraphWriter {
             return this;
         }
 
+        /**
+         * Wraps the output of {@link #writeGraph(OutputStream, Graph)}, {@link #writeVertices(OutputStream, Iterator)}
+         * and {@link #writeVertices(OutputStream, Iterator, Direction)} in a JSON object.  By default, this value
+         * is {@code false} which means that the output is such that there is one JSON object (vertex) per line.
+         * When {@code true} the line breaks are not written and instead a valid JSON object is formed where the
+         * vertices are part of a JSON array in a key called "vertices".
+         * <p/>
+         * By setting this value to {@code true}, the generated JSON is no longer "splittable" by line and thus not
+         * suitable for OLAP processing.  Furthermore, reading this format of the JSON with
+         * {@link GraphSONReader#readGraph(InputStream, Graph)} or
+         * {@link GraphSONReader#readVertices(InputStream, Function, Function, Direction)} requires that the
+         * entire JSON object be read into memory, so it is best saved for "small" graphs.
+         */
+        public Builder wrapAdjacencyList(final boolean wrapAdjacencyListInObject) {
+            this.wrapAdjacencyList = wrapAdjacencyListInObject;
+            return this;
+        }
+
         public GraphSONWriter create() {
-            return new GraphSONWriter(mapper);
+            return new GraphSONWriter(this);
         }
     }
 }

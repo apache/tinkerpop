@@ -31,7 +31,7 @@ import java.util.Map;
 
 /**
  * Factory to construct new {@link org.apache.tinkerpop.gremlin.structure.Graph} instances from a
- * {@link org.apache.commons.configuration.Configuration} object or properties file.
+ * {@code Configuration} object or properties file.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -40,11 +40,11 @@ public final class GraphFactory {
     private GraphFactory() {}
 
     /**
-     * Open a graph.  See each {@link org.apache.tinkerpop.gremlin.structure.Graph} instance for its configuration options.
+     * Open a graph.  See each {@link Graph} instance for its configuration options.
      *
      * @param configuration A configuration object that specifies the minimally required properties for a                        I
-     *                      {@link org.apache.tinkerpop.gremlin.structure.Graph} instance. This minimum is determined by the
-     *                      {@link org.apache.tinkerpop.gremlin.structure.Graph} instance itself.
+     *                      {@link Graph} instance. This minimum is determined by the
+     *                      {@link Graph} instance itself.
      * @return A {@link org.apache.tinkerpop.gremlin.structure.Graph} instance.
      * @throws IllegalArgumentException if {@code configuration}
      */
@@ -56,24 +56,31 @@ public final class GraphFactory {
         if (null == clazz)
             throw new RuntimeException(String.format("Configuration must contain a valid '%s' setting", Graph.GRAPH));
 
-        final Class graphClass;
+        final Class<?> graphClass;
         try {
             graphClass = Class.forName(clazz);
         } catch (final ClassNotFoundException e) {
             throw new RuntimeException(String.format("GraphFactory could not find [%s] - Ensure that the jar is in the classpath", clazz));
         }
 
+        // If the graph class specifies a factory class then use that instead of the specified class.
+        final GraphFactoryClass factoryAnnotation = graphClass.getAnnotation(GraphFactoryClass.class);
+        final Class<?> factoryClass = factoryAnnotation != null ? factoryAnnotation.value() : graphClass;
+
+        return open(configuration, factoryClass);
+    }
+
+    private static Graph open(final Configuration configuration, final Class<?> graphFactoryClass)
+    {
         final Graph g;
         try {
-            // will basically use Graph.open(Configuration c) to instantiate, but could
-            // technically use any method on any class with the same signature.
-            g = (Graph) graphClass.getMethod("open", Configuration.class).invoke(null, configuration);
+            // will use open(Configuration c) to instantiate
+            g = (Graph) graphFactoryClass.getMethod("open", Configuration.class).invoke(null, configuration);
         } catch (final NoSuchMethodException e1) {
-            throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument - [%s] does not seem to have one", clazz));
+            throw new RuntimeException(String.format("GraphFactory can only instantiate Graph implementations from classes that have a static open() method that takes a single Apache Commons Configuration argument - [%s] does not seem to have one", graphFactoryClass));
         } catch (final Exception e2) {
-            throw new RuntimeException(String.format("GraphFactory could not instantiate this Graph implementation [%s]", clazz), e2);
+            throw new RuntimeException(String.format("GraphFactory could not instantiate this Graph implementation [%s]", graphFactoryClass), e2);
         }
-
         return g;
     }
 

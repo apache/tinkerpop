@@ -53,6 +53,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.javatuples.Pair;
 import org.javatuples.Quartet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static io.netty.handler.codec.http.HttpHeaders.Names.*;
@@ -109,6 +114,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
     private final GremlinExecutor gremlinExecutor;
     private final GraphManager graphManager;
+    final Pattern pattern = Pattern.compile("(.*);q=(.*)");
 
     public HttpGremlinEndpointHandler(final Map<String, MessageSerializer> serializers,
                                       final GremlinExecutor gremlinExecutor,
@@ -122,6 +128,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
         if (msg instanceof FullHttpRequest) {
             final FullHttpRequest req = (FullHttpRequest) msg;
+
+            if ("/favicon.ico".equals(req.getUri())) {
+                sendError(ctx, NOT_FOUND, "Gremlin Server doesn't have a favicon.ico");
+                ReferenceCountUtil.release(msg);
+                return;
+            }
 
             if (is100ContinueExpected(req)) {
                 ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
@@ -143,10 +155,9 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             }
 
             final String acceptString = Optional.ofNullable(req.headers().get("Accept")).orElse("application/json");
-            final String accept = acceptString.equals("*/*") ? "application/json" : acceptString;
-            final MessageTextSerializer serializer = (MessageTextSerializer) serializers.get(accept);
+            final Pair<String, MessageTextSerializer> serializer = chooseSerializer(acceptString);
             if (null == serializer) {
-                sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", accept));
+                sendError(ctx, BAD_REQUEST, String.format("no serializer for requested Accept header: %s", acceptString));
                 ReferenceCountUtil.release(msg);
                 return;
             }
@@ -169,7 +180,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                         logger.debug("Preparing HTTP response for request with script [{}] and bindings of [{}] with result of [{}] on [{}]",
                                 requestArguments.getValue0(), requestArguments.getValue1(), resultHolder.get(), Thread.currentThread().getName());
                         final FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, (ByteBuf) resultHolder.get());
-                        response.headers().set(CONTENT_TYPE, accept);
+                        response.headers().set(CONTENT_TYPE, serializer.getValue0());
                         response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 
                         // handle cors business
@@ -210,7 +221,8 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                                     .code(ResponseStatusCode.SUCCESS)
                                     .result(IteratorUtils.asList(o)).create();
                             try {
-                                Object wrappedBuffer = (Object) Unpooled.wrappedBuffer(serializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
+                                Object wrappedBuffer = Unpooled.wrappedBuffer(
+                                        serializer.getValue1().serializeResponseAsString(responseMessage).getBytes(UTF8));
                                 // http server is sessionless and must handle commit on transactions
                                 this.graphManager.commitAll();
                                 return wrappedBuffer;
@@ -279,6 +291,26 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         bindings.putAll(bindingMap);
 
         return bindings;
+    }
+
+    private Pair<String,MessageTextSerializer> chooseSerializer(final String acceptString) {
+        final List<Pair<String,Double>> ordered = Stream.of(acceptString.split(",")).map(mediaType -> {
+            // parse out each mediaType with its params - keeping it simple and just looking for "quality".  if
+            // that value isn't there, default it to 1.0.  not really validating here so users better get their
+            // accept headers straight
+            final Matcher matcher = pattern.matcher(mediaType);
+            return (matcher.matches()) ? Pair.with(matcher.group(1), Double.parseDouble(matcher.group(2))) : Pair.with(mediaType, 1.0);
+        }).sorted((o1, o2) -> o2.getValue0().compareTo(o1.getValue0())).collect(Collectors.toList());
+
+        for (Pair<String,Double> p : ordered) {
+            // this isn't perfect as it doesn't really account for wildcards.  that level of complexity doesn't seem
+            // super useful for gremlin server really.
+            final String accept = p.getValue0().equals("*/*") ? "application/json" : p.getValue0();
+            if (serializers.containsKey(accept))
+                return Pair.with(accept, (MessageTextSerializer) serializers.get(accept));
+        }
+
+        return null;
     }
 
     private static Quartet<String, Map<String, Object>, String, Map<String,String>> getRequestArguments(final FullHttpRequest request) {
