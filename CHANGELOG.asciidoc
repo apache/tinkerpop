@@ -26,6 +26,9 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Gephi Plugin no longer requires manual insert of `store` steps to visualize a traversal.
+* Gephi Plugin visualizes `Path` objects.
+* Added configuration options to Gephi Plugin for setting the size of nodes visualized.
 * Replaced `DedupBijectionStrategy` with the more effective `FilterRankingStrategy`.
 * `ComputerAwareSteps` must not only handle step ids, but also step labels.
 * Renamed `B_O_P_SE_SL_Traverser` to `B_LP_O_P_SE_SL_Traverser` as it now supports `TraverserRequirement.LABELED_PATH`.
