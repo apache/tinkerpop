@@ -943,7 +943,7 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
-             * Supports setting of a long value.
+             * Supports setting of a string value.
              */
             @FeatureDescriptor(name = FEATURE_STRING_VALUES)
             public default boolean supportsStringValues() {

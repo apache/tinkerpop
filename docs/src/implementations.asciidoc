@@ -539,6 +539,12 @@ Neo4j-Gremlin
    <artifactId>neo4j-gremlin</artifactId>
    <version>x.y.z</version>
 </dependency>
+<!-- neo4j-tinkerpop-api-impl is NOT Apache 2 licensed - more information below -->
+<dependency>
+  <groupId>org.neo4j</groupId>
+  <artifactId>neo4j-tinkerpop-api-impl</artifactId>
+  <version>0.1-2.2</version>
+</dependency>
 ----
 
 link:http://neotechnology.com[Neo Technology] are the developers of the OLTP-based link:http://neo4j.org[Neo4j graph database].
