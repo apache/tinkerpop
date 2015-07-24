@@ -24,8 +24,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -45,7 +45,7 @@ public final class MapKeysStep<S, E> extends FlatMapStep<S, E> {
         if (s instanceof Map)
             return ((Map) s).keySet().iterator();
         if (s instanceof Map.Entry)
-            return IteratorUtils.asIterator(((Map.Entry) s).getKey());
+            return Collections.singleton((E) ((Map.Entry) s).getKey()).iterator();
         return EmptyIterator.instance();
     }
 }
