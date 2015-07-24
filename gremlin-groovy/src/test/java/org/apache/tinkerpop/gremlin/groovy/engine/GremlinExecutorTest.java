@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.groovy.engine;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.groovy.ThreadInterruptCustomizerProvider;
-import org.apache.tinkerpop.gremlin.groovy.TimedInterruptCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider;
 import org.junit.Test;
 
 import javax.script.Bindings;

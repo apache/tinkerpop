@@ -16,9 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy;
+package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
 
-import groovy.transform.TypeChecked;
+import groovy.transform.CompileStatic;
+import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
@@ -29,24 +30,19 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Injects the {@code TypeChecked} transformer to enable type validation on script execution.
+ * Injects the {@code CompileStatic} transformer to enable type validation on script execution.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class TypeCheckedCustomizerProvider implements CompilerCustomizerProvider {
+public class CompileStaticCustomizerProvider implements CompilerCustomizerProvider {
 
     private final String extensions;
 
-    public TypeCheckedCustomizerProvider() {
+    public CompileStaticCustomizerProvider() {
         this(null);
     }
 
-    /**
-     * Configures the {@code TypeChecked} annotation to use optional extensions.  The argument should be one or more
-     * groovy scripts on the classpath or the fully qualified classname of a precompiled extension.  If there are
-     * multiple extensions then extensions should be comma separated.
-     */
-    public TypeCheckedCustomizerProvider(final String extensions) {
+    public CompileStaticCustomizerProvider(final String extensions) {
         this.extensions = extensions;
     }
 
@@ -59,6 +55,7 @@ public class TypeCheckedCustomizerProvider implements CompilerCustomizerProvider
             else
                 annotationParams.put("extensions", Collections.singletonList(extensions));
         }
-        return new ASTTransformationCustomizer(annotationParams, TypeChecked.class);
+
+        return new ASTTransformationCustomizer(annotationParams, CompileStatic.class);
     }
 }

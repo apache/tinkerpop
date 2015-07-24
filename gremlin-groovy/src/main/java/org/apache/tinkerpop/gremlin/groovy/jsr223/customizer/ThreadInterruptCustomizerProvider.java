@@ -16,9 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy;
+package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer;
 
 import groovy.transform.ThreadInterrupt;
+import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 
