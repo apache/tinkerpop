@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223
 
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SandboxExtension
 import org.codehaus.groovy.ast.MethodNode
 
 import java.util.function.BiPredicate

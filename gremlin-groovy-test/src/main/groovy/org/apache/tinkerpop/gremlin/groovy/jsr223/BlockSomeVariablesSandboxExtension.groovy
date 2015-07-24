@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223
 
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SandboxExtension
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.VariableExpression
