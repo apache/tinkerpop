@@ -17,17 +17,17 @@
  * under the License.
  */
 
-// Generates the modern graph into an "empty" TinkerGraph via LifeCycleHook
-// it is important that the hook be assigned to a variable (in this case "hook").
-// the exact name of this variable is unimportant.
-hook = [
-  onStartUp: { ctx ->
-    ctx.logger.info("Loading 'modern' graph data.")
-    TinkerFactory.generateModern(graph)
-  }
-] as LifeCycleHook
+// an init script that returns a Map allows explicit setting of global bindings.
+def globals = [:]
 
-// Define the default TraversalSource to bind queries to. Code outside of the "hook"
-// will execute for each instantiated ScriptEngine instance. Use this part of the
-// script to initialize functions that are meant to be re-usable.
-g = graph.traversal()
+// Generates the modern graph into an "empty" TinkerGraph via LifeCycleHook.
+// Note that the name of the key in the "global" map is unimportant.
+globals << [hook : [
+        onStartUp: { ctx ->
+          ctx.logger.info("Loading 'modern' graph data.")
+          TinkerFactory.generateClassic(graph)
+        }
+] as LifeCycleHook]
+
+// define the default TraversalSource to bind queries to - this one will be named "g".
+globals << [g : graph.traversal()]
