@@ -33,7 +33,8 @@ class SimpleSandboxExtension extends SandboxExtension {
         graphIsAlwaysGraphInstance = false
 
         methodFilter = (BiPredicate<String, MethodNode>) { descriptor, method ->
-            return method.declaringClass.name != 'java.lang.System'
+            // declaring class is null when it refers to a script eval (it seems)
+            return null == method.declaringClass || method.declaringClass.name != 'java.lang.System'
         }
     }
 }

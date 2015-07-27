@@ -95,6 +95,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
 
         logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
 
+        // todo: deprecate promoteBindings in 3.1.0
         final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
                 .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
                 .afterFailure((b, e) -> graphManager.rollbackAll())
@@ -111,6 +112,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
         settings.scriptEngines.forEach((k, v) -> {
             // make sure that server related classes are available at init
             v.imports.add(LifeCycleHook.class.getCanonicalName());
+            v.imports.add(LifeCycleHook.Context.class.getCanonicalName());
             gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
         });
 

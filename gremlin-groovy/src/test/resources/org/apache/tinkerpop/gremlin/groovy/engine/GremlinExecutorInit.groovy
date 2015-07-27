@@ -20,3 +20,4 @@ def add(x, y) { x + y }
 
 someSet = ["test"] as Set
 someMap = [name:"stephen"]
+""

@@ -20,7 +20,7 @@
 # secure configuration of Gremlin Server.  Keep in mind that
 # this configuration uses a generated self-signed certificate
 # for SSL and a not so secure TinkerGraph for the credential
-# store - not suitable for production
+# store - not suitable for production.
 ##############################################################
 
 host: localhost
@@ -38,10 +38,12 @@ scriptEngines: {
   gremlin-groovy: {
     imports: [java.lang.Math],
     staticImports: [java.lang.Math.PI],
-    scripts: [scripts/empty-sample.groovy]},
-  nashorn: {
-      imports: [java.lang.Math],
-      staticImports: [java.lang.Math.PI]}}
+    scripts: [scripts/empty-sample-secure.groovy],
+    config: {
+      compilerCustomizerProviders: {
+              "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider":[],
+              "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider":[10000],
+              "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider":["org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension"]}}}}
 serializers:
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0 }                                             # application/vnd.gremlin-v1.0+gryo
   - { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true }}   # application/vnd.gremlin-v1.0+gryo-stringd

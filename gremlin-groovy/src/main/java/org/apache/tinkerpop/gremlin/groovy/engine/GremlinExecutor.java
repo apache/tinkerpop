@@ -232,7 +232,7 @@ public class GremlinExecutor implements AutoCloseable {
         logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
         final Bindings bindings = new SimpleBindings();
-        bindings.putAll(this.globalBindings);
+        bindings.putAll(globalBindings);
         bindings.putAll(boundVars);
         beforeEval.accept(bindings);
 
@@ -417,19 +417,28 @@ public class GremlinExecutor implements AutoCloseable {
                 }).filter(p -> p.getValue1().isPresent()).map(p -> Pair.with(p.getValue0(), p.getValue1().get())).forEachOrdered(p -> {
                     try {
                         final Bindings bindings = new SimpleBindings();
-                        bindings.putAll(this.globalBindings);
+                        bindings.putAll(globalBindings);
 
                         // evaluate init scripts with hard reference so as to ensure it doesn't get garbage collected
                         bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_HARD);
 
-                        se.eval(p.getValue1(), bindings, language);
-
-                        // re-assign graph bindings back to global bindings and grab TraversalSource creations.
-                        // prevent assignment of non-graph implementations just in case someone tries to overwrite
-                        // them in the init
-                        bindings.entrySet().stream()
-                                .filter(promoteBinding)
-                                .forEach(kv -> this.globalBindings.put(kv.getKey(), kv.getValue()));
+                        // todo: drop the "old method" in 3.1.0
+                        // the returned object should be a Map of initialized global bindings - this is in contrast
+                        // to the older method of scanning bindings for certain types/keys to promote.  the reason
+                        // for this change has to do with CompileStatic/TypeChecked "secure" configurations that
+                        // require the defined variables to be typed.  Under that scenario they are not "unresolved"
+                        // and thus don't get set to bindings automatically by the InvokerHelper.
+                        final Object initializedBindings = se.eval(p.getValue1(), bindings, language);
+                        if (initializedBindings != null && initializedBindings instanceof Map) {
+                            globalBindings.putAll((Map) initializedBindings);
+                        } else {
+                            // re-assign graph bindings back to global bindings and grab TraversalSource creations.
+                            // prevent assignment of non-graph implementations just in case someone tries to overwrite
+                            // them in the init
+                            bindings.entrySet().stream()
+                                    .filter(promoteBinding)
+                                    .forEach(kv -> globalBindings.put(kv.getKey(), kv.getValue()));
+                        }
 
                         logger.info("Initialized {} ScriptEngine with {}", language, p.getValue0());
                     } catch (ScriptException sx) {
