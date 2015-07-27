@@ -512,6 +512,7 @@ public class GremlinExecutor implements AutoCloseable {
          * A predicate applied to the binding list to determine if it should be promoted to a "global" binding
          * that should be tied to every script.
          */
+        @Deprecated
         public Builder promoteBindings(final Predicate<Map.Entry<String,Object>> promoteBinding) {
             this.promoteBinding = promoteBinding;
             return this;
