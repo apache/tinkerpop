@@ -139,9 +139,10 @@ public class Session {
                 .scheduledExecutorService(scheduledExecutorService);
 
         settings.scriptEngines.forEach((k, v) -> {
-            // make sure that server related classes are available at init - no really necessary here because
+            // make sure that server related classes are available at init - not really necessary here because
             // lifecycle hooks are not executed per session, but there should be some consistency .... i guess
             v.imports.add(LifeCycleHook.class.getCanonicalName());
+            v.imports.add(LifeCycleHook.Context.class.getCanonicalName());
             gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
         });
 
