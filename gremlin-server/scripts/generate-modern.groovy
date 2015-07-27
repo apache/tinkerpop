@@ -23,10 +23,10 @@ def globals = [:]
 // Generates the modern graph into an "empty" TinkerGraph via LifeCycleHook.
 // Note that the name of the key in the "global" map is unimportant.
 globals << [hook : [
-        onStartUp: { ctx ->
-          ctx.logger.info("Loading 'modern' graph data.")
-          TinkerFactory.generateClassic(graph)
-        }
+  onStartUp: { ctx ->
+    ctx.logger.info("Loading 'modern' graph data.")
+    TinkerFactory.generateClassic(graph)
+  }
 ] as LifeCycleHook]
 
 // define the default TraversalSource to bind queries to - this one will be named "g".
