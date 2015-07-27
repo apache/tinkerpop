@@ -16,8 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.groovy.jsr223
+package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer
 
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport

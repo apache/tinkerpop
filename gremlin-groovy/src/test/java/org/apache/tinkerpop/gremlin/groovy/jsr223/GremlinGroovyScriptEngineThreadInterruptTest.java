@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
-import org.apache.tinkerpop.gremlin.groovy.ThreadInterruptCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.ThreadInterruptCustomizerProvider;
 import org.junit.Test;
 
 import javax.script.ScriptEngine;

@@ -45,6 +45,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Gremlin Server initialization scripts can now return a `Map` of values that will become global bindings for the server.
 * Introduced the `--dryRun` option to the document generation process which ignores actual script execution in the Gremlin Console.
 * Fixed bug in `EventStrategy` around property changed events when calling `property` without cardinality or meta-property values.
 * Improved support for the `Accept` header for REST-based requests in Gremlin Server.

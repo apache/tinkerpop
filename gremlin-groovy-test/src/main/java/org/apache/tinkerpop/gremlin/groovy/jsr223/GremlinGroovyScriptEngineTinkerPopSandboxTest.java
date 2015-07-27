@@ -20,14 +20,13 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
-import org.apache.tinkerpop.gremlin.groovy.CompileStaticCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TinkerPopSandboxExtension;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.junit.Test;
 
 import javax.script.Bindings;
-import javax.script.SimpleBindings;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;

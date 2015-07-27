@@ -16,18 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer
 
-// an init script that returns a Map allows explicit setting of global bindings.
-def globals = [:]
+import org.codehaus.groovy.ast.MethodNode
 
-// Generates the modern graph into an "empty" TinkerGraph via LifeCycleHook.
-// Note that the name of the key in the "global" map is unimportant.
-globals << [hook : [
-        onStartUp: { ctx ->
-          ctx.logger.info("Loading 'modern' graph data.")
-          TinkerFactory.generateClassic(graph)
+import java.util.function.BiPredicate
+
+/**
+ * Blacklists the {@code System} class to ensure that one can't call {@code System.exit()}.
+ *
+ * @author Stephen Mallette (http://stephen.genoprime.com)
+ */
+class SimpleSandboxExtension extends SandboxExtension {
+    SimpleSandboxExtension() {
+        gIsAlwaysGraphTraversalSource = false
+        graphIsAlwaysGraphInstance = false
+
+        methodFilter = (BiPredicate<String, MethodNode>) { descriptor, method ->
+            // declaring class is null when it refers to a script eval (it seems)
+            return null == method.declaringClass || method.declaringClass.name != 'java.lang.System'
         }
-] as LifeCycleHook]
-
-// define the default TraversalSource to bind queries to - this one will be named "g".
-globals << [g : graph.traversal(GraphTraversalSource.build().with(ReadOnlyStrategy.instance()))]
+    }
+}
