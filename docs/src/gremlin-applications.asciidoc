@@ -672,7 +672,7 @@ scriptEngines: {
         "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider":[10000],
         "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider":["org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension"]}}}}
 
-NOTE: The above configuration could also use the `TypeCheckedCustomizerProvider` in place of the `CompileStaticCustomizerProvider`.  The differences between `TypeChecked` and `CompileStatic` are beyond the scope of this documentation.  Consult the latest link:http://docs.groovy-lang.org/latest/html/documentation/#_typing[Groovy Documentation' for information on the differences. It is important to understand the impact that these configuration will have on submitted scripts before enabling this feature.
+NOTE: The above configuration could also use the `TypeCheckedCustomizerProvider` in place of the `CompileStaticCustomizerProvider`.  The differences between `TypeChecked` and `CompileStatic` are beyond the scope of this documentation.  Consult the latest link:http://docs.groovy-lang.org/latest/html/documentation/#_typing[Groovy Documentation] for information on the differences. It is important to understand the impact that these configuration will have on submitted scripts before enabling this feature.
 
 This configuration uses the `SimpleSandboxExtension`, which blacklists calls to methods on the `System` class, thereby preventing someone from remotely killing the server:
 
