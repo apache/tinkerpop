@@ -81,9 +81,17 @@ public class GryoPoolTest {
     }
 
     @Test
-    public void shouldConfigPoolOnConstructionWithCustomIoRegistry() throws Exception {
+    public void shouldConfigPoolOnConstructionWithCustomIoRegistryConstructor() throws Exception {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(GryoPool.CONFIG_IO_REGISTRY, CustomIoRegistry.class.getName());
+        conf.setProperty(GryoPool.CONFIG_IO_REGISTRY, CustomIoRegistryConstructorBased.class.getName());
+        final GryoPool pool = new GryoPool(conf);
+        assertReaderWriter(pool.takeWriter(), pool.takeReader(), new Junk("test"), Junk.class);
+    }
+
+    @Test
+    public void shouldConfigPoolOnConstructionWithCustomIoRegistryInstance() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(GryoPool.CONFIG_IO_REGISTRY, CustomIoRegistryInstanceBased.class.getName());
         final GryoPool pool = new GryoPool(conf);
         assertReaderWriter(pool.takeWriter(), pool.takeReader(), new Junk("test"), Junk.class);
     }
@@ -139,9 +147,21 @@ public class GryoPoolTest {
         }
     }
 
-    public static class CustomIoRegistry extends AbstractIoRegistry {
-        public CustomIoRegistry() {
+    public static class CustomIoRegistryConstructorBased extends AbstractIoRegistry {
+        public CustomIoRegistryConstructorBased() {
             register(GryoIo.class, Junk.class, null);
+        }
+    }
+
+    public static class CustomIoRegistryInstanceBased extends AbstractIoRegistry {
+        private static CustomIoRegistryInstanceBased INSTANCE = new CustomIoRegistryInstanceBased();
+
+        private CustomIoRegistryInstanceBased() {
+            register(GryoIo.class, Junk.class, null);
+        }
+
+        public static CustomIoRegistryInstanceBased getInstance() {
+            return INSTANCE;
         }
     }
 }

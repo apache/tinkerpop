@@ -20,8 +20,8 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 
+import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -127,8 +127,16 @@ public final class GryoPool {
         if (className.isEmpty()) return Optional.empty();
 
         try {
-            final Class clazz = Class.forName(className);
-            return Optional.of((IoRegistry) clazz.newInstance());
+            final Class<?> clazz = Class.forName(className);
+            try {
+                final Method instanceMethod = clazz.getDeclaredMethod("getInstance");
+                if (IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
+                    return Optional.of((IoRegistry) instanceMethod.invoke(null));
+                else
+                    throw new Exception();
+            } catch (Exception methodex) {
+                return Optional.of((IoRegistry) clazz.newInstance());
+            }
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
