@@ -18,8 +18,22 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
+import org.apache.tinkerpop.gremlin.structure.io.IoX;
+import org.apache.tinkerpop.gremlin.structure.io.IoXIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.IoY;
+import org.apache.tinkerpop.gremlin.structure.io.IoYIoRegistry;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotSame;
 
 /**
@@ -27,8 +41,62 @@ import static org.junit.Assert.assertNotSame;
  */
 public class GryoMapperTest {
     @Test
-    public void shouldGetMostRecentVersion() {
+    public void shouldMakeNewInstance() {
         final GryoMapper.Builder b = GryoMapper.build();
         assertNotSame(b, GryoMapper.build());
+    }
+
+    @Test
+    public void shouldRegisterMultipleIoRegistryToSerialize() throws Exception {
+        final GryoMapper mapper = GryoMapper.build()
+                .addRegistry(IoXIoRegistry.InstanceBased.getInstance())
+                .addRegistry(IoYIoRegistry.InstanceBased.getInstance()).create();
+        final Kryo kryo = mapper.createMapper();
+        try (final OutputStream stream = new ByteArrayOutputStream()) {
+            final Output out = new Output(stream);
+            final IoX x = new IoX("x");
+            final IoY y = new IoY(100, 200);
+            kryo.writeClassAndObject(out, x);
+            kryo.writeClassAndObject(out, y);
+
+            try (final InputStream inputStream = new ByteArrayInputStream(out.toBytes())) {
+                final Input input = new Input(inputStream);
+                final IoX readX = (IoX) kryo.readClassAndObject(input);
+                final IoY readY = (IoY) kryo.readClassAndObject(input);
+                assertEquals(x, readX);
+                assertEquals(y, readY);
+            }
+        }
+    }
+
+    @Test
+    public void shouldExpectReadFailureAsIoRegistryOrderIsNotRespected() throws Exception {
+        final GryoMapper mapperWrite = GryoMapper.build()
+                .addRegistry(IoXIoRegistry.InstanceBased.getInstance())
+                .addRegistry(IoYIoRegistry.InstanceBased.getInstance()).create();
+
+        final GryoMapper mapperRead = GryoMapper.build()
+                .addRegistry(IoYIoRegistry.InstanceBased.getInstance())
+                .addRegistry(IoXIoRegistry.InstanceBased.getInstance()).create();
+
+        final Kryo kryoWriter = mapperWrite.createMapper();
+        final Kryo kryoReader = mapperRead.createMapper();
+        try (final OutputStream stream = new ByteArrayOutputStream()) {
+            final Output out = new Output(stream);
+            final IoX x = new IoX("x");
+            final IoY y = new IoY(100, 200);
+            kryoWriter.writeClassAndObject(out, x);
+            kryoWriter.writeClassAndObject(out, y);
+
+            try (final InputStream inputStream = new ByteArrayInputStream(out.toBytes())) {
+                final Input input = new Input(inputStream);
+
+                // kryo will read a IoY instance as we've reversed the registries.  it is neither an X or a Y
+                // so assert that both are incorrect
+                final IoY readY = (IoY) kryoReader.readClassAndObject(input);
+                assertNotEquals(y, readY);
+                assertNotEquals(x, readY);
+            }
+        }
     }
 }

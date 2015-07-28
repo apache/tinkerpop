@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.graphson;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -64,7 +65,7 @@ public final class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWrit
      */
     @Override
     public GraphSONMapper.Builder mapper() {
-        return GraphSONMapper.build().addRegistry(this.registry);
+        return (null == this.registry) ? GraphSONMapper.build() : GraphSONMapper.build().addRegistry(registry);
     }
 
     /**
