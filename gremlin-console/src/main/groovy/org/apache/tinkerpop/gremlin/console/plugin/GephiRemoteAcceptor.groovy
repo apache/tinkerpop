@@ -168,26 +168,50 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             def graph = (Graph) o
             def g = graph.traversal()
             g.V().sideEffect { addVertexToGephi(g, it.get()) }.iterate()
-        } else if (o instanceof Path) {
-            // paths get returned as iterators - so basically any Iterator that has vertices in it will have
-            // their path highlighted
-            final Path path = (Path) o
-            final List<Vertex> verticesInPath = path.stream().map{Pair pair -> pair.getValue0()}
-                    .filter{Object e -> e instanceof Vertex}.collect(Collectors.toList())
+        } else {
+            // an individual Path needs a special case as it is an iterator and gets unrolled by
+            // IteratorUtils.asIterator() if not wrapped in a list prior.
+            final Iterator itty = (o instanceof Path) ? IteratorUtils.asIterator([o]) : IteratorUtils.asIterator(o)
+            def first = true
+            while (itty.hasNext()) {
+                final Object current = itty.next();
+                if (current instanceof Path) {
+                    // paths get returned as iterators - so basically any Iterator that has vertices in it will have
+                    // their path highlighted
+                    final Path path = (Path) current
+                    final List<Vertex> verticesInPath = path.stream().map { Pair pair -> pair.getValue0() }
+                            .filter { Object e -> e instanceof Vertex }.collect(Collectors.toList())
 
-            for (int ix = 0; ix < verticesInPath.size(); ix++) {
-                final Vertex v = (Vertex) verticesInPath.get(ix)
-                visitVertexInGephi(v)
-                if (ix > 0) {
-                    final Vertex previous = (Vertex) verticesInPath.get(ix - 1)
-                    v.edges(Direction.BOTH).findAll { Edge edge ->
-                        edge.bothVertices().any{Vertex vertex -> vertex == previous}
-                    }.each { Object edge ->
-                        visitEdgeInGephi((Edge) edge)
+                    for (int ix = 0; ix < verticesInPath.size(); ix++) {
+                        final Vertex v = (Vertex) verticesInPath.get(ix)
+
+                        // if this vertex has already been highlighted in gephi then no need to do it again,
+                        // just update the touch count in memory
+                        if (!vertexAttributes.containsKey(v.id().toString())) {
+                            // this is a new vertex visited so it needs to get highlighted in gephi
+                            visitVertexInGephi(v)
+                            if (ix > 0) {
+                                final Vertex previous = (Vertex) verticesInPath.get(ix - 1)
+                                v.edges(Direction.BOTH).findAll { Edge edge ->
+                                    edge.bothVertices().any { Vertex vertex -> vertex == previous }
+                                }.each { Object edge ->
+                                    visitEdgeInGephi((Edge) edge)
+                                }
+                            }
+                        }
+
+                        // need to increment the touch even though this may be the first time passed through
+                        // because the default for touch=1 when it is added to the graph
+                        touch(v)
                     }
-                }
 
-                sleep(vizStepDelay)
+                    if (itty.hasNext() || !first) {
+                        sleep(vizStepDelay)
+                        applyRelativeSizingInGephi()
+                    }
+
+                    first = false
+                }
             }
         }
 
@@ -203,37 +227,63 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
      * Visits the last set of vertices traversed and degrades their color and size.
      */
     def updateVisitedVertices(def List except = []) {
-        vertexAttributes.keySet().findAll{ vertex -> !except.contains(vertex) }.each { vertex ->
-            def attrs = vertexAttributes[vertex]
-            def currentColor = attrs.color
+        vertexAttributes.keySet().findAll{ vertexId -> !except.contains(vertexId) }.each { String vertexId ->
+            def attrs = vertexAttributes[vertexId]
+            float currentColor = attrs.color
             currentColor *= vizColorFadeRate
-            vertexAttributes.get(vertex).color = currentColor
 
-            def currentSize = attrs.size
+            int currentSize = attrs["size"]
             currentSize = Math.max(1, currentSize - (currentSize * vizSizeDecrementRate))
-            vertexAttributes.get(vertex).size = currentSize
 
-            def props = [:]
-            props.put(vizColorToFade.toString(), currentColor)
-            props.put("size", currentSize)
-            updateGephiGraph([cn: [(vertex): props]])
+            vertexAttributes.get(vertexId).color = currentColor
+            vertexAttributes.get(vertexId).size = currentSize
+
+            changeVertexAttributes(vertexId)
         }
+    }
+
+    def touch(Vertex v) {
+        vertexAttributes.get(v.id().toString()).touch++
+    }
+
+    def applyRelativeSizingInGephi() {
+        def touches = vertexAttributes.values().collect{it["touch"]}
+        def max = touches.max()
+        def min = touches.min()
+
+        vertexAttributes.each { k, v ->
+            double touch = v.touch
+
+            // establishes the relative size of the node with a lower limit of 0.25 of vizStartSize
+            def relative = Math.max((touch - min) / Math.max((max - min).doubleValue(), 0.00001), 0.25)
+            int size = Math.max(1, vizStartSize * relative)
+            v.size = size
+
+            changeVertexAttributes(k)
+        }
+    }
+
+    def changeVertexAttributes(def String vertexId) {
+        def props = [:]
+        props.put(vizColorToFade.toString(), vertexAttributes[vertexId].color)
+        props.put("size", vertexAttributes[vertexId].size)
+        updateGephiGraph([cn: [(vertexId): props]])
     }
 
     /**
      * Visit a vertex traversed and initialize its color and size.
      */
-    def visitVertexInGephi(def Vertex v) {
+    def visitVertexInGephi(def Vertex v, def size = vizStartSize) {
         def props = [:]
         props.put('r', vizStartRGBColor[0])
         props.put('g', vizStartRGBColor[1])
         props.put('b', vizStartRGBColor[2])
-        props.put('size', vizStartSize)
+        props.put('size', size)
         props.put('visited', 1)
 
         updateGephiGraph([cn: [(v.id().toString()): props]])
 
-        vertexAttributes[v.id().toString()] = [color: vizStartRGBColor[fadeColorIndex()], size: vizStartSize]
+        vertexAttributes[v.id().toString()] = [color: vizStartRGBColor[fadeColorIndex()], size: size, touch: 1]
     }
 
     def visitEdgeInGephi(def Edge e) {
