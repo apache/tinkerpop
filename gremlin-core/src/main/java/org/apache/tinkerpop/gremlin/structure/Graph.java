@@ -239,9 +239,21 @@ public interface Graph extends AutoCloseable, Host {
     public Iterator<Edge> edges(final Object... edgeIds);
 
     /**
-     * Configure and control the transactions for those graphs that support this feature.
+     * Configure and control the transactions for those graphs that support this feature.  Note that this method does
+     * not indicate the creation of a "transaction" object.  A {@link Transaction} in the TinkerPop context is a
+     * transaction "factory" or "controller" that helps manage transactions owned by the underlying graph database.
      */
     public Transaction tx();
+
+    /**
+     * Closing a {@code Graph} is equivalent to "shutdown".  Users should consult the documentation of the underlying
+     * graph database implementation for what this "shutdown" will mean as it pertains to open transactions.  It will
+     * typically be the end user's responsibility to synchronize the thread that calls {@code close()} with other
+     * threads that are accessing open transactions. In other words, be sure that all work performed on the
+     * {@code Graph} instance is complete prior to calling this method.
+     */
+    @Override
+    void close() throws Exception;
 
     /**
      * Construct a particular {@link Io} implementation for reading and writing the {@code Graph} and other data.
