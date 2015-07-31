@@ -156,7 +156,8 @@ public interface Transaction extends Closeable {
     }
 
     /**
-     * Behaviors to supply to the {@link #onClose(Consumer)}.
+     * Behaviors to supply to the {@link #onClose(Consumer)}. The semantics of these behaviors must be examined in
+     * the context of the implementation.  In most cases, these behaviors will be applied as {{@link ThreadLocal}}.
      */
     public enum CLOSE_BEHAVIOR implements Consumer<Transaction> {
         /**
