@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `LoopsStep` to make the loop counter accessible within `repeat()`, `until()` and `emit()`.
 * Gephi Plugin no longer requires manual insert of `store` steps to visualize a traversal.
 * Gephi Plugin visualizes `Path` objects.
 * Added configuration options to Gephi Plugin for setting the size of nodes visualized.
