@@ -16,39 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.lambda;
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class LoopTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
+public final class LoopsStep<S> extends MapStep<S, Integer> {
 
-    private final long maxLoops;
-    private boolean allow = false;
-
-    public LoopTraversal(final long maxLoops) {
-        this.maxLoops = maxLoops;
+    public LoopsStep(final Traversal.Admin traversal) {
+        super(traversal);
     }
 
     @Override
-    public boolean hasNext() {
-        return this.allow;
-    }
-
-    @Override
-    public void addStart(final Traverser<S> start) {
-        this.allow = start.loops() >= this.maxLoops;
-    }
-
-    @Override
-    public String toString() {
-        return "loops(" + this.maxLoops + ')';
-    }
-
-    @Override
-    public int hashCode() {
-        return this.getClass().hashCode() ^ Long.hashCode(this.maxLoops);
+    protected Integer map(final Traverser.Admin<S> traverser) {
+        return traverser.loops();
     }
 }
