@@ -176,7 +176,7 @@ Providing a `Consumer` function to `onReadWrite` allows definition of how a tran
 * `AUTO` - automatic transactions where the transaction is started implicitly to the read or write operation
 * `MANUAL` - manual transactions where it is up to the user to explicitly open a transaction, throwing an exception if the transaction is not open
 
-Providing a `Consumer` function to `onClose` allows configuration of how a transaction is handled when `Graph.close()` is called.  `Transaction.CLOSE_BEHAVIOR` has several pre-defined options that can be supplied to this method:
+Providing a `Consumer` function to `onClose` allows configuration of how a transaction is handled when `Transaction.close()` is called.  `Transaction.CLOSE_BEHAVIOR` has several pre-defined options that can be supplied to this method:
 
 * `COMMIT` - automatically commit an open transaction
 * `ROLLBACK` - automatically rollback an open transaction

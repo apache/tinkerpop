@@ -35,8 +35,9 @@ import java.util.stream.Collectors;
  * A generalized custom serializer registry for vendors implementing a {@link Graph}.  Vendors should provide an
  * implementation of this interface if their implementation requires custom serialization of identifiers or other
  * such content housed in their graph.  Consider extending from {@link AbstractIoRegistry} and ensure that the
- * implementation has a zero-arg constructor, as implementations may need to be constructed from reflection
- * given different parts of the TinkerPop stack.
+ * implementation has a zero-arg constructor or a static "getInstance" method that returns an {@code IoRegistry}
+ * instance, as implementations may need to be constructed from reflection given different parts of the TinkerPop
+ * stack.
  * <p/>
  * The serializers to register depend on the {@link Io} implementations that are expected to be supported.  There
  * are currently two core implementations in {@link GryoIo} and {@link GraphSONIo}.  Both of these should be supported

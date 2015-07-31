@@ -250,7 +250,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DependantMutableMetrics.class, null, 80));
         }};
 
-        private IoRegistry registry = null;
+        private List<IoRegistry> registries = new ArrayList<>();
 
         /**
          * Starts numbering classes for Gryo serialization at 65536 to leave room for future usage by TinkerPop.
@@ -265,7 +265,8 @@ public final class GryoMapper implements Mapper<Kryo> {
          */
         @Override
         public Builder addRegistry(final IoRegistry registry) {
-            this.registry = registry;
+            if (null == registry) throw new IllegalArgumentException("The registry cannot be null");
+            this.registries.add(registry);
             return this;
         }
 
@@ -301,7 +302,7 @@ public final class GryoMapper implements Mapper<Kryo> {
          */
         public GryoMapper create() {
             // consult the registry if provided and inject registry entries as custom classes.
-            if (registry != null) {
+            registries.forEach(registry-> {
                 final List<Pair<Class, Object>> serializers = registry.find(GryoIo.class);
                 serializers.forEach(p -> {
                     if (null == p.getValue1())
@@ -317,7 +318,7 @@ public final class GryoMapper implements Mapper<Kryo> {
                                 Serializer.class.getName(), Kryo.class.getSimpleName(),
                                 Serializer.class.getSimpleName()));
                 });
-            }
+            });
 
             return new GryoMapper(serializationList);
         }

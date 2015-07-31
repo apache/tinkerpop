@@ -64,7 +64,7 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
      */
     @Override
     public GryoMapper.Builder mapper() {
-        return GryoMapper.build().addRegistry(this.registry);
+        return (null == this.registry) ? GryoMapper.build() : GryoMapper.build().addRegistry(this.registry);
     }
 
     /**

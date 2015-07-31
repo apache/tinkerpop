@@ -670,7 +670,7 @@ scriptEngines: {
         "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.TimedInterruptCustomizerProvider":[10000],
         "org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider":["org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension"]}}}}
 
-NOTE: The above configuration could also use the `TypeCheckedCustomizerProvider` in place of the `CompileStaticCustomizerProvider`.  The differences between `TypeChecked` and `CompileStatic` are beyond the scope of this documentation.  Consult the latest link:http://docs.groovy-lang.org/latest/html/documentation/#_typing[Groovy Documentation' for information on the differences. It is important to understand the impact that these configuration will have on submitted scripts before enabling this feature.
+NOTE: The above configuration could also use the `TypeCheckedCustomizerProvider` in place of the `CompileStaticCustomizerProvider`.  The differences between `TypeChecked` and `CompileStatic` are beyond the scope of this documentation.  Consult the latest link:http://docs.groovy-lang.org/latest/html/documentation/#_typing[Groovy Documentation] for information on the differences. It is important to understand the impact that these configuration will have on submitted scripts before enabling this feature.
 
 This configuration uses the `SimpleSandboxExtension`, which blacklists calls to methods on the `System` class, thereby preventing someone from remotely killing the server:
 
@@ -738,8 +738,11 @@ It has the MIME type of `application/vnd.gremlin-v1.0+gryo` and the following co
 |Key |Description |Default
 |serializeResultToString |When set to `true`, results are serialized by first calling `toString()` on each object in the result list resulting in an extended MIME Type of `application/vnd.gremlin-v1.0+gryo-stringd`.  When set to `false` Kryo-based serialization is applied. |_false_
 |useMapperFromGraph |Specifies the name of the `Graph` (from the `graphs` `Map` in the configuration file) from which to plugin any custom serializers that are tied to it. |_none_
+|ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer.
 |custom |A list of classes with custom kryo `Serializer` implementations related to them in the form of `<class>;<serializer-class>`. |_none_
 |=========================================================
+
+As described above, there are multiple ways in which to register serializers for Kryo-based serialization.  These configurations can be used in conjunction with one another where there is a specific ordering to how the configurations are applied.  The `userMapperFromGraph` setting is applied first, followed by any `ioRegistries` and finalized by the `custom` setting.
 
 Best Practices
 ~~~~~~~~~~~~~~

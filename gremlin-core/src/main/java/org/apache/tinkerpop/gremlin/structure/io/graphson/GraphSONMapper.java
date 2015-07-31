@@ -117,7 +117,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private boolean loadCustomModules = false;
         private boolean normalize = false;
         private boolean embedTypes = false;
-        private IoRegistry registry = null;
+        private List<IoRegistry> registries = new ArrayList<>();
         private GraphSONVersion version = GraphSONVersion.V1_0;
 
         private Builder() {
@@ -128,7 +128,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
          */
         @Override
         public Builder addRegistry(final IoRegistry registry) {
-            this.registry = registry;
+            registries.add(registry);
             return this;
         }
 
@@ -182,10 +182,10 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         public GraphSONMapper create() {
-            if (registry != null) {
+            registries.forEach(registry -> {
                 final List<Pair<Class, SimpleModule>> simpleModules = registry.find(GraphSONIo.class, SimpleModule.class);
                 simpleModules.stream().map(Pair::getValue1).forEach(this.customModules::add);
-            }
+            });
 
             return new GraphSONMapper(customModules, loadCustomModules, normalize, embedTypes, version);
         }
