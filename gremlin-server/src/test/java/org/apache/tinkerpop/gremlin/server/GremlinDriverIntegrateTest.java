@@ -47,6 +47,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -142,6 +143,32 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
 
         System.out.println("Eval of 'five' complete: " + TimeUtil.millisSince(start));
+    }
+
+    @Test
+    public void shouldProcessSessionRequestsInOrder() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
+        final ResultSet rsZero = client.submit("'zero'");
+
+        final CompletableFuture<List<Result>> futureFive = rsFive.all();
+        final CompletableFuture<List<Result>> futureZero = rsZero.all();
+
+        final AtomicBoolean hit = new AtomicBoolean(false);
+        while (!futureFive.isDone()) {
+            // futureZero can't finish before futureFive - racy business here?
+            assertThat(futureZero.isDone(), is(false));
+            hit.set(true);
+        }
+
+        // should have entered the loop at least once and thus proven that futureZero didn't return ahead of
+        // futureFive
+        assertThat(hit.get(), is(true));
+
+        assertEquals("zero", futureZero.get().get(0).getString());
+        assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
     }
 
     @Test
