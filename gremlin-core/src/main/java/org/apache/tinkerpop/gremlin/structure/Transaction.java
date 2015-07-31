@@ -83,7 +83,8 @@ public interface Transaction extends Closeable {
     public void readWrite();
 
     /**
-     * Closes the transaction where the default close behavior will be executed.
+     * Closes the transaction where the default close behavior defined by {{@link #onClose(Consumer)}} will be
+     * executed.
      */
     @Override
     public void close();
@@ -161,7 +162,7 @@ public interface Transaction extends Closeable {
      */
     public enum CLOSE_BEHAVIOR implements Consumer<Transaction> {
         /**
-         * Any open transaction will commit on close.
+         * Commit the transaction when {@link #close()} is called.
          */
         COMMIT {
             @Override
@@ -171,7 +172,7 @@ public interface Transaction extends Closeable {
         },
 
         /**
-         * Any open transaction will rollback on close.
+         * Rollback the transaction when {@link #close()} is called.
          */
         ROLLBACK {
             @Override
@@ -181,7 +182,7 @@ public interface Transaction extends Closeable {
         },
 
         /**
-         * Open transactions on close will throw an exception
+         * Throw an exception if the current transaction is open when {@link #close()} is called.
          */
         MANUAL {
             @Override

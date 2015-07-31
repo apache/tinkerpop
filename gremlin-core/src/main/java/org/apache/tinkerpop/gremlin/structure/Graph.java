@@ -246,11 +246,12 @@ public interface Graph extends AutoCloseable, Host {
     public Transaction tx();
 
     /**
-     * Closing a {@code Graph} is equivalent to "shutdown".  Users should consult the documentation of the underlying
-     * graph database implementation for what this "shutdown" will mean as it pertains to open transactions.  It will
-     * typically be the end user's responsibility to synchronize the thread that calls {@code close()} with other
-     * threads that are accessing open transactions. In other words, be sure that all work performed on the
-     * {@code Graph} instance is complete prior to calling this method.
+     * Closing a {@code Graph} is equivalent to "shutdown" and implies that no futher operations can be executed on
+     * the instance.  Users should consult the documentation of the underlying graph database implementation for what
+     * this "shutdown" will mean as it pertains to open transactions.  It will typically be the end user's
+     * responsibility to synchronize the thread that calls {@code close()} with other threads that are accessing open
+     * transactions. In other words, be sure that all work performed on the {@code Graph} instance is complete prior
+     * to calling this method.
      */
     @Override
     void close() throws Exception;
