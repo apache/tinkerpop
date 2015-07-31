@@ -30,11 +30,15 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.IoCore;
+import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -193,7 +197,7 @@ public class TinkerGraphTest {
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());
-        System.out.println(TimeUtil.clockWithResult(1,() -> traversal.get().next()));
+        System.out.println(TimeUtil.clockWithResult(1, () -> traversal.get().next()));
     }
 
     @Test
@@ -443,5 +447,15 @@ public class TinkerGraphTest {
         }, 0.5)).has("oid", "1").count().next());
     }
 
-
+    @Test
+    public void shouldSerializeTinkerGraphToGryo() throws Exception {
+        final TinkerGraph graph = TinkerFactory.createModern();
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            graph.io(IoCore.gryo()).writer().create().writeObject(out, graph);
+            try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
+                final TinkerGraph target = graph.io(IoCore.gryo()).reader().create().readObject(inputStream, TinkerGraph.class);
+                IoTest.assertModernGraph(target, true, false);
+            }
+        }
+    }
 }

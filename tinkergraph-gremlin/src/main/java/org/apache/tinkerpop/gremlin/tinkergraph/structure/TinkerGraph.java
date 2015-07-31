@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -176,6 +177,11 @@ public final class TinkerGraph implements Graph {
         if (null == this.variables)
             this.variables = new TinkerGraphVariables();
         return this.variables;
+    }
+
+    @Override
+    public <I extends Io> I io(final Io.Builder<I> builder) {
+        return (I) builder.graph(this).registry(TinkerIoRegistry.getInstance()).create();
     }
 
     @Override
