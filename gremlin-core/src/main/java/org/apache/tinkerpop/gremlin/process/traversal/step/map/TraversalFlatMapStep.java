@@ -74,6 +74,6 @@ public final class TraversalFlatMapStep<S, E> extends FlatMapStep<S, E> implemen
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
+        return this.getSelfAndChildRequirements();
     }
 }
