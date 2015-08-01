@@ -75,6 +75,6 @@ public final class TraversalMapStep<S, E> extends MapStep<S, E> implements Trave
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
+        return this.getSelfAndChildRequirements();
     }
 }
