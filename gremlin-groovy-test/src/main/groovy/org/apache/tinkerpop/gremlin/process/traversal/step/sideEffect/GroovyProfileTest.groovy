@@ -35,7 +35,7 @@ public abstract class GroovyProfileTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_profile() {
+        public Traversal<Vertex, Vertex> get_g_V_repeat_both_profile() {
             TraversalScriptHelper.compute("g.V.repeat(__.both()).times(3).profile()", g);
         }
 

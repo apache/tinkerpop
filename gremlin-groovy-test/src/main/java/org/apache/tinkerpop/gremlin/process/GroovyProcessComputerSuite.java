@@ -105,7 +105,6 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
             GroovyConstantTest.Traversals.class,
             GroovyCountTest.Traversals.class,
             GroovyFoldTest.Traversals.class,
-            GroovyLoopsTest.Traversals.class,
             GroovyMapTest.Traversals.class,
             GroovyMapKeysTest.Traversals.class,
             GroovyMapValuesTest.Traversals.class,
