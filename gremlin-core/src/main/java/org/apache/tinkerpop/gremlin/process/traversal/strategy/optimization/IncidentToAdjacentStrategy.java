@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
 
@@ -119,6 +118,9 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
      */
     private static void optimizeSteps(final Traversal.Admin traversal, final VertexStep step1, final Step step2) {
         final Step newStep = new VertexStep(traversal, Vertex.class, step1.getDirection(), step1.getEdgeLabels());
+        for (final String label : (Iterable<String>) step2.getLabels()) {
+            newStep.addLabel(label);
+        }
         TraversalHelper.replaceStep(step1, newStep, traversal);
         traversal.removeStep(step2);
     }
