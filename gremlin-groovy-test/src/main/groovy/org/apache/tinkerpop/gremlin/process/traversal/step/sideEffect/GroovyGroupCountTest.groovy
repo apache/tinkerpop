@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -42,6 +42,11 @@ public abstract class GroovyGroupCountTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
             TraversalScriptHelper.compute("g.V.out('created').name.groupCount", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Vertex, Long>> get_g_V_outXcreatedX_groupCountXxX_capXxX() {
+            TraversalScriptHelper.compute("g.V.out('created').groupCount('x').cap('x')", g)
         }
 
         @Override
