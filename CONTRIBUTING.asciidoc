@@ -96,3 +96,10 @@ as one that is representative of a change in the API that might affect users or 
 organizing release notes.
 * The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
 which that particular issue will completed.
+
+Code Style
+~~~~~~~~~~
+
+Contributors should examine the current code base to determine what the code style patterns are and should match their
+style to what is already present.  Of specific note however, TinkerPop does not use "import wildcards" - IDEs should
+be adjusted accordingly to not auto-wildcard the imports.
