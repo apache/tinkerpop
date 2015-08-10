@@ -28,6 +28,7 @@ TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 
 * Gephi Plugin no longer requires manual insert of `store` steps to visualize a traversal.
 * Gephi Plugin visualizes `Path` objects.
+* Added a `TinkerIoRegistry` that registers a custom serializer for Gryo that will serialize an entire `TinkerGraph` instance.
 * Added configuration options to Gephi Plugin for setting the size of nodes visualized.
 * Replaced `DedupBijectionStrategy` with the more effective `FilterRankingStrategy`.
 * `ComputerAwareSteps` must not only handle step ids, but also step labels.
