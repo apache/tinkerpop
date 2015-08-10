@@ -110,7 +110,10 @@ Release Process
 . Perform manual tests:
 .. Execute `:remote connect conf/remote.yaml` and send some requests to a running Gremlin Server instance.
 .. Execute `:?` to display the help in the Console.
-. Update `CHANGELOG.asciidoc` with release date
+. Update `CHANGELOG.asciidoc`:
+.. Update the release date
+.. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`
+.. Organize "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
 . `bin/bump.sh "version"` to update project files to reference the non-SNAPSHOT version
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
