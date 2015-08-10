@@ -21,11 +21,13 @@ author. By submitting any copyrighted material via pull request, email, or other
 you agree to license the material under the project's open source license and
 warrant that you have the legal authority to do so.
 
-## For Committers
+For Committers
+--------------
 
 The guidelines that follow apply to those with commit access to the main repository:
 
-### Release Notes
+Release Notes
+~~~~~~~~~~~~~
 
 There is a two-pronged approach to maintaining the change log and preparing the release notes.
 
@@ -46,7 +48,8 @@ change.
 Changes that break the public APIs should be marked with a "breaking" label and should be
 distinguished from other changes in the release notes.
 
-### Branches
+Branches
+~~~~~~~~
 
 The "master" branch is used for the main line of development and release branches are constructed
 for ongoing maintenance work.  For example, the "tp30" branch is used to maintain the 3.0.x line
@@ -63,7 +66,33 @@ a branch name prefix.  This provides a unique namespace, and also a way to accou
 
 Developers should remove their own branches when they are no longer needed.
 
-### Tags
+Tags
+~~~~
 
 Tags are used for milestones, release candidates, and approved releases.  Please
 refrain from creating arbitrary tags, as they produce permanent clutter.
+
+Issue Tracker Conventions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TinkerPop uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TINKERPOP3[issue tracker].  JIRA is a
+very robust piece of software with many options and configurations.  To simplify usage and ensure consistency across
+issues, the following conventions should be adhered to:
+
+* An issue's "status" should generally be in one of two states: `open` or `closed` (`reopened` is equivalent to `open`
+for our purposes).
+** An `open` issue is newly created, under consideration or otherwise in progress.
+** A `closed` issue is completed for purposes of release (i.e. code, testing, and documentation complete).
+** Issues in a `resolved` state should immediately be evaluated for movement to `closed` - issue become `resolved`
+by those who don't have the permissions to `close`.
+* An issue's "type" should be one of two options: `bug` or `improvement`.
+** A `bug` has a very specific meaning, referring to an error that prevents usage of TinkerPop AND does not have a
+reasonable workaround.  Given that definition, a `bug` should generally have very high priority for a fix.
+** Everything else is an `improvement` in the sense that any other work is an enhancement to the current codebase.
+* The "component" should be representative of the primary area of code that it applies to and all issues should have
+this property set.
+* Issues are not assigned "labels" with one exception: the "breaking" label.  The "breaking" label marks an issue
+as one that is representative of a change in the API that might affect users or vendors.  This label is important when
+organizing release notes.
+* The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
+which that particular issue will completed.
