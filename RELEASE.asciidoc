@@ -14,75 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-TinkerPop3
-----------
-
-image:https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/tinkerpop3-splash.png[TinkerPop3, link="http://tinkerpop.incubator.apache.org"]
-
-Documentation
-~~~~~~~~~~~~~
-
-TinkerPop3 provides graph computing capabilities for both graph databases (OLTP) and graph analytic systems (OLAP).
-
-* link:http://tinkerpop.incubator.apache.org/[homepage]
-* link:http://tinkerpop.incubator.apache.org/docs/3.0.0-SNAPSHOT/[user documentation]
-* link:http://tinkerpop.incubator.apache.org/javadocs/3.0.0-SNAPSHOT/core/[core javadoc]
-* link:http://tinkerpop.incubator.apache.org/javadocs/3.0.0-SNAPSHOT/full/[full javadoc]
-
-Building and Testing
-~~~~~~~~~~~~~~~~~~~~
-
-TinkerPop uses link:https://maven.apache.org/[Maven] and requires `Java 1.8.0_40+` for proper building and proper operations. To build, execute unit tests and package Gremlin Console/Server run:
-
-[source,bash]
-mvn clean install
-
-The zip distributions can be found in the following directories:
-
-. `gremlin-server/target`
-. `gremlin-console/target`
-
-Please see the `CONTRIBUTING.asciidoc` file for more detailed information and options for building, test running and developing TinkerPop.
-
-Get Started
-~~~~~~~~~~~
-
-[source,bash]
-----
-$ bin/gremlin.sh
-
-         \,,,/
-         (o o)
------oOOo-(3)-oOOo-----
-plugin activated: tinkerpop.server
-plugin activated: tinkerpop.utilities
-plugin activated: tinkerpop.tinkergraph
-gremlin> graph = TinkerFactory.createModern()
-==>tinkergraph[vertices:6 edges:6]
-gremlin> g = graph.traversal()
-==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
-gremlin> g.V().has('name','vadas').valueMap()
-==>[name:[vadas], age:[27]]
-----
-
-Issue Tracker Conventions
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-TinkerPop3 uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TINKERPOP3[issue tracker].  JIRA is a very robust piece of software with many options and configurations.  To simplify usage and ensure consistency across issues, the following conventions should be adhered to:
-
-* An issue's "status" should generally be in one of two states: `open` or `closed` (`reopened` is equivalent to `open` for our purposes).
-** An `open` issue is newly created, under consideration or otherwise in progress.
-** A `closed` issue is completed for purposes of release (i.e. code, testing, and documentation complete).
-** Issues in a `resolved` state should immediately be evaluated for movement to `closed` - issue become `resolved` by those who don't have the permissions to `close`.
-* An issue's "type" should be one of two options: `bug` or `improvement`.
-** A `bug` has a very specific meaning, referring to an error that prevents usage of TinkerPop AND does not have a reasonable workaround.  Given that definition, a `bug` should generally have very high priority for a fix.
-** Everything else is an `improvement` in the sense that any other work is an enhancement to the current codebase.
-* The "component" should be representative of the primary area of code that it applies to and all issues should have this property set.
-* Issues are not assigned "labels".
-* The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on which that particular issue will completed.
-
 Release Process
-~~~~~~~~~~~~~~~
+---------------
+
+The following instructions represent the steps required to release TinkerPop:
 
 . `mvn clean install`
 .. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
@@ -90,7 +25,10 @@ Release Process
 . Perform manual tests:
 .. Execute `:remote connect conf/remote.yaml` and send some requests to a running Gremlin Server instance.
 .. Execute `:?` to display the help in the Console.
-. Update `CHANGELOG.asciidoc` with release date
+. Update `CHANGELOG.asciidoc`:
+.. Update the release date
+.. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`
+.. Organize "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
 . `bin/bump.sh "version"` to update project files to reference the non-SNAPSHOT version
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`

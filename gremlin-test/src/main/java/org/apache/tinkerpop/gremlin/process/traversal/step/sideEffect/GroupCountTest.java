@@ -22,8 +22,8 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,8 +34,7 @@ import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -49,6 +48,8 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_groupCountXaX_byXnameX_capXaX();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount();
+
+    public abstract Traversal<Vertex, Map<Vertex, Long>> get_g_V_outXcreatedX_groupCountXxX_capXxX();
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCountXaX_capXaX();
 
@@ -72,6 +73,35 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
             assertEquals(Long.valueOf(1l), map.get("ripple"));
             assertFalse(traversal.hasNext());
         });
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @Ignore // TODO: fix Spark integration
+    public void g_V_outXcreatedX_groupCountXxX_capXxX() {
+        final Traversal<Vertex, Map<Vertex, Long>> traversal = get_g_V_outXcreatedX_groupCountXxX_capXxX();
+        final Object lopId = convertToVertexId("lop");
+        final Object rippleId = convertToVertexId("ripple");
+        printTraversalForm(traversal);
+        final Map<Vertex, Long> map = traversal.next();
+        assertEquals(map.size(), 2);
+        boolean hasLop = false, hasRipple = false, hasSomethingElse = false;
+        for (final Map.Entry<Vertex, Long> entry : map.entrySet()) {
+            final Object id = entry.getKey().id();
+            if (lopId.equals(id)) {
+                hasLop = true;
+                assertEquals(Long.valueOf(3l), entry.getValue());
+            } else if (rippleId.equals(id)) {
+                hasRipple = true;
+                assertEquals(Long.valueOf(1l), entry.getValue());
+            } else {
+                hasSomethingElse = true;
+            }
+        }
+        assertTrue(hasLop);
+        assertTrue(hasRipple);
+        assertFalse(hasSomethingElse);
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -145,6 +175,11 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_outXcreatedX_name_groupCount() {
             return g.V().out("created").values("name").groupCount();
+        }
+
+        @Override
+        public Traversal<Vertex, Map<Vertex, Long>> get_g_V_outXcreatedX_groupCountXxX_capXxX() {
+            return g.V().out("created").groupCount("x").cap("x");
         }
 
         @Override
