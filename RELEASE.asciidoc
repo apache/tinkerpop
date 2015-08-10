@@ -1,0 +1,93 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+Release Process
+---------------
+
+The following instructions represent the steps required to release TinkerPop:
+
+. `mvn clean install`
+.. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
+.. `mvn verify -DskipPerformanceTests=false`
+. Perform manual tests:
+.. Execute `:remote connect conf/remote.yaml` and send some requests to a running Gremlin Server instance.
+.. Execute `:?` to display the help in the Console.
+. Update `CHANGELOG.asciidoc`:
+.. Update the release date
+.. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`
+.. Organize "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
+. `bin/bump.sh "version"` to update project files to reference the non-SNAPSHOT version
+. `git diff` and review the updated files (expect all `pom.xml` files and this README)
+. `git commit -a -m "TinkerPop x.y.z release"` and `git push`
+. `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
+. `mvn clean install -Dmaven.test.skip=true`
+. `bin/publish-docs.sh <username>`
+. `mvn install -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`
+. Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
+.. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/ dev` and `mkdir dev/x.y.z`
+.. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/x.y.z/gremlin-console-x.y.z-distribution.zip* dev/x.y.z`
+.. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/x.y.z/gremlin-server-x.y.z-distribution.zip* dev/x.y.z`
+.. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/x.y.z/tinkerpop-x.y.z-source-release.zip* dev/x.y.z`
+.. `cd dev/x.y.z` and `for f in *.zip*; do  mv "$f" "apache-$f"; done`
+.. `cd ..; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
+. Submit for `[VOTE]` at `general@incubator.apache.org` (see email template below).
+. *Wait for vote acceptance* (72 hours).
+. `mvn clean install -Dmaven.test.skip=true; bin/process-docs.sh` - rebuild source and docs of tagged release
+. `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
+. Review and close the staging repository (Apache Nexus at link:https://repository.apache.org/[https://repository.apache.org/])
+. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/x.y.z`
+. `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/x.y.z`
+. `ls dev/x.y.z/ | grep '\-\(distribution\|source\-release\)\.zip' | sed -e 's/\(^[^ ]*\)-distribution\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-bin\2/' -e 's/\(^[^ ]*\)-source-release\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-src\2/' | /bin/sh`
+. `cd release; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
+. Update homepage with references to latest distribution and to other internal links elsewhere on the page.
+. Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
+. Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`.
+
+Example `[VOTE]` email:
+
+```
+[VOTE] TinkerPop x.y.z Release
+
+Hello,
+
+The release artifacts can be found at this location:
+	https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/x.y.z/
+
+The source distribution is provided by:
+	apache-tinkerpop-x.y.z-source-release.zip
+
+Two binary distributions are provided for user convenience:
+	apache-gremlin-console-x.y.z-distribution.zip
+	apache-gremlin-server-x.y.z-distribution.zip
+
+The online docs can be found here:
+	http://tinkerpop.incubator.apache.org/docs/x.y.z/ (user docs)
+	http://tinkerpop.incubator.apache.org/javadocs/x.y.z/core/ (core javadoc)
+	http://tinkerpop.incubator.apache.org/javadocs/x.y.z/full/ (full javadoc)
+
+The tag in Apache Git can be found here:
+	https://git-wip-us.apache.org/repos/asf?p=incubator-tinkerpop.git;...
+
+The release notes are available here:
+	https://github.com/apache/incubator-tinkerpop/blob/master/CHANGELOG.asciidoc#...
+
+The [VOTE] will be open for the next 72 hours --- closing <DayOfTheWeek> (<Month> <Day> <Year>) at <Time> <TimeZone>.
+
+My vote is +1.
+
+Thank you very much,
+<TinkerPop Committer Name>
+```
