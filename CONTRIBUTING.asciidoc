@@ -20,3 +20,45 @@ Contributions via GitHub pull requests are gladly accepted from their original
 author. By submitting any copyrighted material via pull request, email, or other means
 you agree to license the material under the project's open source license and
 warrant that you have the legal authority to do so.
+
+## For Committers
+
+For those with commit access to the main repository, here are a few guidelines.
+
+### Release Notes
+
+We use a two-pronged approach to maintaining the change log and preparing the release notes.
+
+1. For work that is documented in JIRA, we can run reports that include all of
+the tickets targeted for a specific release.  This report can be included in the
+release announcement.
+
+2. The manual change log (CHANGELOG.asciidoc) can be used to highlight large
+changes, describe themes (e.g. "We focused on performance improvements") or to
+give voice to undocumented changes.
+
+### Branches
+
+We maintain the "master" branch as the one where most people would be developing.
+
+Additionally, we may have release branches for maintenance work.  For example,
+the "tp30" branch is used to maintain the 3.0.x line while work on 3.1.x
+proceeds on "master".
+
+Other branches may be created for collaborating on features or for RFC's that
+other developers may want to inspect.  It is suggested that the JIRA issue ID be
+used as the prefix, since that triggers certain automation, and it provides a
+way to account for the branch lifecycle, i.e. "Who's branch is this, and can I
+delete it?"  For example, TINKERPOP3-999-add-cool-new-feature is a nice branch
+name.
+
+For branches that are NOT associated with JIRA issues, you are free to use your
+Apache ID as a branch name prefix.  This provides a unique namespace, and also a
+way to account for the branch lifecycle.
+
+Please remove your own branches when they are no longer needed.
+
+### Tags
+
+We use tags for milestones, release candidates, and approved releases.  Please
+refrain from creating arbitrary tags, as they produce permanent clutter.
