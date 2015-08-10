@@ -22,6 +22,8 @@ image:https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/s
 Documentation
 ~~~~~~~~~~~~~
 
+TinkerPop3 provides graph computing capabilities for both graph databases (OLTP) and graph analytic systems (OLAP).
+
 * link:http://tinkerpop.incubator.apache.org/[homepage]
 * link:http://tinkerpop.incubator.apache.org/docs/3.0.0-SNAPSHOT/[user documentation]
 * link:http://tinkerpop.incubator.apache.org/javadocs/3.0.0-SNAPSHOT/core/[core javadoc]
@@ -30,47 +32,17 @@ Documentation
 Building and Testing
 ~~~~~~~~~~~~~~~~~~~~
 
-TinkerPop requires `Java 1.8.0_40+` for proper building and proper operations.
+TinkerPop uses link:https://maven.apache.org/[Maven] and requires `Java 1.8.0_40+` for proper building and proper operations. To build, execute unit tests and package Gremlin Console/Server run:
 
-* Build Project: `mvn clean install`
-** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the Maven project list argument, e.g.:
-+
-----
-export GREMLIN_TESTS='org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest$Traversals,org.apache.tinkerpop.gremlin.process.traversal.PathTest'
-mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
-----
-** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
-** Turn off "heavy" logging in the "process" tests: `mvn clean install -DargLine="-DmuteTestLogs=true"`
-** The test suite for `neo4j-gremlin` is disabled by default - to turn it on: `mvn clean install -DincludeNeo4j`
-* Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
-** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
-* Check license headers are present: `mvn apache-rat:check`
-* Build AsciiDocs (Hadoop and ZooKeeper must be running): `bin/process-docs.sh`
-** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
-** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-gremlin-console-*-standalone `pwd`/docs/src/xyz.asciidoc]+
-* Build JavaDocs: `mvn process-resources -Djavadoc`
-* Check for Apache License headers: `mvn apache-rat:check`
-* Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`
-* Deploy JavaDocs/AsciiDocs: `bin/publish-docs.sh svn-username`
-* Integration Tests: `mvn verify -DskipIntegrationTests=false`
-** Execute with the `-DincludeNeo4j` option to include transactional tests.
-* Performance Tests: `mvn verify -DskipPerformanceTests=false`
+[source,bash]
+mvn clean install
 
-IDE Setup
-^^^^^^^^^
+The zip distributions can be found in the following directories:
 
-This section refers specifically to setup within Intellij.  TinkerPop has a module called `gremlin-shaded` which contains shaded dependencies for some libraries that are widely used and tend to introduce conflicts.  To ensure that Intellij properly interprets this module after importing the Maven `pom.xml` perform the following steps:
+. `gremlin-server/target`
+. `gremlin-console/target`
 
-. Build `gremlin-shaded` from the command line with `mvn clean install`.
-. Right-click on the `gremlin-shaded` module in the project viewer of Intellij and select "Remove module".
-. In the "Maven Projects" Tool window and click the tool button for "Reimport All Maven projects" (go to `View | Tool Windows | Maven Projects` on the main menu if this panel is not activated).
-. At this point it should be possible to compile and run the tests within Intellij, but in the worst case, use `File | Invalidate Caches/Restart` to ensure that indices properly rebuild.
-
-Note that it maybe be necessary to re-execute these steps if the `gremlin-shaded` `pom.xml` is ever updated.
-
-Developers working on the `neo4j-gremlin` module should enabled the `include-neo4j` Maven profile in Intellij.  This will ensure that tests will properly execute within the IDE.
-
-If Intellij complains about "duplicate sources" for the Groovy files when attempting to compile/run tests, then install the link:http://plugins.jetbrains.com/plugin/7442?pr=idea[GMavenPlus Intellij plugin].
+Please see the `CONTRIBUTING.asciidoc` file for more detailed information and options for building, test running and developing TinkerPop.
 
 Get Started
 ~~~~~~~~~~~
@@ -82,5 +54,13 @@ $ bin/gremlin.sh
          \,,,/
          (o o)
 -----oOOo-(3)-oOOo-----
-gremlin>
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+gremlin> graph = TinkerFactory.createModern()
+==>tinkergraph[vertices:6 edges:6]
+gremlin> g = graph.traversal()
+==>graphtraversalsource[tinkergraph[vertices:6 edges:6], standard]
+gremlin> g.V().has('name','vadas').valueMap()
+==>[name:[vadas], age:[27]]
 ----

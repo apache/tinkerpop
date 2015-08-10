@@ -14,12 +14,58 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-## Contributing to Apache TinkerPop
+Contributing to Apache TinkerPop
+--------------------------------
 
 Contributions via GitHub pull requests are gladly accepted from their original
 author. By submitting any copyrighted material via pull request, email, or other means
 you agree to license the material under the project's open source license and
 warrant that you have the legal authority to do so.
+
+Building and Testing
+--------------------
+
+TinkerPop requires `Java 1.8.0_40+` for proper building and proper operations.
+
+* Build Project: `mvn clean install`
+** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the Maven project list argument, e.g.:
++
+----
+export GREMLIN_TESTS='org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest$Traversals,org.apache.tinkerpop.gremlin.process.traversal.PathTest'
+mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
+----
+** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
+** Turn off "heavy" logging in the "process" tests: `mvn clean install -DargLine="-DmuteTestLogs=true"`
+** The test suite for `neo4j-gremlin` is disabled by default - to turn it on: `mvn clean install -DincludeNeo4j`
+* Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
+** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
+* Check license headers are present: `mvn apache-rat:check`
+* Build AsciiDocs (Hadoop and ZooKeeper must be running): `bin/process-docs.sh`
+** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
+** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-gremlin-console-*-standalone `pwd`/docs/src/xyz.asciidoc]+
+* Build JavaDocs: `mvn process-resources -Djavadoc`
+* Check for Apache License headers: `mvn apache-rat:check`
+* Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`
+* Deploy JavaDocs/AsciiDocs: `bin/publish-docs.sh svn-username`
+* Integration Tests: `mvn verify -DskipIntegrationTests=false`
+** Execute with the `-DincludeNeo4j` option to include transactional tests.
+* Performance Tests: `mvn verify -DskipPerformanceTests=false`
+
+IDE Setup with Intellij
+-----------------------
+
+This section refers specifically to setup within Intellij.  TinkerPop has a module called `gremlin-shaded` which contains shaded dependencies for some libraries that are widely used and tend to introduce conflicts.  To ensure that Intellij properly interprets this module after importing the Maven `pom.xml` perform the following steps:
+
+. Build `gremlin-shaded` from the command line with `mvn clean install`.
+. Right-click on the `gremlin-shaded` module in the project viewer of Intellij and select "Remove module".
+. In the "Maven Projects" Tool window and click the tool button for "Reimport All Maven projects" (go to `View | Tool Windows | Maven Projects` on the main menu if this panel is not activated).
+. At this point it should be possible to compile and run the tests within Intellij, but in the worst case, use `File | Invalidate Caches/Restart` to ensure that indices properly rebuild.
+
+Note that it maybe be necessary to re-execute these steps if the `gremlin-shaded` `pom.xml` is ever updated.
+
+Developers working on the `neo4j-gremlin` module should enabled the `include-neo4j` Maven profile in Intellij.  This will ensure that tests will properly execute within the IDE.
+
+If Intellij complains about "duplicate sources" for the Groovy files when attempting to compile/run tests, then install the link:http://plugins.jetbrains.com/plugin/7442?pr=idea[GMavenPlus Intellij plugin].
 
 For Committers
 --------------
