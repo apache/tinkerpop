@@ -32,7 +32,7 @@ TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
 * Fixed bug in `EventStrategy` around property changed events when calling `property` without cardinality or meta-property values.
 * Improved support for the `Accept` header for REST-based requests in Gremlin Server.
 * `GraphFactory` now allows specification of the class to use to instantiate the `Graph` through the `GraphFactoryClass` annotation.
-* Added `wrapAdjacencyList and `unwrapAdjacencyList` options to `GraphSONWriter` and `GraphSONReader` respectively, thus allowing valid JSON to be written/read if the user desires.
+* Added `wrapAdjacencyList` and `unwrapAdjacencyList` options to `GraphSONWriter` and `GraphSONReader` respectively, thus allowing valid JSON to be written/read if the user desires.
 * Added Gremlin Server/Driver authentication support via SASL.
 * Added Basic HTTP authentication support for REST in Gremlin Server.
 * Added Gremlin Server plugin to help with "credential graph" management (used in conjunction with authentication features of Gremlin Server).
