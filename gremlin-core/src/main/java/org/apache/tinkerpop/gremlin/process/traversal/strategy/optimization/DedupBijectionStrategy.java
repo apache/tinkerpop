@@ -32,8 +32,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * DedupBijectionStrategy does deduplication prior to a non-mutating bijective step if there is no <code>by()</code>-modulation on <code>dedup()</code>.
- * Given that {@link DedupGlobalStep} reduces the number of objects in the stream, it is cheaper to dedup prior.
+ * {@code DedupBijectionStrategy} does deduplication prior to a non-mutating bijective step if there is no
+ * {@code by()}-modulation on {@code dedup()}. Given that {@link DedupGlobalStep} reduces the number of
+ * objects in the stream, it is cheaper to dedup prior.
  * <p/>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

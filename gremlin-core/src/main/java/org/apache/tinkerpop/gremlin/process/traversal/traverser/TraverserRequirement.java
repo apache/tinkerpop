@@ -18,10 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.traverser;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+
 /**
- * A {@link TraverserRequirement} is a list of requirements that a {@link org.apache.tinkerpop.gremlin.process.traversal.Traversal} requires of a {@link org.apache.tinkerpop.gremlin.process.traversal.Traverser}.
+ * A {@link TraverserRequirement} is a list of requirements that a {@link Traversal} requires of a {@link Traverser}.
  * The less requirements, the simpler the traverser can be (both in terms of space and time constraints).
- * Every {@link org.apache.tinkerpop.gremlin.process.traversal.Step} provides its specific requirements via {@link org.apache.tinkerpop.gremlin.process.traversal.Step#getRequirements()}.
+ * Every {@link Step} provides its specific requirements via {@link Step#getRequirements()}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
