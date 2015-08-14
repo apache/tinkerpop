@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.function.BiPredicate;
 
 /**
- * {@link Contains} is a {@link java.util.function.BiPredicate} that evaluates whether the first object is contained within (or not
+ * {@link Contains} is a {@link BiPredicate} that evaluates whether the first object is contained within (or not
  * within) the second collection object. For example:
  * <p/>
  * <pre>
@@ -36,12 +36,20 @@ import java.util.function.BiPredicate;
  */
 public enum Contains implements BiPredicate<Object, Collection> {
 
+    /**
+     * The first object is within the {@link Collection} provided in the second object.
+     */
     within {
         @Override
         public boolean test(final Object first, final Collection second) {
             return second.contains(first);
         }
-    }, without {
+    },
+
+    /**
+     * The first object is not within the {@link Collection} provided in the second object.
+     */
+    without {
         @Override
         public boolean test(final Object first, final Collection second) {
             return !second.contains(first);
