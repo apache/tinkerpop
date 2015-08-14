@@ -126,7 +126,11 @@ public abstract class AbstractTransaction implements Transaction {
         readWriteConsumer.accept(this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
+    @Deprecated
     public void close() {
         closeConsumer.accept(this);
     }
