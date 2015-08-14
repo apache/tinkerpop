@@ -37,9 +37,11 @@ import java.util.stream.StreamSupport;
  * is stored in an {@link Result} which can be used to retrieve the item once it is on the client side.
  * <p/>
  * Note that a {@code ResultSet} is a forward-only stream only so depending on how the methods are called and
- * interacted with, it is possible to return partial bits of total response (e.g. calling {@link #one()} followed
+ * interacted with, it is possible to return partial bits of the total response (e.g. calling {@link #one()} followed
  * by {@link #all()} will make it so that the {@link List} of results returned from {@link #all()} have one
  * {@link Result} missing from the total set as it was already retrieved by {@link #one}.
+ * <p/>
+ * This class is not thread-safe.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -108,11 +110,15 @@ public final class ResultSet implements Iterable<Result> {
      * Stream items with a blocking iterator.
      */
     public Stream<Result> stream() {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(), Spliterator.IMMUTABLE | Spliterator.SIZED), false);
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(),
+                Spliterator.IMMUTABLE | Spliterator.SIZED), false);
     }
 
     /**
-     * Returns a blocking iterator of the items streaming from the server to the client.
+     * Returns a blocking iterator of the items streaming from the server to the client. This {@link Iterator} will
+     * consume results as they arrive and leaving the {@code ResultSet} empty when complete.
+     * <p/>
+     * The returned {@link Iterator} does not support the {@link Iterator#remove} method.
      */
     @Override
     public Iterator<Result> iterator() {
