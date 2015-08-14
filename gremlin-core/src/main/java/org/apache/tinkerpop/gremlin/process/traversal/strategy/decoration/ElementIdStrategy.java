@@ -48,7 +48,7 @@ import java.util.function.Supplier;
  * thus simulating that capability.
  * <p/>
  * By default, when an identifier is not supplied by the user, newly generated identifiers are {@link UUID} objects.
- * This behavior can be overriden by setting the {@link Builder#idMaker(Supplier)}.
+ * This behavior can be overridden by setting the {@link Builder#idMaker(Supplier)}.
  * <p/>
  * Unless otherwise specified the identifier is stored in the {@code __id} property.  This can be changed by setting
  * the {@link Builder#idPropertyKey(String)}

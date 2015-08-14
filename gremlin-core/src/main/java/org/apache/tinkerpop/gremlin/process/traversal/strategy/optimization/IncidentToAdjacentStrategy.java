@@ -38,12 +38,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This strategy looks for <code>.outE().inV()</code>, <code>.inE().outV()</code> and <code>.bothE().otherV()</code>
- * and replaces these step sequences with <code>.out()</code>, <code>.in()</code> or <code>.both()</code> respectively.
+ * This strategy looks for {@code .outE().inV()}, {@code .inE().outV()} and {@code .bothE().otherV()}
+ * and replaces these step sequences with {@code .out()}, {@code .in()} or {@code .both()} respectively.
  * The strategy won't modify the traversal if:
  * <ul>
  * <li>the edge step is labeled</li>
- * <li>the traversal contains a <code>path</code> step</li>
+ * <li>the traversal contains a {@code path} step</li>
  * <li>the traversal contains a lambda step</li>
  * </ul>
  * <p/>

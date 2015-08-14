@@ -44,26 +44,54 @@ public final class Result {
         this.resultObject = responseData;
     }
 
+    /**
+     * Gets the result item by coercing it to a {@code String} via {@code toString()}.
+     */
     public String getString() {
         return resultObject.toString();
     }
 
+    /**
+     * Gets the result item by coercing it to an {@code int}.
+     *
+     * @throws NumberFormatException if the value is not parsable as an {@code int}.
+     */
     public int getInt() {
         return Integer.parseInt(resultObject.toString());
     }
 
+    /**
+     * Gets the result item by coercing it to an {@code byte}.
+     *
+     * @throws NumberFormatException if the value is not parsable as an {@code byte}.
+     */
     public byte getByte() {
         return Byte.parseByte(resultObject.toString());
     }
 
+    /**
+     * Gets the result item by coercing it to an {@code short}.
+     *
+     * @throws NumberFormatException if the value is not parsable as an {@code short}.
+     */
     public short getShort() {
         return Short.parseShort(resultObject.toString());
     }
 
+    /**
+     * Gets the result item by coercing it to an {@code long}.
+     *
+     * @throws NumberFormatException if the value is not parsable as an {@code long}.
+     */
     public long getLong() {
         return Long.parseLong(resultObject.toString());
     }
 
+    /**
+     * Gets the result item by coercing it to an {@code float}.
+     *
+     * @throws NumberFormatException if the value is not parsable as an {@code float}.
+     */
     public float getFloat() {
         return Float.parseFloat(resultObject.toString());
     }
@@ -72,42 +100,74 @@ public final class Result {
         return Double.parseDouble(resultObject.toString());
     }
 
+    /**
+     * Gets the result item by coercing it to an {@code boolean}.
+     *
+     * @throws NumberFormatException if the value is not parsable as an {@code boolean}.
+     */
     public boolean getBoolean() {
         return Boolean.parseBoolean(resultObject.toString());
     }
 
+    /**
+     * Determines if the result item is null or not.  This is often a good check prior to calling other methods to
+     * get the object as they could throw an unexpected {@link NullPointerException} if the result item is
+     * {@code null}.
+     */
     public boolean isNull() {
         return null == resultObject;
     }
 
+    /**
+     * Gets the result item by casting it to a {@link Vertex}.
+     */
     public Vertex getVertex() {
         return (Vertex) resultObject;
     }
-
+    /**
+     * Gets the result item by casting it to an {@link Edge}.
+     */
     public Edge getEdge() {
         return (Edge) resultObject;
     }
-
+    /**
+     * Gets the result item by casting it to an {@link Element}.
+     */
     public Element getElement() {
         return (Element) resultObject;
     }
 
+    /**
+     * Gets the result item by casting it to a {@link Path}.
+     */
     public Path getPath() {
         return (Path) resultObject;
     }
 
+    /**
+     * Gets the result item by casting it to a {@link Property}.
+     */
     public <V> Property<V> getProperty() {
         return (Property<V>) resultObject;
     }
 
+    /**
+     * Gets the result item by casting it to a {@link VertexProperty}.
+     */
     public <V> VertexProperty<V> getVertexProperty() {
         return (VertexProperty<V>) resultObject;
     }
 
+    /**
+     * Gets the result item by casting it to the specified {@link Class}.
+     */
     public <T> T get(final Class<? extends T> clazz) {
         return clazz.cast(this.resultObject);
     }
 
+    /**
+     * Gets the result item.
+     */
     public Object getObject() {
         return this.resultObject;
     }

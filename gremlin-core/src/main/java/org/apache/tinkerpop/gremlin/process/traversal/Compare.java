@@ -25,9 +25,16 @@ import java.util.function.BiPredicate;
  * {@code >}, {@code >=}, {@code <}, {@code <=} to the second argument.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public enum Compare implements BiPredicate<Object, Object> {
-
+    /**
+     * Evaluates if the first object is equal to the second.  If both are of type {@link Number} but not of the
+     * same class (i.e. double for the first object and long for the second object) both values are cast to
+     * {@link Number} so that it can be evaluated via {@link Number#doubleValue()}.  Otherwise they are evaluated
+     * via {@link Object#equals(Object)}.  Testing against {@link Number#doubleValue()} enables the compare
+     * operations to be a bit more forgiving with respect to comparing different number types.
+     */
     eq {
         @Override
         public boolean test(final Object first, final Object second) {
@@ -37,21 +44,45 @@ public enum Compare implements BiPredicate<Object, Object> {
                     : first.equals(second));
         }
 
+        /**
+         * The negative of {@code eq} is {@link #neq}.
+         */
         @Override
         public Compare negate() {
             return neq;
         }
-    }, neq {
+    },
+
+    /**
+     * Evaluates if the first object is not equal to the second.  If both are of type {@link Number} but not of the
+     * same class (i.e. double for the first object and long for the second object) both values are cast to
+     * {@link Number} so that it can be evaluated via {@link Number#doubleValue()}.  Otherwise they are evaluated
+     * via {@link Object#equals(Object)}.  Testing against {@link Number#doubleValue()} enables the compare
+     * operations to be a bit more forgiving with respect to comparing different number types.
+     */
+    neq {
         @Override
         public boolean test(final Object first, final Object second) {
             return !eq.test(first, second);
         }
 
+        /**
+         * The negative of {@code neq} is {@link #eq}
+         */
         @Override
         public Compare negate() {
             return eq;
         }
-    }, gt {
+    },
+
+    /**
+     * Evaluates if the first object is greater than the second.  If both are of type {@link Number} but not of the
+     * same class (i.e. double for the first object and long for the second object) both values are cast to
+     * {@link Number} so that it can be evaluated via {@link Number#doubleValue()}.  Otherwise they are evaluated
+     * via {@link Comparable#compareTo(Object)}.  Testing against {@link Number#doubleValue()} enables the compare
+     * operations to be a bit more forgiving with respect to comparing different number types.
+     */
+    gt {
         @Override
         public boolean test(final Object first, final Object second) {
             return null != first && null != second && (
@@ -60,21 +91,45 @@ public enum Compare implements BiPredicate<Object, Object> {
                             : ((Comparable) first).compareTo(second) > 0);
         }
 
+        /**
+         * The negative of {@code gt} is {@link #lte}.
+         */
         @Override
         public Compare negate() {
             return lte;
         }
-    }, gte {
+    },
+
+    /**
+     * Evaluates if the first object is greater-equal to the second.  If both are of type {@link Number} but not of the
+     * same class (i.e. double for the first object and long for the second object) both values are cast to
+     * {@link Number} so that it can be evaluated via {@link Number#doubleValue()}.  Otherwise they are evaluated
+     * via {@link Comparable#compareTo(Object)}.  Testing against {@link Number#doubleValue()} enables the compare
+     * operations to be a bit more forgiving with respect to comparing different number types.
+     */
+    gte {
         @Override
         public boolean test(final Object first, final Object second) {
             return null == first ? null == second : (null != second && !lt.test(first, second));
         }
 
+        /**
+         * The negative of {@code gte} is {@link #lt}.
+         */
         @Override
         public Compare negate() {
             return lt;
         }
-    }, lt {
+    },
+
+    /**
+     * Evaluates if the first object is less than the second.  If both are of type {@link Number} but not of the
+     * same class (i.e. double for the first object and long for the second object) both values are cast to
+     * {@link Number} so that it can be evaluated via {@link Number#doubleValue()}.  Otherwise they are evaluated
+     * via {@link Comparable#compareTo(Object)}.  Testing against {@link Number#doubleValue()} enables the compare
+     * operations to be a bit more forgiving with respect to comparing different number types.
+     */
+    lt {
         @Override
         public boolean test(final Object first, final Object second) {
             return null != first && null != second && (
@@ -83,27 +138,36 @@ public enum Compare implements BiPredicate<Object, Object> {
                             : ((Comparable) first).compareTo(second) < 0);
         }
 
+        /**
+         * The negative of {@code lt} is {@link #gte}.
+         */
         @Override
         public Compare negate() {
             return gte;
         }
-    }, lte {
+    },
+
+    /**
+     * Evaluates if the first object is less-equal to the second.  If both are of type {@link Number} but not of the
+     * same class (i.e. double for the first object and long for the second object) both values are cast to
+     * {@link Number} so that it can be evaluated via {@link Number#doubleValue()}.  Otherwise they are evaluated
+     * via {@link Comparable#compareTo(Object)}.  Testing against {@link Number#doubleValue()} enables the compare
+     * operations to be a bit more forgiving with respect to comparing different number types.
+     */
+    lte {
         @Override
         public boolean test(final Object first, final Object second) {
             return null == first ? null == second : (null != second && !gt.test(first, second));
         }
 
+        /**
+         * The negative of {@code lte} is {@link #gt}.
+         */
         @Override
         public Compare negate() {
             return gt;
         }
     };
-
-    /**
-     * {@inheritDoc}
-     */
-    /*@Override
-    public abstract boolean test(final Object first, final Object second);*/
 
     /**
      * Produce the opposite representation of the current {@code Compare} enum.
