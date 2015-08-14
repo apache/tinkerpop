@@ -303,6 +303,8 @@ script = """
 
 TIP: In Groovy, `""" text """` is a convenient way to create a multi-line string and works well in concert with `:> @variable`. Note that this model of submitting a string variable works for all `:>` based plugins, not just Gremlin Server.
 
+WARNING: Not all values that can be returned from a Gremlin script end up being serializable.  For example, submitting `:> graph` will return a `Graph` instance and in most cases those are not serializable by Gremlin Server and will return a serialization error.  It should be noted that `TinkerGraph`, as a convenience for shipping around small sub-graphs, is serializable from Gremlin Server.
+
 Connecting via Java
 ~~~~~~~~~~~~~~~~~~~
 
