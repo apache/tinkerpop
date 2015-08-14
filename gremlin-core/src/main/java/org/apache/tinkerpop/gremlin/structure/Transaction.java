@@ -35,6 +35,10 @@ import java.util.function.Function;
  * It is expected that this interface be implemented by vendors in a {@link ThreadLocal} fashion. In other words
  * transactions are bound to the current thread, which means that any graph operation executed by the thread occurs
  * in the context of that transaction and that there may only be one thread executing in a single transaction.
+ * <p/>
+ * It is important to realize that this class is not a "transaction object".  It is a class that holds transaction
+ * related methods thus hiding them from the {@link Graph} interface.  This object is not meant to be passed around
+ * as a transactional context.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -85,8 +89,19 @@ public interface Transaction extends Closeable {
     /**
      * Closes the transaction where the default close behavior defined by {{@link #onClose(Consumer)}} will be
      * executed.
+     *
+     * @deprecated As of release 3.0.1 and will not be replaced.
+     *             The intention is to no longer have {@code Transaction} implement {@code Closeable} as the
+     *             semantics of closing in this context don't make sense.  {@code Transaction}
+     *             is not a "transaction object" - it exists to hide methods from {@link Graph} that manage a
+     *             transaction.  Closing it doesn't make much sense.  It is also doesn't work quite in the intended
+     *             way as it was expected that calls to {@link Graph#close()} would in turn call this method,
+     *             however doing so will not properly close all transactions as most graphs operate in a
+     *             {@code ThreadLocal} context and so a call to this method would typically just close the
+     *             transaction of the current thread.
      */
     @Override
+    @Deprecated
     public void close();
 
     /**
@@ -98,7 +113,12 @@ public interface Transaction extends Closeable {
     /**
      * Describes what happens to a transaction on a call to {@link Graph#close()}. This value can be set using
      * standard behavior defined in {@link CLOSE_BEHAVIOR} or a mapper {@link Consumer} function.
+     *
+     * @deprecated As of release 3.0.1 and will not be replaced.
+     *             Given the deprecation of {@link #close()}, the need to supply a method to set the close
+     *             behavior is unecessary.
      */
+    @Deprecated
     public Transaction onClose(final Consumer<Transaction> consumer);
 
     /**
@@ -147,6 +167,12 @@ public interface Transaction extends Closeable {
             return new UnsupportedOperationException("Graph does not support threaded transactions");
         }
 
+        /**
+         * @deprecated As of release 3.0.1 and will not be replaced.
+         *             Given the deprecation of {@link #close()}, the need to supply a method to set the close
+         *             behavior is unecessary.
+         */
+        @Deprecated
         public static IllegalArgumentException onCloseBehaviorCannotBeNull() {
             return new IllegalArgumentException("Transaction behavior for onClose cannot be null");
         }
@@ -159,11 +185,21 @@ public interface Transaction extends Closeable {
     /**
      * Behaviors to supply to the {@link #onClose(Consumer)}. The semantics of these behaviors must be examined in
      * the context of the implementation.  In most cases, these behaviors will be applied as {{@link ThreadLocal}}.
+     *
+     * @deprecated As of release 3.0.1 and will not be replaced.
+     *             Given the deprecation of {@link #close()}, the need to supply a method to set the close
+     *             behavior is unecessary.
      */
+    @Deprecated
     public enum CLOSE_BEHAVIOR implements Consumer<Transaction> {
         /**
          * Commit the transaction when {@link #close()} is called.
+         *
+         * @deprecated As of release 3.0.1 and will not be replaced.
+         *             Given the deprecation of {@link #close()}, the need to supply a method to set the close
+         *             behavior is unecessary.
          */
+        @Deprecated
         COMMIT {
             @Override
             public void accept(final Transaction transaction) {
@@ -173,7 +209,12 @@ public interface Transaction extends Closeable {
 
         /**
          * Rollback the transaction when {@link #close()} is called.
+         *
+         * @deprecated As of release 3.0.1 and will not be replaced.
+         *             Given the deprecation of {@link #close()}, the need to supply a method to set the close
+         *             behavior is unecessary.
          */
+        @Deprecated
         ROLLBACK {
             @Override
             public void accept(final Transaction transaction) {
@@ -183,7 +224,12 @@ public interface Transaction extends Closeable {
 
         /**
          * Throw an exception if the current transaction is open when {@link #close()} is called.
+         *
+         * @deprecated As of release 3.0.1 and will not be replaced.
+         *             Given the deprecation of {@link #close()}, the need to supply a method to set the close
+         *             behavior is unecessary.
          */
+        @Deprecated
         MANUAL {
             @Override
             public void accept(final Transaction transaction) {

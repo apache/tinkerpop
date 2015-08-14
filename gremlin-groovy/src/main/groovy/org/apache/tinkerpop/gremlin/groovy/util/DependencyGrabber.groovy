@@ -76,45 +76,41 @@ class DependencyGrabber {
         final def dependencyLocations = [] as Set<URI>
         dependencyLocations.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, dep))
 
-        // if windows then the path contains a starting forward slash that prevents it from being
-        // recognized by FileSystem - strip it off
-        dependencyLocations.collect {
-            def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
-            return fs.getPath(p)
-        }.findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }.findAll {
-            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
-        }.each {
-            def copying = targetPluginPath.resolve(it.fileName)
-            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-            println "Copying - $copying"
-        }
-
-        dependencyLocations.collect {
-            def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
-            return fs.getPath(p)
-        }.each {
-            def copying = targetLibPath.resolve(it.fileName)
-            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-            println "Copying - $copying"
-        }
-
-        getAdditionalDependencies(targetPluginPath, artifact).collect { fs.getPath(it.path) }
+        // get dependencies for the plugin path which should be part of the class path
+        dependencyLocations.collect(convertUriToPath(fs))
+                .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
+                .findAll {!filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
+                .each(copyTo(targetPluginPath))
+        getAdditionalDependencies(targetPluginPath, artifact).collect(convertUriToPath(fs))
             .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
             .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
-            .each {
-                def copying = targetPluginPath.resolve(it.fileName)
-                Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-                println "Copying - $copying"
-            }
+            .each(copyTo(targetPluginPath))
 
-        getAdditionalDependencies(targetLibPath, artifact).collect { fs.getPath(it.path) }.each {
-            def copying = targetLibPath.resolve(it.fileName)
-            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-            println "Copying - $copying"
-        }
+        // get dependencies for the lib path.  the lib path should not filter out any jars - used for reference
+        dependencyLocations.collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
+        getAdditionalDependencies(targetLibPath, artifact).collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
 
         alterPaths("Gremlin-Plugin-Paths", targetPluginPath, artifact)
         alterPaths("Gremlin-Lib-Paths", targetLibPath, artifact)
+    }
+
+    private static Closure copyTo(final Path path) {
+        return { Path p ->
+            def copying = path.resolve(p.fileName)
+            Files.copy(p, copying, StandardCopyOption.REPLACE_EXISTING)
+            println "Copying - $copying"
+        }
+    }
+
+    /**
+     * Windows places a starting forward slash in the URI that needs to be stripped off or else the
+     * {@code FileSystem} won't properly resolve it.
+     */
+    private static Closure convertUriToPath(final FileSystem fs) {
+        return { URI uri ->
+            def p = SystemUtils.IS_OS_WINDOWS ? uri.path.substring(1) : uri.path
+            return fs.getPath(p)
+        }
     }
 
     private Set<URI> getAdditionalDependencies(final Path extPath, final Artifact artifact) {
