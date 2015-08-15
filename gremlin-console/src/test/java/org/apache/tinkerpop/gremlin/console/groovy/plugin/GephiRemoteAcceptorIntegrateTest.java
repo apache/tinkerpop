@@ -22,9 +22,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.tinkerpop.gremlin.console.GremlinGroovysh;
 import org.apache.tinkerpop.gremlin.console.plugin.GephiRemoteAcceptor;
-import org.apache.tinkerpop.gremlin.console.plugin.GephiTraversalVisualizationStrategy;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -41,15 +39,14 @@ import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertThat;
@@ -63,7 +60,7 @@ public class GephiRemoteAcceptorIntegrateTest {
 
     private GephiRemoteAcceptor acceptor;
 
-    private final InputStream inputStream  = new NullInputStream(0);
+    private final InputStream inputStream = new NullInputStream(0);
     private final OutputStream outputStream = new ByteArrayOutputStream();
     private final OutputStream errorStream = new ByteArrayOutputStream();
     private final IO io = new IO(inputStream, outputStream, errorStream);
@@ -182,7 +179,7 @@ public class GephiRemoteAcceptorIntegrateTest {
         acceptor.submit(Arrays.asList(
                 "vg.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().out()).times(2).iterate()"));
 
-        wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(23, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
     @Test
