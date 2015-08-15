@@ -44,7 +44,7 @@ import java.util.function.BiPredicate;
 /**
  * This strategy optimizes any occurrence of {@link CountGlobalStep} followed by an {@link IsStep}. The idea is to limit
  * the number of incoming elements in a way that it's enough for the {@link IsStep} to decide whether it evaluates
- * <code>true</code> or <code>false</code>. If the traversal already contains a user supplied limit, the strategy won't
+ * {@code true} or {@code false}. If the traversal already contains a user supplied limit, the strategy won't
  * modify it.
  *
  * @author Daniel Kuppitz (http://gremlin.guru)

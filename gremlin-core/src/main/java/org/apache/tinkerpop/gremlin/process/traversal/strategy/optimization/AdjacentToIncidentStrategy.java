@@ -41,9 +41,9 @@ import java.util.Set;
 
 /**
  * This strategy looks for vertex- and value-emitting steps followed by a {@link CountGlobalStep} and replaces the
- * pattern with an edge- or property-emitting step followed by a <code>CountGlobalStep</code>. Furthermore, if a vertex-
- * or value-emitting step is the last step in a <code>.has(traversal)</code>, <code>.and(traversal, ...)</code> or
- * <code>.or(traversal, ...)</code> child traversal, it is replaced by an appropriate edge- or property-emitting step.
+ * pattern with an edge- or property-emitting step followed by a {@code CountGlobalStep}. Furthermore, if a vertex-
+ * or value-emitting step is the last step in a {@code .has(traversal)}, {@code .and(traversal, ...)} or
+ * {@code .or(traversal, ...)} child traversal, it is replaced by an appropriate edge- or property-emitting step.
  * <p/>
  *
  * @author Daniel Kuppitz (http://gremlin.guru)

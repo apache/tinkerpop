@@ -28,9 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import java.util.Comparator;
 
 /**
- * LambdaRestrictionStrategy does not allow lambdas to be used in a {@link Traversal}.
- * The contents of a lambda can not be analyzed/optimized and thus, reduces the ability of other {@link TraversalStrategy} instances to reason about the traversal.
- * This strategy is not activated by default. However, graph system vendors may choose to make this a default strategy in order to ensure their respective strategies are better able to operate.
+ * {@code LambdaRestrictionStrategy} does not allow lambdas to be used in a {@link Traversal}. The contents of a lambda
+ * cannot be analyzed/optimized and thus, reduces the ability of other {@link TraversalStrategy} instances to reason
+ * about the traversal. This strategy is not activated by default. However, graph system vendors may choose to make
+ * this a default strategy in order to ensure their respective strategies are better able to operate.
  * <p/>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

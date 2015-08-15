@@ -38,8 +38,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * MatchWhereStrategy will fold any post-<code>where()</code> step that maintains a traversal constraint into <code>match()</code>.
- * {@link MatchStep} is intelligent with traversal constraint applications and thus, can more efficiently use the constraint of {@link WhereTraversalStep} or {@link WherePredicateStep}.
+ * MatchWhereStrategy will fold any post-{@code where()} step that maintains a traversal constraint into
+ * {@code match()}. {@link MatchStep} is intelligent with traversal constraint applications and thus, can more
+ * efficiently use the constraint of {@link WhereTraversalStep} or {@link WherePredicateStep}.
  * <p/>
  * <p/>
  *
