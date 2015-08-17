@@ -130,7 +130,6 @@ public abstract class AbstractTransaction implements Transaction {
      * {@inheritDoc}
      */
     @Override
-    @Deprecated
     public void close() {
         closeConsumer.accept(this);
     }
