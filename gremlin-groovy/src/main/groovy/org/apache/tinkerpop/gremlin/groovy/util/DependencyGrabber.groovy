@@ -96,9 +96,12 @@ class DependencyGrabber {
 
     private static Closure copyTo(final Path path) {
         return { Path p ->
+            // check for existence prior to copying as windows systems seem to have problems with REPLACE_EXISTING
             def copying = path.resolve(p.fileName)
-            Files.copy(p, copying, StandardCopyOption.REPLACE_EXISTING)
-            println "Copying - $copying"
+            if (!copying.toFile().exists()) {
+                Files.copy(p, copying, StandardCopyOption.REPLACE_EXISTING)
+                println "Copying - $copying"
+            }
         }
     }
 
