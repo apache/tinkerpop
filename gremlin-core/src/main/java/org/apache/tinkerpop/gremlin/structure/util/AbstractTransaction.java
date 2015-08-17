@@ -55,8 +55,8 @@ public abstract class AbstractTransaction implements Transaction {
         // auto transaction behavior
         readWriteConsumer = READ_WRITE_BEHAVIOR.AUTO;
 
-        // commit on close
-        closeConsumer = CLOSE_BEHAVIOR.COMMIT;
+        // default is to rollback transactions on close
+        closeConsumer = CLOSE_BEHAVIOR.ROLLBACK;
 
         this.g = g;
     }
