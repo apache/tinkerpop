@@ -179,7 +179,7 @@ public class GephiRemoteAcceptorIntegrateTest {
         acceptor.submit(Arrays.asList(
                 "vg.V(1).repeat(org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.__().out()).times(2).iterate()"));
 
-        wireMockRule.verify(23, postRequestedFor(urlPathEqualTo("/workspace0")));
+        wireMockRule.verify(13, postRequestedFor(urlPathEqualTo("/workspace0")));
     }
 
     @Test

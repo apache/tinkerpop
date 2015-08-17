@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep
@@ -100,8 +101,10 @@ class GephiTraversalVisualizationStrategy extends AbstractTraversalStrategy<Trav
             }
 
             // decay all vertices except those that made it through the filter - "this way you can watch
-            // the Gremlins dying" - said daniel kuppitz
-            TraversalHelper.getStepsOfAssignableClass(FilterStep.class, traversal).each { FilterStep s ->
+            // the Gremlins dying" - said daniel kuppitz. can't do this easily with generic FilterStep as
+            // it creates odd behaviors when used with loop (extra decay that probably shouldn't be there.
+            // todo: can this be better? maybe we shouldn't do this at all
+            TraversalHelper.getStepsOfAssignableClass(HasStep.class, traversal).each { HasStep s ->
                 TraversalHelper.insertAfterStep(new LambdaSideEffectStep(traversal, { Traverser traverser ->
                     final BulkSet<Object> objects = ((BulkSet<Object>) traverser.sideEffects(sideEffectKey))
                     if (!objects.isEmpty()) {
