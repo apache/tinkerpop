@@ -28,13 +28,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * A simple base class for {@link Transaction} that provides some common functionality and default behavior.  Vendors
- * can use this class as a starting point for their own implementations. Implementers should note that this
- * class assumes that threaded transactions are not enabled.  Vendors should explicitly override
- * {@link #createThreadedTx} to implement that functionality if required.
- * <p/>
- * Note that transaction listeners are registered in a {@link ThreadLocal} fashion which matches the pattern
- * expected of vendor implementations of a {@link Transaction}.
+ * A simple base class for {@link Transaction} that provides some common functionality and default behavior.
+ * While vendors can choose to use this class, it is generally better to extend from
+ * {@link AbstractThreadedTransaction} or {@link AbstractThreadLocalTransaction} which include default "listener"
+ * functionality.  Implementers should note that this class assumes that threaded transactions are not enabled
+ * and should explicitly override {@link #createThreadedTx} to implement that functionality if required.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -43,13 +41,6 @@ public abstract class AbstractTransaction implements Transaction {
     protected Consumer<Transaction> closeConsumer;
 
     private Graph g;
-
-    private ThreadLocal<List<Consumer<Status>>> transactionListeners = new ThreadLocal<List<Consumer<Status>>>() {
-        @Override
-        protected List<Consumer<Status>> initialValue() {
-            return new ArrayList<>();
-        }
-    };
 
     public AbstractTransaction(final Graph g) {
         // auto transaction behavior
@@ -79,6 +70,23 @@ public abstract class AbstractTransaction implements Transaction {
      */
     protected abstract void doRollback() throws TransactionException;
 
+    /**
+     * Called within {@link #commit()} just after the internal call to {@link #doCommit()}. Implementations of this
+     * method should raise {@link Status#COMMIT} events to any listeners added via
+     * {@link #addTransactionListener(Consumer)}.
+     */
+    protected abstract void fireOnCommit();
+
+    /**
+     * Called within {@link #rollback()} just after the internal call to {@link #doRollback()} ()}. Implementations
+     * of this method should raise {@link Status#ROLLBACK} events to any listeners added via
+     * {@link #addTransactionListener(Consumer)}.
+     */
+    protected abstract void fireOnRollback();
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void open() {
         if (isOpen())
@@ -87,40 +95,52 @@ public abstract class AbstractTransaction implements Transaction {
             doOpen();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void commit() {
         readWriteConsumer.accept(this);
         try {
             doCommit();
+            fireOnCommit();
         } catch (TransactionException te) {
             throw new RuntimeException(te);
         }
-
-        transactionListeners.get().forEach(c -> c.accept(Status.COMMIT));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void rollback() {
         readWriteConsumer.accept(this);
         try {
             doRollback();
+            fireOnRollback();
         } catch (TransactionException te) {
             throw new RuntimeException(te);
         }
-
-        transactionListeners.get().forEach(c -> c.accept(Status.ROLLBACK));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <R> Workload<R> submit(final Function<Graph, R> work) {
         return new Workload<>(g, work);
     }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <G extends Graph> G createThreadedTx() {
         throw Transaction.Exceptions.threadedTransactionsNotSupported();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void readWrite() {
         readWriteConsumer.accept(this);
@@ -134,31 +154,22 @@ public abstract class AbstractTransaction implements Transaction {
         closeConsumer.accept(this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public synchronized Transaction onReadWrite(final Consumer<Transaction> consumer) {
         readWriteConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull);
         return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public synchronized Transaction onClose(final Consumer<Transaction> consumer) {
         closeConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onCloseBehaviorCannotBeNull);
         return this;
-    }
-
-    @Override
-    public void addTransactionListener(final Consumer<Status> listener) {
-        transactionListeners.get().add(listener);
-    }
-
-    @Override
-    public void removeTransactionListener(final Consumer<Status> listener) {
-        transactionListeners.get().remove(listener);
-    }
-
-    @Override
-    public void clearTransactionListeners() {
-        transactionListeners.get().clear();
     }
 
     /**
