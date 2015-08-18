@@ -1256,3 +1256,16 @@ A good implementation of the Gremlin APIs will validate their features against t
 ----
 describeGraph(HadoopGraph)
 ----
+
+[[describe-steps]]
+Describe Steps
+^^^^^^^^^^^^^^
+
+Gremlin steps are building blocks of the Gremlin language.  In most cases, a step will extend from a number of basic abstract steps that provide most of the functionality for a step of the implemented type.  A step will also possibly implement one or more marker interfaces that don't enforce any functionality, but provide more runtime information about how to classify it.  As there are many steps and many base steps and markers, it can be hard for those writing `TraversalStrategy` implementations to keep track of them all.
+
+The `describeSteps` function helps with this problem by generating a table that contains a list of all steps on the classpath and indicators that show which base classes and markers are associated with them.
+
+[gremlin-groovy,modern]
+----
+describeSteps()
+----
