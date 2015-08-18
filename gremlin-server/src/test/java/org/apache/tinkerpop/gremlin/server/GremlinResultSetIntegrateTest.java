@@ -74,6 +74,12 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
     }
 
     @Test
+    public void shouldHandleVoidResult() throws Exception {
+        final ResultSet results = client.submit("g.V().drop().iterate()");
+        assertEquals(0, results.all().get().size());
+    }
+
+    @Test
     public void shouldHandleEmptyResult() throws Exception {
         final ResultSet results = client.submit("g.V(100,1000,1000)");
         assertEquals(0, results.all().get().size());
