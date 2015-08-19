@@ -29,8 +29,9 @@ import java.util.jar.JarFile
 import java.util.jar.Manifest
 
 /**
- * This class is a rough copy of the {@code InstallCommand} in Gremlin Console.  There are far more detailed
- * comments there with respect to the workings of this class.
+ * This class provides a way to copy an {@link Artifact} and it's dependencies from Maven repositories down to
+ * the local system.  This capability is useful for the {@code :install} command in Gremlin Console and for the
+ * {@code -i} option on {@code gremlin-server.sh}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
