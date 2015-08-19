@@ -77,11 +77,6 @@ limitations under the License.
             <artifactId>gprof</artifactId>
             <version>0.3.1-groovy-2.4</version>
         </dependency>
-        <dependency>
-            <groupId>io.github.lukehutch</groupId>
-            <artifactId>fast-classpath-scanner</artifactId>
-            <version>1.6.0</version>
-        </dependency>
         <!-- TESTING -->
         <dependency>
             <groupId>junit</groupId>
