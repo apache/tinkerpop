@@ -81,11 +81,45 @@ import java.util.stream.Collectors;
  */
 public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements DependencyManager, AutoCloseable {
 
+    /**
+     * An "internal" key for sandboxing the script engine - technically not for public use.
+     */
     public static final String COMPILE_OPTIONS_VAR_TYPES = "sandbox.bindings";
+
+    /**
+     * The attribute key (passed as a binding on the context) for how to cache scripts.  The value must be one of
+     * the following:
+     * <ul>
+     *     <li>{@link #REFERENCE_TYPE_HARD}</li>
+     *     <li>{@link #REFERENCE_TYPE_SOFT}</li>
+     *     <li>{@link #REFERENCE_TYPE_WEAK}</li>
+     *     <li>{@link #REFERENCE_TYPE_PHANTOM}</li>
+     * </ul>
+     */
     public static final String KEY_REFERENCE_TYPE = "#jsr223.groovy.engine.keep.globals";
+
+    /**
+     * A value to the {@link #KEY_REFERENCE_TYPE} that immediately garbage collects the script after evaluation.
+     */
     public static final String REFERENCE_TYPE_PHANTOM = "phantom";
+
+
+    /**
+     * A value to the {@link #KEY_REFERENCE_TYPE} that marks the script as one that can be garbage collected
+     * even when memory is abundant.
+     */
     public static final String REFERENCE_TYPE_WEAK = "weak";
+
+    /**
+     * A value to the {@link #KEY_REFERENCE_TYPE} that retains the script until memory is "low" and therefore
+     * should be reclaimed before an {@link OutOfMemoryError} occurs.
+     */
     public static final String REFERENCE_TYPE_SOFT = "soft";
+
+    /**
+     * A value to the {@link #KEY_REFERENCE_TYPE} that makes the evaluated script available in the cache for the life
+     * of the JVM.
+     */
     public static final String REFERENCE_TYPE_HARD = "hard";
 
     private static final Pattern patternImportStatic = Pattern.compile("\\Aimport\\sstatic.*");
@@ -107,7 +141,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      */
     private ManagedConcurrentValueMap<String, Closure> globalClosures = new ManagedConcurrentValueMap<>(ReferenceBundle.getHardBundle());
 
-    protected GremlinGroovyClassLoader loader;
+    private GremlinGroovyClassLoader loader;
 
     private AtomicLong counter = new AtomicLong(0l);
 
@@ -124,11 +158,13 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private static final String GROOVY_LANG_SCRIPT = "groovy.lang.Script";
 
     private ImportCustomizerProvider importCustomizerProvider;
+    private final List<CompilerCustomizerProvider> customizerProviders;
 
     private final Set<Artifact> artifactsToUse = new HashSet<>();
 
-    private final List<CompilerCustomizerProvider> customizerProviders;
-
+    /**
+     * Creates a new instance using the {@link DefaultImportCustomizerProvider}.
+     */
     public GremlinGroovyScriptEngine() {
         this((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
     }
@@ -141,6 +177,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         this((CompilerCustomizerProvider) importCustomizerProvider);
     }
 
+    /**
+     * Creates a new instance with the specified {@link CompilerCustomizerProvider} objects.
+     */
     public GremlinGroovyScriptEngine(final CompilerCustomizerProvider... compilerCustomizerProviders) {
         final List<CompilerCustomizerProvider> providers = Arrays.asList(compilerCustomizerProviders);
 
@@ -190,6 +229,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         return pluginsFound;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void loadPlugins(final List<GremlinPlugin> plugins) throws GremlinPluginException {
         for (GremlinPlugin gremlinPlugin : plugins) {
@@ -200,11 +242,17 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map[] dependencies() {
         return Grape.listDependencies(loader);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Map<String, Set<String>> imports() {
         final Map<String, Set<String>> m = new HashMap<>();
@@ -215,6 +263,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         return m;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public synchronized void addImports(final Set<String> importStatements) {
         final Set<String> staticImports = new HashSet<>();
@@ -235,7 +286,20 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         reset();
     }
 
+    /**
+     * Get the list of loaded plugins.
+     *
+     * @deprecated As of release 3.0.1, replaced by {@link #getPlugins()}
+     */
+    @Deprecated
     public Set plugins() {
+        return loadedPlugins;
+    }
+
+    /**
+     * Get the list of loaded plugins.
+     */
+    public Set getPlugins() {
         return loadedPlugins;
     }
 
@@ -243,6 +307,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     public void close() throws Exception {
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void reset() {
         createClassLoader();
@@ -260,15 +327,17 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
     }
 
-    private void use(final Artifact artifact) {
-        use(artifact.getGroup(), artifact.getArtifact(), artifact.getVersion());
-    }
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object eval(final Reader reader, final ScriptContext context) throws ScriptException {
         return eval(readFully(reader), context);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object eval(final String script, final ScriptContext context) throws ScriptException {
         try {
@@ -298,11 +367,17 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         }
     }
 
+    /**
+     * Create bindings to be used by this {@code ScriptEngine}.  In this case, {@link SimpleBindings} are returned.
+     */
     @Override
     public Bindings createBindings() {
         return new SimpleBindings();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ScriptEngineFactory getFactory() {
         if (factory == null) {
@@ -315,6 +390,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         return this.factory;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CompiledScript compile(final String scriptSource) throws ScriptException {
         try {
@@ -326,6 +404,9 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CompiledScript compile(final Reader reader) throws ScriptException {
         return compile(readFully(reader));
@@ -486,6 +567,10 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         customizerProviders.forEach(p -> conf.addCompilationCustomizers(p.create()));
 
         this.loader = new GremlinGroovyClassLoader(getParentLoader(), conf);
+    }
+
+    private void use(final Artifact artifact) {
+        use(artifact.getGroup(), artifact.getArtifact(), artifact.getVersion());
     }
 
     private Object callGlobal(final String name, final Object args[]) {
