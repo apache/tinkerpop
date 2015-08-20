@@ -73,8 +73,11 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * This {@code ScriptEngine} implementation is heavily adapted from the {@code GroovyScriptEngineImpl} to include
- * some additional functionality.
+ * Provides methods to compile and evaluate Gremlin scripts. Compiled scripts are stored in a managed cache to cut
+ * down on compilation times of future evaluations of the same script.  This {@code ScriptEngine} implementation is
+ * heavily adapted from the {@code GroovyScriptEngineImpl} to include some additional functionality.
+ *
+ * @see org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
