@@ -27,10 +27,6 @@ import org.apache.tinkerpop.gremlin.groovy.util.DependencyGrabber
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 
-import java.nio.file.*
-import java.util.jar.JarFile
-import java.util.jar.Manifest
-
 /**
  * Install a dependency into the console.
  *
