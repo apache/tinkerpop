@@ -130,7 +130,15 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
     private final List<CompilerCustomizerProvider> customizerProviders;
 
     public GremlinGroovyScriptEngine() {
-        this(new DefaultImportCustomizerProvider());
+        this((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
+    }
+
+    /**
+     * @deprecated As of release 3.0.1, replaced by {@link #GremlinGroovyScriptEngine(CompilerCustomizerProvider...)}
+     */
+    @Deprecated
+    public GremlinGroovyScriptEngine(final ImportCustomizerProvider importCustomizerProvider) {
+        this((CompilerCustomizerProvider) importCustomizerProvider);
     }
 
     public GremlinGroovyScriptEngine(final CompilerCustomizerProvider... compilerCustomizerProviders) {
