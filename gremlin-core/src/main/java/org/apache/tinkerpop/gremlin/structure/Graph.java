@@ -397,6 +397,7 @@ public interface Graph extends AutoCloseable, Host {
             public static final String FEATURE_TRANSACTIONS = "Transactions";
             public static final String FEATURE_PERSISTENCE = "Persistence";
             public static final String FEATURE_THREADED_TRANSACTIONS = "ThreadedTransactions";
+            public static final String FEATURE_CONCURRENT_ACCESS = "ConcurrentAccess";
 
             /**
              * Determines if the {@code Graph} implementation supports
@@ -415,6 +416,18 @@ public interface Graph extends AutoCloseable, Host {
              */
             @FeatureDescriptor(name = FEATURE_PERSISTENCE)
             public default boolean supportsPersistence() {
+                return true;
+            }
+
+            /**
+             * Determines if the {@code Graph} implementation supports more than one connection to the same instance
+             * at the same time.  For example, Neo4j embedded does not support this feature because concurrent
+             * access to the same database files by multiple instances is not possible.  However, Neo4j HA could
+             * support this feature as each new {@code Graph} instance coordinates with the Neo4j cluster allowing
+             * multiple instances to operate on the same database.
+             */
+            @FeatureDescriptor(name = FEATURE_CONCURRENT_ACCESS)
+            public default boolean supportsConcurrentAccess() {
                 return true;
             }
 
