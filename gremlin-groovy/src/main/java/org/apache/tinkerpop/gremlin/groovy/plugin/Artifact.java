@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.groovy.plugin;
 
 /**
+ * A software artifact identified by its maven coordinates.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class Artifact {
@@ -26,6 +28,13 @@ public class Artifact {
     private final String artifact;
     private final String version;
 
+    /**
+     * Create a new instance.
+     *
+     * @param group the {@code groupId}
+     * @param artifact the {@code artifactId}
+     * @param version the {@code version}
+     */
     public Artifact(final String group, final String artifact, final String version) {
         if (group == null || group.isEmpty())
             throw new IllegalArgumentException("group cannot be null or empty");

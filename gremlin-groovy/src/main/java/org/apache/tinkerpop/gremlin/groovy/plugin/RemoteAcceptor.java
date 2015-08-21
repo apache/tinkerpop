@@ -24,6 +24,14 @@ import java.io.Closeable;
 import java.util.List;
 
 /**
+ * The Gremlin Console supports the {@code :remote} and {@code :submit} commands which provide standardized ways
+ * for plugins to provide "remote connections" to resources and a way to "submit" a command to those resources.
+ * A "remote connection" does not necessarily have to be a remote server.  It simply refers to a resource that is
+ * external to the console.
+ * <p/>
+ * By implementing this interface and returning an instance of it through {@link GremlinPlugin#remoteAcceptor()} a
+ * plugin can hook into those commands and provide remoting features.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface RemoteAcceptor extends Closeable {
@@ -31,8 +39,8 @@ public interface RemoteAcceptor extends Closeable {
     public static final String RESULT = "result";
 
     /**
-     * Gets called when :remote is used in conjunction with the "connect" option.  It is up to the implementation
-     * to decide how additional arguments on the line should be treated after "connect".
+     * Gets called when {@code :remote} is used in conjunction with the "connect" option.  It is up to the
+     * implementation to decide how additional arguments on the line should be treated after "connect".
      *
      * @return an object to display as output to the user
      * @throws org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with connecting
@@ -40,8 +48,8 @@ public interface RemoteAcceptor extends Closeable {
     public Object connect(final List<String> args) throws RemoteException;
 
     /**
-     * Gets called when :remote is used in conjunction with the "config" option.  It is up to the implementation
-     * to decide how additional arguments on the line should be treated after "config".
+     * Gets called when {@code :remote} is used in conjunction with the {@code config} option.  It is up to the
+     * implementation to decide how additional arguments on the line should be treated after {@code config}.
      *
      * @return an object to display as output to the user
      * @throws org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with configuration
@@ -49,8 +57,8 @@ public interface RemoteAcceptor extends Closeable {
     public Object configure(final List<String> args) throws RemoteException;
 
     /**
-     * Gets called when :submit is executed.  It is up to the implementation to decide how additional arguments on
-     * the line should be treated after "submit".
+     * Gets called when {@code :submit} is executed.  It is up to the implementation to decide how additional
+     * arguments on the line should be treated after {@code :submit}.
      *
      * @return an object to display as output to the user
      * @throws org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException if there is a problem with submission

@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Plugin for the "credentials graph".  This plugin imports the {@link CredentialGraph} to its environment.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class CredentialGraphGremlinPlugin extends AbstractGremlinPlugin {
@@ -41,13 +43,13 @@ public class CredentialGraphGremlinPlugin extends AbstractGremlinPlugin {
         return "tinkerpop.credentials";
     }
 
-    @Override
-    public void pluginTo(final PluginAcceptor pluginAcceptor) throws PluginInitializationException, IllegalEnvironmentException {
-        pluginAcceptor.addImports(IMPORTS);
-    }
-
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Adds imports for the {@link CredentialGraph}.
+     */
     @Override
     public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
-
+        pluginAcceptor.addImports(IMPORTS);
     }
 }

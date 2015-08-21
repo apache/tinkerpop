@@ -18,18 +18,24 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.plugin;
 
+import org.apache.tinkerpop.gremlin.groovy.jsr223.DependencyManager;
+
 import javax.script.ScriptException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 /**
+ * A {@link GremlinPlugin} can be used in multiple environments (e.g. ScriptEngine implementation).  Any environment
+ * wishing to allow plugins should implement the {@code PluginAcceptor}.  It acts as an adapter to those environments
+ * and provides the abstractions required for a plugin to work regardless of the environmental implementations.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public interface PluginAcceptor {
     /**
-     * If the {@code PluginAcceptor} implements the DependencyManager interface it will try to import the specified
-     * import statements.
+     * If the {@code PluginAcceptor} implements the {@link DependencyManager} interface it will try to import the
+     * specified import statements.
      */
     public void addImports(final Set<String> importStatements);
 
