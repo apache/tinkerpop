@@ -22,15 +22,21 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
@@ -61,6 +67,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX();
+
+    public abstract Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_by_byXorderXlocalX_byXname_decrXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -214,6 +222,26 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_group_byXlabelX_by_byXorderXlocalX_byXname_decrXX() {
+        final Traversal<Vertex, Map<String, List<Vertex>>> traversal = get_g_V_group_byXlabelX_by_byXorderXlocalX_byXname_decrXX();
+        printTraversalForm(traversal);
+        final Map<String, List<Vertex>> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        List list = map.get("software");
+        assertEquals(2, list.size());
+        assertEquals(convertToVertex(graph, "lop"), list.get(1));
+        assertEquals(convertToVertex(graph, "ripple"), list.get(0));
+        list = map.get("person");
+        assertEquals(4, list.size());
+        assertEquals(convertToVertex(graph, "josh"), list.get(3));
+        assertEquals(convertToVertex(graph, "marko"), list.get(2));
+        assertEquals(convertToVertex(graph, "peter"), list.get(1));
+        assertEquals(convertToVertex(graph, "vadas"), list.get(0));
+    }
+
     public static class Traversals extends OrderTest {
 
         @Override
@@ -250,7 +278,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_outXcreatedX_asXbX_order_byXshuffleX_selectXa_bX() {
-            return g.V().as("a").out("created").as("b").order().by(Order.shuffle).select("a","b");
+            return g.V().as("a").out("created").as("b").order().by(Order.shuffle).select("a", "b");
         }
 
         @Override
@@ -268,6 +296,11 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
             return g.V().order().by(outE().count(), Order.decr);
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_by_byXorderXlocalX_byXname_decrXX() {
+            return g.V().<String, List<Vertex>>group().by(T.label).by().by(__.order(Scope.local).by("name", Order.decr));
         }
 
     }

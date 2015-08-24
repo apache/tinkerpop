@@ -570,7 +570,10 @@ public interface Graph extends AutoCloseable, Host {
 
             /**
              * Determines if an {@link Element} can have a user defined identifier.  Implementation that do not support
-             * this feature will be expected to auto-generate unique identifiers.
+             * this feature will be expected to auto-generate unique identifiers.  In other words, if the {@link Graph}
+             * allows {@code graph.addVertex(id,x)} to work and thus set the identifier of the newly added
+             * {@link Vertex} to the value of {@code x} then this feature should return true.  In this case, {@code x}
+             * is assumed to be an identifier datat ype that the {@link Graph} will accept.
              */
             @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
             public default boolean supportsUserSuppliedIds() {
@@ -578,7 +581,12 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
-             * Determines if an {@link Element} has numeric identifiers as their internal representation.
+             * Determines if an {@link Element} has numeric identifiers as their internal representation. In other
+             * words, if the value returned from {@link Element#id()} is a numeric value then this method
+             * should be return {@code true}.
+             * <p/>
+             * Note that this feature is most generally used for determining the appropriate tests to execute in the
+             * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_NUMERIC_IDS)
             public default boolean supportsNumericIds() {
@@ -586,7 +594,12 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
-             * Determines if an {@link Element} has string identifiers as their internal representation.
+             * Determines if an {@link Element} has string identifiers as their internal representation. In other
+             * words, if the value returned from {@link Element#id()} is a string value then this method
+             * should be return {@code true}.
+             * <p/>
+             * Note that this feature is most generally used for determining the appropriate tests to execute in the
+             * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_STRING_IDS)
             public default boolean supportsStringIds() {
@@ -594,7 +607,12 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
-             * Determines if an {@link Element} has UUID identifiers as their internal representation.
+             * Determines if an {@link Element} has UUID identifiers as their internal representation. In other
+             * words, if the value returned from {@link Element#id()} is a {@link UUID} value then this method
+             * should be return {@code true}.
+             * <p/>
+             * Note that this feature is most generally used for determining the appropriate tests to execute in the
+             * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_UUID_IDS)
             public default boolean supportsUuidIds() {
@@ -603,6 +621,11 @@ public interface Graph extends AutoCloseable, Host {
 
             /**
              * Determines if an {@link Element} has a specific custom object as their internal representation.
+             * In other words, if the value returned from {@link Element#id()} is a type defined by the graph
+             * implementations, such as OrientDB's {@code Rid}, then this method should be return {@code true}.
+             * <p/>
+             * Note that this feature is most generally used for determining the appropriate tests to execute in the
+             * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)
             public default boolean supportsCustomIds() {
@@ -610,8 +633,13 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
-             * Determines if an {@link Element} any Java object is a suitable identifier.  Note that this
-             * setting can only return true if {@link #supportsUserSuppliedIds()} is true.
+             * Determines if an {@link Element} any Java object is a suitable identifier. TinkerGraph is a good
+             * example of a {@link Graph} that can support this feature, as it can use any {@link Object} as
+             * a value for the identifier.
+             * <p/>
+             * Note that this feature is most generally used for determining the appropriate tests to execute in the
+             * Gremlin Test Suite. This setting should only return {@code true} if {@link #supportsUserSuppliedIds()}
+             * is {@code true}.
              */
             @FeatureDescriptor(name = FEATURE_ANY_IDS)
             public default boolean supportsAnyIds() {

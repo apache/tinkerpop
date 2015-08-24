@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -80,6 +80,11 @@ public abstract class GroovyOrderTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX() {
             TraversalScriptHelper.compute("g.V.order.by(__.outE.count, decr)", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_by_byXorderXlocalX_byXname_decrXX() {
+            TraversalScriptHelper.compute("g.V.group.by(label).by.by(order(local).by('name', decr))", g)
         }
     }
 }
