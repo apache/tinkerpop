@@ -872,7 +872,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> times(final int maxLoops) {
-        return this.until(__.loops().is(maxLoops));
+        return this.until(new LoopTraversal<>(maxLoops));
     }
 
     public default <E2> GraphTraversal<S, E2> local(final Traversal<?, E2> localTraversal) {

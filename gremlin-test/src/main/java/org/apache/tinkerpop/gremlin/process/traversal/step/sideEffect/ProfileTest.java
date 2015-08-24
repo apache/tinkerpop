@@ -209,24 +209,13 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         assertTrue("Times should be positive.", metrics.getDuration(TimeUnit.MICROSECONDS) >= 0);
 
         // Test the nested global metrics of the repeat step
-        final Metrics loopsStepNestedInRepeat = (Metrics) metrics.getNested().toArray()[0];
-        assertEquals(96, loopsStepNestedInRepeat.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
-        assertEquals(96, loopsStepNestedInRepeat.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
-        assertTrue("Times should be positive.", loopsStepNestedInRepeat.getDuration(TimeUnit.MICROSECONDS) >= 0);
-
-        final Metrics isStepNestedInRepeat = (Metrics) metrics.getNested().toArray()[1];
-        // TODO: the following 2 assertions are pretty questionable (see issue TINKERPOP3-763)
-        assertEquals(0, isStepNestedInRepeat.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
-        assertEquals(0, isStepNestedInRepeat.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
-        assertTrue("Times should be positive.", isStepNestedInRepeat.getDuration(TimeUnit.MICROSECONDS) >= 0);
-
-        final Metrics vertexStepNestedInRepeat = (Metrics) metrics.getNested().toArray()[2];
+        final Metrics vertexStepNestedInRepeat = (Metrics) metrics.getNested().toArray()[0];
         assertEquals(114, vertexStepNestedInRepeat.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
         assertNotEquals(0, vertexStepNestedInRepeat.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
         assertTrue("Count should be greater than traversers.", vertexStepNestedInRepeat.getCount(TraversalMetrics.ELEMENT_COUNT_ID) > vertexStepNestedInRepeat.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
         assertTrue("Times should be positive.", vertexStepNestedInRepeat.getDuration(TimeUnit.MICROSECONDS) >= 0);
 
-        final Metrics repeatEndStepNestedInRepeat = (Metrics) metrics.getNested().toArray()[3];
+        final Metrics repeatEndStepNestedInRepeat = (Metrics) metrics.getNested().toArray()[1];
         assertEquals(72, repeatEndStepNestedInRepeat.getCount(TraversalMetrics.ELEMENT_COUNT_ID).longValue());
         assertNotEquals(0, repeatEndStepNestedInRepeat.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
         assertTrue("Count should be greater than traversers.", repeatEndStepNestedInRepeat.getCount(TraversalMetrics.ELEMENT_COUNT_ID) > repeatEndStepNestedInRepeat.getCount(TraversalMetrics.TRAVERSER_COUNT_ID).longValue());
