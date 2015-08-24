@@ -258,7 +258,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
             this.configuration.setProperty(BULK_LOADER_CLASS, bulkLoaderClass.getCanonicalName());
             if (configuration != null) {
                 configuration.getKeys().forEachRemaining(key -> this.configuration.addProperty(
-                        BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX + "." + key, configuration.getProperty(key)
+                        BULK_LOADER_CFG_PREFIX + "." + key, configuration.getProperty(key)
                 ));
             }
             return this;
