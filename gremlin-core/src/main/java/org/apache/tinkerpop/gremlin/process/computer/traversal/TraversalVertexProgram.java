@@ -61,7 +61,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 
@@ -155,9 +154,10 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
 
             final GraphStep<Element> graphStep = (GraphStep<Element>) this.traversal.getStartStep();
             final String future = graphStep.getNextStep().getId();
+            final boolean elementIds = graphStep.getIds().length > 0 && graphStep.getIds()[0] instanceof Element;
             final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
             if (graphStep.returnsVertex()) {  // VERTICES (process the first step locally)
-                if (ElementHelper.idExists(vertex.id(), graphStep.getIds())) {
+                if (elementIds ? ElementHelper.elementExists(vertex, graphStep.getIds()) : ElementHelper.idExists(vertex.id(), graphStep.getIds())) {
                     final Traverser.Admin<Element> traverser = traverserGenerator.generate(vertex, graphStep, 1l);
                     traverser.setStepId(future);
                     traverser.detach();
@@ -170,9 +170,9 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
                 boolean voteToHalt = true;
                 final Iterator<Edge> starts = vertex.edges(Direction.OUT);
                 while (starts.hasNext()) {
-                    final Edge start = starts.next();
-                    if (ElementHelper.idExists(start.id(), graphStep.getIds())) {
-                        final Traverser.Admin<Element> traverser = traverserGenerator.generate(start, graphStep, 1l);
+                    final Edge edge = starts.next();
+                    if (elementIds ? ElementHelper.elementExists(edge, graphStep.getIds()) : ElementHelper.idExists(edge.id(), graphStep.getIds())) {
+                        final Traverser.Admin<Element> traverser = traverserGenerator.generate(edge, graphStep, 1l);
                         traverser.setStepId(future);
                         traverser.detach();
                         if (traverser.isHalted())

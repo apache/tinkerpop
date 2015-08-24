@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.Supplier;
@@ -46,11 +47,10 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
     public GraphStep(final Traversal.Admin traversal, final Class<S> returnClass, final Object... ids) {
         super(traversal);
         this.returnClass = returnClass;
-        this.ids = ids;
-
+        this.ids = (ids.length == 1 && ids[0] instanceof Collection) ? ((Collection) ids[0]).toArray(new Object[((Collection) ids[0]).size()]) : ids;
         this.iteratorSupplier = () -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ?
-                    this.getTraversal().getGraph().get().vertices(this.ids) :
-                    this.getTraversal().getGraph().get().edges(this.ids));
+                this.getTraversal().getGraph().get().vertices(this.ids) :
+                this.getTraversal().getGraph().get().edges(this.ids));
     }
 
     public String toString() {
