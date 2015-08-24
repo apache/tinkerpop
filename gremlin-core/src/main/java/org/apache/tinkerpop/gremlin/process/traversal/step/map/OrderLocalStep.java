@@ -26,7 +26,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalCompara
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -45,7 +52,7 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Compara
     protected S map(final Traverser.Admin<S> traverser) {
         final S start = traverser.get();
         if (start instanceof Collection)
-            return (S) OrderLocalStep.sortCollection((List) start, this.chainedComparator);
+            return (S) OrderLocalStep.sortCollection((Collection) start, this.chainedComparator);
         else if (start instanceof Map)
             return (S) OrderLocalStep.sortMap((Map) start, this.chainedComparator);
         else
