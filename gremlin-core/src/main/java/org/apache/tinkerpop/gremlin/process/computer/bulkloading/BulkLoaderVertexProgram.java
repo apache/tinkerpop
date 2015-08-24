@@ -145,8 +145,14 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         if (null != graph) {
             if (graph.features().graph().supportsTransactions()) {
                 LOGGER.info("Committing transaction on Graph instance: {}", graph);
-                graph.tx().commit(); // TODO will Giraph/MR restart the program and re-run execute if this fails?
-                LOGGER.debug("Committed transaction on Graph instance: {}", graph);
+                try {
+                    graph.tx().commit(); // TODO will Giraph/MR restart the program and re-run execute if this fails?
+                    LOGGER.debug("Committed transaction on Graph instance: {}", graph);
+                } catch (Exception e) {
+                    LOGGER.error("Failed to commit transaction on Graph instance: {}", graph);
+                    graph.tx().rollback();
+                    throw e;
+                }
             }
             try {
                 graph.close();
@@ -160,6 +166,17 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
 
     @Override
     public void execute(final Vertex sourceVertex, final Messenger<Tuple> messenger, final Memory memory) {
+        try {
+            executeInternal(sourceVertex, messenger, memory);
+        } catch (Exception e) {
+            if (graph.features().graph().supportsTransactions()) {
+                graph.tx().rollback();
+            }
+            throw e;
+        }
+    }
+
+    private void executeInternal(final Vertex sourceVertex, final Messenger<Tuple> messenger, final Memory memory) {
         if (memory.isInitialIteration()) {
             // get or create the vertex
             final Vertex targetVertex = bulkLoader.getOrCreateVertex(sourceVertex, graph, g);
