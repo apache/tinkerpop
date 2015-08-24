@@ -421,8 +421,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 this.scopeKeys = new HashSet<>();
                 if (null != this.selectKey)
                     this.scopeKeys.add(this.selectKey);
-                if (this.getNextStep() instanceof Scoping)
-                    this.scopeKeys.addAll(((Scoping) this.getNextStep()).getScopeKeys());
+                if (this.getNextStep() instanceof WhereTraversalStep || this.getNextStep() instanceof WherePredicateStep)
+                   this.scopeKeys.addAll(((Scoping) this.getNextStep()).getScopeKeys());
                 this.scopeKeys = Collections.unmodifiableSet(this.scopeKeys);
             }
             return this.scopeKeys;
