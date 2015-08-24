@@ -31,9 +31,15 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
  */
 public class DefaultBulkLoader implements BulkLoader {
 
+    public final static String USE_USER_SUPPLIED_IDS_CFG_KEY = "use-user-supplied-ids";
+    public final static String STORE_ORIGINAL_IDS_CFG_KEY = "store-original-ids";
+
     private boolean storeOriginalIds = false;
     private boolean useUserSuppliedIds = false;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Vertex getOrCreateVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
         if (useUserSuppliedIds()) {
@@ -46,6 +52,9 @@ public class DefaultBulkLoader implements BulkLoader {
         return v;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Edge getOrCreateEdge(final Edge edge, final Vertex outVertex, final Vertex inVertex, final Graph graph, final GraphTraversalSource g) {
         final Edge e = outVertex.addEdge(edge.label(), inVertex);
@@ -53,6 +62,9 @@ public class DefaultBulkLoader implements BulkLoader {
         return e;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public VertexProperty getOrCreateVertexProperty(final VertexProperty<?> property, final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
         final VertexProperty<?> vp = vertex.property(property.key(), property.value());
@@ -60,6 +72,9 @@ public class DefaultBulkLoader implements BulkLoader {
         return vp;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Vertex getVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
         return useUserSuppliedIds()
@@ -67,23 +82,32 @@ public class DefaultBulkLoader implements BulkLoader {
                 : g.V().has(vertex.label(), BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID, vertex.id()).next();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean useUserSuppliedIds() {
         return useUserSuppliedIds;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean storeOriginalIds() {
         return storeOriginalIds;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void configure(final Configuration configuration) {
-        if (configuration.containsKey("use-user-supplied-ids")) {
-            useUserSuppliedIds = configuration.getBoolean("use-user-supplied-ids");
+        if (configuration.containsKey(USE_USER_SUPPLIED_IDS_CFG_KEY)) {
+            useUserSuppliedIds = configuration.getBoolean(USE_USER_SUPPLIED_IDS_CFG_KEY);
         }
-        if (configuration.containsKey("store-original-ids")) {
-            storeOriginalIds = configuration.getBoolean("store-original-ids");
+        if (configuration.containsKey(STORE_ORIGINAL_IDS_CFG_KEY)) {
+            storeOriginalIds = configuration.getBoolean(STORE_ORIGINAL_IDS_CFG_KEY);
         }
     }
 }

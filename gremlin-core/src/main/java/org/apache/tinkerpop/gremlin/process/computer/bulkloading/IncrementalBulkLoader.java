@@ -28,7 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.NoSuchElementException;
+import java.util.Iterator;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -37,20 +37,20 @@ public class IncrementalBulkLoader extends DefaultBulkLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IncrementalBulkLoader.class);
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Vertex getOrCreateVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
-        if (useUserSuppliedIds()) {
-            try {
-                return getVertexById(vertex.id(), graph, g);
-            } catch (NoSuchElementException ignored) {
-            }
-        } else {
-            final Traversal<Vertex, Vertex> t = g.V().has(vertex.label(), BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID, vertex.id());
-            if (t.hasNext()) return t.next();
-        }
-        return super.getOrCreateVertex(vertex, graph, g);
+        final Iterator<Vertex> iterator = useUserSuppliedIds()
+                ? graph.vertices(vertex.id())
+                : g.V().has(vertex.label(), BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID, vertex.id());
+        return iterator.hasNext() ? iterator.next() : super.getOrCreateVertex(vertex, graph, g);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Edge getOrCreateEdge(final Edge edge, final Vertex outVertex, final Vertex inVertex, final Graph graph, final GraphTraversalSource g) {
         final Traversal<Vertex, Edge> t = g.V(outVertex).outE(edge.label()).filter(__.inV().is(inVertex));
@@ -62,17 +62,23 @@ public class IncrementalBulkLoader extends DefaultBulkLoader {
         return super.getOrCreateEdge(edge, outVertex, inVertex, graph, g);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean storeOriginalIds() {
         return !useUserSuppliedIds();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void configure(final Configuration configuration) {
         super.configure(configuration);
-        if (configuration.containsKey("store-original-ids")) {
+        if (configuration.containsKey(STORE_ORIGINAL_IDS_CFG_KEY)) {
             LOGGER.warn("{} automatically determines whether original identifiers should be stored or not, hence the " +
-                    "configuration setting 'store-original-ids' will be ignored.", this.getClass());
+                    "configuration setting '{}' will be ignored.", this.getClass(), STORE_ORIGINAL_IDS_CFG_KEY);
         }
     }
 }

@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -58,19 +59,18 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     private static final String BULK_LOADER_CLASS = BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX + ".class";
     private static final String BULK_LOADER_CFG_PREFIX = BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX + ".loader";
 
-    public static final String BULK_LOADER_VERTEX_ID = BulkLoaderVertexProgram.class.getCanonicalName() + "bulkloader.vertex-id";
+    public static final String BULK_LOADER_VERTEX_ID = "bulkloader.vertex-id";
 
-    private MessageScope messageScope = MessageScope.Local.of(__::inE);
+    private final MessageScope messageScope;
+    private final Set<String> elementComputeKeys;
     private Configuration configuration;
+    private BulkLoader bulkLoader;
     private Graph graph;
     private GraphTraversalSource g;
-    private BulkLoader bulkLoader;
-    private Set<String> elementComputeKeys = new HashSet<String>() {{
-        add(BULK_LOADER_VERTEX_ID);
-    }};
 
     private BulkLoaderVertexProgram() {
-
+        messageScope = MessageScope.Local.of(__::inE);
+        elementComputeKeys = Collections.singleton(BULK_LOADER_VERTEX_ID);
     }
 
     @Override

@@ -101,5 +101,10 @@ public interface BulkLoader {
         return !useUserSuppliedIds();
     }
 
+    /**
+     * Configures the BulkLoader instance.
+     *
+     * @param configuration The BulkLoader configuration.
+     */
     public void configure(final Configuration configuration);
 }
