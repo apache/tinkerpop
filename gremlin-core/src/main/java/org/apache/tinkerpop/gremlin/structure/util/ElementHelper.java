@@ -550,17 +550,4 @@ public final class ElementHelper {
             return false;
         }
     }
-
-    public static boolean elementExists(final Element element, final Object... providedElements) {
-        if (0 == providedElements.length) return true;
-
-        if (1 == providedElements.length) return ElementHelper.areEqual(element, providedElements[0]);
-        else {
-            for (final Object temp : providedElements) {
-                if (ElementHelper.areEqual(element, temp))
-                    return true;
-            }
-            return false;
-        }
-    }
 }
