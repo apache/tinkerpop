@@ -105,27 +105,36 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         if (null == graph) {
             graph = GraphFactory.open(configuration);
             LOGGER.info("Opened Graph instance: {}", graph);
-            if (!graph.features().graph().supportsConcurrentAccess()) {
-                throw new IllegalStateException("The given graph instance does not allow concurrent access.");
-            }
-            if (graph.features().graph().supportsTransactions()) {
-                if (!graph.features().graph().supportsThreadedTransactions()) {
-                    throw new IllegalStateException("The given graph instance does not support threaded transactions.");
-                }
-            }
-            g = graph.traversal();
-            final String bulkLoaderClassName = configuration.getString(BULK_LOADER_CLASS, DefaultBulkLoader.class.getCanonicalName());
             try {
-                final Class<?> bulkLoaderClass = Class.forName(bulkLoaderClassName);
-                bulkLoader = (BulkLoader) bulkLoaderClass.getConstructor().newInstance();
-            } catch (ClassNotFoundException e) {
-                LOGGER.error("Unable to find custom bulk loader class: {}", bulkLoaderClassName);
-                throw new IllegalStateException(e);
+                if (!graph.features().graph().supportsConcurrentAccess()) {
+                    throw new IllegalStateException("The given graph instance does not allow concurrent access.");
+                }
+                if (graph.features().graph().supportsTransactions()) {
+                    if (!graph.features().graph().supportsThreadedTransactions()) {
+                        throw new IllegalStateException("The given graph instance does not support threaded transactions.");
+                    }
+                }
+                g = graph.traversal();
+                final String bulkLoaderClassName = configuration.getString(BULK_LOADER_CLASS, DefaultBulkLoader.class.getCanonicalName());
+                try {
+                    final Class<?> bulkLoaderClass = Class.forName(bulkLoaderClassName);
+                    bulkLoader = (BulkLoader) bulkLoaderClass.getConstructor().newInstance();
+                } catch (ClassNotFoundException e) {
+                    LOGGER.error("Unable to find custom bulk loader class: {}", bulkLoaderClassName);
+                    throw new IllegalStateException(e);
+                } catch (Exception e) {
+                    LOGGER.error("Unable to create an instance of the given bulk loader class: {}", bulkLoaderClassName);
+                    throw new IllegalStateException(e);
+                }
+                bulkLoader.configure(configuration.subset(BULK_LOADER_CFG_PREFIX));
             } catch (Exception e) {
-                LOGGER.error("Unable to create an instance of the given bulk loader class: {}", bulkLoaderClassName);
-                throw new IllegalStateException(e);
+                try {
+                    graph.close();
+                } catch (Exception e2) {
+                    LOGGER.warn("Failed to close Graph instance", e2);
+                }
+                throw e;
             }
-            bulkLoader.configure(configuration.subset(BULK_LOADER_CFG_PREFIX));
         } else {
             LOGGER.warn("Leaked Graph instance: {}", graph);
         }
