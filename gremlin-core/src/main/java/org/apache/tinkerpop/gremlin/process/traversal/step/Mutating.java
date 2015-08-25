@@ -34,4 +34,9 @@ public interface Mutating<E extends Event> {
      * Gets the callback registry for events that the step raises.
      */
     public CallbackRegistry<E> getMutatingCallbackRegistry();
+
+    public default void addPropertyMutations(final Object... keyValues) {
+
+    }
+
 }

@@ -105,20 +105,21 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
         // in each case below, determine if the T.id is present and if so, replace T.id with the idPropertyKey or if
         // it is not present then shove it in there and generate an id
         TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal).stream().forEach(s -> {
-            if (ElementHelper.getIdValue(s.getKeyValues()).isPresent())
-                TraversalHelper.replaceStep(s, new AddVertexStep(traversal, ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
-            else {
+            if (ElementHelper.getIdValue(s.getKeyValues()).isPresent()) {
+
+                //TraversalHelper.replaceStep(s, new AddVertexStep(traversal, ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
+            } else {
                 final Object[] kvs = ElementHelper.getKeys(s.getKeyValues()).contains(idPropertyKey) ? s.getKeyValues() : ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get());
-                TraversalHelper.replaceStep(s, new AddVertexStep(traversal, kvs), traversal);
+                // TraversalHelper.replaceStep(s, new AddVertexStep(traversal, kvs), traversal);
             }
         });
 
         TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal).stream().forEach(s -> {
-            if (ElementHelper.getIdValue(s.getKeyValues()).isPresent())
-                TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
-            else {
+            if (ElementHelper.getIdValue(s.getKeyValues()).isPresent()) {
+                // TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
+            } else {
                 final Object[] kvs = ElementHelper.getKeys(s.getKeyValues()).contains(idPropertyKey) ? s.getKeyValues() : ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get());
-                TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, kvs), traversal);
+                // TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, kvs), traversal);
             }
 
         });

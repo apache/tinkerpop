@@ -61,7 +61,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         graph.addVertex("some", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.V().addV("any", "thing").next();
+        gts.V().addV().property("any", "thing").next();
 
         tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing"))));
         assertEquals(1, listener1.addVertexEventRecorded());
@@ -84,7 +84,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         graph.addVertex("some", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.addV("any", "thing").next();
+        gts.addV().property("any", "thing").next();
 
         tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing"))));
         assertEquals(1, listener1.addVertexEventRecorded());
@@ -193,7 +193,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final Vertex vSome = graph.addVertex("some", "thing");
         vSome.property(VertexProperty.Cardinality.single, "that", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.V().addV("any", "thing").property(VertexProperty.Cardinality.single, "this", "thing").next();
+        gts.V().addV().property("any", "thing").property(VertexProperty.Cardinality.single, "this", "thing").next();
 
         tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("this", "thing"))));
 
@@ -220,7 +220,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final Vertex vSome = graph.addVertex("some", "thing");
         vSome.property(VertexProperty.Cardinality.single, "that", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
-        final Vertex vAny = gts.V().addV("any", "thing").next();
+        final Vertex vAny = gts.V().addV().property("any", "thing").next();
         gts.V(vAny).property(VertexProperty.Cardinality.single, "any", "thing else").next();
 
         tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing else"))));
@@ -249,7 +249,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final Vertex vSome = graph.addVertex("some", "thing");
         vSome.property(VertexProperty.Cardinality.single, "that", "thing", "is", "good");
         final GraphTraversalSource gts = create(eventStrategy);
-        final Vertex vAny = gts.V().addV("any", "thing").next();
+        final Vertex vAny = gts.V().addV().property("any", "thing").next();
         gts.V(vAny).properties("any").property("is", "bad").next();
 
         tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.V().has("any", "thing"))));
@@ -442,7 +442,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         final Vertex vSome = graph.addVertex("some", "thing");
         vSome.property(VertexProperty.Cardinality.single, "that", "thing", "is", "good");
         final GraphTraversalSource gts = create(eventStrategy);
-        final Vertex vAny = gts.V().addV("any", "thing").next();
+        final Vertex vAny = gts.V().addV().property("any", "thing").next();
         gts.V(vAny).properties("any").property("is", "bad").next();
         gts.V(vAny).properties("any").properties("is").drop().iterate();
 
@@ -471,8 +471,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         graph.addVertex("some", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.V().addV("any", "thing").next();
-        gts.V().addV("any", "one").next();
+        gts.V().addV().property("any", "thing").next();
+        gts.V().addV().property("any", "one").next();
 
         assertEquals(0, listener1.addVertexEventRecorded());
         assertEquals(0, listener2.addVertexEventRecorded());
@@ -499,8 +499,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         graph.addVertex("some", "thing");
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.V().addV("any", "thing").next();
-        gts.V().addV("any", "one").next();
+        gts.V().addV().property("any", "thing").next();
+        gts.V().addV().property("any", "one").next();
 
         assertEquals(0, listener1.addVertexEventRecorded());
         assertEquals(0, listener2.addVertexEventRecorded());
@@ -512,8 +512,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(0, listener2.addVertexEventRecorded());
 
         graph.addVertex("some", "thing");
-        gts.V().addV("any", "thing").next();
-        gts.V().addV("any", "one").next();
+        gts.V().addV().property("any", "thing").next();
+        gts.V().addV().property("any", "one").next();
 
         assertEquals(0, listener1.addVertexEventRecorded());
         assertEquals(0, listener2.addVertexEventRecorded());

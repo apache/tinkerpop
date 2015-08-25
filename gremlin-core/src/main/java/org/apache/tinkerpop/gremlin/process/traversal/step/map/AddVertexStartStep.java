@@ -26,8 +26,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRe
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -35,24 +40,32 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
  */
 public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements Mutating<Event.VertexAddedEvent> {
 
-    private final Object[] keyValues;
+    private List<Object> keyValues = new ArrayList<>();
     private boolean first = true;
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
 
-    public AddVertexStartStep(final Traversal.Admin traversal, final Object... keyValues) {
+    public AddVertexStartStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
-        this.keyValues = keyValues;
+        if (null != label) {
+            this.keyValues.add(T.label);
+            this.keyValues.add(label);
+        }
     }
 
     public Object[] getKeyValues() {
-        return keyValues;
+        return keyValues.toArray(new Object[this.keyValues.size()]);
+    }
+
+    @Override
+    public void addPropertyMutations(final Object... keyValues) {
+        Collections.addAll(this.keyValues, keyValues);
     }
 
     @Override
     protected Traverser<Vertex> processNextStart() {
         if (this.first) {
             this.first = false;
-            final Vertex v = this.getTraversal().getGraph().get().addVertex(this.keyValues);
+            final Vertex v = this.getTraversal().getGraph().get().addVertex(this.keyValues.toArray(new Object[this.keyValues.size()]));
             if (callbackRegistry != null) {
                 final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(DetachedFactory.detach(v, true));
                 callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));

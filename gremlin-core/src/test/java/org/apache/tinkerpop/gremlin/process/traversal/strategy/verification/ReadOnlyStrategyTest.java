@@ -54,7 +54,7 @@ public class ReadOnlyStrategyTest {
                 {"out().properties(k).property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().properties("test").property("test", "that")},
                 {"out().property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().property("test", "test")},
                 {"out().property(Cardinality,k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().property(VertexProperty.Cardinality.list, "test", "test")},
-                {"addV(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV("test", "test", "this", "that")},
+                {"addV(person)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV("person")},
                 {"addV()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV()}});
     }
 

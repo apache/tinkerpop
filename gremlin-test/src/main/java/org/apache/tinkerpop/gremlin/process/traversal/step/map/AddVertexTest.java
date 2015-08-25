@@ -22,10 +22,10 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
@@ -41,9 +41,67 @@ import static org.junit.Assert.assertFalse;
 @RunWith(GremlinProcessRunner.class)
 public abstract class AddVertexTest extends AbstractGremlinTest {
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_0X();
+
+    public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX();
+
+    // 3.0.0 DEPRECATIONS
+    @Deprecated
     public abstract Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X();
 
+    @Deprecated
     public abstract Traversal<Vertex, Vertex> get_g_addVXlabel_person_name_stephenX();
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void g_V_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(convertToVertexId(graph, "marko"));
+        printTraversalForm(traversal);
+        final Vertex vertex = traversal.next();
+        assertEquals("animal", vertex.label());
+        assertEquals(29, vertex.<Integer>value("age").intValue());
+        assertEquals("puppy", vertex.<String>value("name"));
+        assertFalse(traversal.hasNext());
+        assertEquals(7, IteratorUtils.count(graph.vertices()));
+    }
+
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void g_V_addVXanimalX_propertyXage_0X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_addVXanimalX_propertyXage_0X();
+        printTraversalForm(traversal);
+        int count = 0;
+        while (traversal.hasNext()) {
+            final Vertex vertex = traversal.next();
+            assertEquals("animal", vertex.label());
+            assertEquals(0, vertex.<Integer>value("age").intValue());
+            count++;
+        }
+        assertEquals(6, count);
+        assertEquals(12, IteratorUtils.count(graph.vertices()));
+
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void g_addVXpersonX_propertyXname_stephenX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_addVXpersonX_propertyXname_stephenX();
+        printTraversalForm(traversal);
+        final Vertex stephen = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals("person", stephen.label());
+        assertEquals("stephen", stephen.value("name"));
+        assertEquals(1, IteratorUtils.count(stephen.properties()));
+        assertEquals(7, IteratorUtils.count(graph.vertices()));
+    }
+
+    /////
 
     @Test
     @LoadGraphWith(MODERN)
@@ -79,6 +137,21 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
 
 
     public static class Traversals extends AddVertexTest {
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(final Object v1Id) {
+            return g.V(v1Id).as("a").addV("animal").property("age", __.select("a").by("age")).property("name", "puppy");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_0X() {
+            return g.V().addV("animal").property("age", 0);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX() {
+            return g.addV("person").property("name", "stephen");
+        }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X() {

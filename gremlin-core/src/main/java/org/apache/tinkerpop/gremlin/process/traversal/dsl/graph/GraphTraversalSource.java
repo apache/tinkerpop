@@ -90,9 +90,25 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal;
     }
 
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #addV()}
+     */
+    @Deprecated
     public GraphTraversal<Vertex, Vertex> addV(final Object... keyValues) {
         final GraphTraversal.Admin<Vertex, Vertex> traversal = this.generateTraversal();
-        return traversal.addStep(new AddVertexStartStep(traversal, keyValues));
+        traversal.addStep(new AddVertexStartStep(traversal, null));
+        ((AddVertexStartStep) traversal.getEndStep()).addPropertyMutations(keyValues);
+        return traversal;
+    }
+
+    public GraphTraversal<Vertex, Vertex> addV(final String label) {
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = this.generateTraversal();
+        return traversal.addStep(new AddVertexStartStep(traversal, label));
+    }
+
+    public GraphTraversal<Vertex, Vertex> addV() {
+        final GraphTraversal.Admin<Vertex, Vertex> traversal = this.generateTraversal();
+        return traversal.addStep(new AddVertexStartStep(traversal, null));
     }
 
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
@@ -228,8 +244,23 @@ public class GraphTraversalSource implements TraversalSource {
             this.withPaths = withPaths;
         }
 
+        /**
+         * @deprecated As of release 3.1.0, replaced by {@link #addV()}
+         */
+        @Deprecated
         public GraphTraversal<Vertex, Vertex> addV(final Object... keyValues) {
-            this.traversal.addStep(new AddVertexStartStep(this.traversal, keyValues));
+            this.traversal.addStep(new AddVertexStartStep(this.traversal, null));
+            ((AddVertexStartStep) this.traversal.getEndStep()).addPropertyMutations(keyValues);
+            return ((this.withPaths) ? this.traversal.addStep(new PathIdentityStep<>(this.traversal)) : this.traversal);
+        }
+
+        public GraphTraversal<Vertex, Vertex> addV(final String label) {
+            this.traversal.addStep(new AddVertexStartStep(this.traversal, label));
+            return ((this.withPaths) ? this.traversal.addStep(new PathIdentityStep<>(this.traversal)) : this.traversal);
+        }
+
+        public GraphTraversal<Vertex, Vertex> addV() {
+            this.traversal.addStep(new AddVertexStartStep(this.traversal, null));
             return ((this.withPaths) ? this.traversal.addStep(new PathIdentityStep<>(this.traversal)) : this.traversal);
         }
 
