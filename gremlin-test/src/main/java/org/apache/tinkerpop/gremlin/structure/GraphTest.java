@@ -24,8 +24,12 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.GraphProvider;
-import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.util.CustomId;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
+import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
+import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
@@ -43,6 +47,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 /**
@@ -225,6 +231,48 @@ public class GraphTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_UUID_IDS)
+    public void shouldIterateVerticesWithUuidIdSupportUsingDetachedVertex() {
+        // if the graph supports id assigned, it should allow it.  if the graph does not, it will generate one
+        final Vertex v1 = graph.features().vertex().supportsUserSuppliedIds() ? graph.addVertex(T.id, UUID.randomUUID()) : graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(DetachedFactory.detach(v1, true)).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(DetachedVertex.class))));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_UUID_IDS)
+    public void shouldIterateVerticesWithUuidIdSupportUsingReferenceVertex() {
+        // if the graph supports id assigned, it should allow it.  if the graph does not, it will generate one
+        final Vertex v1 = graph.features().vertex().supportsUserSuppliedIds() ? graph.addVertex(T.id, UUID.randomUUID()) : graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(ReferenceFactory.detach(v1)).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(ReferenceVertex.class))));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_UUID_IDS)
+    public void shouldIterateVerticesWithUuidIdSupportUsingStarVertex() {
+        // if the graph supports id assigned, it should allow it.  if the graph does not, it will generate one
+        final Vertex v1 = graph.features().vertex().supportsUserSuppliedIds() ? graph.addVertex(T.id, UUID.randomUUID()) : graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(StarGraph.of(v1).getStarVertex()).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(StarGraph.StarVertex.class))));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_UUID_IDS)
     public void shouldIterateVerticesWithUuidIdSupportUsingVertexId() {
         // if the graph supports id assigned, it should allow it.  if the graph does not, it will generate one
         final Vertex v1 = graph.features().vertex().supportsUserSuppliedIds() ? graph.addVertex(T.id, UUID.randomUUID()) : graph.addVertex();
@@ -302,6 +350,45 @@ public class GraphTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_CUSTOM_IDS)
+    public void shouldIterateVerticesWithCustomIdSupportUsingDetachedVertex() {
+        final Vertex v1 = graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(DetachedFactory.detach(v1, true)).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(DetachedVertex.class))));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_CUSTOM_IDS)
+    public void shouldIterateVerticesWithCustomIdSupportUsingReferenceVertex() {
+        final Vertex v1 = graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(ReferenceFactory.detach(v1)).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(ReferenceVertex.class))));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_CUSTOM_IDS)
+    public void shouldIterateVerticesWithCustomIdSupportUsingStarVertex() {
+        final Vertex v1 = graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(StarGraph.of(v1).getStarVertex()).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(StarGraph.StarVertex.class))));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_CUSTOM_IDS)
     public void shouldIterateVerticesWithCustomIdSupportUsingVertexId() {
         final Vertex v1 = graph.addVertex();
         graph.addVertex();
@@ -369,6 +456,48 @@ public class GraphTest extends AbstractGremlinTest {
         tryCommit(graph, graph -> {
             final Vertex v = graph.vertices(v1).next();
             assertEquals(v1.id(), v.id());
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+    public void shouldIterateVerticesWithNumericSupportUsingDetachedVertex() {
+        // if the graph supports id assigned, it should allow it.  if the graph does not, it will generate one
+        final Vertex v1 = graph.features().vertex().supportsUserSuppliedIds() ? graph.addVertex(T.id, 1l) : graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(DetachedFactory.detach(v1, true)).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(DetachedVertex.class))));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+    public void shouldIterateVerticesWithNumericSupportUsingReferenceVertex() {
+        // if the graph supports id assigned, it should allow it.  if the graph does not, it will generate one
+        final Vertex v1 = graph.features().vertex().supportsUserSuppliedIds() ? graph.addVertex(T.id, 1l) : graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(ReferenceFactory.detach(v1)).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(ReferenceVertex.class))));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_NUMERIC_IDS)
+    public void shouldIterateVerticesWithNumericSupportUsingStarVertex() {
+        // if the graph supports id assigned, it should allow it.  if the graph does not, it will generate one
+        final Vertex v1 = graph.features().vertex().supportsUserSuppliedIds() ? graph.addVertex(T.id, 1l) : graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(StarGraph.of(v1).getStarVertex()).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(StarGraph.StarVertex.class))));
         });
     }
 
@@ -579,6 +708,48 @@ public class GraphTest extends AbstractGremlinTest {
         tryCommit(graph, graph -> {
             final Vertex v = graph.vertices(v1).next();
             assertEquals(v1.id(), v.id());
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
+    public void shouldIterateVerticesWithStringSupportUsingDetachedVertex() {
+        // if the graph supports id assigned, it should allow it.  if the graph does not, it will generate one
+        final Vertex v1 = graph.features().vertex().supportsUserSuppliedIds() ? graph.addVertex(T.id, "1") : graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(DetachedFactory.detach(v1, true)).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(DetachedVertex.class))));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
+    public void shouldIterateVerticesWithStringSupportUsingReferenceVertex() {
+        // if the graph supports id assigned, it should allow it.  if the graph does not, it will generate one
+        final Vertex v1 = graph.features().vertex().supportsUserSuppliedIds() ? graph.addVertex(T.id, "1") : graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(ReferenceFactory.detach(v1)).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(ReferenceVertex.class))));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_STRING_IDS)
+    public void shouldIterateVerticesWithStringSupportUsingStarVertex() {
+        // if the graph supports id assigned, it should allow it.  if the graph does not, it will generate one
+        final Vertex v1 = graph.features().vertex().supportsUserSuppliedIds() ? graph.addVertex(T.id, "1") : graph.addVertex();
+        graph.addVertex();
+        tryCommit(graph, graph -> {
+            final Vertex v = graph.vertices(StarGraph.of(v1).getStarVertex()).next();
+            assertEquals(v1.id(), v.id());
+            assertThat(v, is(not(instanceOf(StarGraph.StarVertex.class))));
         });
     }
 

@@ -187,8 +187,8 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                             return ((Number) id).longValue();
                         else if (id instanceof String)
                             return Long.valueOf(id.toString());
-                        else if (id instanceof Neo4jVertex) {
-                            return (Long) ((Neo4jVertex) id).id();
+                        else if (id instanceof Vertex) {
+                            return (Long) ((Vertex) id).id();
                         } else
                             throw new IllegalArgumentException("Unknown vertex id type: " + id);
                     })
@@ -221,8 +221,8 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                             return ((Number) id).longValue();
                         else if (id instanceof String)
                             return Long.valueOf(id.toString());
-                        else if (id instanceof Neo4jEdge) {
-                            return (Long) ((Neo4jEdge) id).id();
+                        else if (id instanceof Edge) {
+                            return (Long) ((Edge) id).id();
                         } else
                             throw new IllegalArgumentException("Unknown edge id type: " + id);
                     })
