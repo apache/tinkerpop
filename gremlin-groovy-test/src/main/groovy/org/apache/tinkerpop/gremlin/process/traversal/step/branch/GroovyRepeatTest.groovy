@@ -18,9 +18,9 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.branch
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Path
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -73,6 +73,11 @@ public abstract class GroovyRepeatTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
             TraversalScriptHelper.compute("g.V.repeat(groupCount('m').by('name').out).times(2).cap('m')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX() {
+            TraversalScriptHelper.compute("g.V.repeat(both()).times(10).as('a').out().as('b').select('a', 'b')", g);
         }
     }
 }

@@ -357,10 +357,11 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_PERSISTENCE)
-    public void shouldCommitOnCloseByDefault() throws Exception {
+    public void shouldCommitOnCloseWhenConfigured() throws Exception {
         final AtomicReference<Object> oid = new AtomicReference<>();
         final Thread t = new Thread(() -> {
             final Vertex v1 = graph.addVertex("name", "marko");
+            g.tx().onClose(Transaction.CLOSE_BEHAVIOR.COMMIT);
             oid.set(v1.id());
             graph.tx().close();
         });
@@ -375,17 +376,17 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_PERSISTENCE)
-    public void shouldRollbackOnCloseWhenConfigured() throws Exception {
+    public void shouldRollbackOnCloseByDefault() throws Exception {
         final AtomicReference<Object> oid = new AtomicReference<>();
         final AtomicReference<Vertex> vid = new AtomicReference<>();
         final Thread t = new Thread(() -> {
             vid.set(graph.addVertex("name", "stephen"));
             graph.tx().commit();
 
-            final Vertex v1 = graph.addVertex("name", "marko");
-            oid.set(v1.id());
-            g.tx().onClose(Transaction.CLOSE_BEHAVIOR.ROLLBACK);
-            graph.tx().close();
+            try (Transaction ignored = graph.tx()) {
+                final Vertex v1 = graph.addVertex("name", "marko");
+                oid.set(v1.id());
+            }
         });
         t.start();
         t.join();

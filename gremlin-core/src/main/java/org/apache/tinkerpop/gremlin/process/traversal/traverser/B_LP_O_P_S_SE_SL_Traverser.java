@@ -23,22 +23,22 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
+import java.util.Set;
 import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class B_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
+public class B_LP_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     protected Path path;
 
-    protected B_O_P_S_SE_SL_Traverser() {
+    protected B_LP_O_P_S_SE_SL_Traverser() {
     }
 
-    public B_O_P_S_SE_SL_Traverser(final T t, final Step<T, ?> step, final long initialBulk) {
+    public B_LP_O_P_S_SE_SL_Traverser(final T t, final Step<T, ?> step, final long initialBulk) {
         super(t, step, initialBulk);
         this.path = ImmutablePath.make().extend(t, step.getLabels());
     }
@@ -59,27 +59,26 @@ public class B_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
         return this;
     }
 
-    @Override
-    public T attach(final Function<Attachable<T>, T> method) {
-        // you do not want to attach a path because it will reference graph objects not at the current vertex
-        if (this.t instanceof Attachable && !(((Attachable) this.t).get() instanceof Path))
-            this.t = ((Attachable<T>) this.t).attach(method);
-        return this.t;
-    }
-
     /////////////////
 
     @Override
-    public void merge(final Traverser.Admin<?> other) {
-        this.bulk = this.bulk + other.bulk();
+    public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
+        final B_LP_O_P_S_SE_SL_Traverser<R> clone = (B_LP_O_P_S_SE_SL_Traverser<R>) super.split(r, step);
+        clone.path = clone.path.clone().extend(r, step.getLabels());
+        return clone;
     }
 
     @Override
-    public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
-        final B_O_P_S_SE_SL_Traverser<R> clone = (B_O_P_S_SE_SL_Traverser<R>) super.split(r, step);
-        clone.path = clone.path.clone().extend(r, step.getLabels());
+    public Traverser.Admin<T> split() {
+        final B_LP_O_P_S_SE_SL_Traverser<T> clone = (B_LP_O_P_S_SE_SL_Traverser<T>) super.split();
+        clone.path = clone.path.clone();
         return clone;
+    }
 
+    @Override
+    public void addLabels(final Set<String> labels) {
+        if (!labels.isEmpty())
+            this.path = this.path.extend(labels);
     }
 
     @Override
@@ -89,12 +88,12 @@ public class B_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
 
     @Override
     public boolean equals(final Object object) {
-        return (object instanceof B_O_P_S_SE_SL_Traverser)
-                && ((B_O_P_S_SE_SL_Traverser) object).path().equals(this.path)
-                && ((B_O_P_S_SE_SL_Traverser) object).get().equals(this.t)
-                && ((B_O_P_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
-                && ((B_O_P_S_SE_SL_Traverser) object).loops() == this.loops()
-                && (null == this.sack);
+        return (object instanceof B_LP_O_P_S_SE_SL_Traverser)
+                && ((B_LP_O_P_S_SE_SL_Traverser) object).get().equals(this.t)
+                && ((B_LP_O_P_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
+                && ((B_LP_O_P_S_SE_SL_Traverser) object).loops() == this.loops()
+                && (null == this.sack)
+                && ((B_LP_O_P_S_SE_SL_Traverser) object).path().equals(this.path);
     }
 
 }

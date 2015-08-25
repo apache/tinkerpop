@@ -1,0 +1,42 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns
+        http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+    <key id="id-d" for="node" attr.name="d" attr.type="double"/>
+    <key id="id-s" for="node" attr.name="s" attr.type="string"/>
+    <key id="id-i" for="node" attr.name="i" attr.type="int"/>
+    <key id="id-b" for="node" attr.name="b" attr.type="boolean"/>
+    <key id="id-l" for="node" attr.name="l" attr.type="long"/>
+    <key id="id-f" for="node" attr.name="f" attr.type="float"/>
+    <key id="id-n" for="node" attr.name="n" attr.type="nothing-supported-and-goes-to-string"/>
+    <key id="labelV" for="node" attr.name="labelV" attr.type="string"/>
+    <key id="labelE" for="edge" attr.name="labelE" attr.type="string"/>
+    <graph id="G" edgedefault="directed">
+        <node id="1">
+            <data key="id-d"></data>
+            <data key="id-s">some-string</data>
+            <data key="id-i">not-parseable</data>
+            <data key="id-b">blah</data>
+            <data key="id-l"></data>
+            <data key="id-f"></data>
+            <data key="id-n">junk</data>
+            <data key="label">default</data>
+        </node>
+    </graph>
+</graphml>

@@ -40,8 +40,8 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
     protected String id = Traverser.Admin.HALT;
     protected Traversal.Admin traversal;
     protected ExpandableStepIterator<S> starts;
-    protected Traverser<E> nextEnd = null;
-    protected boolean traverserStepIdSetByChild = false;
+    protected Traverser.Admin<E> nextEnd = null;
+    protected boolean traverserStepIdAndLabelsSetByChild = false;
 
     protected Step<?, S> previousStep = EmptyStep.instance();
     protected Step<E, ?> nextStep = EmptyStep.instance();
@@ -123,7 +123,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
             }
         } else {
             while (true) {
-                final Traverser<E> traverser = this.processNextStart();
+                final Traverser.Admin<E> traverser = (Traverser.Admin<E>) this.processNextStart();
                 if (null != traverser.get() && 0 != traverser.bulk())
                     return this.prepareTraversalForNextStep(traverser);
             }
@@ -137,7 +137,7 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         else {
             try {
                 while (true) {
-                    this.nextEnd = this.processNextStart();
+                    this.nextEnd = (Traverser.Admin<E>) this.processNextStart();
                     if (null != this.nextEnd.get() && 0 != this.nextEnd.bulk())
                         return true;
                     else
@@ -197,9 +197,11 @@ public abstract class AbstractStep<S, E> implements Step<S, E> {
         return result;
     }
 
-    private final Traverser<E> prepareTraversalForNextStep(final Traverser<E> traverser) {
-        if (!this.traverserStepIdSetByChild) ((Traverser.Admin<E>) traverser).setStepId(this.nextStep.getId());
-        if (!this.labels.isEmpty()) this.labels.forEach(label -> traverser.path().addLabel(label));
+    private final Traverser.Admin<E> prepareTraversalForNextStep(final Traverser.Admin<E> traverser) {
+        if (!this.traverserStepIdAndLabelsSetByChild) {
+            traverser.setStepId(this.nextStep.getId());
+            traverser.addLabels(this.labels);
+        }
         return traverser;
     }
 

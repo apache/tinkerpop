@@ -44,13 +44,13 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         while (true) {
             if (this.previousIterator.hasNext())
                 return this.previousIterator.next();
-            this.previousIterator = this.traverserStepIdSetByChild ? this.computerAlgorithm() : this.standardAlgorithm();
+            this.previousIterator = this.traverserStepIdAndLabelsSetByChild ? this.computerAlgorithm() : this.standardAlgorithm();
         }
     }
 
     @Override
     public void onEngine(final TraversalEngine engine) {
-        this.traverserStepIdSetByChild = engine.isComputer();
+        this.traverserStepIdAndLabelsSetByChild = engine.isComputer();
     }
 
     @Override
@@ -75,8 +75,10 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
         @Override
         protected Traverser<S> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<S> start = this.starts.next();
-            if (this.traverserStepIdSetByChild)
-                start.setStepId(((ComputerAwareStep)this.getTraversal().getParent()).getNextStep().getId());
+            if (this.traverserStepIdAndLabelsSetByChild) {
+                start.setStepId(((ComputerAwareStep<?, ?>) this.getTraversal().getParent()).getNextStep().getId());
+                start.addLabels(((ComputerAwareStep<?, ?>) this.getTraversal().getParent()).getLabels());
+            }
             return start;
         }
 
@@ -87,7 +89,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
 
         @Override
         public void onEngine(final TraversalEngine engine) {
-            this.traverserStepIdSetByChild = engine.isComputer();
+            this.traverserStepIdAndLabelsSetByChild = engine.isComputer();
         }
     }
 

@@ -21,12 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -37,7 +33,7 @@ import java.util.stream.Stream;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Path extends Cloneable {
+public interface Path extends Cloneable, Iterable<Object> {
 
     /**
      * Get the number of step in the path.
@@ -57,13 +53,13 @@ public interface Path extends Cloneable {
      */
     public Path extend(final Object object, final Set<String> labels);
 
-    public default Path extend(final Object object, final String... labels) {
-        final Path path = this.extend(object, Collections.emptySet());
-        for (final String label : labels) {
-            path.addLabel(label);
-        }
-        return path;
-    }
+    /**
+     * Add labels to the head of the path.
+     *
+     * @param labels the labels at the head of the path
+     * @return the path with added labels
+     */
+    public Path extend(final Set<String> labels);
 
     /**
      * Get the object associated with the particular label of the path.
@@ -107,7 +103,7 @@ public interface Path extends Cloneable {
      * @throws IllegalArgumentException if the path does not contain the label
      */
     public default <A> A get(final Pop pop, final String label) throws IllegalArgumentException {
-        if(Pop.all == pop) {
+        if (Pop.all == pop) {
             if (this.hasLabel(label)) {
                 final Object object = this.get(label);
                 if (object instanceof List)
@@ -148,13 +144,6 @@ public interface Path extends Cloneable {
     }
 
     /**
-     * Add label to the current head of the path.
-     *
-     * @param label the label to add to the head of the path
-     */
-    public void addLabel(final String label);
-
-    /**
      * An ordered list of the objects in the path.
      *
      * @return the objects of the path
@@ -189,8 +178,8 @@ public interface Path extends Cloneable {
         return true;
     }
 
-    public default void forEach(final Consumer<Object> consumer) {
-        this.objects().forEach(consumer);
+    public default Iterator<Object> iterator() {
+        return this.objects().iterator();
     }
 
     public default void forEach(final BiConsumer<Object, Set<String>> consumer) {

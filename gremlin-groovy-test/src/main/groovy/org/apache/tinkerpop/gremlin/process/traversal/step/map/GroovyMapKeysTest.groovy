@@ -34,5 +34,10 @@ public abstract class GroovyMapKeysTest {
         public Traversal<Vertex, Double> get_g_V_outE_valuesXweightX_groupCount_mapKeys() {
             TraversalScriptHelper.compute("g.V.outE().weight.groupCount().mapKeys()", g)
         }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_outE_valuesXweightX_groupCount_unfold_mapKeys() {
+            TraversalScriptHelper.compute("g.V.outE().weight.groupCount().unfold().mapKeys()", g)
+        }
     }
 }

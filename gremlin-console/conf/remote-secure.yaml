@@ -15,6 +15,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
+##############################################################
+# This configuration is meant to have Gremlin Server return
+# text serialized objects. The server will toString()
+# results giving a view into how scripts are executing.
+#
+# This file will work with:
+# - gremlin-server-secure.yaml
+##############################################################
+
 hosts: [localhost]
 port: 8182
 username: stephen
