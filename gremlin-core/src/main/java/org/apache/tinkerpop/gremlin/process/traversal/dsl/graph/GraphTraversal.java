@@ -687,7 +687,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     @Deprecated
     public default GraphTraversal<S, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-
         if (propertyKeyValues.length % 2 == 0) {
             // addOutE("createdBy", "a")
             this.addE(firstVertexKeyOrEdgeLabel);
@@ -991,9 +990,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ProfileStep<>(this.asAdmin()));
     }
 
-
-    public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Object key,
-                                                 final Object value, final Object... keyValues) {
+    public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
         if ((this.asAdmin().getEndStep() instanceof AddVertexStep || this.asAdmin().getEndStep() instanceof AddEdgeStep || this.asAdmin().getEndStep() instanceof AddVertexStartStep) && keyValues.length == 0) {
             ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(new Object[]{key, value});
         } else {

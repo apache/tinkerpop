@@ -57,7 +57,7 @@ public final class Parameters implements Cloneable, Serializable {
         return null == object ? defaultValue.get() : object instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, E>) object) : (E) object;
     }
 
-    public <S, E> E get(final Object key, final Supplier<E> defaultValue) {
+    public <E> E get(final Object key, final Supplier<E> defaultValue) {
         final Object object = parameters.get(key);
         return null == object ? defaultValue.get() : (E) object;
     }
@@ -75,8 +75,12 @@ public final class Parameters implements Cloneable, Serializable {
         return keyValues.toArray(new Object[keyValues.size()]);
     }
 
-    public void set(final Object key, final Object value) {
-        if (null != value) this.parameters.put(key, value);
+    public void set(final Object... keyValues) {
+        for (int i = 0; i < keyValues.length; i = i + 2) {
+            if (keyValues[i + 1] != null) {
+                this.parameters.put(keyValues[i], keyValues[i + 1]);
+            }
+        }
     }
 
     public void integrateTraversals(final TraversalParent step) {

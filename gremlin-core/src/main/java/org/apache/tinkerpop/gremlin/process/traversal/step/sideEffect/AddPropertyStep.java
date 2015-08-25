@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
 import java.util.List;
@@ -44,8 +45,7 @@ import java.util.Set;
  */
 public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> implements Mutating<Event.ElementPropertyChangedEvent>, TraversalParent, Parameterizing {
 
-    private final Parameters parameters = new Parameters();
-
+    private Parameters parameters = new Parameters();
     private final VertexProperty.Cardinality cardinality;
     private CallbackRegistry<Event.ElementPropertyChangedEvent> callbackRegistry;
 
@@ -69,16 +69,18 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     @Override
     public void addPropertyMutations(final Object... keyValues) {
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            this.parameters.set(keyValues[i], keyValues[i + 1]);
-        }
+        this.parameters.set(keyValues);
         this.parameters.integrateTraversals(this);
     }
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        final String key = this.parameters.get(traverser, T.key, null);
-        final Object value = this.parameters.get(traverser, T.value, null);
+        final String key = this.parameters.get(traverser, T.key, () -> {
+            throw new IllegalStateException("The AddPropertyStep does not have a provided key: " + this);
+        });
+        final Object value = this.parameters.get(traverser, T.value, () -> {
+            throw new IllegalStateException("The AddPropertyStep does not have a provided value: " + this);
+        });
         final Object[] vertexPropertyKeyValues = this.parameters.getKeyValues(traverser, T.key, T.value);
 
         if (this.callbackRegistry != null) {
@@ -99,7 +101,7 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
             else
                 throw new IllegalStateException(String.format("The incoming object cannot be processed by change eventing in %s:  %s", AddPropertyStep.class.getName(), currentElement));
 
-            callbackRegistry.getCallbacks().forEach(c -> c.accept(evt));
+            this.callbackRegistry.getCallbacks().forEach(c -> c.accept(evt));
         }
 
         if (null != this.cardinality)
@@ -115,8 +117,8 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     @Override
     public CallbackRegistry<Event.ElementPropertyChangedEvent> getMutatingCallbackRegistry() {
-        if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
-        return callbackRegistry;
+        if (null == this.callbackRegistry) this.callbackRegistry = new ListCallbackRegistry<>();
+        return this.callbackRegistry;
     }
 
 
@@ -125,5 +127,15 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
         return super.hashCode() ^ this.parameters.hashCode() ^ ((null == this.cardinality) ? "null".hashCode() : this.cardinality.hashCode());
     }
 
-    // TODO clone()
+    @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.parameters);
+    }
+
+    @Override
+    public AddPropertyStep<S> clone() {
+        final AddPropertyStep<S> clone = (AddPropertyStep<S>)super.clone();
+        clone.parameters = this.parameters.clone();
+        return clone;
+    }
 }

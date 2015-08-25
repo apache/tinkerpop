@@ -30,6 +30,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallba
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
 import java.util.List;
@@ -41,7 +42,7 @@ import java.util.Set;
  */
 public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutating<Event.VertexAddedEvent>, TraversalParent, Parameterizing {
 
-    private final Parameters parameters = new Parameters();
+    private Parameters parameters = new Parameters();
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
 
     public AddVertexStep(final Traversal.Admin traversal, final String label) {
@@ -62,20 +63,18 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutati
 
     @Override
     public void addPropertyMutations(final Object... keyValues) {
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            this.parameters.set(keyValues[i], keyValues[i + 1]);
-        }
+        this.parameters.set(keyValues);
         this.parameters.integrateTraversals(this);
     }
 
     @Override
     protected Vertex map(final Traverser.Admin<S> traverser) {
-        final Vertex v = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(traverser));
-        if (callbackRegistry != null) {
-            final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(DetachedFactory.detach(v, true));
-            callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
+        final Vertex vertex = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(traverser));
+        if (this.callbackRegistry != null) {
+            final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(DetachedFactory.detach(vertex, true));
+            this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
         }
-        return v;
+        return vertex;
     }
 
     @Override
@@ -94,5 +93,15 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutati
         return this.getSelfAndChildRequirements();
     }
 
-    // TODO clone()
+    @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.parameters);
+    }
+
+    @Override
+    public AddVertexStep<S> clone() {
+        final AddVertexStep<S> clone = (AddVertexStep<S>) super.clone();
+        clone.parameters = this.parameters.clone();
+        return clone;
+    }
 }

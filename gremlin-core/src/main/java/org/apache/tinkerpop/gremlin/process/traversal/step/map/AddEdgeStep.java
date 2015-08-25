@@ -34,9 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -44,12 +42,12 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Parameterizing {
+public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Parameterizing {
 
     private static final String FROM = Graph.Hidden.hide("from");
     private static final String TO = Graph.Hidden.hide("to");
 
-    private final Parameters parameters = new Parameters();
+    private Parameters parameters = new Parameters();
     private CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry;
 
     public AddEdgeStep(final Traversal.Admin traversal, final String edgeLabel) {
@@ -69,9 +67,7 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutati
 
     @Override
     public void addPropertyMutations(final Object... keyValues) {
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            this.parameters.set(keyValues[i], keyValues[i + 1]);
-        }
+        this.parameters.set(keyValues);
         this.parameters.integrateTraversals(this);
     }
 
@@ -86,18 +82,16 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutati
     }
 
     @Override
-    protected Iterator<Edge> flatMap(final Traverser.Admin<S> traverser) {
-        final Vertex toVertex = this.parameters.get(traverser, TO, () -> (Vertex) traverser.get());
-        final Vertex fromVertex = this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get());
-        final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL);
-
-        final Iterator<Edge> edgeIterator = IteratorUtils.of(fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label)));
-        return IteratorUtils.consume(edgeIterator, edge -> {
-            if (callbackRegistry != null) {
-                final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
-                callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
-            }
-        });
+    protected Edge map(final Traverser.Admin<S> traverser) {
+        final Edge edge =
+                this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get()).
+                        addEdge(this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL),
+                                this.parameters.get(traverser, TO, () -> (Vertex) traverser.get()), this.parameters.getKeyValues(traverser, TO, FROM, T.label));
+        if (callbackRegistry != null) {
+            final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
+            callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
+        }
+        return edge;
     }
 
     @Override
@@ -107,19 +101,25 @@ public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Mutati
 
     @Override
     public CallbackRegistry<Event.EdgeAddedEvent> getMutatingCallbackRegistry() {
-        if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
-        return callbackRegistry;
+        if (null == this.callbackRegistry) this.callbackRegistry = new ListCallbackRegistry<>();
+        return this.callbackRegistry;
     }
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.parameters.hashCode();
-        return result;
+        return super.hashCode() ^ this.parameters.hashCode();
     }
 
     @Override
     public String toString() {
         return StringFactory.stepString(this, this.parameters.toString());
+    }
+
+    @Override
+    public AddEdgeStep<S> clone() {
+        final AddEdgeStep<S> clone = (AddEdgeStep<S>) super.clone();
+        clone.parameters = this.parameters.clone();
+        return clone;
     }
 
 }

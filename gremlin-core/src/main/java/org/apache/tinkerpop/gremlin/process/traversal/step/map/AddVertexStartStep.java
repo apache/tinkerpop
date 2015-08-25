@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraver
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 
 import java.util.List;
@@ -44,7 +45,7 @@ import java.util.Set;
  */
 public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements Mutating<Event.VertexAddedEvent>, TraversalParent, Parameterizing {
 
-    private final Parameters parameters = new Parameters();
+    private Parameters parameters = new Parameters();
     private boolean first = true;
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
 
@@ -66,9 +67,7 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
 
     @Override
     public void addPropertyMutations(final Object... keyValues) {
-        for (int i = 0; i < keyValues.length; i = i + 2) {
-            this.parameters.set(keyValues[i], keyValues[i + 1]);
-        }
+        this.parameters.set(keyValues);
         this.parameters.integrateTraversals(this);
     }
 
@@ -76,21 +75,20 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
     protected Traverser<Vertex> processNextStart() {
         if (this.first) {
             this.first = false;
-            final Vertex v = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(EmptyTraverser.instance()));
-            if (callbackRegistry != null) {
-                final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(DetachedFactory.detach(v, true));
-                callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
+            final Vertex vertex = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(EmptyTraverser.instance()));
+            if (this.callbackRegistry != null) {
+                final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(DetachedFactory.detach(vertex, true));
+                this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
             }
-
-            return this.getTraversal().getTraverserGenerator().generate(v, this, 1l);
+            return this.getTraversal().getTraverserGenerator().generate(vertex, this, 1l);
         } else
             throw FastNoSuchElementException.instance();
     }
 
     @Override
     public CallbackRegistry<Event.VertexAddedEvent> getMutatingCallbackRegistry() {
-        if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
-        return callbackRegistry;
+        if (null == this.callbackRegistry) this.callbackRegistry = new ListCallbackRegistry<>();
+        return this.callbackRegistry;
     }
 
     @Override
@@ -107,5 +105,17 @@ public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> imple
     public void reset() {
         super.reset();
         this.first = false;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.parameters);
+    }
+
+    @Override
+    public AddVertexStartStep clone() {
+        final AddVertexStartStep clone = (AddVertexStartStep) super.clone();
+        clone.parameters = this.parameters.clone();
+        return clone;
     }
 }
