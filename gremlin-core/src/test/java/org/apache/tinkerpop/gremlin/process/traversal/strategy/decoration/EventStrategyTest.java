@@ -36,23 +36,20 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Parameterized.class)
 public class EventStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"addInE()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addInE("test", "x"), 1},
-                {"addInE(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addInE("test", "x", "this", "that"), 1},
-                {"addOutE()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addOutE("test", "x"), 1},
-                {"addOutE(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addOutE("test", "x", "this", "that"), 1},
-                {"addE(IN)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.IN, "test", "test"), 1},
-                {"addE(IN,args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.IN, "test", "test", "this", "that"), 1},
-                {"addE(OUT)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.OUT, "test", "test"), 1},
-                {"addE(OUT,args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.OUT, "test", "test", "this", "that"), 1},
+                {"addE(test).from(x)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").from("x"), 1},
+                {"addE(test).from(x).property(this,that)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").from("x").property("this", "that"), 1},
+                {"addE(test).to(x)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").to("x"), 1},
+                {"addE(test).to(x).property(this,that)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").to("x").property("this", "that"), 1},
                 {"addV()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV(), 1},
-               // {"addV(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV("test", "this"), 1},
-                {"addV().property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV().property("test", "that"), 2},
+                {"addV(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV("test", "this"), 1},
+                {"addV().property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV().property("test", "that"), 1},
                 {"properties().drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).properties().drop(), 1},
                 {"properties(k).drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).properties("test").drop(), 1},
                 {"out().drop()", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().drop(), 1},

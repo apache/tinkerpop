@@ -27,10 +27,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -42,23 +44,35 @@ public final class Parameters implements Cloneable, Serializable {
 
     private Map<Object, Object> parameters = new HashMap<>();
 
-    public <S, E> E get(final Traverser.Admin<S> traverser, final Object key) {
+    public boolean contains(final Object key) {
+        return this.parameters.containsKey(key);
+    }
+
+    public void replace(final Object oldKey, final Object newKey) {
+        this.set(newKey, this.parameters.remove(oldKey));
+    }
+
+    public <S, E> E get(final Traverser.Admin<S> traverser, final Object key, final Supplier<E> defaultValue) {
         final Object object = parameters.get(key);
-        return object instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, E>) object) : (E) object;
+        return null == object ? defaultValue.get() : object instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, E>) object) : (E) object;
+    }
+
+    public <S, E> E get(final Object key, final Supplier<E> defaultValue) {
+        final Object object = parameters.get(key);
+        return null == object ? defaultValue.get() : (E) object;
     }
 
     public <S> Object[] getKeyValues(final Traverser.Admin<S> traverser, final Object... exceptKeys) {
         if (this.parameters.size() == 0) return EMPTY_ARRAY;
         final List<Object> exceptions = Arrays.asList(exceptKeys);
-        final Object[] keyValues = new Object[(this.parameters.size() * 2) - (exceptKeys.length * 2)];
-        int counter = 0;
+        final List<Object> keyValues = new ArrayList<>();
         for (final Map.Entry<Object, Object> keyValue : this.parameters.entrySet()) {
             if (!exceptions.contains(keyValue.getKey())) {
-                keyValues[counter++] = keyValue.getKey() instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) keyValue.getKey()) : keyValue.getKey();
-                keyValues[counter++] = keyValue.getValue() instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) keyValue.getValue()) : keyValue.getValue();
+                keyValues.add(keyValue.getKey() instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) keyValue.getKey()) : keyValue.getKey());
+                keyValues.add(keyValue.getValue() instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) keyValue.getValue()) : keyValue.getValue());
             }
         }
-        return keyValues;
+        return keyValues.toArray(new Object[keyValues.size()]);
     }
 
     public void set(final Object key, final Object value) {
@@ -92,5 +106,9 @@ public final class Parameters implements Cloneable, Serializable {
 
     public int hashCode() {
         return this.parameters.hashCode();
+    }
+
+    public String toString() {
+        return this.parameters.toString();
     }
 }

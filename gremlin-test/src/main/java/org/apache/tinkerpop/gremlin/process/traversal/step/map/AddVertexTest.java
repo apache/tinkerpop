@@ -41,7 +41,7 @@ import static org.junit.Assert.assertFalse;
 @RunWith(GremlinProcessRunner.class)
 public abstract class AddVertexTest extends AbstractGremlinTest {
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(final Object v1Id);
+    public abstract Traversal<Vertex, Vertex> get_g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_0X();
 
@@ -58,7 +58,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void g_V_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(convertToVertexId(graph, "marko"));
+        final Traversal<Vertex, Vertex> traversal = get_g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(convertToVertexId(graph, "marko"));
         printTraversalForm(traversal);
         final Vertex vertex = traversal.next();
         assertEquals("animal", vertex.label());
@@ -139,7 +139,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     public static class Traversals extends AddVertexTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(final Object v1Id) {
             return g.V(v1Id).as("a").addV("animal").property("age", __.select("a").by("age")).property("name", "puppy");
         }
 

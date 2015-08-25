@@ -472,6 +472,7 @@ public class __ {
     /**
      * @see {@link GraphTraversal#addE(Direction, String, String, Object...)}
      */
+    @Deprecated
     public static <A> GraphTraversal<A, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
         return __.<A>start().addE(direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
@@ -479,6 +480,7 @@ public class __ {
     /**
      * @see {@link GraphTraversal#addOutE(String, String, Object...)}
      */
+    @Deprecated
     public static <A> GraphTraversal<A, Edge> addOutE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
         return __.<A>start().addOutE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
@@ -486,8 +488,16 @@ public class __ {
     /**
      * @see {@link GraphTraversal#addInE(String, String, Object...)}
      */
+    @Deprecated
     public static <A> GraphTraversal<A, Edge> addInE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
         return __.<A>start().addInE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
+    }
+
+    /**
+     * @see {@link GraphTraversal#addE(String)}
+     */
+    public static <A> GraphTraversal<A, Edge> addE(final String edgeLabel) {
+        return __.<A>start().addE(edgeLabel);
     }
 
     ///////////////////// FILTER STEPS /////////////////////

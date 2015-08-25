@@ -31,22 +31,22 @@ public abstract class GroovyAddVertexTest {
     public static class Traversals extends AddVertexTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(
+        public Traversal<Vertex, Vertex> get_g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(
                 final Object v1Id) {
             TraversalScriptHelper.compute("g.V(${v1Id}).as('a').addV('animal').property('age', select('a').by('age')).property('name', 'puppy')", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_0X() {
-            TraversalScriptHelper.compute("g.V.addV(T.label, 'animal', 'age', 0)", g)
+            TraversalScriptHelper.compute("g.V.addV(label, 'animal', 'age', 0)", g)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX() {
-            TraversalScriptHelper.compute("g.addV(T.label, 'person', 'name', 'stephen')", g)
+            TraversalScriptHelper.compute("g.addV(label, 'person', 'name', 'stephen')", g)
         }
 
-        /////////
+        ///////// DEPRECATED BELOW
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X() {
@@ -55,7 +55,7 @@ public abstract class GroovyAddVertexTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXlabel_person_name_stephenX() {
-            TraversalScriptHelper.compute("g.V.addV(label, 'person', 'name', 'stephen')", g);
+            TraversalScriptHelper.compute("g.addV(label, 'person', 'name', 'stephen')", g);
         }
     }
 }

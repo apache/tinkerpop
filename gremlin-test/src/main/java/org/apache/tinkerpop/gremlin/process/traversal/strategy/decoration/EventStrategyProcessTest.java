@@ -109,7 +109,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         v.addEdge("self", v);
 
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.withSideEffect("v",()->v).V(v).addOutE("self", "v").next();
+        gts.V(v).as("v").addE("self").to("v").next();
 
         tryCommit(graph, g -> assertEquals(2, IteratorUtils.count(gts.E())));
 
@@ -138,7 +138,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         v.addEdge("self", v);
 
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.V(v).as("a").addOutE("self", "a").next();
+        gts.V(v).as("a").addE("self").to("a").next();
 
         tryCommit(graph, g -> assertEquals(2, IteratorUtils.count(gts.E())));
 
@@ -172,8 +172,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         assertEquals(1, listener1.addVertexEventRecorded());
         assertEquals(1, listener2.addVertexEventRecorded());
-        assertEquals(1, listener2.vertexPropertyChangedEventRecorded());
-        assertEquals(1, listener1.vertexPropertyChangedEventRecorded());
+        assertEquals(0, listener2.vertexPropertyChangedEventRecorded());
+        assertEquals(0, listener1.vertexPropertyChangedEventRecorded());
     }
 
     @Test
@@ -199,8 +199,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         assertEquals(1, listener1.addVertexEventRecorded());
         assertEquals(1, listener2.addVertexEventRecorded());
-        assertEquals(1, listener2.vertexPropertyChangedEventRecorded());
-        assertEquals(1, listener1.vertexPropertyChangedEventRecorded());
+        assertEquals(0, listener2.vertexPropertyChangedEventRecorded());
+        assertEquals(0, listener1.vertexPropertyChangedEventRecorded());
     }
 
     @Test
@@ -278,7 +278,7 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         v.addEdge("self", v);
 
         final GraphTraversalSource gts = create(eventStrategy);
-        gts.withSideEffect("v",v).V(v).addOutE("self", "v").property("some", "thing").next();
+        gts.V(v).as("v").addE("self").to("v").property("some", "thing").next();
 
         tryCommit(graph, g -> assertEquals(1, IteratorUtils.count(gts.E().has("some", "thing"))));
 
@@ -288,8 +288,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(1, listener1.addEdgeEventRecorded());
         assertEquals(1, listener2.addEdgeEventRecorded());
 
-        assertEquals(1, listener2.edgePropertyChangedEventRecorded());
-        assertEquals(1, listener1.edgePropertyChangedEventRecorded());
+        assertEquals(0, listener2.edgePropertyChangedEventRecorded());
+        assertEquals(0, listener1.edgePropertyChangedEventRecorded());
 
     }
 

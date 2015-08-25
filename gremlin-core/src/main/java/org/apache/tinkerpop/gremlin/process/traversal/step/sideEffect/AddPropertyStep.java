@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
@@ -41,7 +42,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> implements Mutating<Event.ElementPropertyChangedEvent>, TraversalParent {
+public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> implements Mutating<Event.ElementPropertyChangedEvent>, TraversalParent, Parameterizing {
 
     private final Parameters parameters = new Parameters();
 
@@ -54,6 +55,11 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
         this.parameters.set(T.value, valueObject);
         this.cardinality = cardinality;
         this.parameters.integrateTraversals(this);
+    }
+
+    @Override
+    public Parameters getParameters() {
+        return this.parameters;
     }
 
     @Override
@@ -71,8 +77,8 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        final String key = this.parameters.get(traverser, T.key);
-        final Object value = this.parameters.get(traverser, T.value);
+        final String key = this.parameters.get(traverser, T.key, null);
+        final Object value = this.parameters.get(traverser, T.value, null);
         final Object[] vertexPropertyKeyValues = this.parameters.getKeyValues(traverser, T.key, T.value);
 
         if (this.callbackRegistry != null) {
@@ -116,7 +122,7 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.cardinality.hashCode() ^ this.parameters.hashCode();
+        return super.hashCode() ^ this.parameters.hashCode() ^ ((null == this.cardinality) ? "null".hashCode() : this.cardinality.hashCode());
     }
 
     // TODO clone()

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
@@ -27,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRe
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
@@ -39,7 +39,7 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutating<Event.VertexAddedEvent>, TraversalParent {
+public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutating<Event.VertexAddedEvent>, TraversalParent, Parameterizing {
 
     private final Parameters parameters = new Parameters();
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
@@ -51,13 +51,13 @@ public final class AddVertexStep<S> extends MapStep<S, Vertex> implements Mutati
     }
 
     @Override
-    public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
-        return this.parameters.getTraversals();
+    public Parameters getParameters() {
+        return this.parameters;
     }
 
-
-    public Object[] getKeyValues() {
-        return this.parameters.getKeyValues(EmptyTraverser.instance());
+    @Override
+    public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
+        return this.parameters.getTraversals();
     }
 
     @Override

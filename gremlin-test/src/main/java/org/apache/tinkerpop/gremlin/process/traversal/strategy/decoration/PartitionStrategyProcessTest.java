@@ -55,7 +55,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource source = create(partitionStrategy);
         final Vertex v1 = source.addV().property("any", "thing").next();
         final Vertex v2 = source.addV().property("some", "thing").next();
-        final Edge e = source.withSideEffect("v2", v2).V(v1.id()).addInE("connectsTo", "v2", "every", "thing").next();
+        final Edge e = source.withSideEffect("v2", v2).V(v1.id()).addE("connectsTo").from("v2").property("every", "thing").next();
 
         assertNotNull(v1);
         assertEquals("thing", v1.property("any").value());
@@ -143,7 +143,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         final GraphTraversalSource sourceA = create(partitionStrategyA);
 
         final Vertex vA = sourceAA.addV().property("any", "a").next();
-        final Edge e = sourceAA.withSideEffect("vA", vA).V(vA.id()).addOutE("knows", "vA").next();
+        final Edge e = sourceAA.withSideEffect("vA", vA).V(vA.id()).addE("knows").to("vA").next();
         assertEquals(e.id(), g.E(e.id()).id().next());
 
         try {
@@ -196,14 +196,14 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
 
         final Vertex vA = sourceAA.addV().property("any", "a").next();
         final Vertex vAA = sourceAA.addV().property("any", "aa").next();
-        final Edge eAtoAA = sourceAA.withSideEffect("vAA", vAA).V(vA.id()).addOutE("a->a", "vAA").next();
+        final Edge eAtoAA = sourceAA.withSideEffect("vAA", vAA).V(vA.id()).addE("a->a").to("vAA").next();
 
         final Vertex vB = sourceBA.addV().property("any", "b").next();
-        sourceBA.withSideEffect("vB", vB).V(vA.id()).addOutE("a->b", "vB").next();
+        sourceBA.withSideEffect("vB", vB).V(vA.id()).addE("a->b").to("vB").next();
 
         final Vertex vC = sourceCAB.addV().property("any", "c").next();
-        final Edge eBtovC = sourceCAB.withSideEffect("vC", vC).V(vB.id()).addOutE("b->c", "vC").next();
-        final Edge eAtovC = sourceCAB.withSideEffect("vC", vC).V(vA.id()).addOutE("a->c", "vC").next();
+        final Edge eBtovC = sourceCAB.withSideEffect("vC", vC).V(vB.id()).addE("b->c").to("vC").next();
+        final Edge eAtovC = sourceCAB.withSideEffect("vC", vC).V(vA.id()).addE("a->c").to("vC").next();
 
         assertEquals(0, IteratorUtils.count(sourceC.V()));
         assertEquals(0, IteratorUtils.count(sourceC.E()));

@@ -35,8 +35,6 @@ public interface Mutating<E extends Event> {
      */
     public CallbackRegistry<E> getMutatingCallbackRegistry();
 
-    public default void addPropertyMutations(final Object... keyValues) {
-
-    }
+    public void addPropertyMutations(final Object... keyValues);
 
 }

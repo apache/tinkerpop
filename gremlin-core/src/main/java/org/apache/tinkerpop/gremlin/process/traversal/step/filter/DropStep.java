@@ -87,4 +87,8 @@ public final class DropStep<S> extends FilterStep<S> implements Mutating<Event> 
         if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
         return callbackRegistry;
     }
+
+    public void addPropertyMutations(final Object... keyValues) {
+
+    }
 }

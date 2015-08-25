@@ -155,7 +155,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("STEPHEN", sg.V("STEPHEN").id().next());
     }*/
 
-    @Test
+    /*@Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldGenerateDefaultIdOnAddEWithSpecifiedId() throws Exception {
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
@@ -202,7 +202,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("some-id", e.value("name"));
         assertEquals("some-id", sg.E(e).id().next());
         assertEquals("some-id", sg.E("some-id").id().next());
-    }
+    } */
 
     private GraphTraversalSource create(final ElementIdStrategy strategy) {
         return graphProvider.traversal(graph, strategy);
