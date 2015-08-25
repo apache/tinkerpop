@@ -21,20 +21,15 @@ package org.apache.tinkerpop.gremlin.console.plugin
 import groovy.transform.CompileStatic
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
-import org.apache.tinkerpop.gremlin.process.traversal.Path
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
-import org.apache.tinkerpop.gremlin.structure.Direction
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import groovy.json.JsonSlurper
 import groovyx.net.http.HTTPBuilder
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
-import org.javatuples.Pair
-
-import java.util.stream.Collectors
 
 import static groovyx.net.http.ContentType.JSON
 
@@ -51,15 +46,11 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     private final Groovysh shell
     private final IO io
 
-    boolean traversalSubmittedForViz = false
-    long vizStepDelay
+    private long vizStepDelay
     private float[] vizStartRGBColor
-    private float[] vizDefaultRGBColor
     private char vizColorToFade
     private float vizColorFadeRate
-    private float vizStartSize
-    private float vizSizeDecrementRate
-    private Map vertexAttributes = [:]
+    private Map<String, Float> fadingVertexColors;
 
     public GephiRemoteAcceptor(final Groovysh shell, final IO io) {
         this.shell = shell
@@ -68,11 +59,8 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         // traversal visualization defaults
         vizStepDelay = 1000;                 // 1 second pause between viz of steps
         vizStartRGBColor = [0.0f, 1.0f, 0.5f]  // light aqua green
-        vizDefaultRGBColor = [0.6f, 0.6f, 0.6f]  // light grey
         vizColorToFade = 'g'                 // will fade so blue is strongest
         vizColorFadeRate = 0.7               // the multiplicative rate to fade visited vertices
-        vizStartSize = 20
-        vizSizeDecrementRate = 0.33f
     }
 
     @Override
@@ -91,17 +79,25 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             }
         }
 
-        def vizConfig = " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
-                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate, startSize:$vizStartSize," +
-                "sizeDecrementRate:$vizSizeDecrementRate"
+        String vizConfig = " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
+                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
+        if (args.size() >= 4) {
+            if (args.size() > 7) {
+                vizConfig = configVizOptions(args.subList(3, 6))
+            } else {
+                vizConfig = configVizOptions(args.subList(3, args.size()))
+            }
+        }
 
         return "Connection to Gephi - http://$host:$port/$workspace" + vizConfig
     }
 
     @Override
     Object configure(final List<String> args) throws RemoteException {
-        if (args.size() < 2)
-            throw new RemoteException("Invalid config arguments - check syntax")
+        if (args.size() != 2)
+            throw new RemoteException("Expects [host <hostname>|port <port number>|workspace <name>|" +
+                    "stepDelay <milliseconds>|startRGBColor <RGB array of floats>|" +
+                    "colorToFade: <char r|g|b>]|colorFadeRate: <float>")
 
         if (args[0] == "host")
             host = args[1]
@@ -121,258 +117,33 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             parseVizColorToFade(args[1])
         else if (args[0] == "colorFadeRate")
             parseVizColorFadeRate(args[1])
-        else if (args[0] == "sizeDecrementRate")
-            parseVizSizeDecrementRate(args[1])
-        else if (args[0] == "startSize")
-            parseVizStartSize(args[1])
-        else if (args[0] == "visualTraversal") {
-            def graphVar = shell.interp.context.getVariable(args[1])
-            if (!(graphVar instanceof Graph))
-                throw new RemoteException("Invalid argument to 'visualTraversal' - first parameter must be a Graph instance")
-
-            def gVar = args.size() == 3 ? args[2] : "vg"
-            def theG = GraphTraversalSource.build().with(new GephiTraversalVisualizationStrategy(this)).create(graphVar)
-            shell.interp.context.setVariable(gVar, theG)
-        } else
-            throw new RemoteException("Invalid config arguments - check syntax")
+        else
+            throw new RemoteException("Expects [host <hostname>|port <port number>|workspace <name>|" +
+                    "stepDelay <milliseconds>|startRGBColor <RGB array of floats>|" +
+                    "colorToFade: <char r|g|b>]|colorFadeRate: <float>")
 
         return "Connection to Gephi - http://$host:$port/$workspace" +
                 " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
-                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate, startSize:$vizStartSize," +
-                "sizeDecrementRate:$vizSizeDecrementRate"
+                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
     }
 
-    @Override
-    @CompileStatic
-    Object submit(final List<String> args) throws RemoteException {
-        final String line = String.join(" ", args)
-        if (line.trim() == "clear") {
-            clearGraph()
-            io.out.println("Gephi workspace cleared")
-            return
-        }
 
-        // need to clear the vertex attributes
-        vertexAttributes.clear()
+    private Object configVizOptions(final List<String> vizConfigArgs) {
+        if (vizConfigArgs.size() >= 1)
+            parseVizStepDelay(vizConfigArgs[0])
 
-        // this tells the GraphTraversalVisualizationStrategy that if the line eval's to a traversal it should
-        // try to visualize it
-        traversalSubmittedForViz = true
+        if (vizConfigArgs.size() >= 2)
+            parseVizStartRGBColor(vizConfigArgs[1])
 
-        // get the colors/sizes back to basics before trying visualize
-        resetColorsSizes()
+        if (vizConfigArgs.size() >= 3)
+            parseVizColorToFade(vizConfigArgs[2])
 
-        final Object o = shell.execute(line)
-        if (o instanceof Graph) {
-            clearGraph()
-            def graph = (Graph) o
-            def g = graph.traversal()
-            g.V().sideEffect { addVertexToGephi(g, it.get()) }.iterate()
-        } else {
-            // an individual Path needs a special case as it is an iterator and gets unrolled by
-            // IteratorUtils.asIterator() if not wrapped in a list prior.
-            final Iterator itty = (o instanceof Path) ? IteratorUtils.asIterator([o]) : IteratorUtils.asIterator(o)
-            def first = true
-            while (itty.hasNext()) {
-                final Object current = itty.next();
-                if (current instanceof Path) {
-                    // paths get returned as iterators - so basically any Iterator that has vertices in it will have
-                    // their path highlighted
-                    final Path path = (Path) current
-                    final List<Vertex> verticesInPath = path.stream().map { Pair pair -> pair.getValue0() }
-                            .filter { Object e -> e instanceof Vertex }.collect(Collectors.toList())
+        if (vizConfigArgs.size() >= 4)
+            parseVizColorFadeRate(vizConfigArgs[3])
 
-                    for (int ix = 0; ix < verticesInPath.size(); ix++) {
-                        final Vertex v = (Vertex) verticesInPath.get(ix)
 
-                        // if this vertex has already been highlighted in gephi then no need to do it again,
-                        // just update the touch count in memory
-                        if (!vertexAttributes.containsKey(v.id().toString())) {
-                            // this is a new vertex visited so it needs to get highlighted in gephi
-                            visitVertexInGephi(v)
-                            if (ix > 0) {
-                                final Vertex previous = (Vertex) verticesInPath.get(ix - 1)
-                                v.edges(Direction.BOTH).findAll { Edge edge ->
-                                    edge.bothVertices().any { Vertex vertex -> vertex == previous }
-                                }.each { Object edge ->
-                                    visitEdgeInGephi((Edge) edge)
-                                }
-                            }
-                        }
-
-                        // need to increment the touch even though this may be the first time passed through
-                        // because the default for touch=1 when it is added to the graph
-                        touch(v)
-                    }
-
-                    if (itty.hasNext() || !first) {
-                        sleep(vizStepDelay)
-                        applyRelativeSizingInGephi()
-                    }
-
-                    first = false
-                }
-            }
-        }
-
-        traversalSubmittedForViz = false
-    }
-
-    @Override
-    void close() throws IOException {
-
-    }
-
-    /**
-     * Visits the last set of vertices traversed and degrades their color and size.
-     */
-    def updateVisitedVertices(def List except = []) {
-        vertexAttributes.keySet().findAll{ vertexId -> !except.contains(vertexId) }.each { String vertexId ->
-            def attrs = vertexAttributes[vertexId]
-            float currentColor = attrs.color
-            currentColor *= vizColorFadeRate
-
-            int currentSize = attrs["size"]
-            currentSize = Math.max(1, currentSize - (currentSize * vizSizeDecrementRate))
-
-            vertexAttributes.get(vertexId).color = currentColor
-            vertexAttributes.get(vertexId).size = currentSize
-
-            changeVertexAttributes(vertexId)
-        }
-    }
-
-    def touch(Vertex v) {
-        vertexAttributes.get(v.id().toString()).touch++
-    }
-
-    def applyRelativeSizingInGephi() {
-        def touches = vertexAttributes.values().collect{it["touch"]}
-        def max = touches.max()
-        def min = touches.min()
-
-        vertexAttributes.each { k, v ->
-            double touch = v.touch
-
-            // establishes the relative size of the node with a lower limit of 0.25 of vizStartSize
-            def relative = Math.max((touch - min) / Math.max((max - min).doubleValue(), 0.00001), 0.25)
-            int size = Math.max(1, vizStartSize * relative)
-            v.size = size
-
-            changeVertexAttributes(k)
-        }
-    }
-
-    def changeVertexAttributes(def String vertexId) {
-        def props = [:]
-        props.put(vizColorToFade.toString(), vertexAttributes[vertexId].color)
-        props.put("size", vertexAttributes[vertexId].size)
-        updateGephiGraph([cn: [(vertexId): props]])
-    }
-
-    /**
-     * Visit a vertex traversed and initialize its color and size.
-     */
-    def visitVertexInGephi(def Vertex v, def size = vizStartSize) {
-        def props = [:]
-        props.put('r', vizStartRGBColor[0])
-        props.put('g', vizStartRGBColor[1])
-        props.put('b', vizStartRGBColor[2])
-        props.put('size', size)
-        props.put('visited', 1)
-
-        updateGephiGraph([cn: [(v.id().toString()): props]])
-
-        vertexAttributes[v.id().toString()] = [color: vizStartRGBColor[fadeColorIndex()], size: size, touch: 1]
-    }
-
-    def visitEdgeInGephi(def Edge e) {
-        def props = [:]
-        props.put('r', vizStartRGBColor[0])
-        props.put('g', vizStartRGBColor[1])
-        props.put('b', vizStartRGBColor[2])
-        props.put('size', vizStartSize)
-        props.put('visited', 1)
-
-        updateGephiGraph([ce: [(e.id().toString()): props]])
-    }
-
-    def fadeColorIndex() {
-        if (vizColorToFade == 'r')
-            return 0
-        else if (vizColorToFade == 'g')
-            return 1
-        else if (vizColorToFade == 'b')
-            return 2
-    }
-
-    def addVertexToGephi(def GraphTraversalSource g, def Vertex v, def boolean ignoreEdges = false) {
-        // grab the first property value from the strategies of values
-        def props = g.V(v).valueMap().next().collectEntries { kv -> [(kv.key): kv.value[0]] }
-        props << [label: v.label()]
-        props.put('r', vizDefaultRGBColor[0])
-        props.put('g', vizDefaultRGBColor[1])
-        props.put('b', vizDefaultRGBColor[2])
-        props.put('visited', 0)
-
-        // only add if it does not exist in graph already
-        if (!getFromGephiGraph([operation: "getNode", id: v.id().toString()]).isPresent())
-            updateGephiGraph([an: [(v.id().toString()): props]])
-
-        if (!ignoreEdges) {
-            g.V(v).outE().sideEffect {
-                addEdgeToGephi(g, it.get())
-            }.iterate()
-        }
-    }
-
-    @CompileStatic
-    def addEdgeToGephi(def GraphTraversalSource g, def Edge e) {
-        def props = g.E(e).valueMap().next()
-        props.put('label', e.label())
-        props.put('source', e.outVertex().id().toString())
-        props.put('target', e.inVertex().id().toString())
-        props.put('directed', true)
-        props.put('visited', 0)
-
-        // make sure the in vertex is there but don't add its edges - that will happen later as we are looping
-        // all vertices in the graph
-        addVertexToGephi(g, e.inVertex(), true)
-
-        // both vertices are definitely there now, so add the edge
-        updateGephiGraph([ae: [(e.id().toString()): props]])
-    }
-
-    def clearGraph() {
-        updateGephiGraph([dn: [filter: "ALL"]])
-    }
-
-    def resetColorsSizes() {
-        updateGephiGraph([cn: [filter: [nodeAttribute: [attribute: "visited", value: 1]],
-                               attributes: [size: 1, r: vizDefaultRGBColor[0], g: vizDefaultRGBColor[1], b: vizDefaultRGBColor[2]]]])
-        updateGephiGraph([ce: [filter: [edgeAttribute: [attribute: "visited", value: 1]],
-                               attributes: [size: 1, r: vizDefaultRGBColor[0], g: vizDefaultRGBColor[1], b: vizDefaultRGBColor[2]]]])
-    }
-
-    def getFromGephiGraph(def Map queryArgs) {
-        def http = new HTTPBuilder("http://$host:$port/")
-        def resp = http.get(path: "/$workspace", query: queryArgs).getText()
-
-        // gephi streaming plugin does not set the content type or respect the Accept header - treat as text
-        if (resp.isEmpty())
-            return Optional.empty()
-        else
-            return Optional.of(new JsonSlurper().parseText(resp))
-    }
-
-    def updateGephiGraph(def Map postBody) {
-        def http = new HTTPBuilder("http://$host:$port/")
-        http.post(path: "/$workspace", requestContentType: JSON, body: postBody, query: [format: "JSON", operation: "updateGraph"])
-    }
-
-    @Override
-    public String toString() {
-        return "Gephi - [$workspace]"
+        return " with stepDelay:$vizStepDelay, startRGBColor:$vizStartRGBColor, " +
+                "colorToFade:$vizColorToFade, colorFadeRate:$vizColorFadeRate"
     }
 
     private void parseVizStepDelay(String arg) {
@@ -409,19 +180,134 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
         }
     }
 
-    private void parseVizSizeDecrementRate(String arg) {
-        try {
-            vizSizeDecrementRate = Float.parseFloat(arg)
-        } catch (Exception ignored) {
-            throw new RemoteException("The sizeDecrementRate must be a float value")
+    @Override
+    @CompileStatic
+    Object submit(final List<String> args) throws RemoteException {
+        final String line = String.join(" ", args)
+        if (line.trim() == "clear") {
+            clearGraph()
+            io.out.println("Gephi workspace cleared")
+            return
+        }
+
+        final Object o = shell.execute(line)
+        if (o instanceof Graph) {
+            clearGraph()
+            def graph = (Graph) o
+            def g = graph.traversal()
+            g.V().sideEffect { addVertexToGephi(g, it.get()) }.iterate()
+        } else if (o instanceof Traversal.Admin) {
+            fadingVertexColors = [:]
+            def traversal = (Traversal.Admin) o
+            def memKeys = traversal.getSideEffects().keys()
+            def memSize = memKeys.size()
+            // assumes user called store("1")...store("n") in ascension
+            for (int i = 1; i <= memSize; i++) {
+                def stepKey = Integer.toString(i)
+                if (memKeys.contains(stepKey)) {
+                    io.out.print("Visualizing vertices at step: $stepKey... ")
+                    updateVisitedVertices()
+                    int visitedCount = 0
+
+                    if (traversal.getSideEffects().keys().contains(stepKey)) {
+                        traversal.getSideEffects().get(stepKey).get().each { element ->
+                            visitVertexToGephi((Vertex) element)
+                            visitedCount++
+                        }
+                    }
+                    io.out.println("Visited: $visitedCount")
+                }
+                sleep(vizStepDelay)
+            }
         }
     }
 
-    private void parseVizStartSize(String arg) {
-        try {
-            vizStartSize = Float.parseFloat(arg)
-        } catch (Exception ignored) {
-            throw new RemoteException("The startSize must be a float value")
+    @Override
+    void close() throws IOException {
+
+    }
+
+    def updateVisitedVertices() {
+        fadingVertexColors.keySet().each { vertex ->
+            def currentColor = fadingVertexColors.get(vertex)
+            currentColor *= vizColorFadeRate
+            fadingVertexColors.put(vertex, currentColor)
+            def props = [:]
+            props.put(vizColorToFade.toString(), currentColor)
+            updateGephiGraph([cn: [(vertex): props]])
         }
+    }
+
+    def visitVertexToGephi(def Vertex v) {
+        def props = [:]
+        props.put('r', vizStartRGBColor[0])
+        props.put('g', vizStartRGBColor[1])
+        props.put('b', vizStartRGBColor[2])
+        props.put('x', 1)
+
+        updateGephiGraph([cn: [(v.id().toString()): props]])
+
+        fadingVertexColors.put(v.id().toString(), vizStartRGBColor[fadeColorIndex()])
+    }
+
+    def fadeColorIndex() {
+        if (vizColorToFade == 'r')
+            return 0
+        else if (vizColorToFade == 'g')
+            return 1
+        else if (vizColorToFade == 'b')
+            return 2
+    }
+
+    def addVertexToGephi(def GraphTraversalSource g, def Vertex v, def boolean ignoreEdges = false) {
+        // grab the first property value from the strategies of values
+        def props = g.V(v).valueMap().next().collectEntries { kv -> [(kv.key): kv.value[0]] }
+        props << [label: v.label()]
+
+        // only add if it does not exist in graph already
+        if (!getFromGephiGraph([operation: "getNode", id: v.id().toString()]).isPresent())
+            updateGephiGraph([an: [(v.id().toString()): props]])
+
+        if (!ignoreEdges) {
+            g.V(v).outE().sideEffect {
+                addEdgeToGephi(g, it.get())
+            }.iterate()
+        }
+    }
+
+    @CompileStatic
+    def addEdgeToGephi(def GraphTraversalSource g, def Edge e) {
+        def props = g.E(e).valueMap().next()
+        props.put('label', e.label())
+        props.put('source', e.outVertex().id().toString())
+        props.put('target', e.inVertex().id().toString())
+        props.put('directed', true)
+
+        // make sure the in vertex is there but don't add its edges - that will happen later as we are looping
+        // all vertices in the graph
+        addVertexToGephi(g, e.inVertex(), true)
+
+        // both vertices are definitely there now, so add the edge
+        updateGephiGraph([ae: [(e.id().toString()): props]])
+    }
+
+    def clearGraph() {
+        updateGephiGraph([dn: [filter: "ALL"]])
+    }
+
+    def getFromGephiGraph(def Map queryArgs) {
+        def http = new HTTPBuilder("http://$host:$port/")
+        def resp = http.get(path: "/$workspace", query: queryArgs).getText()
+
+        // gephi streaming plugin does not set the content type or respect the Accept header - treat as text
+        if (resp.isEmpty())
+            return Optional.empty()
+        else
+            return Optional.of(new JsonSlurper().parseText(resp))
+    }
+
+    def updateGephiGraph(def Map postBody) {
+        def http = new HTTPBuilder("http://$host:$port/")
+        http.post(path: "/$workspace", requestContentType: JSON, body: postBody, query: [format: "JSON", operation: "updateGraph"])
     }
 }

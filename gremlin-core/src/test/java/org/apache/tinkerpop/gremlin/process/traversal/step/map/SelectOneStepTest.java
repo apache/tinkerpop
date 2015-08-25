@@ -61,7 +61,7 @@ public class SelectOneStepTest extends StepTest {
                 {true, __.as("x").local(__.select("x")).asAdmin()},
         };
         for (final Object[] traversalPath : traversalPaths) {
-            assertEquals(traversalPath[0], ((Traversal.Admin<?, ?>) traversalPath[1]).getTraverserRequirements().contains(TraverserRequirement.LABELED_PATH));
+            assertEquals(traversalPath[0], ((Traversal.Admin<?, ?>) traversalPath[1]).getTraverserRequirements().contains(TraverserRequirement.PATH));
         }
     }
 }

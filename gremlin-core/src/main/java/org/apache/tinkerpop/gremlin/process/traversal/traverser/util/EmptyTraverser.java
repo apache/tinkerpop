@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
-import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -40,11 +39,6 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     }
 
     private EmptyTraverser() {
-
-    }
-
-    @Override
-    public void addLabels(final Set<String> labels) {
 
     }
 

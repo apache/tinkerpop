@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -50,8 +49,6 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX3X_count();
 
     public abstract Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count();
-
-    public abstract Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count();
 
     public abstract Traversal<Vertex, Long> get_g_V_hasXnoX_count();
 
@@ -99,15 +96,6 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Long> traversal = get_g_V_repeatXoutX_timesX8X_count();
         printTraversalForm(traversal);
         assertEquals(new Long(2505037961767380L), traversal.next());
-        assertFalse(traversal.hasNext());
-    }
-
-    @Test
-    @LoadGraphWith(GRATEFUL)
-    public void g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count() {
-        final Traversal<Vertex, Long> traversal = get_g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count();
-        printTraversalForm(traversal);
-        assertEquals(new Long(24309134024L), traversal.next());
         assertFalse(traversal.hasNext());
     }
 
@@ -163,11 +151,6 @@ public abstract class CountTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX8X_count() {
             return g.V().repeat(out()).times(8).count();
-        }
-
-        @Override
-        public  Traversal<Vertex, Long> get_g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count() {
-            return g.V().repeat(out()).times(5).as("a").out("writtenBy").as("b").select("a", "b").count();
         }
 
         @Override

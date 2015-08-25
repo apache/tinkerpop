@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Conjun
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.EngineDependentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.DedupBijectionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
@@ -200,7 +200,7 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     ProfileStrategy.instance(),
                     IncidentToAdjacentStrategy.instance(),
                     AdjacentToIncidentStrategy.instance(),
-                    FilterRankingStrategy.instance(),
+                    DedupBijectionStrategy.instance(),
                     IdentityRemovalStrategy.instance(),
                     MatchPredicateStrategy.instance(),
                     RangeByIsCountStrategy.instance(),

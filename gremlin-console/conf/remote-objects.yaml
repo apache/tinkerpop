@@ -15,27 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-##############################################################
-# This configuration is meant to have Gremlin Server return
-# Gryo serialized objects. The TinkerGraph IoRegistry is
-# assigned as this is the configuration defined in the
-# pre-packaged Gremlin Server configuration files.  The
-# client configuration for serializers should match server.
-# Note that the server configures this via the
-# useMapperFromGraph setting - that simply means to use
-# the registry of the current configured Graph when
-# serializing and for these the pre-packaged purpose,
-# that's TinkerGraph.
-#
-# This file will work with:
-# - gremlin-server.yaml
-# - gremlin-server-classic.yaml
-# - gremlin-server-modern.yaml
-# - gremlin-server-modern-readonly.yaml
-# - gremlin-server-secure.yaml
-##############################################################
-
 hosts: [localhost]
 port: 8182
-serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0,
-              config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry] }}
+serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0}

@@ -31,12 +31,23 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.ConjunctionP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class WherePredicateStep<S> extends FilterStep<S> implements Scoping {
+
+    private static final Set<TraverserRequirement> LOCAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
+    private static final Set<TraverserRequirement> GLOBAL_REQUIREMENTS = EnumSet.of(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
 
     protected String startKey;
     protected List<String> selectKeys;

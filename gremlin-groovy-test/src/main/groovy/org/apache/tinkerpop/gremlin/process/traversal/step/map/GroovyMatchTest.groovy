@@ -48,11 +48,6 @@ public abstract class GroovyMatchTest {
     public abstract static class Traversals extends MatchTest {
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_matchXa_selectXnameX_bX() {
-            TraversalScriptHelper.compute("g.V.valueMap.match(__.as('a').select('name').as('b'))", g)
-        }
-
-        @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {
             TraversalScriptHelper.compute("g.V.match(__.as('a').out.as('b'))", g)
         }

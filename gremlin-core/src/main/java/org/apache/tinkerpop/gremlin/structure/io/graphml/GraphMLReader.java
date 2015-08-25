@@ -61,13 +61,12 @@ public final class GraphMLReader implements GraphReader {
     private final String edgeLabelKey;
     private final String vertexLabelKey;
     private final long batchSize;
-    private final boolean strict;
 
-    private GraphMLReader(final Builder builder) {
-        this.edgeLabelKey = builder.edgeLabelKey;
-        this.batchSize = builder.batchSize;
-        this.vertexLabelKey = builder.vertexLabelKey;
-        this.strict = builder.strict;
+    private GraphMLReader(final String edgeLabelKey, final String vertexLabelKey,
+                          final long batchSize) {
+        this.edgeLabelKey = edgeLabelKey;
+        this.batchSize = batchSize;
+        this.vertexLabelKey = vertexLabelKey;
     }
 
     @Override
@@ -144,23 +143,13 @@ public final class GraphMLReader implements GraphReader {
                                 if (isInVertex) {
                                     if (key.equals(vertexLabelKey))
                                         vertexLabel = value;
-                                    else {
-                                        try {
-                                            vertexProps.put(dataAttributeName, typeCastValue(key, value, keyTypesMaps));
-                                        } catch (NumberFormatException nfe) {
-                                            if (strict) throw nfe;
-                                        }
-                                    }
+                                    else
+                                        vertexProps.put(dataAttributeName, typeCastValue(key, value, keyTypesMaps));
                                 } else if (isInEdge) {
                                     if (key.equals(edgeLabelKey))
                                         edgeLabel = value;
-                                    else {
-                                        try {
-                                            edgeProps.put(dataAttributeName, typeCastValue(key, value, keyTypesMaps));
-                                        } catch (NumberFormatException nfe) {
-                                            if (strict) throw nfe;
-                                        }
-                                    }
+                                    else
+                                        edgeProps.put(dataAttributeName, typeCastValue(key, value, keyTypesMaps));
                                 }
                             }
 
@@ -340,19 +329,9 @@ public final class GraphMLReader implements GraphReader {
     public static final class Builder implements ReaderBuilder<GraphMLReader> {
         private String edgeLabelKey = GraphMLTokens.LABEL_E;
         private String vertexLabelKey = GraphMLTokens.LABEL_V;
-        private boolean strict = true;
         private long batchSize = 10000;
 
-        private Builder() { }
-
-        /**
-         * When set to true, exceptions will be thrown if a property value cannot be coerced to the expected data
-         * type. If set to false, then the reader will continue with the import but ignore the failed property key.
-         * By default this value is "true".
-         */
-        public Builder strict(final boolean strict) {
-            this.strict = strict;
-            return this;
+        private Builder() {
         }
 
         /**
@@ -380,7 +359,7 @@ public final class GraphMLReader implements GraphReader {
         }
 
         public GraphMLReader create() {
-            return new GraphMLReader(this);
+            return new GraphMLReader(edgeLabelKey, vertexLabelKey, batchSize);
         }
     }
 }

@@ -24,7 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,9 +58,7 @@ public class MutablePath implements Path, Serializable {
         clone.objects = new ArrayList<>();
         clone.labels = new ArrayList<>();*/
         clone.objects.addAll(this.objects);
-        for (final Set<String> labels : this.labels) {
-            clone.labels.add(new LinkedHashSet<>(labels));
-        }
+        clone.labels.addAll(this.labels);
         return clone;
     }
 
@@ -79,19 +76,13 @@ public class MutablePath implements Path, Serializable {
     }
 
     @Override
-    public Path extend(final Set<String> labels) {
-        this.labels.get(this.labels.size() - 1).addAll(labels);
-        return this;
-    }
-
-    @Override
     public <A> A get(int index) {
         return (A) this.objects.get(index);
     }
 
     @Override
     public <A> A get(final Pop pop, final String label) {
-        if (Pop.all == pop) {
+        if(Pop.all == pop) {
             if (this.hasLabel(label)) {
                 final Object object = this.get(label);
                 if (object instanceof List)
@@ -101,7 +92,7 @@ public class MutablePath implements Path, Serializable {
             } else {
                 return (A) Collections.emptyList();
             }
-        } else {
+        }  else {
             // Override default to avoid building temporary list, and to stop looking when we find the label.
             if (Pop.last == pop) {
                 for (int i = this.labels.size() - 1; i >= 0; i--) {
@@ -124,6 +115,11 @@ public class MutablePath implements Path, Serializable {
     }
 
     @Override
+    public void addLabel(final String label) {
+        this.labels.get(this.labels.size() - 1).add(label);
+    }
+
+    @Override
     public List<Object> objects() {
         return Collections.unmodifiableList(this.objects);
     }
@@ -134,33 +130,7 @@ public class MutablePath implements Path, Serializable {
     }
 
     @Override
-    public Iterator<Object> iterator() {
-        return this.objects.iterator();
-    }
-
-    @Override
     public String toString() {
         return this.objects.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        return this.objects.hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        if (!(other instanceof Path))
-            return false;
-        final Path otherPath = (Path) other;
-        if (otherPath.size() != this.size())
-            return false;
-        for (int i = this.size() - 1; i >= 0; i--) {
-            if (!this.objects.get(i).equals(otherPath.get(i)))
-                return false;
-            if (!this.labels.get(i).equals(otherPath.labels().get(i)))
-                return false;
-        }
-        return true;
     }
 }

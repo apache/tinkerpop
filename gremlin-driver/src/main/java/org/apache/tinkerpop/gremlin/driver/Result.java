@@ -29,8 +29,9 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import java.util.Iterator;
 
 /**
- * A {@code Result} represents an result value from the server (i.e. one item from the server-side {@link Iterator}
- * of results.
+ * A {@code Result} represents a result value from the server-side {@link Iterator} of results.  This would be
+ * one item from that result set.  This class provides methods for coercing the result {@link Object} to an
+ * expected type.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -96,6 +97,11 @@ public final class Result {
         return Float.parseFloat(resultObject.toString());
     }
 
+    /**
+     * Gets the result item by coercing it to an {@code double}.
+     *
+     * @throws NumberFormatException if the value is not parsable as an {@code double}.
+     */
     public double getDouble() {
         return Double.parseDouble(resultObject.toString());
     }

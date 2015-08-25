@@ -95,6 +95,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
 
         logger.info("Initialized Gremlin thread pool.  Threads in pool named with pattern gremlin-*");
 
+        // todo: deprecate promoteBindings in 3.1.0
         final GremlinExecutor.Builder gremlinExecutorBuilder = GremlinExecutor.build()
                 .scriptEvaluationTimeout(settings.scriptEvaluationTimeout)
                 .afterFailure((b, e) -> graphManager.rollbackAll())
@@ -102,6 +103,9 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
                 .afterTimeout(b -> graphManager.rollbackAll())
                 .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphManager.getAsBindings())
+                .promoteBindings(kv -> kv.getValue() instanceof Graph
+                        || kv.getValue() instanceof TraversalSource
+                        || kv.getValue() instanceof LifeCycleHook)
                 .executorService(this.gremlinExecutorService)
                 .scheduledExecutorService(this.scheduledExecutorService);
 
