@@ -135,8 +135,6 @@ public class Session {
                 })
                 .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphManager.getAsBindings())
-                .promoteBindings(kv -> kv.getValue() instanceof Graph
-                        || kv.getValue() instanceof TraversalSource)
                 .executorService(executor)
                 .scheduledExecutorService(scheduledExecutorService);
 

@@ -57,7 +57,7 @@ import static org.junit.Assert.*;
 public abstract class ProfileTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_out_out_profile();
 
-    public abstract Traversal<Vertex, Vertex> get_g_V_repeat_both_profile();
+    public abstract Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_profile();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_sideEffectXThread_sleepX10XX_sideEffectXThread_sleepX5XX_profile();
 
@@ -189,7 +189,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void g_V_repeat_both_modern_profile() {
-        final Traversal<Vertex, Vertex> traversal = get_g_V_repeat_both_profile();
+        final Traversal<Vertex, Vertex> traversal = get_g_V_repeatXbothX_timesX3X_profile();
         printTraversalForm(traversal);
 
         traversal.iterate();
@@ -319,7 +319,7 @@ public abstract class ProfileTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_V_repeat_both_profile() {
+        public Traversal<Vertex, Vertex> get_g_V_repeatXbothX_timesX3X_profile() {
             return g.V().repeat(both()).times(3).profile();
         }
 

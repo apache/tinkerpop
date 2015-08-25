@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -29,6 +29,16 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyVertexTest {
 
     public static class Traversals extends VertexTest {
+
+        @Override
+        public Traversal<Vertex, String> get_g_VXlistXv1_v2_v3XX_name() {
+            TraversalScriptHelper.compute("g.V(ids).name", g, "ids", [convertToVertex(graph, "marko"), convertToVertex(graph, "vadas"), convertToVertex(graph, "lop")])
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VXlistX1_2_3XX_name() {
+            TraversalScriptHelper.compute("g.V(ids).name", g, "ids", [convertToVertexId(graph, "marko"), convertToVertexId(graph, "vadas"), convertToVertexId(graph, "lop")])
+        }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V() {

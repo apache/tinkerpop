@@ -22,10 +22,9 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,6 +68,10 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
     // SIDE-EFFECTS
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX();
+
+    //
+
+    public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -212,6 +215,22 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         });
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX() {
+        final Traversal<Vertex, Map<String, Vertex>> traversal = get_g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            final Map<String, Vertex> map = traversal.next();
+            assertEquals(2, map.size());
+            assertTrue(map.get("a") instanceof Vertex);
+            assertTrue(map.get("b") instanceof Vertex);
+            counter++;
+        }
+        assertTrue(counter > 0);
+    }
+
     public static class Traversals extends RepeatTest {
 
         @Override
@@ -257,6 +276,11 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
             return g.V().repeat(groupCount("m").by("name").out()).times(2).cap("m");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Vertex>> get_g_V_repeatXbothX_timesX10X_asXaX_out_asXbX_selectXa_bX() {
+            return g.V().repeat(both()).times(10).as("a").out().as("b").select("a", "b");
         }
     }
 }

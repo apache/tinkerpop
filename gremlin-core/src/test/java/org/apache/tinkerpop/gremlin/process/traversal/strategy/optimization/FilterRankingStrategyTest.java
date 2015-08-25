@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Enclosed.class)
-public class DedupBijectionStrategyTest {
+public class FilterRankingStrategyTest {
 
     @RunWith(Parameterized.class)
     public static class StandardTest extends AbstractDedupBijectionStrategyTest {
@@ -102,7 +102,7 @@ public class DedupBijectionStrategyTest {
 
         void applyDedupBijectionStrategy(final Traversal traversal) {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(DedupBijectionStrategy.instance(), IdentityRemovalStrategy.instance());
+            strategies.addStrategies(FilterRankingStrategy.instance(), IdentityRemovalStrategy.instance());
 
             traversal.asAdmin().setStrategies(strategies);
             traversal.asAdmin().setEngine(this.traversalEngine);
@@ -121,7 +121,12 @@ public class DedupBijectionStrategyTest {
                     {__.order().dedup(), __.dedup().order()},
                     {__.identity().order().dedup(), __.dedup().order()},
                     {__.order().identity().dedup(), __.dedup().order()},
-                    {__.order().out().dedup(), __.order().out().dedup()}});
+                    {__.order().out().dedup(), __.order().out().dedup()},
+                    {__.has("value", 0).filter(__.out()).dedup(), __.has("value", 0).filter(__.out()).dedup()},
+                    {__.dedup().filter(__.out()).has("value", 0), __.has("value", 0).filter(__.out()).dedup()},
+                    {__.filter(__.out()).dedup().has("value", 0), __.has("value", 0).filter(__.out()).dedup()},
+                    {__.has("value", 0).filter(__.out()).dedup(), __.has("value", 0).filter(__.out()).dedup()},
+            });
         }
     }
 }

@@ -370,7 +370,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
-        final ResultSet results = client.submit("TinkerFactory.createClassic()");
+        final ResultSet results = client.submit("TinkerGraph.open().variables()");
 
         try {
             results.all().join();
