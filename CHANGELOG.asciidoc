@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `GraphStep` can now take a single argument `Collection` which is either elements or element ids (i.e. `g.V([1,2,3])` is supported now).
 * Added `LoopsStep` to make the loop counter accessible within `repeat()`, `until()` and `emit()`.
 * Gephi Plugin no longer requires manual insert of `store` steps to visualize a traversal.
 * Gephi Plugin visualizes `Path` objects.
@@ -47,6 +48,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `WhereTraversalStep` and `WherePredicateStep` are now the only "special" `Scoping` steps after `MatchStartStep` in `match()`.
 * Clarified semantics of `Transaction.close()` in unit tests - now refers only to closing the current transaction in the current thread.
 * `Neo4jGraph` no longer uses `OptOut` on `TransactionTest.shouldRollbackOnCloseWhenConfigured` (formerly `shouldRollbackOnShutdownWhenConfigured`)
 * Gremlin Server initialization scripts can now return a `Map` of values that will become global bindings for the server.

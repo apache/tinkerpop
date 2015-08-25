@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.groovy.plugin;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 
 /**
+ * A plugin implementation which allows for the usage of Gremlin Groovy's syntactic sugar.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class SugarGremlinPlugin extends AbstractGremlinPlugin {
@@ -30,6 +32,11 @@ public class SugarGremlinPlugin extends AbstractGremlinPlugin {
         return "tinkerpop.sugar";
     }
 
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * Executes the {@link SugarLoader#load()} method in the {@link PluginAcceptor}.
+     */
     @Override
     public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
         try {

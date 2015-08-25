@@ -21,14 +21,15 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +46,10 @@ import static org.junit.Assert.*;
  */
 @RunWith(GremlinProcessRunner.class)
 public abstract class VertexTest extends AbstractGremlinProcessTest {
+
+    public abstract Traversal<Vertex, String> get_g_VXlistXv1_v2_v3XX_name();
+
+    public abstract Traversal<Vertex, String> get_g_VXlistX1_2_3XX_name();
 
     public abstract Traversal<Vertex, Vertex> get_g_V();
 
@@ -97,6 +102,17 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_VX4X_bothE_hasXweight_lt_1X_otherV(final Object v4Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_to_XOUT_knowsX(final Object v1Id);
+
+    // GRAPH VERTEX/EDGE
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VXlistX1_2_3XX_name() {
+        Arrays.asList(get_g_VXlistX1_2_3XX_name(), get_g_VXlistXv1_v2_v3XX_name()).forEach(traversal -> {
+            printTraversalForm(traversal);
+            checkResults(Arrays.asList("marko", "vadas", "lop"), traversal);
+        });
+    }
 
     // VERTEX ADJACENCY
 
@@ -517,6 +533,17 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     }
 
     public static class Traversals extends VertexTest {
+
+        @Override
+        public Traversal<Vertex, String> get_g_VXlistXv1_v2_v3XX_name() {
+            return g.V(Arrays.asList(convertToVertex(graph, "marko"), convertToVertex(graph, "vadas"), convertToVertex(graph, "lop"))).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VXlistX1_2_3XX_name() {
+            return g.V(Arrays.asList(convertToVertexId(graph, "marko"), convertToVertexId(graph, "vadas"), convertToVertexId(graph, "lop"))).values("name");
+        }
+
         @Override
         public Traversal<Vertex, Vertex> get_g_V() {
             return g.V();
