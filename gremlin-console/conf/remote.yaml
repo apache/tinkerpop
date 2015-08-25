@@ -15,18 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-##############################################################
-# This configuration is meant to have Gremlin Server return
-# text serialized objects. The server will toString()
-# results giving a view into how scripts are executing.
-#
-# This file will work with:
-# - gremlin-server.yaml
-# - gremlin-server-classic.yaml
-# - gremlin-server-modern.yaml
-# - gremlin-server-modern-readonly.yaml
-##############################################################
-
 hosts: [localhost]
 port: 8182
 serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0, config: { serializeResultToString: true }}

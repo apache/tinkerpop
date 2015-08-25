@@ -17,38 +17,14 @@ limitations under the License.
 TinkerPop3 CHANGELOG
 =====================
 
-
-TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
---------------------------------------------------
-
-image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
-
-TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* `GraphStep` can now take a single argument `Collection` which is either elements or element ids (i.e. `g.V([1,2,3])` is supported now).
-* Added `LoopsStep` to make the loop counter accessible within `repeat()`, `until()` and `emit()`.
-* Gephi Plugin no longer requires manual insert of `store` steps to visualize a traversal.
-* Gephi Plugin visualizes `Path` objects.
-* Added a `TinkerIoRegistry` that registers a custom serializer for Gryo that will serialize an entire `TinkerGraph` instance.
-* Added configuration options to Gephi Plugin for setting the size of nodes visualized.
-* Replaced `DedupBijectionStrategy` with the more effective `FilterRankingStrategy`.
-* `ComputerAwareSteps` must not only handle step ids, but also step labels.
-* Renamed `B_O_P_SE_SL_Traverser` to `B_LP_O_P_SE_SL_Traverser` as it now supports `TraverserRequirement.LABELED_PATH`.
-* Added `B_LP_O_S_SE_SL_Traverser` in support of `TraverserRequirement.LABELED_PATH`.
-* Added `TraverserRequirement.LABELED_PATH` which only generates path data for steps that are labeled (greatly increases the likelihood of bulking).
-* Fixed a bug in `Path` usage that required an API update: `Path.addLabel()` is now `Path.extend(Set<String>)` and `Traverser.addLabels(Set<String>)`.
-* Made `Path` iterable, so that it can be `unfold()`'ed and used by local steps like `min(local)`, `max(local)`, etc.
-
 TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------------------------------------
 
-image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
+image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
 
 TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* `WhereTraversalStep` and `WherePredicateStep` are now the only "special" `Scoping` steps after `MatchStartStep` in `match()`.
 * Clarified semantics of `Transaction.close()` in unit tests - now refers only to closing the current transaction in the current thread.
 * `Neo4jGraph` no longer uses `OptOut` on `TransactionTest.shouldRollbackOnCloseWhenConfigured` (formerly `shouldRollbackOnShutdownWhenConfigured`)
 * Gremlin Server initialization scripts can now return a `Map` of values that will become global bindings for the server.

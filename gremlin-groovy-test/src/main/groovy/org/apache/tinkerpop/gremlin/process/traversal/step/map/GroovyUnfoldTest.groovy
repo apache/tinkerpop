@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -39,10 +39,7 @@ public abstract class GroovyUnfoldTest {
         public Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX() {
             TraversalScriptHelper.compute("g.V.valueMap.unfold.map { it.key }", g)
         }
-
-        @Override
-        Traversal<Vertex, String> get_g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold(Object v1Id, Object v6Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).repeat(__.both.simplePath).until(hasId(v6Id)).path.by('name').unfold", g, "v1Id", v1Id, "v6Id", v6Id)
-        }
     }
+
+
 }

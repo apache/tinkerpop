@@ -412,20 +412,23 @@ public class GremlinExecutorTest {
     }
 
     @Test
-    public void shouldInitializeWithScriptAndMakeGlobalBinding() throws Exception {
+    public void shouldInitializeWithScriptAndPromoteBinding() throws Exception {
         final GremlinExecutor gremlinExecutor = GremlinExecutor.build()
                 .addEngineSettings("gremlin-groovy",
                         Collections.emptyList(),
                         Collections.emptyList(),
                         Arrays.asList(PATHS.get("GremlinExecutorInit.groovy")),
                         Collections.emptyMap())
+                .promoteBindings(kv -> kv.getValue() instanceof Set)
                 .create();
 
         assertEquals(2, gremlinExecutor.eval("add(1,1)").get());
-        assertThat(gremlinExecutor.getGlobalBindings().keySet(), not(contains("someSet")));
-        assertThat(gremlinExecutor.getGlobalBindings().keySet(), contains("name"));
+        assertThat(gremlinExecutor.getGlobalBindings().keySet(), contains("someSet"));
+        assertThat(gremlinExecutor.getGlobalBindings().keySet(), not(contains("someMap")));
 
-        assertEquals("stephen", gremlinExecutor.getGlobalBindings().get("name"));
+        final Set<String> s = (Set<String>) gremlinExecutor.getGlobalBindings().get("someSet");
+        assertThat(s, contains("test"));
+        assertEquals(1, s.size());
 
         gremlinExecutor.close();
     }

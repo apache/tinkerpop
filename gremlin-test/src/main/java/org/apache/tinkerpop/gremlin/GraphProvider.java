@@ -29,9 +29,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_P_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -79,8 +78,7 @@ public interface GraphProvider {
         add(DefaultGraphTraversal.class);
         add(GraphTraversalSource.class);
         add(B_O_S_SE_SL_Traverser.class);
-        add(B_LP_O_P_S_SE_SL_Traverser.class);
-        add(B_LP_O_S_SE_SL_Traverser.class);
+        add(B_O_P_S_SE_SL_Traverser.class);
         add(B_O_Traverser.class);
         add(O_Traverser.class);
     }};
@@ -188,7 +186,7 @@ public interface GraphProvider {
      * @param test                   the test class
      * @param testMethodName         the name of the test
      * @param configurationOverrides settings to override defaults with.
-     * @param loadGraphWith          the data set to load and will be null if no data is to be loaded
+     * @param loadGraphWith  the data set to load and will be null if no data is to be loaded
      */
     public Configuration newGraphConfiguration(final String graphName,
                                                final Class<?> test,
@@ -238,7 +236,7 @@ public interface GraphProvider {
      * <li>{@link Graph}</li>
      * <li>{@link org.apache.tinkerpop.gremlin.structure.Graph.Variables}</li>
      * <li>{@link GraphTraversal}</li>
-     * <li>{@link B_LP_O_P_S_SE_SL_Traverser}</li>
+     * <li>{@link B_O_P_S_SE_SL_Traverser}</li>
      * <li>{@link Property}</li>
      * <li>{@link B_O_S_SE_SL_Traverser}</li>
      * <li>{@link Traversal}</li>

@@ -53,8 +53,6 @@ import static org.junit.Assert.*;
 @RunWith(GremlinProcessRunner.class)
 public abstract class MatchTest extends AbstractGremlinProcessTest {
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_matchXa_selectXnameX_bX();
-
     // very basic query
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX();
 
@@ -133,22 +131,6 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     // distinct values with by()-modulation
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_both_b__b_both_cX_dedupXa_bX_byXlabelX();
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_valueMap_matchXa_selectXnameX_bX() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_valueMap_matchXa_selectXnameX_bX();
-        printTraversalForm(traversal);
-        int counter = 0;
-        while (traversal.hasNext()) {
-            counter++;
-            final Map<String, Object> map = traversal.next();
-            assertTrue(Map.class.isAssignableFrom(map.get("a").getClass()));
-            final String name = ((Map<String,List<String>>) map.get("a")).get("name").get(0);
-            assertEquals(name, ((List<String>) map.get("b")).get(0));
-        }
-        assertEquals(6, counter);
-    }
 
     @Test
     @LoadGraphWith(MODERN)
@@ -487,11 +469,6 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
 
     public abstract static class Traversals extends MatchTest {
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_valueMap_matchXa_selectXnameX_bX() {
-            return g.V().valueMap().match(as("a").select("name").as("b"));
-        }
-
-        @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_matchXa_out_bX() {
             return g.V().match(as("a").out().as("b"));
         }
@@ -544,7 +521,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
             return g.V().match(
                     as("a").out("created").has("name", "lop").as("b"),
                     as("b").in("created").has("age", 29).as("c"))
-                    .where(__.<Vertex>as("c").repeat(out()).times(2)).select("a", "b", "c");
+                    .where(__.<Vertex>as("c").repeat(out()).times(2)).select("a","b","c");
         }
 
         @Override
@@ -574,7 +551,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     as("b").out("created").has("name", "lop"),
                     as("b").match(
                             as("b").out("created").as("d"),
-                            as("d").in("created").as("c")).select("c").as("c")).<Vertex>select("a", "b", "c");
+                            as("d").in("created").as("c")).select("c").as("c")).<Vertex>select("a","b","c");
         }
 
         @Override
@@ -629,7 +606,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX() {
             return g.V().match(
                     as("a").out("created").as("b"),
-                    as("c").out("created").as("b")).<String>select("a", "b", "c").by("name");
+                    as("c").out("created").as("b")).<String>select("a","b","c").by("name");
         }
 
         @Override
@@ -650,7 +627,7 @@ public abstract class MatchTest extends AbstractGremlinProcessTest {
                     ),
                     as("b").in("created").as("c"),
                     as("b").in("created").count().is(P.gt(1)))
-                    .select("a", "b", "c").by(T.id);
+                    .select("a","b","c").by(T.id);
         }
 
         @Override

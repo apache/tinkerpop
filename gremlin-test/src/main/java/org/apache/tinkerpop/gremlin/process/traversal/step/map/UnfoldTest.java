@@ -22,15 +22,19 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.junit.Assert.*;
 
 /**
@@ -42,8 +46,6 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Edge> get_g_V_localXoutE_foldX_unfold();
 
     public abstract Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX();
-
-    public abstract Traversal<Vertex, String> get_g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold(final Object v1Id, final Object v6Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -90,15 +92,6 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold() {
-        final Traversal<Vertex, String> traversal = get_g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold(
-                convertToVertexId("marko"), convertToVertexId("peter"));
-        printTraversalForm(traversal);
-        checkResults(Arrays.asList("marko", "lop", "peter", "marko", "josh", "lop", "peter"), traversal);
-    }
-
     public static class Traversals extends UnfoldTest {
 
         @Override
@@ -109,11 +102,6 @@ public abstract class UnfoldTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, String> get_g_V_valueMap_unfold_mapXkeyX() {
             return g.V().valueMap().<Map.Entry<String, List>>unfold().map(m -> m.get().getKey());
-        }
-
-        @Override
-        public Traversal<Vertex, String> get_g_VX1X_repeatXboth_simplePathX_untilXhasIdX6XX_path_byXnameX_unfold(Object v1Id, Object v6Id) {
-            return g.V(v1Id).repeat(both().simplePath()).until(hasId(v6Id)).path().by("name").unfold();
         }
     }
 }

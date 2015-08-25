@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
 import java.io.Serializable;
-import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -180,8 +179,6 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * @return The split traverser
          */
         public Admin<T> split();
-
-        public void addLabels(final Set<String> labels);
 
         /**
          * Set the current object location of the traverser.
