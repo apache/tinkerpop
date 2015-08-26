@@ -116,8 +116,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentitySt
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackElementValueStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackObjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreStep;
@@ -148,7 +147,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -968,13 +966,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new TreeSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
-    public default <V> GraphTraversal<S, E> sack(final BiFunction<V, E, V> sackFunction) {
-        return this.asAdmin().addStep(new SackObjectStep<>(this.asAdmin(), sackFunction));
+    public default <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator) {
+        return this.asAdmin().addStep(new SackValueStep<>(this.asAdmin(), sackOperator));
     }
 
-    public default <V> GraphTraversal<S, E> sack(final BinaryOperator<V> sackOperator,
-                                                 final String elementPropertyKey) {
-        return this.asAdmin().addStep(new SackElementValueStep(this.asAdmin(), sackOperator, elementPropertyKey));
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #sack(BiFunction)} with {@link #by(String)}.
+     */
+    @Deprecated
+    public default <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator, final String elementPropertyKey) {
+        return this.sack(sackOperator).by(elementPropertyKey);
     }
 
     public default GraphTraversal<S, E> store(final String sideEffectKey) {

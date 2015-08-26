@@ -1244,13 +1244,13 @@ rand = new Random()
 g.withSack {rand.nextFloat()}.V().sack()
 ----
 
-A more complicated initial value supplier example is presented below where the sack values are used in a running computation and then emitted at the end of the traversal. When an edge is traversed, the edge weight is multiplied by the sack value (`sack(mult,'weight')`).
+A more complicated initial value supplier example is presented below where the sack values are used in a running computation and then emitted at the end of the traversal. When an edge is traversed, the edge weight is multiplied by the sack value (`sack(mult).by('weight')`). Note that the <<by-step,`by()`>>-modulator can be any arbitrary traversal.
 
 [gremlin-groovy,modern]
 ----
-g.withSack(1.0f).V().repeat(outE().sack(mult,'weight').inV()).times(2)
-g.withSack(1.0f).V().repeat(outE().sack(mult,'weight').inV()).times(2).sack()
-g.withSack(1.0f).V().repeat(outE().sack(mult,'weight').inV()).times(2).path().
+g.withSack(1.0f).V().repeat(outE().sack(mult).by('weight').inV()).times(2)
+g.withSack(1.0f).V().repeat(outE().sack(mult).by('weight').inV()).times(2).sack()
+g.withSack(1.0f).V().repeat(outE().sack(mult).by('weight').inV()).times(2).path().
       by().by('weight')
 ----
 

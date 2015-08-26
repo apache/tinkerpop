@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
 /**
@@ -28,6 +28,16 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovySackTest {
 
     public static class Traversals extends SackTest {
+
+        @Override
+        public Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum() {
+            TraversalScriptHelper.compute("g.withSack(0.0f).V.outE.sack(sum).by('weight').inV.sack.sum()", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
+            TraversalScriptHelper.compute("g.withSack(0.0f).V.repeat(__.outE.sack(sum).by('weight').inV).times(2).sack()", g)
+        }
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum() {

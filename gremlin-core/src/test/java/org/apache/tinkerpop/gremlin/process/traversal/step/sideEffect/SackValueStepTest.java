@@ -21,6 +21,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
@@ -33,11 +34,14 @@ import java.util.Map;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class SackObjectStepTest extends StepTest {
+public class SackValueStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
+                __.sack(Operator.mult).by("weight"),
+                __.sack(Operator.max).by("weight"),
+                __.sack(Operator.max).by("age"),
                 __.sack((Map m, Vertex v) -> {
                     m.put(v.value("name"), v.value("lang"));
                     return m;
@@ -45,6 +49,7 @@ public class SackObjectStepTest extends StepTest {
                 __.sack((Map m, Vertex v) -> {
                     m.put(v.value("lang"), v.value("name"));
                     return m;
-                }));
+                })
+        );
     }
 }

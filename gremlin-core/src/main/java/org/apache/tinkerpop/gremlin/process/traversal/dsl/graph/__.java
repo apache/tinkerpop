@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.BinaryOperator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -700,11 +699,15 @@ public class __ {
         return __.<A>start().tree(sideEffectKey);
     }
 
-    public static <A, V> GraphTraversal<A, A> sack(final BiFunction<V, A, V> sackFunction) {
-        return __.<A>start().sack(sackFunction);
+    public static <A, V, U> GraphTraversal<A, A> sack(final BiFunction<V, U, V> sackOperator) {
+        return __.<A>start().sack(sackOperator);
     }
 
-    public static <A, V> GraphTraversal<A, A> sack(final BinaryOperator<V> sackOperator, final String elementPropertyKey) {
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #sack(BiFunction)}
+     */
+    @Deprecated
+    public static <A, V, U> GraphTraversal<A, A> sack(final BiFunction<V, U, V> sackOperator, final String elementPropertyKey) {
         return __.<A>start().sack(sackOperator, elementPropertyKey);
     }
 
