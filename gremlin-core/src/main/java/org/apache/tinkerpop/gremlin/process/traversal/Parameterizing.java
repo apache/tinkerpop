@@ -19,27 +19,14 @@
  *
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.step.map;
+package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-
-import java.util.Arrays;
-import java.util.List;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 
 /**
- * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class AddEdgeStepTest extends StepTest {
+public interface Parameterizing {
 
-    @Override
-    protected List<Traversal> getTraversals() {
-        return Arrays.asList(
-                __.addE("knows").property("a", "b"),
-                __.addE("created").property("a", "b"),
-                __.addE("knows").property("a", "b").property("c", "d"),
-                __.addE("knows").property("c", "d")
-        );
-    }
+    public Parameters getParameters();
 }

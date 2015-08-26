@@ -169,9 +169,11 @@ public class TinkerGraphTest {
         graph.createIndex("name",Vertex.class);
         graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");*/
         //System.out.println(g.V().properties().key().groupCount().next());
-        TinkerGraph graph = TinkerFactory.createModern();
+        TinkerGraph graph = TinkerGraph.open();
         GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
-        final List<Supplier<GraphTraversal<?,?>>> traversals = Arrays.asList(
+        g.inject("alice", "bob", "charlie").as("a").addV("person").property("name", select("a")).forEachRemaining(System.out::println);
+        g.V().valueMap().forEachRemaining(System.out::println);
+        /*final List<Supplier<GraphTraversal<?,?>>> traversals = Arrays.asList(
                 () -> g.V().out().as("v").match(
                         __.as("v").outE().count().as("outDegree"),
                         __.as("v").inE().count().as("inDegree")).select("v","outDegree","inDegree").by(valueMap()).by().by().local(union(select("v"), select("inDegree", "outDegree")).unfold().fold())
@@ -181,7 +183,7 @@ public class TinkerGraphTest {
             System.out.println("pre-strategy:  " + traversal.get());
             System.out.println("post-strategy: " + traversal.get().iterate());
             System.out.println(TimeUtil.clockWithResult(50, () -> traversal.get().toList()));
-        });
+        });*/
     }
 
     @Test
