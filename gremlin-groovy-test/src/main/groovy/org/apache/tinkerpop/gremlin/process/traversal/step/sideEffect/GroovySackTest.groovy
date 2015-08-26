@@ -30,6 +30,11 @@ public abstract class GroovySackTest {
     public static class Traversals extends SackTest {
 
         @Override
+        public Traversal<Vertex, String> get_g_withSackXhellowX_V_outE_sackXassignX_byXlabelX_inV_sack() {
+            TraversalScriptHelper.compute("g.withSack('hello').V.outE.sack(assign).by(label).inV.sack", g)
+        }
+
+        @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum() {
             TraversalScriptHelper.compute("g.withSack(0.0f).V.outE.sack(sum).by('weight').inV.sack.sum()", g)
         }

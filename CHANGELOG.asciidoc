@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `Operator.assign` to allow setting a direct value.
+* `Operator` is now a `BinaryOperator<Object>` with appropriate typecasting for respective number operators.
 * Simplified `SackValueStep` so it now supports both `sack(function)` and sack(function).by()`. Deprecated `sack(function,string)`.
 * Added `Parameters` object to allow for the parameters of a step to be retrieved at runtime via a traversal.
 * Redesigned (though backwards compatible) `AddEdgeStep`, `AddVertexStep`, and `AddPropertyStep` (and respective `GraphTraversal` API).
