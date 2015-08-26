@@ -57,6 +57,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
 
     private static final String BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX = "bulkloader.conf";
     private static final String BULK_LOADER_CLASS = BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX + ".class";
+    private static final String BULK_LOADER_GRAPH_CFG_PREFIX = BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX + ".graph";
     private static final String BULK_LOADER_CFG_PREFIX = BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX + ".loader";
 
     public static final String BULK_LOADER_VERTEX_ID = "bulkloader.vertex-id";
@@ -103,7 +104,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     @Override
     public void workerIterationStart(final Memory memory) {
         if (null == graph) {
-            graph = GraphFactory.open(configuration);
+            graph = GraphFactory.open(configuration.subset(BULK_LOADER_GRAPH_CFG_PREFIX));
             LOGGER.info("Opened Graph instance: {}", graph);
             try {
                 if (!graph.features().graph().supportsConcurrentAccess()) {
@@ -269,7 +270,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
             try {
                 final Properties properties = new Properties();
                 properties.load(new FileInputStream(propertiesFileLocation));
-                properties.forEach((key, value) -> configuration.setProperty(BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX + "." + key, value));
+                properties.forEach((key, value) -> configuration.setProperty(BULK_LOADER_GRAPH_CFG_PREFIX + "." + key, value));
                 return this;
             } catch (final Exception e) {
                 throw new IllegalArgumentException(e.getMessage(), e);
