@@ -117,7 +117,7 @@ g.V().choose(has('name','marko'),
 AddEdge Step
 ~~~~~~~~~~~~
 
-link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data what is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. To add edges via a traversal, there is a collection of `addE()`-steps (*map*/*sideEffect*).
+link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit what is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is determined by the traversal definition. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. Moreover, what was once implicit can be made explicit via the `addE()`-step (*map*/*sideEffect*).
 
 image::addedge-step.png[width=450]
 
@@ -125,7 +125,8 @@ image::addedge-step.png[width=450]
 ----
 g.V(1).as('a').out('created').in('created').where(neq('a')).
   addE('co-developer').from('a').property('year',2009) <1>
-g.V(3,4,5).aggregate('x').has('name','josh').as('a').select('x').unfold().hasLabel('software').addE('createdBy').to('a') <2>
+g.V(3,4,5).aggregate('x').has('name','josh').as('a').
+  select('x').unfold().hasLabel('software').addE('createdBy').to('a') <2>
 g.V().as('a').out('created').addE('createdBy').to('a').property('acl','public') <3>
 g.V(1).as('a').out('knows').
   addE('livesNear').from('a').property('year',2009).
