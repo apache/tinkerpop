@@ -90,6 +90,10 @@ public class GraphTraversalSource implements TraversalSource {
         return traversal;
     }
 
+    public <S> GraphTraversal<S, S> inject(S... starts) {
+        return (GraphTraversal<S, S>) this.generateTraversal().inject(starts);
+    }
+
     /**
      * @deprecated As of release 3.1.0, replaced by {@link #addV()}
      */
@@ -242,6 +246,11 @@ public class GraphTraversalSource implements TraversalSource {
         public GraphTraversalSourceStub(final GraphTraversal.Admin traversal, final boolean withPaths) {
             this.traversal = traversal;
             this.withPaths = withPaths;
+        }
+
+        public <S> GraphTraversal<S, S> inject(S... starts) {
+            this.traversal.inject(starts);
+            return ((this.withPaths) ? this.traversal.addStep(new PathIdentityStep<>(this.traversal)) : this.traversal);
         }
 
         /**
