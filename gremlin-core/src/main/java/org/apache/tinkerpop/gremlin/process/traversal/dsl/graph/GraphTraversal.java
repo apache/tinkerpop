@@ -677,11 +677,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
-    public default GraphTraversal<S, E> id(final Object elementId) {
-        ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(T.id, elementId);
-        return this;
-    }
-
     /**
      * @deprecated As of release 3.1.0, replaced by {@link #addE(String)}
      */

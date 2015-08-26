@@ -46,6 +46,11 @@ public abstract class GroovyAddVertexTest {
             TraversalScriptHelper.compute("g.addV(label, 'person', 'name', 'stephen')", g)
         }
 
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX() {
+            TraversalScriptHelper.compute("g.V.has('name', 'marko').property('friendWeight', outE('knows').weight.sum(), 'acl', 'private')", g)
+        }
+
         ///////// DEPRECATED BELOW
 
         @Override

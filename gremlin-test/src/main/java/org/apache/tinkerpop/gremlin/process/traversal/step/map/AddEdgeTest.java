@@ -48,6 +48,8 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X(final Object v1Id);
 
+    public abstract Traversal<Vertex, Edge> get_g_V_aggregateXxX_asXaX_selectXxX_unfold_addEXexistsWithX_toXaX_propertyXtime_nowX();
+
     public abstract Traversal<Vertex, Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_addEXcodeveloperX_fromXaX_toXbX_propertyXyear_2009X();
 
     public abstract Traversal<Vertex, Edge> get_g_V_asXaX_inXcreatedX_addEXcreatedByX_fromXaX_propertyXyear_2009X_propertyXacl_publicX();
@@ -157,6 +159,29 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_withSideEffectXx__g_V_toListX_addOutEXexistsWith_x_time_nowX() {
         final Traversal<Vertex, Edge> traversal = get_g_withSideEffectXx__g_V_toListX_addOutEXexistsWith_x_time_nowX();
+        printTraversalForm(traversal);
+        int count = 0;
+        while (traversal.hasNext()) {
+            final Edge edge = traversal.next();
+            assertEquals("existsWith", edge.label());
+            assertEquals("now", edge.value("time"));
+            assertEquals(1, IteratorUtils.count(edge.properties()));
+            count++;
+        }
+        assertEquals(36, count);
+        assertEquals(42, IteratorUtils.count(graph.edges()));
+        for (final Vertex vertex : IteratorUtils.list(graph.vertices())) {
+            assertEquals(6, IteratorUtils.count(vertex.edges(Direction.OUT, "existsWith")));
+            assertEquals(6, IteratorUtils.count(vertex.edges(Direction.IN, "existsWith")));
+        }
+        assertEquals(6, IteratorUtils.count(graph.vertices()));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    public void g_V_aggregateXxX_asXaX_selectXxX_unfold_addEXexistsWithX_toXaX_propertyXtime_nowX() {
+        final Traversal<Vertex, Edge> traversal = get_g_V_aggregateXxX_asXaX_selectXxX_unfold_addEXexistsWithX_toXaX_propertyXtime_nowX();
         printTraversalForm(traversal);
         int count = 0;
         while (traversal.hasNext()) {
@@ -289,10 +314,10 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
             return g.V(v1Id).as("a").out("created").addE("createdBy").to("a").property("weight", 2);
         }
 
-        /*@Override
-        public Traversal<Vertex, Edge> get_g_withSideEffectXx__g_V_toListX_addOutEXexistsWith_x_time_nowX() {
-            return g.withSideEffect("x", g.V().toList()).V().addE("existsWith").to(__.select("x")).property("time", "now");
-        }*/
+        @Override
+        public Traversal<Vertex, Edge> get_g_V_aggregateXxX_asXaX_selectXxX_unfold_addEXexistsWithX_toXaX_propertyXtime_nowX() {
+            return g.V().aggregate("x").as("a").select("x").unfold().addE("existsWith").to("a").property("time", "now");
+        }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_addEXcodeveloperX_fromXaX_toXbX_propertyXyear_2009X() {

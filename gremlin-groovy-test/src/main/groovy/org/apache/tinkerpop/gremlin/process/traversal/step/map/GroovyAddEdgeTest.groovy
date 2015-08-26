@@ -41,10 +41,10 @@ public abstract class GroovyAddEdgeTest {
             TraversalScriptHelper.compute("g.V(${v1Id}).as('a').out('created').addE('createdBy').to('a').property('weight', 2)", g, "v1Id", v1Id)
         }
 
-        /*@Override
-        public Traversal<Vertex, Edge> get_g_withSideEffectXx__g_V_toListX_addOutEXexistsWith_x_time_nowX() {
-            return g.withSideEffect("x", g.V().toList()).V().addE("existsWith").to(__.select("x")).property("time", "now");
-        }*/
+        @Override
+        public Traversal<Vertex, Edge> get_g_V_aggregateXxX_asXaX_selectXxX_unfold_addEXexistsWithX_toXaX_propertyXtime_nowX() {
+            TraversalScriptHelper.compute("g.V.aggregate('x').as('a').select('x').unfold.addE('existsWith').to('a').property('time', 'now')", g)
+        }
 
         @Override
         public Traversal<Vertex, Edge> get_g_V_asXaX_outXcreatedX_inXcreatedX_whereXneqXaXX_asXbX_addEXcodeveloperX_fromXaX_toXbX_propertyXyear_2009X() {

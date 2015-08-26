@@ -83,31 +83,31 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
         });
         final Object[] vertexPropertyKeyValues = this.parameters.getKeyValues(traverser, T.key, T.value);
 
+        final Element element = traverser.get();
+        final boolean runtimeAsVertex = element instanceof Vertex;
+
         if (this.callbackRegistry != null) {
-            final Element currentElement = traverser.get();
             final Property currentProperty = traverser.get().property(key);
-
-            // todo: have to do a runtime check until TINKERPOP3-783 is done - asVertex is not reliable
-            final boolean runtimeAsVertex = currentElement instanceof Vertex;
             final boolean newProperty = runtimeAsVertex ? currentProperty == VertexProperty.empty() : currentProperty == Property.empty();
-
-            Event.ElementPropertyChangedEvent evt;
-            if (currentElement instanceof Vertex)
-                evt = new Event.VertexPropertyChangedEvent(DetachedFactory.detach((Vertex) currentElement, true), newProperty ? null : DetachedFactory.detach((VertexProperty) currentProperty, true), value, vertexPropertyKeyValues);
-            else if (currentElement instanceof Edge)
-                evt = new Event.EdgePropertyChangedEvent(DetachedFactory.detach((Edge) currentElement, true), newProperty ? null : DetachedFactory.detach(currentProperty), value);
-            else if (currentElement instanceof VertexProperty)
-                evt = new Event.VertexPropertyPropertyChangedEvent(DetachedFactory.detach((VertexProperty) currentElement, true), newProperty ? null : DetachedFactory.detach(currentProperty), value);
+            final Event.ElementPropertyChangedEvent evt;
+            if (element instanceof Vertex)
+                evt = new Event.VertexPropertyChangedEvent(DetachedFactory.detach((Vertex) element, true), newProperty ? null : DetachedFactory.detach((VertexProperty) currentProperty, true), value, vertexPropertyKeyValues);
+            else if (element instanceof Edge)
+                evt = new Event.EdgePropertyChangedEvent(DetachedFactory.detach((Edge) element, true), newProperty ? null : DetachedFactory.detach(currentProperty), value);
+            else if (element instanceof VertexProperty)
+                evt = new Event.VertexPropertyPropertyChangedEvent(DetachedFactory.detach((VertexProperty) element, true), newProperty ? null : DetachedFactory.detach(currentProperty), value);
             else
-                throw new IllegalStateException(String.format("The incoming object cannot be processed by change eventing in %s:  %s", AddPropertyStep.class.getName(), currentElement));
+                throw new IllegalStateException(String.format("The incoming object cannot be processed by change eventing in %s:  %s", AddPropertyStep.class.getName(), element));
 
             this.callbackRegistry.getCallbacks().forEach(c -> c.accept(evt));
         }
 
         if (null != this.cardinality)
-            ((Vertex) traverser.get()).property(this.cardinality, key, value, vertexPropertyKeyValues);
+            ((Vertex) element).property(this.cardinality, key, value, vertexPropertyKeyValues);
+        else if(runtimeAsVertex)
+            ((Vertex)element).property(key,value,vertexPropertyKeyValues);
         else
-            traverser.get().property(key, value);
+            element.property(key, value);
     }
 
     @Override

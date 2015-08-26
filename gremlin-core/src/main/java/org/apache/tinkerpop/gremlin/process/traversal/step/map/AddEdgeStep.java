@@ -34,7 +34,9 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -83,14 +85,15 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<E
 
     @Override
     protected Edge map(final Traverser.Admin<S> traverser) {
-        final Edge edge =
-                this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get()).
-                        addEdge(this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL),
-                                this.parameters.get(traverser, TO, () -> (Vertex) traverser.get()), this.parameters.getKeyValues(traverser, TO, FROM, T.label));
-        if (callbackRegistry != null) {
-            final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
-            callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
-        }
+        final Vertex toVertex = this.parameters.get(traverser, TO, () -> (Vertex) traverser.get());
+        final Vertex fromVertex = this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get());
+        final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL);
+
+        final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
+            if (callbackRegistry != null) {
+                final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
+                callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
+            }
         return edge;
     }
 

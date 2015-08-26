@@ -47,6 +47,8 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX();
 
+    public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX();
+
     // 3.0.0 DEPRECATIONS
     @Deprecated
     public abstract Traversal<Vertex, Vertex> get_g_V_addVXlabel_animal_age_0X();
@@ -57,6 +59,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     public void g_V_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX() {
         final Traversal<Vertex, Vertex> traversal = get_g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(convertToVertexId(graph, "marko"));
         printTraversalForm(traversal);
@@ -72,6 +75,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     public void g_V_addVXanimalX_propertyXage_0X() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_addVXanimalX_propertyXage_0X();
         printTraversalForm(traversal);
@@ -90,6 +94,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     public void g_addVXpersonX_propertyXname_stephenX() {
         final Traversal<Vertex, Vertex> traversal = get_g_addVXpersonX_propertyXname_stephenX();
         printTraversalForm(traversal);
@@ -101,11 +106,29 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals(7, IteratorUtils.count(graph.vertices()));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    public void g_V_hasXname_markoX_addVXmetaPersonX_propertyXname_nameX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX();
+        printTraversalForm(traversal);
+        final Vertex marko = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals("person", marko.label());
+        assertEquals("marko", marko.value("name"));
+        assertEquals(1.5, marko.value("friendWeight"), 0.01);
+        assertEquals("private", marko.property("friendWeight").value("acl"));
+        assertEquals(3, IteratorUtils.count(marko.properties()));
+        assertEquals(1, IteratorUtils.count(marko.property("friendWeight").properties()));
+    }
+
     /////
 
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     public void g_V_addVXlabel_animal_age_0X() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_addVXlabel_animal_age_0X();
         printTraversalForm(traversal);
@@ -124,6 +147,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
     public void g_addVXlabel_person_name_stephenX() {
         final Traversal<Vertex, Vertex> traversal = get_g_addVXlabel_person_name_stephenX();
         printTraversalForm(traversal);
@@ -151,6 +175,11 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX() {
             return g.addV("person").property("name", "stephen");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX() {
+            return g.V().has("name", "marko").property("friendWeight", __.outE("knows").values("weight").sum(), "acl", "private");
         }
 
         @Override
