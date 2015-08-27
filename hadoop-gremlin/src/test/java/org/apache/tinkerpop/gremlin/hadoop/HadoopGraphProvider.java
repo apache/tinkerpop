@@ -20,16 +20,10 @@ package org.apache.tinkerpop.gremlin.hadoop;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConstants;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopElement;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopProperty;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertexProperty;
+import org.apache.tinkerpop.gremlin.hadoop.structure.*;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
@@ -38,13 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONResourceAccess
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoResourceAccess;
 import org.apache.tinkerpop.gremlin.structure.io.script.ScriptResourceAccess;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -80,9 +68,17 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
 
             final List<String> graphsonResources = Arrays.asList(
                     "tinkerpop-modern.json",
+                    "tinkerpop2-modern.json",
+                    "tinkerpop2adj-modern.json",
                     "grateful-dead.json",
+                    "grateful-dead-tp2.json",
+                    "grateful-dead-tp2adj.json",
                     "tinkerpop-classic.json",
-                    "tinkerpop-crew.json");
+                    "tinkerpop2-classic.json",
+                    "tinkerpop2adj-classic.json",
+                    "tinkerpop-crew.json",
+                    //"tinkerpop2adj-crew.json", // todo Add back when resolving issue with multivalued properties
+                    "tinkerpop2-crew.json");
             for (final String fileName : graphsonResources) {
                 PATHS.put(fileName, TestHelper.generateTempFileFromResource(GraphSONResourceAccess.class, fileName, "").getAbsolutePath());
             }
@@ -153,12 +149,28 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
 
         if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL_TP2) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead-tp2." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.GRATEFUL_TP2_ADJ) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("grateful-dead-tp2adj." + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.MODERN)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-modern." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.MODERN_TP2) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop2-modern." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.MODERN_TP2_ADJ) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop2adj-modern." + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-classic." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC_TP2) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop2-classic." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.CLASSIC_TP2_ADJ) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop2adj-classic." + type));
         } else if (graphData.equals(LoadGraphWith.GraphData.CREW)) {
             ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop-crew." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.CREW_TP2) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop2-crew." + type));
+        } else if (graphData.equals(LoadGraphWith.GraphData.CREW_TP2_ADJ) && type.equals("json")) {
+            ((HadoopGraph) g).configuration().setInputLocation(PATHS.get("tinkerpop2adj-crew." + type));
         } else {
             throw new RuntimeException("Could not load graph with " + graphData);
         }

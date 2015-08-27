@@ -62,6 +62,16 @@ public @interface LoadGraphWith {
         CLASSIC,
 
         /**
+         * Classic in TinkerPop2 legacy format.
+         */
+        CLASSIC_TP2,
+
+        /**
+         * Classic in TinkerPop2 adjacency list format.
+         */
+        CLASSIC_TP2_ADJ,
+
+        /**
          * Loads the "modern" TinkerPop toy graph which is like "classic", but with the "weight" value on edges stored
          * as double and labels added for vertices.  This should be the most commonly used graph instance for testing
          * as graphs that support string, double and int should comprise the largest number of implementations.
@@ -69,15 +79,45 @@ public @interface LoadGraphWith {
         MODERN,
 
         /**
+         * Modern in TinkerPop2 legacy format.
+         */
+        MODERN_TP2,
+
+        /**
+         * Modern in TinkerPop2 adjacency list format.
+         */
+        MODERN_TP2_ADJ,
+
+        /**
          * Load "The Crew" TinkerPop3 toy graph which includes {@link org.apache.tinkerpop.gremlin.structure.VertexProperty} data.
          */
         CREW,
 
         /**
+         * Crew in TinkerPop2 legacy format.
+         */
+        CREW_TP2,
+
+        /**
+         * Crew in TinkerPop2 adjacency list format.
+         */
+        CREW_TP2_ADJ,
+
+        /**
          * Loads the "grateful dead" graph which is a "large" graph which provides for the construction of more
          * complex traversals.
          */
-        GRATEFUL;
+        GRATEFUL,
+
+        /**
+         * Grateful in TinkerPop2 legacy format.
+         */
+        GRATEFUL_TP2,
+
+        /**
+         * Grateful in TinkerPop2 adjacency list format.
+         */
+        GRATEFUL_TP2_ADJ;
 
         private static final List<FeatureRequirement> featuresRequiredByClassic = new ArrayList<FeatureRequirement>() {{
             add(FeatureRequirement.Factory.create(FEATURE_STRING_VALUES, VertexPropertyFeatures.class));
@@ -121,16 +161,15 @@ public @interface LoadGraphWith {
 
         public List<FeatureRequirement> featuresRequired() {
             switch (this) {
-                case CLASSIC:
+                case CLASSIC: case CLASSIC_TP2: CLASSIC_TP2_ADJ:
                     return featuresRequiredByClassic;
-                case CREW:
+                case CREW: case CREW_TP2: case CREW_TP2_ADJ:
                     return featuresRequiredByCrew;
-                case MODERN:
+                case MODERN: case MODERN_TP2: case MODERN_TP2_ADJ:
                     return featuresRequiredByModern;
-                case GRATEFUL:
+                case GRATEFUL: case GRATEFUL_TP2: case GRATEFUL_TP2_ADJ:
                     return featuresRequiredByGrateful;
             }
-
             throw new RuntimeException("No features for this GraphData type");
         }
     }

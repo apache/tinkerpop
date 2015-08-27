@@ -300,7 +300,7 @@ public final class StarGraph implements Graph, Serializable {
             return this.property(VertexProperty.Cardinality.single, key, value, keyValues);
         }
 
-        Edge addOutEdge(final String label, final Vertex inVertex, final Object... keyValues) {
+        public Edge addOutEdge(final String label, final Vertex inVertex, final Object... keyValues) {
             ElementHelper.validateLabel(label);
             ElementHelper.legalPropertyKeyValueArray(keyValues);
             if (null == this.outEdges)
@@ -316,7 +316,7 @@ public final class StarGraph implements Graph, Serializable {
             return outEdge;
         }
 
-        Edge addInEdge(final String label, final Vertex outVertex, final Object... keyValues) {
+        public Edge addInEdge(final String label, final Vertex outVertex, final Object... keyValues) {
             ElementHelper.validateLabel(label);
             ElementHelper.legalPropertyKeyValueArray(keyValues);
             if (null == this.inEdges)
