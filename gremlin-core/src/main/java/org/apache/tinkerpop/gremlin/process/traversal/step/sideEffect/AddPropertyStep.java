@@ -84,11 +84,11 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
         final Object[] vertexPropertyKeyValues = this.parameters.getKeyValues(traverser, T.key, T.value);
 
         final Element element = traverser.get();
-        final boolean runtimeAsVertex = element instanceof Vertex;
+
 
         if (this.callbackRegistry != null) {
             final Property currentProperty = traverser.get().property(key);
-            final boolean newProperty = runtimeAsVertex ? currentProperty == VertexProperty.empty() : currentProperty == Property.empty();
+            final boolean newProperty = element instanceof Vertex ? currentProperty == VertexProperty.empty() : currentProperty == Property.empty();
             final Event.ElementPropertyChangedEvent evt;
             if (element instanceof Vertex)
                 evt = new Event.VertexPropertyChangedEvent(DetachedFactory.detach((Vertex) element, true), newProperty ? null : DetachedFactory.detach((VertexProperty) currentProperty, true), value, vertexPropertyKeyValues);
@@ -104,8 +104,8 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
         if (null != this.cardinality)
             ((Vertex) element).property(this.cardinality, key, value, vertexPropertyKeyValues);
-        else if(runtimeAsVertex)
-            ((Vertex)element).property(key,value,vertexPropertyKeyValues);
+        else if (vertexPropertyKeyValues.length > 0)
+            ((Vertex) element).property(key, value, vertexPropertyKeyValues);
         else
             element.property(key, value);
     }
@@ -121,7 +121,6 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
         return this.callbackRegistry;
     }
 
-
     @Override
     public int hashCode() {
         return super.hashCode() ^ this.parameters.hashCode() ^ ((null == this.cardinality) ? "null".hashCode() : this.cardinality.hashCode());
@@ -134,7 +133,7 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     @Override
     public AddPropertyStep<S> clone() {
-        final AddPropertyStep<S> clone = (AddPropertyStep<S>)super.clone();
+        final AddPropertyStep<S> clone = (AddPropertyStep<S>) super.clone();
         clone.parameters = this.parameters.clone();
         return clone;
     }
