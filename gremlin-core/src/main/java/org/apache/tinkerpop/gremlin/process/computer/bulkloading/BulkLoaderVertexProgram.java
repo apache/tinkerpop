@@ -46,7 +46,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -68,8 +67,8 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     private BulkLoader bulkLoader;
     private Graph graph;
     private GraphTraversalSource g;
-    private Long intermediateBatchSize;
-    private AtomicLong counter = new AtomicLong();
+    private long intermediateBatchSize;
+    private long counter;
 
     private BulkLoaderVertexProgram() {
         messageScope = MessageScope.Local.of(__::inE);
@@ -107,14 +106,14 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     }
 
     private void commit(final boolean force) {
-        if (!force && (intermediateBatchSize == 0L || counter.incrementAndGet() % intermediateBatchSize != 0)) return;
+        if (!force && (intermediateBatchSize == 0L || ++counter % intermediateBatchSize != 0)) return;
         if (null != graph) {
             if (graph.features().graph().supportsTransactions()) {
                 LOGGER.info("Committing transaction on Graph instance: {}", graph);
                 try {
                     graph.tx().commit(); // TODO will Giraph/MR restart the program and re-run execute if this fails?
                     LOGGER.debug("Committed transaction on Graph instance: {}", graph);
-                    counter.set(0L);
+                    counter = 0L;
                 } catch (Exception e) {
                     LOGGER.error("Failed to commit transaction on Graph instance: {}", graph);
                     graph.tx().rollback();
@@ -148,13 +147,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
                     DEFAULT_BULK_LOADER_VERTEX_ID);
         }
         intermediateBatchSize = configuration.getLong(INTERMEDIATE_BATCH_SIZE_CFG_KEY, 0L);
-        final String bulkLoaderVertexIdProperty = configuration.subset(BULK_LOADER_CFG_KEY)
-                .getString(BULK_LOADER_VERTEX_ID_CFG_KEY);
-        if (!elementComputeKeys.contains(bulkLoaderVertexIdProperty)) {
-            synchronized (elementComputeKeys) {
-                elementComputeKeys.add(bulkLoaderVertexIdProperty);
-            }
-        }
+        elementComputeKeys.add(configuration.subset(BULK_LOADER_CFG_KEY).getString(BULK_LOADER_VERTEX_ID_CFG_KEY));
     }
 
     @Override
