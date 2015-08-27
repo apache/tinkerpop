@@ -245,6 +245,85 @@ public class PathTest {
     }
 
     @Test
+    public void shouldHavePopEquality() {
+        PATH_SUPPLIERS.forEach(supplier -> {
+            Path pathA1 = supplier.get();
+            Path pathA2 = supplier.get();
+            Path pathB1 = supplier.get();
+            Path pathB2 = supplier.get();
+            assertTrue(pathA1.popEquals(Pop.all, pathA2));
+            assertTrue(pathA2.popEquals(Pop.all, pathB1));
+            assertTrue(pathB1.popEquals(Pop.all, pathB2));
+            assertTrue(pathA1.popEquals(Pop.first, pathA2));
+            assertTrue(pathA2.popEquals(Pop.first, pathB1));
+            assertTrue(pathB1.popEquals(Pop.first, pathB2));
+            assertTrue(pathA1.popEquals(Pop.last, pathA2));
+            assertTrue(pathA2.popEquals(Pop.last, pathB1));
+            assertTrue(pathB1.popEquals(Pop.last, pathB2));
+
+            ///
+            pathA1 = pathA1.extend("marko", Collections.singleton("a"));
+            pathA2 = pathA2.extend("marko", Collections.singleton("a"));
+            pathB1 = pathB1.extend("matthias", Collections.singleton("a"));
+            pathB2 = pathB2.extend("matthias", Collections.singleton("a"));
+            assertTrue(pathA1.popEquals(Pop.all, pathA2));
+            assertFalse(pathA2.popEquals(Pop.all, pathB1));
+            assertTrue(pathB1.popEquals(Pop.all, pathB2));
+            assertTrue(pathA1.popEquals(Pop.first, pathA2));
+            assertFalse(pathA2.popEquals(Pop.first, pathB1));
+            assertTrue(pathB1.popEquals(Pop.first, pathB2));
+            assertTrue(pathA1.popEquals(Pop.last, pathA2));
+            assertFalse(pathA2.popEquals(Pop.last, pathB1));
+            assertTrue(pathB1.popEquals(Pop.last, pathB2));
+
+            ///
+            pathA1 = pathA1.extend("matthias", Collections.singleton("a"));
+            pathA2 = pathA2.extend("matthias", Collections.singleton("a"));
+            pathB1 = pathB1.extend("marko", Collections.singleton("a"));
+            pathB2 = pathB2.extend("marko", Collections.singleton("a"));
+            assertTrue(pathA1.popEquals(Pop.all, pathA2));
+            assertFalse(pathA2.popEquals(Pop.all, pathB1));
+            assertTrue(pathB1.popEquals(Pop.all, pathB2));
+            assertTrue(pathA1.popEquals(Pop.first, pathA2));
+            assertFalse(pathA2.popEquals(Pop.first, pathB1));
+            assertTrue(pathB1.popEquals(Pop.first, pathB2));
+            assertTrue(pathA1.popEquals(Pop.last, pathA2));
+            assertFalse(pathA2.popEquals(Pop.last, pathB1));
+            assertTrue(pathB1.popEquals(Pop.last, pathB2));
+
+            ///
+            pathA1 = pathA1.extend("bob", Collections.singleton("a"));
+            pathA2 = pathA2.extend("bob", Collections.singleton("a"));
+            pathB1 = pathB1.extend("bob", Collections.singleton("a"));
+            pathB2 = pathB2.extend("bob", Collections.singleton("a"));
+            assertTrue(pathA1.popEquals(Pop.all, pathA2));
+            assertFalse(pathA2.popEquals(Pop.all, pathB1));
+            assertTrue(pathB1.popEquals(Pop.all, pathB2));
+            assertTrue(pathA1.popEquals(Pop.first, pathA2));
+            assertFalse(pathA2.popEquals(Pop.first, pathB1));
+            assertTrue(pathB1.popEquals(Pop.first, pathB2));
+            assertTrue(pathA1.popEquals(Pop.last, pathA2));
+            assertTrue(pathA2.popEquals(Pop.last, pathB1));
+            assertTrue(pathB1.popEquals(Pop.last, pathB2));
+
+            ///
+            pathA1 = pathA1.extend("stephen", Collections.singleton("b"));
+            pathA2 = pathA2.extend("stephen", Collections.singleton("b"));
+            pathB1 = pathB1.extend("stephen", Collections.singleton("b"));
+            pathB2 = pathB2.extend("stephen", Collections.singleton("b"));
+            assertTrue(pathA1.popEquals(Pop.all, pathA2));
+            assertFalse(pathA2.popEquals(Pop.all, pathB1));
+            assertTrue(pathB1.popEquals(Pop.all, pathB2));
+            assertTrue(pathA1.popEquals(Pop.first, pathA2));
+            assertFalse(pathA2.popEquals(Pop.first, pathB1));
+            assertTrue(pathB1.popEquals(Pop.first, pathB2));
+            assertTrue(pathA1.popEquals(Pop.last, pathA2));
+            assertTrue(pathA2.popEquals(Pop.last, pathB1));
+            assertTrue(pathB1.popEquals(Pop.last, pathB2));
+        });
+    }
+
+    @Test
     public void shouldHaveCrossTypeEquality() {
         List<Path> paths = PATH_SUPPLIERS.stream()
                 .map(Supplier::get)

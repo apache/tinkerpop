@@ -18,22 +18,138 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
-import org.apache.tinkerpop.gremlin.process.traversal.*;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.*;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.LoopTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.PredicateTraverser;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.lambda.TrueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalOptionParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.branch.*;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.*;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.*;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.*;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.*;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.BranchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.ChooseStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.LocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.branch.UnionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CyclicPathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TimeLimitStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.DedupLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapKeysStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapValuesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyKeyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SampleLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TailLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalFlatMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TraversalMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.TreeStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SackValueStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StoreStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SubgraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementFunctionComparator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementValueComparator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.NoOpBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.PropertyType;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
-import java.util.*;
-import java.util.function.*;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -519,21 +635,84 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new TreeStep<>(this.asAdmin()));
     }
 
-    public default GraphTraversal<S, Vertex> addV(final Object... keyValues) {
-        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), keyValues));
+    public default GraphTraversal<S, Vertex> addV(final String vertexLabel) {
+        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), vertexLabel));
     }
 
+    public default GraphTraversal<S, Vertex> addV() {
+        return this.asAdmin().addStep(new AddVertexStep<>(this.asAdmin(), null));
+    }
+
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #addV()}
+     */
+    @Deprecated
+    public default GraphTraversal<S, Vertex> addV(final Object... propertyKeyValues) {
+        this.addV();
+        ((AddVertexStep) this.asAdmin().getEndStep()).addPropertyMutations(propertyKeyValues);
+        return (GraphTraversal<S, Vertex>) this;
+    }
+
+    public default GraphTraversal<S, Edge> addE(final String edgeLabel) {
+        return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), edgeLabel));
+    }
+
+    public default GraphTraversal<S, E> to(final String toStepLabel) {
+        return this.to(__.select(toStepLabel));
+    }
+
+    public default GraphTraversal<S, E> from(final String fromStepLabel) {
+        return this.from(__.select(fromStepLabel));
+    }
+
+    public default GraphTraversal<S, E> to(final Traversal<E, Vertex> toVertex) {
+        ((AddEdgeStep) this.asAdmin().getEndStep()).addTo(toVertex);
+        return this;
+    }
+
+    public default GraphTraversal<S, E> from(final Traversal<E, Vertex> fromVertex) {
+        ((AddEdgeStep) this.asAdmin().getEndStep()).addFrom(fromVertex);
+        return this;
+    }
+
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #addE(String)}
+     */
+    @Deprecated
     public default GraphTraversal<S, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
-        if (propertyKeyValues.length % 2 == 0)
-            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), direction, null, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues));
-        else
-            return this.asAdmin().addStep(new AddEdgeStep<>(this.asAdmin(), direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, (String) propertyKeyValues[0], Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length)));
+        if (propertyKeyValues.length % 2 == 0) {
+            // addOutE("createdBy", "a")
+            this.addE(firstVertexKeyOrEdgeLabel);
+            if (direction.equals(Direction.OUT))
+                this.to(edgeLabelOrSecondVertexKey);
+            else
+                this.from(edgeLabelOrSecondVertexKey);
+            ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(propertyKeyValues);
+            return (GraphTraversal<S, Edge>) this;
+        } else {
+            // addInE("a", "co-developer", "b", "year", 2009)
+            this.addE(edgeLabelOrSecondVertexKey);
+            if (direction.equals(Direction.OUT))
+                this.from(firstVertexKeyOrEdgeLabel).to((String) propertyKeyValues[0]);
+            else
+                this.to(firstVertexKeyOrEdgeLabel).from((String) propertyKeyValues[0]);
+            ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(Arrays.copyOfRange(propertyKeyValues, 1, propertyKeyValues.length));
+            return (GraphTraversal<S, Edge>) this;
+        }
     }
 
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #addE(String)}
+     */
+    @Deprecated
     public default GraphTraversal<S, Edge> addOutE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
         return this.addE(Direction.OUT, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
 
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #addE(String)}
+     */
+    @Deprecated
     public default GraphTraversal<S, Edge> addInE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
         return this.addE(Direction.IN, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
@@ -787,12 +966,16 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new TreeSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
-    public default <V> GraphTraversal<S, E> sack(final BiFunction<V, E, V> sackFunction) {
-        return this.asAdmin().addStep(new SackObjectStep<>(this.asAdmin(), sackFunction));
+    public default <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator) {
+        return this.asAdmin().addStep(new SackValueStep<>(this.asAdmin(), sackOperator));
     }
 
-    public default <V> GraphTraversal<S, E> sack(final BinaryOperator<V> sackOperator, final String elementPropertyKey) {
-        return this.asAdmin().addStep(new SackElementValueStep(this.asAdmin(), sackOperator, elementPropertyKey));
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #sack(BiFunction)} with {@link #by(String)}.
+     */
+    @Deprecated
+    public default <V, U> GraphTraversal<S, E> sack(final BiFunction<V, U, V> sackOperator, final String elementPropertyKey) {
+        return this.sack(sackOperator).by(elementPropertyKey);
     }
 
     public default GraphTraversal<S, E> store(final String sideEffectKey) {
@@ -803,12 +986,18 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ProfileStep<>(this.asAdmin()));
     }
 
-    public default GraphTraversal<S, E> property(final String key, final Object value, final Object... keyValues) {
-        return this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), key, value, keyValues));
+    public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
+        if ((this.asAdmin().getEndStep() instanceof AddVertexStep || this.asAdmin().getEndStep() instanceof AddEdgeStep || this.asAdmin().getEndStep() instanceof AddVertexStartStep) && keyValues.length == 0) {
+            ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(new Object[]{key, value});
+        } else {
+            this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), cardinality, key, value));
+            ((AddPropertyStep) this.asAdmin().getEndStep()).addPropertyMutations(keyValues);
+        }
+        return this;
     }
 
-    public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final String key, final Object value, final Object... keyValues) {
-        return this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), cardinality, key, value, keyValues));
+    public default GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
+        return this.property(null, key, value, keyValues);
     }
 
     ///////////////////// BRANCH STEPS /////////////////////
@@ -827,7 +1016,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ChooseStep<>(this.asAdmin(), (Traversal.Admin<E, M>) choiceTraversal));
     }
 
-    public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+    public default <E2> GraphTraversal<S, E2> choose(final Traversal<?, ?> traversalPredicate,
+                                                     final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         return this.asAdmin().addStep(new ChooseStep<E, E2, Boolean>(this.asAdmin(), (Traversal.Admin<E, ?>) traversalPredicate, (Traversal.Admin<E, E2>) trueChoice, (Traversal.Admin<E, E2>) falseChoice));
     }
 
@@ -835,7 +1025,8 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.choose(__.map(new FunctionTraverser<>(choiceFunction)));
     }
 
-    public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate, final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
+    public default <E2> GraphTraversal<S, E2> choose(final Predicate<E> choosePredicate,
+                                                     final Traversal<?, E2> trueChoice, final Traversal<?, E2> falseChoice) {
         return this.choose(__.filter(new PredicateTraverser<>(choosePredicate)), trueChoice, falseChoice);
     }
 
@@ -933,11 +1124,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.by((Comparator) order);
     }
 
-    public default <V> GraphTraversal<S, E> by(final Function<Element, V> elementFunctionProjection, final Comparator<V> elementFunctionValueComparator) {
+    public default <V> GraphTraversal<S, E> by(final Function<Element, V> elementFunctionProjection,
+                                               final Comparator<V> elementFunctionValueComparator) {
         return this.by((Comparator) new ElementFunctionComparator<>(elementFunctionProjection, elementFunctionValueComparator));
     }
 
-    public default <V> GraphTraversal<S, E> by(final String elementPropertyProjection, final Comparator<V> propertyValueComparator) {
+    public default <V> GraphTraversal<S, E> by(final String elementPropertyProjection,
+                                               final Comparator<V> propertyValueComparator) {
         return this.by((Comparator) new ElementValueComparator<>(elementPropertyProjection, propertyValueComparator));
     }
 

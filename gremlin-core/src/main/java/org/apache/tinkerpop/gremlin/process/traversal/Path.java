@@ -21,7 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.javatuples.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -152,7 +156,7 @@ public interface Path extends Cloneable, Iterable<Object> {
 
     /**
      * An ordered list of the labels associated with the path
-     * The set of labels for a particular step are ordered by the order in which {@link Path#addLabel} was called.
+     * The set of labels for a particular step are ordered by the order in which {@link Path#extend(Object, Set)} was called.
      *
      * @return the labels of the path
      */
@@ -194,6 +198,17 @@ public interface Path extends Cloneable, Iterable<Object> {
         final List<Set<String>> labels = this.labels();
         final List<Object> objects = this.objects();
         return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(objects.get(i), labels.get(i)));
+    }
+
+    public default boolean popEquals(final Pop pop, final Object other) {
+        if (!(other instanceof Path))
+            return false;
+        final Path otherPath = (Path) other;
+        return !this.labels().stream().
+                flatMap(Set::stream).
+                filter(label -> !otherPath.hasLabel(label) || !otherPath.get(pop, label).equals(this.get(pop, label))).
+                findAny().
+                isPresent();
     }
 
     public static class Exceptions {

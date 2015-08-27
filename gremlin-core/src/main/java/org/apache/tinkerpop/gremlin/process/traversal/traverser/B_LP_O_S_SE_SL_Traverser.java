@@ -22,6 +22,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.traverser;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
@@ -100,7 +101,7 @@ public class B_LP_O_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
                 && ((B_LP_O_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
                 && ((B_LP_O_S_SE_SL_Traverser) object).loops() == this.loops()
                 && (null == this.sack)
-                && ((B_LP_O_S_SE_SL_Traverser) object).path().equals(this.path);
+                && ((B_LP_O_S_SE_SL_Traverser) object).path().popEquals(Pop.last,this.path); // this should be Pop.all?
     }
 
 }

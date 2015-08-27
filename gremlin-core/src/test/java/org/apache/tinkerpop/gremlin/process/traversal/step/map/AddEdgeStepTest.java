@@ -24,7 +24,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,11 +36,10 @@ public class AddEdgeStepTest extends StepTest {
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
-                __.addE(Direction.IN, "knows", "x"),
-                __.addE(Direction.IN, "knows", "y"),
-                __.addE(Direction.OUT, "knows", "x"),
-                __.addE(Direction.IN, "knows", "x", "weight", 0),
-                __.addE(Direction.IN, "knows", "x", "weight", 1)
+                __.addE("knows").property("a", "b"),
+                __.addE("created").property("a", "b"),
+                __.addE("knows").property("a", "b").property("c", "d"),
+                __.addE("knows").property("c", "d")
         );
     }
 }

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
@@ -39,10 +40,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class PartitionStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
     private String writePartition;
@@ -83,29 +84,14 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         stepsToInsertHasAfter.addAll(TraversalHelper.getStepsOfAssignableClass(EdgeVertexStep.class, traversal));
 
         // all steps that return a vertex need to have has(paritionKey,within,partitionValues) injected after it
-        stepsToInsertHasAfter.forEach(s -> TraversalHelper.insertAfterStep(
-                new HasStep(traversal, new HasContainer(partitionKey, P.within(new ArrayList<>(readPartitions)))), s, traversal));
+        stepsToInsertHasAfter.forEach(step -> TraversalHelper.insertAfterStep(
+                new HasStep(traversal, new HasContainer(this.partitionKey, P.within(new ArrayList<>(this.readPartitions)))), step, traversal));
 
-        // all write edge steps need to have partition keys tossed into the property key/value list after mutating steps
-        TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal).forEach(s -> {
-            final Object[] keyValues = injectPartitionInfo(s.getPropertyKeyValues());
-            TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), keyValues), traversal);
+        traversal.getSteps().forEach(step -> {
+            if (step instanceof AddEdgeStep || step instanceof AddVertexStep || step instanceof AddVertexStartStep) {
+                ((Mutating) step).addPropertyMutations(this.partitionKey, this.writePartition);
+            }
         });
-
-        // all write vertex steps need to have partition keys tossed into the property key/value list after mutating steps
-        TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal).forEach(s -> {
-            final Object[] keyValues = injectPartitionInfo(s.getKeyValues());
-            TraversalHelper.replaceStep(s, new AddVertexStep(traversal, keyValues), traversal);
-        });
-
-        TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal).forEach(s -> {
-            final Object[] keyValues = injectPartitionInfo(s.getKeyValues());
-            TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, keyValues), traversal);
-        });
-    }
-
-    private Object[] injectPartitionInfo(final Object[] propertyKeyValues) {
-        return Stream.concat(Stream.of(propertyKeyValues), Stream.of(partitionKey, writePartition)).toArray();
     }
 
     public final static class Builder {

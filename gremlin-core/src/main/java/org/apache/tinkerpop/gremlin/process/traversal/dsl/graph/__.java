@@ -18,14 +18,27 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
-import org.apache.tinkerpop.gremlin.process.traversal.*;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
+import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.*;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -434,8 +447,23 @@ public class __ {
     }
 
     /**
+     * @see {@link GraphTraversal#addV(String)}
+     */
+    public static <A> GraphTraversal<A, Vertex> addV(final String vertexLabel) {
+        return __.<A>start().addV(vertexLabel);
+    }
+
+    /**
+     * @see {@link GraphTraversal#addV()}
+     */
+    public static <A> GraphTraversal<A, Vertex> addV() {
+        return __.<A>start().addV();
+    }
+
+    /**
      * @see {@link GraphTraversal#addV(Object...)}
      */
+    @Deprecated
     public static <A> GraphTraversal<A, Vertex> addV(final Object... propertyKeyValues) {
         return __.<A>start().addV(propertyKeyValues);
     }
@@ -443,6 +471,7 @@ public class __ {
     /**
      * @see {@link GraphTraversal#addE(Direction, String, String, Object...)}
      */
+    @Deprecated
     public static <A> GraphTraversal<A, Edge> addE(final Direction direction, final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
         return __.<A>start().addE(direction, firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
@@ -450,6 +479,7 @@ public class __ {
     /**
      * @see {@link GraphTraversal#addOutE(String, String, Object...)}
      */
+    @Deprecated
     public static <A> GraphTraversal<A, Edge> addOutE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
         return __.<A>start().addOutE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
     }
@@ -457,8 +487,16 @@ public class __ {
     /**
      * @see {@link GraphTraversal#addInE(String, String, Object...)}
      */
+    @Deprecated
     public static <A> GraphTraversal<A, Edge> addInE(final String firstVertexKeyOrEdgeLabel, final String edgeLabelOrSecondVertexKey, final Object... propertyKeyValues) {
         return __.<A>start().addInE(firstVertexKeyOrEdgeLabel, edgeLabelOrSecondVertexKey, propertyKeyValues);
+    }
+
+    /**
+     * @see {@link GraphTraversal#addE(String)}
+     */
+    public static <A> GraphTraversal<A, Edge> addE(final String edgeLabel) {
+        return __.<A>start().addE(edgeLabel);
     }
 
     ///////////////////// FILTER STEPS /////////////////////
@@ -661,11 +699,15 @@ public class __ {
         return __.<A>start().tree(sideEffectKey);
     }
 
-    public static <A, V> GraphTraversal<A, A> sack(final BiFunction<V, A, V> sackFunction) {
-        return __.<A>start().sack(sackFunction);
+    public static <A, V, U> GraphTraversal<A, A> sack(final BiFunction<V, U, V> sackOperator) {
+        return __.<A>start().sack(sackOperator);
     }
 
-    public static <A, V> GraphTraversal<A, A> sack(final BinaryOperator<V> sackOperator, final String elementPropertyKey) {
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #sack(BiFunction)}
+     */
+    @Deprecated
+    public static <A, V, U> GraphTraversal<A, A> sack(final BiFunction<V, U, V> sackOperator, final String elementPropertyKey) {
         return __.<A>start().sack(sackOperator, elementPropertyKey);
     }
 
@@ -673,11 +715,11 @@ public class __ {
         return __.<A>start().store(sideEffectKey);
     }
 
-    public static <A> GraphTraversal<A, A> property(final String key, final Object value, final Object... keyValues) {
+    public static <A> GraphTraversal<A, A> property(final Object key, final Object value, final Object... keyValues) {
         return __.<A>start().property(key, value, keyValues);
     }
 
-    public static <A> GraphTraversal<A, A> property(final VertexProperty.Cardinality cardinality, final String key, final Object value, final Object... keyValues) {
+    public static <A> GraphTraversal<A, A> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
         return __.<A>start().property(cardinality, key, value, keyValues);
     }
 

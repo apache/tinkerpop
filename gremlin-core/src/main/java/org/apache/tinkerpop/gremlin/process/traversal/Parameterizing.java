@@ -19,27 +19,14 @@
  *
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
+package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-
-import java.util.Arrays;
-import java.util.List;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 
 /**
- * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class SackElementValueStepTest extends StepTest {
+public interface Parameterizing {
 
-    @Override
-    protected List<Traversal> getTraversals() {
-        return Arrays.asList(
-                __.sack(Operator.mult, "weight"),
-                __.sack(Operator.max, "weight"),
-                __.sack(Operator.max, "age")
-        );
-    }
+    public Parameters getParameters();
 }

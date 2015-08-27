@@ -117,22 +117,34 @@ g.V().choose(has('name','marko'),
 AddEdge Step
 ~~~~~~~~~~~~
 
-link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit in the data what is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is defined by the traversal description. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. To add edges via a traversal, there is a collection of `addE()`-steps (*map*/*sideEffect*).
+link:http://en.wikipedia.org/wiki/Automated_reasoning[Reasoning] is the process of making explicit what is implicit in the data. What is explicit in a graph are the objects of the graph -- i.e. vertices and edges. What is implicit in the graph is the traversal. In other words, traversals expose meaning where the meaning is determined by the traversal definition. For example, take the concept of a "co-developer." Two people are co-developers if they have worked on the same project together. This concept can be represented as a traversal and thus, the concept of "co-developers" can be derived. Moreover, what was once implicit can be made explicit via the `addE()`-step (*map*/*sideEffect*).
 
 image::addedge-step.png[width=450]
 
 [gremlin-groovy,modern]
 ----
-g.V(1).as('a').out('created').in('created').where(neq('a')).addOutE('co-developer','a','year',2009) <1>
-g.withSideEffect('a',g.V(3,5).toList()).V(4).addInE('createdBy','a') <2>
-g.V().as('a').out('created').as('b').select('a','b').addOutE('b','createdBy','a','acl','public') <3>
-g.V(1).as('a').out('knows').addInE('livesNear','a','year',2009).inV().inE('livesNear').values('year') <4>
+g.V(1).as('a').out('created').in('created').where(neq('a')).
+  addE('co-developer').from('a').property('year',2009) <1>
+g.V(3,4,5).aggregate('x').has('name','josh').as('a').
+  select('x').unfold().hasLabel('software').addE('createdBy').to('a') <2>
+g.V().as('a').out('created').addE('createdBy').to('a').property('acl','public') <3>
+g.V(1).as('a').out('knows').
+  addE('livesNear').from('a').property('year',2009).
+  inV().inE('livesNear').values('year') <4>
+g.V().match(
+        __.as('a').out('knows').as('b'),
+        __.as('a').out('created').as('c'),
+        __.as('b').out('created').as('c')).
+      addE('friendlyCollaborator').from('a').to('b').
+        property(id,13).property('project',select('c').values('name')) <5>
+g.E(13).valueMap()
 ----
 
 <1> Add a co-developer edge with a year-property between marko and his collaborators.
 <2> Add incoming createdBy edges from the josh-vertex to the lop- and ripple-vertices.
-<3> It is possible to pull the vertices from a select-projection.
+<3> Add an inverse createdBy edge for all created edges.
 <4> The newly created edge is a traversable object.
+<5> Two arbitrary bindings in a traversal can be joined `from()`->`to()`, where `id` can be provided for graphs that supports user provided ids.
 
 [[addvertex-step]]
 AddVertex Step
@@ -142,9 +154,9 @@ The `addV()`-step is used to add vertices to the graph (*map*/*sideEffect*). For
 
 [gremlin-groovy,modern]
 ----
-g.addV(label,'person','name','stephen')
+g.addV('person').property('name','stephen')
 g.V().values('name')
-g.V().outE('knows').addV('name','nothing')
+g.V().outE('knows').addV().property('name','nothing')
 g.V().has('name','nothing')
 g.V().has('name','nothing').bothE()
 ----
@@ -153,15 +165,22 @@ g.V().has('name','nothing').bothE()
 AddProperty Step
 ~~~~~~~~~~~~~~~~
 
-The `property()`-step is used to add properties to the elements of the graph (*sideEffect*). Unlike `addV()` and `addE()`, `property()` is a full sideEffect step in that it does not return the property it created, but the element that streamed into it.
+The `property()`-step is used to add properties to the elements of the graph (*sideEffect*). Unlike `addV()` and `addE()`, `property()` is a full sideEffect step in that it does not return the property it created, but the element that streamed into it. Moreover, if `property()` follows an `addV()` or `addE()`, then it is "folded" into the previous step to enable vertex and edge creation with all its properties in one creation operation.
 
 [gremlin-groovy,modern]
 ----
 g.V(1).property('country','usa')
 g.V(1).property('city','santa fe').property('state','new mexico').valueMap()
-g.V(1).property(list,'age',35)
+g.V(1).property(list,'age',35)  <1>
 g.V(1).valueMap()
+g.V(1).property('friendWeight',outE('knows').values('weight').sum(),'acl','private') <2>
+g.V(1).properties('friendWeight').valueMap() <3>
 ----
+
+<1> For vertices, a cardinality can be provided for <<vertex properties,vertex-properties>>.
+<2> It is possible to select the property value (as well as key) via a traversal.
+<3> For vertices, the `property()`-step can add meta-properties.
+
 
 [[aggregate-step]]
 Aggregate Step
@@ -804,7 +823,7 @@ g.V().match(
         __.as('a').out('created').has('name','lop').as('b'), <1>
         __.as('b').in('created').has('age', 29).as('c'),
         __.as('c').repeat(out()).times(2)). <2>
-          select('c').out('knows').dedup().values('name') <3>
+      select('c').out('knows').dedup().values('name') <3>
 ----
 
 <1> *Patterns of arbitrary complexity*: `match()` is not restricted to triple patterns or property paths.
@@ -819,10 +838,10 @@ g.V().match(
         __.as('a').out('knows').as('b'),
         __.as('b').out('created').has('name','lop')).
       select('b').out('created').
-          match(
-            __.as('x').in('created').as('y'),
-            __.as('y').out('knows').as('z')).
-          select('z').values('name')
+        match(
+          __.as('x').in('created').as('y'),
+          __.as('y').out('knows').as('z')).
+      select('z').values('name')
 ----
 
 IMPORTANT: The `match()`-step is stateless. The variable bindings of the traversal patterns are stored in the path history of the traverser. As such, the variables used over all `match()`-steps within a traversal are globally unique. A benefit of this is that subsequent `where()`, `select()`, `match()`, etc. steps can leverage the same variables in their analysis.
@@ -1225,13 +1244,13 @@ rand = new Random()
 g.withSack {rand.nextFloat()}.V().sack()
 ----
 
-A more complicated initial value supplier example is presented below where the sack values are used in a running computation and then emitted at the end of the traversal. When an edge is traversed, the edge weight is multiplied by the sack value (`sack(mult,'weight')`).
+A more complicated initial value supplier example is presented below where the sack values are used in a running computation and then emitted at the end of the traversal. When an edge is traversed, the edge weight is multiplied by the sack value (`sack(mult).by('weight')`). Note that the <<by-step,`by()`>>-modulator can be any arbitrary traversal.
 
 [gremlin-groovy,modern]
 ----
-g.withSack(1.0f).V().repeat(outE().sack(mult,'weight').inV()).times(2)
-g.withSack(1.0f).V().repeat(outE().sack(mult,'weight').inV()).times(2).sack()
-g.withSack(1.0f).V().repeat(outE().sack(mult,'weight').inV()).times(2).path().
+g.withSack(1.0f).V().repeat(outE().sack(mult).by('weight').inV()).times(2)
+g.withSack(1.0f).V().repeat(outE().sack(mult).by('weight').inV()).times(2).sack()
+g.withSack(1.0f).V().repeat(outE().sack(mult).by('weight').inV()).times(2).path().
       by().by('weight')
 ----
 

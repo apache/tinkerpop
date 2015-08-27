@@ -62,37 +62,37 @@ public class ReadOnlyStrategyProcessTest extends AbstractGremlinProcessTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void shouldNotTraverseV_out_addInE() {
-        assertTraversal(create().V().as("a").out().addInE("test", "a"), true);
+        assertTraversal(create().V().as("a").out().addE("test").from("a"), true);
     }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void shouldNotTraverseV_out_addOutE() {
-        assertTraversal(create().V().as("a").out().addOutE("test", "a"), true);
+        assertTraversal(create().V().as("a").out().addE("test").to("a"), true);
     }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void shouldNotTraverseV_In_addInE() {
-        assertTraversal(create().V().as("a").in().addInE("test", "a"), true);
+        assertTraversal(create().V().as("a").in().addE("test").from("a"), true);
     }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void shouldNotTraverseV_In_addOutE() {
-        assertTraversal(create().V().as("a").in().addOutE("test", "a"), true);
+        assertTraversal(create().V().as("a").in().addE("test").to("a"), true);
     }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void shouldNotTraverseV_In_addEXINX() {
-        assertTraversal(create().V().as("a").in().addE(Direction.IN, "test", "a"), true);
+        assertTraversal(create().V().as("a").in().addE("test").from("a"), true);
     }
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void shouldNotTraverseV_In_addEXOUTX() {
-        assertTraversal(create().V().as("a").in().addE(Direction.OUT, "test", "a"), true);
+        assertTraversal(create().V().as("a").in().addE("test").to("a"), true);
     }
 
     private GraphTraversalSource create() {

@@ -18,69 +18,104 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.AbstractStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements Mutating<Event.VertexAddedEvent> {
+public final class AddVertexStartStep extends AbstractStep<Vertex, Vertex> implements Mutating<Event.VertexAddedEvent>, TraversalParent, Parameterizing {
 
-    private final Object[] keyValues;
+    private Parameters parameters = new Parameters();
     private boolean first = true;
     private CallbackRegistry<Event.VertexAddedEvent> callbackRegistry;
 
-    public AddVertexStartStep(final Traversal.Admin traversal, final Object... keyValues) {
+    public AddVertexStartStep(final Traversal.Admin traversal, final String label) {
         super(traversal);
-        this.keyValues = keyValues;
+        this.parameters.set(T.label, label);
+        this.parameters.integrateTraversals(this);
     }
 
-    public Object[] getKeyValues() {
-        return keyValues;
+    @Override
+    public Parameters getParameters() {
+        return this.parameters;
+    }
+
+    @Override
+    public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
+        return this.parameters.getTraversals();
+    }
+
+    @Override
+    public void addPropertyMutations(final Object... keyValues) {
+        this.parameters.set(keyValues);
+        this.parameters.integrateTraversals(this);
     }
 
     @Override
     protected Traverser<Vertex> processNextStart() {
         if (this.first) {
             this.first = false;
-            final Vertex v = this.getTraversal().getGraph().get().addVertex(this.keyValues);
-            if (callbackRegistry != null) {
-                final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(DetachedFactory.detach(v, true));
-                callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
+            final Vertex vertex = this.getTraversal().getGraph().get().addVertex(this.parameters.getKeyValues(EmptyTraverser.instance()));
+            if (this.callbackRegistry != null) {
+                final Event.VertexAddedEvent vae = new Event.VertexAddedEvent(DetachedFactory.detach(vertex, true));
+                this.callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
             }
-
-            return this.getTraversal().getTraverserGenerator().generate(v, this, 1l);
+            return this.getTraversal().getTraverserGenerator().generate(vertex, this, 1l);
         } else
             throw FastNoSuchElementException.instance();
     }
 
     @Override
     public CallbackRegistry<Event.VertexAddedEvent> getMutatingCallbackRegistry() {
-        if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
-        return callbackRegistry;
+        if (null == this.callbackRegistry) this.callbackRegistry = new ListCallbackRegistry<>();
+        return this.callbackRegistry;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getRequirements() {
+        return this.getSelfAndChildRequirements();
     }
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        for (final Object item : this.keyValues) {
-            result ^= item.hashCode();
-        }
-        return result;
+        return super.hashCode() ^ this.parameters.hashCode();
     }
 
     @Override
     public void reset() {
         super.reset();
         this.first = false;
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.parameters);
+    }
+
+    @Override
+    public AddVertexStartStep clone() {
+        final AddVertexStartStep clone = (AddVertexStartStep) super.clone();
+        clone.parameters = this.parameters.clone();
+        return clone;
     }
 }

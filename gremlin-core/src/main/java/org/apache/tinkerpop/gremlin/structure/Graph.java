@@ -175,7 +175,7 @@ public interface Graph extends AutoCloseable, Host {
      * <ul>
      *     <li>g.vertices(v.id())</li>
      * </ul>
-     * <p/>
+     * <p/>                                                                                                         
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsStringIds()} ()} then it should support
      * filters as with:
      * <ul>
