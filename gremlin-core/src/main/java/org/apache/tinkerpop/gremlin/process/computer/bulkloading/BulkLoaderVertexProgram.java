@@ -105,8 +105,14 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         return loader;
     }
 
-    private void commit(final boolean force) {
-        if (!force && (intermediateBatchSize == 0L || ++counter % intermediateBatchSize != 0)) return;
+    /**
+     * Eventually commits the current transaction and closes the current graph instance. commit() will be called
+     * if close is set true, otherwise it will only be called if the intermediate batch size is set and reached.
+     *
+     * @param close Whether to close the current graph instance after calling commit() or not.
+     */
+    private void commit(final boolean close) {
+        if (!close && (intermediateBatchSize == 0L || ++counter % intermediateBatchSize != 0)) return;
         if (null != graph) {
             if (graph.features().graph().supportsTransactions()) {
                 LOGGER.info("Committing transaction on Graph instance: {}", graph);
@@ -120,12 +126,14 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
                     throw e;
                 }
             }
-            try {
-                graph.close();
-                LOGGER.info("Closed Graph instance: {}", graph);
-                graph = null;
-            } catch (Exception e) {
-                LOGGER.warn("Failed to close Graph instance", e);
+            if (close) {
+                try {
+                    graph.close();
+                    LOGGER.info("Closed Graph instance: {}", graph);
+                    graph = null;
+                } catch (Exception e) {
+                    LOGGER.warn("Failed to close Graph instance", e);
+                }
             }
         }
     }

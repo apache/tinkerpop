@@ -24,7 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,10 +58,36 @@ public class IncrementalBulkLoader extends DefaultBulkLoader {
         final Traversal<Vertex, Edge> t = g.V(outVertex).outE(edge.label()).filter(__.inV().is(inVertex));
         if (t.hasNext()) {
             final Edge e = t.next();
-            edge.properties().forEachRemaining(property -> e.property(property.key(), property.value()));
+            edge.properties().forEachRemaining(property -> {
+                final Property<?> existing = e.property(property.key());
+                if (!existing.isPresent() || !existing.value().equals(property.value())) {
+                    e.property(property.key(), property.value());
+                }
+            });
             return e;
         }
         return super.getOrCreateEdge(edge, outVertex, inVertex, graph, g);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public VertexProperty getOrCreateVertexProperty(final VertexProperty<?> property, final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
+        final VertexProperty<?> vp;
+        final VertexProperty<?> existing = vertex.property(property.key());
+        if (!existing.isPresent() || !existing.value().equals(property.value())) {
+            vp = vertex.property(property.key(), property.value());
+        } else {
+            vp = existing;
+        }
+        property.properties().forEachRemaining(metaProperty -> {
+            final Property<?> existing2 = vp.property(metaProperty.key());
+            if (!existing2.isPresent() || !existing2.value().equals(metaProperty.value())) {
+                vp.property(metaProperty.key(), metaProperty.value());
+            }
+        });
+        return vp;
     }
 
     /**
