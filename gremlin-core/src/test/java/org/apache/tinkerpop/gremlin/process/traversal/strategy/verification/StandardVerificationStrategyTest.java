@@ -33,7 +33,8 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +42,7 @@ import static org.mockito.Mockito.when;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Parameterized.class)
-public class ComputerVerificationStrategyTest {
+public class StandardVerificationStrategyTest {
 
     private TraversalEngine traversalEngine;
 
@@ -54,10 +55,8 @@ public class ComputerVerificationStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"__.out().union(__.out().count(),__.in().count())", __.out().union(__.out().count(), __.in().count())},
-                {"__.where(__.out().values(\"name\"))", __.where(__.out().values("name"))},
-                {"__.groupCount(\"a\").out().cap(\"a\").count()", __.groupCount("a").out().cap("a").count()},
-
+                {"__.repeat(out().fold().unfold()).times(2)", __.repeat(__.out().fold().unfold()).times(2)},
+                {"__.repeat(sum()).times(2)", __.repeat(__.sum()).times(2)},
         });
     }
 
@@ -76,9 +75,8 @@ public class ComputerVerificationStrategyTest {
             traversal.asAdmin().setEngine(this.traversalEngine);
             traversal.asAdmin().applyStrategies();
             fail("The strategy should not allow lambdas: " + this.traversal);
-        } catch (VerificationException ise) {
-           assertTrue(true);
+        } catch (IllegalStateException ise) {
+            assertTrue(true);
         }
     }
-
 }

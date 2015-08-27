@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
@@ -28,10 +29,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @example <pre>
- * __.out().addE()                 // throws an IllegalStateException
- * __.addV()                       // throws an IllegalStateException
- * __.property(key,value)          // throws an IllegalStateException
- * __.out().drop()                 // throws an IllegalStateException
+ * __.out().addE()                 // throws an VerificationException
+ * __.addV()                       // throws an VerificationException
+ * __.property(key,value)          // throws an VerificationException
+ * __.out().drop()                 // throws an VerificationException
  * </pre>
  */
 public final class ReadOnlyStrategy extends AbstractTraversalStrategy<TraversalStrategy.VerificationStrategy> implements TraversalStrategy.VerificationStrategy {
@@ -43,8 +44,10 @@ public final class ReadOnlyStrategy extends AbstractTraversalStrategy<TraversalS
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (traversal.getSteps().stream().anyMatch(step -> step instanceof Mutating))
-            throw new IllegalStateException("The provided traversal has a mutating step and thus is not read only: " + traversal);
+        for (final Step step : traversal.getSteps()) {
+            if (step instanceof Mutating)
+                throw new VerificationException("The provided traversal has a mutating step and thus is not read only: " + step, traversal);
+        }
     }
 
     public static ReadOnlyStrategy instance() {

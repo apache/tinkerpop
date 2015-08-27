@@ -62,7 +62,7 @@ public class LambdaRestrictionStrategyTest {
     public Traversal traversal;
 
     @Test
-    public void shouldNotAllowLambdaSteps() {
+    public void shouldBeVerifiedIllegal() {
         try {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
             strategies.addStrategies(LambdaRestrictionStrategy.instance());
@@ -70,7 +70,7 @@ public class LambdaRestrictionStrategyTest {
             traversal.asAdmin().setEngine(StandardTraversalEngine.instance());
             traversal.asAdmin().applyStrategies();
             fail("The strategy should not allow lambdas: " + this.traversal);
-        } catch (IllegalStateException ise) {
+        } catch (VerificationException ise) {
             assertTrue(ise.getMessage().contains("lambda"));
         }
     }
