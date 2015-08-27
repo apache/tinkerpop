@@ -31,9 +31,10 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
  */
 public class DefaultBulkLoader implements BulkLoader {
 
-    public final static String USE_USER_SUPPLIED_IDS_CFG_KEY = "use-user-supplied-ids";
-    public final static String STORE_ORIGINAL_IDS_CFG_KEY = "store-original-ids";
+    public final static String USER_SUPPLIED_IDS_CFG_KEY = "userSuppliedIds";
+    public final static String STORE_ORIGINAL_IDS_CFG_KEY = "storeOriginalIds";
 
+    private String bulkLoaderVertexId = BulkLoaderVertexProgram.DEFAULT_BULK_LOADER_VERTEX_ID;
     private boolean storeOriginalIds = false;
     private boolean useUserSuppliedIds = false;
 
@@ -47,7 +48,7 @@ public class DefaultBulkLoader implements BulkLoader {
         }
         final Vertex v = graph.addVertex(T.label, vertex.label());
         if (storeOriginalIds()) {
-            v.property(BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID, vertex.id());
+            v.property(bulkLoaderVertexId, vertex.id());
         }
         return v;
     }
@@ -79,7 +80,7 @@ public class DefaultBulkLoader implements BulkLoader {
     public Vertex getVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
         return useUserSuppliedIds()
                 ? getVertexById(vertex.id(), graph, g)
-                : g.V().has(vertex.label(), BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID, vertex.id()).next();
+                : g.V().has(vertex.label(), bulkLoaderVertexId, vertex.id()).next();
     }
 
     /**
@@ -102,9 +103,20 @@ public class DefaultBulkLoader implements BulkLoader {
      * {@inheritDoc}
      */
     @Override
+    public String getVertexIdProperty() {
+        return bulkLoaderVertexId;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void configure(final Configuration configuration) {
-        if (configuration.containsKey(USE_USER_SUPPLIED_IDS_CFG_KEY)) {
-            useUserSuppliedIds = configuration.getBoolean(USE_USER_SUPPLIED_IDS_CFG_KEY);
+        if (configuration.containsKey(BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID_CFG_KEY)) {
+            bulkLoaderVertexId = configuration.getString(BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID_CFG_KEY);
+        }
+        if (configuration.containsKey(USER_SUPPLIED_IDS_CFG_KEY)) {
+            useUserSuppliedIds = configuration.getBoolean(USER_SUPPLIED_IDS_CFG_KEY);
         }
         if (configuration.containsKey(STORE_ORIGINAL_IDS_CFG_KEY)) {
             storeOriginalIds = configuration.getBoolean(STORE_ORIGINAL_IDS_CFG_KEY);

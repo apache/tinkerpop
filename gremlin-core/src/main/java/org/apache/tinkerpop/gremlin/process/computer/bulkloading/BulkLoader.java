@@ -74,7 +74,7 @@ public interface BulkLoader {
     public default Vertex getVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
         return useUserSuppliedIds()
                 ? getVertexById(vertex.id(), graph, g)
-                : g.V().has(BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID, vertex.id()).next();
+                : g.V().has(getVertexIdProperty(), vertex.id()).next();
     }
 
     /**
@@ -99,6 +99,13 @@ public interface BulkLoader {
      */
     public default boolean storeOriginalIds() {
         return !useUserSuppliedIds();
+    }
+
+    /**
+     * @return The name of the vertex property that is used to store the original vertex id.
+     */
+    public default String getVertexIdProperty() {
+        return BulkLoaderVertexProgram.DEFAULT_BULK_LOADER_VERTEX_ID;
     }
 
     /**

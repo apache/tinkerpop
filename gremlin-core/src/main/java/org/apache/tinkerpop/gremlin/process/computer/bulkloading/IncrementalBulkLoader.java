@@ -44,7 +44,7 @@ public class IncrementalBulkLoader extends DefaultBulkLoader {
     public Vertex getOrCreateVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
         final Iterator<Vertex> iterator = useUserSuppliedIds()
                 ? graph.vertices(vertex.id())
-                : g.V().has(vertex.label(), BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID, vertex.id());
+                : g.V().has(vertex.label(), getVertexIdProperty(), vertex.id());
         return iterator.hasNext() ? iterator.next() : super.getOrCreateVertex(vertex, graph, g);
     }
 
