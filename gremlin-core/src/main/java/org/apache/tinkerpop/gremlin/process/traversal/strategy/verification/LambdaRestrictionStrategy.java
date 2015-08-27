@@ -53,14 +53,14 @@ public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<T
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (traversal instanceof LambdaHolder)
-            throw new IllegalStateException("The provided traversal is a lambda traversal: " + traversal);
+            throw new VerificationException("The provided traversal is a lambda traversal: ", traversal);
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (step instanceof LambdaHolder)
-                throw new IllegalStateException("The provided traversal contains a lambda step: " + step);
+                throw new VerificationException("The provided traversal contains a lambda step: " + step, traversal);
             if (step instanceof ComparatorHolder) {
                 for (final Comparator<?> comparator : ((ComparatorHolder<?>) step).getComparators()) {
                     if (comparator instanceof LambdaHolder || comparator.toString().contains("$$Lambda$"))
-                        throw new IllegalStateException("The provided step contains a lambda comparator: " + step);
+                        throw new VerificationException("The provided step contains a lambda comparator: " + step, traversal);
                 }
             }
         }

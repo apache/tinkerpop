@@ -20,8 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -31,7 +29,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -65,12 +63,12 @@ public class ReadOnlyStrategyTest {
     public Traversal traversal;
 
     @Test
-    public void shouldPreventMutatingStepsFromBeingInTheTraversal() {
+    public void shouldBeVerifiedIllegal() {
         try {
             ReadOnlyStrategy.instance().apply(this.traversal.asAdmin());
             fail("The strategy should have found a mutating step.");
-        } catch (IllegalStateException ise) {
-            assertEquals("The provided traversal has a mutating step and thus is not read only: " + this.traversal, ise.getMessage());
+        } catch (VerificationException ise) {
+            assertTrue(ise.getMessage().startsWith("The provided traversal has a mutating step and thus is not read only: "));
         }
     }
 }

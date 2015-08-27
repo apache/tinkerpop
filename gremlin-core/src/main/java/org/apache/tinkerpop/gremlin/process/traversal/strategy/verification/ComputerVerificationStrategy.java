@@ -78,46 +78,46 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
 
         if (traversal.getParent() instanceof EmptyStep) {
             if (!(traversal.getStartStep() instanceof GraphStep))
-                throw new ComputerVerificationException("GraphComputer does not support traversals starting from a non-GraphStep: " + traversal.getStartStep(), traversal);
+                throw new VerificationException("GraphComputer does not support traversals starting from a non-GraphStep: " + traversal.getStartStep(), traversal);
             ///
             if (endStep instanceof CollectingBarrierStep && endStep instanceof TraversalParent) {
                 if (((TraversalParent) endStep).getLocalChildren().stream().filter(t ->
                         !(t instanceof IdentityTraversal) &&
                                 !(t instanceof ConstantTraversal) &&  // for SampleStep
                                 !(t instanceof TokenTraversal && ((TokenTraversal) t).getToken().equals(T.id))).findAny().isPresent())
-                    throw new ComputerVerificationException("A final CollectingBarrierStep can not process an element beyond its id: " + endStep, traversal);
+                    throw new VerificationException("A final CollectingBarrierStep can not process an element beyond its id: " + endStep, traversal);
             }
             ///
             if (endStep instanceof RangeGlobalStep || endStep instanceof TailGlobalStep || endStep instanceof DedupGlobalStep)
                 ((Bypassing) endStep).setBypass(true);
             if (endStep instanceof DedupGlobalStep && !((DedupGlobalStep) endStep).getScopeKeys().isEmpty())
-                throw new ComputerVerificationException("Path history de-duplication is not possible in GraphComputer:" + endStep, traversal);
+                throw new VerificationException("Path history de-duplication is not possible in GraphComputer:" + endStep, traversal);
         }
 
         for (final Step<?, ?> step : traversal.getSteps()) {
             if ((step instanceof ReducingBarrierStep || step instanceof SupplyingBarrierStep || step instanceof OrderGlobalStep || step instanceof RangeGlobalStep || step instanceof TailGlobalStep || step instanceof DedupGlobalStep) && (step != endStep || !(traversal.getParent() instanceof EmptyStep)))
-                throw new ComputerVerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
+                throw new VerificationException("Global traversals on GraphComputer may not contain mid-traversal barriers: " + step, traversal);
 
             if (step instanceof DedupGlobalStep && !((DedupGlobalStep) step).getLocalChildren().isEmpty())
-                throw new ComputerVerificationException("Global traversals on GraphComputer may not contain by()-projecting de-duplication steps: " + step, traversal);
+                throw new VerificationException("Global traversals on GraphComputer may not contain by()-projecting de-duplication steps: " + step, traversal);
 
             if (step instanceof TraversalParent) {
                 final Optional<Traversal.Admin<Object, Object>> traversalOptional = ((TraversalParent) step).getLocalChildren().stream()
                         .filter(t -> !TraversalHelper.isLocalStarGraph(t.asAdmin()))
                         .findAny();
                 if (traversalOptional.isPresent())
-                    throw new ComputerVerificationException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get(), traversal);
+                    throw new VerificationException("Local traversals on GraphComputer may not traverse past the local star-graph: " + traversalOptional.get(), traversal);
             }
 
             if ((step instanceof WherePredicateStep && ((WherePredicateStep) step).getStartKey().isPresent()) ||
                     (step instanceof WhereTraversalStep && TraversalHelper.getVariableLocations(((WhereTraversalStep<?>) step).getLocalChildren().get(0)).contains(Scoping.Variable.START)))
-                throw new ComputerVerificationException("A where()-step that has a start variable is not allowed because the variable value is retrieved from the path: " + step, traversal);
+                throw new VerificationException("A where()-step that has a start variable is not allowed because the variable value is retrieved from the path: " + step, traversal);
 
             if (UNSUPPORTED_STEPS.stream().filter(c -> c.isAssignableFrom(step.getClass())).findFirst().isPresent())
-                throw new ComputerVerificationException("The following step is currently not supported by GraphComputer traversals: " + step, traversal);
+                throw new VerificationException("The following step is currently not supported by GraphComputer traversals: " + step, traversal);
 
             if (step instanceof PathProcessor && ((PathProcessor) step).getMaxRequirement() != PathProcessor.ElementRequirement.ID)
-                throw new ComputerVerificationException("The following path processor step requires more than the element id: " + step + " requires " + ((PathProcessor) step).getMaxRequirement(), traversal);
+                throw new VerificationException("The following path processor step requires more than the element id: " + step + " requires " + ((PathProcessor) step).getMaxRequirement(), traversal);
         }
     }
 
