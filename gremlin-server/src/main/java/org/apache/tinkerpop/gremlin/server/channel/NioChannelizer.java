@@ -40,13 +40,11 @@ import org.slf4j.LoggerFactory;
 public class NioChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(NioChannelizer.class);
 
-    private NioGremlinBinaryRequestDecoder nioGremlinBinaryRequestDecoder;
     private SaslAuthenticationHandler authenticationHandler;
 
     @Override
     public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
-        nioGremlinBinaryRequestDecoder = new NioGremlinBinaryRequestDecoder(serializers);
 
         // configure authentication - null means don't bother to add authentication to the pipeline
         if (authenticator != null)
@@ -60,7 +58,7 @@ public class NioChannelizer extends AbstractChannelizer {
             pipeline.addLast(new LoggingHandler("log-io", LogLevel.DEBUG));
 
         pipeline.addLast("response-encoder", new NioGremlinResponseEncoder());
-        pipeline.addLast("request-binary-decoder", nioGremlinBinaryRequestDecoder);
+        pipeline.addLast("request-binary-decoder", new NioGremlinBinaryRequestDecoder(serializers));
 
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-codec", LogLevel.DEBUG));

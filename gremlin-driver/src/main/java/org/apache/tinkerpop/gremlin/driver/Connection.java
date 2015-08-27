@@ -65,6 +65,8 @@ final class Connection {
      * busy a particular {@code Connection} is.
      */
     public final AtomicInteger borrowed = new AtomicInteger(0);
+    private final AtomicReference<Class<Channelizer>> channelizerClass = new AtomicReference<>(null);
+
     private volatile boolean isDead = false;
     private final int maxInProcess;
 
@@ -83,11 +85,15 @@ final class Connection {
         if (cluster.isClosing()) throw new IllegalStateException("Cannot open a connection while the cluster after close() is called");
 
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
-        final Channelizer channelizer = new Channelizer.WebSocketChannelizer();
-        channelizer.init(this);
-        b.channel(NioSocketChannel.class).handler(channelizer);
-
         try {
+            if (channelizerClass.get() == null) {
+                channelizerClass.compareAndSet(null, (Class<Channelizer>) Class.forName(cluster.connectionPoolSettings().channelizer));
+            }
+
+            final Channelizer channelizer = channelizerClass.get().newInstance();
+            channelizer.init(this);
+            b.channel(NioSocketChannel.class).handler(channelizer);
+
             channel = b.connect(uri.getHost(), uri.getPort()).sync().channel();
             channelizer.connected();
 

@@ -230,6 +230,7 @@ public final class Cluster {
         private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
         private AuthProperties authProps = new AuthProperties();
@@ -387,6 +388,21 @@ public final class Cluster {
         }
 
         /**
+         * Specify the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
+         */
+        public Builder channelizer(final String channelizerClass) {
+            this.channelizer = channelizerClass;
+            return this;
+        }
+
+        /**
+         * Specify the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
+         */
+        public Builder channelizer(final Class channelizerClass) {
+            return channelizer(channelizerClass.getCanonicalName());
+        }
+
+        /**
          * Time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
          */
         public Builder reconnectIntialDelay(final int initialDelay) {
@@ -466,6 +482,7 @@ public final class Cluster {
             connectionPoolSettings.reconnectInterval = this.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = this.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = this.enableSsl;
+            connectionPoolSettings.channelizer = this.channelizer;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
                     connectionPoolSettings, loadBalancingStrategy, authProps);
         }

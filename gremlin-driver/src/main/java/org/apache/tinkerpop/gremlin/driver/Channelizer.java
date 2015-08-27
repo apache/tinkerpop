@@ -35,7 +35,6 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.util.SelfSignedCertificate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,7 +128,7 @@ public interface Channelizer extends ChannelHandler {
     /**
      * WebSocket {@link Channelizer} implementation.
      */
-    final class WebSocketChannelizer extends AbstractChannelizer {
+    public final class WebSocketChannelizer extends AbstractChannelizer {
         private WebSocketClientHandler handler;
 
         private WebSocketGremlinRequestEncoder webSocketGremlinRequestEncoder;
@@ -182,19 +181,16 @@ public interface Channelizer extends ChannelHandler {
     /**
      * NIO {@link Channelizer} implementation.
      */
-    final class NioChannelizer extends AbstractChannelizer {
-        private NioGremlinRequestEncoder nioGremlinRequestEncoder;
-
+    public final class NioChannelizer extends AbstractChannelizer {
         @Override
         public void init(final Connection connection) {
             super.init(connection);
-            nioGremlinRequestEncoder = new NioGremlinRequestEncoder(true, cluster.getSerializer());
         }
 
         @Override
         public void configure(ChannelPipeline pipeline) {
             pipeline.addLast("gremlin-decoder", new NioGremlinResponseDecoder(cluster.getSerializer()));
-            pipeline.addLast("gremlin-encoder", nioGremlinRequestEncoder);
+            pipeline.addLast("gremlin-encoder", new NioGremlinRequestEncoder(true, cluster.getSerializer()));
         }
     }
 }
