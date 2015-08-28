@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
@@ -117,17 +118,27 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
             final List<PropertiesStep> propertiesSteps = TraversalHelper.getStepsOfAssignableClass(PropertiesStep.class, traversal);
             propertiesSteps.forEach(step -> {
                 if (step.getReturnType() == PropertyType.PROPERTY) {
-                    // this is the same filter application as above for the other steps
-                    TraversalHelper.insertAfterStep(
-                            new HasStep(traversal, new HasContainer(partitionKey, P.within(new ArrayList<>(readPartitions)))), step, traversal);
+                    // check the following step to see if it is a has(partitionKey, *) - if so then this strategy was
+                    // already applied down below via g.V().values() which injects a properties() step
+                    final Step next = step.getNextStep();
+                    if (!(next instanceof HasStep) || !((HasContainer) ((HasStep) next).getHasContainers().get(0)).getKey().equals(partitionKey)) {
+                        // use choose() to determine if the properties() step is called on a Vertex to get a VertexProperty
+                        // if not, pass it through.
+                        final Traversal choose = __.choose(
+                                __.filter(e -> e.get() instanceof VertexProperty),
+                                __.has(partitionKey, P.within(new ArrayList<>(readPartitions))),
+                                __.__());
+                        TraversalHelper.insertTraversal(step, choose.asAdmin(), traversal);
+                    }
                 } else if (step.getReturnType() == PropertyType.VALUE) {
-                    // explode g.V().values() to g.V().property().has().value()
-                    final PropertiesStep propertiesStep = new PropertiesStep(traversal, PropertyType.PROPERTY, step.getPropertyKeys());
-                    final HasStep hasStep = new HasStep(traversal, new HasContainer(partitionKey, P.within(new ArrayList<>(readPartitions))));
-                    final PropertyValueStep valueStep = new PropertyValueStep(traversal);
-                    TraversalHelper.replaceStep(step, propertiesStep, traversal);
-                    TraversalHelper.insertAfterStep(hasStep, propertiesStep, traversal);
-                    TraversalHelper.insertAfterStep(valueStep, hasStep, traversal);
+                    // use choose() to determine if the values() step is called on a Vertex to get a VertexProperty
+                    // if not, pass it through otherwise explode g.V().values() to g.V().properties().has().value()
+                    final Traversal choose = __.choose(
+                            __.filter(e -> e.get() instanceof Vertex),
+                            __.properties(step.getPropertyKeys()).has(partitionKey, P.within(new ArrayList<>(readPartitions))).value(),
+                            __.__());
+                    TraversalHelper.insertTraversal(step, choose.asAdmin(), traversal);
+                    traversal.removeStep(step);
                 } else {
                     throw new IllegalStateException(String.format("%s is not accounting for a particular PropertyType %s",
                             PartitionStrategy.class.getSimpleName(), step.getReturnType()));
