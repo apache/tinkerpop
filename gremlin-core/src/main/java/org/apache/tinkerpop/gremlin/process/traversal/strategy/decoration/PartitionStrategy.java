@@ -223,21 +223,37 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
             return this;
         }
 
+        /**
+         * Specifies the name of the partition to write when adding vertices, edges and vertex properties.  This
+         * name can be any user defined value.  It is only possible to write to a single partition at a time.
+         */
         public Builder writePartition(final String writePartition) {
             this.writePartition = writePartition;
             return this;
         }
 
+        /**
+         * Specifies the partition key name.  This is the property key that contains the partition value. It
+         * may a good choice to index on this key in certain cases (in graphs that support such things). This
+         * value must be specified for the {@code PartitionStrategy} to be constructed properly.
+         */
         public Builder partitionKey(final String partitionKey) {
             this.partitionKey = partitionKey;
             return this;
         }
 
+        /**
+         * Specifies the partition of the graph to read from.  It is possible to assign multiple partition keys so
+         * as to read from multiple partitions at the same time.
+         */
         public Builder addReadPartition(final String readPartition) {
             this.readPartitions.add(readPartition);
             return this;
         }
 
+        /**
+         * Creates the {@code PartitionStrategy}.
+         */
         public PartitionStrategy create() {
             if (partitionKey == null || partitionKey.isEmpty())
                 throw new IllegalStateException("The partitionKey cannot be null or empty");
