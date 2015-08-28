@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
@@ -43,18 +44,21 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -125,7 +129,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                         // use choose() to determine if the properties() step is called on a Vertex to get a VertexProperty
                         // if not, pass it through.
                         final Traversal choose = __.choose(
-                                __.filter(e -> e.get() instanceof VertexProperty),
+                                __.filter(new TypeChecker<>(VertexProperty.class)),
                                 __.has(partitionKey, P.within(new ArrayList<>(readPartitions))),
                                 __.__());
                         TraversalHelper.insertTraversal(step, choose.asAdmin(), traversal);
@@ -134,7 +138,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                     // use choose() to determine if the values() step is called on a Vertex to get a VertexProperty
                     // if not, pass it through otherwise explode g.V().values() to g.V().properties().has().value()
                     final Traversal choose = __.choose(
-                            __.filter(e -> e.get() instanceof Vertex),
+                            __.filter(new TypeChecker<>(Vertex.class)),
                             __.properties(step.getPropertyKeys()).has(partitionKey, P.within(new ArrayList<>(readPartitions))).value(),
                             __.__());
                     TraversalHelper.insertTraversal(step, choose.asAdmin(), traversal);
@@ -176,6 +180,24 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                 }
             }
         });
+    }
+
+    public final class TypeChecker<A> implements Predicate<Traverser<A>>, Serializable {
+        final Class<? extends Element> toCheck;
+
+        public TypeChecker(final Class<? extends Element> toCheck) {
+            this.toCheck = toCheck;
+        }
+
+        @Override
+        public boolean test(final Traverser traverser) {
+            return toCheck.isAssignableFrom(traverser.get().getClass());
+        }
+
+        @Override
+        public String toString() {
+            return "instanceOf(" + toCheck.getSimpleName() + ")";
+        }
     }
 
     public final static class Builder {
