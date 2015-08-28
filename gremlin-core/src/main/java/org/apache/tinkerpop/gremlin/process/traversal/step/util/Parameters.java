@@ -1,21 +1,21 @@
 /*
  *
- *  * Licensed to the Apache Software Foundation (ASF) under one
- *  * or more contributor license agreements.  See the NOTICE file
- *  * distributed with this work for additional information
- *  * regarding copyright ownership.  The ASF licenses this file
- *  * to you under the Apache License, Version 2.0 (the
- *  * "License"); you may not use this file except in compliance
- *  * with the License.  You may obtain a copy of the License at
- *  *
- *  * http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing,
- *  * software distributed under the License is distributed on an
- *  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  * KIND, either express or implied.  See the License for the
- *  * specific language governing permissions and limitations
- *  * under the License.
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing,
+ *  software distributed under the License is distributed on an
+ *  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *  KIND, either express or implied.  See the License for the
+ *  specific language governing permissions and limitations
+ *  under the License.
  *
  */
 
@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
+ * The parameters held by a {@link Traversal}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Parameters implements Cloneable, Serializable {
 
@@ -62,6 +66,10 @@ public final class Parameters implements Cloneable, Serializable {
         return null == object ? defaultValue.get() : (E) object;
     }
 
+    public Object remove(final Object key) {
+        return parameters.remove(key);
+    }
+
     public <S> Object[] getKeyValues(final Traverser.Admin<S> traverser, final Object... exceptKeys) {
         if (this.parameters.size() == 0) return EMPTY_ARRAY;
         final List<Object> exceptions = Arrays.asList(exceptKeys);
@@ -73,6 +81,23 @@ public final class Parameters implements Cloneable, Serializable {
             }
         }
         return keyValues.toArray(new Object[keyValues.size()]);
+    }
+
+    /**
+     * Gets an immutable set of the parameters without evaluating them in the context of a {@link Traverser} as
+     * is done in {@link #getKeyValues(Traverser.Admin, Object...)}.
+     *
+     * @param exceptKeys keys to not include in the returned {@link Map}
+     */
+    public Map<Object,Object> getRaw(final Object... exceptKeys) {
+        if (parameters.isEmpty()) return Collections.emptyMap();
+        final List<Object> exceptions = Arrays.asList(exceptKeys);
+        final Map<Object,Object> raw = new HashMap<>();
+        for (Map.Entry entry : parameters.entrySet()) {
+            if (!exceptions.contains(entry.getKey())) raw.put(entry.getKey(), entry.getValue());
+        }
+
+        return Collections.unmodifiableMap(raw);
     }
 
     public void set(final Object... keyValues) {
