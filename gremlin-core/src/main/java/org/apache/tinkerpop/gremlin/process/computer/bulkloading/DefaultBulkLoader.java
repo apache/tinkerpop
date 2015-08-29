@@ -19,12 +19,17 @@
 package org.apache.tinkerpop.gremlin.process.computer.bulkloading;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+
+import java.util.Iterator;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -32,25 +37,25 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 public class DefaultBulkLoader implements BulkLoader {
 
     public final static String USER_SUPPLIED_IDS_CFG_KEY = "userSuppliedIds";
-    public final static String STORE_ORIGINAL_IDS_CFG_KEY = "storeOriginalIds";
+    public final static String KEEP_ORIGINAL_IDS_CFG_KEY = "keepOriginalIds";
 
     private String bulkLoaderVertexId = BulkLoaderVertexProgram.DEFAULT_BULK_LOADER_VERTEX_ID;
-    private boolean storeOriginalIds = false;
-    private boolean useUserSuppliedIds = false;
+    private boolean keepOriginalIds = true;
+    private boolean userSuppliedIds = false;
 
     /**
      * {@inheritDoc}
      */
     @Override
     public Vertex getOrCreateVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
-        if (useUserSuppliedIds()) {
-            return graph.addVertex(T.id, vertex.id(), T.label, vertex.label());
-        }
-        final Vertex v = graph.addVertex(T.label, vertex.label());
-        if (storeOriginalIds()) {
-            v.property(bulkLoaderVertexId, vertex.id());
-        }
-        return v;
+        final Iterator<Vertex> iterator = useUserSuppliedIds()
+                ? graph.vertices(vertex.id())
+                : g.V().has(vertex.label(), getVertexIdProperty(), vertex.id());
+        return iterator.hasNext()
+                ? iterator.next()
+                : useUserSuppliedIds()
+                ? graph.addVertex(T.id, vertex.id(), T.label, vertex.label())
+                : graph.addVertex(T.label, vertex.label(), getVertexIdProperty(), vertex.id());
     }
 
     /**
@@ -58,8 +63,20 @@ public class DefaultBulkLoader implements BulkLoader {
      */
     @Override
     public Edge getOrCreateEdge(final Edge edge, final Vertex outVertex, final Vertex inVertex, final Graph graph, final GraphTraversalSource g) {
-        final Edge e = outVertex.addEdge(edge.label(), inVertex);
-        edge.properties().forEachRemaining(property -> e.property(property.key(), property.value()));
+        final Edge e;
+        final Traversal<Vertex, Edge> t = g.V(outVertex).outE(edge.label()).filter(__.inV().is(inVertex));
+        if (t.hasNext()) {
+            e = t.next();
+            edge.properties().forEachRemaining(property -> {
+                final Property<?> existing = e.property(property.key());
+                if (!existing.isPresent() || !existing.value().equals(property.value())) {
+                    e.property(property.key(), property.value());
+                }
+            });
+        } else {
+            e = outVertex.addEdge(edge.label(), inVertex);
+            edge.properties().forEachRemaining(property -> e.property(property.key(), property.value()));
+        }
         return e;
     }
 
@@ -68,8 +85,19 @@ public class DefaultBulkLoader implements BulkLoader {
      */
     @Override
     public VertexProperty getOrCreateVertexProperty(final VertexProperty<?> property, final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
-        final VertexProperty<?> vp = vertex.property(property.key(), property.value());
-        vp.properties().forEachRemaining(metaProperty -> property.property(metaProperty.key(), metaProperty.value()));
+        final VertexProperty<?> vp;
+        final VertexProperty<?> existing = vertex.property(property.key());
+        if (!existing.isPresent() || !existing.value().equals(property.value())) {
+            vp = vertex.property(property.key(), property.value());
+        } else {
+            vp = existing;
+        }
+        property.properties().forEachRemaining(metaProperty -> {
+            final Property<?> existing2 = vp.property(metaProperty.key());
+            if (!existing2.isPresent() || !existing2.value().equals(metaProperty.value())) {
+                vp.property(metaProperty.key(), metaProperty.value());
+            }
+        });
         return vp;
     }
 
@@ -88,15 +116,15 @@ public class DefaultBulkLoader implements BulkLoader {
      */
     @Override
     public boolean useUserSuppliedIds() {
-        return useUserSuppliedIds;
+        return userSuppliedIds;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean storeOriginalIds() {
-        return storeOriginalIds;
+    public boolean keepOriginalIds() {
+        return keepOriginalIds;
     }
 
     /**
@@ -116,10 +144,10 @@ public class DefaultBulkLoader implements BulkLoader {
             bulkLoaderVertexId = configuration.getString(BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID_CFG_KEY);
         }
         if (configuration.containsKey(USER_SUPPLIED_IDS_CFG_KEY)) {
-            useUserSuppliedIds = configuration.getBoolean(USER_SUPPLIED_IDS_CFG_KEY);
+            userSuppliedIds = configuration.getBoolean(USER_SUPPLIED_IDS_CFG_KEY);
         }
-        if (configuration.containsKey(STORE_ORIGINAL_IDS_CFG_KEY)) {
-            storeOriginalIds = configuration.getBoolean(STORE_ORIGINAL_IDS_CFG_KEY);
+        if (configuration.containsKey(KEEP_ORIGINAL_IDS_CFG_KEY)) {
+            keepOriginalIds = configuration.getBoolean(KEEP_ORIGINAL_IDS_CFG_KEY);
         }
     }
 }

@@ -95,11 +95,9 @@ public interface BulkLoader {
     public boolean useUserSuppliedIds();
 
     /**
-     * @return Whether original vertex identifiers are stored in the target graph or not.
+     * @return Whether to keep the original vertex identifiers in the target graph or not.
      */
-    public default boolean storeOriginalIds() {
-        return !useUserSuppliedIds();
-    }
+    public boolean keepOriginalIds();
 
     /**
      * @return The name of the vertex property that is used to store the original vertex id.

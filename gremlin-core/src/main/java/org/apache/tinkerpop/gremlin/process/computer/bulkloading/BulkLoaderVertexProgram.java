@@ -54,10 +54,10 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BulkLoaderVertexProgram.class);
 
-    public static final String BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX = "gremlin.bulkLoading";
-    private static final String GRAPH_CFG_KEY = "graph";
-    private static final String BULK_LOADER_CFG_KEY = "loader";
-    private static final String INTERMEDIATE_BATCH_SIZE_CFG_KEY = "intermediateBatchSize";
+    public static final String BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX = "gremlin.bulkLoaderVertexProgram";
+    public static final String GRAPH_CFG_KEY = "graph";
+    public static final String BULK_LOADER_CFG_KEY = "loader";
+    public static final String INTERMEDIATE_BATCH_SIZE_CFG_KEY = "intermediateBatchSize";
     public static final String BULK_LOADER_VERTEX_ID_CFG_KEY = "vertexIdProperty";
     public static final String DEFAULT_BULK_LOADER_VERTEX_ID = "bulkLoader.vertex.id";
 
@@ -117,9 +117,8 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
             if (graph.features().graph().supportsTransactions()) {
                 LOGGER.info("Committing transaction on Graph instance: {}", graph);
                 try {
-                    graph.tx().commit(); // TODO will Giraph/MR restart the program and re-run execute if this fails?
+                    graph.tx().commit();
                     LOGGER.debug("Committed transaction on Graph instance: {}", graph);
-                    counter = 0L;
                 } catch (Exception e) {
                     LOGGER.error("Failed to commit transaction on Graph instance: {}", graph);
                     graph.tx().rollback();
@@ -140,7 +139,6 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
 
     @Override
     public void setup(final Memory memory) {
-
     }
 
     @Override
@@ -156,6 +154,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         }
         intermediateBatchSize = configuration.getLong(INTERMEDIATE_BATCH_SIZE_CFG_KEY, 0L);
         elementComputeKeys.add(configuration.subset(BULK_LOADER_CFG_KEY).getString(BULK_LOADER_VERTEX_ID_CFG_KEY));
+        bulkLoader = createBulkLoader();
     }
 
     @Override
@@ -176,7 +175,6 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
                     throw new IllegalStateException("The given graph instance does not allow concurrent access.");
                 }
                 g = graph.traversal();
-                bulkLoader = createBulkLoader();
             } catch (Exception e) {
                 try {
                     graph.close();
@@ -222,12 +220,13 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
                 sourceVertex.property(bulkLoader.getVertexIdProperty(), targetVertex.id());
                 messenger.sendMessage(messageScope, Pair.with(sourceVertex.id(), targetVertex.id()));
             }
-        } else {
+        } else if (memory.getIteration() == 1) {
             if (bulkLoader.useUserSuppliedIds()) {
                 final Vertex outV = bulkLoader.getVertex(sourceVertex, graph, g);
                 sourceVertex.edges(Direction.OUT).forEachRemaining(edge -> {
                     final Vertex inV = bulkLoader.getVertex(edge.inVertex(), graph, g);
                     bulkLoader.getOrCreateEdge(edge, outV, inV, graph, g);
+                    this.commit(false);
                 });
             } else {
                 // create an id map and populate it with all the incoming messages
@@ -237,7 +236,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
                     final Tuple idPair = idi.next();
                     idPairs.put(idPair.getValue(0), idPair.getValue(1));
                 }
-                // get the vertex given the dummy id property
+                // get the vertex with given the dummy id property
                 final Long outVId = sourceVertex.value(bulkLoader.getVertexIdProperty());
                 final Vertex outV = bulkLoader.getVertexById(outVId, graph, g);
                 // for all the incoming edges of the vertex, get the incoming adjacent vertex and write the edge and its properties
@@ -248,12 +247,23 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
                     this.commit(false);
                 });
             }
+        } else if (memory.getIteration() == 2) {
+            final Long vertexId = sourceVertex.value(bulkLoader.getVertexIdProperty());
+            bulkLoader.getVertexById(vertexId, graph, g)
+                    .property(bulkLoader.getVertexIdProperty()).remove();
+            this.commit(false);
         }
     }
 
     @Override
     public boolean terminate(final Memory memory) {
-        return memory.getIteration() >= 1;
+        switch (memory.getIteration()) {
+            case 1:
+                return bulkLoader.keepOriginalIds();
+            case 2:
+                return true;
+        }
+        return false;
     }
 
     @Override
@@ -266,6 +276,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         return Collections.singleton(messageScope);
     }
 
+    @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException", "CloneDoesntCallSuperClone"})
     @Override
     public VertexProgram<Tuple> clone() {
         return this;
@@ -273,17 +284,17 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
 
     @Override
     public GraphComputer.ResultGraph getPreferredResultGraph() {
-        return GraphComputer.ResultGraph.NEW;
+        return GraphComputer.ResultGraph.ORIGINAL;
     }
 
     @Override
     public GraphComputer.Persist getPreferredPersist() {
-        return GraphComputer.Persist.EDGES;
+        return GraphComputer.Persist.NOTHING;
     }
 
     @Override
     public String toString() {
-        return StringFactory.vertexProgramString(this, "");
+        return StringFactory.vertexProgramString(this, bulkLoader != null ? bulkLoader.getClass().getSimpleName() : null);
     }
 
     public static Builder build() {
