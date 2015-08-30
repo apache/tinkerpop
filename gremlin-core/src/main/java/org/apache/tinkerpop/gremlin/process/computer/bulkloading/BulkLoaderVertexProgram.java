@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -68,7 +69,12 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     private Graph graph;
     private GraphTraversalSource g;
     private long intermediateBatchSize;
-    private long counter;
+    private static ThreadLocal<AtomicLong> counter = new ThreadLocal<AtomicLong>() {
+        @Override
+        protected AtomicLong initialValue() {
+            return new AtomicLong();
+        }
+    };
 
     private BulkLoaderVertexProgram() {
         messageScope = MessageScope.Local.of(__::inE);
@@ -99,7 +105,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
                 throw new IllegalStateException(e);
             }
         } else {
-            loader = new DefaultBulkLoader();
+            loader = new IncrementalBulkLoader();
         }
         loader.configure(config);
         return loader;
@@ -112,10 +118,11 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
      * @param close Whether to close the current graph instance after calling commit() or not.
      */
     private void commit(final boolean close) {
-        if (!close && (intermediateBatchSize == 0L || ++counter % intermediateBatchSize != 0)) return;
+        if (!close && (counter.get().incrementAndGet() % intermediateBatchSize != 0 || intermediateBatchSize == 0L))
+            return;
         if (null != graph) {
             if (graph.features().graph().supportsTransactions()) {
-                LOGGER.info("Committing transaction on Graph instance: {}", graph);
+                LOGGER.info("Committing transaction on Graph instance: {} [{}]", graph, counter.get().get());
                 try {
                     graph.tx().commit();
                     LOGGER.debug("Committed transaction on Graph instance: {}", graph);
@@ -139,6 +146,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
 
     @Override
     public void setup(final Memory memory) {
+        counter.get().set(0L);
     }
 
     @Override
