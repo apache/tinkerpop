@@ -34,7 +34,7 @@ import java.util.Iterator;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class DefaultBulkLoader implements BulkLoader {
+public class IncrementalBulkLoader implements BulkLoader {
 
     public final static String USER_SUPPLIED_IDS_CFG_KEY = "userSuppliedIds";
     public final static String KEEP_ORIGINAL_IDS_CFG_KEY = "keepOriginalIds";
