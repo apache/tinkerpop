@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +29,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -46,14 +46,14 @@ public class StandardVerificationStrategyTest {
     @Before
     public void setup() {
         this.traversalEngine = mock(TraversalEngine.class);
-        when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.COMPUTER);
+        when(this.traversalEngine.getType()).thenReturn(TraversalEngine.Type.STANDARD);
     }
 
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"__.repeat(out().fold().unfold()).times(2)", __.repeat(__.out().fold().unfold()).times(2)},
-                {"__.repeat(sum()).times(2)", __.repeat(__.sum()).times(2)},
+                {"__.repeat(out().fold().unfold()).times(2)", repeat(out().fold().unfold()).times(2)},
+                {"__.repeat(sum()).times(2)", repeat(sum()).times(2)},
         });
     }
 

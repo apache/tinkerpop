@@ -20,12 +20,10 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -41,7 +39,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -165,37 +162,21 @@ public class TinkerGraphTest {
     @Test
     @Ignore
     public void testPlay7() throws Exception {
-        /*TinkerGraph graph = TinkerGraph.open();
-        graph.createIndex("name",Vertex.class);
-        graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");*/
-        //System.out.println(g.V().properties().key().groupCount().next());
-        TinkerGraph graph = TinkerGraph.open();
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
-        g.inject("alice", "bob", "charlie").as("a").addV("person").property("name", select("a")).forEachRemaining(System.out::println);
-        g.V().valueMap().forEachRemaining(System.out::println);
-        /*final List<Supplier<GraphTraversal<?,?>>> traversals = Arrays.asList(
-                () -> g.V().out().as("v").match(
-                        __.as("v").outE().count().as("outDegree"),
-                        __.as("v").inE().count().as("inDegree")).select("v","outDegree","inDegree").by(valueMap()).by().by().local(union(select("v"), select("inDegree", "outDegree")).unfold().fold())
-        );
-
-        traversals.forEach(traversal -> {
-            System.out.println("pre-strategy:  " + traversal.get());
-            System.out.println("post-strategy: " + traversal.get().iterate());
-            System.out.println(TimeUtil.clockWithResult(50, () -> traversal.get().toList()));
-        });*/
+        final Graph graph = TinkerFactory.createModern();
+        final GraphTraversalSource g = graph.traversal();
+        g.withSack(1.0).V(1).local(outE().barrier(LambdaCollectingBarrierStep.Consumers.normSack)).inV().sack().forEachRemaining(System.out::println);
     }
 
     @Test
     @Ignore
     public void testPlay5() throws Exception {
         TinkerGraph graph = TinkerGraph.open();
-        graph.createIndex("name",Vertex.class);
+        graph.createIndex("name", Vertex.class);
         graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
         GraphTraversalSource g = graph.traversal(GraphTraversalSource.computer());
 
-        final Supplier<Traversal<?,?>> traversal = () ->
-                g.V().repeat(out()).times(5).as("a").out("writtenBy").as("b").select("a","b").count();
+        final Supplier<Traversal<?, ?>> traversal = () ->
+                g.V().repeat(out()).times(5).as("a").out("writtenBy").as("b").select("a", "b").count();
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());

@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `LambdaCollectingBarrierStep` which generalizes `NoOpBarrierStep` and allows for `barrier(normSack)`-type operations.
 * Fixed bugs in the Gremlin Server's NIO protocol both on the server and driver side.
 * Added `Path.popEquals(Pop,Object)` to check for path equality based on `Pop` (useful for `TraverserRequirement.LABELED_PATH`).
 * Added `Operator.assign` to allow setting a direct value.

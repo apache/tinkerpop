@@ -37,7 +37,7 @@ public final class StandardVerificationStrategy extends AbstractTraversalStrateg
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         traversal.getSteps().forEach(step -> {
-            if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof RepeatStep)
+            if (step instanceof ReducingBarrierStep && step.getTraversal().getParent() instanceof RepeatStep && step.getTraversal().getParent().getGlobalChildren().get(0).getSteps().contains(step))
                 throw new VerificationException("The direct parent of a ReducingBarrierStep can not be a RepeatStep: " + step, traversal);
         });
     }
