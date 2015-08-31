@@ -234,6 +234,14 @@ public abstract class RepeatTest extends AbstractGremlinProcessTest {
         assertTrue(counter > 0);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_repeatXoutX_untilXoutE_count_isX0XX_name() {
+        final Traversal<Vertex, String> traversal = get_g_VX1X_repeatXoutX_untilXoutE_count_isX0XX_name(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("lop", "lop", "ripple", "vadas"), traversal);
+    }
+
     public static class Traversals extends RepeatTest {
 
         @Override
