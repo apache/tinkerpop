@@ -74,5 +74,10 @@ public abstract class GroovyRepeatTest {
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXgroupCountXmX_byXnameX_outX_timesX2X_capXmX() {
             TraversalScriptHelper.compute("g.V.repeat(groupCount('m').by('name').out).times(2).cap('m')", g)
         }
+
+        @Override
+        public Traversal<Vertex, String> get_g_VX1X_repeatXoutX_untilXoutE_count_isX0XX_name(final Object v1Id) {
+            TraversalScriptHelper.compute("g.V(${v1Id}).repeat(out()).until(__.outE.count.is(0)).name", g, "v1Id", v1Id)
+        }
     }
 }
