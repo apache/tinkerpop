@@ -48,6 +48,7 @@ TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 * Added `TraverserRequirement.LABELED_PATH` which only generates path data for steps that are labeled (greatly increases the likelihood of bulking).
 * Fixed a bug in `Path` usage that required an API update: `Path.addLabel()` is now `Path.extend(Set<String>)` and `Traverser.addLabels(Set<String>)`.
 * Made `Path` iterable, so that it can be `unfold()`'ed and used by local steps like `min(local)`, `max(local)`, etc.
+* `WhereTraversalStep` and `WherePredicateStep` are now the only "special" `Scoping` steps after `MatchStartStep` in `match()`.
 
 TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------------------------------------
@@ -57,7 +58,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* `WhereTraversalStep` and `WherePredicateStep` are now the only "special" `Scoping` steps after `MatchStartStep` in `match()`.
+* `Compare` now uses `BigDecimal` internally to ensure that precision is not lost on standard number comparisons.
 * Renamed `ComputerVerificationStrategy` to `VerificationStrategy` so all the verification strategies can use it.
 * Added `StandardVerificationStrategy` that throws exceptions for illegal traversal patterns on the standard engine (which extends to `GraphComputer`).
 * Clarified semantics of `Transaction.close()` in unit tests - now refers only to closing the current transaction in the current thread.
