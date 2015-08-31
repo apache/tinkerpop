@@ -36,9 +36,6 @@ import java.util.Iterator;
  */
 public class IncrementalBulkLoader implements BulkLoader {
 
-    public final static String USER_SUPPLIED_IDS_CFG_KEY = "userSuppliedIds";
-    public final static String KEEP_ORIGINAL_IDS_CFG_KEY = "keepOriginalIds";
-
     private String bulkLoaderVertexId = BulkLoaderVertexProgram.DEFAULT_BULK_LOADER_VERTEX_ID;
     private boolean keepOriginalIds = true;
     private boolean userSuppliedIds = false;
@@ -143,11 +140,11 @@ public class IncrementalBulkLoader implements BulkLoader {
         if (configuration.containsKey(BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID_CFG_KEY)) {
             bulkLoaderVertexId = configuration.getString(BulkLoaderVertexProgram.BULK_LOADER_VERTEX_ID_CFG_KEY);
         }
-        if (configuration.containsKey(USER_SUPPLIED_IDS_CFG_KEY)) {
-            userSuppliedIds = configuration.getBoolean(USER_SUPPLIED_IDS_CFG_KEY);
+        if (configuration.containsKey(BulkLoaderVertexProgram.USER_SUPPLIED_IDS_CFG_KEY)) {
+            userSuppliedIds = configuration.getBoolean(BulkLoaderVertexProgram.USER_SUPPLIED_IDS_CFG_KEY);
         }
-        if (configuration.containsKey(KEEP_ORIGINAL_IDS_CFG_KEY)) {
-            keepOriginalIds = configuration.getBoolean(KEEP_ORIGINAL_IDS_CFG_KEY);
+        if (configuration.containsKey(BulkLoaderVertexProgram.KEEP_ORIGINAL_IDS_CFG_KEY)) {
+            keepOriginalIds = configuration.getBoolean(BulkLoaderVertexProgram.KEEP_ORIGINAL_IDS_CFG_KEY);
         }
     }
 }

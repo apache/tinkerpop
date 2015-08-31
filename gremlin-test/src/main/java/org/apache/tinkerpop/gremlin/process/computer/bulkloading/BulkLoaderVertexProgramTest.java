@@ -22,7 +22,6 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.junit.Test;
@@ -38,11 +37,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
 
-    private BulkLoader getBulkLoader(final Configuration configuration) throws Exception {
-        final VertexProgram.Builder builder = BulkLoaderVertexProgram.build();
-        if (configuration != null)
-            configuration.getKeys().forEachRemaining(key -> builder.configure(key, configuration.getProperty(key)));
-        BulkLoaderVertexProgram blvp = builder.create(graph);
+    private BulkLoader getBulkLoader(final BulkLoaderVertexProgram blvp) throws Exception {
         final Field field = BulkLoaderVertexProgram.class.getDeclaredField("bulkLoader");
         field.setAccessible(true);
         return (BulkLoader) field.get(blvp);
@@ -56,7 +51,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
 
     @Test
     public void shouldUseIncrementalBulkLoaderByDefault() throws Exception {
-        final BulkLoader loader = getBulkLoader(null);
+        final BulkLoader loader = getBulkLoader(BulkLoaderVertexProgram.build().create(graph));
         assertTrue(loader instanceof IncrementalBulkLoader);
         assertTrue(loader.keepOriginalIds());
         assertFalse(loader.useUserSuppliedIds());
@@ -65,9 +60,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldStoreOriginalIds() throws Exception {
-        final Configuration configuration = new BaseConfiguration();
-        configuration.setProperty("loader.userSuppliedIds", false);
-        final BulkLoader loader = getBulkLoader(configuration);
+        final BulkLoader loader = getBulkLoader(BulkLoaderVertexProgram.build().userSuppliedIds(false).create(graph));
         assertFalse(loader.useUserSuppliedIds());
         final Graph target = getTargetGraph();
         graph.vertices().forEachRemaining(v -> loader.getOrCreateVertex(v, target, target.traversal()));
@@ -77,9 +70,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldNotStoreOriginalIds() throws Exception {
-        final Configuration configuration = new BaseConfiguration();
-        configuration.setProperty("loader.userSuppliedIds", true);
-        final BulkLoader loader = getBulkLoader(configuration);
+        final BulkLoader loader = getBulkLoader(BulkLoaderVertexProgram.build().userSuppliedIds(true).create(graph));
         assertTrue(loader.useUserSuppliedIds());
         final Graph target = getTargetGraph();
         graph.vertices().forEachRemaining(v -> loader.getOrCreateVertex(v, target, target.traversal()));

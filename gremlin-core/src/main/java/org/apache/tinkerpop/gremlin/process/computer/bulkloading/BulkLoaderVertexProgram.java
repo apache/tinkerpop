@@ -20,7 +20,9 @@ package org.apache.tinkerpop.gremlin.process.computer.bulkloading;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.ConfigurationUtils;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.MessageScope;
@@ -58,6 +60,8 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     public static final String BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX = "gremlin.bulkLoaderVertexProgram";
     public static final String GRAPH_CFG_KEY = "graph";
     public static final String BULK_LOADER_CFG_KEY = "loader";
+    public final static String USER_SUPPLIED_IDS_CFG_KEY = "userSuppliedIds";
+    public final static String KEEP_ORIGINAL_IDS_CFG_KEY = "keepOriginalIds";
     public static final String INTERMEDIATE_BATCH_SIZE_CFG_KEY = "intermediateBatchSize";
     public static final String BULK_LOADER_VERTEX_ID_CFG_KEY = "vertexIdProperty";
     public static final String DEFAULT_BULK_LOADER_VERTEX_ID = "bulkLoader.vertex.id";
@@ -79,13 +83,6 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     private BulkLoaderVertexProgram() {
         messageScope = MessageScope.Local.of(__::inE);
         elementComputeKeys = new HashSet<>();
-    }
-
-    private Configuration getGraphConfiguration() {
-        final Configuration config = configuration.subset(GRAPH_CFG_KEY);
-        config.setProperty(Graph.GRAPH, config.getString("class"));
-        config.clearProperty("class");
-        return config;
     }
 
     private BulkLoader createBulkLoader() {
@@ -118,7 +115,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
      * @param close Whether to close the current graph instance after calling commit() or not.
      */
     private void commit(final boolean close) {
-        if (!close && (counter.get().incrementAndGet() % intermediateBatchSize != 0 || intermediateBatchSize == 0L))
+        if (!close && (intermediateBatchSize == 0L || counter.get().incrementAndGet() % intermediateBatchSize != 0))
             return;
         if (null != graph) {
             if (graph.features().graph().supportsTransactions()) {
@@ -176,7 +173,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     @Override
     public void workerIterationStart(final Memory memory) {
         if (null == graph) {
-            graph = GraphFactory.open(getGraphConfiguration());
+            graph = GraphFactory.open(configuration.subset(GRAPH_CFG_KEY));
             LOGGER.info("Opened Graph instance: {}", graph);
             try {
                 if (!graph.features().graph().supportsConcurrentAccess()) {
@@ -320,6 +317,74 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         public BulkLoaderVertexProgram create(final Graph graph) {
             ConfigurationUtils.append(graph.configuration().subset(BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX), configuration);
             return (BulkLoaderVertexProgram) VertexProgram.createVertexProgram(graph, this.configuration);
+        }
+
+        private void setLoaderConfigurationProperty(final String key, final Object value) {
+            configuration.setProperty(String.join(".", BULK_LOADER_CFG_KEY, key), value);
+        }
+
+        private void setGraphConfigurationProperty(final String key, final Object value) {
+            configuration.setProperty(String.join(".", GRAPH_CFG_KEY, key), value);
+        }
+
+        /**
+         * Sets the class name of the BulkLoader implementation to be used.
+         */
+        public Builder bulkLoader(final String className) {
+            setLoaderConfigurationProperty(Graph.GRAPH, className);
+            return this;
+        }
+
+        /**
+         * Sets the class of the BulkLoader implementation to be used.
+         */
+        public Builder bulkLoader(final Class<? extends BulkLoader> clazz) {
+            return bulkLoader(clazz.getCanonicalName());
+        }
+
+        /**
+         * Sets the name of the property that is used to store the original vertex identifiers in the target graph.
+         */
+        public Builder vertexIdProperty(final String name) {
+            setLoaderConfigurationProperty(BULK_LOADER_VERTEX_ID_CFG_KEY, name);
+            return this;
+        }
+
+        /**
+         * Specifies whether user supplied identifiers should be used when the bulk loader creates vertices in the
+         * target graph.
+         */
+        public Builder userSuppliedIds(final boolean useUserSuppliedIds) {
+            setLoaderConfigurationProperty(USER_SUPPLIED_IDS_CFG_KEY, useUserSuppliedIds);
+            return this;
+        }
+
+        /**
+         * Specifies whether the original vertex identifiers should be kept in the target graph or not. In case of false
+         * BulkLoaderVertexProgram will add another iteration to remove the properties and it won't be possible to use
+         * the data for further incremental bulk loads.
+         */
+        public Builder keepOriginalIds(final boolean keepOriginalIds) {
+            setLoaderConfigurationProperty(KEEP_ORIGINAL_IDS_CFG_KEY, keepOriginalIds);
+            return this;
+        }
+
+        /**
+         * The batch size for a single transaction (number of vertices in the vertex loading stage; number of edges in
+         * the edge loading stage).
+         */
+        public Builder intermediateBatchSize(final int batchSize) {
+            configuration.setProperty(INTERMEDIATE_BATCH_SIZE_CFG_KEY, batchSize);
+            return this;
+        }
+
+        /**
+         * A configuration for the target graph that can be passed to GraphFactory.open().
+         */
+        public Builder writeGraph(final String configurationFile) throws ConfigurationException {
+            final Configuration conf = new PropertiesConfiguration(configurationFile);
+            conf.getKeys().forEachRemaining(key -> setGraphConfigurationProperty(key, conf.getProperty(key)));
+            return this;
         }
     }
 }
