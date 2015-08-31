@@ -129,6 +129,20 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertThat(gOverA.V(v).values("any").hasNext(), is(true));
         assertThat(gOverB.V(v).values("any").hasNext(), is(false));
         assertThat(gOverB.V(v).values("that").hasNext(), is(false));
+
+        assertThat(gOverAB.V(v).propertyMap().next().containsKey("any"), is(true));
+        assertThat(gOverAB.V(v).propertyMap().next().containsKey("that"), is(true));
+        assertThat(gOverA.V(v).propertyMap().next().containsKey("that"), is(false));
+        assertThat(gOverA.V(v).propertyMap().next().containsKey("any"), is(true));
+        assertThat(gOverB.V(v).propertyMap().hasNext(), is(false));
+        assertThat(gOverB.V(v).propertyMap().hasNext(), is(false));
+
+        assertThat(gOverAB.V(v).valueMap().next().containsKey("any"), is(true));
+        assertThat(gOverAB.V(v).valueMap().next().containsKey("that"), is(true));
+        assertThat(gOverA.V(v).valueMap().next().containsKey("that"), is(false));
+        assertThat(gOverA.V(v).valueMap().next().containsKey("any"), is(true));
+        assertThat(gOverB.V(v).valueMap().hasNext(), is(false));
+        assertThat(gOverB.V(v).valueMap().hasNext(), is(false));
     }
 
     @Test

@@ -32,7 +32,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartSte
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropertyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
@@ -42,6 +44,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -49,10 +52,13 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -144,8 +150,30 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                     TraversalHelper.insertTraversal(step, choose.asAdmin(), traversal);
                     traversal.removeStep(step);
                 } else {
-                    throw new IllegalStateException(String.format("%s is not accounting for a particular PropertyType %s",
-                            PartitionStrategy.class.getSimpleName(), step.getReturnType()));
+                    throw new IllegalStateException(String.format("%s is not accounting for a particular %s %s",
+                            PartitionStrategy.class.getSimpleName(), PropertyType.class.toString(), step.getReturnType()));
+                }
+            });
+
+            final List<PropertyMapStep> propertyMapSteps = TraversalHelper.getStepsOfAssignableClass(PropertyMapStep.class, traversal);
+            propertyMapSteps.forEach(step -> {
+                if (step.getReturnType() == PropertyType.PROPERTY) {
+                    // via map() filter out properties that aren't in the partition if it is a PropertyVertex,
+                    // otherwise just let them pass through
+                    TraversalHelper.insertAfterStep(new LambdaMapStep<>(traversal, new MapPropertiesFilter()), step, traversal);
+                } else if (step.getReturnType() == PropertyType.VALUE) {
+                    // as this is a value map, replace that step with propertiesMap() that returns PropertyType.VALUE.
+                    // from there, add the filter as shown above and then unwrap the properties as they would have
+                    // been done under valueMap()
+                    final PropertyMapStep propertyMapStep = new PropertyMapStep(traversal, step.isIncludeTokens(), PropertyType.PROPERTY, step.getPropertyKeys());
+                    TraversalHelper.replaceStep(step, propertyMapStep, traversal);
+
+                    final LambdaMapStep mapPropertiesFilterStep = new LambdaMapStep<>(traversal, new MapPropertiesFilter());
+                    TraversalHelper.insertAfterStep(mapPropertiesFilterStep, propertyMapStep, traversal);
+                    TraversalHelper.insertAfterStep(new LambdaMapStep<>(traversal, new MapPropertiesConverter()), mapPropertiesFilterStep, traversal);
+                } else {
+                    throw new IllegalStateException(String.format("%s is not accounting for a particular %s %s",
+                            PartitionStrategy.class.getSimpleName(), PropertyType.class.toString(), step.getReturnType()));
                 }
             });
         }
@@ -182,6 +210,10 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         });
     }
 
+    /**
+     * A concrete lambda implementation that checks if the type passing through on the {@link Traverser} is
+     * of a specific {@link Element} type.
+     */
     public final class TypeChecker<A> implements Predicate<Traverser<A>>, Serializable {
         final Class<? extends Element> toCheck;
 
@@ -200,14 +232,68 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         }
     }
 
+    /**
+     * Takes the result of a {@link Map} containing {@link Property} lists and if the property is a
+     * {@link VertexProperty} it applies a filter based on the current partitioning.  If is not a
+     * {@link VertexProperty} the property is simply passed through.
+     */
+    public final class MapPropertiesFilter implements Function<Traverser<Map<String,List<Property>>>, Map<String,List<Property>>>, Serializable {
+        @Override
+        public Map<String, List<Property>> apply(final Traverser<Map<String, List<Property>>> mapTraverser) {
+            final Map<String,List<Property>> values = mapTraverser.get();
+            final Map<String,List<Property>> filtered = new HashMap<>();
+
+            values.entrySet().forEach(p -> {
+                final List l = p.getValue().stream().filter(property -> {
+                    if (property instanceof VertexProperty) {
+                        final Iterator<String> itty = ((VertexProperty) property).values(partitionKey);
+                        return itty.hasNext() && readPartitions.contains(itty.next());
+                    } else {
+                        return true;
+                    }
+                }).collect(Collectors.toList());
+                if (l.size() > 0) filtered.put(p.getKey(), l);
+            });
+
+            return filtered;
+        }
+
+        @Override
+        public String toString() {
+            return "applyPartitionFilter";
+        }
+    }
+
+    /**
+     * Takes a {@link Map} of a {@link List} of {@link Property} objects and unwraps the {@link Property#value()}.
+     */
+    public final class MapPropertiesConverter implements Function<Traverser<Map<String,List<Property>>>, Map<String,List<Property>>>, Serializable {
+        @Override
+        public Map<String, List<Property>> apply(final Traverser<Map<String, List<Property>>> mapTraverser) {
+            final Map<String,List<Property>> values = mapTraverser.get();
+            final Map<String,List<Property>> converted = new HashMap<>();
+
+            values.entrySet().forEach(p -> {
+                final List l = p.getValue().stream().map(property -> property.value()).collect(Collectors.toList());
+                converted.put(p.getKey(), l);
+            });
+
+            return converted;
+        }
+
+        @Override
+        public String toString() {
+            return "extractValuesInPropertiesMap";
+        }
+    }
+
     public final static class Builder {
         private String writePartition;
         private String partitionKey;
         private Set<String> readPartitions = new HashSet<>();
         private boolean includeMetaProperties = false;
 
-        Builder() {
-        }
+        Builder() { }
 
         /**
          * Set to {@code true} if the {@link VertexProperty} instances should get assigned to partitions.  This
