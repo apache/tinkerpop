@@ -26,8 +26,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -78,6 +81,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("thing", v.property("any").value());
         assertEquals("A", v.property(partition).value());
         assertThat(v.property("any").properties().hasNext(), is(false));
+
     }
 
     @Test
@@ -143,6 +147,106 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertThat(gOverA.V(v).valueMap().next().containsKey("any"), is(true));
         assertThat(gOverB.V(v).valueMap().hasNext(), is(false));
         assertThat(gOverB.V(v).valueMap().hasNext(), is(false));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldHidePartitionKeyForValues() {
+        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+                .includeMetaProperties(true)
+                .partitionKey(partition).writePartition("A").addReadPartition("A").create());
+        final Vertex v = gOverA.addV().property("any", "thing").next();
+
+        gOverA.V(v).values(partition).next();
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldHidePartitionKeyForValuesWithEmptyKeys() {
+        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+                .includeMetaProperties(true)
+                .partitionKey(partition).writePartition("A").addReadPartition("A").create());
+        final Vertex v = gOverA.addV().property("any", "thing").next();
+
+        assertEquals(1l, (long) gOverA.V(v).values().count().next());
+        assertEquals("thing", gOverA.V(v).values().next());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldHidePartitionKeyForProperties() {
+        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+                .includeMetaProperties(true)
+                .partitionKey(partition).writePartition("A").addReadPartition("A").create());
+        final Vertex v = gOverA.addV().property("any", "thing").next();
+
+        gOverA.V(v).properties(partition).next();
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldHidePartitionKeyForPropertiesWithEmptyKeys() {
+        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+                .includeMetaProperties(true)
+                .partitionKey(partition).writePartition("A").addReadPartition("A").create());
+        final Vertex v = gOverA.addV().property("any", "thing").next();
+
+        assertEquals(1l, (long) gOverA.V(v).properties().count().next());
+        assertEquals("thing", gOverA.V(v).properties().value().next());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldHidePartitionKeyForPropertyMap() {
+        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+                .includeMetaProperties(true)
+                .partitionKey(partition).writePartition("A").addReadPartition("A").create());
+        final Vertex v = gOverA.addV().property("any", "thing").next();
+
+        gOverA.V(v).propertyMap(partition).next();
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldHidePartitionKeyForPropertyMapWithEmptyKeys() {
+        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+                .includeMetaProperties(true)
+                .partitionKey(partition).writePartition("A").addReadPartition("A").create());
+        final Vertex v = gOverA.addV().property("any", "thing").next();
+
+        assertEquals(1l, (long) gOverA.V(v).propertyMap().count().next());
+        assertEquals("thing", ((List<VertexProperty>) gOverA.V(v).propertyMap().next().get("any")).get(0).value());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldHidePartitionKeyForValueMap() {
+        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+                .includeMetaProperties(true)
+                .partitionKey(partition).writePartition("A").addReadPartition("A").create());
+        final Vertex v = gOverA.addV().property("any", "thing").next();
+
+        gOverA.V(v).valueMap(partition).next();
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    public void shouldHidePartitionKeyForValueMapWithEmptyKeys() {
+        final GraphTraversalSource gOverA = create(PartitionStrategy.build()
+                .includeMetaProperties(true)
+                .partitionKey(partition).writePartition("A").addReadPartition("A").create());
+        final Vertex v = gOverA.addV().property("any", "thing").next();
+
+        assertEquals(1l, (long) gOverA.V(v).valueMap().count().next());
+        assertEquals("thing", ((List) gOverA.V(v).valueMap().next().get("any")).get(0));
     }
 
     @Test

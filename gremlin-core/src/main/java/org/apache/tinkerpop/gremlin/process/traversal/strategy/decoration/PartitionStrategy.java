@@ -48,6 +48,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -127,6 +128,10 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         if (includeMetaProperties) {
             final List<PropertiesStep> propertiesSteps = TraversalHelper.getStepsOfAssignableClass(PropertiesStep.class, traversal);
             propertiesSteps.forEach(step -> {
+                // check length first because keyExists will return true otherwise
+                if (step.getPropertyKeys().length > 0 && ElementHelper.keyExists(partitionKey, step.getPropertyKeys()))
+                    throw new IllegalStateException("Cannot explicitly request the partitionKey in the traversal");
+
                 if (step.getReturnType() == PropertyType.PROPERTY) {
                     // check the following step to see if it is a has(partitionKey, *) - if so then this strategy was
                     // already applied down below via g.V().values() which injects a properties() step
@@ -137,7 +142,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                         final Traversal choose = __.choose(
                                 __.filter(new TypeChecker<>(VertexProperty.class)),
                                 __.has(partitionKey, P.within(new ArrayList<>(readPartitions))),
-                                __.__());
+                                __.__()).filter(new PartitionKeyHider());
                         TraversalHelper.insertTraversal(step, choose.asAdmin(), traversal);
                     }
                 } else if (step.getReturnType() == PropertyType.VALUE) {
@@ -145,8 +150,8 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                     // if not, pass it through otherwise explode g.V().values() to g.V().properties().has().value()
                     final Traversal choose = __.choose(
                             __.filter(new TypeChecker<>(Vertex.class)),
-                            __.properties(step.getPropertyKeys()).has(partitionKey, P.within(new ArrayList<>(readPartitions))).value(),
-                            __.__());
+                            __.properties(step.getPropertyKeys()).has(partitionKey, P.within(new ArrayList<>(readPartitions))).filter(new PartitionKeyHider()).value(),
+                            __.__().filter(new PartitionKeyHider()));
                     TraversalHelper.insertTraversal(step, choose.asAdmin(), traversal);
                     traversal.removeStep(step);
                 } else {
@@ -157,6 +162,10 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
 
             final List<PropertyMapStep> propertyMapSteps = TraversalHelper.getStepsOfAssignableClass(PropertyMapStep.class, traversal);
             propertyMapSteps.forEach(step -> {
+                // check length first because keyExists will return true otherwise
+                if (step.getPropertyKeys().length > 0 && ElementHelper.keyExists(partitionKey, step.getPropertyKeys()))
+                    throw new IllegalStateException("Cannot explicitly request the partitionKey in the traversal");
+
                 if (step.getReturnType() == PropertyType.PROPERTY) {
                     // via map() filter out properties that aren't in the partition if it is a PropertyVertex,
                     // otherwise just let them pass through
@@ -229,6 +238,18 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         @Override
         public String toString() {
             return "instanceOf(" + toCheck.getSimpleName() + ")";
+        }
+    }
+
+    public final class PartitionKeyHider<A extends Property> implements Predicate<Traverser<A>>, Serializable {
+        @Override
+        public boolean test(final Traverser<A> traverser) {
+            return !traverser.get().key().equals(partitionKey);
+        }
+
+        @Override
+        public String toString() {
+            return "remove(" + partitionKey + ")";
         }
     }
 
