@@ -58,12 +58,12 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     private static final Logger LOGGER = LoggerFactory.getLogger(BulkLoaderVertexProgram.class);
 
     public static final String BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX = "gremlin.bulkLoaderVertexProgram";
-    public static final String GRAPH_CFG_KEY = "graph";
-    public static final String BULK_LOADER_CFG_KEY = "loader";
-    public final static String USER_SUPPLIED_IDS_CFG_KEY = "userSuppliedIds";
-    public final static String KEEP_ORIGINAL_IDS_CFG_KEY = "keepOriginalIds";
-    public static final String INTERMEDIATE_BATCH_SIZE_CFG_KEY = "intermediateBatchSize";
-    public static final String BULK_LOADER_VERTEX_ID_CFG_KEY = "vertexIdProperty";
+    public static final String BULK_LOADER_CLASS_CFG_KEY = String.join(".", BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX, "class");
+    public static final String BULK_LOADER_VERTEX_ID_CFG_KEY = String.join(".", BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX, "vertexIdProperty");
+    public static final String INTERMEDIATE_BATCH_SIZE_CFG_KEY = String.join(".", BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX, "intermediateBatchSize");
+    public static final String KEEP_ORIGINAL_IDS_CFG_KEY = String.join(".", BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX, "keepOriginalIds");
+    public static final String USER_SUPPLIED_IDS_CFG_KEY = String.join(".", BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX, "userSuppliedIds");
+    public static final String WRITE_GRAPH_CFG_KEY = String.join(".", BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX, "writeGraph");
     public static final String DEFAULT_BULK_LOADER_VERTEX_ID = "bulkLoader.vertex.id";
 
     private final MessageScope messageScope;
@@ -73,7 +73,8 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     private Graph graph;
     private GraphTraversalSource g;
     private long intermediateBatchSize;
-    private static ThreadLocal<AtomicLong> counter = new ThreadLocal<AtomicLong>() {
+
+    private static final ThreadLocal<AtomicLong> counter = new ThreadLocal<AtomicLong>() {
         @Override
         protected AtomicLong initialValue() {
             return new AtomicLong();
@@ -87,7 +88,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
 
     private BulkLoader createBulkLoader() {
         final BulkLoader loader;
-        final Configuration config = configuration.subset(BULK_LOADER_CFG_KEY);
+        final Configuration config = configuration.subset(BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX);
         if (config.containsKey("class")) {
             final String className = config.getString("class");
             config.clearProperty("class");
@@ -104,7 +105,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         } else {
             loader = new IncrementalBulkLoader();
         }
-        loader.configure(config);
+        loader.configure(configuration);
         return loader;
     }
 
@@ -152,13 +153,8 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         if (config != null) {
             ConfigurationUtils.copy(config, configuration);
         }
-        if (!configuration.subset(BULK_LOADER_CFG_KEY).containsKey(BULK_LOADER_VERTEX_ID_CFG_KEY)) {
-            configuration.addProperty(
-                    String.join(".", BULK_LOADER_CFG_KEY, BULK_LOADER_VERTEX_ID_CFG_KEY),
-                    DEFAULT_BULK_LOADER_VERTEX_ID);
-        }
         intermediateBatchSize = configuration.getLong(INTERMEDIATE_BATCH_SIZE_CFG_KEY, 0L);
-        elementComputeKeys.add(configuration.subset(BULK_LOADER_CFG_KEY).getString(BULK_LOADER_VERTEX_ID_CFG_KEY));
+        elementComputeKeys.add(configuration.getString(BULK_LOADER_VERTEX_ID_CFG_KEY, DEFAULT_BULK_LOADER_VERTEX_ID));
         bulkLoader = createBulkLoader();
     }
 
@@ -173,7 +169,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     @Override
     public void workerIterationStart(final Memory memory) {
         if (null == graph) {
-            graph = GraphFactory.open(configuration.subset(GRAPH_CFG_KEY));
+            graph = GraphFactory.open(configuration.subset(WRITE_GRAPH_CFG_KEY));
             LOGGER.info("Opened Graph instance: {}", graph);
             try {
                 if (!graph.features().graph().supportsConcurrentAccess()) {
@@ -316,22 +312,18 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         @Override
         public BulkLoaderVertexProgram create(final Graph graph) {
             ConfigurationUtils.append(graph.configuration().subset(BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX), configuration);
-            return (BulkLoaderVertexProgram) VertexProgram.createVertexProgram(graph, this.configuration);
-        }
-
-        private void setLoaderConfigurationProperty(final String key, final Object value) {
-            configuration.setProperty(String.join(".", BULK_LOADER_CFG_KEY, key), value);
+            return (BulkLoaderVertexProgram) VertexProgram.createVertexProgram(graph, configuration);
         }
 
         private void setGraphConfigurationProperty(final String key, final Object value) {
-            configuration.setProperty(String.join(".", GRAPH_CFG_KEY, key), value);
+            configuration.setProperty(String.join(".", WRITE_GRAPH_CFG_KEY, key), value);
         }
 
         /**
          * Sets the class name of the BulkLoader implementation to be used.
          */
         public Builder bulkLoader(final String className) {
-            setLoaderConfigurationProperty(Graph.GRAPH, className);
+            configuration.setProperty(BULK_LOADER_CLASS_CFG_KEY, className);
             return this;
         }
 
@@ -346,7 +338,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
          * Sets the name of the property that is used to store the original vertex identifiers in the target graph.
          */
         public Builder vertexIdProperty(final String name) {
-            setLoaderConfigurationProperty(BULK_LOADER_VERTEX_ID_CFG_KEY, name);
+            configuration.setProperty(BULK_LOADER_VERTEX_ID_CFG_KEY, name);
             return this;
         }
 
@@ -355,7 +347,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
          * target graph.
          */
         public Builder userSuppliedIds(final boolean useUserSuppliedIds) {
-            setLoaderConfigurationProperty(USER_SUPPLIED_IDS_CFG_KEY, useUserSuppliedIds);
+            configuration.setProperty(USER_SUPPLIED_IDS_CFG_KEY, useUserSuppliedIds);
             return this;
         }
 
@@ -365,7 +357,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
          * the data for further incremental bulk loads.
          */
         public Builder keepOriginalIds(final boolean keepOriginalIds) {
-            setLoaderConfigurationProperty(KEEP_ORIGINAL_IDS_CFG_KEY, keepOriginalIds);
+            configuration.setProperty(KEEP_ORIGINAL_IDS_CFG_KEY, keepOriginalIds);
             return this;
         }
 
@@ -386,5 +378,20 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
             conf.getKeys().forEachRemaining(key -> setGraphConfigurationProperty(key, conf.getProperty(key)));
             return this;
         }
+    }
+
+    @Override
+    public Features getFeatures() {
+        return new Features() {
+            @Override
+            public boolean requiresLocalMessageScopes() {
+                return true;
+            }
+
+            @Override
+            public boolean requiresVertexPropertyAddition() {
+                return true;
+            }
+        };
     }
 }
