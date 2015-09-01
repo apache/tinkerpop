@@ -17,37 +17,39 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.step.util;
+package org.apache.tinkerpop.gremlin.groovy.function;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import groovy.lang.Closure;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaCollectingBarrierStep<S> extends CollectingBarrierStep<S> implements LambdaHolder {
+public final class GBiFunction<A, B, C> implements BiFunction<A, B, C>, LambdaHolder {
 
-    public enum Consumers implements Consumer<TraverserSet<Object>> {
-        noOp {
-            @Override
-            public void accept(final TraverserSet<Object> traverserSet) {
+    private final Closure closure;
 
-            }
-        }
+    public GBiFunction(final Closure closure) {
+        this.closure = closure;
     }
 
-    private final Consumer<TraverserSet<S>> barrierConsumer;
-
-    public LambdaCollectingBarrierStep(final Traversal.Admin traversal, final Consumer<TraverserSet<S>> barrierConsumer, final int maxBarrierSize) {
-        super(traversal, maxBarrierSize);
-        this.barrierConsumer = barrierConsumer;
+    public static GBiFunction[] make(final Closure... closures) {
+        final GBiFunction[] functions = new GBiFunction[closures.length];
+        for (int i = 0; i < closures.length; i++) {
+            functions[i] = new GBiFunction(closures[i]);
+        }
+        return functions;
     }
 
     @Override
-    public void barrierConsumer(final TraverserSet<S> traverserSet) {
-        this.barrierConsumer.accept(traverserSet);
+    public String toString() {
+        return "lambda";
+    }
+
+    @Override
+    public C apply(final A a, final B b) {
+        return (C) closure.call(a, b);
     }
 }

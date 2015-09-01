@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
-import java.util.function.UnaryOperator;
+import java.util.function.BiFunction;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -89,16 +89,23 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
 
     @Override
     public <R> Traverser.Admin<R> split(final R r, final Step<T, R> step) {
-        final B_O_S_SE_SL_Traverser<R> clone = (B_O_S_SE_SL_Traverser<R>) super.split(r,step);
-        clone.sack = null == clone.sack ? null : clone.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(clone.sack);
+        final B_O_S_SE_SL_Traverser<R> clone = (B_O_S_SE_SL_Traverser<R>) super.split(r, step);
+        clone.sack = null == clone.sack ? null : null == clone.sideEffects.getSackSplitter() ? clone.sack : clone.sideEffects.getSackSplitter().apply(clone.sack);
         return clone;
     }
 
     @Override
     public Traverser.Admin<T> split() {
         final B_O_S_SE_SL_Traverser<T> clone = (B_O_S_SE_SL_Traverser<T>) super.split();
-        clone.sack = null == clone.sack ? null : clone.sideEffects.getSackSplitOperator().orElse(UnaryOperator.identity()).apply(clone.sack);
+        clone.sack = null == clone.sack ? null : null == clone.sideEffects.getSackSplitter() ? clone.sack : clone.sideEffects.getSackSplitter().apply(clone.sack);
         return clone;
+    }
+
+    @Override
+    public void merge(final Traverser.Admin<?> other) {
+        super.merge(other);
+        if (this.sack != null && this.sideEffects.getSackMerger() != null)
+           this.sack = ((BiFunction)this.sideEffects.getSackMerger()).apply(this,other);
     }
 
     /////////////////
@@ -114,6 +121,6 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
                 && ((B_O_S_SE_SL_Traverser) object).get().equals(this.t)
                 && ((B_O_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
                 && ((B_O_S_SE_SL_Traverser) object).loops() == this.loops()
-                && (null == this.sack);
+                && (null == this.sack || null != this.sideEffects.getSackMerger());
     }
 }

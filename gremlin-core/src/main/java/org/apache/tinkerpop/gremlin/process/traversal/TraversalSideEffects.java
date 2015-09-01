@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -106,14 +107,16 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
     }
 
     /**
-     * Set the initial value of each {@link Traverser} "sack" along with the operator for splitting sacks.
-     * If no operator is provided, then a direct memory copy is assumed (this is typically good for primitive types and strings).
+     * Set the initial value of each {@link Traverser} "sack" along with the methods for splitting and merging sacks.
+     * If no split operator is provided, then a direct memory copy is assumed (this is typically good for primitive types and strings).
+     * If no merge function is provided, then traversers with sacks can not be merged.
      *
      * @param initialValue  the initial value supplier of the traverser sack
      * @param splitOperator the split operator for splitting traverser sacks
+     * @param <T>           the traverser object type
      * @param <S>           the sack type
      */
-    public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator);
+    public <T, S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, S> mergeFunction);
 
     /**
      * If sacks are enabled, get the initial value of the {@link Traverser} sack.
@@ -124,13 +127,23 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
     public <S> Optional<Supplier<S>> getSackInitialValue();
 
     /**
-     * If sacks are enabled and a split operator has been specified, then get it.
-     * The split operator is used to split a stack when a bifurcation in a {@link Traverser} happens.
+     * If sacks are enabled and a split operator has been specified, then get it (else null).
+     * The split operator is used to split a sack when a bifurcation in a {@link Traverser} happens.
      *
      * @param <S> the sack type
      * @return the operator for splitting a traverser sack
      */
-    public <S> Optional<UnaryOperator<S>> getSackSplitOperator();
+    public <S> UnaryOperator<S> getSackSplitter();
+
+    /**
+     * If sacks are enabled and a merge function has been specified, then get it (else null).
+     * The merge function is used to merge a sack when two {@link Traverser}s converge.
+     *
+     * @param <T> the traverser object type
+     * @param <S> the sack type
+     * @return the operator for merging two traverser sacks
+     */
+    public <T, S> BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, S> getSackMerger();
 
     /**
      * If the sideEffect contains an object associated with the key, return it.

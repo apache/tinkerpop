@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
@@ -30,6 +31,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.PathIdentityStep;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -39,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -139,29 +142,44 @@ public class GraphTraversalSource implements TraversalSource {
         return new GraphTraversalSourceStub(traversal, false);
     }
 
-    public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-        final GraphTraversal.Admin traversal = this.generateTraversal();
-        traversal.getSideEffects().setSack(initialValue, Optional.of(splitOperator));
-        return new GraphTraversalSourceStub(traversal, false);
+    public <A> GraphTraversalSourceStub withSack(final A initialValue) {
+        return this.withSack(initialValue, null, null);
     }
 
     public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue) {
         final GraphTraversal.Admin traversal = this.generateTraversal();
-        traversal.getSideEffects().setSack(initialValue, Optional.empty());
+        traversal.getSideEffects().setSack(initialValue, null, null);
         return new GraphTraversalSourceStub(traversal, false);
+    }
+
+    public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
+        return this.withSack(initialValue, splitOperator, null);
     }
 
     public <A> GraphTraversalSourceStub withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
+        return this.withSack(initialValue, splitOperator, null);
+    }
+
+    public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, A> mergeFunction) {
+        return this.withSack(initialValue, null, mergeFunction);
+    }
+
+    public <A> GraphTraversalSourceStub withSack(final A initialValue, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, A> mergeFunction) {
+        return this.withSack(initialValue, null, mergeFunction);
+    }
+
+    public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, A> mergeFunction) {
         final GraphTraversal.Admin traversal = this.generateTraversal();
-        traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), Optional.of(splitOperator));
+        traversal.getSideEffects().setSack(initialValue, splitOperator, mergeFunction);
         return new GraphTraversalSourceStub(traversal, false);
     }
 
-    public <A> GraphTraversalSourceStub withSack(final A initialValue) {
+    public <A> GraphTraversalSourceStub withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, A> mergeFunction) {
         final GraphTraversal.Admin traversal = this.generateTraversal();
-        traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), Optional.empty());
+        traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), splitOperator, mergeFunction);
         return new GraphTraversalSourceStub(traversal, false);
     }
+
 
     public <S> GraphTraversalSourceStub withPath() {
         return new GraphTraversalSourceStub(this.generateTraversal(), true);
@@ -295,23 +313,43 @@ public class GraphTraversalSource implements TraversalSource {
             return this;
         }
 
-        public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
-            this.traversal.getSideEffects().setSack(initialValue, Optional.of(splitOperator));
+        public <A> GraphTraversalSourceStub withSack(final A initialValue) {
+            this.traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), null, null);
             return this;
         }
 
         public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue) {
-            this.traversal.getSideEffects().setSack(initialValue, Optional.empty());
+            this.traversal.getSideEffects().setSack(initialValue, null, null);
+            return this;
+        }
+
+        public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator) {
+            this.traversal.getSideEffects().setSack(initialValue, splitOperator, null);
             return this;
         }
 
         public <A> GraphTraversalSourceStub withSack(final A initialValue, final UnaryOperator<A> splitOperator) {
-            this.traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), Optional.of(splitOperator));
+            this.traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), splitOperator, null);
             return this;
         }
 
-        public <A> GraphTraversalSourceStub withSack(final A initialValue) {
-            this.traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), Optional.empty());
+        public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, A> mergeFunction) {
+            this.traversal.getSideEffects().setSack(initialValue, null, mergeFunction);
+            return this;
+        }
+
+        public <A> GraphTraversalSourceStub withSack(final A initialValue, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, A> mergeFunction) {
+            this.traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), null, mergeFunction);
+            return this;
+        }
+
+        public <A> GraphTraversalSourceStub withSack(final Supplier<A> initialValue, final UnaryOperator<A> splitOperator, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, A> mergeFunction) {
+            this.traversal.getSideEffects().setSack(initialValue, splitOperator, mergeFunction);
+            return this;
+        }
+
+        public <A> GraphTraversalSourceStub withSack(final A initialValue, final UnaryOperator<A> splitOperator, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, A> mergeFunction) {
+            this.traversal.getSideEffects().setSack(new ConstantSupplier<>(initialValue), splitOperator, mergeFunction);
             return this;
         }
 

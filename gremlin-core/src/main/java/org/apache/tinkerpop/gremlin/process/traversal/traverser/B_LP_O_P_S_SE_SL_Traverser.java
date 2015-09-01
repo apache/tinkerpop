@@ -22,11 +22,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ImmutablePath;
-import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceFactory;
 
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -92,7 +90,7 @@ public class B_LP_O_P_S_SE_SL_Traverser<T> extends B_O_S_SE_SL_Traverser<T> {
                 && ((B_LP_O_P_S_SE_SL_Traverser) object).get().equals(this.t)
                 && ((B_LP_O_P_S_SE_SL_Traverser) object).getStepId().equals(this.getStepId())
                 && ((B_LP_O_P_S_SE_SL_Traverser) object).loops() == this.loops()
-                && (null == this.sack)
+                && (null == this.sack || null != this.sideEffects.getSackMerger())
                 && ((B_LP_O_P_S_SE_SL_Traverser) object).path().equals(this.path);
     }
 

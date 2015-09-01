@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.computer.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -26,6 +27,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -58,7 +60,7 @@ public final class VertexTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator) {
+    public <T, S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, S> mergeFunction) {
         throw EXCEPTION;
     }
 
@@ -68,7 +70,12 @@ public final class VertexTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <S> Optional<UnaryOperator<S>> getSackSplitOperator() {
+    public <S> UnaryOperator<S> getSackSplitter() {
+        throw EXCEPTION;
+    }
+
+    @Override
+    public <T, S> BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, S> getSackMerger() {
         throw EXCEPTION;
     }
 

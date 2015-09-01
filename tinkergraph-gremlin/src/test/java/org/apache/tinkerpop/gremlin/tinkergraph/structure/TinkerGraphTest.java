@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -40,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
@@ -164,7 +166,7 @@ public class TinkerGraphTest {
     public void testPlay7() throws Exception {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        g.withSack(1.0).V(1).local(outE().barrier(LambdaCollectingBarrierStep.Consumers.normSack)).inV().sack().forEachRemaining(System.out::println);
+        g.withSack(1.0,(BiFunction)SackFunctions.Merge.weightedSum).V(1).local(outE("knows").barrier(SackFunctions.Barrier.normSack)).inV().in("knows").barrier().sack().forEachRemaining(System.out::println);
     }
 
     @Test
