@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -107,27 +108,28 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
     }
 
     /**
-     * Set the initial value of each {@link Traverser} "sack" along with the methods for splitting and merging sacks.
+     * Set the initial value of each {@link Traverser} "sack" along with the operators for splitting and merging sacks.
      * If no split operator is provided, then a direct memory copy is assumed (this is typically good for primitive types and strings).
-     * If no merge function is provided, then traversers with sacks can not be merged.
+     * If no merge operator is provided, then traversers with sacks will not be merged.
      *
      * @param initialValue  the initial value supplier of the traverser sack
      * @param splitOperator the split operator for splitting traverser sacks
-     * @param <T>           the traverser object type
+     * @param mergeOperator the merge operator for merging traverser sacks
      * @param <S>           the sack type
      */
-    public <T, S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, S> mergeFunction);
+    public <S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BinaryOperator<S> mergeOperator);
 
     /**
      * If sacks are enabled, get the initial value of the {@link Traverser} sack.
+     * If its not enabled, then <code>null</code> is returned.
      *
      * @param <S> the sack type
      * @return the supplier of the initial value of the traverser sack
      */
-    public <S> Optional<Supplier<S>> getSackInitialValue();
+    public <S> Supplier<S> getSackInitialValue();
 
     /**
-     * If sacks are enabled and a split operator has been specified, then get it (else null).
+     * If sacks are enabled and a split operator has been specified, then get it (else get <code>null</code>).
      * The split operator is used to split a sack when a bifurcation in a {@link Traverser} happens.
      *
      * @param <S> the sack type
@@ -136,14 +138,13 @@ public interface TraversalSideEffects extends Cloneable, Serializable {
     public <S> UnaryOperator<S> getSackSplitter();
 
     /**
-     * If sacks are enabled and a merge function has been specified, then get it (else null).
-     * The merge function is used to merge a sack when two {@link Traverser}s converge.
+     * If sacks are enabled and a merge function has been specified, then get it (else get <code>null</code>).
+     * The merge function is used to merge two sacks when two {@link Traverser}s converge.
      *
-     * @param <T> the traverser object type
      * @param <S> the sack type
      * @return the operator for merging two traverser sacks
      */
-    public <T, S> BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, S> getSackMerger();
+    public <S> BinaryOperator<S> getSackMerger();
 
     /**
      * If the sideEffect contains an object associated with the key, return it.

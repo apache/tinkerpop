@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 
-import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /**
@@ -33,32 +32,16 @@ public final class SackFunctions {
 
     }
 
-    public enum Merge implements BiFunction<Traverser.Admin<Object>, Traverser.Admin<Object>, Object> {
-        weightedSum {
-            @Override
-            public Object apply(final Traverser.Admin<Object> a, final Traverser.Admin<Object> b) {
-                final Object value = (a.bulk() * ((Number) a.sack()).doubleValue()) + (b.bulk() * ((Number) b.sack()).doubleValue());
-                a.setBulk(1l);
-                return value;
-            }
-        };
-    }
-
     public enum Barrier implements Consumer<TraverserSet<Object>> {
-        noOp {
-            @Override
-            public void accept(final TraverserSet<Object> traverserSet) {
-
-            }
-        }, normSack {
+        normSack {
             @Override
             public void accept(final TraverserSet<Object> traverserSet) {
                 double total = 0.0d;
                 for (final Traverser.Admin<Object> traverser : traverserSet) {
-                    total = total + ((double) traverser.sack() * (double) traverser.bulk());
+                    total = total + (((Number) traverser.sack()).doubleValue() * ((Number) traverser.bulk()).doubleValue());
                 }
                 for (final Traverser.Admin<Object> traverser : traverserSet) {
-                    traverser.sack(((double) traverser.sack() * (double) traverser.bulk()) / total);
+                    traverser.sack((((Number) traverser.sack()).doubleValue() * ((Number) traverser.bulk()).doubleValue()) / total);
                 }
             }
         }

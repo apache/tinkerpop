@@ -42,13 +42,13 @@ class StepLoader {
             return ((GraphTraversalSource) delegate).withSack(new GSupplier(closure));
         }
 
-        GraphTraversalSource.metaClass.withSack = { final Closure closure, final Closure splitOrMerge ->
-            return ((GraphTraversalSource) delegate).withSack(new GSupplier(closure), splitOrMerge.getMaximumNumberOfParameters() == 1 ? new GUnaryOperator(splitOrMerge) : new GBiFunction(splitOrMerge));
+        GraphTraversalSource.metaClass.withSack = { final Closure closure, final Closure splitOrMergeOperator ->
+            return ((GraphTraversalSource) delegate).withSack(new GSupplier(closure), splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? new GUnaryOperator(splitOrMergeOperator) : new GBinaryOperator(splitOrMergeOperator));
         }
 
         GraphTraversalSource.metaClass.withSack = {
-            final Closure closure, final Closure splitOperator, final Closure mergeFunction ->
-                return ((GraphTraversalSource) delegate).withSack(new GSupplier(closure), new GUnaryOperator(splitOperator), new GBiFunction(mergeFunction));
+            final Closure closure, final Closure splitOperator, final Closure mergeOperator ->
+                return ((GraphTraversalSource) delegate).withSack(new GSupplier(closure), new GUnaryOperator(splitOperator), new GBinaryOperator(mergeOperator));
         }
 
         ///////////////////
@@ -63,13 +63,13 @@ class StepLoader {
         }
 
         GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSack = {
-            final Closure closure, final Closure splitOrMerge ->
-                return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(new GSupplier(closure), splitOrMerge.getMaximumNumberOfParameters() == 1 ? new GUnaryOperator(splitOrMerge) : new GBiFunction(splitOrMerge));
+            final Closure closure, final Closure splitOrMergeOperator ->
+                return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(new GSupplier(closure), splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? new GUnaryOperator(splitOrMergeOperator) : new GBinaryOperator(splitOrMergeOperator));
         }
 
         GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSack = {
-            final Closure closure, final Closure splitOperator, Closure mergeFunction ->
-                return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(new GSupplier(closure), new GUnaryOperator(splitOperator), new GBiFunction(mergeFunction));
+            final Closure closure, final Closure splitOperator, Closure mergeOperator ->
+                return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(new GSupplier(closure), new GUnaryOperator(splitOperator), new GBinaryOperator(mergeOperator));
         }
     }
 }

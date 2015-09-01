@@ -19,13 +19,12 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -71,13 +70,13 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <T, S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, S> mergeFunction) {
+    public <S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BinaryOperator<S> mergeOperator) {
 
     }
 
     @Override
-    public <S> Optional<Supplier<S>> getSackInitialValue() {
-        return Optional.empty();
+    public <S> Supplier<S> getSackInitialValue() {
+        return null;
     }
 
     @Override
@@ -86,7 +85,7 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <T, S> BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, S> getSackMerger() {
+    public <S> BinaryOperator<S> getSackMerger() {
         return null;
     }
 

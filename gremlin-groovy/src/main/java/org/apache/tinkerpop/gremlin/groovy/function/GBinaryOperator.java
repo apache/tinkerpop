@@ -22,23 +22,23 @@ package org.apache.tinkerpop.gremlin.groovy.function;
 import groovy.lang.Closure;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GBiFunction<A, B, C> implements BiFunction<A, B, C>, LambdaHolder {
+public final class GBinaryOperator<A> implements BinaryOperator<A>, LambdaHolder {
 
     private final Closure closure;
 
-    public GBiFunction(final Closure closure) {
+    public GBinaryOperator(final Closure closure) {
         this.closure = closure;
     }
 
-    public static GBiFunction[] make(final Closure... closures) {
-        final GBiFunction[] functions = new GBiFunction[closures.length];
+    public static GBinaryOperator[] make(final Closure... closures) {
+        final GBinaryOperator[] functions = new GBinaryOperator[closures.length];
         for (int i = 0; i < closures.length; i++) {
-            functions[i] = new GBiFunction(closures[i]);
+            functions[i] = new GBinaryOperator(closures[i]);
         }
         return functions;
     }
@@ -49,7 +49,7 @@ public final class GBiFunction<A, B, C> implements BiFunction<A, B, C>, LambdaHo
     }
 
     @Override
-    public C apply(final A a, final B b) {
-        return (C) closure.call(a, b);
+    public A apply(final A a, final A b) {
+        return (A) closure.call(a, b);
     }
 }

@@ -105,7 +105,6 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         staticImports.add(Scope.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Pop.class.getCanonicalName() + DOT_STAR);
         staticImports.add(__.class.getCanonicalName() + DOT_STAR);
-        staticImports.add(SackFunctions.Merge.class.getCanonicalName() + DOT_STAR);
         staticImports.add(SackFunctions.Barrier.class.getCanonicalName() + DOT_STAR);
         staticImports.add(TraversalOptionParent.Pick.class.getCanonicalName() + DOT_STAR);
         staticImports.add(GraphTraversalSource.class.getCanonicalName() + DOT_STAR);

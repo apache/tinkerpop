@@ -78,7 +78,7 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.maxBarrierSize);
+        return StringFactory.stepString(this, this.maxBarrierSize == Integer.MAX_VALUE ? null : this.maxBarrierSize);
     }
 
     @Override

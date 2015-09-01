@@ -23,8 +23,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 
-import java.util.function.BiFunction;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -40,7 +38,8 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
     public B_O_S_SE_SL_Traverser(final T t, final Step<T, ?> step, final long initialBulk) {
         super(t, initialBulk);
         this.sideEffects = step.getTraversal().getSideEffects();
-        this.sideEffects.getSackInitialValue().ifPresent(supplier -> this.sack = supplier.get());
+        if (null != this.sideEffects.getSackInitialValue())
+            this.sack = this.sideEffects.getSackInitialValue().get();
     }
 
     /////////////////
@@ -104,8 +103,9 @@ public class B_O_S_SE_SL_Traverser<T> extends B_O_Traverser<T> {
     @Override
     public void merge(final Traverser.Admin<?> other) {
         super.merge(other);
-        if (this.sack != null && this.sideEffects.getSackMerger() != null)
-           this.sack = ((BiFunction)this.sideEffects.getSackMerger()).apply(this,other);
+        if (null != this.sack && null != this.sideEffects.getSackMerger())
+            this.sack = this.sideEffects.getSackMerger().apply(this.sack, other.sack());
+
     }
 
     /////////////////

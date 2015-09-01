@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSideEffects;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -31,7 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -43,7 +42,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     protected Map<String, Object> objectMap = new HashMap<>();
     protected Map<String, Supplier> supplierMap = new HashMap<>();
     protected UnaryOperator sackSplitOperator = null;
-    protected BiFunction sackMergeOperator = null;
+    protected BinaryOperator sackMergeOperator = null;
     protected Supplier sackInitialValue = null;
 
     public DefaultTraversalSideEffects() {
@@ -78,15 +77,15 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <T,S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, S> mergeFunction) {
+    public <S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BinaryOperator<S> mergeOperator) {
         this.sackInitialValue = initialValue;
         this.sackSplitOperator = splitOperator;
-        this.sackMergeOperator = mergeFunction;
+        this.sackMergeOperator = mergeOperator;
     }
 
     @Override
-    public <S> Optional<Supplier<S>> getSackInitialValue() {
-        return Optional.ofNullable(this.sackInitialValue);
+    public <S> Supplier<S> getSackInitialValue() {
+        return this.sackInitialValue;
     }
 
     @Override
@@ -95,7 +94,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <T,S> BiFunction<Traverser.Admin<T>, Traverser.Admin<T>, S> getSackMerger() {
+    public <S> BinaryOperator<S> getSackMerger() {
         return this.sackMergeOperator;
     }
 

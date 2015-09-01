@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.function.Consumer;
 
@@ -49,5 +50,10 @@ public final class LambdaCollectingBarrierStep<S> extends CollectingBarrierStep<
     @Override
     public void barrierConsumer(final TraverserSet<S> traverserSet) {
         this.barrierConsumer.accept(traverserSet);
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.barrierConsumer.toString());
     }
 }
