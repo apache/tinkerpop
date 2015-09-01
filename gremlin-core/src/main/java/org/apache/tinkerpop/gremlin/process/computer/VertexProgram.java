@@ -223,6 +223,10 @@ public interface VertexProgram<M> extends Cloneable {
 
     public interface Builder {
 
+        /**
+         * This method should only be used by the underlying compute engine. For VertexProgram configurations, please
+         * use specific fluent methods off the builder.
+         */
         public Builder configure(final Object... keyValues);
 
         public <P extends VertexProgram> P create(final Graph graph);
