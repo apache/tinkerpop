@@ -51,6 +51,16 @@ public abstract class GroovyAddVertexTest {
             TraversalScriptHelper.compute("g.V.has('name', 'marko').property('friendWeight', outE('knows').weight.sum(), 'acl', 'private')", g)
         }
 
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXanimalX_propertyXname_mateoX_propertyXname_gateoX_propertyXname_cateoX_propertyXage_5X() {
+            TraversalScriptHelper.compute("g.addV('animal').property('name', 'mateo').property('name', 'gateo').property('name', 'cateo').property('age', 5)", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXname_valuesXnameXX_propertyXname_an_animalX_propertyXvaluesXnameX_labelX() {
+            TraversalScriptHelper.compute("g.V.addV('animal').property('name', values('name')).property('name', 'an animal').property(values('name'), label())", g)
+        }
+
         ///////// DEPRECATED BELOW
 
         @Override

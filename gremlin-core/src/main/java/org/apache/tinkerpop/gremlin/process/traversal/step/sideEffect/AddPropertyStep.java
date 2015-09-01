@@ -75,12 +75,12 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        final String key = this.parameters.get(traverser, T.key, () -> {
+        final String key = (String) this.parameters.get(traverser, T.key, () -> {
             throw new IllegalStateException("The AddPropertyStep does not have a provided key: " + this);
-        });
+        }).get(0);
         final Object value = this.parameters.get(traverser, T.value, () -> {
             throw new IllegalStateException("The AddPropertyStep does not have a provided value: " + this);
-        });
+        }).get(0);
         final Object[] vertexPropertyKeyValues = this.parameters.getKeyValues(traverser, T.key, T.value);
 
         final Element element = traverser.get();
