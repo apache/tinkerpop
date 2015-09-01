@@ -295,7 +295,17 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
 
     @Override
     public String toString() {
-        return StringFactory.vertexProgramString(this, bulkLoader != null ? bulkLoader.getClass().getSimpleName() : null);
+        final StringBuilder sb = new StringBuilder();
+        if (bulkLoader != null) {
+            sb.append("bulkLoader=").append(bulkLoader.getClass().getSimpleName()).append(",");
+            sb.append("vertexIdProperty=").append(bulkLoader.getVertexIdProperty()).append(",");
+            sb.append("userSuppliedIds=").append(bulkLoader.useUserSuppliedIds()).append(",");
+            sb.append("keepOriginalIds=").append(bulkLoader.keepOriginalIds()).append(",");
+        } else {
+            sb.append("bulkLoader=").append(bulkLoader).append(",");
+        }
+        sb.append("batchSize=").append(intermediateBatchSize);
+        return StringFactory.vertexProgramString(this, sb.toString());
     }
 
     public static Builder build() {
