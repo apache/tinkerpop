@@ -115,6 +115,7 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
     public void g_V_hasXname_markoX_addVXmetaPersonX_propertyXname_nameX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX() {
         final Traversal<Vertex, Vertex> traversal = get_g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX();
         printTraversalForm(traversal);
