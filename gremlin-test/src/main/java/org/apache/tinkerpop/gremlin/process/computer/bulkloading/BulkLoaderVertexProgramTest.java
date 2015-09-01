@@ -78,4 +78,5 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
     }
 
     // TODO: once Neo4j supports concurrent connections, write a real integration test that leverages BLVP
+    // TODO: also, once Neo4j can be used, remove the tinkergraph-gremlin dependency from hadoop-gremlin and clean up the existing tests
 }
