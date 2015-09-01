@@ -108,19 +108,19 @@ public class PartitionStrategyTraverseTest {
                 final List<AddEdgeStep> addEdgeSteps = TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal.asAdmin());
                 assertEquals(1, addEdgeSteps.size());
                 addEdgeSteps.forEach(s -> {
-                    assertEquals("test", s.getParameters().get(T.label, () -> Edge.DEFAULT_LABEL));
-                    assertEquals("a", s.getParameters().get("p", null));
+                    assertEquals("test", s.getParameters().get(T.label, () -> Edge.DEFAULT_LABEL).get(0));
+                    assertEquals("a", s.getParameters().get("p", null).get(0));
                 });
             } else if (TraversalHelper.hasStepOfAssignableClass(AddVertexStep.class, traversal.asAdmin())) {
                 strategy.apply(traversal.asAdmin());
                 final List<AddVertexStep> addVertexSteps = TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal.asAdmin());
                 assertEquals(1, addVertexSteps.size());
-                addVertexSteps.forEach(s -> assertEquals("a", s.getParameters().get("p", null)));
+                addVertexSteps.forEach(s -> assertEquals("a", s.getParameters().get("p", null).get(0)));
             } else if (TraversalHelper.hasStepOfAssignableClass(AddVertexStartStep.class, traversal.asAdmin())) {
                 strategy.apply(traversal.asAdmin());
                 final List<AddVertexStartStep> addVertexSteps = TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal.asAdmin());
                 assertEquals(1, addVertexSteps.size());
-                addVertexSteps.forEach(s -> assertEquals("a", s.getParameters().get("p", null)));
+                addVertexSteps.forEach(s -> assertEquals("a", s.getParameters().get("p", null).get(0)));
             } else
                 fail("This test should not be marked as having a mutating step or there is something else amiss.");
         } else {

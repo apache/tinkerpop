@@ -31,9 +31,10 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
+
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -48,6 +49,10 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_addVXanimalX_propertyXname_mateoX_propertyXname_gateoX_propertyXname_cateoX_propertyXage_5X();
+
+    public abstract Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXname_valuesXnameXX_propertyXname_an_animalX_propertyXvaluesXnameX_labelX();
 
     // 3.0.0 DEPRECATIONS
     @Deprecated
@@ -123,6 +128,58 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertEquals(1, IteratorUtils.count(marko.property("friendWeight").properties()));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+    public void g_addVXanimalX_propertyXname_mateoX_propertyXname_gateoX_propertyXname_cateoX_propertyXage_5X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_addVXanimalX_propertyXname_mateoX_propertyXname_gateoX_propertyXname_cateoX_propertyXage_5X();
+        printTraversalForm(traversal);
+        final Vertex mateo = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals("animal", mateo.label());
+        assertEquals(3, IteratorUtils.count(mateo.properties("name")));
+        mateo.values("name").forEachRemaining(name -> {
+            assertTrue(name.equals("mateo") || name.equals("cateo") || name.equals("gateo"));
+        });
+        assertEquals(5, ((Integer) mateo.value("age")).intValue());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+    public void xxx() {
+        final Traversal<Vertex, Vertex> traversal = get_g_V_addVXanimalX_propertyXname_valuesXnameXX_propertyXname_an_animalX_propertyXvaluesXnameX_labelX();
+        printTraversalForm(traversal);
+        while (traversal.hasNext()) {
+            final Vertex vertex = traversal.next();
+            assertEquals("animal", vertex.label());
+            assertEquals(2, IteratorUtils.count(vertex.properties("name")));
+            List<String> names = IteratorUtils.asList(vertex.values("name"));
+            assertEquals(2, names.size());
+            assertTrue(names.contains("an animal"));
+            assertTrue(names.contains("marko") || names.contains("vadas") || names.contains("josh") || names.contains("lop") || names.contains("ripple") || names.contains("peter"));
+            if (names.contains("marko")) {
+                assertEquals("person", vertex.value("marko"));
+            } else if (names.contains("vadas")) {
+                assertEquals("person", vertex.value("vadas"));
+            } else if (names.contains("josh")) {
+                assertEquals("person", vertex.value("josh"));
+            } else if (names.contains("ripple")) {
+                assertEquals("software", vertex.value("ripple"));
+            } else if (names.contains("lop")) {
+                assertEquals("software", vertex.value("lop"));
+            } else if (names.contains("peter")) {
+                assertEquals("person", vertex.value("peter"));
+            } else {
+                throw new IllegalStateException("This state should not have been reached");
+            }
+        }
+    }
+
     /////
 
     @Test
@@ -180,6 +237,16 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX() {
             return g.V().has("name", "marko").property("friendWeight", __.outE("knows").values("weight").sum(), "acl", "private");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXanimalX_propertyXname_mateoX_propertyXname_gateoX_propertyXname_cateoX_propertyXage_5X() {
+            return g.addV("animal").property("name", "mateo").property("name", "gateo").property("name", "cateo").property("age", 5);
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXname_valuesXnameXX_propertyXname_an_animalX_propertyXvaluesXnameX_labelX() {
+            return g.V().addV("animal").property("name", __.values("name")).property("name", "an animal").property(__.values("name"), __.label());
         }
 
         @Override
