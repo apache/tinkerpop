@@ -25,7 +25,6 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.0.1 (Release Date: September 2, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Added `BulkLoaderVertexProgram` and a default bulk loader implementation: `IncrementalBulkLoader`
 * `Compare` now uses `BigDecimal` internally to ensure that precision is not lost on standard number comparisons.
 * Renamed `ComputerVerificationStrategy` to `VerificationStrategy` so all the verification strategies can use it.
 * Added `StandardVerificationStrategy` that throws exceptions for illegal traversal patterns on the standard engine (which extends to `GraphComputer`).
@@ -67,7 +66,6 @@ Bugs
 Improvements
 ^^^^^^^^^^^^
 
-* [TINKERPOP3-319] - BulkLoaderVertexProgram for generalized batch loading across graphs
 * [TINKERPOP3-576] - Gremlin Server Authentication
 * [TINKERPOP3-582] - Remove Groovy Sandbox Dependency
 * [TINKERPOP3-610] - General graph concept names in test schema
