@@ -20,7 +20,7 @@ TinkerPop3 CHANGELOG
 TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------------------------------------
 
-image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
+image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
 
 TinkerPop 3.0.1 (Release Date: September 2, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
