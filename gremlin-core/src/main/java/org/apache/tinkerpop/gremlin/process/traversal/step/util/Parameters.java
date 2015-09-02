@@ -132,7 +132,7 @@ public final class Parameters implements Cloneable, Serializable {
         for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
             result ^= entry.getKey().hashCode();
             for (final Object value : entry.getValue()) {
-                result ^= value.hashCode();
+                result ^= Integer.rotateLeft(value.hashCode(), entry.getKey().hashCode());
             }
         }
         return result;

@@ -34,8 +34,8 @@ public class AddPropertyStepTest extends StepTest {
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
                 __.property("x", 0),
-                __.property("x", 1)
-                //__.property("y", 0) // TODO: when this is 0 is breaks?! I think this is because of ^ and y being 1 away from x and 0 being one away from x.
+                __.property("x", 1),
+                __.property("y", 0)
         );
     }
 }

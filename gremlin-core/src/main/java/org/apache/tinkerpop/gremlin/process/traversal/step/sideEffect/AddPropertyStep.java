@@ -123,7 +123,8 @@ public final class AddPropertyStep<S extends Element> extends SideEffectStep<S> 
 
     @Override
     public int hashCode() {
-        return super.hashCode() ^ this.parameters.hashCode() ^ ((null == this.cardinality) ? "null".hashCode() : this.cardinality.hashCode());
+        final int hash = super.hashCode() ^ this.parameters.hashCode();
+        return (null != this.cardinality) ? (hash ^ cardinality.hashCode()) : hash;
     }
 
     @Override
