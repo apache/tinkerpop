@@ -68,7 +68,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_order_byXoutE_count__decrX();
 
-    public abstract Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_by_byXorderXlocalX_byXname_decrXX();
+    public abstract Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_byXnameX_byXorderXlocalX_byXdecrXX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -224,22 +224,22 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_group_byXlabelX_by_byXorderXlocalX_byXname_decrXX() {
-        final Traversal<Vertex, Map<String, List<Vertex>>> traversal = get_g_V_group_byXlabelX_by_byXorderXlocalX_byXname_decrXX();
+    public void g_V_group_byXlabelX_byXnameX_byXorderXlocalX_byXdecrXX() {
+        final Traversal<Vertex, Map<String, List<Vertex>>> traversal = get_g_V_group_byXlabelX_byXnameX_byXorderXlocalX_byXdecrXX();
         printTraversalForm(traversal);
         final Map<String, List<Vertex>> map = traversal.next();
         assertFalse(traversal.hasNext());
         assertEquals(2, map.size());
         List list = map.get("software");
         assertEquals(2, list.size());
-        assertEquals(convertToVertex(graph, "lop"), list.get(1));
-        assertEquals(convertToVertex(graph, "ripple"), list.get(0));
+        assertEquals("lop", list.get(1));
+        assertEquals("ripple", list.get(0));
         list = map.get("person");
         assertEquals(4, list.size());
-        assertEquals(convertToVertex(graph, "josh"), list.get(3));
-        assertEquals(convertToVertex(graph, "marko"), list.get(2));
-        assertEquals(convertToVertex(graph, "peter"), list.get(1));
-        assertEquals(convertToVertex(graph, "vadas"), list.get(0));
+        assertEquals("josh", list.get(3));
+        assertEquals("marko", list.get(2));
+        assertEquals("peter", list.get(1));
+        assertEquals("vadas", list.get(0));
     }
 
     public static class Traversals extends OrderTest {
@@ -299,8 +299,8 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_by_byXorderXlocalX_byXname_decrXX() {
-            return g.V().<String, List<Vertex>>group().by(T.label).by().by(__.order(Scope.local).by("name", Order.decr));
+        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_byXnameX_byXorderXlocalX_byXdecrXX() {
+            return g.V().<String, List<Vertex>>group().by(T.label).by("name").by(__.order(Scope.local).by(Order.decr));
         }
 
     }
