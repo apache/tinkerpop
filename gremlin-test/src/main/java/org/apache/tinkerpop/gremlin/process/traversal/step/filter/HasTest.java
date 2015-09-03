@@ -63,6 +63,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id);
 
+    public abstract Traversal<Vertex, Vertex> get_g_VXv1X_hasXage_gt_30X(final Object v1Id);
+
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_hasXid_lt_3X(final Object v1Id, final Object v3Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_hasIdX2X(final Object v1Id, final Object v2Id);
@@ -155,12 +157,13 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_hasXage_gt_30X() {
-        Traversal<Vertex, Vertex> traversal = get_g_VX1X_hasXage_gt_30X(convertToVertexId("marko"));
-        printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
-        traversal = get_g_VX1X_hasXage_gt_30X(convertToVertexId("josh"));
-        printTraversalForm(traversal);
-        assertTrue(traversal.hasNext());
+        Arrays.asList(get_g_VX1X_hasXage_gt_30X(convertToVertexId("marko")), get_g_VXv1X_hasXage_gt_30X(convertToVertexId("marko"))).forEach(traversal -> {
+            printTraversalForm(traversal);
+            assertFalse(traversal.hasNext());
+            traversal = get_g_VX1X_hasXage_gt_30X(convertToVertexId("josh"));
+            printTraversalForm(traversal);
+            assertTrue(traversal.hasNext());
+        });
     }
 
     @Test
@@ -383,6 +386,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id) {
             return g.V(v1Id).has("age", P.gt(30));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VXv1X_hasXage_gt_30X(final Object v1Id) {
+            return g.V(g.V(v1Id).next()).has("age", P.gt(30));
         }
 
         @Override

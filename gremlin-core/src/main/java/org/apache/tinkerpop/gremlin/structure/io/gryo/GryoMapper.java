@@ -248,6 +248,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapReduce.NullObject.class, null, 74));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(AtomicLong.class, null, 79));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DependantMutableMetrics.class, null, 80));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Pair.class, kryo -> new PairSerializer(), 87)); // ***LAST ID**
         }};
 
         private List<IoRegistry> registries = new ArrayList<>();
@@ -302,7 +303,7 @@ public final class GryoMapper implements Mapper<Kryo> {
          */
         public GryoMapper create() {
             // consult the registry if provided and inject registry entries as custom classes.
-            registries.forEach(registry-> {
+            registries.forEach(registry -> {
                 final List<Pair<Class, Object>> serializers = registry.find(GryoIo.class);
                 serializers.forEach(p -> {
                     if (null == p.getValue1())

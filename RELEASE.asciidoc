@@ -17,7 +17,36 @@ limitations under the License.
 Release Process
 ---------------
 
-The following instructions represent the steps required to release TinkerPop:
+This document describes the steps required to release a version of TinkerPop.  The process is multi-phased and can therefore take several weeks to complete given the time needed for Apache voting and community feedback.  Once a release point has been identified, the following phases represent the flow of "release":
+
+* Optionally, produce a release candidate for community feedback.
+* Submit the official release for PMC vote.
+* Submit the official release for Incubator vote.
+* Release and promote.
+
+Release Candidate
+~~~~~~~~~~~~~~~~~
+
+A release candidate is an unofficial release that is represented by a tagged version in the Git repository.  It is offered in cases where there is significant change in a particular version and the potential for upgrades and problems might be high.
+
+. `mvn clean install -DincludeNeo4j`
+.. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
+.. `mvn verify -DskipPerformanceTests=false`
+. `bin/publish-docs.sh <username>` - note that under a release candidate the documentation is published as SNAPSHOT
+. `bin/bump.sh "version"` to update the project files to reference a non-SNAPSHOT `rc` version (e.g. `x.y.z-incubating-rc1)
+. `git diff` and review the updated files (expect all `pom.xml` files and this README)
+. `git commit -a -m "TinkerPop x.y.z release"` and `git push`
+. `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
+. `mvn clean install -Dmaven.test.skip=true`
+. `bin/bump.sh "version"` to go back to SNAPSHOT
+. `git commit -a -m "Returned to x.y.z-SNAPSHOT"` and `git push`
+. Announce the release candidate to `dev` mailing list and await feedback
+. Repeat as required or proceed to the next phase
+
+PMC Vote
+~~~~~~~~
+
+A positive vote for a particular release from the TinkerPop PMC is required to move to the following phase.
 
 . `mvn clean install`
 .. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
@@ -43,8 +72,21 @@ The following instructions represent the steps required to release TinkerPop:
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/x.y.z/tinkerpop-x.y.z-source-release.zip* dev/x.y.z`
 .. `cd dev/x.y.z` and `for f in *.zip*; do  mv "$f" "apache-$f"; done`
 .. `cd ..; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
-. Submit for `[VOTE]` at `general@incubator.apache.org` (see email template below).
+. Submit for `[VOTE]` at `dev@tinkerpop.incubator.apache.org` (see email template below).
 . *Wait for vote acceptance* (72 hours).
+
+Incubator Vote
+~~~~~~~~~~~~~~
+
+A positive vote for a particular release from the Apache Incubator is required to move to the following phase.
+
+. Submit for `[VOTE]` at `general@incubator.apache.org` (see email template below).
+.. Include the vote tally: "Apache TinkerPop (http://tinkerpop.incubator.apache.org/) would like to release TinkerPop x.y.z. We had a dev@ VOTE which resulted in a tally of +1 (3), 0 (0), and -1 (0). We now present our artifacts for vote by Incubator."
+. *Wait for vote acceptance* (72 hours).
+
+Release & Promote
+~~~~~~~~~~~~~~~~~
+
 . `mvn clean install -Dmaven.test.skip=true; bin/process-docs.sh` - rebuild source and docs of tagged release
 . `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
 . Review and close the staging repository (Apache Nexus at link:https://repository.apache.org/[https://repository.apache.org/])

@@ -55,12 +55,13 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
 
-TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.0.1 (Release Date: September 2, 2015)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * `Compare` now uses `BigDecimal` internally to ensure that precision is not lost on standard number comparisons.
 * Renamed `ComputerVerificationStrategy` to `VerificationStrategy` so all the verification strategies can use it.
 * Added `StandardVerificationStrategy` that throws exceptions for illegal traversal patterns on the standard engine (which extends to `GraphComputer`).
+* Added `GraphFeatures.supportsConcurrentAccess()` to allows `Graph` implementations to signify if multiple instances can access the same data.
 * Clarified semantics of `Transaction.close()` in unit tests - now refers only to closing the current transaction in the current thread.
 * `Neo4jGraph` no longer uses `OptOut` on `TransactionTest.shouldRollbackOnCloseWhenConfigured` (formerly `shouldRollbackOnShutdownWhenConfigured`)
 * Gremlin Server initialization scripts can now return a `Map` of values that will become global bindings for the server.
@@ -82,6 +83,36 @@ TinkerPop 3.0.1 (NOT OFFICIALLY RELEASED YET)
 * Refactored `GremlinGroovyScriptEngine` to make more general use of `ImportCustomizerProvider` implementations.
 * Removed `SecurityCustomizerProvider` class and the "sandbox" configuration on the `ScriptEngines` class - this was an experimental feature and not meant for public use.
 * Removed dependency on `groovy-sandbox` from the `gremlin-groovy` module.
+
+Bugs
+^^^^
+
+* [TINKERPOP3-770] - Exception while AddPropertyStep tries to detach vertex property
+* [TINKERPOP3-780] - Use of fold() in repeat()
+* [TINKERPOP3-782] - map(Traversal) should declare requirements of child
+* [TINKERPOP3-785] - Gremlin Server Not Properly Reporting Port Conflict
+* [TINKERPOP3-792] - select at start of match traversal on Map can fail
+* [TINKERPOP3-794] - IncidentToAdjecentStrategy malfunction
+* [TINKERPOP3-804] - Failed installing neo4j-gremlin extension on Windows 7
+* [TINKERPOP3-822] - Neo4j GraphStep with element arguments ignores has  *(breaking)*
+
+Improvements
+^^^^^^^^^^^^
+
+* [TINKERPOP3-576] - Gremlin Server Authentication
+* [TINKERPOP3-582] - Remove Groovy Sandbox Dependency
+* [TINKERPOP3-610] - General graph concept names in test schema
+* [TINKERPOP3-656] - IoRegistry Chaining
+* [TINKERPOP3-690] - Be able to OPT_OUT for Standard, but not Computer *(breaking)*
+* [TINKERPOP3-699] - GraphSON writeGraph not producing valid json object
+* [TINKERPOP3-750] - Compare should not have special case for Number
+* [TINKERPOP3-752] - Make Gremlin Server Better Respect ACCEPT
+* [TINKERPOP3-764] - Unify semantics of Transaction.close() in tests and documentation *(breaking)*
+* [TINKERPOP3-771] - IoRegistry Instantiation With GryoPool
+* [TINKERPOP3-778] - Support GraphFactory location via annotation.
+* [TINKERPOP3-791] - Document rules for committers
+* [TINKERPOP3-797] - order() seems to only like List? *(breaking)*
+* [TINKERPOP3-808] - TraversalComparator.comparator needs a getter
 
 TinkerPop 3.0.0 (Release Date: July 9, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

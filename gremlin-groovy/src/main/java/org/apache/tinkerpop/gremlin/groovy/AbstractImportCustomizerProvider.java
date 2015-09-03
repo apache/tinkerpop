@@ -24,6 +24,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.groovy.function.GFunction;
 import org.apache.tinkerpop.gremlin.groovy.loaders.GremlinLoader;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
@@ -128,6 +129,7 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(PeerPressureVertexProgram.class.getPackage().getName() + DOT_STAR);
         imports.add(PageRankVertexProgram.class.getPackage().getName() + DOT_STAR);
         imports.add(TraversalVertexProgram.class.getPackage().getName() + DOT_STAR);
+        imports.add(BulkLoaderVertexProgram.class.getPackage().getName() + DOT_STAR);
 
         // groovy extras
         imports.add(Grape.class.getCanonicalName());

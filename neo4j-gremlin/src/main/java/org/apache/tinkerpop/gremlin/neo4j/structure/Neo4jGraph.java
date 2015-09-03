@@ -392,6 +392,11 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
             }
 
             @Override
+            public boolean supportsConcurrentAccess() {
+                return false;
+            }
+
+            @Override
             public boolean supportsComputer() {
                 return false;
             }
