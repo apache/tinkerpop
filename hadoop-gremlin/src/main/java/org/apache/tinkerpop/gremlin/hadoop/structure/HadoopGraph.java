@@ -24,7 +24,6 @@ import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer;
-import org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopEdgeIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopVertexIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
@@ -192,10 +191,17 @@ public final class HadoopGraph implements Graph {
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
         if (graphComputerClass.equals(GiraphGraphComputer.class))
             return (C) new GiraphGraphComputer(this);
-        else if (graphComputerClass.equals(SparkGraphComputer.class))
-            return (C) new SparkGraphComputer(this);
-        else
-            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+        else {
+            try {
+                return graphComputerClass.getConstructor(HadoopGraph.class).newInstance(this);
+            } catch (final Exception e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
+            }
+        }
+        //else if (graphComputerClass.equals(SparkGraphComputer.class))
+        //    return (C) new SparkGraphComputer(this);
+        //else
+        //   throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
     }
 
     @Override
