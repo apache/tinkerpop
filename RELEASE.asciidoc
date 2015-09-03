@@ -33,12 +33,12 @@ A release candidate is an unofficial release that is represented by a tagged ver
 .. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
 .. `mvn verify -DskipPerformanceTests=false`
 . `bin/publish-docs.sh <username>` - note that under a release candidate the documentation is published as SNAPSHOT
-. `bin/bump.sh "version"` to update the project files to reference a non-SNAPSHOT `rc` version (e.g. `x.y.z-incubating-rc1)
+. `mvn versions:set -DnewVersion=x.y.z -DgenerateBackupPoms=false` to update the project files to reference a non-SNAPSHOT version.
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
 . `mvn clean install -Dmaven.test.skip=true`
-. `bin/bump.sh "version"` to go back to SNAPSHOT
+. `mvn versions:set -DnewVersion=x.y.z-SNAPSHOT -DgenerateBackupPoms=false` to go back to SNAPSHOT
 . `git commit -a -m "Returned to x.y.z-SNAPSHOT"` and `git push`
 . Announce the release candidate to `dev` mailing list and await feedback
 . Repeat as required or proceed to the next phase
@@ -58,7 +58,7 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 .. Update the release date
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`
 .. Organize "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
-. `bin/bump.sh "version"` to update project files to reference the non-SNAPSHOT version
+. `mvn versions:set -DnewVersion=x.y.z -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
