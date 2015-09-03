@@ -85,6 +85,10 @@ public class GraphStep<S extends Element> extends StartStep<S> implements Engine
     public void onEngine(final TraversalEngine traversalEngine) {
         if (traversalEngine.isComputer()) {
             this.iteratorSupplier = Collections::emptyIterator;
+            for(int i=0; i<this.ids.length; i++) {    // if this is going to OLAP, convert to ids so you don't serialize elements
+                if(this.ids[i] instanceof Element)
+                    this.ids[i] = ((Element)this.ids[i]).id();
+            }
         }
     }
 
