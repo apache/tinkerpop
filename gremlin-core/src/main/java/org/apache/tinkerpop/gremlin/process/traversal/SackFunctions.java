@@ -17,43 +17,33 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.process.traversal.step.util;
+package org.apache.tinkerpop.gremlin.process.traversal;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.function.Consumer;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class LambdaCollectingBarrierStep<S> extends CollectingBarrierStep<S> implements LambdaHolder {
+public final class SackFunctions {
 
-    public enum Consumers implements Consumer<TraverserSet<Object>> {
-        noOp {
+    private SackFunctions() {
+
+    }
+
+    public enum Barrier implements Consumer<TraverserSet<Object>> {
+        normSack {
             @Override
             public void accept(final TraverserSet<Object> traverserSet) {
-
+                double total = 0.0d;
+                for (final Traverser.Admin<Object> traverser : traverserSet) {
+                    total = total + (((Number) traverser.sack()).doubleValue() * ((Number) traverser.bulk()).doubleValue());
+                }
+                for (final Traverser.Admin<Object> traverser : traverserSet) {
+                    traverser.sack((((Number) traverser.sack()).doubleValue() * ((Number) traverser.bulk()).doubleValue()) / total);
+                }
             }
         }
-    }
-
-    private final Consumer<TraverserSet<S>> barrierConsumer;
-
-    public LambdaCollectingBarrierStep(final Traversal.Admin traversal, final Consumer<TraverserSet<S>> barrierConsumer, final int maxBarrierSize) {
-        super(traversal, maxBarrierSize);
-        this.barrierConsumer = barrierConsumer;
-    }
-
-    @Override
-    public void barrierConsumer(final TraverserSet<S> traverserSet) {
-        this.barrierConsumer.accept(traverserSet);
-    }
-
-    @Override
-    public String toString() {
-        return StringFactory.stepString(this, this.barrierConsumer.toString());
     }
 }

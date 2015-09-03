@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ public final class Parameters implements Cloneable, Serializable {
 
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
-    private Map<Object, Object> parameters = new HashMap<>();
+    private Map<Object, List<Object>> parameters = new HashMap<>();
 
     public boolean contains(final Object key) {
         return this.parameters.containsKey(key);
@@ -49,24 +50,32 @@ public final class Parameters implements Cloneable, Serializable {
         this.set(newKey, this.parameters.remove(oldKey));
     }
 
-    public <S, E> E get(final Traverser.Admin<S> traverser, final Object key, final Supplier<E> defaultValue) {
-        final Object object = parameters.get(key);
-        return null == object ? defaultValue.get() : object instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, E>) object) : (E) object;
+    public <S, E> List<E> get(final Traverser.Admin<S> traverser, final Object key, final Supplier<E> defaultValue) {
+        final List<E> values = (List<E>) this.parameters.get(key);
+        if (null == values) return Collections.singletonList(defaultValue.get());
+        final List<E> result = new ArrayList<>();
+        for (final Object value : values) {
+            result.add(value instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, E>) value) : (E) value);
+        }
+        return result;
     }
 
-    public <E> E get(final Object key, final Supplier<E> defaultValue) {
-        final Object object = parameters.get(key);
-        return null == object ? defaultValue.get() : (E) object;
+    public <E> List<E> get(final Object key, final Supplier<E> defaultValue) {
+        final List<E> list = (List<E>) this.parameters.get(key);
+        return (null == list) ? Collections.singletonList(defaultValue.get()) : list;
+
     }
 
     public <S> Object[] getKeyValues(final Traverser.Admin<S> traverser, final Object... exceptKeys) {
         if (this.parameters.size() == 0) return EMPTY_ARRAY;
         final List<Object> exceptions = Arrays.asList(exceptKeys);
         final List<Object> keyValues = new ArrayList<>();
-        for (final Map.Entry<Object, Object> keyValue : this.parameters.entrySet()) {
-            if (!exceptions.contains(keyValue.getKey())) {
-                keyValues.add(keyValue.getKey() instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) keyValue.getKey()) : keyValue.getKey());
-                keyValues.add(keyValue.getValue() instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) keyValue.getValue()) : keyValue.getValue());
+        for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
+            if (!exceptions.contains(entry.getKey())) {
+                for (final Object value : entry.getValue()) {
+                    keyValues.add(entry.getKey() instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) entry.getKey()) : entry.getKey());
+                    keyValues.add(value instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) value) : value);
+                }
             }
         }
         return keyValues.toArray(new Object[keyValues.size()]);
@@ -75,29 +84,42 @@ public final class Parameters implements Cloneable, Serializable {
     public void set(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i + 1] != null) {
-                this.parameters.put(keyValues[i], keyValues[i + 1]);
+                List<Object> values = this.parameters.get(keyValues[i]);
+                if (null == values) {
+                    values = new ArrayList<>();
+                    values.add(keyValues[i + 1]);
+                    this.parameters.put(keyValues[i], values);
+                } else {
+                    values.add(keyValues[i + 1]);
+                }
             }
         }
     }
 
     public void integrateTraversals(final TraversalParent step) {
-        for (final Object value : this.parameters.values()) {
-            if (value instanceof Traversal.Admin) {
-                step.integrateChild((Traversal.Admin) value);
+        for (final List<Object> values : this.parameters.values()) {
+            for (final Object object : values) {
+                if (object instanceof Traversal.Admin) {
+                    step.integrateChild((Traversal.Admin) object);
+                }
             }
         }
     }
 
     public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
-        return (List) this.parameters.values().stream().filter(t -> t instanceof Traversal.Admin).collect(Collectors.toList());
+        return (List) this.parameters.values().stream().flatMap(List::stream).filter(t -> t instanceof Traversal.Admin).collect(Collectors.toList());
     }
 
     public Parameters clone() {
         try {
             final Parameters clone = (Parameters) super.clone();
             clone.parameters = new HashMap<>();
-            for (final Map.Entry<Object, Object> entry : this.parameters.entrySet()) {
-                clone.parameters.put(entry.getKey(), entry.getValue() instanceof Traversal ? ((Traversal.Admin) entry.getValue()).clone() : entry.getValue());
+            for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
+                final List<Object> values = new ArrayList<>();
+                for (final Object value : entry.getValue()) {
+                    values.add(value instanceof Traversal.Admin ? ((Traversal.Admin) value).clone() : value);
+                }
+                clone.parameters.put(entry.getKey() instanceof Traversal.Admin ? ((Traversal.Admin) entry.getKey()).clone() : entry.getKey(), values);
             }
             return clone;
         } catch (final CloneNotSupportedException e) {
@@ -106,7 +128,14 @@ public final class Parameters implements Cloneable, Serializable {
     }
 
     public int hashCode() {
-        return this.parameters.hashCode();
+        int result = 1;
+        for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
+            result ^= entry.getKey().hashCode();
+            for (final Object value : entry.getValue()) {
+                result ^= Integer.rotateLeft(value.hashCode(), entry.getKey().hashCode());
+            }
+        }
+        return result;
     }
 
     public String toString() {

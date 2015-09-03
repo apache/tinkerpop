@@ -58,5 +58,11 @@ public abstract class GroovySackTest {
         public Traversal<Vertex, Map> get_g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack() {
             TraversalScriptHelper.compute("g.withSack{[:]}{ it.clone() }.V.out().out().sack { m, v -> m['a'] = v.name; m }.sack()", g);
         }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack(
+                final Object v1Id) {
+            TraversalScriptHelper.compute("g.withSack(1.0d,sum).V(${v1Id}).local(out('knows').barrier(normSack)).in('knows').barrier.sack", g, "v1Id", v1Id)
+        }
     }
 }

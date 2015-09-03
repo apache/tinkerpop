@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -45,7 +46,7 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
 
     @Override
     public <V> Optional<V> get(final String key) throws IllegalArgumentException {
-       return Optional.empty();
+        return Optional.empty();
     }
 
     @Override
@@ -69,18 +70,23 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator) {
+    public <S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BinaryOperator<S> mergeOperator) {
 
     }
 
     @Override
-    public <S> Optional<Supplier<S>> getSackInitialValue() {
-        return Optional.empty();
+    public <S> Supplier<S> getSackInitialValue() {
+        return null;
     }
 
     @Override
-    public <S> Optional<UnaryOperator<S>> getSackSplitOperator() {
-        return Optional.empty();
+    public <S> UnaryOperator<S> getSackSplitter() {
+        return null;
+    }
+
+    @Override
+    public <S> BinaryOperator<S> getSackMerger() {
+        return null;
     }
 
     @Override
@@ -90,7 +96,7 @@ public final class EmptyTraversalSideEffects implements TraversalSideEffects {
 
     @SuppressWarnings("CloneDoesntCallSuperClone")
     @Override
-    public TraversalSideEffects clone()  {
+    public TraversalSideEffects clone() {
         return this;
     }
 

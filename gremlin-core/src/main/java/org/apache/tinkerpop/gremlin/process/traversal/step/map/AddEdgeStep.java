@@ -85,9 +85,9 @@ public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<E
 
     @Override
     protected Edge map(final Traverser.Admin<S> traverser) {
-        final Vertex toVertex = this.parameters.get(traverser, TO, () -> (Vertex) traverser.get());
-        final Vertex fromVertex = this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get());
-        final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL);
+        final Vertex toVertex = this.parameters.get(traverser, TO, () -> (Vertex) traverser.get()).get(0);
+        final Vertex fromVertex = this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get()).get(0);
+        final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
 
         final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
             if (callbackRegistry != null) {
