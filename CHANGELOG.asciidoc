@@ -58,6 +58,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.0.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed id parameter used in tests for `GroovyStoreTest` and `GroovyRepeatTest` to not be treated as an embedded string.
 * `GraphStep` will convert any `Vertex` or `Edge` ids to their id `Object` prior to submission to `GraphComputer` (OLAP).
 
 TinkerPop 3.0.1 (Release Date: September 2, 2015)

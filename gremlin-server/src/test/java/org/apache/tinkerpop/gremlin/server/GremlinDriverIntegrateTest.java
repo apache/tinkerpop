@@ -352,7 +352,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldCloseWithServerDown() throws Exception {
         final Cluster cluster = Cluster.open();
-        cluster.connect();
+        cluster.connect().init();
 
         stopServer();
 
@@ -361,11 +361,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldMarkHostDeadSinceServerIsDown() throws Exception {
+        final Cluster cluster = Cluster.open();
+        assertEquals(0, cluster.availableHosts().size());
+        cluster.connect().init();
+        assertEquals(1, cluster.availableHosts().size());
+
         stopServer();
 
-        final Cluster cluster = Cluster.open();
-        cluster.connect();
-
+        cluster.connect().init();
         assertEquals(0, cluster.availableHosts().size());
 
         cluster.close();

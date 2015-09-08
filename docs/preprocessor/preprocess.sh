@@ -107,6 +107,11 @@ else
 fi
 
 # process *.asciidoc files
+COLS=${COLUMNS}
+[[ ${COLUMNS} -lt 240 ]] && stty cols 240
+
+tput rmam
+
 echo
 echo "============================"
 echo "+   Processing AsciiDocs   +"
@@ -122,6 +127,9 @@ for i in {0..7}; do
   ec=${ps[i]}
   [ ${ec} -eq 0 ] || break
 done
+
+tput smam
+stty cols ${COLS}
 
 if [ ${ec} -ne 0 ]; then
   exit 1
