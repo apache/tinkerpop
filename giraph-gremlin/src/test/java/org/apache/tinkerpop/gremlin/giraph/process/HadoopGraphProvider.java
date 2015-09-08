@@ -16,12 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop;
+
+package org.apache.tinkerpop.gremlin.giraph.process;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.giraph.conf.GiraphConstants;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.TestHelper;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopElement;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -47,8 +50,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Stephen Mallette (http://stephen.genoprime.com)
- * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class HadoopGraphProvider extends AbstractGraphProvider {
 
@@ -110,23 +111,18 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "hadoop-gremlin/target/test-output");
             put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
             /// giraph configuration
-            //put(GiraphConstants.MIN_WORKERS, 1);
-            //put(GiraphConstants.MAX_WORKERS, 1);
-            //put(GiraphConstants.SPLIT_MASTER_WORKER.getKey(), false);
-            //put(GiraphConstants.ZOOKEEPER_SERVER_PORT.getKey(), 2181);  // you must have a local zookeeper running on this port
-            //put(GiraphConstants.NETTY_SERVER_USE_EXECUTION_HANDLER.getKey(), false); // this prevents so many integration tests running out of threads
-            //put(GiraphConstants.NETTY_CLIENT_USE_EXECUTION_HANDLER.getKey(), false); // this prevents so many integration tests running out of threads
-            //put(GiraphConstants.NUM_INPUT_THREADS.getKey(), 3);
-            //put(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 3);
-            //put(GiraphConstants.MAX_MASTER_SUPERSTEP_WAIT_MSECS.getKey(), TimeUnit.MINUTES.toMillis(60L));
-            //put("mapred.reduce.tasks", 4);
-            //put("giraph.vertexOutputFormatThreadSafe", false);
-            //put("giraph.numOutputThreads", 3);
-
-            /// spark configuration
-            put("spark.master", "local[4]");
-            put("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
-            // put("spark.kryo.registrationRequired",true);
+            put(GiraphConstants.MIN_WORKERS, 1);
+            put(GiraphConstants.MAX_WORKERS, 1);
+            put(GiraphConstants.SPLIT_MASTER_WORKER.getKey(), false);
+            put(GiraphConstants.ZOOKEEPER_SERVER_PORT.getKey(), 2181);  // you must have a local zookeeper running on this port
+            put(GiraphConstants.NETTY_SERVER_USE_EXECUTION_HANDLER.getKey(), false); // this prevents so many integration tests running out of threads
+            put(GiraphConstants.NETTY_CLIENT_USE_EXECUTION_HANDLER.getKey(), false); // this prevents so many integration tests running out of threads
+            put(GiraphConstants.NUM_INPUT_THREADS.getKey(), 3);
+            put(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 3);
+            put(GiraphConstants.MAX_MASTER_SUPERSTEP_WAIT_MSECS.getKey(), TimeUnit.MINUTES.toMillis(60L));
+            put("mapred.reduce.tasks", 4);
+            put("giraph.vertexOutputFormatThreadSafe", false);
+            put("giraph.numOutputThreads", 3);
         }};
     }
 
@@ -162,3 +158,4 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
         }
     }
 }
+

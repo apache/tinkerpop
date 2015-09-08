@@ -16,17 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
+package org.apache.tinkerpop.gremlin.giraph.process.computer;
 
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.process.ProcessComputerSuite;
-import org.junit.runner.RunWith;
+import org.apache.tinkerpop.giraph.process.computer.GiraphGraphComputer;
+import org.apache.tinkerpop.gremlin.GraphProvider;
+import org.apache.tinkerpop.gremlin.giraph.process.HadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(ProcessComputerSuite.class)
-@GraphProviderClass(provider = HadoopGiraphGraphProvider.class, graph = HadoopGraph.class)
-public class GiraphGraphComputerProcessIntegrateTest {
+@GraphProvider.Descriptor(computer = GiraphGraphComputer.class)
+public final class HadoopGiraphGraphProvider extends HadoopGraphProvider {
+
+    public GraphTraversalSource traversal(final Graph graph) {
+        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(GiraphGraphComputer.class)).create(graph);
+    }
 }

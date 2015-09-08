@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph;
+package org.apache.tinkerpop.giraph.process.computer;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.combiner.Combiner;
