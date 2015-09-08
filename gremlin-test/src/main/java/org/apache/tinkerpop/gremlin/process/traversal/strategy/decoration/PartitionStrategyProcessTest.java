@@ -60,6 +60,10 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         final PartitionStrategy partitionStrategy = PartitionStrategy.build()
                 .includeMetaProperties(true)
                 .partitionKey(partition).writePartition("A").addReadPartition("A").create();
+        Traversal t = create(partitionStrategy).addV().property("any", "thing");
+        System.out.println(t);
+        t.asAdmin().applyStrategies();
+        System.out.println(t);
         final Vertex v = create(partitionStrategy).addV().property("any", "thing").next();
 
         assertNotNull(v);

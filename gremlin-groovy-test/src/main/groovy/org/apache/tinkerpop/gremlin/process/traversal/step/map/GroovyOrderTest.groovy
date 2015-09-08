@@ -83,8 +83,8 @@ public abstract class GroovyOrderTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_by_byXorderXlocalX_byXname_decrXX() {
-            TraversalScriptHelper.compute("g.V.group.by(label).by.by(order(local).by('name', decr))", g)
+        public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_byXnameX_byXorderXlocalX_byXdecrXX() {
+            TraversalScriptHelper.compute("g.V.group.by(label).by('name').by(order(local).by(decr))", g)
         }
     }
 }

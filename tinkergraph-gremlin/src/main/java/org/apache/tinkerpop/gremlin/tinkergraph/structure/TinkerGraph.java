@@ -341,6 +341,11 @@ public final class TinkerGraph implements Graph {
         }
 
         @Override
+        public boolean supportsConcurrentAccess() {
+            return false;
+        }
+
+        @Override
         public boolean supportsTransactions() {
             return false;
         }

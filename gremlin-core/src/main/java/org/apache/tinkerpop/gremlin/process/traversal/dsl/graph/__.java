@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -805,6 +806,10 @@ public class __ {
 
     public static <A> GraphTraversal<A, A> barrier(final int maxBarrierSize) {
         return __.<A>start().barrier(maxBarrierSize);
+    }
+
+    public static <A> GraphTraversal<A, A> barrier(final Consumer<TraverserSet<Object>> barrierConsumer) {
+        return __.<A>start().barrier(barrierConsumer);
     }
 
 }

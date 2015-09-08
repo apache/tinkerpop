@@ -205,15 +205,17 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                 // has to be exploded back to g.addV().property('k','v','partition','A')
                 if (step instanceof AddVertexStartStep || step instanceof AddVertexStep) {
                     final Parameters parameters = ((Parameterizing) step).getParameters();
-                    final Map<Object, Object> params = parameters.getRaw();
+                    final Map<Object, List<Object>> params = parameters.getRaw();
                     params.forEach((k, v) -> {
-                        final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, null, k, v);
-                        addPropertyStep.addPropertyMutations(partitionKey, writePartition);
-                        TraversalHelper.insertAfterStep(addPropertyStep, step, traversal);
+                        v.forEach(o -> {
+                            final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, null, k, o);
+                            addPropertyStep.addPropertyMutations(partitionKey, writePartition);
+                            TraversalHelper.insertAfterStep(addPropertyStep, step, traversal);
 
-                        // need to remove the parameter from the AddVertex/StartStep because it's now being added
-                        // via the AddPropertyStep
-                        parameters.remove(k);
+                            // need to remove the parameter from the AddVertex/StartStep because it's now being added
+                            // via the AddPropertyStep
+                            parameters.remove(k);
+                        });
                     });
                 }
             }

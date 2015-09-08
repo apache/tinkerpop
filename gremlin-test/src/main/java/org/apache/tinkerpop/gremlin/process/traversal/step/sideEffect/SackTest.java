@@ -22,7 +22,9 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -55,6 +57,8 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack();
 
     public abstract Traversal<Vertex, Map> get_g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack();
+
+    public abstract Traversal<Vertex, Double> get_g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack(final Object v1Id);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -103,6 +107,14 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
         assertEquals(2, counter);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack() {
+        final Traversal<Vertex, Double> traversal = get_g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(1.0d, 1.0d), traversal);
+    }
+
     public static class Traversals extends SackTest {
 
         @Override
@@ -136,6 +148,11 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
                 map.put("a", vertex.value("name"));
                 return map;
             }).sack();
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack(final Object v1Id) {
+            return g.withSack(1.0d, Operator.sum).V(v1Id).local(__.out("knows").barrier(SackFunctions.Barrier.normSack)).in("knows").barrier().sack();
         }
     }
 }

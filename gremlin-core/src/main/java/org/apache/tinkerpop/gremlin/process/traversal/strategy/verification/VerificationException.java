@@ -23,11 +23,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public class ComputerVerificationException extends IllegalStateException {
+public class VerificationException extends IllegalStateException {
 
     private final Traversal traversal;
 
-    public ComputerVerificationException(final String message, final Traversal traversal) {
+    public VerificationException(final String message, final Traversal traversal) {
         super(message);
         this.traversal = traversal;
     }

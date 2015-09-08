@@ -21,8 +21,11 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 import org.junit.Test;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -34,17 +37,29 @@ public class ParametersTest {
         final Parameters parameters = new Parameters();
         parameters.set("a", "axe", "b", "bat", "c", "cat");
 
-        final Map<Object,Object> params = parameters.getRaw();
+        final Map<Object,List<Object>> params = parameters.getRaw();
         assertEquals(3, params.size());
-        assertEquals("axe", params.get("a"));
-        assertEquals("bat", params.get("b"));
-        assertEquals("cat", params.get("c"));
+        assertEquals("axe", params.get("a").get(0));
+        assertEquals("bat", params.get("b").get(0));
+        assertEquals("cat", params.get("c").get(0));
+    }
+
+    @Test
+    public void shouldGetRawWithMulti() {
+        final Parameters parameters = new Parameters();
+        parameters.set("a", "axe", "b", "bat", "a", "ant", "c", "cat");
+
+        final Map<Object,List<Object>> params = parameters.getRaw();
+        assertEquals(3, params.size());
+        assertThat(params.get("a"), contains("axe", "ant"));
+        assertEquals("bat", params.get("b").get(0));
+        assertEquals("cat", params.get("c").get(0));
     }
 
     @Test
     public void shouldGetRawEmptyAndUnmodifiable() {
         final Parameters parameters = new Parameters();
-        final Map<Object,Object> params = parameters.getRaw();
+        final Map<Object,List<Object>> params = parameters.getRaw();
         assertEquals(Collections.emptyMap(), params);
     }
 
@@ -53,10 +68,10 @@ public class ParametersTest {
         final Parameters parameters = new Parameters();
         parameters.set("a", "axe", "b", "bat", "c", "cat");
 
-        final Map<Object,Object> params = parameters.getRaw("b");
+        final Map<Object,List<Object>> params = parameters.getRaw("b");
         assertEquals(2, params.size());
-        assertEquals("axe", params.get("a"));
-        assertEquals("cat", params.get("c"));
+        assertEquals("axe", params.get("a").get(0));
+        assertEquals("cat", params.get("c").get(0));
     }
 
     @Test
@@ -64,17 +79,17 @@ public class ParametersTest {
         final Parameters parameters = new Parameters();
         parameters.set("a", "axe", "b", "bat", "c", "cat");
 
-        final Map<Object,Object> before = parameters.getRaw();
+        final Map<Object,List<Object>> before = parameters.getRaw();
         assertEquals(3, before.size());
-        assertEquals("axe", before.get("a"));
-        assertEquals("bat", before.get("b"));
-        assertEquals("cat", before.get("c"));
+        assertEquals("axe", before.get("a").get(0));
+        assertEquals("bat", before.get("b").get(0));
+        assertEquals("cat", before.get("c").get(0));
 
         parameters.remove("b");
 
-        final Map<Object,Object> after = parameters.getRaw("b");
+        final Map<Object,List<Object>> after = parameters.getRaw("b");
         assertEquals(2, after.size());
-        assertEquals("axe", after.get("a"));
-        assertEquals("cat", after.get("c"));
+        assertEquals("axe", after.get("a").get(0));
+        assertEquals("cat", after.get("c").get(0));
     }
 }

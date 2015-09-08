@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerHelper;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,9 +74,9 @@ public final class TinkerGraphStep<S extends Element> extends GraphStep<S> imple
         final TinkerGraph graph = (TinkerGraph) this.getTraversal().getGraph().get();
         final HasContainer indexedContainer = getIndexKey(Vertex.class);
         // ids are present, filter on them first
-        if (this.ids != null && this.ids.length > 0) {
+        if (this.ids != null && this.ids.length > 0)
             return this.iteratorList(graph.vertices(this.ids));
-        } else
+        else
             return null == indexedContainer ?
                     this.iteratorList(graph.vertices()) :
                     TinkerHelper.queryVertexIndex(graph, indexedContainer.getKey(), indexedContainer.getPredicate().getValue()).stream()
