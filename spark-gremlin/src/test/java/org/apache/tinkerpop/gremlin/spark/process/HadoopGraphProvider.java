@@ -109,9 +109,6 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "hadoop-gremlin/target/test-output");
             put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
             put("mapred.reduce.tasks", 4);
-            //put("giraph.vertexOutputFormatThreadSafe", false);
-            //put("giraph.numOutputThreads", 3);
-
             /// spark configuration
             put("spark.master", "local[4]");
             put("spark.serializer", "org.apache.spark.serializer.KryoSerializer");

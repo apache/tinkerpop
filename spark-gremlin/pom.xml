@@ -17,7 +17,6 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -34,6 +33,20 @@
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-core</artifactId>
             <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -65,13 +78,21 @@
                     <groupId>org.mortbay.jetty</groupId>
                     <artifactId>jsp-api-2.1</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>jersey-server</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>jersey-core</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- SPARK GRAPH COMPUTER -->
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
-            <version>1.2.1</version>
+            <version>1.4.1</version>
             <exclusions>
                 <!-- self conflicts -->
                 <exclusion>
@@ -81,6 +102,10 @@
                 <exclusion>
                     <groupId>org.scala-lang</groupId>
                     <artifactId>scala-library</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-reflect</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>log4j</groupId>
@@ -107,6 +132,10 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>jcl-over-slf4j</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.ivy</groupId>
+                    <artifactId>ivy</artifactId>
+                </exclusion>
                 <!-- gremlin-groovy conflicts -->
                 <exclusion>
                     <groupId>jline</groupId>
@@ -120,7 +149,7 @@
                 <!-- lgpl conflicts -->
                 <exclusion>
                     <groupId>com.google.code.findbugs</groupId>
-                    <artifactId>findbugs</artifactId>
+                    <artifactId>jsr305</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -129,6 +158,11 @@
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
             <version>2.10.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.4.4</version>
         </dependency>
         <!-- TEST -->
         <dependency>
