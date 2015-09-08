@@ -17,14 +17,14 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.groovy.plugin;
+package org.apache.tinkerpop.giraph.groovy.plugin;
 
+import org.apache.tinkerpop.giraph.process.computer.GiraphGraphComputer;
 import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
-import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -33,15 +33,15 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
+public final class GiraphGremlinPlugin extends AbstractGremlinPlugin {
 
     protected static String NAME = "tinkerpop.spark";
 
     protected static final Set<String> IMPORTS = new HashSet<String>() {{
-        add(IMPORT_SPACE + SparkGraphComputer.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);
     }};
 
-    public SparkGremlinPlugin() {
+    public GiraphGremlinPlugin() {
         super(true);
     }
 
@@ -54,7 +54,7 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
     public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws PluginInitializationException, IllegalEnvironmentException {
         pluginAcceptor.addImports(IMPORTS);
         try {
-            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", SparkGraphComputer.class.getName()));
+            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphGraphComputer.class.getName()));
         } catch (final Exception e) {
             throw new PluginInitializationException(e.getMessage(), e);
         }

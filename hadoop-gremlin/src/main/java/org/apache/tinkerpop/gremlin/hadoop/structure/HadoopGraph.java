@@ -78,7 +78,7 @@ import java.util.stream.Stream;
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
        // computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
         method = "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
@@ -137,21 +137,6 @@ import java.util.stream.Stream;
         method = "g_V_repeatXoutX_timesX5X_asXaX_outXwrittenByX_asXbX_selectXa_bX_count",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
-        method = "shouldNotAllowNullMemoryKeys",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-        //computers = {GiraphGraphComputer.class})
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
-        method = "shouldNotAllowSettingUndeclaredMemoryKeys",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-        //computers = {GiraphGraphComputer.class})
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
-        method = "shouldHaveConsistentMemoryVertexPropertiesAndExceptions",
-        reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-        //computers = {GiraphGraphComputer.class})
-@Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileTest$Traversals",
         method = "g_V_out_out_profile_grateful",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
@@ -188,9 +173,6 @@ public final class HadoopGraph implements Graph {
 
     @Override
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
-        //if (graphComputerClass.equals(GiraphGraphComputer.class))
-         //   return (C) new GiraphGraphComputer(this);
-        //else {
             try {
                 return graphComputerClass.getConstructor(HadoopGraph.class).newInstance(this);
             } catch (final Exception e) {
