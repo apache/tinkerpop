@@ -140,6 +140,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertThat(gOverA.V(v).propertyMap().next().containsKey("any"), is(true));
         assertThat(gOverB.V(v).propertyMap().hasNext(), is(false));
         assertThat(gOverB.V(v).propertyMap().hasNext(), is(false));
+        assertThat(gOverAB.V(v).propertyMap().next().containsKey(partition), is(false));
 
         assertThat(gOverAB.V(v).valueMap().next().containsKey("any"), is(true));
         assertThat(gOverAB.V(v).valueMap().next().containsKey("that"), is(true));
@@ -147,6 +148,7 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertThat(gOverA.V(v).valueMap().next().containsKey("any"), is(true));
         assertThat(gOverB.V(v).valueMap().hasNext(), is(false));
         assertThat(gOverB.V(v).valueMap().hasNext(), is(false));
+        assertThat(gOverAB.V(v).valueMap().next().containsKey(partition), is(false));
     }
 
     @Test(expected = IllegalStateException.class)

@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
@@ -241,6 +242,10 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
         }
     }
 
+    /**
+     * A concrete lambda implementation that filters out the partition key so that it isn't visible when making
+     * calls to {@link GraphTraversal#valueMap}.
+     */
     public final class PartitionKeyHider<A extends Property> implements Predicate<Traverser<A>>, Serializable {
         @Override
         public boolean test(final Traverser<A> traverser) {
@@ -264,6 +269,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
             final Map<String,List<Property>> values = mapTraverser.get();
             final Map<String,List<Property>> filtered = new HashMap<>();
 
+            // note the final filter that removes the partitionKey from the outgoing Map
             values.entrySet().forEach(p -> {
                 final List l = p.getValue().stream().filter(property -> {
                     if (property instanceof VertexProperty) {
@@ -272,7 +278,7 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
                     } else {
                         return true;
                     }
-                }).collect(Collectors.toList());
+                }).filter(property -> !property.key().equals(partitionKey)).collect(Collectors.toList());
                 if (l.size() > 0) filtered.put(p.getKey(), l);
             });
 
