@@ -46,13 +46,17 @@ public abstract class MapValuesTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outE_valuesXweightX_groupCount_mapValues() {
-        final List<Traversal<Vertex, Long>> traversals = Arrays.asList(
-                get_g_V_outE_valuesXweightX_groupCount_mapValues(),
-                get_g_V_outE_valuesXweightX_groupCount_unfold_mapValues());
-        for (final Traversal<Vertex, Long> traversal : traversals) {
-            printTraversalForm(traversal);
-            checkResults(Arrays.asList(1l, 1l, 2l, 2l), traversal);
-        }
+        final Traversal<Vertex, Long> traversal = get_g_V_outE_valuesXweightX_groupCount_mapValues();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(1l, 1l, 2l, 2l), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outE_valuesXweightX_groupCount_unfold_mapValues() {
+        final Traversal<Vertex, Long> traversal = get_g_V_outE_valuesXweightX_groupCount_unfold_mapValues();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(1l, 1l, 2l, 2l), traversal);
     }
 
     @Test

@@ -51,13 +51,17 @@ public abstract class MaxTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_age_max() {
-        final List<Traversal<Vertex, Integer>> traversals = Arrays.asList(
-                get_g_V_age_max(),
-                get_g_V_repeatXbothX_timesX5X_age_max());
-        traversals.forEach(traversal -> {
-            printTraversalForm(traversal);
-            checkResults(Arrays.asList(35), traversal);
-        });
+        final Traversal<Vertex, Integer> traversal = get_g_V_age_max();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(35), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_repeatXbothX_timesX5X_age_max() {
+        final Traversal<Vertex, Integer> traversal = get_g_V_repeatXbothX_timesX5X_age_max();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(35), traversal);
     }
 
     @Test

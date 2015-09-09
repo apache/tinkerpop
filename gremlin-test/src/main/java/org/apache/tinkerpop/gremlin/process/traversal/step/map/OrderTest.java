@@ -75,14 +75,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     public void g_V_name_order() {
         final Traversal<Vertex, String> traversal = get_g_V_name_order();
         printTraversalForm(traversal);
-        final List<String> names = traversal.toList();
-        assertEquals(names.size(), 6);
-        assertEquals("josh", names.get(0));
-        assertEquals("lop", names.get(1));
-        assertEquals("marko", names.get(2));
-        assertEquals("peter", names.get(3));
-        assertEquals("ripple", names.get(4));
-        assertEquals("vadas", names.get(5));
+        assertCommon(traversal);
     }
 
     @Test
@@ -104,17 +97,28 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_order_byXname_incrX_name() {
-        Arrays.asList(get_g_V_order_byXname_incrX_name(), get_g_V_order_byXnameX_name()).forEach(traversal -> {
-            printTraversalForm(traversal);
-            final List<String> names = traversal.toList();
-            assertEquals(names.size(), 6);
-            assertEquals("josh", names.get(0));
-            assertEquals("lop", names.get(1));
-            assertEquals("marko", names.get(2));
-            assertEquals("peter", names.get(3));
-            assertEquals("ripple", names.get(4));
-            assertEquals("vadas", names.get(5));
-        });
+        final Traversal<Vertex,String> traversal = get_g_V_order_byXname_incrX_name();
+        printTraversalForm(traversal);
+        assertCommon(traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_order_byXnameX_name() {
+        final Traversal<Vertex,String> traversal = get_g_V_order_byXnameX_name();
+        printTraversalForm(traversal);
+        assertCommon(traversal);
+    }
+
+    private static void assertCommon(Traversal<Vertex, String> traversal) {
+        final List<String> names = traversal.toList();
+        assertEquals(names.size(), 6);
+        assertEquals("josh", names.get(0));
+        assertEquals("lop", names.get(1));
+        assertEquals("marko", names.get(2));
+        assertEquals("peter", names.get(3));
+        assertEquals("ripple", names.get(4));
+        assertEquals("vadas", names.get(5));
     }
 
     @Test

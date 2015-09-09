@@ -108,10 +108,17 @@ public abstract class VertexTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VXlistX1_2_3XX_name() {
-        Arrays.asList(get_g_VXlistX1_2_3XX_name(), get_g_VXlistXv1_v2_v3XX_name()).forEach(traversal -> {
-            printTraversalForm(traversal);
-            checkResults(Arrays.asList("marko", "vadas", "lop"), traversal);
-        });
+        final Traversal<Vertex,String> traversal = get_g_VXlistX1_2_3XX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", "vadas", "lop"), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VXlistXv1_v2_v3XX_name() {
+        final Traversal<Vertex,String> traversal = get_g_VXlistXv1_v2_v3XX_name();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", "vadas", "lop"), traversal);
     }
 
     // VERTEX ADJACENCY

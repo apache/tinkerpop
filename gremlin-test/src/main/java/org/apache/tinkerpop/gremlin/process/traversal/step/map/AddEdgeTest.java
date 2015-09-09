@@ -76,7 +76,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @Deprecated
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX() {
-        Traversal<Vertex, Edge> traversal = get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX(convertToVertexId("marko"));
+        final Traversal<Vertex, Edge> traversal = get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_aX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int count = 0;
         while (traversal.hasNext()) {
@@ -95,7 +95,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX() {
-        Traversal<Vertex, Edge> traversal = get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX(convertToVertexId("marko"));
+        final Traversal<Vertex, Edge> traversal = get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int count = 0;
         while (traversal.hasNext()) {
@@ -115,7 +115,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @Deprecated
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X() {
-        Traversal<Vertex, Edge> traversal = get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(convertToVertexId("marko"));
+        final Traversal<Vertex, Edge> traversal = get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int count = 0;
         while (traversal.hasNext()) {
@@ -136,7 +136,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     public void g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X() {
-        Traversal<Vertex, Edge> traversal = get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X(convertToVertexId("marko"));
+        final Traversal<Vertex, Edge> traversal = get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X(convertToVertexId("marko"));
         printTraversalForm(traversal);
         int count = 0;
         while (traversal.hasNext()) {

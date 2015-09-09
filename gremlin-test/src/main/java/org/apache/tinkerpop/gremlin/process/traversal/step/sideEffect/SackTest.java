@@ -70,25 +70,37 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum() {
-        Arrays.asList(
-                get_g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum(),
-                get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum()).forEach(traversal -> {
-            printTraversalForm(traversal);
-            assertEquals(3.5d, traversal.next(), 0.00001d);
-            assertFalse(traversal.hasNext());
-        });
+        final Traversal<Vertex,Double> traversal = get_g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum();
+        printTraversalForm(traversal);
+        assertEquals(3.5d, traversal.next(), 0.00001d);
+        assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @Deprecated
+    public void g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum() {
+        final Traversal<Vertex,Double> traversal = get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum();
+        printTraversalForm(traversal);
+        assertEquals(3.5d, traversal.next(), 0.00001d);
+        assertFalse(traversal.hasNext());
+    }
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
-        Arrays.asList(
-                get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack(),
-                get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack()).forEach(traversal -> {
-            printTraversalForm(traversal);
-            checkResults(Arrays.asList(2.0f, 1.4f), traversal);
-        });
+        final Traversal<Vertex,Float> traversal = get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(2.0f, 1.4f), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @Deprecated
+    public void g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
+        final Traversal<Vertex,Float> traversal = get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(2.0f, 1.4f), traversal);
     }
 
     @Test
