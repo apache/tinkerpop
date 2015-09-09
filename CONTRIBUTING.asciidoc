@@ -149,3 +149,25 @@ Code Style
 Contributors should examine the current code base to determine what the code style patterns are and should match their
 style to what is already present.  Of specific note however, TinkerPop does not use "import wildcards" - IDEs should
 be adjusted accordingly to not auto-wildcard the imports.
+
+Deprecation
+~~~~~~~~~~~
+
+When possible, committers should avoid direct "breaking" change (e.g. removing a method from a class) and favor
+deprecation.  Deprecation should come with sufficient documentation and notice especially when the change involves
+public APIs that might be utilized by users or implemented by vendors:
+
+* Mark the code with the `@Deprecated` annotation.
+* Use javadoc to further document the change with the following pattern:
+`@deprecated As of release x.y.z, replaced by {@link SomeOtherClass#someNewMethod()}`.
+* All deprecation should be tied to a JIRA issue with a "breaking" label - the issue itself does not need to
+specifically or solely be about "deprecation" but it should be documented very clearly in the comments what was
+deprecated and what the path forward should be.
+* Be sure that deprecated methods are still under test - consider using javadoc/comments in the tests themselves to
+call out this fact.
+* Create a new JIRA issue to track removal of the deprecation for future evaluation - this issue should have the
+"breaking" label.
+* Provide a post to the developers and/or users mailing lists as the case requires to alert the community to the change.
+
+The JIRA issues that track removal of deprecated methods should be periodically evaluated to determine if it is
+prudent to schedule them into a release.
