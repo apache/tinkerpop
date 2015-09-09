@@ -33,7 +33,7 @@ A release candidate is an unofficial release that is represented by a tagged ver
 .. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
 .. `mvn verify -DskipPerformanceTests=false`
 . `bin/publish-docs.sh <username>` - note that under a release candidate the documentation is published as SNAPSHOT
-. `mvn versions:set -DnewVersion=x.y.z -DgenerateBackupPoms=false` to update the project files to reference a non-SNAPSHOT version.
+. `mvn versions:set -DnewVersion=x.y.z -DgenerateBackupPoms=false` to update the project files to reference a non-SNAPSHOT version
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
@@ -72,17 +72,21 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/x.y.z/tinkerpop-x.y.z-source-release.zip* dev/x.y.z`
 .. `cd dev/x.y.z` and `for f in *.zip*; do  mv "$f" "apache-$f"; done`
 .. `cd ..; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
-. Submit for `[VOTE]` at `dev@tinkerpop.incubator.apache.org` (see email template below).
-. *Wait for vote acceptance* (72 hours).
+. Perform JIRA administration tasks:
+.. "Release" the current version and set the "release date"
+.. If there is to be a follow on release in the current line of code, create that new version specifying the "start date"
+.. Migrate the "Affected Version" of all unresolved issues to the next lowest common denominator version - if version 3.0.1 released then all 3.0.0 issues should move forward to 3.0.1 as they now "affect" that latest release
+. Submit for `[VOTE]` at `dev@tinkerpop.incubator.apache.org` (see email template below)
+. *Wait for vote acceptance* (72 hours)
 
 Incubator Vote
 ~~~~~~~~~~~~~~
 
 A positive vote for a particular release from the Apache Incubator is required to move to the following phase.
 
-. Submit for `[VOTE]` at `general@incubator.apache.org` (see email template below).
+. Submit for `[VOTE]` at `general@incubator.apache.org` (see email template below)
 .. Include the vote tally: "Apache TinkerPop (http://tinkerpop.incubator.apache.org/) would like to release TinkerPop x.y.z. We had a dev@ VOTE which resulted in a tally of +1 (3), 0 (0), and -1 (0). We now present our artifacts for vote by Incubator."
-. *Wait for vote acceptance* (72 hours).
+. *Wait for vote acceptance* (72 hours)
 
 Release & Promote
 ~~~~~~~~~~~~~~~~~
@@ -96,7 +100,7 @@ Release & Promote
 . `cd release; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
-. Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`.
+. Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`
 
 Example `[VOTE]` email:
 
