@@ -28,10 +28,12 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -45,6 +47,7 @@ import java.util.function.Supplier;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -440,5 +443,39 @@ public class TinkerGraphTest {
                 IoTest.assertModernGraph(target, true, false);
             }
         }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldNotModifyAVertexThatWasRemoved() {
+        final TinkerGraph graph = TinkerGraph.open();
+        final Vertex v = graph.addVertex();
+        v.property("name", "stephen");
+
+        assertEquals("stephen", v.value("name"));
+        v.remove();
+
+        v.property("status", 1);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldNotAddEdgeToAVertexThatWasRemoved() {
+        final TinkerGraph graph = TinkerGraph.open();
+        final Vertex v = graph.addVertex();
+        v.property("name", "stephen");
+
+        assertEquals("stephen", v.value("name"));
+        v.remove();
+        v.addEdge("self", v);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldNotReadValueOfPropertyOnVertexThatWasRemoved() {
+        final TinkerGraph graph = TinkerGraph.open();
+        final Vertex v = graph.addVertex();
+        v.property("name", "stephen");
+
+        assertEquals("stephen", v.value("name"));
+        v.remove();
+        v.value("name");
     }
 }

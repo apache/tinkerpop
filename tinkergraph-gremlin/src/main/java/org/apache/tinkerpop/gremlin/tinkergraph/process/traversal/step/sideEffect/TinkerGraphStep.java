@@ -48,6 +48,11 @@ public final class TinkerGraphStep<S extends Element> extends GraphStep<S> imple
     public TinkerGraphStep(final GraphStep<S> originalGraphStep) {
         super(originalGraphStep.getTraversal(), originalGraphStep.getReturnClass(), originalGraphStep.getIds());
         originalGraphStep.getLabels().forEach(this::addLabel);
+
+        // we used to only setIteratorSupplier() if there were no ids OR the first id was instanceof Element,
+        // but that allowed the filter in g.V(v).has('k','v') to be ignored.  this created problems for
+        // PartitionStrategy which wants to prevent someone from passing "v" from one TraversalSource to
+        // another TraversalSource using a different partition
         this.setIteratorSupplier(() -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
     }
 
@@ -97,7 +102,7 @@ public final class TinkerGraphStep<S extends Element> extends GraphStep<S> imple
                     StringFactory.stepString(this, this.returnClass.getSimpleName().toLowerCase(), Arrays.toString(this.ids), this.hasContainers);
     }
 
-    private final <E extends Element> Iterator<E> iteratorList(final Iterator<E> iterator) {
+    private <E extends Element> Iterator<E> iteratorList(final Iterator<E> iterator) {
         final List<E> list = new ArrayList<>();
         while (iterator.hasNext()) {
             final E e = iterator.next();

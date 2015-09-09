@@ -233,19 +233,11 @@ public final class MultiMetaNeo4jTrait implements Neo4jTrait {
 
     @Override
     public <V> Property<V> getProperty(final Neo4jVertexProperty vertexProperty, final String key) {
-        try {
-            final Neo4jNode vertexPropertyNode = Neo4jHelper.getVertexPropertyNode(vertexProperty);
-            if (null != vertexPropertyNode && vertexPropertyNode.hasProperty(key))
-                return new Neo4jProperty<>(vertexProperty, key, (V) vertexPropertyNode.getProperty(key));
-            else
-                return Property.empty();
-        } catch (IllegalStateException ex) {
-            throw Element.Exceptions.elementAlreadyRemoved(vertexProperty.getClass(), vertexProperty.id());
-        } catch (RuntimeException ex) {
-            if (Neo4jHelper.isNotFound(ex))
-                throw Element.Exceptions.elementAlreadyRemoved(vertexProperty.getClass(), vertexProperty.id());
-            throw ex;
-        }
+        final Neo4jNode vertexPropertyNode = Neo4jHelper.getVertexPropertyNode(vertexProperty);
+        if (null != vertexPropertyNode && vertexPropertyNode.hasProperty(key))
+            return new Neo4jProperty<>(vertexProperty, key, (V) vertexPropertyNode.getProperty(key));
+        else
+            return Property.empty();
     }
 
     @Override

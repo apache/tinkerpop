@@ -129,7 +129,7 @@ final class Handler {
         private Subject login() throws LoginException {
             // Login if the user provided us with an entry into the JAAS config file
             if (authProps.get(AuthProperties.Property.JAAS_ENTRY) != null) {
-                LoginContext login = new LoginContext(authProps.get(AuthProperties.Property.JAAS_ENTRY));
+                final LoginContext login = new LoginContext(authProps.get(AuthProperties.Property.JAAS_ENTRY));
                 login.login();
                 return login.getSubject();                    
             }

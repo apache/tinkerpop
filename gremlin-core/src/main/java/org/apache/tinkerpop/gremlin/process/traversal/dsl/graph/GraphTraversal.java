@@ -987,9 +987,29 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new ProfileStep<>(this.asAdmin()));
     }
 
+    /**
+     * Sets a {@link Property} value and related meta properties if supplied, if supported by the {@link Graph}
+     * and if the {@link Element} is a {@link VertexProperty}.  This method is the long-hand version of
+     * {@link #property(Object, Object, Object...)} with the difference that the {@link VertexProperty.Cardinality}
+     * can be supplied.
+     * <p/>
+     * Generally speaking, this method will append an {@link AddPropertyStep} to the {@link Traversal} but when
+     * possible, this method will attempt to fold key/value pairs into an {@link AddVertexStep}, {@link AddEdgeStep} or
+     * {@link AddVertexStartStep}.  This potential optimization can only happen if cardinality is not supplied
+     * and when meta-properties are not included.
+     *
+     * @param cardinality the specified cardinality of the property where {@code null} will allow the {@link Graph}
+     *                    to use its default settings
+     * @param key the key for the property
+     * @param value the value for the property
+     * @param keyValues any meta properties to be assigned to this property
+     */
     public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
-        if ((this.asAdmin().getEndStep() instanceof AddVertexStep || this.asAdmin().getEndStep() instanceof AddEdgeStep || this.asAdmin().getEndStep() instanceof AddVertexStartStep) && keyValues.length == 0) {
-            ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(new Object[]{key, value});
+        // if it can be detected that this call to property() is related to an addV/E() then we can attempt to fold
+        // the properties into that step to gain an optimization for those graphs that support such capabilities.
+        if ((this.asAdmin().getEndStep() instanceof AddVertexStep || this.asAdmin().getEndStep() instanceof AddEdgeStep
+                || this.asAdmin().getEndStep() instanceof AddVertexStartStep) && keyValues.length == 0 && null == cardinality) {
+            ((Mutating) this.asAdmin().getEndStep()).addPropertyMutations(key, value);
         } else {
             this.asAdmin().addStep(new AddPropertyStep(this.asAdmin(), cardinality, key, value));
             ((AddPropertyStep) this.asAdmin().getEndStep()).addPropertyMutations(keyValues);
@@ -997,6 +1017,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this;
     }
 
+    /**
+     * Sets the key and value of a {@link Property}. If the {@link Element} is a {@link VertexProperty} and the
+     * {@link Graph} supports it, meta properties can be set.  Use of this method assumes that the
+     * {@link VertexProperty.Cardinality} is defaulted to {@code null} which means that the default cardinality
+     * for the {@link Graph} will be used.
+     * <p/>
+     * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)} as
+     * {@code property(null, key, value, keyValues}.
+     *
+     * @param key the key for the property
+     * @param value the value for the property
+     * @param keyValues any meta properties to be assigned to this property
+     */
     public default GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
         return this.property(null, key, value, keyValues);
     }

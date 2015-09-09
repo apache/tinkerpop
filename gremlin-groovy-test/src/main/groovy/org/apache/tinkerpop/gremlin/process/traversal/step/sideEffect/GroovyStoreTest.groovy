@@ -37,7 +37,7 @@ public abstract class GroovyStoreTest {
         @Override
         public Traversal<Vertex, Collection> get_g_VX1X_storeXaX_byXnameX_out_storeXaX_byXnameX_name_capXaX(
                 final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(${v1Id}).store('a').by('name').out().store('a').by('name').name.cap('a')", g)
+            TraversalScriptHelper.compute("g.V(v1Id).store('a').by('name').out().store('a').by('name').name.cap('a')", g, "v1Id", v1Id)
         }
 
         @Override

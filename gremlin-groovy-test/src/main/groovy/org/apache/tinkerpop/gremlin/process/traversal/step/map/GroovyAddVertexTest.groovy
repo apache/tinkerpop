@@ -31,19 +31,33 @@ public abstract class GroovyAddVertexTest {
     public static class Traversals extends AddVertexTest {
 
         @Override
-        public Traversal<Vertex, Vertex> get_g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(
-                final Object v1Id) {
+        public Traversal<Vertex, Vertex> get_g_VX1X_addVXanimalX_propertyXage_selectXaX_byXageXX_propertyXname_puppyX(final Object v1Id) {
             TraversalScriptHelper.compute("g.V(v1Id).as('a').addV('animal').property('age', select('a').by('age')).property('name', 'puppy')", g, "v1Id", v1Id);
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_0X() {
-            TraversalScriptHelper.compute("g.V.addV(label, 'animal', 'age', 0)", g)
+            TraversalScriptHelper.compute("g.V().addV('animal').property('age', 0)", g)
         }
 
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX() {
             TraversalScriptHelper.compute("g.addV(label, 'person', 'name', 'stephen')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX_propertyXname_stephenmX() {
+            TraversalScriptHelper.compute("g.addV('person').property('name', 'stephen').property('name', 'stephenm')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX() {
+            TraversalScriptHelper.compute("g.addV('person').property(VertexProperty.Cardinality.single, 'name', 'stephen').property(VertexProperty.Cardinality.single, 'name', 'stephenm')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X() {
+            TraversalScriptHelper.compute("g.addV('person').property(VertexProperty.Cardinality.single, 'name', 'stephen').property(VertexProperty.Cardinality.single, 'name', 'stephenm', 'since', 2010)", g)
         }
 
         @Override

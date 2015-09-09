@@ -21,22 +21,50 @@ package org.apache.tinkerpop.gremlin.driver;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Properties to supply to the {@link Cluster} for authentication purposes.
+ */
 public class AuthProperties {
+
+    /**
+     * An enum of the available authorization properties.
+     */
     public enum Property {
+        /**
+         * The username.
+         */
         USERNAME,
+
+        /**
+         * The password.
+         */
         PASSWORD,
+
+        /**
+         * The protocol for which the authentication is being performed (e.g., "ldap").
+         */
         PROTOCOL,
+
+        /**
+         * The name used as the index into the configuration for the {@code LoginContext}.
+         */
         JAAS_ENTRY
     }
 
-    private Map<Property, String> properties = new HashMap<>();    
+    private final Map<Property, String> properties = new HashMap<>();
 
-    public AuthProperties with(Property key, String value) {
+    /**
+     * Adds a {@link Property} with value to the authorization property set.
+     */
+    public AuthProperties with(final Property key, final String value) {
         properties.put(key, value);
         return this;
     }
 
-    public String get(Property key) {
+    /**
+     * Gets a property given the key.
+     */
+    public String get(final Property key) {
         return properties.get(key);
     }
 }

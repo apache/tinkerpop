@@ -76,6 +76,14 @@ public class PropertyMapStep<E> extends MapStep<Element, Map<String, E>> {
         return this.returnType;
     }
 
+    public String[] getPropertyKeys() {
+        return propertyKeys;
+    }
+
+    public boolean isIncludeTokens() {
+        return includeTokens;
+    }
+
     public String toString() {
         return StringFactory.stepString(this, Arrays.asList(this.propertyKeys), this.returnType.name().toLowerCase());
     }

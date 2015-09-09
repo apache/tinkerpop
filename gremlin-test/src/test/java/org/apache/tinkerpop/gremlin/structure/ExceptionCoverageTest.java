@@ -67,7 +67,10 @@ public class ExceptionCoverageTest {
             add("org.apache.tinkerpop.gremlin.structure.Graph$Exceptions#argumentCanNotBeNull");
             add("org.apache.tinkerpop.gremlin.structure.Graph$Exceptions#traversalEngineNotSupported");
 
-            // todo: need to write consistency tests for the following items still...........
+            // deprecated exceptions
+            add("org.apache.tinkerpop.gremlin.structure.Element$Exceptions#elementAlreadyRemoved"); // as of 3.1.0
+
+            // need to write consistency tests for the following items still...........
             add("org.apache.tinkerpop.gremlin.process.computer.GraphComputer$Exceptions#supportsDirectObjects");
         }};
 

@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -34,7 +35,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
+ * The parameters held by a {@link Traversal}.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class Parameters implements Cloneable, Serializable {
 
@@ -66,6 +70,10 @@ public final class Parameters implements Cloneable, Serializable {
 
     }
 
+    public Object remove(final Object key) {
+        return parameters.remove(key);
+    }
+
     public <S> Object[] getKeyValues(final Traverser.Admin<S> traverser, final Object... exceptKeys) {
         if (this.parameters.size() == 0) return EMPTY_ARRAY;
         final List<Object> exceptions = Arrays.asList(exceptKeys);
@@ -79,6 +87,23 @@ public final class Parameters implements Cloneable, Serializable {
             }
         }
         return keyValues.toArray(new Object[keyValues.size()]);
+    }
+
+    /**
+     * Gets an immutable set of the parameters without evaluating them in the context of a {@link Traverser} as
+     * is done in {@link #getKeyValues(Traverser.Admin, Object...)}.
+     *
+     * @param exceptKeys keys to not include in the returned {@link Map}
+     */
+    public Map<Object,List<Object>> getRaw(final Object... exceptKeys) {
+        if (parameters.isEmpty()) return Collections.emptyMap();
+        final List<Object> exceptions = Arrays.asList(exceptKeys);
+        final Map<Object,List<Object>> raw = new HashMap<>();
+        for (Map.Entry<Object, List<Object>> entry : parameters.entrySet()) {
+            if (!exceptions.contains(entry.getKey())) raw.put(entry.getKey(), entry.getValue());
+        }
+
+        return Collections.unmodifiableMap(raw);
     }
 
     public void set(final Object... keyValues) {
