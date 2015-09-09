@@ -40,32 +40,6 @@ limitations under the License.
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>hadoop-gremlin</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.giraph</groupId>
-                    <artifactId>giraph-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>servlet-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>javax.servlet-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.netty</groupId>
-                    <artifactId>netty-all</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.java.dev.jets3t</groupId>
-                    <artifactId>jets3t</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.scala-lang</groupId>
-                    <artifactId>scala-library</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- GIRAPH GRAPH COMPUTER -->
         <dependency>
@@ -92,11 +66,6 @@ limitations under the License.
                     <groupId>jline</groupId>
                     <artifactId>jline</artifactId>
                 </exclusion>
-                <!-- gremlin-test conflicts -->
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <!-- consistent dependencies -->
@@ -110,13 +79,13 @@ limitations under the License.
             <groupId>org.apache.tinkerpop</groupId>
             <artifactId>gremlin-test</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -207,11 +176,6 @@ limitations under the License.
                         <manifestEntries>
                             <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-core:1.2.1
                             </Gremlin-Plugin-Dependencies>
-                            <!-- deletes the servlet-api jar from the path after install - causes conflicts -->
-                            <Gremlin-Plugin-Paths>servlet-api-2.5-6.1.14.jar=;servlet-api-2.5-20081211.jar=
-                            </Gremlin-Plugin-Paths>
-                            <Gremlin-Lib-Paths>servlet-api-2.5-6.1.14.jar=;servlet-api-2.5-20081211.jar=
-                            </Gremlin-Lib-Paths>
                         </manifestEntries>
                     </archive>
                 </configuration>

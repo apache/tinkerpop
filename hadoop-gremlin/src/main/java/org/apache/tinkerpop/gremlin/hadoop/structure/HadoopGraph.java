@@ -66,17 +66,17 @@ import java.util.stream.Stream;
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
         method = "g_V_matchXa_knows_b__c_knows_bX",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-        //computers = {GiraphGraphComputer.class})
+//computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
         method = "g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-        //computers = {GiraphGraphComputer.class})
+//computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest$Traversals",
         method = "g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-       // computers = {GiraphGraphComputer.class})
+// computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
         method = "g_V_matchXa_hasXname_GarciaX__a_0writtenBy_b__a_0sungBy_bX",
@@ -85,17 +85,17 @@ import java.util.stream.Stream;
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
         method = "g_V_matchXa_knows_b__c_knows_bX",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-        //computers = {GiraphGraphComputer.class})
+//computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
         method = "g_V_matchXa_created_b__c_created_bX_selectXa_b_cX_byXnameX",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-        //computers = {GiraphGraphComputer.class})
+//computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
         method = "g_V_out_asXcX_matchXb_knows_a__c_created_eX_selectXcX",
         reason = "Giraph does a hard kill on failure and stops threads which stops test cases. Exception handling semantics are correct though.")
-        //computers = {GiraphGraphComputer.class})
+//computers = {GiraphGraphComputer.class})
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.map.GroovyMatchTest$Traversals",
         method = "g_V_matchXa_0sungBy_b__a_0sungBy_c__b_writtenBy_d__c_writtenBy_e__d_hasXname_George_HarisonX__e_hasXname_Bob_MarleyXX",
@@ -173,22 +173,16 @@ public final class HadoopGraph implements Graph {
 
     @Override
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
-            try {
-                return graphComputerClass.getConstructor(HadoopGraph.class).newInstance(this);
-            } catch (final Exception e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
-        //}
-        //else if (graphComputerClass.equals(SparkGraphComputer.class))
-        //    return (C) new SparkGraphComputer(this);
-        //else
-        //   throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+        try {
+            return graphComputerClass.getConstructor(HadoopGraph.class).newInstance(this);
+        } catch (final Exception e) {
+            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+        }
     }
 
     @Override
     public GraphComputer compute() {
-        return null;
-        //return this.compute(GiraphGraphComputer.class);
+        throw new IllegalArgumentException("There is no default GraphComputer for HadoopGraph. Use HadoopGraph.compute(class) to specify the GraphComputer to use.");
     }
 
     @Override

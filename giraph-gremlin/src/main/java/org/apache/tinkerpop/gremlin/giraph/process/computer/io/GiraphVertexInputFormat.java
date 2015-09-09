@@ -16,50 +16,50 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.giraph.process.computer.io;
+package org.apache.tinkerpop.gremlin.giraph.process.computer.io;
 
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.giraph.io.VertexOutputFormat;
-import org.apache.giraph.io.VertexWriter;
+import org.apache.giraph.io.VertexInputFormat;
+import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.mapreduce.OutputCommitter;
-import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.util.ReflectionUtils;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphVertexOutputFormat extends VertexOutputFormat {
+public final class GiraphVertexInputFormat extends VertexInputFormat {
 
-    private OutputFormat<NullWritable, VertexWritable> hadoopGraphOutputFormat;
+    private InputFormat<NullWritable, VertexWritable> hadoopGraphInputFormat;
 
     @Override
-    public VertexWriter createVertexWriter(final TaskAttemptContext context) throws IOException, InterruptedException {
+    public List<InputSplit> getSplits(final JobContext context, final int minSplitCountHint) throws IOException, InterruptedException {
         this.constructor(context.getConfiguration());
-        return new GiraphVertexWriter(this.hadoopGraphOutputFormat);
+        return this.hadoopGraphInputFormat.getSplits(context);
     }
 
     @Override
-    public void checkOutputSpecs(final JobContext context) throws IOException, InterruptedException {
+    public VertexReader createVertexReader(final InputSplit split, final TaskAttemptContext context) throws IOException {
         this.constructor(context.getConfiguration());
-        this.hadoopGraphOutputFormat.checkOutputSpecs(context);
-    }
-
-    @Override
-    public OutputCommitter getOutputCommitter(final TaskAttemptContext context) throws IOException, InterruptedException {
-        this.constructor(context.getConfiguration());
-        return this.hadoopGraphOutputFormat.getOutputCommitter(context);
+        try {
+            return new GiraphVertexReader(this.hadoopGraphInputFormat.createRecordReader(split, context));
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
     }
 
     private final void constructor(final Configuration configuration) {
-        if (null == this.hadoopGraphOutputFormat) {
-            this.hadoopGraphOutputFormat = ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class, OutputFormat.class), configuration);
+        if (null == this.hadoopGraphInputFormat) {
+            this.hadoopGraphInputFormat = ReflectionUtils.newInstance(configuration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class, InputFormat.class), configuration);
         }
     }
+
 }

@@ -17,9 +17,9 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.giraph.groovy.plugin;
+package org.apache.tinkerpop.gremlin.giraph.groovy.plugin;
 
-import org.apache.tinkerpop.giraph.process.computer.GiraphGraphComputer;
+import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer;
 import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
@@ -35,7 +35,7 @@ import java.util.Set;
  */
 public final class GiraphGremlinPlugin extends AbstractGremlinPlugin {
 
-    protected static String NAME = "tinkerpop.spark";
+    protected static String NAME = "tinkerpop.giraph";
 
     protected static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT_SPACE + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);
@@ -53,11 +53,11 @@ public final class GiraphGremlinPlugin extends AbstractGremlinPlugin {
     @Override
     public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws PluginInitializationException, IllegalEnvironmentException {
         pluginAcceptor.addImports(IMPORTS);
-        try {
-            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", GiraphGraphComputer.class.getName()));
+        /*try {
+            pluginAcceptor.eval(String.format("LoggerFactory.getLogger(%s).setLevel(Level.INFO)", GiraphGraphComputer.class.getName()));
         } catch (final Exception e) {
             throw new PluginInitializationException(e.getMessage(), e);
-        }
+        }*/
     }
 
     @Override

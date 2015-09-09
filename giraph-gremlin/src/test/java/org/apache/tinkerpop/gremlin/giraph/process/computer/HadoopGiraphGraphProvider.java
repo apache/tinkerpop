@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.giraph.process.computer;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.giraph.conf.GiraphConstants;
-import org.apache.tinkerpop.giraph.process.computer.GiraphGraphComputer;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;

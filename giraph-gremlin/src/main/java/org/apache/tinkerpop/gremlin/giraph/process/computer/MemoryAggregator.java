@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.giraph.process.computer;
+package org.apache.tinkerpop.gremlin.giraph.process.computer;
 
 import org.apache.giraph.aggregators.Aggregator;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.Rule;
