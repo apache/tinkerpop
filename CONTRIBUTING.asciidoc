@@ -159,7 +159,7 @@ public APIs that might be utilized by users or implemented by vendors:
 
 * Mark the code with the `@Deprecated` annotation.
 * Use javadoc to further document the change with the following pattern:
-`@deprecated As of release x.y.z, replaced by {@link #GremlinGroovyScriptEngine(CompilerCustomizerProvider...)}`.
+`@deprecated As of release x.y.z, replaced by {@link SomeOtherClass#someNewMethod()}`.
 * All deprecation should be tied to a JIRA issue with a "breaking" label.
 * Provide a post to the developers and/or users mailing lists as the case requires to alert the community to the change.
 
