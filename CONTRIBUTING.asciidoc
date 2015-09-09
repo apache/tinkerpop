@@ -149,3 +149,17 @@ Code Style
 Contributors should examine the current code base to determine what the code style patterns are and should match their
 style to what is already present.  Of specific note however, TinkerPop does not use "import wildcards" - IDEs should
 be adjusted accordingly to not auto-wildcard the imports.
+
+Deprecation
+~~~~~~~~~~~
+
+When possible, committers should avoid direct "breaking" change (e.g. removing a method from a class) and favor
+deprecation.  Deprecation should come with sufficient documentation and notice especially when the change involves
+public APIs that might be utilized by users or implemented by vendors:
+
+* Mark the code with the `@Deprecated` annotation.
+* Use javadoc to further document the change with the following pattern:
+`@deprecated As of release x.y.z, replaced by {@link #GremlinGroovyScriptEngine(CompilerCustomizerProvider...)}`.
+* All deprecation should be tied to a JIRA issue with a "breaking" label.
+* Provide a post to the developers and/or users mailing lists as the case requires to alert the community to the change.
+
