@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -31,8 +30,10 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 
 /**
@@ -66,6 +67,23 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("thing", v.property("any").value());
         assertEquals("A", v.property(partition).value());
         assertEquals("A", v.property("any").value(partition));
+    }
+
+    @Test
+    @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+    public void shouldAppendPartitionToVertexPropertyOverMultiProperty() {
+        final PartitionStrategy partitionStrategy = PartitionStrategy.build()
+                .includeMetaProperties(true)
+                .partitionKey(partition).writePartition("A").addReadPartition("A").create();
+        final Vertex v = create(partitionStrategy).addV().property(VertexProperty.Cardinality.list, "any", "thing")
+                .property(VertexProperty.Cardinality.list, "any", "more").next();
+
+        assertNotNull(v);
+        assertThat((List<String>) IteratorUtils.asList(v.properties("any")).stream().map(p -> ((VertexProperty) p).value()).collect(Collectors.toList()), containsInAnyOrder("thing", "more"));
+        assertEquals("A", v.property(partition).value());
+        assertThat((List<String>) IteratorUtils.asList(v.properties("any")).stream().map(p -> ((VertexProperty) p).value(partition)).collect(Collectors.toList()), containsInAnyOrder("A", "A"));
     }
 
     @Test

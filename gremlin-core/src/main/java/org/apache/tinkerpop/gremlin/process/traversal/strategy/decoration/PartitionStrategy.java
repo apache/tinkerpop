@@ -108,8 +108,9 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        final boolean supportsMetaProperties = traversal.getGraph().isPresent()
-                && traversal.getGraph().get().features().vertex().supportsMetaProperties();
+        final Graph graph = traversal.getGraph().orElseThrow(() -> new IllegalStateException("PartitionStrategy does not work with anonymous Traversals"));
+        final Graph.Features.VertexFeatures vertexFeatures = graph.features().vertex();
+        final boolean supportsMetaProperties = vertexFeatures.supportsMetaProperties();
         if (includeMetaProperties && !supportsMetaProperties)
             throw new IllegalStateException("PartitionStrategy is configured to include meta-properties but the Graph does not support them");
 
@@ -202,20 +203,25 @@ public final class PartitionStrategy extends AbstractTraversalStrategy<Traversal
 
             if (includeMetaProperties) {
                 // GraphTraversal folds g.addV().property('k','v') to just AddVertexStep/AddVertexStartStep so this
-                // has to be exploded back to g.addV().property('k','v','partition','A')
+                // has to be exploded back to g.addV().property(cardinality, 'k','v','partition','A')
                 if (step instanceof AddVertexStartStep || step instanceof AddVertexStep) {
                     final Parameters parameters = ((Parameterizing) step).getParameters();
                     final Map<Object, List<Object>> params = parameters.getRaw();
                     params.forEach((k, v) -> {
+                        final List<Step> addPropertyStepsToAppend = new ArrayList<>(v.size());
+                        final VertexProperty.Cardinality cardinality = vertexFeatures.getCardinality((String) k);
                         v.forEach(o -> {
-                            final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, null, k, o);
+                            final AddPropertyStep addPropertyStep = new AddPropertyStep(traversal, cardinality, k, o);
                             addPropertyStep.addPropertyMutations(partitionKey, writePartition);
-                            TraversalHelper.insertAfterStep(addPropertyStep, step, traversal);
+                            addPropertyStepsToAppend.add(addPropertyStep);
 
                             // need to remove the parameter from the AddVertex/StartStep because it's now being added
                             // via the AddPropertyStep
                             parameters.remove(k);
                         });
+
+                        Collections.reverse(addPropertyStepsToAppend);
+                        addPropertyStepsToAppend.forEach(s -> TraversalHelper.insertAfterStep(s, step, traversal));
                     });
                 }
             }

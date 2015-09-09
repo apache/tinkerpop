@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +35,7 @@ import org.junit.runner.RunWith;
 import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.*;
 
 /**
@@ -47,6 +49,12 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_addVXanimalX_propertyXage_0X();
 
     public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX_propertyXname_stephenmX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX();
+
+    public abstract Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X();
 
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXname_markoX_propertyXfriendWeight_outEXknowsX_weight_sum__acl_privateX();
 
@@ -107,6 +115,55 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         assertFalse(traversal.hasNext());
         assertEquals("person", stephen.label());
         assertEquals("stephen", stephen.value("name"));
+        assertEquals(1, IteratorUtils.count(stephen.properties()));
+        assertEquals(7, IteratorUtils.count(graph.vertices()));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+    public void g_addVXpersonX_propertyXname_stephenX_propertyXname_stephenmX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_addVXpersonX_propertyXname_stephenX_propertyXname_stephenmX();
+        printTraversalForm(traversal);
+        final Vertex stephen = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals("person", stephen.label());
+        assertThat((List<String>) IteratorUtils.asList(stephen.values("name")), containsInAnyOrder("stephen", "stephenm"));
+        assertEquals(2, IteratorUtils.count(stephen.properties()));
+        assertEquals(7, IteratorUtils.count(graph.vertices()));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    public void g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX() {
+        final Traversal<Vertex, Vertex> traversal = get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX();
+        printTraversalForm(traversal);
+        final Vertex stephen = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals("person", stephen.label());
+        assertEquals("stephenm", stephen.value("name"));
+        assertEquals(1, IteratorUtils.count(stephen.properties()));
+        assertEquals(7, IteratorUtils.count(graph.vertices()));
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
+    public void g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X() {
+        final Traversal<Vertex, Vertex> traversal = get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X();
+        printTraversalForm(traversal);
+        final Vertex stephen = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals("person", stephen.label());
+        assertEquals("stephenm", stephen.value("name"));
+        assertEquals(2010, Integer.parseInt(stephen.property("name").value("since").toString()));
+        assertEquals(1, IteratorUtils.count(stephen.property("name").properties()));
         assertEquals(1, IteratorUtils.count(stephen.properties()));
         assertEquals(7, IteratorUtils.count(graph.vertices()));
     }
@@ -233,6 +290,21 @@ public abstract class AddVertexTest extends AbstractGremlinTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX() {
             return g.addV("person").property("name", "stephen");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXname_stephenX_propertyXname_stephenmX() {
+            return g.addV("person").property("name", "stephen").property("name", "stephenm");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenmX() {
+            return g.addV("person").property(VertexProperty.Cardinality.single, "name", "stephen").property(VertexProperty.Cardinality.single, "name", "stephenm");
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_addVXpersonX_propertyXsingle_name_stephenX_propertyXsingle_name_stephenm_since_2010X() {
+            return g.addV("person").property(VertexProperty.Cardinality.single, "name", "stephen").property(VertexProperty.Cardinality.single, "name", "stephenm", "since", 2010);
         }
 
         @Override

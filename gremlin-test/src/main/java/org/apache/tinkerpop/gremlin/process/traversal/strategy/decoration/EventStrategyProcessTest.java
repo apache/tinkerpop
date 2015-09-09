@@ -199,8 +199,8 @@ public class EventStrategyProcessTest extends AbstractGremlinProcessTest {
 
         assertEquals(1, listener1.addVertexEventRecorded());
         assertEquals(1, listener2.addVertexEventRecorded());
-        assertEquals(0, listener2.vertexPropertyChangedEventRecorded());
-        assertEquals(0, listener1.vertexPropertyChangedEventRecorded());
+        assertEquals(1, listener2.vertexPropertyChangedEventRecorded());
+        assertEquals(1, listener1.vertexPropertyChangedEventRecorded());
     }
 
     @Test
