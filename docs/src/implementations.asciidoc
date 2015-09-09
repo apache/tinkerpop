@@ -847,6 +847,38 @@ A `Graph` in TinkerPop3 can support any number of `GraphComputer` implementation
 
 TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with their submitted traversal, do `:remote config useSugar true` as well as `:plugin use tinkerpop.sugar` at the start of the Gremlin Console session if it is not already activated.
 
+Note that `GiraphGraphComputer` and `SparkGraphComputer` are loaded via their respective plugins. Due to jar conflicts, both Giraph and Spark can not be loaded at the same time.
+
+[source,text]
+----
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+plugin activated: tinkerpop.hadoop
+gremlin> :install org.apache.tinkerpop giraph-gremlin x.y.z
+==>loaded: [org.apache.tinkerpop, giraph-gremlin, x.y.z] - restart the console to use [tinkerpop.giraph]
+gremlin> :install org.apache.tinkerpop spark-gremlin x.y.z
+==>loaded: [org.apache.tinkerpop, spark-gremlin, x.y.z] - restart the console to use [tinkerpop.spark]
+gremlin> :q
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+plugin activated: tinkerpop.hadoop
+gremlin> :plugin use tinkerpop.giraph
+==>tinkerpop.giraph activated
+gremlin> :plugin use tinkerpop.spark
+----
+
 [[giraphgraphcomputer]]
 GiraphGraphComputer
 ^^^^^^^^^^^^^^^^^^^
@@ -858,6 +890,17 @@ WARNING: Be sure that the link:http://www.slf4j.org/[SLF4J] of Hadoop matches th
 WARNING: Giraph uses a large number of Hadoop counters. The default for Hadoop is 120. In `mapred-site.xml` it is possible to increase the limit it via the `mapreduce.job.counters.limit` property. A good value to use is 1000. This is a cluster-wide property so be sure to restart the cluster after updating.
 
 WARNING: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
+
+If `GiraphGraphComputer` will be used as the `GraphComputer` for `HadoopGraph` then its `lib` directory should be specified in `HADOOP_GREMLIN_LIBS`.
+
+[source,shell]
+export HADOOP_GREMLIN_LIBS=$HADOOP_GREMLIN_LIBS:/usr/local/gremlin-console/ext/giraph-gremlin/lib
+
+Or, the user can specify the directory in the Gremlin Console.
+
+[gremlin-groovy]
+----
+System.setProperty('HADOOP_GREMLIN_LIBS',System.getProperty('HADOOP_GREMLIN_LIBS') + ':' + /usr/local/gremlin-console/ext/giraph-gremlin/lib)
 
 [gremlin-groovy]
 ----

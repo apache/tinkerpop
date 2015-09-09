@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.spark.groovy.plugin;
 
+import org.apache.spark.metrics.MetricsSystem;
 import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
@@ -55,6 +56,7 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
         pluginAcceptor.addImports(IMPORTS);
         try {
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", SparkGraphComputer.class.getName()));
+            pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.ERROR)", MetricsSystem.class.getName()));
         } catch (final Exception e) {
             throw new PluginInitializationException(e.getMessage(), e);
         }
