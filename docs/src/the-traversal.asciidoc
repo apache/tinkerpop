@@ -1942,7 +1942,7 @@ image::partition-graph.png[width=325]
 
 `PartitionStrategy` partitions the vertices and edges of a graph into `String` named partitions (i.e. buckets, subgraphs, etc.). The idea behind `PartitionStrategy` is presented in the image above where each element is in a single partition (represented by its color). Partitions can be read from, written to, and linked/joined by edges that span one or two partitions (e.g. a tail vertex in one partition and a head vertex in another).
 
-There are three primary variables in `PartitionStrategy`:
+There are three primary configurations in `PartitionStrategy`:
 
 . Partition Key - The property key that denotes a String value representing a partition.
 . Write Partition - A `String` denoting what partition all future written elements will be in.
@@ -1962,6 +1962,8 @@ gB.addV() // this vertex has a property of {_partition:"b"}
 gA.V()
 gB.V()
 ----
+
+Partitions may also extend to `VertexProperty` elements if the `Graph` can support meta-properties and if the `includeMetaProperties` value is set to `true` when the `PartitionStrategy` is built.  The `partitionKey` will be stored in the meta-properties of the `VertexProperty` and blind the traversal to those properties.  Please note that the `VertexProperty` will only be hidden by way of the `Traversal` itself.  For example, calling `Vertex.property(k)` bypasses the context of the `PartitionStrategy` and will thus allow all properties to be accessed.
 
 By writing elements to particular partitions and then restricting read partitions, the developer is able to create multiple graphs within a single address space. Moreover, by supporting references between partitions, it is possible to merge those multiple graphs (i.e. join partitions).
 
