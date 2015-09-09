@@ -43,7 +43,6 @@ public final class Neo4jVertexProperty<V> implements VertexProperty<V> {
     protected final String key;
     protected final V value;
     protected Neo4jNode vertexPropertyNode;
-    protected boolean removed = false;
 
     public Neo4jVertexProperty(final Neo4jVertex vertex, final String key, final V value) {
         this.vertex = vertex;
@@ -94,14 +93,12 @@ public final class Neo4jVertexProperty<V> implements VertexProperty<V> {
 
     @Override
     public <U> Iterator<Property<U>> properties(final String... propertyKeys) {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(VertexProperty.class, this.id());
         this.vertex.graph.tx().readWrite();
         return this.vertex.graph.trait.getProperties(this, propertyKeys);
     }
 
     @Override
     public <U> Property<U> property(final String key, final U value) {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(VertexProperty.class, this.id());
         this.vertex.graph.tx().readWrite();
         ElementHelper.validateProperty(key, value);
         return this.vertex.graph.trait.setProperty(this, key, value);
@@ -109,8 +106,6 @@ public final class Neo4jVertexProperty<V> implements VertexProperty<V> {
 
     @Override
     public void remove() {
-        if (this.removed) return;
-        this.removed = true;
         this.vertex.graph.tx().readWrite();
         this.vertex.graph.trait.removeVertexProperty(this);
         this.vertexPropertyNode= null;

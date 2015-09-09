@@ -111,12 +111,12 @@ public class TinkerVertexProperty<V> extends TinkerElement implements VertexProp
 
     @Override
     public <U> Property<U> property(final String key) {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
         return null == this.properties ? Property.<U>empty() : this.properties.getOrDefault(key, Property.<U>empty());
     }
 
     @Override
     public <U> Property<U> property(final String key, final U value) {
+        if (this.removed) throw elementAlreadyRemoved(VertexProperty.class, id);
         final Property<U> property = new TinkerProperty<>(this, key, value);
         if (this.properties == null) this.properties = new HashMap<>();
         this.properties.put(key, property);

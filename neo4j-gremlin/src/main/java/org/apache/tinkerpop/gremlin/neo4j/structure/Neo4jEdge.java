@@ -65,8 +65,6 @@ public final class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<N
 
     @Override
     public void remove() {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Edge.class, this.getBaseEdge().getId());
-        this.removed = true;
         this.graph.tx().readWrite();
         try {
             this.baseElement.delete();
@@ -108,14 +106,10 @@ public final class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<N
     @Override
     public <V> Property<V> property(final String key) {
         this.graph.tx().readWrite();
-        try {
-            if (this.baseElement.hasProperty(key))
-                return new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key));
-            else
-                return Property.empty();
-        } catch (final IllegalStateException e) {
-            throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id());
-        }
+        if (this.baseElement.hasProperty(key))
+            return new Neo4jProperty<>(this, key, (V) this.baseElement.getProperty(key));
+        else
+            return Property.empty();
     }
 
     @Override

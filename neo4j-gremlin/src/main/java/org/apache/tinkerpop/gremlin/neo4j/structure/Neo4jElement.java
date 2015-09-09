@@ -34,7 +34,6 @@ import java.util.Set;
 public abstract class Neo4jElement implements Element, WrappedElement<Neo4jEntity> {
     protected final Neo4jGraph graph;
     protected final Neo4jEntity baseElement;
-    public boolean removed = false;
 
     public Neo4jElement(final Neo4jEntity baseElement, final Neo4jGraph graph) {
         this.baseElement = baseElement;
