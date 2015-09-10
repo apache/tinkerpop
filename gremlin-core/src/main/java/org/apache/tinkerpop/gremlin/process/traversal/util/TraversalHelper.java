@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class TraversalHelper {
 
@@ -88,6 +89,44 @@ public final class TraversalHelper {
         return true;
     }
 
+    /**
+     * Insert a step before a specified step instance.
+     *
+     * @param insertStep the step to insert
+     * @param afterStep the step to insert the new step after
+     * @param traversal the traversal on which the action should occur
+     */
+    public static <S, E> void insertBeforeStep(final Step<S, E> insertStep, final Step<E, ?> afterStep, final Traversal.Admin<?, ?> traversal) {
+        traversal.addStep(stepIndex(afterStep, traversal), insertStep);
+    }
+
+    /**
+     * Insert a step after a specified step instance.
+     *
+     * @param insertStep the step to insert
+     * @param beforeStep the step to insert the new step after
+     * @param traversal the traversal on which the action should occur
+     */
+    public static <S, E> void insertAfterStep(final Step<S, E> insertStep, final Step<?, S> beforeStep, final Traversal.Admin<?, ?> traversal) {
+        traversal.addStep(stepIndex(beforeStep, traversal) + 1, insertStep);
+    }
+
+    /**
+     * Replace a step with a new step.
+     *
+     * @param removeStep the step to remove
+     * @param insertStep the step to insert
+     * @param traversal the traversal on which the action will occur
+     */
+    public static <S, E> void replaceStep(final Step<S, E> removeStep, final Step<S, E> insertStep, final Traversal.Admin<?, ?> traversal) {
+        traversal.addStep(stepIndex(removeStep, traversal), insertStep);
+        traversal.removeStep(removeStep);
+    }
+
+    public static <S, E> Step<?, E> insertTraversal(final Step<?, S> previousStep, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {
+        return TraversalHelper.insertTraversal(stepIndex(previousStep, traversal), insertTraversal, traversal);
+    }
+
     public static <S, E> Step<?, E> insertTraversal(final int insertIndex, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {
         if (0 == traversal.getSteps().size()) {
             Step currentStep = EmptyStep.instance();
@@ -106,23 +145,6 @@ public final class TraversalHelper {
         }
     }
 
-    public static <S, E> Step<?, E> insertTraversal(final Step<?, S> previousStep, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {
-        return TraversalHelper.insertTraversal(stepIndex(previousStep, traversal), insertTraversal, traversal);
-    }
-
-    public static <S, E> void insertBeforeStep(final Step<S, E> insertStep, final Step<E, ?> afterStep, final Traversal.Admin<?, ?> traversal) {
-        traversal.addStep(stepIndex(afterStep, traversal), insertStep);
-    }
-
-    public static <S, E> void insertAfterStep(final Step<S, E> insertStep, final Step<?, S> beforeStep, final Traversal.Admin<?, ?> traversal) {
-        traversal.addStep(stepIndex(beforeStep, traversal) + 1, insertStep);
-    }
-
-    public static <S, E> void replaceStep(final Step<S, E> removeStep, final Step<S, E> insertStep, final Traversal.Admin<?, ?> traversal) {
-        traversal.addStep(stepIndex(removeStep, traversal), insertStep);
-        traversal.removeStep(removeStep);
-    }
-
     public static <S, E> void removeToTraversal(final Step<S, ?> startStep, final Step<?, E> endStep, final Traversal.Admin<S, E> newTraversal) {
         final Traversal.Admin<?, ?> originalTraversal = startStep.getTraversal();
         Step<?, ?> currentStep = startStep;
@@ -134,6 +156,13 @@ public final class TraversalHelper {
         }
     }
 
+    /**
+     * Gets the index of a particular step in the {@link Traversal}.
+     *
+     * @param step the step to retrieve the index for
+     * @param traversal the traversal to perform the action on
+     * @return the index of the step or -1 if the step is not present
+     */
     public static <S, E> int stepIndex(final Step<S, E> step, final Traversal.Admin<?, ?> traversal) {
         int i = 0;
         for (final Step s : traversal.getSteps()) {
@@ -171,6 +200,13 @@ public final class TraversalHelper {
         return list;
     }
 
+    /**
+     * Determine if the traversal has a step of a particular class.
+     *
+     * @param stepClass the step class to look for
+     * @param traversal the traversal to perform the action on
+     * @return {@code true} if the class is found and {@code false} otherwise
+     */
     public static boolean hasStepOfClass(final Class stepClass, final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (step.getClass().equals(stepClass)) {
@@ -180,6 +216,13 @@ public final class TraversalHelper {
         return false;
     }
 
+    /**
+     * Determine if the traversal has a step of an assignable class.
+     *
+     * @param superClass the step super class to look for
+     * @param traversal the traversal to perform the action on
+     * @return {@code true} if the class is found and {@code false} otherwise
+     */
     public static boolean hasStepOfAssignableClass(final Class superClass, final Traversal.Admin<?, ?> traversal) {
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (superClass.isAssignableFrom(step.getClass())) {
@@ -190,6 +233,9 @@ public final class TraversalHelper {
     }
 
     /**
+     * Determine if the traversal has a step of an assignable class in the current {@link Traversal} and its
+     * child traversals.
+     *
      * @param stepClass the step class to look for
      * @param traversal the traversal in which to look for the given step class
      * @return <code>true</code> if any step in the given traversal (and its child traversals) is an instance of the
@@ -202,25 +248,7 @@ public final class TraversalHelper {
             }
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
-                    if (hasStepOfAssignableClassRecursively(stepClass, globalChild)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    public static boolean anyStepRecursively(final Predicate<Step> predicate, final Traversal.Admin<?, ?> traversal) {
-        for (final Step<?, ?> step : traversal.getSteps()) {
-            if (predicate.test(step)) {
-                return true;
-            }
-            if (step instanceof TraversalParent) {
-                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
-                    if (anyStepRecursively(predicate, globalChild)) {
-                        return true;
-                    }
+                    if (hasStepOfAssignableClassRecursively(stepClass, globalChild)) return true;
                 }
             }
         }
@@ -228,6 +256,9 @@ public final class TraversalHelper {
     }
 
     /**
+     * Determine if the traversal has any of the supplied steps of an assignable class in the current {@link Traversal}
+     * and its child traversals.
+     *
      * @param stepClasses the step classes to look for
      * @param traversal   the traversal in which to look for the given step classes
      * @return <code>true</code> if any step in the given traversal (and its child traversals) is an instance of a class
@@ -242,9 +273,28 @@ public final class TraversalHelper {
             }
             if (step instanceof TraversalParent) {
                 for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
-                    if (hasStepOfAssignableClassRecursively(stepClasses, globalChild)) {
-                        return true;
-                    }
+                    if (hasStepOfAssignableClassRecursively(stepClasses, globalChild)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determine if any step in {@link Traversal} or its children match the step given the provided {@link Predicate}.
+     *
+     * @param predicate the match function
+     * @param traversal th traversal to perform the action on
+     * @return {@code true} if there is a match and {@code false} otherwise
+     */
+    public static boolean anyStepRecursively(final Predicate<Step> predicate, final Traversal.Admin<?, ?> traversal) {
+        for (final Step<?, ?> step : traversal.getSteps()) {
+            if (predicate.test(step)) {
+                return true;
+            }
+            if (step instanceof TraversalParent) {
+                for (final Traversal.Admin<?, ?> globalChild : ((TraversalParent) step).getGlobalChildren()) {
+                    if (anyStepRecursively(predicate, globalChild))  return true;
                 }
             }
         }
