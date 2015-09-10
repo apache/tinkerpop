@@ -37,7 +37,6 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-
 public class TraversalHelperTest {
 
     @Test

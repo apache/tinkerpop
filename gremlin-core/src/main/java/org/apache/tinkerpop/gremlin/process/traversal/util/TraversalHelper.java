@@ -106,16 +106,6 @@ public final class TraversalHelper {
         }
     }
 
-    public static <S, E> int stepIndex(final Step<S, E> step, final Traversal.Admin<?, ?> traversal) {
-        int i = 0;
-        for (final Step s : traversal.getSteps()) {
-            if (s.equals(step, true))
-                return i;
-            i++;
-        }
-        return -1;
-    }
-
     public static <S, E> Step<?, E> insertTraversal(final Step<?, S> previousStep, final Traversal.Admin<S, E> insertTraversal, final Traversal.Admin<?, ?> traversal) {
         return TraversalHelper.insertTraversal(stepIndex(previousStep, traversal), insertTraversal, traversal);
     }
@@ -131,6 +121,27 @@ public final class TraversalHelper {
     public static <S, E> void replaceStep(final Step<S, E> removeStep, final Step<S, E> insertStep, final Traversal.Admin<?, ?> traversal) {
         traversal.addStep(stepIndex(removeStep, traversal), insertStep);
         traversal.removeStep(removeStep);
+    }
+
+    public static <S, E> void removeToTraversal(final Step<S, ?> startStep, final Step<?, E> endStep, final Traversal.Admin<S, E> newTraversal) {
+        final Traversal.Admin<?, ?> originalTraversal = startStep.getTraversal();
+        Step<?, ?> currentStep = startStep;
+        while (currentStep != endStep && !(currentStep instanceof EmptyStep)) {
+            final Step<?, ?> temp = currentStep.getNextStep();
+            originalTraversal.removeStep(currentStep);
+            newTraversal.addStep(currentStep);
+            currentStep = temp;
+        }
+    }
+
+    public static <S, E> int stepIndex(final Step<S, E> step, final Traversal.Admin<?, ?> traversal) {
+        int i = 0;
+        for (final Step s : traversal.getSteps()) {
+            if (s.equals(step, true))
+                return i;
+            i++;
+        }
+        return -1;
     }
 
     public static <S> List<S> getStepsOfClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
@@ -158,17 +169,6 @@ public final class TraversalHelper {
             }
         }
         return list;
-    }
-
-    public static <S, E> void removeToTraversal(final Step<S, ?> startStep, final Step<?, E> endStep, final Traversal.Admin<S, E> newTraversal) {
-        final Traversal.Admin<?, ?> originalTraversal = startStep.getTraversal();
-        Step<?, ?> currentStep = startStep;
-        while (currentStep != endStep && !(currentStep instanceof EmptyStep)) {
-            final Step<?, ?> temp = currentStep.getNextStep();
-            originalTraversal.removeStep(currentStep);
-            newTraversal.addStep(currentStep);
-            currentStep = temp;
-        }
     }
 
     public static boolean hasStepOfClass(final Class stepClass, final Traversal.Admin<?, ?> traversal) {
