@@ -1887,7 +1887,7 @@ ElementIdStrategy
 [gremlin-groovy]
 ----
 g = TinkerGraph.open().traversal()
-v = g.addV(id,'42a')
+v = g.addV().property(id,'42a').next()
 g.V('42a')
 ----
 
@@ -1898,7 +1898,7 @@ Other `Graph` implementations, such as Neo4j, generate element identifiers autom
 graph = Neo4jGraph.open('/tmp/neo4j')
 strategy = ElementIdStrategy.build().create()
 g = GraphTraversalSource.build().with(strategy).create(graph)
-g.addV(id, '42a').id()
+// g.addV().property(id, '42a').id()
 ----
 
 IMPORTANT: The key that is used to store the assigned identifier should be indexed in the underlying graph database. If it is not indexed, then lookups for the elements that use these identifiers will perform a linear scan.
