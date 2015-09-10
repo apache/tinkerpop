@@ -111,8 +111,9 @@ public final class HadoopGiraphGraphProvider extends AbstractGraphProvider {
             put(Graph.GRAPH, HadoopGraph.class.getName());
             put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, graphSONInput ? GraphSONInputFormat.class.getCanonicalName() : GryoInputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
-            put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "giraph-gremlin/target/test-output");
+            put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "target/test-output");
             put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
+            put("mapreduce.job.reduces", 4);
             /// giraph configuration
             put(GiraphConstants.MIN_WORKERS, 1);
             put(GiraphConstants.MAX_WORKERS, 1);
@@ -123,9 +124,8 @@ public final class HadoopGiraphGraphProvider extends AbstractGraphProvider {
             put(GiraphConstants.NUM_INPUT_THREADS.getKey(), 3);
             put(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 3);
             put(GiraphConstants.MAX_MASTER_SUPERSTEP_WAIT_MSECS.getKey(), TimeUnit.MINUTES.toMillis(60L));
-            put("mapreduce.job.reduces", 4);
-            put("giraph.vertexOutputFormatThreadSafe", false);
-            put("giraph.numOutputThreads", 3);
+            put(GiraphConstants.VERTEX_OUTPUT_FORMAT_THREAD_SAFE.getKey(), false);
+            put(GiraphConstants.NUM_OUTPUT_THREADS.getKey(), 3);
         }};
     }
 

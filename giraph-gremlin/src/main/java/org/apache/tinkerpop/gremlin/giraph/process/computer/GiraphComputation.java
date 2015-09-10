@@ -41,7 +41,7 @@ public final class GiraphComputation extends BasicComputation<ObjectWritable, Ve
     public void compute(final Vertex<ObjectWritable, VertexWritable, NullWritable> vertex, final Iterable<ObjectWritable> messages) throws IOException {
         final GiraphWorkerContext workerContext = this.getWorkerContext();
         final VertexProgram<?> vertexProgram = workerContext.getVertexProgramPool().take();
-        vertexProgram.execute(ComputerGraph.vertexProgram(vertex.getValue().get(), vertexProgram), workerContext.getMessenger((GiraphComputeVertex) vertex, this, messages.iterator()), workerContext.getMemory());
+        vertexProgram.execute(ComputerGraph.vertexProgram(vertex.getValue().get(), vertexProgram), workerContext.getMessenger((GiraphVertex) vertex, this, messages.iterator()), workerContext.getMemory());
         workerContext.getVertexProgramPool().offer(vertexProgram);
     }
 }

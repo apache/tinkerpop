@@ -24,7 +24,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphComputeVertex;
+import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphVertex;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 import java.io.IOException;
@@ -52,7 +52,7 @@ public final class GiraphVertexReader extends VertexReader {
 
     @Override
     public Vertex getCurrentVertex() throws IOException, InterruptedException {
-        return new GiraphComputeVertex(this.recordReader.getCurrentValue());
+        return new GiraphVertex(this.recordReader.getCurrentValue());
     }
 
     @Override
