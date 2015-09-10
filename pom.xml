@@ -143,7 +143,6 @@ limitations under the License.
         <hadoop.version>1.2.1</hadoop.version>
         <commons.configuration.version>1.10</commons.configuration.version>
         <java.tuples.version>1.2</java.tuples.version>
-        <jackson.version>2.5.3</jackson.version>
         <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
         <muteTestLogs>false</muteTestLogs>
     </properties>
@@ -837,16 +836,6 @@ limitations under the License.
                                             <groupId>org.javatuples</groupId>
                                             <artifactId>javatuples</artifactId>
                                             <version>${java.tuples.version}</version>
-                                        </additionalDependency>
-                                        <additionalDependency>
-                                            <groupId>com.fasterxml.jackson.core</groupId>
-                                            <artifactId>jackson-databind</artifactId>
-                                            <version>${jackson.version}</version>
-                                        </additionalDependency>
-                                        <additionalDependency>
-                                            <groupId>com.fasterxml.jackson.core</groupId>
-                                            <artifactId>jackson-core</artifactId>
-                                            <version>${jackson.version}</version>
                                         </additionalDependency>
                                         <additionalDependency>
                                             <groupId>org.apache.tinkerpop</groupId>

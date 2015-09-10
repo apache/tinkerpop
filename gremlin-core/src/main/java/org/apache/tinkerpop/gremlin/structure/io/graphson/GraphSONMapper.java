@@ -18,17 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
-import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
+import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
+import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.shaded.jackson.databind.SerializationFeature;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeResolverBuilder;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
+import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.DefaultSerializerProvider;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
