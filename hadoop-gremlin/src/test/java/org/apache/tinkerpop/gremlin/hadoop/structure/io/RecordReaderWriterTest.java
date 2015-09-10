@@ -22,8 +22,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.*;
+import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.hadoop.mapreduce.RecordReader;
+import org.apache.hadoop.mapreduce.RecordWriter;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.mapreduce.TaskType;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
@@ -44,6 +51,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class RecordReaderWriterTest {
 
@@ -70,8 +78,8 @@ public abstract class RecordReaderWriterTest {
     protected Configuration configure(final File outputDirectory) {
         final Configuration configuration = new Configuration(false);
         configuration.set("fs.file.impl", LocalFileSystem.class.getName());
-        configuration.set("fs.default.name", "file:///");
-        configuration.set("mapred.output.dir", "file:///" + outputDirectory.getAbsolutePath());
+        configuration.set("fs.defaultFS", "file:///");
+        configuration.set("mapreduce.output.fileoutputformat.outputdir", "file:///" + outputDirectory.getAbsolutePath());
         return configuration;
     }
 
@@ -90,7 +98,7 @@ public abstract class RecordReaderWriterTest {
                                            final Optional<Class<? extends OutputFormat<NullWritable, VertexWritable>>> outFormatClass) throws Exception {
 
         final InputFormat inputFormat = ReflectionUtils.newInstance(inputFormatClass, configuration);
-        final TaskAttemptContext job = new TaskAttemptContext(configuration, new TaskAttemptID(UUID.randomUUID().toString(), 0, true, 0, 0));
+        final TaskAttemptContext job = new TaskAttemptContextImpl(configuration, new TaskAttemptID(UUID.randomUUID().toString(), 0, TaskType.MAP, 0, 0));
 
         int vertexCount = 0;
         int outEdgeCount = 0;
@@ -134,10 +142,10 @@ public abstract class RecordReaderWriterTest {
         assertTrue(foundKeyValue);
 
         if (null != writer) {
-            writer.close(new TaskAttemptContext(configuration, job.getTaskAttemptID()));
+            writer.close(new TaskAttemptContextImpl(configuration, job.getTaskAttemptID()));
             for (int i = 1; i < 10; i++) {
-                final File outputDirectory = new File(new URL(configuration.get("mapred.output.dir")).toURI());
-                final List<FileSplit> splits = generateFileSplits(new File(outputDirectory.getAbsoluteFile() + "/_temporary/" + job.getTaskAttemptID().getTaskID().toString().replace("task", "_attempt") + "_0" + "/part-m-00000"), i);
+                final File outputDirectory = new File(new URL(configuration.get("mapreduce.output.fileoutputformat.outputdir")).toURI());
+                final List<FileSplit> splits = generateFileSplits(new File(outputDirectory.getAbsoluteFile() + "/_temporary/0/_temporary/" + job.getTaskAttemptID().getTaskID().toString().replace("task", "attempt") + "_0" + "/part-m-00000"), i);
                 validateFileSplits(splits, configuration, inputFormatClass, Optional.empty());
             }
         }

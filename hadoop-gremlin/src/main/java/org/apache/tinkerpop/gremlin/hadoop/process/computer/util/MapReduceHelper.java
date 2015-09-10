@@ -72,7 +72,7 @@ public final class MapReduceHelper {
             final Optional<Comparator<?>> reduceSort = mapReduce.getReduceKeySort();
 
             newConfiguration.setClass(Constants.GREMLIN_HADOOP_MAP_REDUCE_CLASS, mapReduce.getClass(), MapReduce.class);
-            final Job job = new Job(newConfiguration, mapReduce.toString());
+            final Job job = Job.getInstance(newConfiguration, mapReduce.toString());
             HadoopGraph.LOGGER.info(Constants.GREMLIN_HADOOP_JOB_PREFIX + mapReduce.toString());
             job.setJarByClass(HadoopGraph.class);
             if (mapSort.isPresent())
@@ -111,7 +111,7 @@ public final class MapReduceHelper {
 
             // if there is a reduce sort, we need to run another identity MapReduce job
             if (reduceSort.isPresent()) {
-                final Job reduceSortJob = new Job(newConfiguration, "ReduceKeySort");
+                final Job reduceSortJob = Job.getInstance(newConfiguration, "ReduceKeySort");
                 reduceSortJob.setSortComparatorClass(ObjectWritableComparator.ObjectWritableReduceComparator.class);
                 reduceSortJob.setMapperClass(Mapper.class);
                 reduceSortJob.setReducerClass(Reducer.class);

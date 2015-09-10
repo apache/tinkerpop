@@ -74,8 +74,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
         if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class))) {
             try {
                 final String inputLocation = FileSystem.get(hadoopConfiguration).getFileStatus(new Path(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION))).getPath().toString();
-                apacheConfiguration.setProperty(Constants.MAPRED_INPUT_DIR, inputLocation);
-                hadoopConfiguration.set(Constants.MAPRED_INPUT_DIR, inputLocation);
+                apacheConfiguration.setProperty(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, inputLocation);
+                hadoopConfiguration.set(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, inputLocation);
             } catch (final IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

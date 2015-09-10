@@ -133,9 +133,9 @@ public class HadoopGremlinPluginTest extends AbstractGremlinTest {
         this.remote.connect(Arrays.asList("graph", "g"));
         Traversal<Vertex, String> traversal = (Traversal<Vertex, String>) this.remote.submit(Arrays.asList("g.V().hasLabel('person').group('m').by('age').by('name').out('knows').out('created').values('name')"));
         AbstractGremlinProcessTest.checkResults(Arrays.asList("ripple", "lop"), traversal);
-        assertTrue((Boolean) this.console.eval("hdfs.exists('hadoop-gremlin/target/test-output/m')"));
-        assertTrue((Boolean) this.console.eval("hdfs.exists('hadoop-gremlin/target/test-output/" + TraverserMapReduce.TRAVERSERS + "')"));
-        final List<KeyValue<Integer, BulkSet<String>>> mList = IteratorUtils.asList(this.console.eval("hdfs.head('hadoop-gremlin/target/test-output/m',ObjectWritable)"));
+        assertTrue((Boolean) this.console.eval("hdfs.exists('giraph-gremlin/target/test-output/m')"));
+        assertTrue((Boolean) this.console.eval("hdfs.exists('giraph-gremlin/target/test-output/" + TraverserMapReduce.TRAVERSERS + "')"));
+        final List<KeyValue<Integer, BulkSet<String>>> mList = IteratorUtils.asList(this.console.eval("hdfs.head('giraph-gremlin/target/test-output/m',ObjectWritable)"));
         assertEquals(4, mList.size());
         mList.forEach(keyValue -> {
             if (keyValue.getKey().equals(29))
@@ -149,7 +149,7 @@ public class HadoopGremlinPluginTest extends AbstractGremlinTest {
             else
                 throw new IllegalStateException("The provided key/value is unknown: " + keyValue);
         });
-        final List<KeyValue<MapReduce.NullObject, Traverser<String>>> traversersList = IteratorUtils.asList(this.console.eval("hdfs.head('hadoop-gremlin/target/test-output/" + TraverserMapReduce.TRAVERSERS + "',ObjectWritable)"));
+        final List<KeyValue<MapReduce.NullObject, Traverser<String>>> traversersList = IteratorUtils.asList(this.console.eval("hdfs.head('giraph-gremlin/target/test-output/" + TraverserMapReduce.TRAVERSERS + "',ObjectWritable)"));
         assertEquals(2, traversersList.size());
         traversersList.forEach(keyValue -> {
             assertEquals(MapReduce.NullObject.instance(), keyValue.getKey());

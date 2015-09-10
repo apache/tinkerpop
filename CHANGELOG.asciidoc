@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Bumped to Apache Hadoop 2.7.1.
+* Bumped to Apache Giraph 1.1.0.
 * Bumped to Apache Spark 1.5.0.
 * Split Hadoop-Gremlin apart such there is now `hadoop-gremlin`, `spark-gremlin`, and `giraph-gremlin` (and respective `GremlinPlugins`).
 * Added `LambdaCollectingBarrierStep` which generalizes `NoOpBarrierStep` and allows for `barrier(normSack)`-type operations.

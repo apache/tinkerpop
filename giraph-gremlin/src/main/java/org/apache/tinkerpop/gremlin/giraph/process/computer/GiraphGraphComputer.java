@@ -71,6 +71,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, configuration.getProperty(key).toString()));
         this.giraphConfiguration.setMasterComputeClass(GiraphMemory.class);
         this.giraphConfiguration.setVertexClass(GiraphComputeVertex.class);
+        this.giraphConfiguration.setComputationClass(GiraphComputation.class);
         this.giraphConfiguration.setWorkerContextClass(GiraphWorkerContext.class);
         this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);
         this.giraphConfiguration.setClass(GiraphConstants.VERTEX_ID_CLASS.getKey(), ObjectWritable.class, ObjectWritable.class);
@@ -87,7 +88,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         final BaseConfiguration apacheConfiguration = new BaseConfiguration();
         vertexProgram.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, this.giraphConfiguration);
-        this.vertexProgram.getMessageCombiner().ifPresent(combiner -> this.giraphConfiguration.setCombinerClass(GiraphMessageCombiner.class));
+        this.vertexProgram.getMessageCombiner().ifPresent(combiner -> this.giraphConfiguration.setMessageCombinerClass(GiraphMessageCombiner.class));
         return this;
     }
 

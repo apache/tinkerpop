@@ -38,10 +38,12 @@ import java.util.Iterator;
 public final class GiraphMessenger<M> implements Messenger<M> {
 
     private GiraphComputeVertex giraphComputeVertex;
+    private GiraphComputation giraphComputation;
     private Iterator<ObjectWritable<M>> messages;
 
-    public GiraphMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterator<ObjectWritable<M>> messages) {
+    public GiraphMessenger(final GiraphComputeVertex giraphComputeVertex, final GiraphComputation giraphComputation, final Iterator<ObjectWritable<M>> messages) {
         this.giraphComputeVertex = giraphComputeVertex;
+        this.giraphComputation = giraphComputation;
         this.messages = messages;
     }
 
@@ -57,13 +59,13 @@ public final class GiraphMessenger<M> implements Messenger<M> {
             final Traversal.Admin<Vertex, Edge> incidentTraversal = GiraphMessenger.setVertexStart(localMessageScope.getIncidentTraversal().get(), this.giraphComputeVertex.getValue().get());
             final Direction direction = GiraphMessenger.getOppositeDirection(incidentTraversal);
             incidentTraversal.forEachRemaining(edge ->
-                    this.giraphComputeVertex.sendMessage(
+                    this.giraphComputation.sendMessage(
                             new ObjectWritable<>(edge.vertices(direction).next().id()),
                             new ObjectWritable<>(localMessageScope.getEdgeFunction().apply(message, edge))));
         } else {
             final MessageScope.Global globalMessageScope = (MessageScope.Global) messageScope;
             globalMessageScope.vertices().forEach(vertex ->
-                    this.giraphComputeVertex.sendMessage(new ObjectWritable<>(vertex.id()), new ObjectWritable<>(message)));
+                    this.giraphComputation.sendMessage(new ObjectWritable<>(vertex.id()), new ObjectWritable<>(message)));
         }
     }
 

@@ -16,24 +16,32 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.giraph.process.computer;
 
-import org.apache.giraph.graph.DefaultVertex;
+import org.apache.giraph.graph.BasicComputation;
+import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
+import org.apache.tinkerpop.gremlin.process.computer.util.ComputerGraph;
+
+import java.io.IOException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphComputeVertex extends DefaultVertex<ObjectWritable, VertexWritable, NullWritable> {
+public final class GiraphComputation extends BasicComputation<ObjectWritable, VertexWritable, NullWritable, ObjectWritable> {
 
-    public GiraphComputeVertex() {
+    public GiraphComputation() {
     }
 
-    public GiraphComputeVertex(final VertexWritable vertexWritable) {
-        final VertexWritable newWritable = new VertexWritable();
-        newWritable.set(vertexWritable.get());
-        this.initialize(new ObjectWritable<>(newWritable.get().id()), newWritable, EmptyOutEdges.instance());
+    @Override
+    public void compute(final Vertex<ObjectWritable, VertexWritable, NullWritable> vertex, final Iterable<ObjectWritable> messages) throws IOException {
+        final GiraphWorkerContext workerContext = this.getWorkerContext();
+        final VertexProgram<?> vertexProgram = workerContext.getVertexProgramPool().take();
+        vertexProgram.execute(ComputerGraph.vertexProgram(vertex.getValue().get(), vertexProgram), workerContext.getMessenger((GiraphComputeVertex) vertex, this, messages.iterator()), workerContext.getMemory());
+        workerContext.getVertexProgramPool().offer(vertexProgram);
     }
 }

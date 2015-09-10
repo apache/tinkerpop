@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.giraph.process.computer;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.giraph.combiner.Combiner;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfigurable;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -31,7 +30,7 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphMessageCombiner extends Combiner<ObjectWritable, ObjectWritable> implements ImmutableClassesGiraphConfigurable {
+public final class GiraphMessageCombiner extends org.apache.giraph.combiner.MessageCombiner<ObjectWritable, ObjectWritable> implements ImmutableClassesGiraphConfigurable {
 
     private MessageCombiner messageCombiner;
     private ImmutableClassesGiraphConfiguration configuration;

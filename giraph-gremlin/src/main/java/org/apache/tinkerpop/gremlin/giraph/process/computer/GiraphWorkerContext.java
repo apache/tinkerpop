@@ -71,7 +71,7 @@ public final class GiraphWorkerContext extends WorkerContext {
         return this.memory;
     }
 
-    public GiraphMessenger getMessenger(final GiraphComputeVertex giraphComputeVertex, final Iterator<ObjectWritable> messages) {
-        return new GiraphMessenger(giraphComputeVertex, messages);
+    public GiraphMessenger getMessenger(final GiraphComputeVertex giraphComputeVertex, final GiraphComputation giraphComputation, final Iterator<ObjectWritable> messages) {
+        return new GiraphMessenger(giraphComputeVertex, giraphComputation, messages);
     }
 }

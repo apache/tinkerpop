@@ -45,7 +45,7 @@ public final class MemoryAggregator implements Aggregator<Rule> {
 
     @Override
     public void setAggregatedValue(final Rule rule) {
-        this.currentObject = rule.getObject();
+        this.currentObject = null == rule ? null : rule.getObject();
     }
 
     @Override
