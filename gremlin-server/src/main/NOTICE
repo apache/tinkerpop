@@ -134,6 +134,18 @@ Copyright (c) 2002-2012, the original author or authors.
 All rights reserved.
 
 ------------------------------------------------------------------------
+Kryo - shaded in gremlin-shaded
+------------------------------------------------------------------------
+Copyright (c) 2008, Nathan Sweet
+All rights reserved.
+
+------------------------------------------------------------------------
+minlog - shaded in gremlin-shaded
+------------------------------------------------------------------------
+Copyright (c) 2008, Nathan Sweet
+All rights reserved.
+
+------------------------------------------------------------------------
 gmetric4j
 ------------------------------------------------------------------------
 Copyright (C) 2010-2015 Daniel Pocock <daniel@pocock.com.au>
