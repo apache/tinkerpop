@@ -129,7 +129,7 @@ for i in {0..7}; do
 done
 
 tput smam
-stty cols ${COLS}
+[[ "${COLUMNS}" != "" ]] && stty cols ${COLS}
 
 if [ ${ec} -ne 0 ]; then
   exit 1
