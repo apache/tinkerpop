@@ -77,6 +77,10 @@ limitations under the License.
                     <groupId>org.xerial.snappy</groupId>
                     <artifactId>snappy-java</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
             </exclusions>
             <!--<scope>provided</scope>-->
         </dependency>
@@ -110,6 +114,11 @@ limitations under the License.
             <groupId>org.xerial.snappy</groupId>
             <artifactId>snappy-java</artifactId>
             <version>1.1.1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
         </dependency>
         <!-- TEST -->
         <dependency>
@@ -201,9 +210,6 @@ limitations under the License.
                         <manifestEntries>
                             <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:2.7.1
                             </Gremlin-Plugin-Dependencies>
-                            <!-- deletes the servlet-api jar from the path after install - causes conflicts -->
-                            <Gremlin-Plugin-Paths>servlet-api-2.5.jar=</Gremlin-Plugin-Paths>
-                            <Gremlin-Lib-Paths>servlet-api-2.5.jar=</Gremlin-Lib-Paths>
                         </manifestEntries>
                     </archive>
                 </configuration>

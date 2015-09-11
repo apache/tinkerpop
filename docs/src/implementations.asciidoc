@@ -1150,12 +1150,9 @@ Found 2 items
 $ hadoop jar target/giraph-gremlin-x.y.z-job.jar org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer ../hadoop-gremlin/conf/hadoop-graphson.properties
 15/09/11 08:02:08 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 15/09/11 08:02:11 INFO computer.GiraphGraphComputer: HadoopGremlin(Giraph): PageRankVertexProgram[alpha=0.85,iterations=30]
-15/09/11 08:02:11 INFO job.GiraphJob: run: Since checkpointing is disabled (default), do not allow any task retries (setting mapred.map.max.attempts = 0, old value = 4)
-15/09/11 08:02:11 INFO client.RMProxy: Connecting to ResourceManager at /0.0.0.0:8032
 15/09/11 08:02:12 INFO mapreduce.JobSubmitter: number of splits:3
 15/09/11 08:02:12 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1441915907347_0028
 15/09/11 08:02:12 INFO impl.YarnClientImpl: Submitted application application_1441915907347_0028
-15/09/11 08:02:12 INFO mapreduce.Job: The url to track the job: http://markos-macbook:8088/proxy/application_1441915907347_0028/
 15/09/11 08:02:12 INFO job.GiraphJob: Tracking URL: http://markos-macbook:8088/proxy/application_1441915907347_0028/
 15/09/11 08:02:12 INFO job.GiraphJob: Waiting for resources... Job will start only when it gets all 3 mappers
 15/09/11 08:03:54 INFO mapreduce.Job: Running job: job_1441915907347_0028
@@ -1245,16 +1242,14 @@ $ hadoop jar target/giraph-gremlin-x.y.z-job.jar org.apache.tinkerpop.gremlin.gi
 		Superstep 8 GiraphComputation (ms)=4009
 		Superstep 9 GiraphComputation (ms)=3994
 		Total (ms)=138788
-	Zookeeper base path
-		/_hadoopBsp/job_1441915907347_0028=0
-	Zookeeper halt node
-		/_hadoopBsp/job_1441915907347_0028/_haltComputation=0
-	Zookeeper server:port
-		localhost:22181=0
 	File Input Format Counters
 		Bytes Read=0
 	File Output Format Counters
 		Bytes Written=0
+----
+
+[source,text]
+----
 $ hdfs dfs -cat output/~g/*
 {"id":1,"label":"person","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":39,"value":0.15000000000000002}],"name":[{"id":0,"value":"marko"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":10,"value":3.0}],"age":[{"id":1,"value":29}]}}
 {"id":5,"label":"software","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":35,"value":0.23181250000000003}],"name":[{"id":8,"value":"ripple"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":6,"value":0.0}],"lang":[{"id":9,"value":"java"}]}}
@@ -1288,14 +1283,18 @@ Hadoop-Gremlin is centered around `InputFormats` and `OutputFormats`. If a 3rd-p
 Conceptually, `HadoopGraph` is a wrapper around a `Configuration` object. There is no "data" in the `HadoopGraph` as the `InputFormat` specifies where and how to get the graph data at OLAP (and OLTP) runtime. Thus, `HadoopGraph` is a small object with little overhead. Vendors should realize `HadoopGraph` as the gateway to the OLAP features offered by Hadoop-Gremlin. An example, vendor-specific `Graph.compute(Class<? extends GraphComputer> graphComputerClass)`-method may look as follows:
 
 [source,java]
+----
 public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException {
-  if(AbstractHadoopGraphComputer.class.isAssignableFrom(graphComputerClass))
-    return HadoopGraph.open(this.configuration()).compute(graphComputerClass);
-  else if(...) // vendor specific graph computer classes
-    // return vendor specific instance
-  else
-    throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+  try {
+    if (AbstractHadoopGraphComputer.class.isAssignableFrom(graphComputerClass))
+      return graphComputerClass.getConstructor(HadoopGraph.class).newInstance(this);
+    else
+      throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+  } catch (final Exception e) {
+    throw new IllegalArgumentException(e.getMessage(),e);
+  }
 }
+----
 
 Note that the configurations for Hadoop are assumed to be in the `Graph.configuration()` object. If this is not the case, then the `Configuration` provided to `HadoopGraph.open()` should be dynamically created within the `compute()`-method. It is in the provided configuration that `HadoopGraph` gets the various properties which determine how to read and write data to and from Hadoop. For instance, `gremlin.hadoop.graphInputFormat` and `gremlin.hadoop.graphOutputFormat`.
 

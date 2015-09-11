@@ -23,6 +23,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopEdgeIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HadoopVertexIterator;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
@@ -182,9 +183,12 @@ public final class HadoopGraph implements Graph {
     @Override
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) {
         try {
-            return graphComputerClass.getConstructor(HadoopGraph.class).newInstance(this);
+            if (AbstractHadoopGraphComputer.class.isAssignableFrom(graphComputerClass))
+                return graphComputerClass.getConstructor(HadoopGraph.class).newInstance(this);
+            else
+                throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
         } catch (final Exception e) {
-            throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+            throw new IllegalArgumentException(e.getMessage(), e);
         }
     }
 

@@ -159,6 +159,10 @@
                     <groupId>com.thoughtworks.paranamer</groupId>
                     <artifactId>paranamer</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
                 <!-- gremlin-core conflicts -->
                 <exclusion>
                     <groupId>org.slf4j</groupId>
