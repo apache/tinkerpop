@@ -76,12 +76,24 @@ public final class Parameters implements Cloneable, Serializable {
         return result;
     }
 
+    /**
+     * Gets the value of a key and if that key isn't present returns the default value from the {@link Supplier}.
+     *
+     * @param key the key to retrieve
+     * @param defaultValue the default value generator
+     */
     public <E> List<E> get(final Object key, final Supplier<E> defaultValue) {
         final List<E> list = (List<E>) this.parameters.get(key);
         return (null == list) ? Collections.singletonList(defaultValue.get()) : list;
 
     }
 
+    /**
+     * Remove a key from the parameter set.
+     *
+     * @param key the key to remove
+     * @return the value of the removed key
+     */
     public Object remove(final Object key) {
         return parameters.remove(key);
     }

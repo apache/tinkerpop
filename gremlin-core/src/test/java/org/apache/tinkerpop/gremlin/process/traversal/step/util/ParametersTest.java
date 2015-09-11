@@ -137,4 +137,17 @@ public class ParametersTest {
         assertEquals("ball", params.get("b").get(1));
         assertEquals("cat", params.get("c").get(0));
     }
+
+    @Test
+    public void shouldGetDefault() {
+        final Parameters parameters = new Parameters();
+        parameters.set("a", "axe", "b", "bat", "c", "cat");
+
+        final Map<Object,List<Object>> params = parameters.getRaw();
+        assertEquals(3, params.size());
+        assertEquals("axe", params.get("a").get(0));
+        assertEquals("bat", params.get("b").get(0));
+        assertEquals("cat", params.get("c").get(0));
+        assertEquals("zebra", parameters.get("z", () -> "zebra").get(0));
+    }
 }
