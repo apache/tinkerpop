@@ -187,7 +187,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     private void loadJars(final FileSystem fs) {
         final String hadoopGremlinLibsRemote = "hadoop-gremlin-libs";
         if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true)) {
-            final String hadoopGremlinLocalLibs = System.getProperty(Constants.HADOOP_GREMLIN_LIBS);
+            final String hadoopGremlinLocalLibs = null == System.getProperty(Constants.HADOOP_GREMLIN_LIBS) ? System.getenv(Constants.HADOOP_GREMLIN_LIBS) : System.getProperty(Constants.HADOOP_GREMLIN_LIBS);
             if (null == hadoopGremlinLocalLibs)
                 this.logger.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
             else {
