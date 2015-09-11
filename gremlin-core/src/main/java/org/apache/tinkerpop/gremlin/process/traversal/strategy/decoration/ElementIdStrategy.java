@@ -103,10 +103,11 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
         // it is not present then shove it in there and generate an id
         traversal.getSteps().forEach(step -> {
             if (step instanceof AddVertexStep || step instanceof AddVertexStartStep || step instanceof AddEdgeStep) {
-                if (((Parameterizing) step).getParameters().contains(T.id))
-                    ((Parameterizing) step).getParameters().replace(T.id, this.idPropertyKey);
-                else if (!((Parameterizing) step).getParameters().contains(this.idPropertyKey))
-                    ((Parameterizing) step).getParameters().set(this.idPropertyKey, idMaker.get());
+                final Parameterizing parameterizing = (Parameterizing) step;
+                if (parameterizing.getParameters().contains(T.id))
+                    parameterizing.getParameters().replace(T.id, this.idPropertyKey);
+                else if (!parameterizing.getParameters().contains(this.idPropertyKey))
+                    parameterizing.getParameters().set(this.idPropertyKey, idMaker.get());
             }
         });
     }

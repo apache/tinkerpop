@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -35,7 +34,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -83,7 +81,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("stephen", sg.V("stephen").id().next());
     }
 
-    /*@Test
+    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldSetIdOnAddVWithIdPropertyKeySpecifiedAndIdSuppliedAsProperty() throws Exception {
         final ElementIdStrategy strategy = ElementIdStrategy.build().idPropertyKey("name").create();
@@ -92,20 +90,18 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("stephen", v.value("name"));
         assertEquals("stephen", sg.V(v).id().next());
         assertEquals("stephen", sg.V("stephen").id().next());
-    }*/
+    }
 
-    /*
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldGenerateDefaultIdOnGraphAddVWithSpecifiedId() throws Exception {
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
         final GraphTraversalSource sg = create(strategy);
-        final Vertex v = sg.addV().property(T.id, "STEPHEN", "name", "stephen").next();
+        final Vertex v = sg.addV().property(T.id, "STEPHEN").property("name", "stephen").next();
         assertEquals("stephen", v.value("name"));
         assertEquals("STEPHEN", sg.V(v).id().next());
         assertEquals("STEPHEN", sg.V("STEPHEN").id().next());
     }
-    */
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
@@ -140,8 +136,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("yyy", sg.V("yyy").id().next());
     }
 
-    /*@Test
-    //TODO
+    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     public void shouldGenerateDefaultIdOnAddVWithSpecifiedId() throws Exception {
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
@@ -153,9 +148,9 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("stephen", v.value("name"));
         assertEquals("STEPHEN", sg.V(v).id().next());
         assertEquals("STEPHEN", sg.V("STEPHEN").id().next());
-    }*/
+    }
 
-    /*@Test
+    @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     public void shouldGenerateDefaultIdOnAddEWithSpecifiedId() throws Exception {
         final ElementIdStrategy strategy = ElementIdStrategy.build().create();
@@ -202,7 +197,7 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals("some-id", e.value("name"));
         assertEquals("some-id", sg.E(e).id().next());
         assertEquals("some-id", sg.E("some-id").id().next());
-    } */
+    }
 
     private GraphTraversalSource create(final ElementIdStrategy strategy) {
         return graphProvider.traversal(graph, strategy);

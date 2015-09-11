@@ -51,7 +51,7 @@ public final class Parameters implements Cloneable, Serializable {
     }
 
     public void replace(final Object oldKey, final Object newKey) {
-        this.set(newKey, this.parameters.remove(oldKey));
+        this.parameters.put(newKey, this.parameters.remove(oldKey));
     }
 
     public <S, E> List<E> get(final Traverser.Admin<S> traverser, final Object key, final Supplier<E> defaultValue) {

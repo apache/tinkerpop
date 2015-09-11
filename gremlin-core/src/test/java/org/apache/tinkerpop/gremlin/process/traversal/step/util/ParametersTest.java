@@ -92,4 +92,18 @@ public class ParametersTest {
         assertEquals("axe", after.get("a").get(0));
         assertEquals("cat", after.get("c").get(0));
     }
+
+    @Test
+    public void shouldReplace() {
+        final Parameters parameters = new Parameters();
+        parameters.set("a", "axe", "b", "bat", "c", "cat");
+
+        parameters.replace("a", "z");
+
+        final Map<Object,List<Object>> before = parameters.getRaw();
+        assertEquals(3, before.size());
+        assertEquals("axe", before.get("z").get(0));
+        assertEquals("bat", before.get("b").get(0));
+        assertEquals("cat", before.get("c").get(0));
+    }
 }
