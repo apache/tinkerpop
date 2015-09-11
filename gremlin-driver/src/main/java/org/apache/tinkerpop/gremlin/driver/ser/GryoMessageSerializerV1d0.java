@@ -196,7 +196,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
     public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException {
         try {
             final Kryo kryo = kryoThreadLocal.get();
-            final byte[] payload = new byte[msg.readableBytes()];
+            final byte[] payload = new byte[msg.capacity()];
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final UUID requestId = kryo.readObjectOrNull(input, UUID.class);
@@ -244,7 +244,8 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                 if (size > Integer.MAX_VALUE)
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
-                encodedMessage = allocator.buffer((int) output.total());
+                encodedMessage = allocator.buffer((int) size);
+                output.flush();
                 encodedMessage.writeBytes(output.toBytes());
             }
 
@@ -305,6 +306,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
                 encodedMessage = allocator.buffer((int) size);
+                output.flush();
                 encodedMessage.writeBytes(output.toBytes());
             }
 
