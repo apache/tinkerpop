@@ -85,6 +85,7 @@ public final class MapReduceHelper {
             } else {
                 if (mapSort.isPresent()) {
                     job.setReducerClass(Reducer.class);
+                    job.setNumReduceTasks(1); // todo: is this necessary to ensure sorted order?
                 } else {
                     job.setNumReduceTasks(0);
                 }
