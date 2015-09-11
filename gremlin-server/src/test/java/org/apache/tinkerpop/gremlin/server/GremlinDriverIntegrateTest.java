@@ -338,7 +338,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         IntStream.range(0, requests).forEach(ix -> {
             refs[ix] = new AtomicReference();
             client.submitAsync("Thread.sleep(5000);[1,2,3,4,5,6,7,8,9]").thenAccept(rs ->
-                rs.all().thenAccept(refs[ix]::set).thenRun(latch::countDown));
+                    rs.all().thenAccept(refs[ix]::set).thenRun(latch::countDown));
         });
 
         // countdown should have reached zero as results should have eventually been all returned and processed
@@ -502,7 +502,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("'" + fatty + "'").all().get();
             fail("Should throw an exception.");
         } catch (Exception re) {
-            Throwable root = ExceptionUtils.getRootCause(re);
+            final Throwable root = ExceptionUtils.getRootCause(re);
             assertTrue(root.getMessage().equals("Max frame length of 1 has been exceeded."));
         } finally {
             cluster.close();

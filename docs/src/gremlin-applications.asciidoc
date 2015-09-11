@@ -784,6 +784,7 @@ It has the MIME type of `application/vnd.gremlin-v1.0+gryo` and the following co
 [width="100%",cols="3,10,^2",options="header"]
 |=========================================================
 |Key |Description |Default
+|bufferSize |The maximum size of the Kryo buffer for use on a single object being serialized.  Increasing this value will correct `KryoException` errors that complain of "Buffer too small". |_4096_
 |serializeResultToString |When set to `true`, results are serialized by first calling `toString()` on each object in the result list resulting in an extended MIME Type of `application/vnd.gremlin-v1.0+gryo-stringd`.  When set to `false` Kryo-based serialization is applied. |_false_
 |useMapperFromGraph |Specifies the name of the `Graph` (from the `graphs` `Map` in the configuration file) from which to plugin any custom serializers that are tied to it. |_none_
 |ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer.
