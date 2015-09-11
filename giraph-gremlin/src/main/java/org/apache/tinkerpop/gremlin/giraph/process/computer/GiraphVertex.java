@@ -26,12 +26,12 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GiraphComputeVertex extends DefaultVertex<ObjectWritable, VertexWritable, NullWritable> {
+public final class GiraphVertex extends DefaultVertex<ObjectWritable, VertexWritable, NullWritable> {
 
-    public GiraphComputeVertex() {
+    public GiraphVertex() {
     }
 
-    public GiraphComputeVertex(final VertexWritable vertexWritable) {
+    public GiraphVertex(final VertexWritable vertexWritable) {
         final VertexWritable newWritable = new VertexWritable();
         newWritable.set(vertexWritable.get());
         this.initialize(new ObjectWritable<>(newWritable.get().id()), newWritable, EmptyOutEdges.instance());

@@ -70,7 +70,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         final Configuration configuration = hadoopGraph.configuration();
         configuration.getKeys().forEachRemaining(key -> this.giraphConfiguration.set(key, configuration.getProperty(key).toString()));
         this.giraphConfiguration.setMasterComputeClass(GiraphMemory.class);
-        this.giraphConfiguration.setVertexClass(GiraphComputeVertex.class);
+        this.giraphConfiguration.setVertexClass(GiraphVertex.class);
         this.giraphConfiguration.setComputationClass(GiraphComputation.class);
         this.giraphConfiguration.setWorkerContextClass(GiraphWorkerContext.class);
         this.giraphConfiguration.setOutEdgesClass(EmptyOutEdges.class);

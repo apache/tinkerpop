@@ -24,7 +24,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphComputeVertex;
+import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphVertex;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 
 import java.io.IOException;
@@ -52,6 +52,6 @@ public final class GiraphVertexWriter extends VertexWriter {
 
     @Override
     public void writeVertex(final Vertex vertex) throws IOException, InterruptedException {
-        this.recordWriter.write(NullWritable.get(), ((GiraphComputeVertex) vertex).getValue());
+        this.recordWriter.write(NullWritable.get(), ((GiraphVertex) vertex).getValue());
     }
 }

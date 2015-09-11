@@ -121,6 +121,7 @@ public final class MapReduceHelper {
                 reduceSortJob.setOutputValueClass(ObjectWritable.class);
                 reduceSortJob.setInputFormatClass(SequenceFileInputFormat.class);
                 reduceSortJob.setOutputFormatClass(SequenceFileOutputFormat.class);
+                reduceSortJob.setNumReduceTasks(1); // todo: is this necessary to ensure sorted order?
                 FileInputFormat.setInputPaths(reduceSortJob, memoryPath);
                 final Path sortedMemoryPath = new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
                 FileOutputFormat.setOutputPath(reduceSortJob, sortedMemoryPath);

@@ -27,7 +27,7 @@ if [ ! -f bin/gremlin.sh ]; then
   exit 1
 fi
 
-for daemon in "NameNode" "DataNode" "JobTracker" "TaskTracker"
+for daemon in "NameNode" "DataNode" "ResourceManager" "NodeManager"
 do
   running=`jps | cut -d ' ' -f2 | grep -c ${daemon}`
   if [ ${running} -eq 0 ]; then
