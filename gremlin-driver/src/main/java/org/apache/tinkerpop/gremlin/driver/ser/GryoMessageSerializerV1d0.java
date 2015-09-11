@@ -245,7 +245,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
                 encodedMessage = allocator.buffer((int) size);
-                output.flush();
+                if (size > bufferSize) output.flush();
                 encodedMessage.writeBytes(output.toBytes());
             }
 
@@ -306,7 +306,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
                 encodedMessage = allocator.buffer((int) size);
-                output.flush();
+                if (size > bufferSize) output.flush();
                 encodedMessage.writeBytes(output.toBytes());
             }
 
