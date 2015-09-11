@@ -20,8 +20,10 @@ package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
@@ -138,10 +140,20 @@ public interface Graph extends AutoCloseable, Host {
 
     public GraphComputer compute() throws IllegalArgumentException;
 
+    /**
+     * Construct a {@link TraversalSource} using the specified {@code sourceBuilder}.  The {@link TraversalSource}
+     * provides methods for creating a {@link Traversal} given the context of {@link TraversalStrategy} implementations
+     * and a {@link GraphComputer}.
+     */
     public default <C extends TraversalSource> C traversal(final TraversalSource.Builder<C> sourceBuilder) {
         return sourceBuilder.create(this);
     }
 
+    /**
+     * Construct a {@link GraphTraversalSource} instance using the {@link StandardTraversalEngine}. The
+     * {@link TraversalSource} provides methods for creating a {@link Traversal} given the context of
+     * {@link TraversalStrategy} implementations and a {@link GraphComputer}.
+     */
     public default GraphTraversalSource traversal() {
         return this.traversal(GraphTraversalSource.build().engine(StandardTraversalEngine.build()));
     }
