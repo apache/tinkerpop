@@ -34,8 +34,8 @@ public class AddPropertyStepTest extends StepTest {
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
                 __.property("x", 0),
-                __.property("x", 1),
-                __.property("y", 0)
+                __.property("x", 1)
+               // __.property("y", 0)
         );
     }
 }
