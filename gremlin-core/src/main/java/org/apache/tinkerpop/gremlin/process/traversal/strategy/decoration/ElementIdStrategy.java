@@ -105,7 +105,7 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
             if (step instanceof AddVertexStep || step instanceof AddVertexStartStep || step instanceof AddEdgeStep) {
                 final Parameterizing parameterizing = (Parameterizing) step;
                 if (parameterizing.getParameters().contains(T.id))
-                    parameterizing.getParameters().replace(T.id, this.idPropertyKey);
+                    parameterizing.getParameters().rename(T.id, this.idPropertyKey);
                 else if (!parameterizing.getParameters().contains(this.idPropertyKey))
                     parameterizing.getParameters().set(this.idPropertyKey, idMaker.get());
             }

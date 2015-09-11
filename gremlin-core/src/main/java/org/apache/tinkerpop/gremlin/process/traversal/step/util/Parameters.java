@@ -46,11 +46,23 @@ public final class Parameters implements Cloneable, Serializable {
 
     private Map<Object, List<Object>> parameters = new HashMap<>();
 
+    /**
+     * Checks for existence of key in parameter set.
+     *
+     * @param key the key to check
+     * @return {@code true} if the key is present and {@code false} otherwise
+     */
     public boolean contains(final Object key) {
         return this.parameters.containsKey(key);
     }
 
-    public void replace(final Object oldKey, final Object newKey) {
+    /**
+     * Renames a key in the parameter set.
+     *
+     * @param oldKey the key to rename
+     * @param newKey the new name of the key
+     */
+    public void rename(final Object oldKey, final Object newKey) {
         this.parameters.put(newKey, this.parameters.remove(oldKey));
     }
 
@@ -106,6 +118,9 @@ public final class Parameters implements Cloneable, Serializable {
         return Collections.unmodifiableMap(raw);
     }
 
+    /**
+     * Set parameters given key/value pairs.
+     */
     public void set(final Object... keyValues) {
         for (int i = 0; i < keyValues.length; i = i + 2) {
             if (keyValues[i + 1] != null) {

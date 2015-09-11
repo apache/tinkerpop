@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
@@ -94,16 +95,46 @@ public class ParametersTest {
     }
 
     @Test
-    public void shouldReplace() {
+    public void shouldRename() {
         final Parameters parameters = new Parameters();
         parameters.set("a", "axe", "b", "bat", "c", "cat");
 
-        parameters.replace("a", "z");
+        parameters.rename("a", "z");
 
         final Map<Object,List<Object>> before = parameters.getRaw();
         assertEquals(3, before.size());
         assertEquals("axe", before.get("z").get(0));
         assertEquals("bat", before.get("b").get(0));
         assertEquals("cat", before.get("c").get(0));
+    }
+
+    @Test
+    public void shouldContainKey() {
+        final Parameters parameters = new Parameters();
+        parameters.set("a", "axe", "b", "bat", "c", "cat");
+
+        assertThat(parameters.contains("b"), is(true));
+    }
+
+    @Test
+    public void shouldNotContainKey() {
+        final Parameters parameters = new Parameters();
+        parameters.set("a", "axe", "b", "bat", "c", "cat");
+
+        assertThat(parameters.contains("z"), is(false));
+    }
+
+    @Test
+    public void shouldGetSetMultiple() {
+        final Parameters parameters = new Parameters();
+        parameters.set("a", "axe", "a", "ant", "b", "bat", "b", "ball", "c", "cat");
+
+        final Map<Object,List<Object>> params = parameters.getRaw();
+        assertEquals(3, params.size());
+        assertEquals("axe", params.get("a").get(0));
+        assertEquals("ant", params.get("a").get(1));
+        assertEquals("bat", params.get("b").get(0));
+        assertEquals("ball", params.get("b").get(1));
+        assertEquals("cat", params.get("c").get(0));
     }
 }
