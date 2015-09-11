@@ -644,6 +644,9 @@ limitations under the License.
                             </execution>
                         </executions>
                     </plugin>
+                    <!-- replaces x.y.z in asciidoc with the tinkerpop version from the pom.  using an attribute
+                         in the asciidoctor-maven-plugin doesn't work properly in all cases for some reasons,
+                         specifically in the code examples -->
                     <plugin>
                         <groupId>com.google.code.maven-replacer-plugin</groupId>
                         <artifactId>replacer</artifactId>

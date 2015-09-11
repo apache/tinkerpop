@@ -16,6 +16,8 @@ limitations under the License.
 ////
 image::apache-tinkerpop-logo.png[width=500]
 
+x.y.z
+
 :toc-position: left
 
 include::preface.asciidoc[]
