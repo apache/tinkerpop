@@ -65,6 +65,7 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 . `mvn clean install -Dmaven.test.skip=true`
 . `bin/publish-docs.sh <username>`
 . `mvn install -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`
+. Review generated artifacts to be sure they have both javadocs and asciidocs present
 . Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
 .. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/ dev` and `mkdir dev/x.y.z`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/x.y.z/gremlin-console-x.y.z-distribution.zip* dev/x.y.z`
@@ -91,9 +92,9 @@ A positive vote for a particular release from the Apache Incubator is required t
 Release & Promote
 ~~~~~~~~~~~~~~~~~
 
-. `mvn clean install -Dmaven.test.skip=true; bin/process-docs.sh` - rebuild source and docs of tagged release
+. `mvn clean install -Djavadoc -Dmaven.test.skip=true; bin/process-docs.sh` - rebuild source and docs of tagged release
 . `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
-. Review and close the staging repository (Apache Nexus at link:https://repository.apache.org/[https://repository.apache.org/])
+. Review and close the staging repository (Apache Nexus at link:https://repository.apache.org/[https://repository.apache.org/]) - check that versions are correct and that all artifacts are present
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/x.y.z`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/x.y.z`
 . `ls dev/x.y.z/ | grep '\-\(distribution\|source\-release\)\.zip' | sed -e 's/\(^[^ ]*\)-distribution\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-bin\2/' -e 's/\(^[^ ]*\)-source-release\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-src\2/' | /bin/sh`
