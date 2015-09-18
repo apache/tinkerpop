@@ -292,7 +292,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    @org.junit.Ignore("Not sure why this fails consistently now - bugs around NIO were fixed in 3.1.x - this test passes there")
     public void shouldWorkOverNioTransport() throws Exception {
         try (SimpleClient client = new NioClient()) {
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
