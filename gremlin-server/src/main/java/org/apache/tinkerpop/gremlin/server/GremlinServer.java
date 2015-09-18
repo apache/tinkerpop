@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.server.op.OpLoader;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
@@ -199,6 +200,16 @@ public class GremlinServer {
 
         serverStopped = new CompletableFuture<>();
         final CountDownLatch servicesLeftToShutdown = new CountDownLatch(3);
+
+        // release resources in the OpProcessors (e.g. kill sessions)
+        OpLoader.getProcessors().entrySet().forEach(kv -> {
+            logger.info("Shutting down OpProcessor[{}]", kv.getKey());
+            try {
+                kv.getValue().close();
+            } catch (Exception ex) {
+                logger.warn("Shutdown will continue but, there was an error encountered while closing " + kv.getKey(), ex);
+            }
+        });
 
         // it's possible that a channel might not be initialized in the first place if bind() fails because
         // of port conflict.  in that case, there's no need to wait for the channel to close.

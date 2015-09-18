@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.SimpleBindings;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -59,6 +60,11 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
     @Override
     public ThrowingConsumer<Context> getEvalOp() {
         return this::evalOp;
+    }
+
+    @Override
+    public void close() throws Exception {
+        // do nothing = no resources to release
     }
 
     private void evalOp(final Context context) throws OpProcessorException {

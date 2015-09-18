@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -103,6 +104,11 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public void close() throws Exception {
+       sessions.values().forEach(Session::kill);
     }
 
     protected void evalOp(final Context context) throws OpProcessorException {
