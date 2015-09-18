@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,11 @@ public class ControlOpProcessor implements OpProcessor {
 
         controlOpMeter.mark();
         return op;
+    }
+
+    @Override
+    public void close() throws Exception {
+        // do nothing = no resources to release
     }
 
     private static Optional<ThrowingConsumer<Context>> validateImportMessage(final RequestMessage message) throws OpProcessorException {
