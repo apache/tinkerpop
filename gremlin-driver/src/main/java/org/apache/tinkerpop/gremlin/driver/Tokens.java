@@ -30,6 +30,7 @@ public final class Tokens {
     private Tokens() {}
 
     public static final String OPS_SHOW = "show";
+    public static final String OPS_CLOSE = "close";
     public static final String OPS_EVAL = "eval";
     public static final String OPS_IMPORT = "import";
     public static final String OPS_INVALID = "invalid";

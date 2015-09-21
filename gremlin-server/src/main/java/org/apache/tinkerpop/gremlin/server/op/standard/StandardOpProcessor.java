@@ -63,6 +63,11 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
     }
 
     @Override
+    public Optional<ThrowingConsumer<Context>> selectOther(final RequestMessage requestMessage)  throws OpProcessorException {
+        return Optional.empty();
+    }
+
+    @Override
     public void close() throws Exception {
         // do nothing = no resources to release
     }

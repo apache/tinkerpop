@@ -1003,6 +1003,7 @@ The "session" `OpProcessor` handles requests for the primary function of Gremlin
 !Key !Description
 !`authentication` !A request that contains the response to a server challenge for authentication
 !`eval` !Evaluate a Gremlin script provided as a `String`
+|`close` |Close the specified session and rollback any open transactions.
 !=========================================================
 |=========================================================
 
