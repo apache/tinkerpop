@@ -71,6 +71,8 @@ final class Connection {
 
     private final String connectionLabel;
 
+    private final Channelizer channelizer;
+
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
     public Connection(final URI uri, final ConnectionPool pool, final int maxInProcess) throws ConnectionException {
@@ -85,7 +87,7 @@ final class Connection {
         if (cluster.isClosing()) throw new IllegalStateException("Cannot open a connection while the cluster after close() is called");
 
         final Bootstrap b = this.cluster.getFactory().createBootstrap();
-        final Channelizer channelizer = new Channelizer.WebSocketChannelizer();
+        channelizer = new Channelizer.WebSocketChannelizer();
         channelizer.init(this);
         b.channel(NioSocketChannel.class).handler(channelizer);
 
@@ -203,6 +205,7 @@ final class Connection {
 
     private void shutdown(final CompletableFuture<Void> future) {
         if (client instanceof Client.SessionedClient) {
+            // maybe this should be delegated back to the Client implementation???
             final RequestMessage closeMessage = client.buildMessage(RequestMessage.build(Tokens.OPS_CLOSE));
             final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
             write(closeMessage, closed);
@@ -220,7 +223,7 @@ final class Connection {
             }
         }
 
-        channel.writeAndFlush(new CloseWebSocketFrame());
+        channelizer.close(channel);
         final ChannelPromise promise = channel.newPromise();
         promise.addListener(f -> {
             if (f.cause() != null)

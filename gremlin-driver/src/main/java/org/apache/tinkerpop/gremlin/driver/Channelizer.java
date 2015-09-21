@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
@@ -58,6 +60,14 @@ public interface Channelizer extends ChannelHandler {
     public void init(final Connection connection);
 
     /**
+     * Called on {@link Connection#close()} to perform an {@code Channelizer} specific functions.  Note that the
+     * {@link Connection} already calls {@code Channel.close()} so there is no need to call that method here.
+     * An implementation will typically use this method to send a {@code Channelizer} specific message to the
+     * server to notify of shutdown coming from the client side (e.g. a "close" websocket frame).
+     */
+    public void close(final Channel channel);
+
+    /**
      * Called after the channel connects. The {@code Channelizer} may need to perform some functions, such as a
      * handshake.
      */
@@ -84,6 +94,11 @@ public interface Channelizer extends ChannelHandler {
         public abstract void configure(final ChannelPipeline pipeline);
 
         public void finalize(final ChannelPipeline pipeline) {
+            // do nothing
+        }
+
+        @Override
+        public void close(final Channel channel) {
             // do nothing
         }
 
@@ -140,6 +155,14 @@ public interface Channelizer extends ChannelHandler {
             super.init(connection);
             webSocketGremlinRequestEncoder = new WebSocketGremlinRequestEncoder(true, cluster.getSerializer());
             webSocketGremlinResponseDecoder = new WebSocketGremlinResponseDecoder(cluster.getSerializer());
+        }
+
+        /**
+         * Sends a {@code CloseWebSocketFrame} to the server for the specified channel.
+         */
+        @Override
+        public void close(final Channel channel) {
+            channel.writeAndFlush(new CloseWebSocketFrame());
         }
 
         @Override
