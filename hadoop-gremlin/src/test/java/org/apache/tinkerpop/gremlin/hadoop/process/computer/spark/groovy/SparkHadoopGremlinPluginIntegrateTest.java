@@ -32,5 +32,5 @@ import org.junit.runner.RunWith;
  */
 @RunWith(HadoopPluginSuite.class)
 @GraphProviderClass(provider = HadoopSparkGraphProvider.class, graph = HadoopGraph.class)
-public class SparkHadoopGremlinPluginTest {
+public class SparkHadoopGremlinPluginIntegrateTest {
 }
