@@ -43,7 +43,6 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-
 public class HadoopGremlinPluginTest extends AbstractGremlinTest {
 
     @Before

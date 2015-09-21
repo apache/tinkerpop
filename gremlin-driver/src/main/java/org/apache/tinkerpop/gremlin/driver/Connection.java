@@ -49,6 +49,7 @@ final class Connection {
     private final URI uri;
     private final ConcurrentMap<UUID, ResultQueue> pending = new ConcurrentHashMap<>();
     private final Cluster cluster;
+    private final Client client;
     private final ConnectionPool pool;
 
     public static final int MAX_IN_PROCESS = 4;
@@ -72,11 +73,14 @@ final class Connection {
 
     private final String connectionLabel;
 
+    private final Channelizer channelizer;
+
     private final AtomicReference<CompletableFuture<Void>> closeFuture = new AtomicReference<>();
 
-    public Connection(final URI uri, final ConnectionPool pool, final Cluster cluster, final int maxInProcess) throws ConnectionException {
+    public Connection(final URI uri, final ConnectionPool pool, final int maxInProcess) throws ConnectionException {
         this.uri = uri;
-        this.cluster = cluster;
+        this.cluster = pool.getCluster();
+        this.client = pool.getClient();
         this.pool = pool;
         this.maxInProcess = maxInProcess;
 
@@ -90,7 +94,7 @@ final class Connection {
                 channelizerClass.compareAndSet(null, (Class<Channelizer>) Class.forName(cluster.connectionPoolSettings().channelizer));
             }
 
-            final Channelizer channelizer = channelizerClass.get().newInstance();
+            channelizer = channelizerClass.get().newInstance();
             channelizer.init(this);
             b.channel(NioSocketChannel.class).handler(channelizer);
 
@@ -126,6 +130,10 @@ final class Connection {
 
     Cluster getCluster() {
         return cluster;
+    }
+
+    Client getClient() {
+        return client;
     }
 
     ConcurrentMap<UUID, ResultQueue> getPending() {
@@ -202,7 +210,26 @@ final class Connection {
     }
 
     private void shutdown(final CompletableFuture<Void> future) {
-        channel.writeAndFlush(new CloseWebSocketFrame());
+        if (client instanceof Client.SessionedClient) {
+            // maybe this should be delegated back to the Client implementation???
+            final RequestMessage closeMessage = client.buildMessage(RequestMessage.build(Tokens.OPS_CLOSE));
+            final CompletableFuture<ResultSet> closed = new CompletableFuture<>();
+            write(closeMessage, closed);
+
+            try {
+                // make sure we get a response here to validate that things closed as expected.  on error, we'll let
+                // the server try to clean up on its own.  the primary error here should probably be related to
+                // protocol issues which should not be something a user has to fuss with.
+                closed.get();
+            } catch (Exception ex) {
+                final String msg = String.format(
+                    "Encountered an error trying to close connection on %s - force closing - server will close session on shutdown or timeout.",
+                    ((Client.SessionedClient) client).getSessionId());
+                logger.warn(msg, ex);
+            }
+        }
+
+        channelizer.close(channel);
         final ChannelPromise promise = channel.newPromise();
         promise.addListener(f -> {
             if (f.cause() != null)

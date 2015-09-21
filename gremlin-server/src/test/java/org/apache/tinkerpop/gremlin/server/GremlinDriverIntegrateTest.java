@@ -22,6 +22,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.driver.*;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
+import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
@@ -527,6 +528,27 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldCloseSession() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect(name.getMethodName());
+
+        final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
+        assertEquals(9, results1.all().get().size());
+        final ResultSet results2 = client.submit("x[0]+1");
+        assertEquals(2, results2.all().get().get(0).getInt());
+
+        client.close();
+
+        try {
+            client.submit("x[0]+1");
+            fail("Should have thrown an exception because the connection is closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ConnectionException.class));
+        }
+    }
+
+    @Test
     public void shouldExecuteScriptInSessionAssumingDefaultedImports() throws Exception {
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
@@ -702,5 +724,4 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         cluster.close();
     }
-
 }
