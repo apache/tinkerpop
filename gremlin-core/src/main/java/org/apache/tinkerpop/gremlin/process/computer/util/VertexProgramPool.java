@@ -54,4 +54,16 @@ public final class VertexProgramPool {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
+
+    public synchronized void workerIterationStart(final Memory memory) {
+        for (final VertexProgram<?> vertexProgram : this.pool) {
+            vertexProgram.workerIterationStart(memory);
+        }
+    }
+
+    public synchronized void workerIterationEnd(final Memory memory) {
+        for (final VertexProgram<?> vertexProgram : this.pool) {
+            vertexProgram.workerIterationEnd(memory);
+        }
+    }
 }
