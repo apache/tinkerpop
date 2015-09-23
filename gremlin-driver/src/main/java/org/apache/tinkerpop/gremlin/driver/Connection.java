@@ -24,7 +24,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
