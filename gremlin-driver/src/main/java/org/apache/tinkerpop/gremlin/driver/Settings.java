@@ -47,6 +47,10 @@ final class Settings {
 
     public int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
 
+    public String username;
+
+    public String password;
+
     /**
      * Read configuration from a file into a new {@link Settings} object.
      *
@@ -79,6 +83,7 @@ final class Settings {
         public int reconnectInterval = Connection.RECONNECT_INTERVAL;
         public int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         public int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        public String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         public String sessionId = null;
 
         public Optional<String> optionalSessionId() {

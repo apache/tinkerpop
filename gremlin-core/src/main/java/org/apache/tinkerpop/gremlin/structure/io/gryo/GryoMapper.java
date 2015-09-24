@@ -20,10 +20,12 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
-import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_P_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_P_S_SE_SL_Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_LP_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_S_SE_SL_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.B_O_Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.O_Traverser;
@@ -31,7 +33,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 import org.apache.tinkerpop.gremlin.process.traversal.util.DependantMutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.MutableMetrics;
 import org.apache.tinkerpop.gremlin.process.traversal.util.StandardTraversalMetrics;
-import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -96,12 +97,12 @@ import java.util.stream.Collectors;
  * serializers in one of three ways:
  * <p/>
  * <ol>
- *     <li>Register just the custom class with a {@code null} {@link Serializer} implementation</li>
- *     <li>Register the custom class with a {@link Serializer} implementation</li>
- *     <li>
- *         Register the custom class with a {@code Function<Kryo, Serializer>} for those cases where the
- *         {@link Serializer} requires the {@link Kryo} instance to get constructed.
- *     </li>
+ * <li>Register just the custom class with a {@code null} {@link Serializer} implementation</li>
+ * <li>Register the custom class with a {@link Serializer} implementation</li>
+ * <li>
+ * Register the custom class with a {@code Function<Kryo, Serializer>} for those cases where the
+ * {@link Serializer} requires the {@link Kryo} instance to get constructed.
+ * </li>
  * </ol>
  * <p/>
  * For example:
@@ -223,7 +224,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferenceVertex.class, null, 84));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ReferencePath.class, null, 85));
 
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StarGraph.class, kryo -> StarGraphGryoSerializer.with(Direction.BOTH), 86)); // ***LAST ID**
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(StarGraph.class, kryo -> StarGraphGryoSerializer.with(Direction.BOTH), 86));
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Edge.class, kryo -> new GryoSerializers.EdgeSerializer(), 65));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Vertex.class, kryo -> new GryoSerializers.VertexSerializer(), 66));
@@ -233,8 +234,9 @@ public final class GryoMapper implements Mapper<Kryo> {
             // skip 55
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_Traverser.class, null, 75));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(O_Traverser.class, null, 76));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_P_S_SE_SL_Traverser.class, null, 77));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_LP_O_P_S_SE_SL_Traverser.class, null, 77));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_O_S_SE_SL_Traverser.class, null, 78));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_LP_O_S_SE_SL_Traverser.class, null, 87));
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraverserSet.class, null, 58));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Tree.class, null, 61));
@@ -246,9 +248,10 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MapReduce.NullObject.class, null, 74));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(AtomicLong.class, null, 79));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DependantMutableMetrics.class, null, 80));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Pair.class, kryo -> new PairSerializer(), 88)); // ***LAST ID**
         }};
 
-        private IoRegistry registry = null;
+        private List<IoRegistry> registries = new ArrayList<>();
 
         /**
          * Starts numbering classes for Gryo serialization at 65536 to leave room for future usage by TinkerPop.
@@ -263,7 +266,8 @@ public final class GryoMapper implements Mapper<Kryo> {
          */
         @Override
         public Builder addRegistry(final IoRegistry registry) {
-            this.registry = registry;
+            if (null == registry) throw new IllegalArgumentException("The registry cannot be null");
+            this.registries.add(registry);
             return this;
         }
 
@@ -299,7 +303,7 @@ public final class GryoMapper implements Mapper<Kryo> {
          */
         public GryoMapper create() {
             // consult the registry if provided and inject registry entries as custom classes.
-            if (registry != null) {
+            registries.forEach(registry -> {
                 final List<Pair<Class, Object>> serializers = registry.find(GryoIo.class);
                 serializers.forEach(p -> {
                     if (null == p.getValue1())
@@ -315,7 +319,7 @@ public final class GryoMapper implements Mapper<Kryo> {
                                 Serializer.class.getName(), Kryo.class.getSimpleName(),
                                 Serializer.class.getSimpleName()));
                 });
-            }
+            });
 
             return new GryoMapper(serializationList);
         }

@@ -21,18 +21,22 @@ package org.apache.tinkerpop.gremlin.groovy.util
 import groovy.grape.Grape
 import org.apache.commons.lang3.SystemUtils
 import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.nio.file.*
 import java.util.jar.JarFile
 import java.util.jar.Manifest
 
 /**
- * This class is a rough copy of the {@code InstallCommand} in Gremlin Console.  There are far more detailed
- * comments there with respect to the workings of this class.
+ * This class provides a way to copy an {@link Artifact} and it's dependencies from Maven repositories down to
+ * the local system.  This capability is useful for the {@code :install} command in Gremlin Console and for the
+ * {@code -i} option on {@code gremlin-server.sh}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 class DependencyGrabber {
+    private static final Logger logger = LoggerFactory.getLogger(DependencyGrabber.class);
 
     private final static String fileSep = System.getProperty("file.separator")
     private final ClassLoader classLoaderToUse
@@ -43,7 +47,7 @@ class DependencyGrabber {
         this.extensionDirectory = extensionDirectory
     }
 
-    def void copyDependenciesToPath(final Artifact artifact) {
+    def Set<String> copyDependenciesToPath(final Artifact artifact) {
         final def dep = makeDepsMap(artifact)
         final String extClassPath = getPathFromDependency(dep)
         final String extLibPath = extClassPath + fileSep + "lib"
@@ -61,60 +65,81 @@ class DependencyGrabber {
         def targetPluginPath = fs.getPath(extPluginPath)
         def targetLibPath = fs.getPath(extLibPath)
 
+        // collect the files already on the path in /lib. making some unfortunate assumptions about what the path
+        // looks like for the gremlin distribution
         def filesAlreadyInPath = []
         def libClassPath
         try {
             libClassPath = fs.getPath(System.getProperty("user.dir") + fileSep + "lib")
             getFileNames(filesAlreadyInPath, libClassPath)
         } catch (Exception ignored) {
-            println "Detected a non-standard Gremlin directory structure during install.  Expecting a 'lib' " +
+            // the user might have a non-standard directory system.  if they are non-standard then they must be
+            // smart and they are therefore capable of resolving their own dependency problems.  this could also
+            // mean that they are running gremlin from source and not from target/*standalone*
+            logger.warn("Detected a non-standard Gremlin directory structure during install.  Expecting a 'lib' " +
                     "directory sibling to 'ext'. This message does not necessarily imply failure, however " +
                     "the console requires a certain directory structure for proper execution. Altering that " +
-                    "structure can lead to unexpected behavior."
+                    "structure can lead to unexpected behavior.")
         }
 
         final def dependencyLocations = [] as Set<URI>
         dependencyLocations.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, dep))
 
-        // if windows then the path contains a starting forward slash that prevents it from being
-        // recognized by FileSystem - strip it off
-        dependencyLocations.collect {
-            def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
-            return fs.getPath(p)
-        }.findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }.findAll {
-            !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)
-        }.each {
-            def copying = targetPluginPath.resolve(it.fileName)
-            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-            println "Copying - $copying"
-        }
-
-        dependencyLocations.collect {
-            def p = SystemUtils.IS_OS_WINDOWS ? it.path.substring(1) : it.path
-            return fs.getPath(p)
-        }.each {
-            def copying = targetLibPath.resolve(it.fileName)
-            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-            println "Copying - $copying"
-        }
-
-        getAdditionalDependencies(targetPluginPath, artifact).collect { fs.getPath(it.path) }
+        // for the "plugin" path ignore slf4j related jars.  they are already in the path and will create duplicate
+        // bindings which generate annoying log messages that make you think stuff is wrong.  also, don't bring
+        // over files that are already on the path. these dependencies will be part of the classpath
+        //
+        // additional dependencies are outside those pulled by grape and are defined in the manifest of the plugin jar.
+        // if a plugin uses that setting, it should force "restart" when the plugin is activated.  right now,
+        // it is up to the plugin developer to enforce that setting.
+        dependencyLocations.collect(convertUriToPath(fs))
+                .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
+                .findAll {!filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
+                .each(copyTo(targetPluginPath))
+        getAdditionalDependencies(targetPluginPath, artifact).collect(convertUriToPath(fs))
             .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
             .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
-            .each {
-                def copying = targetPluginPath.resolve(it.fileName)
-                Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-                println "Copying - $copying"
-            }
+            .each(copyTo(targetPluginPath))
 
-        getAdditionalDependencies(targetLibPath, artifact).collect { fs.getPath(it.path) }.each {
-            def copying = targetLibPath.resolve(it.fileName)
-            Files.copy(it, copying, StandardCopyOption.REPLACE_EXISTING)
-            println "Copying - $copying"
-        }
+        // get dependencies for the lib path.  the lib path should not filter out any jars - used for reference
+        dependencyLocations.collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
+        getAdditionalDependencies(targetLibPath, artifact).collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
 
+        // the ordering of jars seems to matter in some cases (e.g. neo4j).  the plugin system allows the plugin
+        // to place a Gremlin-Plugin-Paths entry in the jar manifest file to define where specific jar files should
+        // go in the path which provides enough flexibility to control when jars should load.  unfortunately,
+        // this "ordering" issue doesn't seem to be documented as an issue anywhere and it is difficult to say
+        // whether it is a java issue, groovy classloader issue, grape issue, etc.  see this issue for more
+        // on the weirdness: https://github.org/apache/tinkerpop/tinkerpop3/issues/230
+        //
+        // another unfortunate side-effect to this approach is that manual cleanup of jars is kinda messy now
+        // because you can't just delete the plugin directory as one or more of the jars might have been moved.
+        // unsure of what the long term effects of this is.  at the end of the day, users may simply need to
+        // know something about their dependencies in order to have lots of "installed" plugins/dependencies.
         alterPaths("Gremlin-Plugin-Paths", targetPluginPath, artifact)
         alterPaths("Gremlin-Lib-Paths", targetLibPath, artifact)
+    }
+
+    private static Closure copyTo(final Path path) {
+        return { Path p ->
+            // check for existence prior to copying as windows systems seem to have problems with REPLACE_EXISTING
+            def copying = path.resolve(p.fileName)
+            if (!copying.toFile().exists()) {
+                Files.copy(p, copying, StandardCopyOption.REPLACE_EXISTING)
+                logger.info("Copying - $copying")
+            }
+        }
+    }
+
+    /**
+     * Windows places a starting forward slash in the URI that needs to be stripped off or else the
+     * {@code FileSystem} won't properly resolve it.
+     */
+    private static Closure convertUriToPath(final FileSystem fs) {
+        return { URI uri ->
+            def p = SystemUtils.IS_OS_WINDOWS ? uri.path.substring(1) : uri.path
+            return fs.getPath(p)
+        }
     }
 
     private Set<URI> getAdditionalDependencies(final Path extPath, final Artifact artifact) {
@@ -164,11 +189,10 @@ class DependencyGrabber {
     }
 
     private String getPathFromDependency(final Map<String, Object> dep) {
-        def fileSep = System.getProperty("file.separator")
         return this.extensionDirectory + fileSep + (String) dep.module
     }
 
-    private def makeDepsMap(final Artifact artifact) {
+    public def makeDepsMap(final Artifact artifact) {
         final Map<String, Object> map = new HashMap<>()
         map.put("classLoader", this.classLoaderToUse)
         map.put("group", artifact.getGroup())
@@ -178,7 +202,7 @@ class DependencyGrabber {
         return map
     }
 
-    private static void getFileNames(final List fileNames, final Path dir) {
+    public static void getFileNames(final List fileNames, final Path dir) {
         final DirectoryStream<Path> stream = Files.newDirectoryStream(dir)
         for (Path path : stream) {
             if (path.toFile().isDirectory()) getFileNames(fileNames, path)

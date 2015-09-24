@@ -20,9 +20,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.strategy.verification;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ReadOnlyStrategy;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
@@ -31,7 +28,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -42,19 +39,15 @@ public class ReadOnlyStrategyTest {
     @Parameterized.Parameters(name = "{0}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {"addInE()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addInE("test", "x")},
-                {"addInE(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addInE("test", "x", "this", "that")},
-                {"addOutE()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addOutE("test", "x")},
-                {"addOutE(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addOutE("test", "x", "this", "that")},
-                {"addE(IN)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.IN, "test", "test")},
-                {"addE(IN,args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.IN, "test", "test", "this", "that")},
-                {"addE(OUT)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.OUT, "test", "test")},
-                {"addE(OUT,args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE(Direction.OUT, "test", "test", "this", "that")},
+                {"addE(test).from(x)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").from("x")},
+                {"addE(test).from(x).property(this,that)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").from("x").property("this", "that")},
+                {"addE(test).to(x)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").to("x")},
+                {"addE(test).to(x).property(this,that)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addE("test").to("x").property("this", "that")},
                 {"outE().property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).outE().property("test", "test")},
                 {"out().properties(k).property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().properties("test").property("test", "that")},
                 {"out().property(k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().property("test", "test")},
                 {"out().property(Cardinality,k,v)", new DefaultGraphTraversal<>(EmptyGraph.instance()).out().property(VertexProperty.Cardinality.list, "test", "test")},
-                {"addV(args)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV("test", "test", "this", "that")},
+                {"addV(person)", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV("person")},
                 {"addV()", new DefaultGraphTraversal<>(EmptyGraph.instance()).addV()}});
     }
 
@@ -65,12 +58,12 @@ public class ReadOnlyStrategyTest {
     public Traversal traversal;
 
     @Test
-    public void shouldPreventMutatingStepsFromBeingInTheTraversal() {
+    public void shouldBeVerifiedIllegal() {
         try {
             ReadOnlyStrategy.instance().apply(this.traversal.asAdmin());
             fail("The strategy should have found a mutating step.");
-        } catch (IllegalStateException ise) {
-            assertEquals("The provided traversal has a mutating step and thus is not read only: " + this.traversal, ise.getMessage());
+        } catch (VerificationException ise) {
+            assertTrue(ise.getMessage().startsWith("The provided traversal has a mutating step and thus is not read only: "));
         }
     }
 }

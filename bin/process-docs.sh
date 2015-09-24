@@ -20,20 +20,38 @@
 
 pushd "$(dirname $0)/.." > /dev/null
 
-GEPHI_MOCK=
+if [ "$1" == "--dryRun" ]; then
 
-trap cleanup EXIT
+  mkdir -p target/postprocess-asciidoc/tmp
+  cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
+  cp docs/src/*.asciidoc target/postprocess-asciidoc/
+  ec=$?
 
-function cleanup() {
-  [ ${GEPHI_MOCK} ] && kill ${GEPHI_MOCK}
-}
+else
+
+  GEPHI_MOCK=
+
+  trap cleanup EXIT
+
+  function cleanup() {
+    [ ${GEPHI_MOCK} ] && kill ${GEPHI_MOCK}
+  }
 
 
-nc -z localhost 8080 || (
-  bin/gephi-mock.py > /dev/null 2>&1 &
-  GEPHI_MOCK=$!
-)
+  nc -z localhost 8080 || (
+    bin/gephi-mock.py > /dev/null 2>&1 &
+    GEPHI_MOCK=$!
+  )
 
-docs/preprocessor/preprocess.sh && mvn process-resources -Dasciidoc && docs/postprocessor/postprocess.sh
+  docs/preprocessor/preprocess.sh
+  ec=$?
+fi
+
+if [ $ec == 0 ]; then
+  mvn process-resources -Dasciidoc && docs/postprocessor/postprocess.sh
+  ec=$?
+fi
 
 popd > /dev/null
+
+exit ${ec}

@@ -32,7 +32,7 @@ VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep '<v
 
 rm -rf target/svn
 
-bin/process-docs.sh
+bin/process-docs.sh || exit 1
 mvn process-resources -Djavadoc
 
 mkdir -p target/svn

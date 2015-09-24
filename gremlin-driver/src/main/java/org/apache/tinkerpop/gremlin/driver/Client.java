@@ -300,7 +300,7 @@ public abstract class Client {
             cluster.allHosts().forEach(host -> {
                 try {
                     // hosts that don't initialize connection pools will come up as a dead host
-                    hostConnectionPools.put(host, new ConnectionPool(host, cluster));
+                    hostConnectionPools.put(host, new ConnectionPool(host, this));
 
                     // added a new host to the cluster so let the load-balancer know
                     this.cluster.loadBalancingStrategy().onNew(host);
@@ -412,6 +412,10 @@ public abstract class Client {
             this.sessionId = sessionId;
         }
 
+        String getSessionId() {
+            return sessionId;
+        }
+
         @Override
         public Client rebind(final String graphOrTraversalSourceName){
             throw new UnsupportedOperationException("Sessioned client do no support rebinding");
@@ -445,7 +449,7 @@ public abstract class Client {
                     .stream().filter(Host::isAvailable).collect(Collectors.toList());
             Collections.shuffle(hosts);
             final Host host = hosts.get(0);
-            connectionPool = new ConnectionPool(host, cluster);
+            connectionPool = new ConnectionPool(host, this, Optional.of(1), Optional.of(1));
         }
 
         /**

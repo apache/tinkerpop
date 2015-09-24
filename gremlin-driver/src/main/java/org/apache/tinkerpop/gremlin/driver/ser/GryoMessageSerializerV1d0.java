@@ -26,16 +26,17 @@ import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
-import org.javatuples.Pair;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -64,14 +64,17 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
     private static final String MIME_TYPE = SerTokens.MIME_GRYO_V1D0;
     private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRYO_V1D0 + "-stringd";
 
+    private static final String TOKEN_IO_REGISTRIES = "ioRegistries";
     private static final String TOKEN_CUSTOM = "custom";
     private static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
     private static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
+    private static final String TOKEN_BUFFER_SIZE = "bufferSize";
 
-    private boolean serializeToString;
+    private boolean serializeToString = false;
+    private int bufferSize = 4096;
 
     /**
-     * Creates an instance with a standard {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper} instance. Note that this instance
+     * Creates an instance with a standard {@link GryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
     public GryoMessageSerializerV1d0() {
@@ -79,7 +82,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
     }
 
     /**
-     * Creates an instance with a provided mapper configured {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper} instance. Note that this instance
+     * Creates an instance with a provided mapper configured {@link GryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
     public GryoMessageSerializerV1d0(final GryoMapper kryo) {
@@ -109,13 +112,39 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
             builder = GryoMapper.build();
         }
 
-        final List<String> classNameList;
-        try {
-            classNameList = (List<String>) config.getOrDefault(TOKEN_CUSTOM, new ArrayList<String>());
-        } catch (Exception ex) {
-            throw new IllegalStateException(String.format("Invalid configuration value of [%s] for [%s] setting on %s serialization configuration",
-                    config.getOrDefault(TOKEN_CUSTOM, ""), TOKEN_CUSTOM, this.getClass().getName()), ex);
-        }
+        addIoRegistries(config, builder);
+        addCustomClasses(config, builder);
+
+        this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
+        this.bufferSize = Integer.parseInt(config.getOrDefault(TOKEN_BUFFER_SIZE, "4096").toString());
+
+        this.gryoMapper = builder.create();
+    }
+
+    private void addIoRegistries(final Map<String, Object> config, final GryoMapper.Builder builder) {
+        final List<String> classNameList = getClassNamesFromConfig(TOKEN_IO_REGISTRIES, config);
+
+        classNameList.stream().forEach(className -> {
+            try {
+                final Class<?> clazz = Class.forName(className);
+                try {
+                    final Method instanceMethod = clazz.getDeclaredMethod("getInstance");
+                    if (IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
+                        builder.addRegistry((IoRegistry) instanceMethod.invoke(null));
+                    else
+                        throw new Exception();
+                } catch (Exception methodex) {
+                    // tried getInstance() and that failed so try newInstance() no-arg constructor
+                    builder.addRegistry((IoRegistry) clazz.newInstance());
+                }
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        });
+    }
+
+    private void addCustomClasses(final Map<String, Object> config, final GryoMapper.Builder builder) {
+        final List<String> classNameList = getClassNamesFromConfig(TOKEN_CUSTOM, config);
 
         classNameList.stream().forEach(serializerDefinition -> {
             String className;
@@ -145,10 +174,17 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                 throw new IllegalStateException("Class could not be found", ex);
             }
         });
+    }
 
-        this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
-
-        this.gryoMapper = builder.create();
+    private List<String> getClassNamesFromConfig(final String token, final Map<String, Object> config) {
+        final List<String> classNameList;
+        try {
+            classNameList = (List<String>) config.getOrDefault(token, new ArrayList<String>());
+        } catch (Exception ex) {
+            throw new IllegalStateException(String.format("Invalid configuration value of [%s] for [%s] setting on %s serialization configuration",
+                    config.getOrDefault(token, ""), token, this.getClass().getName()), ex);
+        }
+        return classNameList;
     }
 
     @Override
@@ -160,7 +196,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
     public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException {
         try {
             final Kryo kryo = kryoThreadLocal.get();
-            final byte[] payload = new byte[msg.readableBytes()];
+            final byte[] payload = new byte[msg.capacity()];
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final UUID requestId = kryo.readObjectOrNull(input, UUID.class);
@@ -190,7 +226,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
         try {
             final Kryo kryo = kryoThreadLocal.get();
             try (final OutputStream baos = new ByteArrayOutputStream()) {
-                final Output output = new Output(baos);
+                final Output output = new Output(baos, bufferSize);
 
                 // request id - if present
                 kryo.writeObjectOrNull(output, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null, UUID.class);
@@ -208,7 +244,8 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                 if (size > Integer.MAX_VALUE)
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
-                encodedMessage = allocator.buffer((int) output.total());
+                encodedMessage = allocator.buffer((int) size);
+                if (size > bufferSize) output.flush();
                 encodedMessage.writeBytes(output.toBytes());
             }
 
@@ -254,7 +291,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
         try {
             final Kryo kryo = kryoThreadLocal.get();
             try (final OutputStream baos = new ByteArrayOutputStream()) {
-                final Output output = new Output(baos);
+                final Output output = new Output(baos, bufferSize);
                 final String mimeType = serializeToString ? MIME_TYPE_STRINGD : MIME_TYPE;
                 output.writeByte(mimeType.length());
                 output.write(mimeType.getBytes(UTF8));
@@ -269,6 +306,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
                 encodedMessage = allocator.buffer((int) size);
+                if (size > bufferSize) output.flush();
                 encodedMessage.writeBytes(output.toBytes());
             }
 

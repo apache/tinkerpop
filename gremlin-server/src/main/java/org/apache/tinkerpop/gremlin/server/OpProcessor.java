@@ -21,12 +21,14 @@ package org.apache.tinkerpop.gremlin.server;
 import org.apache.tinkerpop.gremlin.server.op.OpProcessorException;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 
+import java.io.Closeable;
+
 /**
  * Interface for providing commands that websocket requests will respond to.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public interface OpProcessor {
+public interface OpProcessor extends AutoCloseable {
 
     /**
      * The name of the processor which requests must refer to "processor" field on a request.

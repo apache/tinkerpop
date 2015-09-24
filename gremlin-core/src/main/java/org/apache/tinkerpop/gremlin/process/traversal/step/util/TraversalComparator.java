@@ -61,5 +61,9 @@ public final class TraversalComparator<S, E> implements Comparator<S>, Serializa
     public Traversal.Admin<S, E> getTraversal() {
         return this.traversal;
     }
+
+    public Comparator<E> getComparator() {
+        return this.comparator;
+    }
 }
 

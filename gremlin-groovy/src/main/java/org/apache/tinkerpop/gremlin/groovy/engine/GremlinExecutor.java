@@ -82,7 +82,6 @@ public class GremlinExecutor implements AutoCloseable {
     private final Map<String, EngineSettings> settings;
     private final long scriptEvaluationTimeout;
     private final Bindings globalBindings;
-    private final Predicate<Map.Entry<String,Object>> promoteBinding;
     private final List<List<String>> use;
     private final ExecutorService executorService;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -107,7 +106,6 @@ public class GremlinExecutor implements AutoCloseable {
         this.settings = builder.settings;
         this.scriptEvaluationTimeout = builder.scriptEvaluationTimeout;
         this.globalBindings = builder.globalBindings;
-        this.promoteBinding = builder.promoteBinding;
         this.enabledPlugins = builder.enabledPlugins;
         this.scriptEngines = createScriptEngines();
         this.suppliedExecutor = suppliedExecutor;
@@ -232,7 +230,7 @@ public class GremlinExecutor implements AutoCloseable {
         logger.debug("Preparing to evaluate script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
         final Bindings bindings = new SimpleBindings();
-        bindings.putAll(this.globalBindings);
+        bindings.putAll(globalBindings);
         bindings.putAll(boundVars);
         beforeEval.accept(bindings);
 
@@ -255,7 +253,7 @@ public class GremlinExecutor implements AutoCloseable {
                 if (withResult != null) withResult.accept(result);
 
                 afterSuccess.accept(bindings);
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 final Throwable root = null == ex.getCause() ? ex : ExceptionUtils.getRootCause(ex);
 
                 // thread interruptions will typically come as the result of a timeout, so in those cases,
@@ -277,7 +275,7 @@ public class GremlinExecutor implements AutoCloseable {
         if (scriptEvaluationTimeout > 0) {
             // Schedule a timeout in the thread pool for future execution
             final ScheduledFuture<?> sf = scheduledExecutorService.schedule(() -> {
-                logger.info("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
+                logger.warn("Timing out script - {} - in thread [{}]", script, Thread.currentThread().getName());
                 if (!f.isDone()) {
                     afterTimeout.accept(bindings);
                     f.cancel(true);
@@ -417,19 +415,17 @@ public class GremlinExecutor implements AutoCloseable {
                 }).filter(p -> p.getValue1().isPresent()).map(p -> Pair.with(p.getValue0(), p.getValue1().get())).forEachOrdered(p -> {
                     try {
                         final Bindings bindings = new SimpleBindings();
-                        bindings.putAll(this.globalBindings);
+                        bindings.putAll(globalBindings);
 
                         // evaluate init scripts with hard reference so as to ensure it doesn't get garbage collected
                         bindings.put(GremlinGroovyScriptEngine.KEY_REFERENCE_TYPE, GremlinGroovyScriptEngine.REFERENCE_TYPE_HARD);
 
-                        se.eval(p.getValue1(), bindings, language);
-
-                        // re-assign graph bindings back to global bindings and grab TraversalSource creations.
-                        // prevent assignment of non-graph implementations just in case someone tries to overwrite
-                        // them in the init
-                        bindings.entrySet().stream()
-                                .filter(promoteBinding)
-                                .forEach(kv -> this.globalBindings.put(kv.getKey(), kv.getValue()));
+                        // the returned object should be a Map of initialized global bindings
+                        final Object initializedBindings = se.eval(p.getValue1(), bindings, language);
+                        if (initializedBindings != null && initializedBindings instanceof Map)
+                            globalBindings.putAll((Map) initializedBindings);
+                        else
+                            logger.warn("Initialization script {} did not return a Map - no global bindings specified", p.getValue0());
 
                         logger.info("Initialized {} ScriptEngine with {}", language, p.getValue0());
                     } catch (ScriptException sx) {
@@ -473,7 +469,6 @@ public class GremlinExecutor implements AutoCloseable {
         };
         private List<List<String>> use = new ArrayList<>();
         private Bindings globalBindings = new SimpleBindings();
-        private Predicate<Map.Entry<String,Object>> promoteBinding = kv -> false;
 
         private Builder() {
         }
@@ -496,15 +491,6 @@ public class GremlinExecutor implements AutoCloseable {
             final Map<String, Object> m = null == config ? Collections.emptyMap() : config;
 
             settings.put(engineName, new EngineSettings(imports, staticImports, scripts, m));
-            return this;
-        }
-
-        /**
-         * A predicate applied to the binding list to determine if it should be promoted to a "global" binding
-         * that should be tied to every script.
-         */
-        public Builder promoteBindings(final Predicate<Map.Entry<String,Object>> promoteBinding) {
-            this.promoteBinding = promoteBinding;
             return this;
         }
 

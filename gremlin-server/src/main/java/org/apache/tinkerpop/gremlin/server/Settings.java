@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
+import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
+import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.channel.WebSocketChannelizer;
 import info.ganglia.gmetric4j.gmetric.GMetric;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
@@ -184,6 +186,8 @@ public class Settings {
      */
     public SslSettings ssl = null;
 
+    public AuthenticationSettings authentication = new AuthenticationSettings();
+
     /**
      * The list of plugins to enable for the server.  Plugins may be available on the classpath, but with this
      * configuration it is possible to explicitly include or omit them.
@@ -246,6 +250,9 @@ public class Settings {
 
         final TypeDescription sslSettings = new TypeDescription(SslSettings.class);
         constructor.addTypeDescription(sslSettings);
+
+        final TypeDescription authenticationSettings = new TypeDescription(AuthenticationSettings.class);
+        constructor.addTypeDescription(authenticationSettings);
 
         final TypeDescription serverMetricsDescription = new TypeDescription(ServerMetrics.class);
         constructor.addTypeDescription(serverMetricsDescription);
@@ -332,6 +339,24 @@ public class Settings {
         /**
          * A {@link Map} containing {@link MessageSerializer} specific configurations. Consult the
          * {@link MessageSerializer} implementation for specifics on what configurations are expected.
+         */
+        public Map<String, Object> config = null;
+    }
+
+    /**
+     * Settings for the {@link Authenticator} implementation.
+     */
+    public static class AuthenticationSettings {
+        /**
+         * The fully qualified class name of the {@link Authenticator} implementation. This class name will be
+         * used to load the implementation from the classpath. Defaults to {@link AllowAllAuthenticator} when
+         * not specified.
+         */
+        public String className = AllowAllAuthenticator.class.getName();
+
+        /**
+         * A {@link Map} containing {@link Authenticator} specific configurations. Consult the
+         * {@link Authenticator} implementation for specifics on what configurations are expected.
          */
         public Map<String, Object> config = null;
     }

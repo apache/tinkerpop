@@ -64,7 +64,7 @@ public final class GraphSONIo implements Io<GraphSONReader.Builder, GraphSONWrit
      */
     @Override
     public GraphSONMapper.Builder mapper() {
-        return GraphSONMapper.build().addRegistry(this.registry);
+        return (null == this.registry) ? GraphSONMapper.build() : GraphSONMapper.build().addRegistry(registry);
     }
 
     /**

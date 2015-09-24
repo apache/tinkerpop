@@ -26,8 +26,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * A TraversalSource is responsible for generating a {@link Traversal}. A TraversalSource, once built, can generate any number of {@link Traversal} instances.
- * Each traversal DSL will maintain a corresponding {@link TraversalSource} which specifies the methods which being a "fluent-chaining" of traversal steps.
+ * A {@code TraversalSource} is responsible for generating a {@link Traversal}. A {@code TraversalSource}, once built,
+ * can generate any number of {@link Traversal} instances. Each traversal DSL will maintain a corresponding
+ * {@code TraversalSource} which specifies the methods which being a "fluent-chaining" of traversal steps.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -35,10 +36,20 @@ public interface TraversalSource {
 
     public TraversalSource.Builder asBuilder();
 
+    /**
+     * Gets the {@link GraphComputer} associated with the {@code TraversalSource} which could be constructed as empty.
+     */
     public Optional<GraphComputer> getGraphComputer();
 
+    /**
+     * Gets the {@link Graph} associated with the {@code TraversalSource} which could be constructed as empty.
+     */
     public Optional<Graph> getGraph();
 
+    /**
+     * Gets the list of {@link TraversalStrategy} instances that will be applied to {@link Traversal} objects
+     * generated from this {@code TraversalSource}.
+     */
     public List<TraversalStrategy> getStrategies();
 
     ////////////////

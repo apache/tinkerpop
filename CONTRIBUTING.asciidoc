@@ -14,9 +14,164 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-## Contributing to Apache TinkerPop
+Contributing to Apache TinkerPop
+--------------------------------
 
 Contributions via GitHub pull requests are gladly accepted from their original
 author. By submitting any copyrighted material via pull request, email, or other means
 you agree to license the material under the project's open source license and
 warrant that you have the legal authority to do so.
+
+Building and Testing
+--------------------
+
+TinkerPop requires `Java 1.8.0_40+` for proper building and proper operations.
+
+* Build Project: `mvn clean install`
+** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the Maven project list argument, e.g.:
++
+----
+export GREMLIN_TESTS='org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest$Traversals,org.apache.tinkerpop.gremlin.process.traversal.PathTest'
+mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
+----
+** Clean the `.groovy/grapes/org.apache.tinkerpop` directory on build: `mvn clean install -DcleanGrapes`
+** Turn off "heavy" logging in the "process" tests: `mvn clean install -DargLine="-DmuteTestLogs=true"`
+** The test suite for `neo4j-gremlin` is disabled by default - to turn it on: `mvn clean install -DincludeNeo4j`
+* Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
+** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
+* Check license headers are present: `mvn apache-rat:check`
+* Build AsciiDocs (Hadoop and ZooKeeper must be running): `bin/process-docs.sh`
+** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
+** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-gremlin-console-*-standalone `pwd`/docs/src/xyz.asciidoc]+
+* Build JavaDocs: `mvn process-resources -Djavadoc`
+* Check for Apache License headers: `mvn apache-rat:check`
+* Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`
+* Deploy JavaDocs/AsciiDocs: `bin/publish-docs.sh svn-username`
+* Integration Tests: `mvn verify -DskipIntegrationTests=false`
+** Execute with the `-DincludeNeo4j` option to include transactional tests.
+* Performance Tests: `mvn verify -DskipPerformanceTests=false`
+
+IDE Setup with Intellij
+-----------------------
+
+This section refers specifically to setup within Intellij.  TinkerPop has a module called `gremlin-shaded` which contains shaded dependencies for some libraries that are widely used and tend to introduce conflicts.  To ensure that Intellij properly interprets this module after importing the Maven `pom.xml` perform the following steps:
+
+. Build `gremlin-shaded` from the command line with `mvn clean install`.
+. Right-click on the `gremlin-shaded` module in the project viewer of Intellij and select "Remove module".
+. In the "Maven Projects" Tool window and click the tool button for "Reimport All Maven projects" (go to `View | Tool Windows | Maven Projects` on the main menu if this panel is not activated).
+. At this point it should be possible to compile and run the tests within Intellij, but in the worst case, use `File | Invalidate Caches/Restart` to ensure that indices properly rebuild.
+
+Note that it maybe be necessary to re-execute these steps if the `gremlin-shaded` `pom.xml` is ever updated.
+
+Developers working on the `neo4j-gremlin` module should enabled the `include-neo4j` Maven profile in Intellij.  This will ensure that tests will properly execute within the IDE.
+
+If Intellij complains about "duplicate sources" for the Groovy files when attempting to compile/run tests, then install the link:http://plugins.jetbrains.com/plugin/7442?pr=idea[GMavenPlus Intellij plugin].
+
+For Committers
+--------------
+
+The guidelines that follow apply to those with commit access to the main repository:
+
+Release Notes
+~~~~~~~~~~~~~
+
+There is a two-pronged approach to maintaining the change log and preparing the release notes.
+
+1. For work that is documented in JIRA, run the release notes report to include all of
+the tickets targeted for a specific release.  This report can be included in the
+release announcement.
+
+2. The manual change log (`CHANGELOG.asciidoc`) can be used to highlight large
+changes, describe themes (e.g. "We focused on performance improvements") or to
+give voice to undocumented changes.
+
+Given the dependence on the JIRA report for generating additions to the `CHANGELOG.asciidoc`,
+which uses the title of the issue as the line presented in the release note report, titles should
+be edited prior to release to be useful in that context.  In other words, an issue title should
+be understandable as a change in the fewest words possible while still conveying the gist of the
+change.
+
+Changes that break the public APIs should be marked with a "breaking" label and should be
+distinguished from other changes in the release notes.
+
+Branches
+~~~~~~~~
+
+The "master" branch is used for the main line of development and release branches are constructed
+for ongoing maintenance work.  For example, the "tp30" branch is used to maintain the 3.0.x line
+while work on 3.1.x proceeds on "master".
+
+Other branches may be created for collaborating on features or for RFC's that
+other developers may want to inspect.  It is suggested that the JIRA issue ID be
+used as the prefix, since that triggers certain automation, and it provides a
+way to account for the branch lifecycle, i.e. "Who's branch is this, and can I
+delete it?"
+
+For branches that are NOT associated with JIRA issues, developers should utilize their Apache ID as
+a branch name prefix.  This provides a unique namespace, and also a way to account for the branch lifecycle.
+
+Developers should remove their own branches when they are no longer needed.
+
+Tags
+~~~~
+
+Tags are used for milestones, release candidates, and approved releases.  Please
+refrain from creating arbitrary tags, as they produce permanent clutter.
+
+Issue Tracker Conventions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TinkerPop uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TINKERPOP3[issue tracker].  JIRA is a
+very robust piece of software with many options and configurations.  To simplify usage and ensure consistency across
+issues, the following conventions should be adhered to:
+
+* An issue's "status" should generally be in one of two states: `open` or `closed` (`reopened` is equivalent to `open`
+for our purposes).
+** An `open` issue is newly created, under consideration or otherwise in progress.
+** A `closed` issue is completed for purposes of release (i.e. code, testing, and documentation complete).
+** Issues in a `resolved` state should immediately be evaluated for movement to `closed` - issue become `resolved`
+by those who don't have the permissions to `close`.
+* An issue's "type" should be one of two options: `bug` or `improvement`.
+** A `bug` has a very specific meaning, referring to an error that prevents usage of TinkerPop AND does not have a
+reasonable workaround.  Given that definition, a `bug` should generally have very high priority for a fix.
+** Everything else is an `improvement` in the sense that any other work is an enhancement to the current codebase.
+* The "component" should be representative of the primary area of code that it applies to and all issues should have
+this property set.
+* Issues are not assigned "labels" with one exception: the "breaking" label.  The "breaking" label marks an issue
+as one that is representative of a change in the API that might affect users or vendors.  This label is important when
+organizing release notes.
+* The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
+which that particular issue will completed.
+
+Code Style
+~~~~~~~~~~
+
+Contributors should examine the current code base to determine what the code style patterns are and should match their
+style to what is already present.  Of specific note however, TinkerPop does not use "import wildcards" - IDEs should
+be adjusted accordingly to not auto-wildcard the imports.
+
+Deprecation
+~~~~~~~~~~~
+
+When possible, committers should avoid direct "breaking" change (e.g. removing a method from a class) and favor
+deprecation.  Deprecation should come with sufficient documentation and notice especially when the change involves
+public APIs that might be utilized by users or implemented by vendors:
+
+* Mark the code with the `@Deprecated` annotation.
+* Use javadoc to further document the change with the following content:
+** `@deprecated As of release x.y.z, replaced by {@link SomeOtherClass#someNewMethod()}` - if the method is not
+replaced then the comment can simply read "not replaced".  Additional comments that provide more context are
+encouraged.
+** `@see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-XXX">TINKERPOP3-XXX</a>` - supply a link to the
+JIRA issue for reference.
+* All deprecation should be tied to a JIRA issue with a "breaking" label - the issue itself does not need to
+specifically or solely be about "deprecation" but it should be documented very clearly in the comments what was
+deprecated and what the path forward should be.
+* Be sure that deprecated methods are still under test - consider using javadoc/comments in the tests themselves to
+call out this fact.
+* Create a new JIRA issue to track removal of the deprecation for future evaluation - this issue should have the
+"breaking" label.
+* Provide a post to the developers and/or users mailing lists as the case requires to alert the community to the change.
+
+The JIRA issues that track removal of deprecated methods should be periodically evaluated to determine if it is
+prudent to schedule them into a release.

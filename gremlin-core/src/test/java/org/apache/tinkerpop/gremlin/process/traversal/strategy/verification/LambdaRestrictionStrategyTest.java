@@ -24,9 +24,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategies;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.DedupBijectionStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.LambdaRestrictionStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,7 +62,7 @@ public class LambdaRestrictionStrategyTest {
     public Traversal traversal;
 
     @Test
-    public void shouldNotAllowLambdaSteps() {
+    public void shouldBeVerifiedIllegal() {
         try {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
             strategies.addStrategies(LambdaRestrictionStrategy.instance());
@@ -73,7 +70,7 @@ public class LambdaRestrictionStrategyTest {
             traversal.asAdmin().setEngine(StandardTraversalEngine.instance());
             traversal.asAdmin().applyStrategies();
             fail("The strategy should not allow lambdas: " + this.traversal);
-        } catch (IllegalStateException ise) {
+        } catch (VerificationException ise) {
             assertTrue(ise.getMessage().contains("lambda"));
         }
     }

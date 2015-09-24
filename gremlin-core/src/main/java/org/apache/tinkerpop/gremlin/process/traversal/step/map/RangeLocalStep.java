@@ -68,13 +68,15 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
     static <S> S applyRange(final S start, final long low, final long high) {
         if (start instanceof Map) {
             return (S) applyRangeMap((Map) start, low, high);
-        } else if (start instanceof Collection) {
-            return (S) applyRangeCollection((Collection) start, low, high);
+        } else if (start instanceof Iterable) {
+            return (S) applyRangeIterable((Iterable) start, low, high);
         }
         return start;
     }
 
-    /** Extracts specified range of elements from a Map. */
+    /**
+     * Extracts specified range of elements from a Map.
+     */
     private static Map applyRangeMap(final Map map, final long low, final long high) {
         final long capacity = (high != -1 ? high : map.size()) - low;
         final Map result = new LinkedHashMap((int) Math.min(capacity, map.size()));
@@ -91,8 +93,10 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
         return result;
     }
 
-    /** Extracts specified range of elements from a Collection. */
-    private static Object applyRangeCollection(final Collection collection, final long low, final long high) {
+    /**
+     * Extracts specified range of elements from a Collection.
+     */
+    private static Object applyRangeIterable(final Iterable<Object> iterable, final long low, final long high) {
         // See if we only want a single item.  It is also possible that we will allow more than one item, but that the
         // incoming container is only capable of producing a single item.  In that case, we will still emit a
         // container.  This allows the result type to be predictable based on the step arguments.  It also allows us to
@@ -100,10 +104,10 @@ public final class RangeLocalStep<S> extends MapStep<S, S> {
         boolean single = high != -1 ? (high - low == 1) : false;
 
         final Collection resultCollection =
-            single ? null : (collection instanceof Set) ? new LinkedHashSet() : new LinkedList();
+                single ? null : (iterable instanceof Set) ? new LinkedHashSet() : new LinkedList();
         Object result = single ? null : resultCollection;
         long c = 0L;
-        for (final Object item : collection) {
+        for (final Object item : iterable) {
             if (c >= low) {
                 if (c < high || high == -1) {
                     if (single) {

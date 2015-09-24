@@ -25,7 +25,7 @@ limitations under the License.
     </parent>
     <groupId>org.apache.tinkerpop</groupId>
     <artifactId>tinkerpop</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Apache TinkerPop</name>
     <description>A Graph Computing Framework</description>
@@ -112,6 +112,8 @@ limitations under the License.
         <module>gremlin-groovy-test</module>
         <module>tinkergraph-gremlin</module>
         <module>hadoop-gremlin</module>
+        <module>spark-gremlin</module>
+        <module>giraph-gremlin</module>
         <module>neo4j-gremlin</module>
         <module>gremlin-driver</module>
         <module>gremlin-console</module>
@@ -138,7 +140,9 @@ limitations under the License.
         <skipIntegrationTests>true</skipIntegrationTests>
         <skipPerformanceTests>true</skipPerformanceTests>
         <slf4j.version>1.7.12</slf4j.version>
-        <hadoop.version>1.2.1</hadoop.version>
+        <hadoop.version>2.7.1</hadoop.version>
+        <commons.configuration.version>1.10</commons.configuration.version>
+        <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
         <muteTestLogs>false</muteTestLogs>
     </properties>
@@ -200,14 +204,10 @@ limitations under the License.
                         <phase>site</phase>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
-                            <additionalDependencies>
-                                <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
-                                <additionalDependency>
-                                    <groupId>org.apache.hadoop</groupId>
-                                    <artifactId>hadoop-core</artifactId>
-                                    <version>1.2.1</version>
-                                </additionalDependency>
-                            </additionalDependencies>
+                            <includeDependencySources>true</includeDependencySources>
+                            <dependencySourceIncludes>
+                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
+                            </dependencySourceIncludes>
                         </configuration>
                     </execution>
                     <execution>
@@ -437,14 +437,10 @@ limitations under the License.
                         <id>non-aggregate</id>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
-                            <additionalDependencies>
-                                <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
-                                <additionalDependency>
-                                    <groupId>org.apache.hadoop</groupId>
-                                    <artifactId>hadoop-core</artifactId>
-                                    <version>1.2.1</version>
-                                </additionalDependency>
-                            </additionalDependencies>
+                            <includeDependencySources>true</includeDependencySources>
+                            <dependencySourceIncludes>
+                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
+                            </dependencySourceIncludes>
                         </configuration>
                         <reports>
                             <report>javadoc</report>
@@ -454,14 +450,10 @@ limitations under the License.
                         <id>aggregate</id>
                         <configuration>
                             <additionalparam>-Xdoclint:none</additionalparam>
-                            <additionalDependencies>
-                                <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
-                                <additionalDependency>
-                                    <groupId>org.apache.hadoop</groupId>
-                                    <artifactId>hadoop-core</artifactId>
-                                    <version>1.2.1</version>
-                                </additionalDependency>
-                            </additionalDependencies>
+                            <includeDependencySources>true</includeDependencySources>
+                            <dependencySourceIncludes>
+                                <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
+                            </dependencySourceIncludes>
                         </configuration>
                         <reports>
                             <report>aggregate</report>
@@ -477,7 +469,7 @@ limitations under the License.
             <dependency>
                 <groupId>commons-configuration</groupId>
                 <artifactId>commons-configuration</artifactId>
-                <version>1.10</version>
+                <version>${commons.configuration.version}</version>
                 <exclusions>
                     <!-- self-conflict -->
                     <exclusion>
@@ -652,6 +644,9 @@ limitations under the License.
                             </execution>
                         </executions>
                     </plugin>
+                    <!-- replaces x.y.z in asciidoc with the tinkerpop version from the pom.  using an attribute
+                         in the asciidoctor-maven-plugin doesn't work properly in all cases for some reasons,
+                         specifically in the code examples -->
                     <plugin>
                         <groupId>com.google.code.maven-replacer-plugin</groupId>
                         <artifactId>replacer</artifactId>
@@ -761,18 +756,10 @@ limitations under the License.
                                 <configuration>
                                     <destDir>full</destDir>
                                     <additionalparam>-Xdoclint:none</additionalparam>
+                                    <quiet>true</quiet>
                                     <sourcepath>
                                         hadoop-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
-                                    <quiet>true</quiet>
-                                    <additionalDependencies>
-                                        <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
-                                        <additionalDependency>
-                                            <groupId>org.apache.hadoop</groupId>
-                                            <artifactId>hadoop-core</artifactId>
-                                            <version>1.2.1</version>
-                                        </additionalDependency>
-                                    </additionalDependencies>
                                 </configuration>
                             </execution>
                             <execution>
@@ -785,66 +772,78 @@ limitations under the License.
                                 <configuration>
                                     <destDir>core</destDir>
                                     <additionalparam>-Xdoclint:none</additionalparam>
+                                    <quiet>true</quiet>
                                     <sourcepath>
                                         gremlin-core/src/main/java:gremlin-driver/src/main/java
                                     </sourcepath>
-                                    <quiet>true</quiet>
                                     <sourceFileIncludes>
                                         <!-- structure -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/*.java
-                                        </sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/structure/*.java
+                                        </include>
                                         <!-- io -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/structure/io/*.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/structure/io/*.java
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/structure/io/graphml/GraphMLReader.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/structure/io/graphml/GraphMLWriter.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONReader.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
-                                            org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONWrtier.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/structure/io/graphson/GraphSONWriter.java
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/structure/io/gryo/GryoReader.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
-                                            org/apache/tinkerpop/gremlin/structure/io/gryo/GryoWrtier.java
-                                        </sourceFileInclude>
+                                        </include>
+                                        <include>
+                                            org/apache/tinkerpop/gremlin/structure/io/gryo/GryoWriter.java
+                                        </include>
                                         <!-- process -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/*.java
-                                        </sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/process/*.java
+                                        </include>
                                         <!-- computer -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/computer/*.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/process/computer/*.java
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/process/computer/clustering/peerpressure/PeerPressureVertexProgram.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/process/computer/ranking/pagerank/PageRankVertexProgram.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/process/computer/traversal/TraversalVertexProgram.java
-                                        </sourceFileInclude>
+                                        </include>
                                         <!-- traversal -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/process/traversal/*.java
-                                        </sourceFileInclude>
-                                        <sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/process/traversal/*.java
+                                        </include>
+                                        <include>
                                             org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.java
-                                        </sourceFileInclude>
+                                        </include>
                                         <!-- driver -->
-                                        <sourceFileInclude>org/apache/tinkerpop/gremlin/driver/*.java
-                                        </sourceFileInclude>
+                                        <include>org/apache/tinkerpop/gremlin/driver/*.java
+                                        </include>
                                     </sourceFileIncludes>
+                                    <!-- add dependencies as necessary here - not sure why this is necessary, but assume
+                                         it is related to the <sourceFileIncludes> as ERROR messages do not appear on
+                                         build for the "full" javadocs -->
                                     <additionalDependencies>
-                                        <!-- all that exclusion work in hadoop-gremlin seems to dump dependencies needed for javadoc -->
                                         <additionalDependency>
-                                            <groupId>org.apache.hadoop</groupId>
-                                            <artifactId>hadoop-core</artifactId>
-                                            <version>1.2.1</version>
+                                            <groupId>commons-configuration</groupId>
+                                            <artifactId>commons-configuration</artifactId>
+                                            <version>${commons.configuration.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.javatuples</groupId>
+                                            <artifactId>javatuples</artifactId>
+                                            <version>${java.tuples.version}</version>
+                                        </additionalDependency>
+                                        <additionalDependency>
+                                            <groupId>org.apache.tinkerpop</groupId>
+                                            <artifactId>gremlin-shaded</artifactId>
+                                            <version>${project.version}</version>
                                         </additionalDependency>
                                     </additionalDependencies>
                                 </configuration>

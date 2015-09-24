@@ -102,15 +102,13 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
                 .afterTimeout(b -> graphManager.rollbackAll())
                 .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphManager.getAsBindings())
-                .promoteBindings(kv -> kv.getValue() instanceof Graph
-                        || kv.getValue() instanceof TraversalSource
-                        || kv.getValue() instanceof LifeCycleHook)
                 .executorService(this.gremlinExecutorService)
                 .scheduledExecutorService(this.scheduledExecutorService);
 
         settings.scriptEngines.forEach((k, v) -> {
             // make sure that server related classes are available at init
             v.imports.add(LifeCycleHook.class.getCanonicalName());
+            v.imports.add(LifeCycleHook.Context.class.getCanonicalName());
             gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
         });
 

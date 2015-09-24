@@ -188,10 +188,10 @@ Traversals in Gremlin are spawned from a `TraversalSource`. The `GraphTraversalS
 The return type of `V()` and `E()` is a `GraphTraversal`. A GraphTraversal maintains numerous methods that return GraphTraversal. In this way, a GraphTraversal supports function composition. Each method of GraphTraversal is called a step and each step modulates the results of the previous step in one of five general ways.
 
  . `map`: transform the incoming traverser's object to another object (S &rarr; E).
- . `flatMap`: transform the incoming traverser's object to an iterator of other objects (S &rarr; E^*^).
+ . `flatMap`: transform the incoming traverser's object to an iterator of other objects (S &rarr; E*).
  . `filter`: allow or disallow the traverser from proceeding to the next step (S &rarr; S &cup; &empty;).
  . `sideEffect`: allow the traverser to proceed unchanged, but yield some computational sideEffect in the process (S &rarrlp; S).
- . `branch`: split the traverser and send each to an arbitrary location in the traversal (S &rArr; S~1~, S~2~, ..., S~n~).
+ . `branch`: split the traverser and send each to an arbitrary location in the traversal (S &rarr; { S~1~ &rarr; E*, ..., S~n~ &rarr; E* } &rarr; E*).
 
 Nearly every step in GraphTraversal either extends `MapStep`, `FlatMapStep`, `FilterStep`, `SideEffectStep`, or `BranchStep`.
 
@@ -263,7 +263,7 @@ CAUTION: A Traversal's result are never ordered unless explicitly by means of <<
 On Gremlin Language Variants
 ----------------------------
 
-Gremlin is written in Java8. There are various language variants of Gremlin such as Gremlin-Groovy (packaged with TinkerPop3), link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala], Gremlin-JavaScript, Gremlin-Clojure (known as link:link:https://github.com/clojurewerkz/ogre[Ogre]), etc. It is best to think of Gremlin as a style of graph traversing that is not bound to a particular programming language per se. Within a programming language familiar to the developer, there is a Gremlin variant that they can use that leverages the idioms of that language. At minimum, a programming language providing a Gremlin implementation must support link:http://en.wikipedia.org/wiki/Method_chaining[function chaining] (with link:http://en.wikipedia.org/wiki/Anonymous_function[lambdas/anonymous functions] being a "nice to have" if the variants wishes to offer arbitrary computations beyond the provided Gremlin steps).
+Gremlin is written in Java8. There are various language variants of Gremlin such as Gremlin-Groovy (packaged with TinkerPop3), link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala], Gremlin-JavaScript, Gremlin-Clojure (known as link:https://github.com/clojurewerkz/ogre[Ogre]), etc. It is best to think of Gremlin as a style of graph traversing that is not bound to a particular programming language per se. Within a programming language familiar to the developer, there is a Gremlin variant that they can use that leverages the idioms of that language. At minimum, a programming language providing a Gremlin implementation must support link:http://en.wikipedia.org/wiki/Method_chaining[function chaining] (with link:http://en.wikipedia.org/wiki/Anonymous_function[lambdas/anonymous functions] being a "nice to have" if the variants wishes to offer arbitrary computations beyond the provided Gremlin steps).
 
 Throughout the documentation, the examples provided are primarily written in Gremlin-Groovy. The reason for this is the <<gremlin-console,Gremlin Console>> whereby an interactive programming environment exists that does not require code compilation. For learning TinkerPop3 and interacting with a live graph system in an ad hoc manner, the Gremlin Console is invaluable. However, for developers interested in working with Gremlin-Java, a few Groovy-to-Java patterns are presented below.
 

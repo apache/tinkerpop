@@ -23,10 +23,10 @@ import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -37,7 +37,7 @@ import java.util.stream.Stream;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public interface Path extends Cloneable {
+public interface Path extends Cloneable, Iterable<Object> {
 
     /**
      * Get the number of step in the path.
@@ -57,13 +57,13 @@ public interface Path extends Cloneable {
      */
     public Path extend(final Object object, final Set<String> labels);
 
-    public default Path extend(final Object object, final String... labels) {
-        final Path path = this.extend(object, Collections.emptySet());
-        for (final String label : labels) {
-            path.addLabel(label);
-        }
-        return path;
-    }
+    /**
+     * Add labels to the head of the path.
+     *
+     * @param labels the labels at the head of the path
+     * @return the path with added labels
+     */
+    public Path extend(final Set<String> labels);
 
     /**
      * Get the object associated with the particular label of the path.
@@ -107,7 +107,7 @@ public interface Path extends Cloneable {
      * @throws IllegalArgumentException if the path does not contain the label
      */
     public default <A> A get(final Pop pop, final String label) throws IllegalArgumentException {
-        if(Pop.all == pop) {
+        if (Pop.all == pop) {
             if (this.hasLabel(label)) {
                 final Object object = this.get(label);
                 if (object instanceof List)
@@ -148,13 +148,6 @@ public interface Path extends Cloneable {
     }
 
     /**
-     * Add label to the current head of the path.
-     *
-     * @param label the label to add to the head of the path
-     */
-    public void addLabel(final String label);
-
-    /**
      * An ordered list of the objects in the path.
      *
      * @return the objects of the path
@@ -163,7 +156,7 @@ public interface Path extends Cloneable {
 
     /**
      * An ordered list of the labels associated with the path
-     * The set of labels for a particular step are ordered by the order in which {@link Path#addLabel} was called.
+     * The set of labels for a particular step are ordered by the order in which {@link Path#extend(Object, Set)} was called.
      *
      * @return the labels of the path
      */
@@ -189,8 +182,8 @@ public interface Path extends Cloneable {
         return true;
     }
 
-    public default void forEach(final Consumer<Object> consumer) {
-        this.objects().forEach(consumer);
+    public default Iterator<Object> iterator() {
+        return this.objects().iterator();
     }
 
     public default void forEach(final BiConsumer<Object, Set<String>> consumer) {
@@ -205,6 +198,17 @@ public interface Path extends Cloneable {
         final List<Set<String>> labels = this.labels();
         final List<Object> objects = this.objects();
         return IntStream.range(0, this.size()).mapToObj(i -> Pair.with(objects.get(i), labels.get(i)));
+    }
+
+    public default boolean popEquals(final Pop pop, final Object other) {
+        if (!(other instanceof Path))
+            return false;
+        final Path otherPath = (Path) other;
+        return !this.labels().stream().
+                flatMap(Set::stream).
+                filter(label -> !otherPath.hasLabel(label) || !otherPath.get(pop, label).equals(this.get(pop, label))).
+                findAny().
+                isPresent();
     }
 
     public static class Exceptions {

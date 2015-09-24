@@ -28,9 +28,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import java.util.Comparator;
 
 /**
- * LambdaRestrictionStrategy does not allow lambdas to be used in a {@link Traversal}.
- * The contents of a lambda can not be analyzed/optimized and thus, reduces the ability of other {@link TraversalStrategy} instances to reason about the traversal.
- * This strategy is not activated by default. However, graph system vendors may choose to make this a default strategy in order to ensure their respective strategies are better able to operate.
+ * {@code LambdaRestrictionStrategy} does not allow lambdas to be used in a {@link Traversal}. The contents of a lambda
+ * cannot be analyzed/optimized and thus, reduces the ability of other {@link TraversalStrategy} instances to reason
+ * about the traversal. This strategy is not activated by default. However, graph system vendors may choose to make
+ * this a default strategy in order to ensure their respective strategies are better able to operate.
  * <p/>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -52,14 +53,14 @@ public final class LambdaRestrictionStrategy extends AbstractTraversalStrategy<T
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
         if (traversal instanceof LambdaHolder)
-            throw new IllegalStateException("The provided traversal is a lambda traversal: " + traversal);
+            throw new VerificationException("The provided traversal is a lambda traversal: ", traversal);
         for (final Step<?, ?> step : traversal.getSteps()) {
             if (step instanceof LambdaHolder)
-                throw new IllegalStateException("The provided traversal contains a lambda step: " + step);
+                throw new VerificationException("The provided traversal contains a lambda step: " + step, traversal);
             if (step instanceof ComparatorHolder) {
                 for (final Comparator<?> comparator : ((ComparatorHolder<?>) step).getComparators()) {
                     if (comparator instanceof LambdaHolder || comparator.toString().contains("$$Lambda$"))
-                        throw new IllegalStateException("The provided step contains a lambda comparator: " + step);
+                        throw new VerificationException("The provided step contains a lambda comparator: " + step, traversal);
                 }
             }
         }

@@ -18,12 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
-import com.fasterxml.jackson.databind.ser.SerializerFactory;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.SerializationConfig;
+import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.DefaultSerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.SerializerFactory;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.ToStringSerializer;
 
 /**
  * Implementation of the {@code DefaultSerializerProvider} for Jackson that users the {@code ToStringSerializer} for

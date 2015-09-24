@@ -369,6 +369,7 @@ The above examples show how to ignore individual tests.  It is also possible to:
 
 * Ignore an entire test case (i.e. all the methods within the test) by setting the `method` to "*".
 * Ignore a "base" test class such that test that extend from those classes will all be ignored.  This style of ignoring is useful for Gremlin "process" tests that have bases classes that are extended by various Gremlin flavors (e.g. groovy).
+* Ignore a `GraphComputer` test based on the type of `GraphComputer` being used.  Specify the "computer" attribute on the `OptOut` (which is an array specification) which should have a value of the `GraphComputer` implementation class that should ignore that test. This attribute should be left empty for "standard" execution and by default all `GraphComputer` implementations will be included in the `OptOut` so if there are multiple implementations, explicitly specify the ones that should be excluded.
 
 Also note that some of the tests in the Gremlin Test Suite are parameterized tests and require an additional level of specificity to be properly ignored.  To ignore these types of tests, examine the name template of the parameterized tests.  It is defined by a Java annotation that looks like this:
 
@@ -537,6 +538,12 @@ Neo4j-Gremlin
    <groupId>org.apache.tinkerpop</groupId>
    <artifactId>neo4j-gremlin</artifactId>
    <version>x.y.z</version>
+</dependency>
+<!-- neo4j-tinkerpop-api-impl is NOT Apache 2 licensed - more information below -->
+<dependency>
+  <groupId>org.neo4j</groupId>
+  <artifactId>neo4j-tinkerpop-api-impl</artifactId>
+  <version>0.1-2.2</version>
 </dependency>
 ----
 
@@ -716,17 +723,17 @@ Hadoop-Gremlin
 </dependency>
 ----
 
-image:hadoop-logo-notext.png[width=100,float=left] link:http://hadoop.apache.org/[Hadoop] is a distributed computing framework that is used to process data represented across a multi-machine compute cluster. When the data in the Hadoop cluster represents a TinkerPop3 graph, then Hadoop-Gremlin can be used to process the graph using TinkerPop3's OLTP and OLAP models of graph computing.
+image:hadoop-logo-notext.png[width=100,float=left] link:http://hadoop.apache.org/[Hadoop] is a distributed computing framework that is used to process data represented across a multi-machine compute cluster. When the data in the Hadoop cluster represents a TinkerPop3 graph, then Hadoop-Gremlin can be used to process the graph using both TinkerPop3's OLTP and OLAP graph computing models.
 
-IMPORTANT: This section assumes that the user has a Hadoop 1.x cluster functioning. For more information on getting started with Hadoop, please see the link:http://hadoop.apache.org/docs/r1.2.1/single_node_setup.html[Single Node Setup] tutorial. Moreover, if using `GiraphGraphComputer` it is advisable that the reader also familiarize their self with Giraph as well via the link:http://giraph.apache.org/quick_start.html[Getting Started] page.
+IMPORTANT: This section assumes that the user has a Hadoop 2.x cluster functioning. For more information on getting started with Hadoop, please see the link:http://hadoop.apache.org/docs/r2.7.1/hadoop-project-dist/hadoop-common/SingleCluster.html[Single Node Setup] tutorial. Moreover, if using `GiraphGraphComputer` or `SparkGraphComputer` it is advisable that the reader also familiarize their self with Giraph (link:http://giraph.apache.org/quick_start.html[Getting Started]) and Spark (link:http://spark.apache.org/docs/latest/quick-start.html[Quick Start]).
 
 Installing Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To the `.bash_profile` file, add the following environmental variable (of course, be sure the directories are respective of the local machine locations). The `HADOOP_GREMLIN_LIBS` is the location of all the Hadoop-Gremlin jars. It is possible to place developer jars into this directory for loading into the Hadoop job's classpath. Or, better yet, note that `HADOOP_GREMLIN_LIBS` can be a colon-separated (`:`) list of locations and thus will load all jars into the cluster at all provided locations.
+The `HADOOP_GREMLIN_LIBS` references locations that contains jars that should be uploaded to a respective distributed cache (link:http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.html[YARN] or SparkServer). Note that the locations in `HADOOP_GREMLIN_LIBS` can be a colon-separated (`:`) and all jars from all locations will be loaded into the cluster. Typically, only the jars of the respective GraphComputer are required to be loaded (e.g. `GiraphGraphComputer` plugin lib directory).
 
 [source,shell]
-export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/hadoop-gremlin/lib
+export HADOOP_GREMLIN_LIBS=/usr/local/gremlin-console/ext/giraph-gremlin/lib
 
 If using <<gremlin-console,Gremlin Console>>, it is important to install the Hadoop-Gremlin plugin. Note that Hadoop-Gremlin requires a Gremlin Console restart after installing.
 
@@ -759,15 +766,21 @@ gremlin>
 Properties Files
 ~~~~~~~~~~~~~~~~
 
-`HadoopGraph` makes heavy use of properties files which ultimately get turned into Apache configurations and Hadoop configurations. The example properties file presented below is located at `conf/hadoop/hadoop-gryo.properties`.
+`HadoopGraph` makes use of properties files which ultimately get turned into Apache configurations and/or Hadoop configurations. The example properties file presented below is located at `conf/hadoop/hadoop-gryo.properties`.
 
 [source,text]
 gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
+gremlin.hadoop.inputLocation=tinkerpop-modern.kryo
 gremlin.hadoop.graphInputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
+gremlin.hadoop.outputLocation=output
 gremlin.hadoop.graphOutputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat
 gremlin.hadoop.jarsInDistributedCache=true
-gremlin.hadoop.inputLocation=tinkerpop-modern.kryo
-gremlin.hadoop.outputLocation=output
+####################################
+# SparkGraphComputer Configuration #
+####################################
+spark.master=local[4]
+spark.executor.memory=1g
+spark.serializer=org.apache.spark.serializer.KryoSerializer
 #####################################
 # GiraphGraphComputer Configuration #
 #####################################
@@ -780,14 +793,8 @@ mapred.reduce.child.java.opts=-Xmx1024m
 giraph.numInputThreads=4
 giraph.numComputeThreads=4
 giraph.maxMessagesInMemory=100000
-####################################
-# SparkGraphComputer Configuration #
-####################################
-spark.master=local[4]
-spark.executor.memory=1g
-spark.serializer=org.apache.spark.serializer.KryoSerializer
 
-A review of the Hadoop-Gremlin specific properties are provided in the table below. For the respective OLAP engines (<<giraphgraphcomputer,`GiraphGraphComputer`>> or <<sparkgraphcomputer,`SparkGraphComputer`>>) refer to their respective documentation for configuration options.
+A review of the Hadoop-Gremlin specific properties are provided in the table below. For the respective OLAP engines (<<sparkgraphcomputer,`SparkGraphComputer`>> or <<giraphgraphcomputer,`GiraphGraphComputer`>>) refer to their respective documentation for configuration options.
 
 [width="100%",cols="2,10",options="header"]
 |=========================================================
@@ -797,19 +804,19 @@ A review of the Hadoop-Gremlin specific properties are provided in the table bel
 |gremlin.hadoop.graphInputFormat |The format that the graph input file(s) are represented in.
 |gremlin.hadoop.outputLocation |The location to write the computed HadoopGraph to.
 |gremlin.hadoop.graphOutputFormat |The format that the output file(s) should be represented in.
-|gremlin.hadoop.jarsInDistributedCache |Whether to upload the Hadoop-Gremlin jars to Hadoop's distributed cache (necessary if jars are not on machines' classpaths).
+|gremlin.hadoop.jarsInDistributedCache |Whether to upload the Hadoop-Gremlin jars to a distributed cache (necessary if jars are not on the machines' classpaths).
 |=========================================================
 
 Along with the properties above, the numerous link:http://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/core-default.xml[Hadoop specific properties] can be added as needed to tune and parameterize the executed Hadoop-Gremlin job on the respective Hadoop cluster.
 
-IMPORTANT: As the size of the graphs being processed becomes large, it is important to fully understand how the underlying OLAP engine (e.g. Giraph, Spark, etc.) works and understand the numerous parameterizations offered by these systems. Such knowledge can help alleviate out of memory exceptions, slow load times, slow processing times, etc.
+IMPORTANT: As the size of the graphs being processed becomes large, it is important to fully understand how the underlying OLAP engine (e.g. Spark, Giraph, etc.) works and understand the numerous parameterizations offered by these systems. Such knowledge can help alleviate out of memory exceptions, slow load times, slow processing times, garbage collection issues, etc.
 
 OLTP Hadoop-Gremlin
 ~~~~~~~~~~~~~~~~~~~
 
-image:hadoop-pipes.png[width=180,float=left] It is possible to execute OLTP operations over a `HadoopGraph`. However, realize that the underlying HDFS files are typically not random access and thus, to retrieve a vertex, a linear scan is required. OLTP operations are useful for peeking at the graph prior to executing a long running OLAP job -- e.g. `g.V().valueMap().limit(10)`.
+image:hadoop-pipes.png[width=180,float=left] It is possible to execute OLTP operations over a `HadoopGraph`. However, realize that the underlying HDFS files are not random access and thus, to retrieve a vertex, a linear scan is required. OLTP operations are useful for peeking into the graph prior to executing a long running OLAP job -- e.g. `g.V().valueMap().limit(10)`.
 
-CAUTION: OLTP operations on `HadoopGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP implementation of the Gremlin language. Hadoop-Gremlin provides various `GraphComputer` implementations to execute OLAP computations over a `HadoopGraph`.
+CAUTION: OLTP operations on `HadoopGraph` are not efficient. They require linear scans to execute and are unreasonable for large graphs. In such large graph situations, make use of <<traversalvertexprogram,TraversalVertexProgram>> which is the OLAP Gremlin machine.
 
 [gremlin-groovy]
 ----
@@ -827,57 +834,72 @@ OLAP Hadoop-Gremlin
 
 image:hadoop-furnace.png[width=180,float=left] Hadoop-Gremlin was designed to execute OLAP operations via `GraphComputer`. The OLTP examples presented previously are reproduced below, but using `TraversalVertexProgram` for the execution of the Gremlin traversal.
 
-IMPORTANT: As of TinkerPop3 x.y.z, when using Hadoop-Gremlin OLAP from the Gremlin Console, the only Gremlin language subset supported is Gremlin-Groovy. Future versions will support other Gremlin language dialects.
+A `Graph` in TinkerPop3 can support any number of `GraphComputer` implementations. Out of the box, Hadoop-Gremlin supports the following three implementations.
 
-A `Graph` in TinkerPop3 can support any number of `GraphComputer` implementations. Out of the box, Hadoop-Gremlin supports three GraphComputer implementations.
-
-* <<giraphgraphcomputer,`GiraphGraphComputer`>>: Leverages Giraph to execute TinkerPop3 OLAP computations.
-** The graph should fit within the total RAM of the Hadoop cluster (graph size restriction), though "out-of-core" processing is possible. Messages passing is coordinated via ZooKeeper for the in-memory graph (speedy traversals).
-* <<sparkgraphcomputer,`SparkGraphComputer`>>: Leverages Spark to execute TinkerPop3 OLAP computations.
-** The graph may fit within the total RAM of the cluster (supports larger graphs). Message passing is coordinated via Spark map/reduce/join operations on in-memory and disk-cached data (average speed traversals).
-* <<mapreducegraphcomputer,`MapReduceGraphComputer`>>: Leverages Hadoop's MapReduce to execute TinkerPop3 OLAP computations. (*coming soon*)
+* <<mapreducegraphcomputer,`MapReduceGraphComputer`>>: Leverages Hadoop's MapReduce engine to execute TinkerPop3 OLAP computations. (*coming soon*)
 ** The graph must fit within the total disk space of the Hadoop cluster (supports massive graphs). Message passing is coordinated via MapReduce jobs over the on-disk graph (slow traversals).
+* <<sparkgraphcomputer,`SparkGraphComputer`>>: Leverages Apache Spark to execute TinkerPop3 OLAP computations.
+** The graph may fit within the total RAM of the cluster (supports larger graphs). Message passing is coordinated via Spark map/reduce/join operations on in-memory and disk-cached data (average speed traversals).
+* <<giraphgraphcomputer,`GiraphGraphComputer`>>: Leverages Apache Giraph to execute TinkerPop3 OLAP computations.
+** The graph should fit within the total RAM of the Hadoop cluster (graph size restriction), though "out-of-core" processing is possible. Message passing is coordinated via ZooKeeper for the in-memory graph (speedy traversals).
 
 TIP: image:gremlin-sugar.png[width=50,float=left] For those wanting to use the <<sugar-plugin,SugarPlugin>> with their submitted traversal, do `:remote config useSugar true` as well as `:plugin use tinkerpop.sugar` at the start of the Gremlin Console session if it is not already activated.
 
-[[giraphgraphcomputer]]
-GiraphGraphComputer
-^^^^^^^^^^^^^^^^^^^
+Note that `SparkGraphComputer` and `GiraphGraphComputer` are loaded via their respective plugins. Typically only one plugin or the other is loaded depending on the desired `GraphComputer` to use.
 
-image:giraph-logo.png[width=100,float=left] link:http://giraph.apache.org[Giraph] is an Apache Software Foundation project focused on OLAP-based graph processing. Giraph makes use of the distributed graph computing paradigm made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs communicate with one another in a bulk synchronous parallel (BSP) manner. This model aligns with TinkerPop3's `GraphComputer` API. TinkerPop3 provides an implementation of `GraphComputer` that works for Giraph called `GiraphGraphComputer`. Moreover, with TinkerPop3's <<mapreduce,MapReduce>>-framework, the standard Giraph/Pregel model is extended to support an arbitrary number of MapReduce phases to aggregate and yield results from the graph. Below are examples using `GiraphGraphComputer` from the <<gremlin-console,Gremlin-Console>>.
-
-WARNING: Be sure that the link:http://www.slf4j.org/[SLF4J] of Hadoop matches that of Giraph or else there will be conflicts. Simply copy the following jars to the `lib/` of the machines in the Hadoop cluster: `slf4j-api-a.b.c.jar` and `slf4j-log4j12-a.b.c.jar`.
-
-WARNING: Giraph uses a large number of Hadoop counters. The default for Hadoop is 120. In `mapred-site.xml` it is possible to increase the limit it via the `mapreduce.job.counters.limit` property. A good value to use is 1000. This is a cluster-wide property so be sure to restart the cluster after updating.
-
-WARNING: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
-
-[gremlin-groovy]
+[source,text]
 ----
-graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-g = graph.traversal(computer())
-g.V().count()
-g.V().out().out().values('name')
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+plugin activated: tinkerpop.hadoop
+gremlin> :install org.apache.tinkerpop giraph-gremlin x.y.z
+==>loaded: [org.apache.tinkerpop, giraph-gremlin, x.y.z] - restart the console to use [tinkerpop.giraph]
+gremlin> :install org.apache.tinkerpop spark-gremlin x.y.z
+==>loaded: [org.apache.tinkerpop, spark-gremlin, x.y.z] - restart the console to use [tinkerpop.spark]
+gremlin> :q
+$ bin/gremlin.sh
+
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+plugin activated: tinkerpop.server
+plugin activated: tinkerpop.utilities
+plugin activated: tinkerpop.tinkergraph
+plugin activated: tinkerpop.hadoop
+gremlin> :plugin use tinkerpop.giraph
+==>tinkerpop.giraph activated
+gremlin> :plugin use tinkerpop.spark
+==>tinkerpop.spark activated
 ----
 
-IMPORTANT: The examples above do not use lambdas (i.e. closures in Gremlin-Groovy). This makes the traversal serializable and thus, able to be distributed to all machines in the Hadoop cluster. If a lambda is required in a traversal, then the traversal must be sent as a `String` and compiled locally at each machine in the cluster. The following example demonstrates the `:remote` command which allows for submitting Gremlin traversals as a `String`.
+WARNING: Hadoop, Spark, and Giraph all depend on many of the same libraries (e.g. ZooKeeper, Snappy, Netty, Guava, etc.). Unfortunately, typically these dependencies are not to the same versions of the respective libraries. As such, it is best to *not* have both Spark and Giraph plugins loaded in the same console session nor in the same Java project (though intelligent `<exclusion>`-usage can help alleviate conflicts in a Java project).
 
-[gremlin-groovy]
-----
-graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-:remote connect tinkerpop.hadoop graph
-:> g.V().group().by{it.value('name')[1]}.by('name')
-result
-result.memory.runtime
-result.memory.keys()
-result.memory.get('~reducing')
-----
+[[mapreducegraphcomputer]]
+MapReduceGraphComputer
+^^^^^^^^^^^^^^^^^^^^^^
+
+*COMING SOON*
 
 [[sparkgraphcomputer]]
 SparkGraphComputer
 ^^^^^^^^^^^^^^^^^^
 
-image:spark-logo.png[width=175,float=left] link:http://spark.apache.org[Spark] is an Apache Software Foundation project focused on general-purpose OLAP data processing. Spark provides a hybrid in-memory/disk-based distributed computing model that is similar to Hadoop's MapReduce model. Spark maintains a fluent function chaining DSL that is arguably easier for developers to work with than native Hadoop MapReduce. While Spark has a shorter startup time between "jobs" (a scatter/gather-step), the actual message passing algorithm (as designed by TinkerPop) is less efficient than that of Giraph. For small graphs, Spark will typically be much faster than Giraph, but as the graph becomes larger, the Hadoop MapReduce startup time incurred by Giraph will amortize as more time is spent passing messages (i.e. traversers) between the vertices of the graph.
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>spark-gremlin</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+image:spark-logo.png[width=175,float=left] link:http://spark.apache.org[Spark] is an Apache Software Foundation project focused on general-purpose OLAP data processing. Spark provides a hybrid in-memory/disk-based distributed computing model that is similar to Hadoop's MapReduce model. Spark maintains a fluent function chaining DSL that is arguably easier for developers to work with than native Hadoop MapReduce. Spark-Gremlin provides an implementation of the bulk-synchronous parallel, distributed message passing algorithm within Spark and thus, any `VertexProgram` can be executed over `SparkGraphComputer`.
 
 [gremlin-groovy]
 ----
@@ -903,11 +925,58 @@ image::spark-algorithm.png[width=775]
 
 IMPORTANT: If the vendor/user wishes to bypass using Hadoop `InputFormats` for pulling data from the underlying graph system, it is possible to leverage Spark's RDD constructs directly. There is a `gremlin.hadoop.graphInputRDD` configuration that references a `Class<? extends InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, to bypass `OutputFormat`, use `gremlin.hadoop.graphOutputRDD` and the respective `OutputRDD` with its write-based method.
 
-[[mapreducegraphcomputer]]
-MapReduceGraphComputer
-^^^^^^^^^^^^^^^^^^^^^^
+[[giraphgraphcomputer]]
+GiraphGraphComputer
+^^^^^^^^^^^^^^^^^^^
 
-*COMING SOON*
+[source,xml]
+----
+<dependency>
+   <groupId>org.apache.tinkerpop</groupId>
+   <artifactId>giraph-gremlin</artifactId>
+   <version>x.y.z</version>
+</dependency>
+----
+
+image:giraph-logo.png[width=100,float=left] link:http://giraph.apache.org[Giraph] is an Apache Software Foundation project focused on OLAP-based graph processing. Giraph makes use of the distributed graph computing paradigm made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs communicate with one another in a bulk synchronous parallel (BSP) manner. This model aligns with TinkerPop3's `GraphComputer` API. TinkerPop3 provides an implementation of `GraphComputer` that works for Giraph called `GiraphGraphComputer`. Moreover, with TinkerPop3's <<mapreduce,MapReduce>>-framework, the standard Giraph/Pregel model is extended to support an arbitrary number of MapReduce phases to aggregate and yield results from the graph. Below are examples using `GiraphGraphComputer` from the <<gremlin-console,Gremlin-Console>>.
+
+WARNING: Be sure that the link:http://www.slf4j.org/[SLF4J] of Hadoop matches that of Giraph or else there will be conflicts. Simply copy the following jars to the `lib/` of the machines in the Hadoop cluster: `slf4j-api-a.b.c.jar` and `slf4j-log4j12-a.b.c.jar`.
+
+WARNING: Giraph uses a large number of Hadoop counters. The default for Hadoop is 120. In `mapred-site.xml` it is possible to increase the limit it via the `mapreduce.job.counters.max` property. A good value to use is 1000. This is a cluster-wide property so be sure to restart the cluster after updating.
+
+WARNING: The maximum number of workers can be no larger than the number of map-slots in the Hadoop cluster minus 1. For example, if the Hadoop cluster has 4 map slots, then `giraph.maxWorkers` can not be larger than 3. One map-slot is reserved for the master compute node and all other slots can be allocated as workers to execute the VertexPrograms on the vertices of the graph.
+
+If `GiraphGraphComputer` will be used as the `GraphComputer` for `HadoopGraph` then its `lib` directory should be specified in `HADOOP_GREMLIN_LIBS`.
+
+[source,shell]
+export HADOOP_GREMLIN_LIBS=$HADOOP_GREMLIN_LIBS:/usr/local/gremlin-console/ext/giraph-gremlin/lib
+
+Or, the user can specify the directory in the Gremlin Console.
+
+[source,groovy]
+System.setProperty('HADOOP_GREMLIN_LIBS',System.getProperty('HADOOP_GREMLIN_LIBS') + ':' + '/usr/local/gremlin-console/ext/giraph-gremlin/lib')
+
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+g = graph.traversal(computer(GiraphGraphComputer))
+g.V().count()
+g.V().out().out().values('name')
+----
+
+IMPORTANT: The examples above do not use lambdas (i.e. closures in Gremlin-Groovy). This makes the traversal serializable and thus, able to be distributed to all machines in the Hadoop cluster. If a lambda is required in a traversal, then the traversal must be sent as a `String` and compiled locally at each machine in the cluster. The following example demonstrates the `:remote` command which allows for submitting Gremlin traversals as a `String`.
+
+[gremlin-groovy]
+----
+graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
+g = graph.traversal(computer(GiraphGraphComputer))
+:remote connect tinkerpop.hadoop graph g
+:> g.V().group().by{it.value('name')[1]}.by('name')
+result
+result.memory.runtime
+result.memory.keys()
+result.memory.get('~reducing')
+----
 
 Input/Output Formats
 ~~~~~~~~~~~~~~~~~~~~
@@ -1036,7 +1105,8 @@ The distributed file system of Hadoop is called link:http://en.wikipedia.org/wik
 [gremlin-groovy]
 ----
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
-:remote connect tinkerpop.hadoop graph
+g = graph.traversal(computer(SparkGraphComputer))
+:remote connect tinkerpop.hadoop graph g
 :> g.V().group().by{it.value('name')[1]}.by('name')
 hdfs.ls()
 hdfs.ls('output')
@@ -1069,90 +1139,121 @@ image::pagerank-logo.png[width=300]
 
 The classic link:http://en.wikipedia.org/wiki/PageRank[PageRank] centrality algorithm can be executed over the TinkerPop graph from the command line using `GiraphGraphComputer`.
 
+WARNING: Be sure that the `HADOOP_GREMLIN_LIBS` references the location `lib` directory of the respective `GraphComputer` engine being used or else the requisite dependencies will not be uploaded to the Hadoop cluster.
+
 [source,text]
-$ hadoop fs -copyFromLocal data/tinkerpop-modern.json tinkerpop-modern.json
-$ hadoop fs -ls
+----
+$ hdfs dfs -copyFromLocal data/tinkerpop-modern.json tinkerpop-modern.json
+$ hdfs dfs -ls
 Found 2 items
 -rw-r--r--   1 marko supergroup       2356 2014-07-28 13:00 /user/marko/tinkerpop-modern.json
-$ hadoop jar target/hadoop-gremlin-x.y.z-job.jar org.apache.tinkerpop.gremlin.hadoop.process.computer.giraph.GiraphGraphComputer conf/hadoop-graphson.properties
-14/07/29 12:08:27 INFO giraph.GiraphGraphComputer: HadoopGremlin(Giraph): PageRankVertexProgram[alpha=0.85,iterations=30]
-14/07/29 12:08:28 INFO mapred.JobClient: Running job: job_201407281259_0041
-14/07/29 12:08:29 INFO mapred.JobClient:  map 0% reduce 0%
-14/07/29 12:08:51 INFO mapred.JobClient:  map 66% reduce 0%
-14/07/29 12:08:52 INFO mapred.JobClient:  map 100% reduce 0%
-14/07/29 12:08:54 INFO mapred.JobClient: Job complete: job_201407281259_0041
-14/07/29 12:08:54 INFO mapred.JobClient: Counters: 57
-14/07/29 12:08:54 INFO mapred.JobClient:   Map-Reduce Framework
-14/07/29 12:08:54 INFO mapred.JobClient:     Spilled Records=0
-14/07/29 12:08:54 INFO mapred.JobClient:     Map input records=3
-14/07/29 12:08:54 INFO mapred.JobClient:     SPLIT_RAW_BYTES=132
-14/07/29 12:08:54 INFO mapred.JobClient:     Map output records=0
-14/07/29 12:08:54 INFO mapred.JobClient:     Total committed heap usage (bytes)=347602944
-14/07/29 12:08:54 INFO mapred.JobClient:   Giraph Timers
-14/07/29 12:08:54 INFO mapred.JobClient:     Shutdown (milliseconds)=385
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 1 (milliseconds)=89
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 23 (milliseconds)=28
-14/07/29 12:08:54 INFO mapred.JobClient:     Input superstep (milliseconds)=1127
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 27 (milliseconds)=30
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 10 (milliseconds)=34
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 5 (milliseconds)=43
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 22 (milliseconds)=31
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 14 (milliseconds)=35
-14/07/29 12:08:54 INFO mapred.JobClient:     Total (milliseconds)=4023
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 2 (milliseconds)=50
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 18 (milliseconds)=29
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 11 (milliseconds)=35
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 24 (milliseconds)=32
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 28 (milliseconds)=32
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 15 (milliseconds)=34
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 6 (milliseconds)=37
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 19 (milliseconds)=31
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 25 (milliseconds)=27
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 8 (milliseconds)=33
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 12 (milliseconds)=44
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 20 (milliseconds)=31
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 16 (milliseconds)=31
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 9 (milliseconds)=36
-14/07/29 12:08:54 INFO mapred.JobClient:     Setup (milliseconds)=1119
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 3 (milliseconds)=50
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 7 (milliseconds)=38
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 13 (milliseconds)=36
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 29 (milliseconds)=37
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 26 (milliseconds)=40
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 0 (milliseconds)=293
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 21 (milliseconds)=46
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 17 (milliseconds)=32
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep 4 (milliseconds)=39
-14/07/29 12:08:54 INFO mapred.JobClient:   File Input Format Counters
-14/07/29 12:08:54 INFO mapred.JobClient:     Bytes Read=0
-14/07/29 12:08:54 INFO mapred.JobClient:   Giraph Stats
-14/07/29 12:08:54 INFO mapred.JobClient:     Aggregate finished vertices=0
-14/07/29 12:08:54 INFO mapred.JobClient:     Aggregate edges=0
-14/07/29 12:08:54 INFO mapred.JobClient:     Sent messages=6
-14/07/29 12:08:54 INFO mapred.JobClient:     Current workers=2
-14/07/29 12:08:54 INFO mapred.JobClient:     Last checkpointed superstep=0
-14/07/29 12:08:54 INFO mapred.JobClient:     Current master task partition=0
-14/07/29 12:08:54 INFO mapred.JobClient:     Superstep=30
-14/07/29 12:08:54 INFO mapred.JobClient:     Aggregate vertices=6
-14/07/29 12:08:54 INFO mapred.JobClient:   FileSystemCounters
-14/07/29 12:08:54 INFO mapred.JobClient:     HDFS_BYTES_READ=2488
-14/07/29 12:08:54 INFO mapred.JobClient:     FILE_BYTES_WRITTEN=250470
-14/07/29 12:08:54 INFO mapred.JobClient:     HDFS_BYTES_WRITTEN=2719
-14/07/29 12:08:54 INFO mapred.JobClient:   Job Counters
-14/07/29 12:08:54 INFO mapred.JobClient:     Launched map tasks=3
-14/07/29 12:08:54 INFO mapred.JobClient:     SLOTS_MILLIS_REDUCES=0
-14/07/29 12:08:54 INFO mapred.JobClient:     Total time spent by all reduces waiting after reserving slots (ms)=0
-14/07/29 12:08:54 INFO mapred.JobClient:     SLOTS_MILLIS_MAPS=31907
-14/07/29 12:08:54 INFO mapred.JobClient:     Total time spent by all maps waiting after reserving slots (ms)=0
-14/07/29 12:08:54 INFO mapred.JobClient:   File Output Format Counters
-14/07/29 12:08:54 INFO mapred.JobClient:     Bytes Written=0
-$ hadoop fs -cat output/~g/*
+$ hadoop jar target/giraph-gremlin-x.y.z-job.jar org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphGraphComputer ../hadoop-gremlin/conf/hadoop-graphson.properties
+15/09/11 08:02:08 WARN util.NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+15/09/11 08:02:11 INFO computer.GiraphGraphComputer: HadoopGremlin(Giraph): PageRankVertexProgram[alpha=0.85,iterations=30]
+15/09/11 08:02:12 INFO mapreduce.JobSubmitter: number of splits:3
+15/09/11 08:02:12 INFO mapreduce.JobSubmitter: Submitting tokens for job: job_1441915907347_0028
+15/09/11 08:02:12 INFO impl.YarnClientImpl: Submitted application application_1441915907347_0028
+15/09/11 08:02:12 INFO job.GiraphJob: Tracking URL: http://markos-macbook:8088/proxy/application_1441915907347_0028/
+15/09/11 08:02:12 INFO job.GiraphJob: Waiting for resources... Job will start only when it gets all 3 mappers
+15/09/11 08:03:54 INFO mapreduce.Job: Running job: job_1441915907347_0028
+15/09/11 08:03:55 INFO mapreduce.Job: Job job_1441915907347_0028 running in uber mode : false
+15/09/11 08:03:55 INFO mapreduce.Job:  map 33% reduce 0%
+15/09/11 08:03:57 INFO mapreduce.Job:  map 67% reduce 0%
+15/09/11 08:04:01 INFO mapreduce.Job:  map 100% reduce 0%
+15/09/11 08:06:17 INFO mapreduce.Job: Job job_1441915907347_0028 completed successfully
+15/09/11 08:06:17 INFO mapreduce.Job: Counters: 80
+    File System Counters
+        FILE: Number of bytes read=0
+        FILE: Number of bytes written=483918
+        FILE: Number of read operations=0
+        FILE: Number of large read operations=0
+        FILE: Number of write operations=0
+        HDFS: Number of bytes read=1465
+        HDFS: Number of bytes written=1760
+        HDFS: Number of read operations=39
+        HDFS: Number of large read operations=0
+        HDFS: Number of write operations=20
+    Job Counters
+        Launched map tasks=3
+        Other local map tasks=3
+        Total time spent by all maps in occupied slots (ms)=458105
+        Total time spent by all reduces in occupied slots (ms)=0
+        Total time spent by all map tasks (ms)=458105
+        Total vcore-seconds taken by all map tasks=458105
+        Total megabyte-seconds taken by all map tasks=469099520
+    Map-Reduce Framework
+        Map input records=3
+        Map output records=0
+        Input split bytes=132
+        Spilled Records=0
+        Failed Shuffles=0
+        Merged Map outputs=0
+        GC time elapsed (ms)=1594
+        CPU time spent (ms)=0
+        Physical memory (bytes) snapshot=0
+        Virtual memory (bytes) snapshot=0
+        Total committed heap usage (bytes)=527958016
+    Giraph Stats
+        Aggregate edges=0
+        Aggregate finished vertices=0
+        Aggregate sent message message bytes=13535
+        Aggregate sent messages=186
+        Aggregate vertices=6
+        Current master task partition=0
+        Current workers=2
+        Last checkpointed superstep=0
+        Sent message bytes=438
+        Sent messages=6
+        Superstep=31
+    Giraph Timers
+        Initialize (ms)=2996
+        Input superstep (ms)=5209
+        Setup (ms)=59
+        Shutdown (ms)=9324
+        Superstep 0 GiraphComputation (ms)=3861
+        Superstep 1 GiraphComputation (ms)=4027
+        Superstep 10 GiraphComputation (ms)=4000
+        Superstep 11 GiraphComputation (ms)=4004
+        Superstep 12 GiraphComputation (ms)=3999
+        Superstep 13 GiraphComputation (ms)=4000
+        Superstep 14 GiraphComputation (ms)=4005
+        Superstep 15 GiraphComputation (ms)=4003
+        Superstep 16 GiraphComputation (ms)=4001
+        Superstep 17 GiraphComputation (ms)=4007
+        Superstep 18 GiraphComputation (ms)=3998
+        Superstep 19 GiraphComputation (ms)=4006
+        Superstep 2 GiraphComputation (ms)=4007
+        Superstep 20 GiraphComputation (ms)=3996
+        Superstep 21 GiraphComputation (ms)=4006
+        Superstep 22 GiraphComputation (ms)=4002
+        Superstep 23 GiraphComputation (ms)=3998
+        Superstep 24 GiraphComputation (ms)=4003
+        Superstep 25 GiraphComputation (ms)=4001
+        Superstep 26 GiraphComputation (ms)=4003
+        Superstep 27 GiraphComputation (ms)=4005
+        Superstep 28 GiraphComputation (ms)=4002
+        Superstep 29 GiraphComputation (ms)=4001
+        Superstep 3 GiraphComputation (ms)=3988
+        Superstep 30 GiraphComputation (ms)=4248
+        Superstep 4 GiraphComputation (ms)=4010
+        Superstep 5 GiraphComputation (ms)=3998
+        Superstep 6 GiraphComputation (ms)=3996
+        Superstep 7 GiraphComputation (ms)=4005
+        Superstep 8 GiraphComputation (ms)=4009
+        Superstep 9 GiraphComputation (ms)=3994
+        Total (ms)=138788
+    File Input Format Counters
+        Bytes Read=0
+    File Output Format Counters
+        Bytes Written=0
+$ hdfs dfs -cat output/~g/*
 {"id":1,"label":"person","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":39,"value":0.15000000000000002}],"name":[{"id":0,"value":"marko"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":10,"value":3.0}],"age":[{"id":1,"value":29}]}}
 {"id":5,"label":"software","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":35,"value":0.23181250000000003}],"name":[{"id":8,"value":"ripple"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":6,"value":0.0}],"lang":[{"id":9,"value":"java"}]}}
 {"id":3,"label":"software","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":39,"value":0.4018125}],"name":[{"id":4,"value":"lop"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":10,"value":0.0}],"lang":[{"id":5,"value":"java"}]}}
 {"id":4,"label":"person","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":39,"value":0.19250000000000003}],"name":[{"id":6,"value":"josh"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":10,"value":2.0}],"age":[{"id":7,"value":32}]}}
 {"id":2,"label":"person","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":35,"value":0.19250000000000003}],"name":[{"id":2,"value":"vadas"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":6,"value":0.0}],"age":[{"id":3,"value":27}]}}
 {"id":6,"label":"person","properties":{"gremlin.pageRankVertexProgram.pageRank":[{"id":35,"value":0.15000000000000002}],"name":[{"id":10,"value":"peter"}],"gremlin.pageRankVertexProgram.edgeCount":[{"id":6,"value":1.0}],"age":[{"id":11,"value":35}]}}
+----
 
 Vertex 4 ("josh") is isolated below:
 
@@ -1178,14 +1279,18 @@ Hadoop-Gremlin is centered around `InputFormats` and `OutputFormats`. If a 3rd-p
 Conceptually, `HadoopGraph` is a wrapper around a `Configuration` object. There is no "data" in the `HadoopGraph` as the `InputFormat` specifies where and how to get the graph data at OLAP (and OLTP) runtime. Thus, `HadoopGraph` is a small object with little overhead. Vendors should realize `HadoopGraph` as the gateway to the OLAP features offered by Hadoop-Gremlin. An example, vendor-specific `Graph.compute(Class<? extends GraphComputer> graphComputerClass)`-method may look as follows:
 
 [source,java]
+----
 public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException {
-  if(AbstractHadoopGraphComputer.class.isAssignableFrom(graphComputerClass))
-    return HadoopGraph.open(this.configuration()).compute(graphComputerClass);
-  else if(...) // vendor specific graph computer classes
-    // return vendor specific instance
-  else
-    throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+  try {
+    if (AbstractHadoopGraphComputer.class.isAssignableFrom(graphComputerClass))
+      return graphComputerClass.getConstructor(HadoopGraph.class).newInstance(this);
+    else
+      throw Graph.Exceptions.graphDoesNotSupportProvidedGraphComputer(graphComputerClass);
+  } catch (final Exception e) {
+    throw new IllegalArgumentException(e.getMessage(),e);
+  }
 }
+----
 
 Note that the configurations for Hadoop are assumed to be in the `Graph.configuration()` object. If this is not the case, then the `Configuration` provided to `HadoopGraph.open()` should be dynamically created within the `compute()`-method. It is in the provided configuration that `HadoopGraph` gets the various properties which determine how to read and write data to and from Hadoop. For instance, `gremlin.hadoop.graphInputFormat` and `gremlin.hadoop.graphOutputFormat`.
 

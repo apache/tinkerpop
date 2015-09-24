@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 /**
- * IdentityRemovalStrategy looks for {@link IdentityStep} instances and removes them.
+ * {@code IdentityRemovalStrategy} looks for {@link IdentityStep} instances and removes them.
  * If the identity step is labeled, its labels are added to the previous step.
  * If the identity step is labeled and its the first step, in the traversal, it stays.
  * <p/>
@@ -48,7 +48,7 @@ public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<Tra
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (!TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
+        if (traversal.getSteps().size() <= 1 || !TraversalHelper.hasStepOfClass(IdentityStep.class, traversal))
             return;
 
         TraversalHelper.getStepsOfClass(IdentityStep.class, traversal).stream().forEach(identityStep -> {

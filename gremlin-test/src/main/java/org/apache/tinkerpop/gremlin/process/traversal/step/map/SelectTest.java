@@ -28,7 +28,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -185,36 +184,43 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_out_asXbX_selectXa_bX_byXnameX() {
-        Arrays.asList(
-                get_g_V_asXaX_out_asXbX_selectXa_bX_byXnameX(),
-                get_g_V_asXaX_out_aggregateXxX_asXbX_selectXa_bX_byXnameX()).forEach(traversal -> {
-            printTraversalForm(traversal);
-            final List<Map<String, String>> expected = makeMapList(2,
-                    "a", "marko", "b", "lop",
-                    "a", "marko", "b", "vadas",
-                    "a", "marko", "b", "josh",
-                    "a", "josh", "b", "ripple",
-                    "a", "josh", "b", "lop",
-                    "a", "peter", "b", "lop");
-            checkResults(expected, traversal);
-        });
+        final Traversal<Vertex, Map<String,String>> traversal = get_g_V_asXaX_out_asXbX_selectXa_bX_byXnameX();
+        printTraversalForm(traversal);
+        assertCommonA(traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXaX_out_aggregateXxX_asXbX_selectXa_bX_byXnameX() {
+        final Traversal<Vertex, Map<String,String>> traversal = get_g_V_asXaX_out_aggregateXxX_asXbX_selectXa_bX_byXnameX();
+        printTraversalForm(traversal);
+        assertCommonA(traversal);
+    }
+
+    private void assertCommonA(final Traversal<Vertex, Map<String, String>> traversal) {
+        final List<Map<String, String>> expected = makeMapList(2,
+                "a", "marko", "b", "lop",
+                "a", "marko", "b", "vadas",
+                "a", "marko", "b", "josh",
+                "a", "josh", "b", "ripple",
+                "a", "josh", "b", "lop",
+                "a", "peter", "b", "lop");
+        checkResults(expected, traversal);
     }
 
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_name_order_asXbX_selectXa_bX_byXnameX_by_XitX() {
-        Arrays.asList(
-                get_g_V_asXaX_name_order_asXbX_selectXa_bX_byXnameX_by_XitX()).forEach(traversal -> {
-            printTraversalForm(traversal);
-            final List<Map<String, String>> expected = makeMapList(2,
-                    "a", "marko", "b", "marko",
-                    "a", "vadas", "b", "vadas",
-                    "a", "josh", "b", "josh",
-                    "a", "ripple", "b", "ripple",
-                    "a", "lop", "b", "lop",
-                    "a", "peter", "b", "peter");
-            checkResults(expected, traversal);
-        });
+        final Traversal<Vertex, Map<String,String>> traversal = get_g_V_asXaX_name_order_asXbX_selectXa_bX_byXnameX_by_XitX();
+        printTraversalForm(traversal);
+        final List<Map<String, String>> expected = makeMapList(2,
+                "a", "marko", "b", "marko",
+                "a", "vadas", "b", "vadas",
+                "a", "josh", "b", "josh",
+                "a", "ripple", "b", "ripple",
+                "a", "lop", "b", "lop",
+                "a", "peter", "b", "peter");
+        checkResults(expected, traversal);
     }
 
     @Test
@@ -376,20 +382,35 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX() {
-        final List<Traversal<Vertex, Edge>> traversals = Arrays.asList(
-                get_g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX(convertToVertexId("marko")),
-                get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_selectXhereX(convertToVertexId("marko")),
-                get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX(convertToVertexId("marko")));
-        traversals.forEach(traversal -> {
-            printTraversalForm(traversal);
-            assertTrue(traversal.hasNext());
-            assertTrue(traversal.hasNext());
-            final Edge edge = traversal.next();
-            assertEquals("knows", edge.label());
-            assertEquals(1.0d, edge.<Double>value("weight"), 0.00001d);
-            assertFalse(traversal.hasNext());
-            assertFalse(traversal.hasNext());
-        });
+        final Traversal<Vertex, Edge> traversal = get_g_VX1X_outEXknowsX_hasXweight_1X_asXhereX_inV_hasXname_joshX_selectXhereX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        assertCommonB(traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_selectXhereX() {
+        final Traversal<Vertex, Edge> traversal = get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_inV_hasXname_joshX_selectXhereX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        assertCommonB(traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX() {
+        final Traversal<Vertex, Edge> traversal = get_g_VX1X_outEXknowsX_asXhereX_hasXweight_1X_asXfakeX_inV_hasXname_joshX_selectXhereX(convertToVertexId("marko"));
+        printTraversalForm(traversal);
+        assertCommonB(traversal);
+    }
+
+    private static void assertCommonB(final Traversal<Vertex, Edge> traversal) {
+        assertTrue(traversal.hasNext());
+        assertTrue(traversal.hasNext());
+        final Edge edge = traversal.next();
+        assertEquals("knows", edge.label());
+        assertEquals(1.0d, edge.<Double>value("weight"), 0.00001d);
+        assertFalse(traversal.hasNext());
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -407,16 +428,14 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX() {
-        final List<Traversal<Vertex, Map<String, Long>>> traversals = Arrays.asList(get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX());
-        traversals.forEach(traversal -> {
-            printTraversalForm(traversal);
-            assertTrue(traversal.hasNext());
-            final Map<String, Long> map = traversal.next();
-            assertFalse(traversal.hasNext());
-            assertEquals(2, map.size());
-            assertEquals(1l, map.get("ripple").longValue());
-            assertEquals(6l, map.get("lop").longValue());
-        });
+        Traversal<Vertex, Map<String, Long>> traversal = get_g_V_outXcreatedX_unionXasXprojectX_inXcreatedX_hasXname_markoX_selectXprojectX__asXprojectX_inXcreatedX_inXknowsX_hasXname_markoX_selectXprojectXX_groupCount_byXnameX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Long> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        assertEquals(1l, map.get("ripple").longValue());
+        assertEquals(6l, map.get("lop").longValue());
     }
 
     @Test

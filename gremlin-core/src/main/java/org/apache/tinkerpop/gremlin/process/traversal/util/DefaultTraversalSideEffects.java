@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -41,6 +42,7 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     protected Map<String, Object> objectMap = new HashMap<>();
     protected Map<String, Supplier> supplierMap = new HashMap<>();
     protected UnaryOperator sackSplitOperator = null;
+    protected BinaryOperator sackMergeOperator = null;
     protected Supplier sackInitialValue = null;
 
     public DefaultTraversalSideEffects() {
@@ -75,19 +77,25 @@ public class DefaultTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator) {
+    public <S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BinaryOperator<S> mergeOperator) {
         this.sackInitialValue = initialValue;
-        this.sackSplitOperator = splitOperator.orElse(null);
+        this.sackSplitOperator = splitOperator;
+        this.sackMergeOperator = mergeOperator;
     }
 
     @Override
-    public <S> Optional<Supplier<S>> getSackInitialValue() {
-        return Optional.ofNullable(this.sackInitialValue);
+    public <S> Supplier<S> getSackInitialValue() {
+        return this.sackInitialValue;
     }
 
     @Override
-    public <S> Optional<UnaryOperator<S>> getSackSplitOperator() {
-        return Optional.ofNullable(this.sackSplitOperator);
+    public <S> UnaryOperator<S> getSackSplitter() {
+        return this.sackSplitOperator;
+    }
+
+    @Override
+    public <S> BinaryOperator<S> getSackMerger() {
+        return this.sackMergeOperator;
     }
 
     /**

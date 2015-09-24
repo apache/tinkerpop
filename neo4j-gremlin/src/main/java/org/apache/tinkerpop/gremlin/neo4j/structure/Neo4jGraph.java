@@ -36,7 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction;
+import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
@@ -71,10 +71,6 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE)
 @Graph.OptIn("org.apache.tinkerpop.gremlin.neo4j.NativeNeo4jSuite")
-@Graph.OptOut(
-        test = "org.apache.tinkerpop.gremlin.structure.TransactionTest",
-        method = "shouldRollbackOnShutdownWhenConfigured",
-        reason = "There appears to be a race condition that occurs between Graph.close() and Neo4jGraphAPI.shutdown()")
 public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(Neo4jGraph.class);
@@ -191,8 +187,8 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                             return ((Number) id).longValue();
                         else if (id instanceof String)
                             return Long.valueOf(id.toString());
-                        else if (id instanceof Neo4jVertex) {
-                            return (Long) ((Neo4jVertex) id).id();
+                        else if (id instanceof Vertex) {
+                            return (Long) ((Vertex) id).id();
                         } else
                             throw new IllegalArgumentException("Unknown vertex id type: " + id);
                     })
@@ -225,8 +221,8 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                             return ((Number) id).longValue();
                         else if (id instanceof String)
                             return Long.valueOf(id.toString());
-                        else if (id instanceof Neo4jEdge) {
-                            return (Long) ((Neo4jEdge) id).id();
+                        else if (id instanceof Edge) {
+                            return (Long) ((Edge) id).id();
                         } else
                             throw new IllegalArgumentException("Unknown edge id type: " + id);
                     })
@@ -271,7 +267,6 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
     public Configuration configuration() {
         return this.configuration;
     }
-
 
     /**
      * This implementation of {@code close} will also close the current transaction on the the thread, but it
@@ -321,7 +316,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         return traversal;
     }
 
-    class Neo4jTransaction extends AbstractTransaction {
+    class Neo4jTransaction extends AbstractThreadLocalTransaction {
 
         protected final ThreadLocal<Neo4jTx> threadLocalTx = ThreadLocal.withInitial(() -> null);
 
@@ -349,10 +344,6 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         @Override
         public void doRollback() throws TransactionException {
             try {
-//                javax.transaction.Transaction t = transactionManager.getTransaction();
-//                if (null == t || t.getStatus() == javax.transaction.Status.STATUS_ROLLEDBACK)
-//                    return;
-
                 threadLocalTx.get().failure();
             } catch (Exception e) {
                 throw new TransactionException(e);
@@ -398,6 +389,11 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
             private VariableFeatures variableFeatures = new Neo4jGraphVariables.Neo4jVariableFeatures();
 
             Neo4jGraphGraphFeatures() {
+            }
+
+            @Override
+            public boolean supportsConcurrentAccess() {
+                return false;
             }
 
             @Override

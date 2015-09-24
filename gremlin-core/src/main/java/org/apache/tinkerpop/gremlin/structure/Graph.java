@@ -20,9 +20,12 @@ package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
@@ -137,10 +140,20 @@ public interface Graph extends AutoCloseable, Host {
 
     public GraphComputer compute() throws IllegalArgumentException;
 
+    /**
+     * Construct a {@link TraversalSource} using the specified {@code sourceBuilder}.  The {@link TraversalSource}
+     * provides methods for creating a {@link Traversal} given the context of {@link TraversalStrategy} implementations
+     * and a {@link GraphComputer}.
+     */
     public default <C extends TraversalSource> C traversal(final TraversalSource.Builder<C> sourceBuilder) {
         return sourceBuilder.create(this);
     }
 
+    /**
+     * Construct a {@link GraphTraversalSource} instance using the {@link StandardTraversalEngine}. The
+     * {@link TraversalSource} provides methods for creating a {@link Traversal} given the context of
+     * {@link TraversalStrategy} implementations and a {@link GraphComputer}.
+     */
     public default GraphTraversalSource traversal() {
         return this.traversal(GraphTraversalSource.build().engine(StandardTraversalEngine.build()));
     }
@@ -174,7 +187,7 @@ public interface Graph extends AutoCloseable, Host {
      * <ul>
      *     <li>g.vertices(v.id())</li>
      * </ul>
-     * <p/>
+     * <p/>                                                                                                         
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsStringIds()} ()} then it should support
      * filters as with:
      * <ul>
@@ -238,9 +251,22 @@ public interface Graph extends AutoCloseable, Host {
     public Iterator<Edge> edges(final Object... edgeIds);
 
     /**
-     * Configure and control the transactions for those graphs that support this feature.
+     * Configure and control the transactions for those graphs that support this feature.  Note that this method does
+     * not indicate the creation of a "transaction" object.  A {@link Transaction} in the TinkerPop context is a
+     * transaction "factory" or "controller" that helps manage transactions owned by the underlying graph database.
      */
     public Transaction tx();
+
+    /**
+     * Closing a {@code Graph} is equivalent to "shutdown" and implies that no futher operations can be executed on
+     * the instance.  Users should consult the documentation of the underlying graph database implementation for what
+     * this "shutdown" will mean as it pertains to open transactions.  It will typically be the end user's
+     * responsibility to synchronize the thread that calls {@code close()} with other threads that are accessing open
+     * transactions. In other words, be sure that all work performed on the {@code Graph} instance is complete prior
+     * to calling this method.
+     */
+    @Override
+    void close() throws Exception;
 
     /**
      * Construct a particular {@link Io} implementation for reading and writing the {@code Graph} and other data.
@@ -383,6 +409,7 @@ public interface Graph extends AutoCloseable, Host {
             public static final String FEATURE_TRANSACTIONS = "Transactions";
             public static final String FEATURE_PERSISTENCE = "Persistence";
             public static final String FEATURE_THREADED_TRANSACTIONS = "ThreadedTransactions";
+            public static final String FEATURE_CONCURRENT_ACCESS = "ConcurrentAccess";
 
             /**
              * Determines if the {@code Graph} implementation supports
@@ -401,6 +428,18 @@ public interface Graph extends AutoCloseable, Host {
              */
             @FeatureDescriptor(name = FEATURE_PERSISTENCE)
             public default boolean supportsPersistence() {
+                return true;
+            }
+
+            /**
+             * Determines if the {@code Graph} implementation supports more than one connection to the same instance
+             * at the same time.  For example, Neo4j embedded does not support this feature because concurrent
+             * access to the same database files by multiple instances is not possible.  However, Neo4j HA could
+             * support this feature as each new {@code Graph} instance coordinates with the Neo4j cluster allowing
+             * multiple instances to operate on the same database.
+             */
+            @FeatureDescriptor(name = FEATURE_CONCURRENT_ACCESS)
+            public default boolean supportsConcurrentAccess() {
                 return true;
             }
 
@@ -556,7 +595,10 @@ public interface Graph extends AutoCloseable, Host {
 
             /**
              * Determines if an {@link Element} can have a user defined identifier.  Implementation that do not support
-             * this feature will be expected to auto-generate unique identifiers.
+             * this feature will be expected to auto-generate unique identifiers.  In other words, if the {@link Graph}
+             * allows {@code graph.addVertex(id,x)} to work and thus set the identifier of the newly added
+             * {@link Vertex} to the value of {@code x} then this feature should return true.  In this case, {@code x}
+             * is assumed to be an identifier datat ype that the {@link Graph} will accept.
              */
             @FeatureDescriptor(name = FEATURE_USER_SUPPLIED_IDS)
             public default boolean supportsUserSuppliedIds() {
@@ -564,7 +606,12 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
-             * Determines if an {@link Element} has numeric identifiers as their internal representation.
+             * Determines if an {@link Element} has numeric identifiers as their internal representation. In other
+             * words, if the value returned from {@link Element#id()} is a numeric value then this method
+             * should be return {@code true}.
+             * <p/>
+             * Note that this feature is most generally used for determining the appropriate tests to execute in the
+             * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_NUMERIC_IDS)
             public default boolean supportsNumericIds() {
@@ -572,7 +619,12 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
-             * Determines if an {@link Element} has string identifiers as their internal representation.
+             * Determines if an {@link Element} has string identifiers as their internal representation. In other
+             * words, if the value returned from {@link Element#id()} is a string value then this method
+             * should be return {@code true}.
+             * <p/>
+             * Note that this feature is most generally used for determining the appropriate tests to execute in the
+             * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_STRING_IDS)
             public default boolean supportsStringIds() {
@@ -580,7 +632,12 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
-             * Determines if an {@link Element} has UUID identifiers as their internal representation.
+             * Determines if an {@link Element} has UUID identifiers as their internal representation. In other
+             * words, if the value returned from {@link Element#id()} is a {@link UUID} value then this method
+             * should be return {@code true}.
+             * <p/>
+             * Note that this feature is most generally used for determining the appropriate tests to execute in the
+             * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_UUID_IDS)
             public default boolean supportsUuidIds() {
@@ -589,6 +646,11 @@ public interface Graph extends AutoCloseable, Host {
 
             /**
              * Determines if an {@link Element} has a specific custom object as their internal representation.
+             * In other words, if the value returned from {@link Element#id()} is a type defined by the graph
+             * implementations, such as OrientDB's {@code Rid}, then this method should be return {@code true}.
+             * <p/>
+             * Note that this feature is most generally used for determining the appropriate tests to execute in the
+             * Gremlin Test Suite.
              */
             @FeatureDescriptor(name = FEATURE_CUSTOM_IDS)
             public default boolean supportsCustomIds() {
@@ -596,8 +658,13 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
-             * Determines if an {@link Element} any Java object is a suitable identifier.  Note that this
-             * setting can only return true if {@link #supportsUserSuppliedIds()} is true.
+             * Determines if an {@link Element} any Java object is a suitable identifier. TinkerGraph is a good
+             * example of a {@link Graph} that can support this feature, as it can use any {@link Object} as
+             * a value for the identifier.
+             * <p/>
+             * Note that this feature is most generally used for determining the appropriate tests to execute in the
+             * Gremlin Test Suite. This setting should only return {@code true} if {@link #supportsUserSuppliedIds()}
+             * is {@code true}.
              */
             @FeatureDescriptor(name = FEATURE_ANY_IDS)
             public default boolean supportsAnyIds() {
@@ -942,7 +1009,7 @@ public interface Graph extends AutoCloseable, Host {
             }
 
             /**
-             * Supports setting of a long value.
+             * Supports setting of a string value.
              */
             @FeatureDescriptor(name = FEATURE_STRING_VALUES)
             public default boolean supportsStringValues() {
@@ -1121,6 +1188,15 @@ public interface Graph extends AutoCloseable, Host {
          * For parameterized tests specify the name of the test itself without its "square brackets".
          */
         public String specific() default "";
+
+        /**
+         * The list of {@link GraphComputer} implementations that a test should opt-out from using (i.e. other
+         * graph computers not in this list will execute the test).  This setting should only be included when
+         * the test is one that uses the {@link ComputerTraversalEngine} - it will otherwise be ignored.  By
+         * default, an empty array is assigned and it is thus assumed that all computers are excluded when an
+         * {@code OptOut} annotation is used, therefore this value must be overridden to be more specific.
+         */
+        public Class<? extends GraphComputer>[] computers() default { };
     }
 
     /**

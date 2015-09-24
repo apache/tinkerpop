@@ -29,7 +29,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
 
@@ -39,12 +38,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This strategy looks for <code>.outE().inV()</code>, <code>.inE().outV()</code> and <code>.bothE().otherV()</code>
- * and replaces these step sequences with <code>.out()</code>, <code>.in()</code> or <code>.both()</code> respectively.
+ * This strategy looks for {@code .outE().inV()}, {@code .inE().outV()} and {@code .bothE().otherV()}
+ * and replaces these step sequences with {@code .out()}, {@code .in()} or {@code .both()} respectively.
  * The strategy won't modify the traversal if:
  * <ul>
  * <li>the edge step is labeled</li>
- * <li>the traversal contains a <code>path</code> step</li>
+ * <li>the traversal contains a {@code path} step</li>
  * <li>the traversal contains a lambda step</li>
  * </ul>
  * <p/>
@@ -119,6 +118,9 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
      */
     private static void optimizeSteps(final Traversal.Admin traversal, final VertexStep step1, final Step step2) {
         final Step newStep = new VertexStep(traversal, Vertex.class, step1.getDirection(), step1.getEdgeLabels());
+        for (final String label : (Iterable<String>) step2.getLabels()) {
+            newStep.addLabel(label);
+        }
         TraversalHelper.replaceStep(step1, newStep, traversal);
         traversal.removeStep(step2);
     }

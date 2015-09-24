@@ -260,10 +260,10 @@ public class VertexTest {
         public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnEdge() {
             final Vertex v = graph.addVertex();
             final Object o = GraphManager.getGraphProvider().convertId("1", Edge.class);
-            v.addEdge("label", v, T.id, o);
+            v.addEdge("self", v, T.id, o);
 
             try {
-                v.addEdge("label", v, T.id, o);
+                v.addEdge("self", v, T.id, o);
                 fail("Assigning the same ID to an Element should throw an exception");
             } catch (Exception ex) {
                 validateException(Graph.Exceptions.edgeWithIdAlreadyExists(o), ex);
@@ -278,7 +278,7 @@ public class VertexTest {
         public void shouldHaveExceptionConsistencyWhenIdNotSupportedForAddEdge() throws Exception {
             try {
                 final Vertex v = this.graph.addVertex();
-                v.addEdge("label", v, T.id, "");
+                v.addEdge("self", v, T.id, "");
                 fail("Call to addEdge should have thrown an exception when ID was specified as it is not supported");
             } catch (Exception ex) {
                 validateException(Edge.Exceptions.userSuppliedIdsNotSupported(), ex);
@@ -532,51 +532,6 @@ public class VertexTest {
         public void shouldReturnEmptyIteratorIfNoProperties() {
             final Vertex v = graph.addVertex();
             assertEquals(0, IteratorUtils.count(v.properties()));
-        }
-    }
-
-    @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
-            "elementAlreadyRemoved"
-    })
-    public static class ExceptionConsistencyWhenVertexRemovedTest extends AbstractGremlinTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return Arrays.asList(new Object[][]{
-                    {"property(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.property("name"))},
-                    {"remove()", FunctionUtils.wrapConsumer(Vertex::remove)},
-                    {"addEdge()", FunctionUtils.wrapConsumer((Vertex v) -> v.addEdge("self", v))},
-                    {"property(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
-                        v.property(VertexProperty.Cardinality.single, "k", "v");
-                    })},
-                    {"property(single,k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
-                        v.property(VertexProperty.Cardinality.single, "k", "v");
-                    })},
-                    {"value(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.value("name"))}});
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public String name;
-
-        @Parameterized.Parameter(value = 1)
-        public Consumer<Vertex> functionToTest;
-
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
-        public void shouldThrowExceptionIfVertexWasRemovedWhenCallingProperty() {
-            final Vertex v1 = graph.addVertex("name", "stephen");
-            final Object id = v1.id();
-            v1.remove();
-            tryCommit(graph, g -> {
-                try {
-                    functionToTest.accept(v1);
-                    fail("Should have thrown exception as the Vertex was already removed");
-                } catch (Exception ex) {
-                    validateException(Element.Exceptions.elementAlreadyRemoved(Vertex.class, id), ex);
-                }
-            });
         }
     }
 }

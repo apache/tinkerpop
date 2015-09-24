@@ -20,15 +20,15 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.driver.Client;
-import org.apache.tinkerpop.gremlin.driver.Cluster;
-import org.apache.tinkerpop.gremlin.driver.Result;
-import org.apache.tinkerpop.gremlin.driver.ResultSet;
+import org.apache.tinkerpop.gremlin.driver.*;
+import org.apache.tinkerpop.gremlin.driver.Channelizer;
+import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer;
 import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
+import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
@@ -47,6 +47,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -84,6 +85,9 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
+                break;
+            case "shouldWorkOverNioTransport":
+                settings.channelizer = NioChannelizer.class.getName();
                 break;
             case "shouldFailWithBadClientSideSerialization":
                 final List<String> custom = Arrays.asList(
@@ -145,8 +149,52 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldProcessSessionRequestsInOrder() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect(name.getMethodName());
+
+        final ResultSet rsFive = client.submit("Thread.sleep(5000);'five'");
+        final ResultSet rsZero = client.submit("'zero'");
+
+        final CompletableFuture<List<Result>> futureFive = rsFive.all();
+        final CompletableFuture<List<Result>> futureZero = rsZero.all();
+
+        final AtomicBoolean hit = new AtomicBoolean(false);
+        while (!futureFive.isDone()) {
+            // futureZero can't finish before futureFive - racy business here?
+            assertThat(futureZero.isDone(), is(false));
+            hit.set(true);
+        }
+
+        // should have entered the loop at least once and thus proven that futureZero didn't return ahead of
+        // futureFive
+        assertThat(hit.get(), is(true));
+
+        assertEquals("zero", futureZero.get().get(0).getString());
+        assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
+    }
+
+    @Test
     public void shouldWaitForAllResultsToArrive() throws Exception {
         final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final AtomicInteger checked = new AtomicInteger(0);
+        final ResultSet results = client.submit("[1,2,3,4,5,6,7,8,9]");
+        while (!results.allItemsAvailable()) {
+            assertTrue(results.getAvailableItemCount() < 10);
+            checked.incrementAndGet();
+            Thread.sleep(100);
+        }
+
+        assertTrue(checked.get() > 0);
+        assertEquals(9, results.getAvailableItemCount());
+        cluster.close();
+    }
+
+    @Test
+    public void shouldWorkOverNioTransport() throws Exception {
+        final Cluster cluster = Cluster.build().channelizer(Channelizer.NioChannelizer.class.getName()).create();
         final Client client = cluster.connect();
 
         final AtomicInteger checked = new AtomicInteger(0);
@@ -291,7 +339,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         IntStream.range(0, requests).forEach(ix -> {
             refs[ix] = new AtomicReference();
             client.submitAsync("Thread.sleep(5000);[1,2,3,4,5,6,7,8,9]").thenAccept(rs ->
-                rs.all().thenAccept(refs[ix]::set).thenRun(latch::countDown));
+                    rs.all().thenAccept(refs[ix]::set).thenRun(latch::countDown));
         });
 
         // countdown should have reached zero as results should have eventually been all returned and processed
@@ -305,7 +353,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     @Test
     public void shouldCloseWithServerDown() throws Exception {
         final Cluster cluster = Cluster.open();
-        cluster.connect();
+        cluster.connect().init();
 
         stopServer();
 
@@ -314,11 +362,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
     @Test
     public void shouldMarkHostDeadSinceServerIsDown() throws Exception {
+        final Cluster cluster = Cluster.open();
+        assertEquals(0, cluster.availableHosts().size());
+        cluster.connect().init();
+        assertEquals(1, cluster.availableHosts().size());
+
         stopServer();
 
-        final Cluster cluster = Cluster.open();
-        cluster.connect();
-
+        cluster.connect().init();
         assertEquals(0, cluster.availableHosts().size());
 
         cluster.close();
@@ -343,7 +394,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
-        final ResultSet results = client.submit("TinkerFactory.createClassic()");
+        final ResultSet results = client.submit("TinkerGraph.open().variables()");
 
         try {
             results.all().join();
@@ -452,7 +503,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             client.submit("'" + fatty + "'").all().get();
             fail("Should throw an exception.");
         } catch (Exception re) {
-            Throwable root = ExceptionUtils.getRootCause(re);
+            final Throwable root = ExceptionUtils.getRootCause(re);
             assertTrue(root.getMessage().equals("Max frame length of 1 has been exceeded."));
         } finally {
             cluster.close();
@@ -474,6 +525,27 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(4, results3.all().get().get(0).getInt());
 
         cluster.close();
+    }
+
+    @Test
+    public void shouldCloseSession() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect(name.getMethodName());
+
+        final ResultSet results1 = client.submit("x = [1,2,3,4,5,6,7,8,9]");
+        assertEquals(9, results1.all().get().size());
+        final ResultSet results2 = client.submit("x[0]+1");
+        assertEquals(2, results2.all().get().get(0).getInt());
+
+        client.close();
+
+        try {
+            client.submit("x[0]+1");
+            fail("Should have thrown an exception because the connection is closed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ConnectionException.class));
+        }
     }
 
     @Test
@@ -652,5 +724,4 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         cluster.close();
     }
-
 }

@@ -14,17 +14,124 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-TinkerPop3 CHANGEGLOG
+TinkerPop3 CHANGELOG
 =====================
+
+
+TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
+--------------------------------------------------
+
+image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
+
+TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Bumped to Apache Hadoop 2.7.1.
+* Bumped to Apache Giraph 1.1.0.
+* Bumped to Apache Spark 1.5.0.
+* Split Hadoop-Gremlin apart such there is now `hadoop-gremlin`, `spark-gremlin`, and `giraph-gremlin` (and respective `GremlinPlugins`).
+* Added `LambdaCollectingBarrierStep` which generalizes `NoOpBarrierStep` and allows for `barrier(normSack)`-type operations.
+* Fixed bugs in the Gremlin Server's NIO protocol both on the server and driver side.
+* Added `Path.popEquals(Pop,Object)` to check for path equality based on `Pop` (useful for `TraverserRequirement.LABELED_PATH`).
+* Added `Operator.assign` to allow setting a direct value.
+* `Operator` is now a `BinaryOperator<Object>` with appropriate typecasting for respective number operators.
+* Simplified `SackValueStep` so it now supports both `sack(function)` and sack(function).by()`. Deprecated `sack(function,string)`.
+* Added `Parameters` object to allow for the parameters of a step to be retrieved at runtime via a traversal.
+* Redesigned (though backwards compatible) `AddEdgeStep`, `AddVertexStep`, and `AddPropertyStep` (and respective `GraphTraversal` API).
+* Added `GraphTraversalSource.inject()` so users can spawn a traverser with non-graph objects.
+* `GraphStep` can now take a single argument `Collection` which is either elements or element ids (i.e. `g.V([1,2,3])` is supported now).
+* Added `LoopsStep` to make the loop counter accessible within `repeat()`, `until()` and `emit()`.
+* Gephi Plugin no longer requires manual insert of `store` steps to visualize a traversal.
+* Gephi Plugin visualizes `Path` objects.
+* Added a `TinkerIoRegistry` that registers a custom serializer for Gryo that will serialize an entire `TinkerGraph` instance.
+* Added configuration options to Gephi Plugin for setting the size of nodes visualized.
+* Replaced `DedupBijectionStrategy` with the more effective `FilterRankingStrategy`.
+* `ComputerAwareSteps` must not only handle step ids, but also step labels.
+* Renamed `B_O_P_SE_SL_Traverser` to `B_LP_O_P_SE_SL_Traverser` as it now supports `TraverserRequirement.LABELED_PATH`.
+* Added `B_LP_O_S_SE_SL_Traverser` in support of `TraverserRequirement.LABELED_PATH`.
+* Added `TraverserRequirement.LABELED_PATH` which only generates path data for steps that are labeled (greatly increases the likelihood of bulking).
+* Fixed a bug in `Path` usage that required an API update: `Path.addLabel()` is now `Path.extend(Set<String>)` and `Traverser.addLabels(Set<String>)`.
+* Made `Path` iterable, so that it can be `unfold()`'ed and used by local steps like `min(local)`, `max(local)`, etc.
+* `WhereTraversalStep` and `WherePredicateStep` are now the only "special" `Scoping` steps after `MatchStartStep` in `match()`.
 
 TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------------------------------------
 
-image::http://www.tinkerpop.com/docs/current/images/gremlin-hindu.png[width=225]
+image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
 
-TinkerPop 3.0.0.GA (NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.0.2 (NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a thread context bug in `TinkerGraphComputer`.
+* Improved session closing for transactional graphs during shutdown of Gremlin Server.
+* Fixed id parameter used in tests for `GroovyStoreTest` and `GroovyRepeatTest` to not be treated as an embedded string.
+* `GraphStep` will convert any `Vertex` or `Edge` ids to their id `Object` prior to submission to `GraphComputer` (OLAP).
+
+TinkerPop 3.0.1 (Release Date: September 2, 2015)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* `Compare` now uses `BigDecimal` internally to ensure that precision is not lost on standard number comparisons.
+* Renamed `ComputerVerificationStrategy` to `VerificationStrategy` so all the verification strategies can use it.
+* Added `StandardVerificationStrategy` that throws exceptions for illegal traversal patterns on the standard engine (which extends to `GraphComputer`).
+* Added `GraphFeatures.supportsConcurrentAccess()` to allows `Graph` implementations to signify if multiple instances can access the same data.
+* Clarified semantics of `Transaction.close()` in unit tests - now refers only to closing the current transaction in the current thread.
+* `Neo4jGraph` no longer uses `OptOut` on `TransactionTest.shouldRollbackOnCloseWhenConfigured` (formerly `shouldRollbackOnShutdownWhenConfigured`)
+* Gremlin Server initialization scripts can now return a `Map` of values that will become global bindings for the server.
+* Introduced the `--dryRun` option to the document generation process which ignores actual script execution in the Gremlin Console.
+* Fixed bug in `EventStrategy` around property changed events when calling `property` without cardinality or meta-property values.
+* Improved support for the `Accept` header for REST-based requests in Gremlin Server.
+* `GraphFactory` now allows specification of the class to use to instantiate the `Graph` through the `GraphFactoryClass` annotation.
+* Added `wrapAdjacencyList` and `unwrapAdjacencyList` options to `GraphSONWriter` and `GraphSONReader` respectively, thus allowing valid JSON to be written/read if the user desires.
+* Added Gremlin Server/Driver authentication support via SASL.
+* Added Basic HTTP authentication support for REST in Gremlin Server.
+* Added Gremlin Server plugin to help with "credential graph" management (used in conjunction with authentication features of Gremlin Server).
+* Added "secure" Gremlin Server/Driver example configuration files.
+* Adjusted configuration for javadoc generation to eliminate error messages.
+* Removed "reserved" graph concept names from tests (e.g. "label", "edge", "value") to support the convention of avoiding these strings for property names.
+* Introduced `GraphProvider.Descriptor` which annotates a `GraphProvider` implementation to describe what `GraphComputer` implementation will be used.
+* Modified `OptOut` to include a `computers` attribute which allows the `Graph` to opt-out of computer-based tests for specific computation engines.
+* Added a `SandboxExtension` that can be plugged into `TypeCheckedCustomizerProvider` and `CompileStaticCustomizerProvider` to control classes and methods that can be used in the `GremlinGroovyScriptEngine`.
+* Added a number of new `ImportCustomizerProvider` implementations such as, `TimedInterruptCustomizerProvider`, `TypeCheckedCustomizerProvider` and others.
+* Refactored `GremlinGroovyScriptEngine` to make more general use of `ImportCustomizerProvider` implementations.
+* Removed `SecurityCustomizerProvider` class and the "sandbox" configuration on the `ScriptEngines` class - this was an experimental feature and not meant for public use.
+* Removed dependency on `groovy-sandbox` from the `gremlin-groovy` module.
+
+Bugs
+^^^^
+
+* [TINKERPOP3-770] - Exception while AddPropertyStep tries to detach vertex property
+* [TINKERPOP3-780] - Use of fold() in repeat()
+* [TINKERPOP3-782] - map(Traversal) should declare requirements of child
+* [TINKERPOP3-785] - Gremlin Server Not Properly Reporting Port Conflict
+* [TINKERPOP3-792] - select at start of match traversal on Map can fail
+* [TINKERPOP3-794] - IncidentToAdjecentStrategy malfunction
+* [TINKERPOP3-804] - Failed installing neo4j-gremlin extension on Windows 7
+* [TINKERPOP3-822] - Neo4j GraphStep with element arguments ignores has  *(breaking)*
+
+Improvements
+^^^^^^^^^^^^
+
+* [TINKERPOP3-576] - Gremlin Server Authentication
+* [TINKERPOP3-582] - Remove Groovy Sandbox Dependency
+* [TINKERPOP3-610] - General graph concept names in test schema
+* [TINKERPOP3-656] - IoRegistry Chaining
+* [TINKERPOP3-690] - Be able to OPT_OUT for Standard, but not Computer *(breaking)*
+* [TINKERPOP3-699] - GraphSON writeGraph not producing valid json object
+* [TINKERPOP3-750] - Compare should not have special case for Number
+* [TINKERPOP3-752] - Make Gremlin Server Better Respect ACCEPT
+* [TINKERPOP3-764] - Unify semantics of Transaction.close() in tests and documentation *(breaking)*
+* [TINKERPOP3-771] - IoRegistry Instantiation With GryoPool
+* [TINKERPOP3-778] - Support GraphFactory location via annotation.
+* [TINKERPOP3-791] - Document rules for committers
+* [TINKERPOP3-797] - order() seems to only like List? *(breaking)*
+* [TINKERPOP3-808] - TraversalComparator.comparator needs a getter
+
+TinkerPop 3.0.0 (Release Date: July 9, 2015)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Modified the `GremlinExecutor` to catch `Throwable` as opposed to `Exception` so as to properly handle `Error` based exceptions.
+* Modified the `GremlinGroovyScriptEngine` compilation configuration to prevent inappropriate script evaluation timeouts on standalone functions.
+* Added a custom configuration for "timed interrupt" in the `ScriptEngines` instantiation of the `GremlinGroovyScriptEngine`.
 * Added `mapKeys()` (`MapKeyStep`) and `mapValues()` (`MapValueStep`) to get the keys and values of a map, respectively.
 * `select()` no longer supports empty arguments. The user must specify the keys they are selecting.
 * `MatchStep` and `match()` no longer have a "start label" parameter -- it is computed if the incoming traverser does not have requisite labels.

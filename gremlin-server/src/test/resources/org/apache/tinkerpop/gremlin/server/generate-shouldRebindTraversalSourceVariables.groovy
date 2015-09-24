@@ -17,8 +17,6 @@
  * under the License.
  */
 
-// Define the default TraversalSource to bind queries to. Code outside of the "hook"
-// will execute for each instantiated ScriptEngine instance. Use this part of the
-// script to initialize functions that are meant to be re-usable.
-g = graph.traversal(GraphTraversalSource.build().with(ReadOnlyStrategy.instance()))
-g1 = graph.traversal()
+def globals = [:]
+globals << [g : graph.traversal(GraphTraversalSource.build().with(ReadOnlyStrategy.instance()))]
+globals << [g1 : graph.traversal()]

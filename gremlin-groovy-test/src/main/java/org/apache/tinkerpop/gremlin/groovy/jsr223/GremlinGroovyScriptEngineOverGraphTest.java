@@ -47,6 +47,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -70,7 +71,7 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldLoadImports() throws Exception {
-        final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(new NoImportCustomizerProvider());
+        final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
         try {
             engineNoImports.eval("Vertex.class.getName()");
             fail("Should have thrown an exception because no imports were supplied");
@@ -145,7 +146,7 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
     public void shouldClearBindingsBetweenEvals() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine();
         engine.put("g", g);
-        Assert.assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()"));
+        assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()"));
 
         final Bindings bindings = engine.createBindings();
         bindings.put("g", g);

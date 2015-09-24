@@ -21,6 +21,10 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.IoX;
+import org.apache.tinkerpop.gremlin.structure.io.IoXIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.IoY;
+import org.apache.tinkerpop.gremlin.structure.io.IoYIoRegistry;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.junit.Test;
 
@@ -81,18 +85,36 @@ public class GryoPoolTest {
     }
 
     @Test
-    public void shouldConfigPoolOnConstructionWithCustomIoRegistry() throws Exception {
+    public void shouldConfigPoolOnConstructionWithCustomIoRegistryConstructor() throws Exception {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(GryoPool.CONFIG_IO_REGISTRY, CustomIoRegistry.class.getName());
+        conf.setProperty(GryoPool.CONFIG_IO_REGISTRY, IoXIoRegistry.ConstructorBased.class.getName());
         final GryoPool pool = new GryoPool(conf);
-        assertReaderWriter(pool.takeWriter(), pool.takeReader(), new Junk("test"), Junk.class);
+        assertReaderWriter(pool.takeWriter(), pool.takeReader(), new IoX("test"), IoX.class);
+    }
+
+    @Test
+    public void shouldConfigPoolOnConstructionWithCustomIoRegistryInstance() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(GryoPool.CONFIG_IO_REGISTRY, IoXIoRegistry.InstanceBased.class.getName());
+        final GryoPool pool = new GryoPool(conf);
+        assertReaderWriter(pool.takeWriter(), pool.takeReader(), new IoX("test"), IoX.class);
+    }
+
+    @Test
+    public void shouldConfigPoolOnConstructionWithMultipleCustomIoRegistries() throws Exception {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(GryoPool.CONFIG_IO_REGISTRY,
+                IoXIoRegistry.InstanceBased.class.getName() + "," + IoYIoRegistry.InstanceBased.class.getName());
+        final GryoPool pool = new GryoPool(conf);
+        assertReaderWriter(pool.takeWriter(), pool.takeReader(), new IoX("test"), IoX.class);
+        assertReaderWriter(pool.takeWriter(), pool.takeReader(), new IoY(100, 200), IoY.class);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldConfigPoolOnConstructionWithoutCustomIoRegistryAndFail() throws Exception {
         final Configuration conf = new BaseConfiguration();
         final GryoPool pool = new GryoPool(conf);
-        assertReaderWriter(pool.takeWriter(), pool.takeReader(), new Junk("test"), Junk.class);
+        assertReaderWriter(pool.takeWriter(), pool.takeReader(), new IoX("test"), IoX.class);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -110,38 +132,6 @@ public class GryoPoolTest {
             try (final ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
                 assertEquals(o, reader.readObject(is, clazz));
             }
-        }
-    }
-
-    public static class Junk {
-        private String x;
-
-        private Junk() {}
-
-        public Junk(final String x) {
-            this.x = x;
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            final Junk junk = (Junk) o;
-
-            return x.equals(junk.x);
-
-        }
-
-        @Override
-        public int hashCode() {
-            return x.hashCode();
-        }
-    }
-
-    public static class CustomIoRegistry extends AbstractIoRegistry {
-        public CustomIoRegistry() {
-            register(GryoIo.class, Junk.class, null);
         }
     }
 }

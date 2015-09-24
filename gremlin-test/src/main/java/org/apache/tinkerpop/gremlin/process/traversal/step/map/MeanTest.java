@@ -50,14 +50,11 @@ public abstract class MeanTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_age_mean() {
-        final List<Traversal<Vertex, Double>> traversals = Arrays.asList(get_g_V_age_mean());
-        traversals.forEach(traversal -> {
-            printTraversalForm(traversal);
-            final Double mean = traversal.next();
-            assertEquals(30.75, mean, 0.05);
-            assertFalse(traversal.hasNext());
-
-        });
+        final Traversal<Vertex, Double> traversal = get_g_V_age_mean();
+        printTraversalForm(traversal);
+        final Double mean = traversal.next();
+        assertEquals(30.75, mean, 0.05);
+        assertFalse(traversal.hasNext());
     }
 
     @Test

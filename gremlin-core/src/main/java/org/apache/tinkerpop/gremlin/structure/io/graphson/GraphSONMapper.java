@@ -18,17 +18,17 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
-import com.fasterxml.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
+import org.apache.tinkerpop.shaded.jackson.annotation.JsonTypeInfo;
+import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.shaded.jackson.databind.SerializationFeature;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeResolverBuilder;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.impl.StdTypeResolverBuilder;
+import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.DefaultSerializerProvider;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
@@ -117,7 +117,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         private boolean loadCustomModules = false;
         private boolean normalize = false;
         private boolean embedTypes = false;
-        private IoRegistry registry = null;
+        private List<IoRegistry> registries = new ArrayList<>();
         private GraphSONVersion version = GraphSONVersion.V1_0;
 
         private Builder() {
@@ -128,7 +128,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
          */
         @Override
         public Builder addRegistry(final IoRegistry registry) {
-            this.registry = registry;
+            registries.add(registry);
             return this;
         }
 
@@ -182,10 +182,10 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
         }
 
         public GraphSONMapper create() {
-            if (registry != null) {
+            registries.forEach(registry -> {
                 final List<Pair<Class, SimpleModule>> simpleModules = registry.find(GraphSONIo.class, SimpleModule.class);
                 simpleModules.stream().map(Pair::getValue1).forEach(this.customModules::add);
-            }
+            });
 
             return new GraphSONMapper(customModules, loadCustomModules, normalize, embedTypes, version);
         }

@@ -18,8 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.graphson;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -38,6 +36,11 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProper
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.jackson.core.type.TypeReference;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.shaded.jackson.databind.node.JsonNodeType;
 import org.javatuples.Pair;
 
 import java.io.BufferedReader;
@@ -52,6 +55,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * A @{link GraphReader} that constructs a graph from a JSON-based representation of a graph and its elements.
@@ -66,13 +70,15 @@ import java.util.function.Function;
 public final class GraphSONReader implements GraphReader {
     private final ObjectMapper mapper;
     private final long batchSize;
+    private boolean unwrapAdjacencyList = false;
 
     final TypeReference<Map<String, Object>> mapTypeReference = new TypeReference<Map<String, Object>>() {
     };
 
-    private GraphSONReader(final GraphSONMapper mapper, final long batchSize) {
-        this.mapper = mapper.createMapper();
-        this.batchSize = batchSize;
+    private GraphSONReader(final Builder builder) {
+        mapper = builder.mapper.createMapper();
+        batchSize = builder.batchSize;
+        unwrapAdjacencyList = builder.unwrapAdjacencyList;
     }
 
     /**
@@ -93,8 +99,7 @@ public final class GraphSONReader implements GraphReader {
         final boolean supportsTx = graphToWriteTo.features().graph().supportsTransactions();
         final Graph.Features.EdgeFeatures edgeFeatures = graphToWriteTo.features().edge();
 
-        final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), null, null, Direction.OUT))).forEach(vertex -> {
+        readVertexStrings(inputStream).<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), null, null, Direction.OUT))).forEach(vertex -> {
             final Attachable<Vertex> attachable = (Attachable<Vertex>) vertex;
             cache.put((StarGraph.StarVertex) attachable.get(), attachable.attach(Attachable.Method.create(graphToWriteTo)));
             if (supportsTx && counter.incrementAndGet() % batchSize == 0)
@@ -131,8 +136,7 @@ public final class GraphSONReader implements GraphReader {
                                          final Function<Attachable<Vertex>, Vertex> vertexAttachMethod,
                                          final Function<Attachable<Edge>, Edge> edgeAttachMethod,
                                          final Direction attachEdgesOfThisDirection) throws IOException {
-        final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        return br.lines().<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), vertexAttachMethod, edgeAttachMethod, attachEdgesOfThisDirection))).iterator();
+        return readVertexStrings(inputStream).<Vertex>map(FunctionUtils.wrapFunction(line -> readVertex(new ByteArrayInputStream(line.getBytes()), vertexAttachMethod, edgeAttachMethod, attachEdgesOfThisDirection))).iterator();
     }
 
     /**
@@ -244,6 +248,18 @@ public final class GraphSONReader implements GraphReader {
         return mapper.readValue(inputStream, clazz);
     }
 
+    private Stream<String> readVertexStrings(final InputStream inputStream) throws IOException {
+        if (unwrapAdjacencyList) {
+            final JsonNode root = mapper.readTree(inputStream);
+            final JsonNode vertices = root.get("vertices");
+            if (!vertices.getNodeType().equals(JsonNodeType.ARRAY)) throw new IOException("The 'vertices' key must be an array");
+            return IteratorUtils.stream(vertices.elements()).map(Object::toString);
+        } else {
+            final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+            return br.lines();
+        }
+    }
+
     public static Builder build() {
         return new Builder();
     }
@@ -252,6 +268,7 @@ public final class GraphSONReader implements GraphReader {
         private long batchSize = 10000;
 
         private GraphSONMapper mapper = GraphSONMapper.build().create();
+        private boolean unwrapAdjacencyList = false;
 
         private Builder() {}
 
@@ -274,8 +291,25 @@ public final class GraphSONReader implements GraphReader {
             return this;
         }
 
+        /**
+         * If the adjacency list is wrapped in a JSON object, as is done when writing a graph with
+         * {@link GraphSONWriter.Builder#wrapAdjacencyList} set to {@code true}, this setting needs to be set to
+         * {@code true} to properly read it.  By default, this value is {@code false} and the adjacency list is
+         * simply read as line delimited vertices.
+         * <p/>
+         * By setting this value to {@code true}, the generated JSON is no longer "splittable" by line and thus not
+         * suitable for OLAP processing.  Furthermore, reading this format of the JSON with
+         * {@link GraphSONReader#readGraph(InputStream, Graph)} or
+         * {@link GraphSONReader#readVertices(InputStream, Function, Function, Direction)} requires that the
+         * entire JSON object be read into memory, so it is best saved for "small" graphs.
+         */
+        public Builder unwrapAdjacencyList(final boolean unwrapAdjacencyList) {
+            this.unwrapAdjacencyList = unwrapAdjacencyList;
+            return this;
+        }
+
         public GraphSONReader create() {
-            return new GraphSONReader(mapper, batchSize);
+            return new GraphSONReader(this);
         }
     }
 }

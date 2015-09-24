@@ -50,7 +50,6 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
     @Override
     public Edge addEdge(final String label, final Vertex inVertex, final Object... keyValues) {
         if (null == inVertex) throw Graph.Exceptions.argumentCanNotBeNull("inVertex");
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
         ElementHelper.validateLabel(label);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         if (ElementHelper.getIdValue(keyValues).isPresent())
@@ -70,15 +69,12 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
 
     @Override
     public void remove() {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
-        this.removed = true;
         this.graph.tx().readWrite();
         this.graph.trait.removeVertex(this);
     }
 
     @Override
     public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
         ElementHelper.validateProperty(key, value);
         if (ElementHelper.getIdValue(keyValues).isPresent())
             throw Vertex.Exceptions.userSuppliedIdsNotSupported();
@@ -88,14 +84,12 @@ public final class Neo4jVertex extends Neo4jElement implements Vertex, WrappedVe
 
     @Override
     public <V> VertexProperty<V> property(final String key) {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
         this.graph.tx().readWrite();
         return this.graph.trait.getVertexProperty(this, key);
     }
 
     @Override
     public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id());
         this.graph.tx().readWrite();
         return this.graph.trait.getVertexProperties(this, propertyKeys);
     }

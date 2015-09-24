@@ -79,7 +79,7 @@ public class TransactionTest extends AbstractGremlinTest {
             g.tx().open();
 
         try {
-            graph.close();
+            graph.tx().close();
             fail("An exception should be thrown when close behavior is manual and the graph is close with an open transaction");
         } catch (Exception ex) {
             validateException(Transaction.Exceptions.openTransactionsOnClose(), ex);
@@ -357,13 +357,18 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_PERSISTENCE)
-    public void shouldCommitOnShutdownByDefault() throws Exception {
-        final Vertex v1 = graph.addVertex("name", "marko");
-        final Object oid = v1.id();
-        graph.close();
+    public void shouldCommitOnCloseWhenConfigured() throws Exception {
+        final AtomicReference<Object> oid = new AtomicReference<>();
+        final Thread t = new Thread(() -> {
+            final Vertex v1 = graph.addVertex("name", "marko");
+            g.tx().onClose(Transaction.CLOSE_BEHAVIOR.COMMIT);
+            oid.set(v1.id());
+            graph.tx().close();
+        });
+        t.start();
+        t.join();
 
-        graph = graphProvider.openTestGraph(config);
-        final Vertex v2 = graph.vertices(oid).next();
+        final Vertex v2 = graph.vertices(oid.get()).next();
         assertEquals("marko", v2.<String>value("name"));
     }
 
@@ -371,23 +376,27 @@ public class TransactionTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_PERSISTENCE)
-    public void shouldRollbackOnShutdownWhenConfigured() throws Exception {
-        final Vertex v2 = graph.addVertex("name", "stephen");
-        graph.tx().commit();
+    public void shouldRollbackOnCloseByDefault() throws Exception {
+        final AtomicReference<Object> oid = new AtomicReference<>();
+        final AtomicReference<Vertex> vid = new AtomicReference<>();
+        final Thread t = new Thread(() -> {
+            vid.set(graph.addVertex("name", "stephen"));
+            graph.tx().commit();
 
-        final Vertex v1 = graph.addVertex("name", "marko");
-        final Object oid = v1.id();
-        g.tx().onClose(Transaction.CLOSE_BEHAVIOR.ROLLBACK);
-        graph.close();
-
-        graph = graphProvider.openTestGraph(config);
+            try (Transaction ignored = graph.tx()) {
+                final Vertex v1 = graph.addVertex("name", "marko");
+                oid.set(v1.id());
+            }
+        });
+        t.start();
+        t.join();
 
         // this was committed
-        assertTrue(graph.vertices(v2.id()).hasNext());
+        assertTrue(graph.vertices(vid.get().id()).hasNext());
 
         try {
             // this was not
-            graph.vertices(oid).next();
+            graph.vertices(oid.get()).next();
             fail("Vertex should not be found as close behavior was set to rollback");
         } catch (Exception ex) {
             validateException(Graph.Exceptions.elementNotFound(Vertex.class, oid), ex);

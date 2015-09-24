@@ -1,24 +1,21 @@
 /*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *  * Licensed to the Apache Software Foundation (ASF) under one
- *  * or more contributor license agreements.  See the NOTICE file
- *  * distributed with this work for additional information
- *  * regarding copyright ownership.  The ASF licenses this file
- *  * to you under the Apache License, Version 2.0 (the
- *  * "License"); you may not use this file except in compliance
- *  * with the License.  You may obtain a copy of the License at
- *  *
- *  * http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing,
- *  * software distributed under the License is distributed on an
- *  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  * KIND, either express or implied.  See the License for the
- *  * specific language governing permissions and limitations
- *  * under the License.
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.tinkerpop.gremlin.structure.util.star;
 
 import org.apache.commons.configuration.BaseConfiguration;
@@ -49,6 +46,11 @@ import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 /**
+ * A {@code StarGraph} is a form of {@link Attachable} (though the {@link Graph} implementation does not implement
+ * that interface itself).  It is a very limited {@link Graph} implementation that holds a single {@link Vertex}
+ * and its related properties and edges (and their properties).  It is designed to be an efficient memory
+ * representation of this data structure, thus making it good for network and disk-based serialization.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class StarGraph implements Graph, Serializable {
@@ -67,6 +69,9 @@ public final class StarGraph implements Graph, Serializable {
     private StarGraph() {
     }
 
+    /**
+     * Gets the {@link Vertex} representative of the {@link StarGraph}.
+     */
     public StarVertex getStarVertex() {
         return this.starVertex;
     }
@@ -172,10 +177,16 @@ public final class StarGraph implements Graph, Serializable {
         return StringFactory.graphString(this, "starOf:" + this.starVertex);
     }
 
+    /**
+     * Creates an empty {@link StarGraph}.
+     */
     public static StarGraph open() {
         return new StarGraph();
     }
 
+    /**
+     * Creates a new {@link StarGraph} from a {@link Vertex}.
+     */
     public static StarGraph of(final Vertex vertex) {
         if (vertex instanceof StarVertex) return (StarGraph) vertex.graph();
         // else convert to a star graph

@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.server.auth.Authenticator;
 import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import io.netty.util.AttributeKey;
 
@@ -28,7 +30,28 @@ import io.netty.util.AttributeKey;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class StateKey {
+    /**
+     * The key for the current serializer requested by the client.
+     */
     public static final AttributeKey<MessageSerializer> SERIALIZER = AttributeKey.valueOf("serializer");
+
+    /**
+     * The key to indicate if the serializer should use its binary format.
+     */
     public static final AttributeKey<Boolean> USE_BINARY = AttributeKey.valueOf("useBinary");
+
+    /**
+     * The key for the current {@link Session} object.
+     */
     public static final AttributeKey<Session> SESSION = AttributeKey.valueOf("session");
+
+    /**
+     * The key for the current SASL negotiator.
+     */
+    public static final AttributeKey<Authenticator.SaslNegotiator> NEGOTIATOR = AttributeKey.valueOf("negotiator");
+
+    /**
+     * The key for the current request.
+     */
+    public static final AttributeKey<RequestMessage> REQUEST_MESSAGE = AttributeKey.valueOf("request");
 }

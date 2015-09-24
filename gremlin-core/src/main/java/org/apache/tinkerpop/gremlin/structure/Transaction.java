@@ -18,7 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure;
 
-import java.io.Closeable;
+import org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction;
+
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -27,18 +28,22 @@ import java.util.function.Function;
 
 /**
  * A set of methods that allow for control of transactional behavior of a {@link Graph} instance. Vendors may
- * consider using {@link org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction} as a base implementation
- * that provides default features for most of these methods.
+ * consider using {@link AbstractTransaction} as a base implementation that provides default features for most of
+ * these methods.
  * <p/>
  * It is expected that this interface be implemented by vendors in a {@link ThreadLocal} fashion. In other words
  * transactions are bound to the current thread, which means that any graph operation executed by the thread occurs
  * in the context of that transaction and that there may only be one thread executing in a single transaction.
+ * <p/>
+ * It is important to realize that this class is not a "transaction object".  It is a class that holds transaction
+ * related methods thus hiding them from the {@link Graph} interface.  This object is not meant to be passed around
+ * as a transactional context.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author TinkerPop Community (http://tinkerpop.com)
  */
-public interface Transaction extends Closeable {
+public interface Transaction extends AutoCloseable {
 
     /**
      * Opens a transaction.
@@ -81,7 +86,8 @@ public interface Transaction extends Closeable {
     public void readWrite();
 
     /**
-     * Closes the transaction where the default close behavior will be executed.
+     * Closes the transaction where the default close behavior defined by {{@link #onClose(Consumer)}} will be
+     * executed.
      */
     @Override
     public void close();
@@ -93,9 +99,8 @@ public interface Transaction extends Closeable {
     public Transaction onReadWrite(final Consumer<Transaction> consumer);
 
     /**
-     * Describes what happens to a transaction on a call to {@link org.apache.tinkerpop.gremlin.structure.Graph#close()}.
-     * This value can be set using standard behavior defined in {@link CLOSE_BEHAVIOR} or a mapper {@link Consumer}
-     * function.
+     * Describes what happens to a transaction on a call to {@link Graph#close()}. This value can be set using
+     * standard behavior defined in {@link CLOSE_BEHAVIOR} or a mapper {@link Consumer} function.
      */
     public Transaction onClose(final Consumer<Transaction> consumer);
 
@@ -155,11 +160,12 @@ public interface Transaction extends Closeable {
     }
 
     /**
-     * Behaviors to supply to the {@link #onClose(java.util.function.Consumer)}.
+     * Behaviors to supply to the {@link #onClose(Consumer)}. The semantics of these behaviors must be examined in
+     * the context of the implementation.  In most cases, these behaviors will be applied as {{@link ThreadLocal}}.
      */
-    public static enum CLOSE_BEHAVIOR implements Consumer<Transaction> {
+    public enum CLOSE_BEHAVIOR implements Consumer<Transaction> {
         /**
-         * Any open transaction will commit on close.
+         * Commit the transaction when {@link #close()} is called.
          */
         COMMIT {
             @Override
@@ -169,7 +175,7 @@ public interface Transaction extends Closeable {
         },
 
         /**
-         * Any open transaction will rollback on close.
+         * Rollback the transaction when {@link #close()} is called.
          */
         ROLLBACK {
             @Override
@@ -179,7 +185,7 @@ public interface Transaction extends Closeable {
         },
 
         /**
-         * Open transactions on close will throw an exception
+         * Throw an exception if the current transaction is open when {@link #close()} is called.
          */
         MANUAL {
             @Override
@@ -190,9 +196,9 @@ public interface Transaction extends Closeable {
     }
 
     /**
-     * Behaviors to supply to the {@link #onReadWrite(java.util.function.Consumer)}.
+     * Behaviors to supply to the {@link #onReadWrite(Consumer)}.
      */
-    public static enum READ_WRITE_BEHAVIOR implements Consumer<Transaction> {
+    public enum READ_WRITE_BEHAVIOR implements Consumer<Transaction> {
         /**
          * Transactions are automatically started when a read or a write occurs.
          */
@@ -215,12 +221,11 @@ public interface Transaction extends Closeable {
     }
 
     /**
-     * A {@link Workload} represents a unit of work constructed by the
-     * {@link Workload#submit(java.util.function.Function)} method on the {@link Transaction} interface.
-     * The unit of work is a {@link java.util.function.Function} typically containing mutations to the {@link Graph}.  The
-     * {@link Workload} is responsible for executing the unit of work in the context of a retry strategy, such that a
-     * failed unit of work is rolled back and executed again until retries are exhausted or the unit of work succeeds
-     * with a commit operation.
+     * A {@link Workload} represents a unit of work constructed by the {@link Workload#submit(Function)} method on
+     * the {@link Transaction} interface. The unit of work is a {@link Function} typically containing mutations to
+     * the {@link Graph}.  The {@link Workload} is responsible for executing the unit of work in the context of a
+     * retry strategy, such that a failed unit of work is rolled back and executed again until retries are exhausted
+     * or the unit of work succeeds with a commit operation.
      *
      * @param <R> The type of the result from the unit of work.
      */

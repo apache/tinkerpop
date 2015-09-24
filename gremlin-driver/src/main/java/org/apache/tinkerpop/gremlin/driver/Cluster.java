@@ -57,8 +57,9 @@ public final class Cluster {
     private Cluster(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
                     final int nioPoolSize, final int workerPoolSize,
                     final Settings.ConnectionPoolSettings connectionPoolSettings,
-                    final LoadBalancingStrategy loadBalancingStrategy) {
-        this.manager = new Manager(contactPoints, serializer, nioPoolSize, workerPoolSize, connectionPoolSettings, loadBalancingStrategy);
+                    final LoadBalancingStrategy loadBalancingStrategy,
+                    final AuthProperties authProps) {
+        this.manager = new Manager(contactPoints, serializer, nioPoolSize, workerPoolSize, connectionPoolSettings, loadBalancingStrategy, authProps);
     }
 
     public synchronized void init() {
@@ -70,6 +71,11 @@ public final class Cluster {
      * Creates a {@link Client.ClusteredClient} instance to this {@code Cluster}, meaning requests will be routed to
      * one or more servers (depending on the cluster configuration), where each request represents the entirety of a
      * transaction.  A commit or rollback (in case of error) is automatically executed at the end of the request.
+     * <p/>
+     * Note that calling this method does not imply that a connection is made to the server itself at this point.
+     * Therefore, if there is only one server specified in the {@code Cluster} and that server is not available an
+     * error will not be raised at this point.  Connections get initialized in the {@link Client} when a request is
+     * submitted or can be directly initialized via {@link Client#init()}.
      */
     public Client connect() {
         return new Client.ClusteredClient(this);
@@ -80,6 +86,11 @@ public final class Cluster {
      * a single server (randomly selected from the cluster), where the same bindings will be available on each request.
      * Requests are bound to the same thread on the server and thus transactions may extend beyond the bounds of a
      * single request.  The transactions are managed by the user and must be committed or rolledback manually.
+     * <p/>
+     * Note that calling this method does not imply that a connection is made to the server itself at this point.
+     * Therefore, if there is only one server specified in the {@code Cluster} and that server is not available an
+     * error will not be raised at this point.  Connections get initialized in the {@link Client} when a request is
+     * submitted or can be directly initialized via {@link Client#init()}.
      *
      * @param sessionId user supplied id for the session which should be unique (a UUID is ideal).
      */
@@ -110,6 +121,7 @@ public final class Cluster {
 
         final Builder builder = new Builder(settings.hosts.get(0))
                 .port(settings.port)
+                .enableSsl(settings.connectionPool.enableSsl)
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
                 .maxInProcessPerConnection(settings.connectionPool.maxInProcessPerConnection)
@@ -117,6 +129,9 @@ public final class Cluster {
                 .minSimultaneousUsagePerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
                 .minConnectionPoolSize(settings.connectionPool.minSize);
+
+        if (settings.username != null && settings.password != null)
+            builder.credentials(settings.username, settings.password);
 
         // the first address was added above in the constructor, so skip it if there are more
         if (addresses.size() > 1)
@@ -173,6 +188,13 @@ public final class Cluster {
         return manager.isClosing() && manager.close().isDone();
     }
 
+    /**
+     * Gets the list of hosts that the {@code Cluster} was able to connect to.  A {@link Host} is assumed unavailable
+     * until a connection to it is proven to be present.  This will not happen until the the {@link Client} submits
+     * requests that succeed in reaching a server at the {@link Host} or {@link Client#init()} is called which
+     * initializes the {@link ConnectionPool} for the {@link Client} itself.  The number of available hosts returned
+     * from this method will change as different servers come on and offline.
+     */
     public List<URI> availableHosts() {
         return Collections.unmodifiableList(allHosts().stream()
                 .filter(Host::isAvailable)
@@ -200,6 +222,10 @@ public final class Cluster {
         return manager.loadBalancingStrategy;
     }
 
+    AuthProperties authProperties() {
+        return manager.authProps;
+    }
+
     Collection<Host> allHosts() {
         return manager.allHosts();
     }
@@ -221,8 +247,10 @@ public final class Cluster {
         private int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         private int reconnectInterval = Connection.RECONNECT_INTERVAL;
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
+        private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
+        private AuthProperties authProps = new AuthProperties();
 
         private Builder() {
             // empty to prevent direct instantiation
@@ -377,6 +405,21 @@ public final class Cluster {
         }
 
         /**
+         * Specify the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
+         */
+        public Builder channelizer(final String channelizerClass) {
+            this.channelizer = channelizerClass;
+            return this;
+        }
+
+        /**
+         * Specify the {@link Channelizer} implementation to use on the client when creating a {@link Connection}.
+         */
+        public Builder channelizer(final Class channelizerClass) {
+            return channelizer(channelizerClass.getCanonicalName());
+        }
+
+        /**
          * Time in milliseconds to wait before attempting to reconnect to a dead host after it has been marked dead.
          */
         public Builder reconnectIntialDelay(final int initialDelay) {
@@ -392,11 +435,52 @@ public final class Cluster {
             return this;
         }
 
+        /**
+         * Specifies the load balancing strategy to use on the client side.
+         */
         public Builder loadBalancingStrategy(final LoadBalancingStrategy loadBalancingStrategy) {
             this.loadBalancingStrategy = loadBalancingStrategy;
             return this;
         }
 
+        /**
+         * Specifies parameters for authentication to Gremlin Server.
+         */
+        public Builder authProperties(final AuthProperties authProps) {
+            this.authProps = authProps;
+            return this;
+        }
+
+        /**
+         * Sets the {@link AuthProperties.Property#USERNAME} and {@link AuthProperties.Property#PASSWORD} properties
+         * for authentication to Gremlin Server.
+         */
+        public Builder credentials(final String username, final String password) {
+            authProps = authProps.with(AuthProperties.Property.USERNAME, username).with(AuthProperties.Property.PASSWORD, password);
+            return this;
+        }
+
+        /**
+         * Sets the {@link AuthProperties.Property#PROTOCOL} properties for authentication to Gremlin Server.
+         */
+        public Builder protocol(final String protocol) {
+            this.authProps = authProps.with(AuthProperties.Property.PROTOCOL, protocol);
+            return this;
+        }
+
+        /**
+         * Sets the {@link AuthProperties.Property#JAAS_ENTRY} properties for authentication to Gremlin Server.
+         */
+        public Builder jaasEntry(final String jaasEntry) {
+            this.authProps = authProps.with(AuthProperties.Property.JAAS_ENTRY, jaasEntry);
+            return this;
+        }
+
+        /**
+         * Adds the address of a Gremlin Server to the list of servers a {@link Client} will try to contact to send
+         * requests to.  The address should be parseable by {@link InetAddress#getByName(String)}.  That's the only
+         * validation performed at this point.  No connection to the host is attempted.
+         */
         public Builder addContactPoint(final String address) {
             try {
                 this.addresses.add(InetAddress.getByName(address));
@@ -406,12 +490,20 @@ public final class Cluster {
             }
         }
 
+        /**
+         * Add one or more the addresses of a Gremlin Servers to the list of servers a {@link Client} will try to
+         * contact to send requests to.  The address should be parseable by {@link InetAddress#getByName(String)}.
+         * That's the only validation performed at this point.  No connection to the host is attempted.
+         */
         public Builder addContactPoints(final String... addresses) {
             for (String address : addresses)
                 addContactPoint(address);
             return this;
         }
 
+        /**
+         * Sets the port that the Gremlin Servers will be listening on.
+         */
         public Builder port(final int port) {
             this.port = port;
             return this;
@@ -436,8 +528,9 @@ public final class Cluster {
             connectionPoolSettings.reconnectInterval = this.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = this.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = this.enableSsl;
+            connectionPoolSettings.channelizer = this.channelizer;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
-                    connectionPoolSettings, loadBalancingStrategy);
+                    connectionPoolSettings, loadBalancingStrategy, authProps);
         }
     }
 
@@ -468,6 +561,7 @@ public final class Cluster {
         private final MessageSerializer serializer;
         private final Settings.ConnectionPoolSettings connectionPoolSettings;
         private final LoadBalancingStrategy loadBalancingStrategy;
+        private final AuthProperties authProps;
 
         private final ScheduledExecutorService executor;
 
@@ -475,8 +569,10 @@ public final class Cluster {
 
         private Manager(final List<InetSocketAddress> contactPoints, final MessageSerializer serializer,
                         final int nioPoolSize, final int workerPoolSize, final Settings.ConnectionPoolSettings connectionPoolSettings,
-                        final LoadBalancingStrategy loadBalancingStrategy) {
+                        final LoadBalancingStrategy loadBalancingStrategy,
+                        final AuthProperties authProps) {
             this.loadBalancingStrategy = loadBalancingStrategy;
+            this.authProps = authProps;
             this.contactPoints = contactPoints;
             this.connectionPoolSettings = connectionPoolSettings;
             this.factory = new Factory(nioPoolSize);

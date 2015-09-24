@@ -22,8 +22,10 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -62,6 +64,8 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Vertex> get_g_V_hasXblahX();
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id);
+
+    public abstract Traversal<Vertex, Vertex> get_g_VXv1X_hasXage_gt_30X(final Object v1Id);
 
     public abstract Traversal<Vertex, Vertex> get_g_VX1X_out_hasXid_lt_3X(final Object v1Id, final Object v3Id);
 
@@ -155,12 +159,24 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_hasXage_gt_30X() {
-        Traversal<Vertex, Vertex> traversal = get_g_VX1X_hasXage_gt_30X(convertToVertexId("marko"));
-        printTraversalForm(traversal);
-        assertFalse(traversal.hasNext());
-        traversal = get_g_VX1X_hasXage_gt_30X(convertToVertexId("josh"));
-        printTraversalForm(traversal);
-        assertTrue(traversal.hasNext());
+        final Traversal<Vertex,Vertex> traversalMarko = get_g_VX1X_hasXage_gt_30X(convertToVertexId("marko"));
+        printTraversalForm(traversalMarko);
+        assertFalse(traversalMarko.hasNext());
+        final Traversal<Vertex,Vertex> traversalJosh = get_g_VX1X_hasXage_gt_30X(convertToVertexId("josh"));
+        printTraversalForm(traversalJosh);
+        assertTrue(traversalJosh.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    public void g_VXv1X_hasXage_gt_30X() {
+        final Traversal<Vertex,Vertex> traversalMarko = get_g_VXv1X_hasXage_gt_30X(convertToVertexId("marko"));
+        printTraversalForm(traversalMarko);
+        assertFalse(traversalMarko.hasNext());
+        final Traversal<Vertex,Vertex> traversalJosh = get_g_VXv1X_hasXage_gt_30X(convertToVertexId("josh"));
+        printTraversalForm(traversalJosh);
+        assertTrue(traversalJosh.hasNext());
     }
 
     @Test
@@ -383,6 +399,11 @@ public abstract class HasTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_VX1X_hasXage_gt_30X(final Object v1Id) {
             return g.V(v1Id).has("age", P.gt(30));
+        }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_VXv1X_hasXage_gt_30X(final Object v1Id) {
+            return g.V(g.V(v1Id).next()).has("age", P.gt(30));
         }
 
         @Override

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -36,6 +37,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.kryo.KryoException;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -44,10 +46,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * Serializer tests that cover non-lossy serialization/deserialization methods.
@@ -72,7 +76,7 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeIterable() throws Exception {
+    public void shouldSerializeIterable() throws Exception {
         final ArrayList<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(100);
@@ -87,7 +91,7 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeIterableToString() throws Exception {
+    public void shouldSerializeIterableToString() throws Exception {
         final ArrayList<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(100);
@@ -102,7 +106,7 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeIterableToStringWithNull() throws Exception {
+    public void shouldSerializeIterableToStringWithNull() throws Exception {
         final ArrayList<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(null);
@@ -119,7 +123,7 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeIterableWithNull() throws Exception {
+    public void shouldSerializeIterableWithNull() throws Exception {
         final ArrayList<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(null);
@@ -136,7 +140,7 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeMap() throws Exception {
+    public void shouldSerializeMap() throws Exception {
         final Map<String, Object> map = new HashMap<>();
         final Map<String, String> innerMap = new HashMap<>();
         innerMap.put("a", "b");
@@ -159,7 +163,7 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeEdge() throws Exception {
+    public void shouldSerializeEdge() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v1 = g.addVertex();
         final Vertex v2 = g.addVertex();
@@ -187,7 +191,7 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeTree() throws Exception {
+    public void shouldSerializeTree() throws Exception {
         final Graph g = TinkerFactory.createModern();
         final Tree t = g.traversal().V().out().out().tree().by("name").next();
 
@@ -211,7 +215,7 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeVertexWithEmbeddedMap() throws Exception {
+    public void shouldSerializeVertexWithEmbeddedMap() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex();
         final Map<String, Object> map = new HashMap<>();
@@ -251,7 +255,7 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeToMapWithElementForKey() throws Exception {
+    public void shouldSerializeToMapWithElementForKey() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
@@ -274,7 +278,7 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeFullResponseMessage() throws Exception {
+    public void shouldSerializeFullResponseMessage() throws Exception {
         final UUID id = UUID.randomUUID();
 
         final Map<String, Object> metaData = new HashMap<>();
@@ -307,7 +311,42 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeFullRequestMessage() throws Exception {
+    public void shouldHaveTooSmallBufferToSerializeResponseMessage() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        final Map<String, Object> metaData = new HashMap<>();
+        metaData.put("test", "this");
+        metaData.put("one", 1);
+
+        final Map<String, Object> attributes = new HashMap<>();
+        attributes.put("test", "that");
+        attributes.put("two", 2);
+
+        final ResponseMessage response = ResponseMessage.build(id)
+                .responseMetaData(metaData)
+                .code(ResponseStatusCode.SUCCESS)
+                .result("some-result")
+                .statusAttributes(attributes)
+                .statusMessage("worked")
+                .create();
+
+        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
+            put("bufferSize", 1);
+        }};
+        binarySerializerWithSmallBuffer.configure(configWithSmallBuffer, null);
+
+        try {
+            binarySerializerWithSmallBuffer.serializeResponseAsBinary(response, allocator);
+            fail("Should have a buffer size that is too small");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(KryoException.class));
+        }
+    }
+
+    @Test
+    public void shouldSerializeFullRequestMessage() throws Exception {
         final UUID id = UUID.randomUUID();
 
         final RequestMessage request = RequestMessage.build("try")
@@ -324,6 +363,31 @@ public class GryoMessageSerializerV1d0Test {
         assertEquals("pro", deserialized.getProcessor());
         assertEquals("try", deserialized.getOp());
         assertEquals("this", deserialized.getArgs().get("test"));
+    }
+
+    @Test
+    public void shouldHaveTooSmallBufferToSerializeRequestMessage() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        final RequestMessage request = RequestMessage.build("try")
+                .overrideRequestId(id)
+                .processor("pro")
+                .addArg("test", "this")
+                .create();
+
+        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
+            put("bufferSize", 1);
+        }};
+        binarySerializerWithSmallBuffer.configure(configWithSmallBuffer, null);
+
+        try {
+            binarySerializerWithSmallBuffer.serializeRequestAsBinary(request, allocator);
+            fail("Should have a buffer size that is too small");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(KryoException.class));
+        }
     }
 
     private void assertCommon(final ResponseMessage response) {

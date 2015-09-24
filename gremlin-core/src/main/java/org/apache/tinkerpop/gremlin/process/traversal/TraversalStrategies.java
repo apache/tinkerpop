@@ -22,12 +22,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.Conjun
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.EngineDependentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.AdjacentToIncidentStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.DedupBijectionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.FilterRankingStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IdentityRemovalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.IncidentToAdjacentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.MatchPredicateStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.optimization.RangeByIsCountStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.StandardVerificationStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserGeneratorFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversalStrategies;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -200,11 +201,12 @@ public interface TraversalStrategies extends Serializable, Cloneable {
                     ProfileStrategy.instance(),
                     IncidentToAdjacentStrategy.instance(),
                     AdjacentToIncidentStrategy.instance(),
-                    DedupBijectionStrategy.instance(),
+                    FilterRankingStrategy.instance(),
                     IdentityRemovalStrategy.instance(),
                     MatchPredicateStrategy.instance(),
                     RangeByIsCountStrategy.instance(),
-                    ComputerVerificationStrategy.instance());
+                    ComputerVerificationStrategy.instance(),
+                    StandardVerificationStrategy.instance());
             //LambdaRestrictionStrategy.instance(),
             //LazyBarrierStrategy.instance(),
 

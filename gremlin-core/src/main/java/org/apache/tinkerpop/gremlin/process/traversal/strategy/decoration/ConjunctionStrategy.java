@@ -35,7 +35,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import java.util.Set;
 
 /**
- * ConjunctionStrategy rewrites the binary conjunction form of <code>a.and().b</code> into a {@link AndStep} of <code>and(a,b)</code> (likewise for {@link OrStep}.
+ * ConjunctionStrategy rewrites the binary conjunction form of {@code a.and().b} into a {@link AndStep} of
+ * {@code and(a,b)} (likewise for {@link OrStep}).
  * <p/>
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)

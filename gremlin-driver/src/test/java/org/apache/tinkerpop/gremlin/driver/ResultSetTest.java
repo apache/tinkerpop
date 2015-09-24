@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,6 +32,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -122,6 +124,43 @@ public class ResultSetTest extends AbstractResultQueueTest {
         }
 
         assertEquals(100, counter.get());
+    }
+
+    @Test
+    public void shouldIterateWithoutCheckingHasNext() throws Exception {
+        final Iterator itty = resultSet.iterator();
+        final AtomicInteger counter = new AtomicInteger(0);
+
+        addToQueue(100, 1, true, true);
+
+        for (int ix = 0; ix < 100; ix++) {
+            itty.next();
+            counter.incrementAndGet();
+        }
+
+        assertEquals(100, counter.get());
+        assertThat(itty.hasNext(), is(false));
+    }
+
+    @Test
+    public void shouldIterateAndThenThrowIfCallToNextExceedsAvailableResultItems() throws Exception {
+        final Iterator itty = resultSet.iterator();
+
+        addToQueue(3, 1, true, true);
+
+        assertThat(itty.hasNext(), is(true));
+        itty.next();
+        assertThat(itty.hasNext(), is(true));
+        itty.next();
+        itty.next();
+        assertThat(itty.hasNext(), is(false));
+
+        try {
+            itty.next();
+            fail("Should throw exception");
+        } catch (NoSuchElementException ignore) {
+            // this is the right path - an exception should toss here
+        }
     }
 
     @Test

@@ -20,8 +20,14 @@ package org.apache.tinkerpop.gremlin.process.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DropStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.FilterStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.LambdaFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.DefaultTraversal;
@@ -32,17 +38,125 @@ import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-
 public class TraversalHelperTest {
 
     @Test
+    public void shouldNotFindStepOfClassInTraversal() {
+        final Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+
+        assertThat(TraversalHelper.hasStepOfClass(FilterStep.class, traversal), is(false));
+    }
+
+    @Test
+    public void shouldFindStepOfClassInTraversal() {
+        final Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, new IdentityStep<>(traversal));
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+
+        assertThat(TraversalHelper.hasStepOfClass(IdentityStep.class, traversal), is(true));
+    }
+
+    @Test
+    public void shouldNotFindStepOfAssignableClassInTraversal() {
+        final Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+
+        assertThat(TraversalHelper.hasStepOfAssignableClass(IdentityStep.class, traversal), is(false));
+    }
+
+    @Test
+    public void shouldFindStepOfAssignableClassInTraversal() {
+        final Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+
+        assertThat(TraversalHelper.hasStepOfAssignableClass(FilterStep.class, traversal), is(true));
+    }
+
+    @Test
+    public void shouldGetTheStepIndex() {
+        final Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
+        final HasStep hasStep = new HasStep(traversal);
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, hasStep);
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+
+        assertEquals(1, TraversalHelper.stepIndex(hasStep, traversal));
+    }
+
+    @Test
+    public void shouldNotFindTheStepIndex() {
+        final Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
+        final IdentityStep identityStep = new IdentityStep(traversal);
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+
+        assertEquals(-1, TraversalHelper.stepIndex(identityStep, traversal));
+    }
+
+    @Test
+    public void shouldInsertBeforeStep() {
+        final Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
+        final HasStep hasStep = new HasStep(traversal);
+        final IdentityStep identityStep = new IdentityStep(traversal);
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, hasStep);
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+
+        TraversalHelper.insertBeforeStep(identityStep, hasStep, traversal);
+
+        assertEquals(traversal.asAdmin().getSteps().get(1), identityStep);
+        assertEquals(4, traversal.asAdmin().getSteps().size());
+    }
+
+    @Test
+    public void shouldInsertAfterStep() {
+        final Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
+        final HasStep hasStep = new HasStep(traversal);
+        final IdentityStep identityStep = new IdentityStep(traversal);
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, hasStep);
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+
+        TraversalHelper.insertAfterStep(identityStep, hasStep, traversal);
+
+        assertEquals(traversal.asAdmin().getSteps().get(2), identityStep);
+        assertEquals(4, traversal.asAdmin().getSteps().size());
+    }
+
+    @Test
+    public void shouldReplaceStep() {
+        final Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
+        final HasStep hasStep = new HasStep(traversal);
+        final IdentityStep identityStep = new IdentityStep(traversal);
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+        traversal.asAdmin().addStep(0, hasStep);
+        traversal.asAdmin().addStep(0, new HasStep(traversal));
+
+        TraversalHelper.replaceStep(hasStep, identityStep, traversal);
+
+        assertEquals(traversal.asAdmin().getSteps().get(1), identityStep);
+        assertEquals(3, traversal.asAdmin().getSteps().size());
+    }
+
+    @Test
     public void shouldChainTogetherStepsWithNextPreviousInALinkedListStructure() {
-        Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
+        final Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
         traversal.asAdmin().addStep(new IdentityStep(traversal));
         traversal.asAdmin().addStep(new HasStep(traversal));
         traversal.asAdmin().addStep(new LambdaFilterStep(traversal, traverser -> true));
@@ -66,7 +180,7 @@ public class TraversalHelperTest {
 
     @Test
     public void shouldRemoveStepsCorrectly() {
-        Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
+        final Traversal.Admin traversal = new DefaultTraversal<>(EmptyGraph.instance());
         traversal.asAdmin().addStep(new IdentityStep(traversal));
         traversal.asAdmin().addStep(new HasStep(traversal));
         traversal.asAdmin().addStep(new LambdaFilterStep(traversal, traverser -> true));

@@ -19,17 +19,36 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.util.Attribute;
+import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+import java.security.PrivilegedExceptionAction;
+import java.security.PrivilegedActionException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.NameCallback;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
+import javax.security.sasl.Sasl;
+import javax.security.sasl.SaslClient;
+import javax.security.sasl.SaslException;
 
 /**
  * Holder for internal handler classes used in constructing the channel pipeline.
@@ -37,6 +56,108 @@ import java.util.concurrent.ConcurrentMap;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 final class Handler {
+
+    /**
+     * Generic SASL handler that will authenticate against the gremlin server. 
+     */
+    static class GremlinSaslAuthenticationHandler extends SimpleChannelInboundHandler<ResponseMessage> implements CallbackHandler {
+        private static final Logger logger = LoggerFactory.getLogger(GremlinSaslAuthenticationHandler.class);
+        private static final AttributeKey<Subject> subjectKey = AttributeKey.valueOf("subject");
+        private static final AttributeKey<SaslClient> saslClientKey = AttributeKey.valueOf("saslclient");
+        private static final Map<String, String> SASL_PROPERTIES = new HashMap<String, String>() {{ put(Sasl.SERVER_AUTH, "true"); }};
+        private static final byte[] NULL_CHALLENGE = new byte[0];
+
+        private final AuthProperties authProps;
+
+        public GremlinSaslAuthenticationHandler(final AuthProperties authProps) {
+            this.authProps = authProps;
+        }
+
+        @Override
+        protected void channelRead0(final ChannelHandlerContext channelHandlerContext, final ResponseMessage response) throws Exception {
+            // We are only interested in AUTHENTICATE responses here. Everything else can
+            // get passed down the pipeline
+            if (response.getStatus().getCode() == ResponseStatusCode.AUTHENTICATE) {
+                final Attribute<SaslClient> saslClient = channelHandlerContext.attr(saslClientKey);
+                final Attribute<Subject> subject = channelHandlerContext.attr(subjectKey);
+                byte[] saslResponse;
+                // First time through we don't have a sasl client
+                if (saslClient.get() == null) {
+                    subject.set(login());
+                    saslClient.set(saslClient(getHostName(channelHandlerContext)));
+                    saslResponse = saslClient.get().hasInitialResponse() ? evaluateChallenge(subject, saslClient, NULL_CHALLENGE) : null;
+                } else {
+                    saslResponse = evaluateChallenge(subject, saslClient, (byte[])response.getResult().getData());
+                }
+                channelHandlerContext.writeAndFlush(RequestMessage.build(Tokens.OPS_AUTHENTICATION).addArg(Tokens.ARGS_SASL, saslResponse).create());
+            } else {
+                channelHandlerContext.fireChannelRead(response);
+            }
+        }
+
+        public void handle(final Callback[] callbacks) {
+            for (Callback callback : callbacks) {
+                if (callback instanceof NameCallback) {
+                    if (authProps.get(AuthProperties.Property.USERNAME) != null) {
+                        ((NameCallback)callback).setName(authProps.get(AuthProperties.Property.USERNAME));
+                    }
+                } else if (callback instanceof PasswordCallback) {
+                    if (authProps.get(AuthProperties.Property.PASSWORD) != null) {
+                        ((PasswordCallback)callback).setPassword(authProps.get(AuthProperties.Property.PASSWORD).toCharArray());
+                    }
+                } else {
+                    logger.warn("SASL handler got a callback of type " + callback.getClass().getCanonicalName());
+                }
+            }
+        }
+
+        private byte[] evaluateChallenge(final Attribute<Subject> subject, final Attribute<SaslClient> saslClient, 
+                                         final byte[] challenge) throws SaslException {
+
+            if (subject.get() == null) {
+                return saslClient.get().evaluateChallenge(challenge);
+            } else {
+                // If we have a subject then run this as a privileged action using the subject
+                try {
+                    return Subject.doAs(subject.get(), (PrivilegedExceptionAction<byte[]>) () -> saslClient.get().evaluateChallenge(challenge));
+                } catch (PrivilegedActionException e) {
+                    throw (SaslException)e.getException();
+                }
+            }
+        }
+
+        private Subject login() throws LoginException {
+            // Login if the user provided us with an entry into the JAAS config file
+            if (authProps.get(AuthProperties.Property.JAAS_ENTRY) != null) {
+                final LoginContext login = new LoginContext(authProps.get(AuthProperties.Property.JAAS_ENTRY));
+                login.login();
+                return login.getSubject();                    
+            }
+            return null;
+        }
+
+        private SaslClient saslClient(final String hostname) throws SaslException {
+            return Sasl.createSaslClient(new String[] { getMechanism() }, null, authProps.get(AuthProperties.Property.PROTOCOL), 
+                                         hostname, SASL_PROPERTIES, this);
+        }
+
+        private String getHostName(final ChannelHandlerContext channelHandlerContext) {
+            return ((InetSocketAddress)channelHandlerContext.channel().remoteAddress()).getAddress().getCanonicalHostName();
+        }
+
+        /**
+         * Work out the Sasl mechanism based on the user supplied parameters. 
+         * If we have a username and password use PLAIN otherwise GSSAPI
+         */
+        private String getMechanism() {
+            if ((authProps.get(AuthProperties.Property.USERNAME) != null) &&
+                (authProps.get(AuthProperties.Property.PASSWORD) != null)) {
+                return "PLAIN";
+            } else {
+                return "GSSAPI";
+            }
+        }
+    }
 
     /**
      * Takes a map of requests pending responses and writes responses to the {@link ResultQueue} of a request

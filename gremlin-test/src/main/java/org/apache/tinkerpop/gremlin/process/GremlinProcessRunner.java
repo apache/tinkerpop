@@ -18,7 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process;
 
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationException;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.VerificationException;
 import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.model.EachTestNotifier;
 import org.junit.runner.Description;
@@ -68,7 +68,7 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
     private static boolean validateForGraphComputer(final Throwable e) {
         Throwable ex = e;
         while (ex != null) {
-            if (ex instanceof ComputerVerificationException)
+            if (ex instanceof VerificationException)
                 return true;
             else if (ex instanceof NotSerializableException)
                 return true;

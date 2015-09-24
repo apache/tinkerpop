@@ -56,4 +56,7 @@ public abstract class TinkerElement implements Element {
         return ElementHelper.areEqual(this, object);
     }
 
+    protected static IllegalStateException elementAlreadyRemoved(final Class<? extends Element> clazz, final Object id) {
+        return new IllegalStateException(String.format("%s with id %s was removed.", clazz.getSimpleName(), id));
+    }
 }

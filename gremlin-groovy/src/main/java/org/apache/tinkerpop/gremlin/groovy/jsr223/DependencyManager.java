@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
+import org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPluginException;
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 
 import java.util.List;
 import java.util.Map;
@@ -36,16 +38,16 @@ public interface DependencyManager {
     /**
      * Take maven coordinates and load the classes into the classloader used by the ScriptEngine.  Those ScriptEngines
      * that can support script engine plugins should check if there are any new {@link GremlinPlugin}
-     * implementations in the classloader.  The {@link org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine}
+     * implementations in the classloader.  The {@link GremlinGroovyScriptEngine}
      * implementation uses ServiceLoader to figure out if there are such classes to return.
      * <p/>
      * It is up to the caller to execute the
      * {@link GremlinPlugin#pluginTo(org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor)} method.  The reason for
      * this has to do with conflicts that can occur with mapper imports that are added via the
-     * {@link org.apache.tinkerpop.gremlin.groovy.ImportCustomizerProvider} and scripts executed through the
-     * {@link org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor}. Generally speaking, all calls to this "use" method
+     * {@link ImportCustomizerProvider} and scripts executed through the
+     * {@link PluginAcceptor}. Generally speaking, all calls to this "use" method
      * should be complete prior to calling
-     * {@link GremlinPlugin#pluginTo(org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor)}.
+     * {@link GremlinPlugin#pluginTo(PluginAcceptor)}.
      */
     List<GremlinPlugin> use(final String group, final String artifact, final String version);
 

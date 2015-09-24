@@ -26,7 +26,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Executes a Gremlin script from the command line.
+ * Executes a Gremlin script from the command line. Takes a path to the Gremlin script file as the first argument.
+ * Remaining arguments are treated as parameters to the script, where they are batched up into an array and passed
+ * in as a single parameter to the script named "args".
  *
  * @author Pavel A. Yaskevich
  * @author Marko A. Rodriguez (http://markorodriguez.com)

@@ -53,16 +53,4 @@ public final class MapReducePool {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
-
-    public synchronized void workerStart(final MapReduce.Stage stage) {
-        for (final MapReduce<?, ?, ?, ?, ?> mapReduce : this.pool) {
-            mapReduce.workerStart(stage);
-        }
-    }
-
-    public synchronized void workerEnd(final MapReduce.Stage stage) {
-        for (final MapReduce<?, ?, ?, ?, ?> mapReduce : this.pool) {
-            mapReduce.workerEnd(stage);
-        }
-    }
 }

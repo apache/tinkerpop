@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import org.apache.tinkerpop.gremlin.server.op.OpLoader;
 import org.apache.tinkerpop.gremlin.server.util.LifeCycleHook;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
@@ -117,7 +118,7 @@ public class GremlinServer {
         }
 
         serverStarted = new CompletableFuture<>();
-        final CompletableFuture<ServerGremlinExecutor<EventLoopGroup>> serverReadyFuture = serverStarted = new CompletableFuture<>();
+        final CompletableFuture<ServerGremlinExecutor<EventLoopGroup>> serverReadyFuture = serverStarted;
         try {
             final ServerBootstrap b = new ServerBootstrap();
 
@@ -200,7 +201,22 @@ public class GremlinServer {
         serverStopped = new CompletableFuture<>();
         final CountDownLatch servicesLeftToShutdown = new CountDownLatch(3);
 
-        ch.close().addListener(f -> servicesLeftToShutdown.countDown());
+        // release resources in the OpProcessors (e.g. kill sessions)
+        OpLoader.getProcessors().entrySet().forEach(kv -> {
+            logger.info("Shutting down OpProcessor[{}]", kv.getKey());
+            try {
+                kv.getValue().close();
+            } catch (Exception ex) {
+                logger.warn("Shutdown will continue but, there was an error encountered while closing " + kv.getKey(), ex);
+            }
+        });
+
+        // it's possible that a channel might not be initialized in the first place if bind() fails because
+        // of port conflict.  in that case, there's no need to wait for the channel to close.
+        if (null == ch)
+            servicesLeftToShutdown.countDown();
+        else
+            ch.close().addListener(f -> servicesLeftToShutdown.countDown());
 
         logger.info("Shutting down thread pools.");
 
@@ -242,7 +258,7 @@ public class GremlinServer {
             try {
                 servicesLeftToShutdown.await(30000, TimeUnit.MILLISECONDS);
             } catch (InterruptedException ie) {
-                logger.warn("Timeout waiting for bossy/worker thread pools to shutdown - continuing with shutdown process.");
+                logger.warn("Timeout waiting for boss/worker thread pools to shutdown - continuing with shutdown process.");
             }
 
             serverGremlinExecutor.getGraphManager().getGraphs().forEach((k, v) -> {
@@ -282,7 +298,12 @@ public class GremlinServer {
 
         logger.info("Configuring Gremlin Server from {}", file);
         settings.optionalMetrics().ifPresent(GremlinServer::configureMetrics);
-        new GremlinServer(settings).start();
+        final GremlinServer server = new GremlinServer(settings);
+        server.start().exceptionally(t -> {
+            logger.error("Gremlin Server was unable to start and will now begin shutdown: {}", t.getMessage());
+            server.stop().join();
+            return null;
+        }).join();
     }
 
     public static String getHeader() {

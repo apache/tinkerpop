@@ -215,6 +215,7 @@ public class EdgeTest {
 
         @Test
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_REMOVE_PROPERTY)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         public void shouldGetPropertyKeysOnEdge() {
@@ -319,44 +320,6 @@ public class EdgeTest {
             assertTrue(iterator.hasNext());
             assertEquals(b, iterator.next());
             assertFalse(iterator.hasNext());
-        }
-    }
-
-    @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
-            "elementAlreadyRemoved"
-    })
-    public static class ExceptionConsistencyWhenEdgeRemovedTest extends AbstractGremlinTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return Arrays.asList(new Object[][]{
-                    {"property(k)", FunctionUtils.wrapConsumer((Edge e) -> e.property("x"))},
-                    {"remove()", FunctionUtils.wrapConsumer(Edge::remove)}});
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public String name;
-
-        @Parameterized.Parameter(value = 1)
-        public Consumer<Edge> functionToTest;
-
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
-        public void shouldThrowExceptionIfEdgeWasRemoved() {
-            final Vertex v1 = graph.addVertex("name", "stephen");
-            final Edge e = v1.addEdge("knows", v1, "x", "y");
-            final Object id = e.id();
-            e.remove();
-            tryCommit(graph, graph -> {
-                try {
-                    functionToTest.accept(e);
-                    fail("Should have thrown exception as the Edge was already removed");
-                } catch (Exception ex) {
-                    validateException(Element.Exceptions.elementAlreadyRemoved(Edge.class, id), ex);
-                }
-            });
         }
     }
 }

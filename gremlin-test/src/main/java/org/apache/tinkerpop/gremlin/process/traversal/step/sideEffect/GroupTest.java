@@ -55,16 +55,27 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_group_byXnameX() {
-        Arrays.asList(get_g_V_group_byXnameX(), get_g_V_groupXaX_byXnameX_capXaX()).forEach(traversal -> {
-            printTraversalForm(traversal);
-            final Map<String, Collection<Vertex>> map = traversal.next();
-            assertEquals(6, map.size());
-            map.forEach((key, values) -> {
-                assertEquals(1, values.size());
-                assertEquals(convertToVertexId(key), values.iterator().next().id());
-            });
-            assertFalse(traversal.hasNext());
+        final Traversal<Vertex,Map<String,Collection<Vertex>>> traversal = get_g_V_group_byXnameX();
+        printTraversalForm(traversal);
+        assertCommonA(traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_groupXaX_byXnameX_capXaX() {
+        final Traversal<Vertex,Map<String,Collection<Vertex>>> traversal = get_g_V_groupXaX_byXnameX_capXaX();
+        printTraversalForm(traversal);
+        assertCommonA(traversal);
+    }
+
+    private void assertCommonA(Traversal<Vertex, Map<String, Collection<Vertex>>> traversal) {
+        final Map<String, Collection<Vertex>> map = traversal.next();
+        assertEquals(6, map.size());
+        map.forEach((key, values) -> {
+            assertEquals(1, values.size());
+            assertEquals(convertToVertexId(key), values.iterator().next().id());
         });
+        assertFalse(traversal.hasNext());
     }
 
     @Test
@@ -96,22 +107,19 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_timesX2X_capXaX() {
-        final List<Traversal<Vertex, Map<String, Long>>> traversals = new ArrayList<>();
-        traversals.add(get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX());
-        traversals.forEach(traversal -> {
-            printTraversalForm(traversal);
-            final Map<String, Long> map = traversal.next();
-            assertFalse(traversal.hasNext());
-            assertEquals(4, map.size());
-            assertTrue(map.containsKey("vadas"));
-            assertEquals(Long.valueOf(1), map.get("vadas"));
-            assertTrue(map.containsKey("josh"));
-            assertEquals(Long.valueOf(1), map.get("josh"));
-            assertTrue(map.containsKey("lop"));
-            assertEquals(Long.valueOf(4), map.get("lop"));
-            assertTrue(map.containsKey("ripple"));
-            assertEquals(Long.valueOf(2), map.get("ripple"));
-        });
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX();
+        printTraversalForm(traversal);
+        final Map<String, Long> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(4, map.size());
+        assertTrue(map.containsKey("vadas"));
+        assertEquals(Long.valueOf(1), map.get("vadas"));
+        assertTrue(map.containsKey("josh"));
+        assertEquals(Long.valueOf(1), map.get("josh"));
+        assertTrue(map.containsKey("lop"));
+        assertEquals(Long.valueOf(4), map.get("lop"));
+        assertTrue(map.containsKey("ripple"));
+        assertEquals(Long.valueOf(2), map.get("ripple"));
     }
 
     @Test

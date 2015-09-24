@@ -30,11 +30,28 @@ package org.apache.tinkerpop.gremlin.structure;
  * {@link Vertex}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public enum Direction {
 
-    OUT, IN, BOTH;
+    /**
+     * Refers to an outgoing direction.
+     */
+    OUT,
 
+    /**
+     * Refers to an incoming direction.
+     */
+    IN,
+
+    /**
+     * Refers to either direction ({@link #IN} or {@link #OUT}).
+     */
+    BOTH;
+
+    /**
+     * The actual direction of an {@link Edge} may only be {@link #IN} or {@link #OUT}, as defined in this array.
+     */
     public static final Direction[] proper = new Direction[]{OUT, IN};
 
     /**

@@ -49,8 +49,6 @@ g.V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
 
 NOTE: This model of "vertex-centric graph computing" was made popular by Google's link:http://googleresearch.blogspot.com/2009/06/large-scale-graph-computing-at-google.html[Pregel] graph engine. In the open source world, this model is found in OLAP graph computing systems such as link:https://giraph.apache.org/[Giraph], link:https://hama.apache.org/[Hama], and link:http://faunus.thinkaurelius.com[Faunus]. TinkerPop3 extends the popularized model with integrated post-processing <<mapreduce,MapReduce>> jobs over the vertex set.
 
-IMPORTANT: As of TinkerPop3 x.y.z, message combiners are not supported. The primary reason is that TinkerPop wants to provide a model of message combining that does not require all messages to a particular vertex to be combined. This allows for more complex message passing scenarios to exist, where multi-typed messages are possible. However, at this time, no general solution has been developed.
-
 [[mapreduce]]
 MapReduce
 ---------
@@ -128,7 +126,7 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
     private static final String TOTAL_ITERATIONS = "gremlin.pageRankVertexProgram.totalIterations";
     private static final String INCIDENT_TRAVERSAL_SUPPLIER = "gremlin.pageRankVertexProgram.incidentTraversalSupplier";
 
-     private ConfigurationTraversal<Vertex, Edge> configurationTraversal;
+    private ConfigurationTraversal<Vertex, Edge> configurationTraversal;
     private double vertexCountAsDouble = 1.0d;
     private double alpha = 0.85d;
     private int totalIterations = 30;
@@ -223,6 +221,17 @@ public class PageRankVertexProgram implements VertexProgram<Double> { <1>
 <9> Energy is aggregated, computed on according to the PageRank algorithm, and then disseminated according to the defined `MessageScope.Local`.
 <10> The computation is terminated after a pre-defined number of iterations.
 
+The above `PageRankVertexProgram` is used as follows.
+
+[gremlin-groovy,modern]
+----
+result = graph.compute().program(PageRankVertexProgram.build().create()).submit().get()
+result.memory().runtime
+g = result.graph().traversal(standard())
+g.V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
+----
+
+
 [[peerpressurevertexprogram]]
 PeerPressureVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -240,7 +249,7 @@ The `PeerPressureVertexProgram` is a clustering algorithm that assigns a nominal
 TraversalVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~~
 
-image:traversal-vertex-program.png[width=250,float=left] The `TraversalVertexProgram` is a "special" VertexProgram in that it can be executed via `GraphTraversal` and the submit `:>` command in <<gremlin-console,Gremlin Console>>. In Gremlin, it is possible to have the same traversal executed using either the standard OTLP-engine or the `GraphComputer` OLAP-engine. The difference being where the traversal is submitted.
+image:traversal-vertex-program.png[width=250,float=left] The `TraversalVertexProgram` is a "special" VertexProgram in that it can be executed via a `GraphTraversal` with a `ComputerTraversalEngine`. In Gremlin, it is possible to have the same traversal executed using either the standard OTLP-engine or the `GraphComputer` OLAP-engine. The difference being where the traversal is submitted.
 
 NOTE: This model of graph traversal in a BSP system was first implemented by the link:http://faunus.thinkaurelius.com[Faunus] graph analytics engine and originally described in link:http://markorodriguez.com/2011/04/19/local-and-distributed-traversal-engines/[Local and Distributed Traversal Engines].
 

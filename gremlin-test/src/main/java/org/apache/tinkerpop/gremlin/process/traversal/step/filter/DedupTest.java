@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -29,11 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
@@ -65,6 +62,8 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_selectXa_bX();
 
     public abstract Traversal<Vertex, Path> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path();
+
+    public abstract Traversal<Vertex, String> get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -198,6 +197,19 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         assertEquals(4, results.size());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup() {
+        final Traversal<Vertex, String> traversal = get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup();
+        printTraversalForm(traversal);
+        final List<String> names = traversal.toList();
+        assertEquals(4, names.size());
+        assertTrue(names.contains("vadas"));
+        assertTrue(names.contains("lop"));
+        assertTrue(names.contains("josh"));
+        assertTrue(names.contains("ripple"));
+        assertFalse(traversal.hasNext());
+    }
 
     public static class Traversals extends DedupTest {
         @Override
@@ -237,12 +249,17 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_selectXa_bX() {
-            return g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a","b");
+            return g.V().as("a").both().as("b").dedup("a", "b").by(T.label).select("a", "b");
         }
 
         @Override
         public Traversal<Vertex, Path> get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_dedupXa_bX_path() {
             return g.V().as("a").out("created").as("b").in("created").as("c").dedup("a", "b").path();
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_outE_asXeX_inV_asXvX_selectXeX_order_byXweight_incrX_selectXvX_valuesXnameX_dedup() {
+            return g.V().outE().as("e").inV().as("v").select("e").order().by("weight", Order.incr).select("v").<String>values("name").dedup();
         }
     }
 }

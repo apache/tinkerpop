@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer.util;
 
-import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
@@ -44,6 +44,9 @@ public abstract class AbstractVertexProgramBuilder<B extends VertexProgram.Build
         return (B) this;
     }*/
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public B configure(final Object... keyValues) {
         VertexProgramHelper.legalConfigurationKeyValueArray(keyValues);

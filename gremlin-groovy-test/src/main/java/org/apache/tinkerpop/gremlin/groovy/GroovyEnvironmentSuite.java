@@ -23,19 +23,18 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.GraphManager;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutorOverGraphTest;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineOverGraphTest;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineSandboxCustomTest;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineSandboxedStandardTest;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngineTinkerPopSandboxTest;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoader;
 import org.apache.tinkerpop.gremlin.groovy.loaders.SugarLoaderTest;
+import org.apache.tinkerpop.gremlin.groovy.plugin.dsl.credential.CredentialGraphTest;
 import org.apache.tinkerpop.gremlin.groovy.util.SugarTestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * The {@code GroovyEnvironmentSuite} is a JUnit test runner that executes the Gremlin Test Suite over a
@@ -54,7 +53,11 @@ public class GroovyEnvironmentSuite extends AbstractGremlinSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] allTests = new Class<?>[]{
+            CredentialGraphTest.class,
             GremlinGroovyScriptEngineOverGraphTest.class,
+            GremlinGroovyScriptEngineSandboxCustomTest.class,
+            GremlinGroovyScriptEngineSandboxedStandardTest.class,
+            GremlinGroovyScriptEngineTinkerPopSandboxTest.class,
             GremlinExecutorOverGraphTest.class,
             SugarLoaderTest.class,
     };

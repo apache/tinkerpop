@@ -18,9 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
@@ -46,6 +43,9 @@ import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.LegacyGraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.util.CustomId;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -79,6 +79,7 @@ import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatur
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexPropertyFeatures.*;
 import static org.apache.tinkerpop.gremlin.structure.io.IoCore.graphson;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -123,7 +124,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_LONG_VALUES)
         @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_DOUBLE_VALUES)
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
-        public void shouldReadGraphMLAnAllSupportedDataTypes() throws IOException {
+        public void shouldReadGraphMLWithAllSupportedDataTypes() throws IOException {
             final GraphReader reader = GraphMLReader.build().create();
             try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graph-types.xml")) {
                 reader.readGraph(stream, graph);
@@ -137,6 +138,49 @@ public class IoTest {
             assertEquals(123.54f, v.value("f"), 0.000001f);
             assertEquals(10000000l, v.<Long>value("l").longValue());
             assertEquals("junk", v.<String>value("n"));
+        }
+
+        @Test
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_BOOLEAN_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_LONG_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_DOUBLE_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        public void shouldReadGraphMLWithoutStrictOption() throws IOException {
+            final GraphReader reader = GraphMLReader.build().strict(false).create();
+            try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graph-types-bad.xml")) {
+                reader.readGraph(stream, graph);
+            }
+
+            final Vertex v = graph.vertices().next();
+            assertFalse(v.values("d").hasNext());
+            assertEquals("some-string", v.<String>value("s"));
+            assertFalse(v.values("i").hasNext());
+            assertEquals(false, v.<Boolean>value("b"));
+            assertFalse(v.values("f").hasNext());
+            assertFalse(v.values("l").hasNext());
+            assertEquals("junk", v.<String>value("n"));
+        }
+
+        @Test(expected = NumberFormatException.class)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_STRING_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_INTEGER_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_FLOAT_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_BOOLEAN_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_LONG_VALUES)
+        @FeatureRequirement(featureClass = VertexPropertyFeatures.class, feature = FEATURE_DOUBLE_VALUES)
+        @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = EdgePropertyFeatures.FEATURE_FLOAT_VALUES)
+        public void shouldReadGraphMLWithStrictOption() throws IOException {
+            final GraphReader reader = GraphMLReader.build().strict(true).create();
+            try (final InputStream stream = IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphMLResourceAccess.class) + "graph-types-bad.xml")) {
+                reader.readGraph(stream, graph);
+            }
         }
 
         /**
@@ -232,6 +276,30 @@ public class IoTest {
 
                 final String expected = streamToString(IoTest.class.getResourceAsStream(TestHelper.convertPackageToResourcePath(GraphSONResourceAccess.class) + "tinkerpop-classic-normalized.json"));
                 assertEquals(expected.replace("\n", "").replace("\r", ""), bos.toString().replace("\n", "").replace("\r", ""));
+            }
+        }
+
+        @Test
+        @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+        @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+        public void shouldReadWriteModernWrappedInJsonObject() throws Exception {
+            try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                final GraphWriter writer = graph.io(graphson()).writer().wrapAdjacencyList(true).create();
+                writer.writeGraph(os, graph);
+
+                final Configuration configuration = graphProvider.newGraphConfiguration("readGraph", this.getClass(), name.getMethodName(), LoadGraphWith.GraphData.MODERN);
+                graphProvider.clear(configuration);
+                final Graph g1 = graphProvider.openTestGraph(configuration);
+                final GraphReader reader = graph.io(graphson()).reader().unwrapAdjacencyList(true).create();
+                try (final ByteArrayInputStream bais = new ByteArrayInputStream(os.toByteArray())) {
+                    reader.readGraph(bais, g1);
+                }
+
+                // modern uses double natively so always assert as such
+                IoTest.assertModernGraph(g1, true, true);
+
+                graphProvider.clear(g1, configuration);
             }
         }
 

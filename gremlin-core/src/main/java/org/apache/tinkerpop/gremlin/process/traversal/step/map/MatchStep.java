@@ -1,24 +1,21 @@
 /*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *  * Licensed to the Apache Software Foundation (ASF) under one
- *  * or more contributor license agreements.  See the NOTICE file
- *  * distributed with this work for additional information
- *  * regarding copyright ownership.  The ASF licenses this file
- *  * to you under the Apache License, Version 2.0 (the
- *  * "License"); you may not use this file except in compliance
- *  * with the License.  You may obtain a copy of the License at
- *  *
- *  * http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing,
- *  * software distributed under the License is distributed on an
- *  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *  * KIND, either express or implied.  See the License for the
- *  * specific language governing permissions and limitations
- *  * under the License.
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -312,8 +309,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 traverser = this.starts.next();
                 final Path path = traverser.path();
                 if (!this.matchStartLabels.stream().filter(path::hasLabel).findAny().isPresent())
-                    path.addLabel(this.computedStartLabel); // if the traverser doesn't have a legal start, then provide it the pre-computed one
-                path.addLabel(this.getId()); // so the traverser never returns to this branch ever again
+                    traverser.addLabels(Collections.singleton(this.computedStartLabel)); // if the traverser doesn't have a legal start, then provide it the pre-computed one
+                traverser.addLabels(Collections.singleton(this.getId())); // so the traverser never returns to this branch ever again
             }
             ///
             if (!this.isDuplicate(traverser)) {
@@ -337,13 +334,14 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             final Traverser.Admin traverser = this.starts.next();
             final Path path = traverser.path();
             if (!this.matchStartLabels.stream().filter(path::hasLabel).findAny().isPresent())
-                path.addLabel(this.computedStartLabel); // if the traverser doesn't have a legal start, then provide it the pre-computed one
+                traverser.addLabels(Collections.singleton(this.computedStartLabel)); // if the traverser doesn't have a legal start, then provide it the pre-computed one
             if (!path.hasLabel(this.getId()))
-                path.addLabel(this.getId()); // so the traverser never returns to this branch ever again
+                traverser.addLabels(Collections.singleton(this.getId())); // so the traverser never returns to this branch ever again
             ///
             if (!this.isDuplicate(traverser)) {
                 if (hasMatched(this.conjunction, traverser)) {
                     traverser.setStepId(this.getNextStep().getId());
+                    traverser.addLabels(this.labels);
                     return IteratorUtils.of(traverser.split(this.getBindings(traverser), this));
                 }
                 if (this.conjunction == ConjunctionStep.Conjunction.AND) {
@@ -374,7 +372,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.PATH, TraverserRequirement.SIDE_EFFECTS);
+        return this.getSelfAndChildRequirements(TraverserRequirement.LABELED_PATH, TraverserRequirement.SIDE_EFFECTS);
     }
 
     //////////////////////////////
@@ -392,7 +390,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         @Override
         protected Traverser<Object> processNextStart() throws NoSuchElementException {
             final Traverser.Admin<Object> traverser = this.starts.next();
-            traverser.path().addLabel(this.getId());
+            traverser.addLabels(Collections.singleton(this.getId()));
             ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordStart(traverser, this.getTraversal());
             // TODO: sideEffect check?
             return null == this.selectKey ? traverser : traverser.split(traverser.path().get(Pop.last, this.selectKey), this);
@@ -421,8 +419,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 this.scopeKeys = new HashSet<>();
                 if (null != this.selectKey)
                     this.scopeKeys.add(this.selectKey);
-                if (this.getNextStep() instanceof Scoping)
-                    this.scopeKeys.addAll(((Scoping) this.getNextStep()).getScopeKeys());
+                if (this.getNextStep() instanceof WhereTraversalStep || this.getNextStep() instanceof WherePredicateStep)
+                   this.scopeKeys.addAll(((Scoping) this.getNextStep()).getScopeKeys());
                 this.scopeKeys = Collections.unmodifiableSet(this.scopeKeys);
             }
             return this.scopeKeys;
@@ -444,7 +442,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 final Traverser.Admin traverser = this.starts.next();
                 // no end label
                 if (null == this.matchKey) {
-                    if (this.traverserStepIdSetByChild)
+                    if (this.traverserStepIdAndLabelsSetByChild)
                         traverser.setStepId(((MatchStep<?, ?>) this.getTraversal().getParent()).getId());
                     ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
                     return traverser;
@@ -453,9 +451,9 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 // path check
                 final Path path = traverser.path();
                 if (!path.hasLabel(this.matchKey) || traverser.get().equals(path.get(Pop.last, this.matchKey))) {
-                    if (this.traverserStepIdSetByChild)
+                    if (this.traverserStepIdAndLabelsSetByChild)
                         traverser.setStepId(((MatchStep<?, ?>) this.getTraversal().getParent()).getId());
-                    traverser.path().addLabel(this.matchKey);
+                    traverser.addLabels(Collections.singleton(this.matchKey));
                     ((MatchStep<?, ?>) this.getTraversal().getParent()).getMatchAlgorithm().recordEnd(traverser, this.getTraversal());
                     return traverser;
                 }

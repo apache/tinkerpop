@@ -104,21 +104,35 @@ public class Session {
         if (null == killFuture || !killFuture.isDone()) {
             if (killFuture != null) killFuture.cancel(false);
             kill.set(this.scheduledExecutorService.schedule(() -> {
-                // when the session is killed open transaction should be rolled back
-                graphManager.getGraphs().values().forEach(g -> {
-                    if (g.features().graph().supportsTransactions()) {
-                        // have to execute the rollback in the executor because the transaction is associated with
-                        // that thread of execution from this session
-                        this.executor.execute(() -> {
-                            logger.info("Rolling back any open transactions before killing idle session: {}", this.session);
-                            if (g.tx().isOpen()) g.tx().rollback();
-                        });
-                    }
-                });
-                sessions.remove(this.session);
-                logger.info("Kill idle session named {} after {} milliseconds", this.session, this.configuredSessionTimeout);
+                logger.info("Session {} has been idle for more than {} milliseconds - preparing to close",
+                        this.session, this.configuredSessionTimeout);
+                kill();
             }, this.configuredSessionTimeout, TimeUnit.MILLISECONDS));
         }
+    }
+
+    /**
+     * Kills the session and rollback any uncommitted changes on transactional graphs.
+     */
+    public void kill() {
+        // when the session is killed open transaction should be rolled back
+        graphManager.getGraphs().entrySet().forEach(kv -> {
+            final Graph g = kv.getValue();
+            if (g.features().graph().supportsTransactions()) {
+                // have to execute the rollback in the executor because the transaction is associated with
+                // that thread of execution from this session
+                try {
+                    executor.submit(() -> {
+                        logger.info("Rolling back open transactions on {} before killing session: {}", kv.getKey(), session);
+                        if (g.tx().isOpen()) g.tx().rollback();
+                    }).get(30000, TimeUnit.MILLISECONDS);
+                } catch (Exception ex) {
+                    logger.warn("An error occurred while attempting rollback when closing session: " + session, ex);
+                }
+            }
+        });
+        sessions.remove(session);
+        logger.info("Session {} closed", session);
     }
 
     private GremlinExecutor.Builder initializeGremlinExecutor() {
@@ -135,15 +149,14 @@ public class Session {
                 })
                 .enabledPlugins(new HashSet<>(settings.plugins))
                 .globalBindings(graphManager.getAsBindings())
-                .promoteBindings(kv -> kv.getValue() instanceof Graph
-                        || kv.getValue() instanceof TraversalSource)
                 .executorService(executor)
                 .scheduledExecutorService(scheduledExecutorService);
 
         settings.scriptEngines.forEach((k, v) -> {
-            // make sure that server related classes are available at init - no really necessary here because
+            // make sure that server related classes are available at init - not really necessary here because
             // lifecycle hooks are not executed per session, but there should be some consistency .... i guess
             v.imports.add(LifeCycleHook.class.getCanonicalName());
+            v.imports.add(LifeCycleHook.Context.class.getCanonicalName());
             gremlinExecutorBuilder.addEngineSettings(k, v.imports, v.staticImports, v.scripts, v.config);
         });
 
