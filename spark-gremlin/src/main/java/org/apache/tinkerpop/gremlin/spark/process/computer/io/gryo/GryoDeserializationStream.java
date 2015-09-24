@@ -29,7 +29,7 @@ import java.io.InputStream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GryoDeserializationStream extends DeserializationStream {
+public final class GryoDeserializationStream extends DeserializationStream {
 
     private final InputStream inputStream;
     private final GryoSerializerInstance serializer;

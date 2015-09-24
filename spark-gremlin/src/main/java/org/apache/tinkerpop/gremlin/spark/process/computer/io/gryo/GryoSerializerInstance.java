@@ -34,7 +34,7 @@ import java.nio.ByteBuffer;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GryoSerializerInstance extends SerializerInstance {
+public final class GryoSerializerInstance extends SerializerInstance {
 
     private final Kryo kryo;
 
@@ -46,6 +46,7 @@ public class GryoSerializerInstance extends SerializerInstance {
     public <T> ByteBuffer serialize(final T t, final ClassTag<T> classTag) {
         final Output output = new Output(100000);
         this.kryo.writeClassAndObject(output, t);
+        output.flush();
         return ByteBuffer.wrap(output.getBuffer());
     }
 

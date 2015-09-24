@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.spark.process.computer.io.gryo;
 
 import org.apache.spark.serializer.SerializationStream;
-import org.apache.spark.serializer.SerializerInstance;
 import scala.reflect.ClassTag;
 
 import java.io.IOException;
@@ -29,10 +28,10 @@ import java.io.OutputStream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GryoSerializationStream extends SerializationStream {
+public final class GryoSerializationStream extends SerializationStream {
 
     private final OutputStream outputStream;
-    private final SerializerInstance serializer;
+    private final GryoSerializerInstance serializer;
 
     public GryoSerializationStream(final GryoSerializerInstance serializer, final OutputStream outputStream) {
         this.outputStream = outputStream;

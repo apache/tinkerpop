@@ -39,7 +39,7 @@ import scala.Tuple2;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GryoSerializer extends Serializer {
+public final class GryoSerializer extends Serializer {
     @Override
     public SerializerInstance newInstance() {
         return new GryoSerializerInstance(
@@ -56,7 +56,7 @@ public class GryoSerializer extends Serializer {
                         addCustom(SerializableConfiguration.class, new JavaSerializer()).
                         addCustom(VertexWritable.class, new JavaSerializer()).
                         addCustom(ObjectWritable.class, new JavaSerializer()).
-                create().createMapper());
+                        create().createMapper());
         // kryo.register(org.apache.spark.serializer.JavaIterableWrapperSerializer..MODULE$.wrapperClass(), new JavaIterableWrapperSerializer());
     }
 }
