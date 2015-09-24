@@ -18,134 +18,111 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
+import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.Parameters;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.CallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.Event;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.event.ListCallbackRegistry;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class AddEdgeStep<S> extends FlatMapStep<S, Edge> implements Scoping, Mutating<Event.EdgeAddedEvent> {
+public final class AddEdgeStep<S> extends MapStep<S, Edge> implements Mutating<Event.EdgeAddedEvent>, TraversalParent, Parameterizing {
 
-    private final Direction direction;
-    private final String firstVertexKey;
-    private final String edgeLabel;
-    private final String secondVertexKey;
-    private final Object[] propertyKeyValues;
+    private static final String FROM = Graph.Hidden.hide("from");
+    private static final String TO = Graph.Hidden.hide("to");
 
+    private Parameters parameters = new Parameters();
     private CallbackRegistry<Event.EdgeAddedEvent> callbackRegistry;
 
-    public AddEdgeStep(final Traversal.Admin traversal, final Direction direction, final String firstVertexKey, final String edgeLabel, final String secondVertexKey, final Object... propertyKeyValues) {
+    public AddEdgeStep(final Traversal.Admin traversal, final String edgeLabel) {
         super(traversal);
-        this.direction = direction;
-        this.firstVertexKey = firstVertexKey;
-        this.edgeLabel = edgeLabel;
-        this.secondVertexKey = secondVertexKey;
-        this.propertyKeyValues = propertyKeyValues;
-    }
-
-    public Direction getDirection() {
-        return this.direction;
-    }
-
-    public String getFirstVertexKey() {
-        return this.firstVertexKey;
-    }
-
-    public String getEdgeLabel() {
-        return this.edgeLabel;
-    }
-
-    public String getSecondVertexKey() {
-        return this.secondVertexKey;
-    }
-
-    public Object[] getPropertyKeyValues() {
-        return this.propertyKeyValues;
+        this.parameters.set(T.label, edgeLabel);
     }
 
     @Override
-    protected Iterator<Edge> flatMap(final Traverser.Admin<S> traverser) {
-        final Object firstVertex = null == this.firstVertexKey ? (Vertex) traverser.get() : this.getScopeValue(Pop.last, this.firstVertexKey, traverser);
-        final Object secondVertex = null == this.secondVertexKey ? (Vertex) traverser.get() : this.getScopeValue(Pop.last, this.secondVertexKey, traverser);
-        final Object finalFirstVertex = firstVertex instanceof Iterable ? ((Iterable) firstVertex).iterator() : firstVertex;
-        final Object finalSecondVertex = secondVertex instanceof Iterable ? ((Iterable) secondVertex).iterator() : secondVertex;
+    public <S, E> List<Traversal.Admin<S, E>> getLocalChildren() {
+        return this.parameters.getTraversals();
+    }
 
-        final Iterator<Edge> edgeIterator;
-        if (finalFirstVertex instanceof Iterator) {
-            edgeIterator = IteratorUtils.map((Iterator<Vertex>) finalFirstVertex, vertex ->
-                    this.direction.equals(Direction.OUT) ?
-                            vertex.addEdge(this.edgeLabel, (Vertex) finalSecondVertex, this.propertyKeyValues) :
-                            ((Vertex) finalSecondVertex).addEdge(this.edgeLabel, vertex, this.propertyKeyValues));
-        } else if (finalSecondVertex instanceof Iterator) {
-            edgeIterator = IteratorUtils.map((Iterator<Vertex>) finalSecondVertex, vertex ->
-                    this.direction.equals(Direction.OUT) ?
-                            ((Vertex) finalFirstVertex).addEdge(this.edgeLabel, vertex, this.propertyKeyValues) :
-                            vertex.addEdge(this.edgeLabel, ((Vertex) finalFirstVertex), this.propertyKeyValues));
-        } else {
-            edgeIterator = IteratorUtils.of(this.direction.equals(Direction.OUT) ?
-                    ((Vertex) firstVertex).addEdge(this.edgeLabel, (Vertex) secondVertex, this.propertyKeyValues) :
-                    ((Vertex) secondVertex).addEdge(this.edgeLabel, (Vertex) firstVertex, this.propertyKeyValues));
-        }
+    @Override
+    public Parameters getParameters() {
+        return this.parameters;
+    }
 
-        return IteratorUtils.consume(edgeIterator, edge -> {
+    @Override
+    public void addPropertyMutations(final Object... keyValues) {
+        this.parameters.set(keyValues);
+        this.parameters.integrateTraversals(this);
+    }
+
+    public void addTo(final Object toObject) {
+        this.parameters.set(TO, toObject);
+        this.parameters.integrateTraversals(this);
+    }
+
+    public void addFrom(final Object fromObject) {
+        this.parameters.set(FROM, fromObject);
+        this.parameters.integrateTraversals(this);
+    }
+
+    @Override
+    protected Edge map(final Traverser.Admin<S> traverser) {
+        final Vertex toVertex = this.parameters.get(traverser, TO, () -> (Vertex) traverser.get()).get(0);
+        final Vertex fromVertex = this.parameters.get(traverser, FROM, () -> (Vertex) traverser.get()).get(0);
+        final String edgeLabel = this.parameters.get(traverser, T.label, () -> Edge.DEFAULT_LABEL).get(0);
+
+        final Edge edge = fromVertex.addEdge(edgeLabel, toVertex, this.parameters.getKeyValues(traverser, TO, FROM, T.label));
             if (callbackRegistry != null) {
                 final Event.EdgeAddedEvent vae = new Event.EdgeAddedEvent(DetachedFactory.detach(edge, true));
                 callbackRegistry.getCallbacks().forEach(c -> c.accept(vae));
             }
-        });
+        return edge;
     }
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return TraversalHelper.getLabels(TraversalHelper.getRootTraversal(this.traversal)).stream().filter(this.getScopeKeys()::contains).findAny().isPresent() ?
-                TYPICAL_GLOBAL_REQUIREMENTS :
-                TYPICAL_LOCAL_REQUIREMENTS;
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
     }
 
     @Override
     public CallbackRegistry<Event.EdgeAddedEvent> getMutatingCallbackRegistry() {
-        if (null == callbackRegistry) callbackRegistry = new ListCallbackRegistry<>();
-        return callbackRegistry;
+        if (null == this.callbackRegistry) this.callbackRegistry = new ListCallbackRegistry<>();
+        return this.callbackRegistry;
     }
 
     @Override
     public int hashCode() {
-        int result = super.hashCode() ^ this.direction.hashCode() ^ this.edgeLabel.hashCode();
-        if (null != this.firstVertexKey)
-            result ^= this.firstVertexKey.hashCode();
-        if (null != this.secondVertexKey)
-            result ^= this.secondVertexKey.hashCode();
-        for (final Object object : this.propertyKeyValues) {
-            result ^= object.hashCode();
-        }
-        return result;
+        return super.hashCode() ^ this.parameters.hashCode();
     }
 
     @Override
-    public Set<String> getScopeKeys() {
-        final Set<String> keys = new HashSet<>();
-        if (null != this.firstVertexKey)
-            keys.add(this.firstVertexKey);
-        if (null != this.secondVertexKey)
-            keys.add(this.secondVertexKey);
-        return keys;
+    public String toString() {
+        return StringFactory.stepString(this, this.parameters.toString());
     }
+
+    @Override
+    public AddEdgeStep<S> clone() {
+        final AddEdgeStep<S> clone = (AddEdgeStep<S>) super.clone();
+        clone.parameters = this.parameters.clone();
+        return clone;
+    }
+
 }

@@ -27,7 +27,7 @@ if [ ! -f bin/gremlin.sh ]; then
   exit 1
 fi
 
-for daemon in "NameNode" "DataNode" "JobTracker" "TaskTracker"
+for daemon in "NameNode" "DataNode" "ResourceManager" "NodeManager"
 do
   running=`jps | cut -d ' ' -f2 | grep -c ${daemon}`
   if [ ${running} -eq 0 ]; then
@@ -107,6 +107,11 @@ else
 fi
 
 # process *.asciidoc files
+COLS=${COLUMNS}
+[[ ${COLUMNS} -lt 240 ]] && stty cols 240
+
+tput rmam
+
 echo
 echo "============================"
 echo "+   Processing AsciiDocs   +"
@@ -122,6 +127,9 @@ for i in {0..7}; do
   ec=${ps[i]}
   [ ${ec} -eq 0 ] || break
 done
+
+tput smam
+[[ "${COLUMNS}" != "" ]] && stty cols ${COLS}
 
 if [ ${ec} -ne 0 ]; then
   exit 1

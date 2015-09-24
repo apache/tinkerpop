@@ -18,26 +18,43 @@
  */
 package org.apache.tinkerpop.gremlin.driver.handler;
 
+import io.netty.handler.codec.ReplayingDecoder;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.util.List;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class NioGremlinResponseDecoder extends ByteToMessageDecoder {
+public final class NioGremlinResponseDecoder extends ReplayingDecoder<NioGremlinResponseDecoder.DecoderState> {
     private final MessageSerializer serializer;
+    private int messageLength;
 
     public NioGremlinResponseDecoder(final MessageSerializer serializer) {
+        super(DecoderState.MESSAGE_LENGTH);
         this.serializer = serializer;
     }
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final ByteBuf byteBuf, final List<Object> objects) throws Exception {
-        if (byteBuf.readableBytes() < 1) return;
-        objects.add(serializer.deserializeResponse(byteBuf));
+        switch (state()) {
+            case MESSAGE_LENGTH:
+                messageLength = byteBuf.readInt();
+                checkpoint(DecoderState.MESSAGE);
+            case MESSAGE:
+                final ByteBuf messageFrame = byteBuf.readBytes(messageLength);
+                objects.add(serializer.deserializeResponse(messageFrame));
+                checkpoint(DecoderState.MESSAGE_LENGTH);
+                break;
+            default:
+                throw new Error("Invalid message received from Gremlin Server");
+        }
+    }
+
+    public enum DecoderState {
+        MESSAGE_LENGTH,
+        MESSAGE
     }
 }

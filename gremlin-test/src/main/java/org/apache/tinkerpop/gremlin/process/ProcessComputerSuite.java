@@ -42,27 +42,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SampleTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.SimplePathTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TailTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.CoalesceTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ConstantTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.FlatMapTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapKeysTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapValuesTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MeanTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MinTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.OrderTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.ValueMapTest;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.*;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest;
@@ -131,6 +111,7 @@ public class ProcessComputerSuite extends AbstractGremlinSuite {
             CountTest.Traversals.class,
             FlatMapTest.Traversals.class,
             FoldTest.Traversals.class,
+            LoopsTest.Traversals.class,
             MapTest.Traversals.class,
             MapKeysTest.Traversals.class,
             MapValuesTest.Traversals.class,

@@ -30,6 +30,8 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.hasLabel;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.values;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
@@ -61,11 +63,7 @@ public abstract class ConstantTest extends AbstractGremlinProcessTest {
     public void g_V_chooseXhasLabelXpersonX_valuesXnameX_constantXinhumanXX() {
         final Traversal<Vertex, String> traversal = get_g_V_chooseXhasLabelXpersonX_valuesXnameX_constantXinhumanXX();
         printTraversalForm(traversal);
-        final List<String> actual = traversal.toList();
-        Collections.sort(actual);
-        final List<String> expected = Arrays.asList("marko", "vadas", "inhuman", "josh", "inhuman", "peter");
-        Collections.sort(expected);
-        assertEquals(expected, actual);
+        assertThat(traversal.toList(), containsInAnyOrder("marko", "vadas", "inhuman", "josh", "inhuman", "peter"));
     }
 
     public static class Traversals extends ConstantTest {

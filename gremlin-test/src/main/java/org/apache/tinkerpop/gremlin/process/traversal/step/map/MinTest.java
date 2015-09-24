@@ -51,13 +51,17 @@ public abstract class MinTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_age_min() {
-        final List<Traversal<Vertex, Integer>> traversals = Arrays.asList(
-                get_g_V_age_min(),
-                get_g_V_repeatXbothX_timesX5X_age_min());
-        traversals.forEach(traversal -> {
-            printTraversalForm(traversal);
-            checkResults(Arrays.asList(27), traversal);
-        });
+        final Traversal<Vertex, Integer> traversal = get_g_V_age_min();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(27), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_repeatXbothX_timesX5X_age_min() {
+        final Traversal<Vertex, Integer> traversal = get_g_V_repeatXbothX_timesX5X_age_min();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(27), traversal);
     }
 
     @Test

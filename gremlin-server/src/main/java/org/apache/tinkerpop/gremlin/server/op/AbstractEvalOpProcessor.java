@@ -82,6 +82,12 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
      */
     public abstract ThrowingConsumer<Context> getEvalOp();
 
+    /**
+     * A sub-class may have additional "ops" that it will service.  Calls to {@link #select(Context)} that are not
+     * handled will be passed to this method to see if the sub-class can service the requested op code.
+     */
+    public abstract Optional<ThrowingConsumer<Context>> selectOther(final RequestMessage requestMessage) throws OpProcessorException;
+
     @Override
     public ThrowingConsumer<Context> select(final Context ctx) throws OpProcessorException {
         final RequestMessage message = ctx.getRequestMessage();
@@ -96,8 +102,10 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                 final String msgInvalid = String.format("Message could not be parsed.  Check the format of the request. [%s]", message);
                 throw new OpProcessorException(msgInvalid, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).result(msgInvalid).create());
             default:
-                final String msgDefault = String.format("Message with op code [%s] is not recognized.", message.getOp());
-                throw new OpProcessorException(msgDefault, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).result(msgDefault).create());
+                op = selectOther(message).orElseThrow(() -> {
+                    final String msgDefault = String.format("Message with op code [%s] is not recognized.", message.getOp());
+                    return new OpProcessorException(msgDefault, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).result(msgDefault).create());
+                });
         }
 
         return op;

@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -60,8 +59,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public <V> VertexProperty<V> property(final String key) {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
-
+        if (this.removed) return VertexProperty.empty();
         if (TinkerHelper.inComputerMode(this.graph)) {
             final List<VertexProperty> list = (List) this.graph.graphComputerView.getProperty(this, key);
             if (list.size() == 0)
@@ -84,7 +82,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public <V> VertexProperty<V> property(final VertexProperty.Cardinality cardinality, final String key, final V value, final Object... keyValues) {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
+        if (this.removed) throw elementAlreadyRemoved(Vertex.class, id);
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         ElementHelper.validateProperty(key, value);
         final Optional<Object> optionalId = ElementHelper.getIdValue(keyValues);
@@ -123,13 +121,12 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
     @Override
     public Edge addEdge(final String label, final Vertex vertex, final Object... keyValues) {
         if (null == vertex) throw Graph.Exceptions.argumentCanNotBeNull("vertex");
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
+        if (this.removed) throw elementAlreadyRemoved(Vertex.class, this.id);
         return TinkerHelper.addEdge(this.graph, this, (TinkerVertex) vertex, label, keyValues);
     }
 
     @Override
     public void remove() {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(Vertex.class, this.id);
         final List<Edge> edges = new ArrayList<>();
         this.edges(Direction.BOTH).forEachRemaining(edges::add);
         edges.stream().filter(edge -> !((TinkerEdge) edge).removed).forEach(Edge::remove);
@@ -156,6 +153,7 @@ public final class TinkerVertex extends TinkerElement implements Vertex {
 
     @Override
     public <V> Iterator<VertexProperty<V>> properties(final String... propertyKeys) {
+        if (this.removed) return Collections.emptyIterator();
         if (TinkerHelper.inComputerMode((TinkerGraph) graph()))
             return (Iterator) ((TinkerGraph) graph()).graphComputerView.getProperties(TinkerVertex.this).stream().filter(p -> ElementHelper.keyExists(p.key(), propertyKeys)).iterator();
         else {

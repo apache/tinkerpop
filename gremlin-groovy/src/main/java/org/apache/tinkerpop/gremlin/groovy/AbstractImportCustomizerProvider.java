@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -97,14 +98,15 @@ public abstract class AbstractImportCustomizerProvider implements ImportCustomiz
         imports.add(IdentityRemovalStrategy.class.getPackage().getName() + DOT_STAR); // optimization strategies
         imports.add(ProfileStrategy.class.getPackage().getName() + DOT_STAR);         // finalization strategies
         imports.add(ReadOnlyStrategy.class.getPackage().getName() + DOT_STAR);        // verification strategies
-
         imports.add(Event.class.getPackage().getName() + DOT_STAR);                   // eventing
+
         staticImports.add(P.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Order.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Operator.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Scope.class.getCanonicalName() + DOT_STAR);
         staticImports.add(Pop.class.getCanonicalName() + DOT_STAR);
         staticImports.add(__.class.getCanonicalName() + DOT_STAR);
+        staticImports.add(SackFunctions.Barrier.class.getCanonicalName() + DOT_STAR);
         staticImports.add(TraversalOptionParent.Pick.class.getCanonicalName() + DOT_STAR);
         staticImports.add(GraphTraversalSource.class.getCanonicalName() + DOT_STAR);
 

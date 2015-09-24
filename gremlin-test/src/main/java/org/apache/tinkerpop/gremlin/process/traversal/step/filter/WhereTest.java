@@ -273,7 +273,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_selectXa_bX() {
-        Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_selectXa_bX();
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_out_asXbX_whereXandXasXaX_outXknowsX_asXbX__orXasXbX_outXcreatedX_hasXname_rippleX__asXbX_inXknowsX_count_isXnotXeqX0XXXXX_selectXa_bX();
         printTraversalForm(traversal);
         checkResults(makeMapList(2,
                 "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "josh"),
@@ -283,7 +283,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_selectXaX_byXnameX() {
-        Traversal<Vertex, String> traversal = get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX();
+        final Traversal<Vertex, String> traversal = get_g_V_whereXoutXcreatedX_and_outXknowsX_or_inXknowsXX_valuesXnameX();
         printTraversalForm(traversal);
         checkResults(Arrays.asList("marko", "vadas", "josh"), traversal);
     }
@@ -291,7 +291,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_selectXa_bX() {
-        Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_selectXa_bX();
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_whereXandXasXbX_in__notXasXaX_outXcreatedX_hasXname_rippleXXX_selectXa_bX();
         printTraversalForm(traversal);
         checkResults(makeMapList(2,
                 "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop"),
@@ -301,7 +301,7 @@ public abstract class WhereTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_selectXa_b_c_dX() {
-        Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_selectXa_b_c_dX();
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXaX_outXcreatedX_asXbX_inXcreatedX_asXcX_bothXknowsX_bothXknowsX_asXdX_whereXc__notXeqXaX_orXeqXdXXXX_selectXa_b_c_dX();
         printTraversalForm(traversal);
         checkResults(makeMapList(4,
                 "a", convertToVertex(graph, "marko"), "b", convertToVertex(graph, "lop"), "c", convertToVertex(graph, "josh"), "d", convertToVertex(graph, "vadas"),

@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -54,6 +53,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public <V> Property<V> property(final String key, final V value) {
+        if (this.removed) throw elementAlreadyRemoved(Edge.class, id);
         ElementHelper.validateProperty(key, value);
         final Property oldProperty = super.property(key);
         final Property<V> newProperty = new TinkerProperty<>(this, key, value);
@@ -66,7 +66,6 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public <V> Property<V> property(final String key) {
-        if (this.removed) throw Element.Exceptions.elementAlreadyRemoved(this.getClass(), this.id);
         return null == this.properties ? Property.<V>empty() : this.properties.getOrDefault(key, Property.<V>empty());
     }
 
@@ -77,8 +76,6 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public void remove() {
-        if (this.removed)
-            throw Element.Exceptions.elementAlreadyRemoved(Edge.class, this.id);
         final TinkerVertex outVertex = (TinkerVertex) this.outVertex;
         final TinkerVertex inVertex = (TinkerVertex) this.inVertex;
 
@@ -117,6 +114,7 @@ public final class TinkerEdge extends TinkerElement implements Edge {
 
     @Override
     public Iterator<Vertex> vertices(final Direction direction) {
+        if (removed) return Collections.emptyIterator();
         switch (direction) {
             case OUT:
                 return IteratorUtils.of(this.outVertex);

@@ -81,11 +81,6 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
         if (traversal.getParent() instanceof EmptyStep) {
             if (!(traversal.getStartStep() instanceof GraphStep))
                 throw new VerificationException("GraphComputer does not support traversals starting from a non-GraphStep: " + traversal.getStartStep(), traversal);
-            for (final Object id : ((GraphStep) traversal.getStartStep()).getIds()) {
-                if (id instanceof Vertex || id instanceof Edge) {
-                    throw new VerificationException("GraphComputer does not support traversals starting from a particular vertex or edge.", traversal);
-                }
-            }
             ///
             if (endStep instanceof CollectingBarrierStep && endStep instanceof TraversalParent) {
                 if (((TraversalParent) endStep).getLocalChildren().stream().filter(t ->

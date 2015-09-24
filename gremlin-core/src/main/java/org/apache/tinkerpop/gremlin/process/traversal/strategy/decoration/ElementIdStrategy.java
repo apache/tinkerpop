@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Parameterizing;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
@@ -35,7 +36,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.util.Arrays;
@@ -83,52 +83,31 @@ public final class ElementIdStrategy extends AbstractTraversalStrategy<Traversal
 
         if (traversal.getStartStep() instanceof GraphStep) {
             final GraphStep graphStep = (GraphStep) traversal.getStartStep();
-
             // only need to apply the custom id if ids were assigned - otherwise we want the full iterator.
             // note that it is then only necessary to replace the step if the id is a non-element.  other tests
             // in the suite validate that items in getIds() is uniform so it is ok to just test the first item
             // in the list.
             if (graphStep.getIds().length > 0 && !(graphStep.getIds()[0] instanceof Element)) {
-                if (graphStep instanceof HasContainerHolder) {
+                if (graphStep instanceof HasContainerHolder)
                     ((HasContainerHolder) graphStep).addHasContainer(new HasContainer(this.idPropertyKey, P.within(Arrays.asList(graphStep.getIds()))));
-                } else {
+                else
                     TraversalHelper.insertAfterStep(new HasStep(traversal, new HasContainer(this.idPropertyKey, P.within(Arrays.asList(graphStep.getIds())))), graphStep, traversal);
-                }
                 graphStep.clearIds();
             }
         }
-
-        TraversalHelper.getStepsOfAssignableClass(IdStep.class, traversal).stream().forEach(s -> {
-            TraversalHelper.replaceStep(s, new PropertiesStep(traversal, PropertyType.VALUE, idPropertyKey), traversal);
+        TraversalHelper.getStepsOfAssignableClass(IdStep.class, traversal).stream().forEach(step -> {
+            TraversalHelper.replaceStep(step, new PropertiesStep(traversal, PropertyType.VALUE, idPropertyKey), traversal);
         });
 
         // in each case below, determine if the T.id is present and if so, replace T.id with the idPropertyKey or if
         // it is not present then shove it in there and generate an id
-        TraversalHelper.getStepsOfAssignableClass(AddVertexStep.class, traversal).stream().forEach(s -> {
-            if (ElementHelper.getIdValue(s.getKeyValues()).isPresent())
-                TraversalHelper.replaceStep(s, new AddVertexStep(traversal, ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
-            else {
-                final Object[] kvs = ElementHelper.getKeys(s.getKeyValues()).contains(idPropertyKey) ? s.getKeyValues() : ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get());
-                TraversalHelper.replaceStep(s, new AddVertexStep(traversal, kvs), traversal);
-            }
-        });
-
-        TraversalHelper.getStepsOfAssignableClass(AddVertexStartStep.class, traversal).stream().forEach(s -> {
-            if (ElementHelper.getIdValue(s.getKeyValues()).isPresent())
-                TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, ElementHelper.replaceKey(s.getKeyValues(), T.id, idPropertyKey)), traversal);
-            else {
-                final Object[] kvs = ElementHelper.getKeys(s.getKeyValues()).contains(idPropertyKey) ? s.getKeyValues() : ElementHelper.upsert(s.getKeyValues(), idPropertyKey, idMaker.get());
-                TraversalHelper.replaceStep(s, new AddVertexStartStep(traversal, kvs), traversal);
-            }
-
-        });
-
-        TraversalHelper.getStepsOfAssignableClass(AddEdgeStep.class, traversal).stream().forEach(s -> {
-            if (ElementHelper.getIdValue(s.getPropertyKeyValues()).isPresent())
-                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), ElementHelper.replaceKey(s.getPropertyKeyValues(), T.id, idPropertyKey)), traversal);
-            else {
-                final Object[] kvs = ElementHelper.getKeys(s.getPropertyKeyValues()).contains(idPropertyKey) ? s.getPropertyKeyValues() : ElementHelper.upsert(s.getPropertyKeyValues(), idPropertyKey, idMaker.get());
-                TraversalHelper.replaceStep(s, new AddEdgeStep(traversal, s.getDirection(), s.getFirstVertexKey(), s.getEdgeLabel(), s.getSecondVertexKey(), kvs), traversal);
+        traversal.getSteps().forEach(step -> {
+            if (step instanceof AddVertexStep || step instanceof AddVertexStartStep || step instanceof AddEdgeStep) {
+                final Parameterizing parameterizing = (Parameterizing) step;
+                if (parameterizing.getParameters().contains(T.id))
+                    parameterizing.getParameters().rename(T.id, this.idPropertyKey);
+                else if (!parameterizing.getParameters().contains(this.idPropertyKey))
+                    parameterizing.getParameters().set(this.idPropertyKey, idMaker.get());
             }
         });
     }

@@ -469,44 +469,6 @@ public class VertexPropertyTest extends AbstractGremlinTest {
         }
     }
 
-    @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
-            "elementAlreadyRemoved"
-    })
-    public static class ExceptionConsistencyWhenVertexPropertyRemovedTest extends AbstractGremlinTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return Arrays.asList(new Object[][]{
-                    {"property(k)", FunctionUtils.wrapConsumer((VertexProperty p) -> p.property("year"))}});
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public String name;
-
-        @Parameterized.Parameter(value = 1)
-        public Consumer<VertexProperty> functionToTest;
-
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_META_PROPERTIES)
-        public void shouldThrowExceptionIfVertexPropertyWasRemoved() {
-            final Vertex v1 = graph.addVertex();
-            final VertexProperty p = v1.property(VertexProperty.Cardinality.single, "name", "stephen", "year", "2012");
-            final Object id = p.id();
-            p.remove();
-            tryCommit(graph, g -> {
-                try {
-                    functionToTest.accept(p);
-                    fail("Should have thrown exception as the Vertex was already removed");
-                } catch (Exception ex) {
-                    validateException(Element.Exceptions.elementAlreadyRemoved(VertexProperty.class, id), ex);
-                }
-            });
-        }
-    }
-
     public static class VertexPropertyProperties extends AbstractGremlinTest {
 
         @Test

@@ -20,30 +20,34 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
+import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.IoCore;
+import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -152,64 +156,34 @@ public class TinkerGraphTest {
     public void testPlayDK() throws Exception {
         final Graph graph = TinkerFactory.createModern();
         final GraphTraversalSource g = graph.traversal();
-        Traversal traversal = g.V().where(out().and().in()).profile().cap(TraversalMetrics.METRICS_KEY);
-        //traversal.forEachRemaining(System.out::println);
+        Traversal traversal = g.V().dedup().filter(__.out()).has("age", P.gt(0));
         System.out.println(traversal.toString());
-        traversal.asAdmin().applyStrategies();
-        System.out.println(traversal.toString());
-        traversal.forEachRemaining(System.out::println);
-        traversal = g.V().where(and(out(), in())).profile().cap(TraversalMetrics.METRICS_KEY);
-        //traversal.forEachRemaining(System.out::println);
-        System.out.println(traversal.toString());
-        traversal.asAdmin().applyStrategies();
-        System.out.println(traversal.toString());
-        //System.out.println(traversal.toString());
+        //traversal.asAdmin().applyStrategies();
+        System.out.println(traversal.iterate().toString());
     }
 
     @Test
     @Ignore
     public void testPlay7() throws Exception {
-        /*TinkerGraph graph = TinkerGraph.open();
-        graph.createIndex("name",Vertex.class);
-        graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");*/
-        //System.out.println(g.V().properties().key().groupCount().next());
-        TinkerGraph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
-        final List<Supplier<GraphTraversal<?,?>>> traversals = Arrays.asList(
-                () -> g.V().out().as("v").match(
-                        __.as("v").outE().count().as("outDegree"),
-                        __.as("v").inE().count().as("inDegree")).select("v","outDegree","inDegree").by(valueMap()).by().by().local(union(select("v"), select("inDegree", "outDegree")).unfold().fold())
-        );
-
-        traversals.forEach(traversal -> {
-            System.out.println("pre-strategy:  " + traversal.get());
-            System.out.println("post-strategy: " + traversal.get().iterate());
-            System.out.println(TimeUtil.clockWithResult(50, () -> traversal.get().toList()));
-        });
+        final Graph graph = TinkerFactory.createModern();
+        final GraphTraversalSource g = graph.traversal();
+        g.withSack(1.0, Operator.sum).V(1).local(outE("knows").barrier(SackFunctions.Barrier.normSack)).inV().in("knows").barrier().sack().forEachRemaining(System.out::println);
     }
 
     @Test
     @Ignore
     public void testPlay5() throws Exception {
-
         TinkerGraph graph = TinkerGraph.open();
-        graph.createIndex("name",Vertex.class);
+        graph.createIndex("name", Vertex.class);
         graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.computer());
 
-        final Supplier<Traversal<?,?>> traversal = () ->
-                g.V().match(
-                        as("a").has("name", "Garcia"),
-                        as("a").in("writtenBy").as("b"),
-                        as("b").out("followedBy").as("c"),
-                        as("c").out("writtenBy").as("d"),
-                        as("d").where(P.neq("a"))).select("a","b","c","d").by("name");
-
+        final Supplier<Traversal<?, ?>> traversal = () ->
+                g.V().repeat(out()).times(5).as("a").out("writtenBy").as("b").select("a", "b").count();
 
         System.out.println(traversal.get());
         System.out.println(traversal.get().iterate());
-        traversal.get().forEachRemaining(System.out::println);
-
+        System.out.println(TimeUtil.clockWithResult(1, () -> traversal.get().next()));
     }
 
     @Test
@@ -459,5 +433,49 @@ public class TinkerGraphTest {
         }, 0.5)).has("oid", "1").count().next());
     }
 
+    @Test
+    public void shouldSerializeTinkerGraphToGryo() throws Exception {
+        final TinkerGraph graph = TinkerFactory.createModern();
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            graph.io(IoCore.gryo()).writer().create().writeObject(out, graph);
+            try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
+                final TinkerGraph target = graph.io(IoCore.gryo()).reader().create().readObject(inputStream, TinkerGraph.class);
+                IoTest.assertModernGraph(target, true, false);
+            }
+        }
+    }
 
+    @Test(expected = IllegalStateException.class)
+    public void shouldNotModifyAVertexThatWasRemoved() {
+        final TinkerGraph graph = TinkerGraph.open();
+        final Vertex v = graph.addVertex();
+        v.property("name", "stephen");
+
+        assertEquals("stephen", v.value("name"));
+        v.remove();
+
+        v.property("status", 1);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldNotAddEdgeToAVertexThatWasRemoved() {
+        final TinkerGraph graph = TinkerGraph.open();
+        final Vertex v = graph.addVertex();
+        v.property("name", "stephen");
+
+        assertEquals("stephen", v.value("name"));
+        v.remove();
+        v.addEdge("self", v);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldNotReadValueOfPropertyOnVertexThatWasRemoved() {
+        final TinkerGraph graph = TinkerGraph.open();
+        final Vertex v = graph.addVertex();
+        v.property("name", "stephen");
+
+        assertEquals("stephen", v.value("name"));
+        v.remove();
+        v.value("name");
+    }
 }

@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-@ChannelHandler.Sharable
 public final class NioGremlinRequestEncoder extends MessageToByteEncoder<Object> {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketGremlinRequestEncoder.class);
     private boolean binaryEncoding = false;
@@ -49,10 +48,19 @@ public final class NioGremlinRequestEncoder extends MessageToByteEncoder<Object>
         final RequestMessage requestMessage = (RequestMessage) msg;
         try {
             if (binaryEncoding) {
-                byteBuf.writeBytes(serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc()));
+                // wrap the serialized message/payload inside of a "frame".  this works around the problem where
+                // the length of the payload is not encoded into the general protocol.  that length isn't needed
+                // for websockets because under that protocol, the message is wrapped in a "websocket frame". this
+                // is not the optimal way to deal with this really, but it does prevent a protocol change in this
+                // immediate moment trying to get the NioChannelizer working.
+                final ByteBuf bytes = serializer.serializeRequestAsBinary(requestMessage, channelHandlerContext.alloc());
+                byteBuf.writeInt(bytes.capacity());
+                byteBuf.writeBytes(bytes);
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                byteBuf.writeBytes(textSerializer.serializeRequestAsString(requestMessage).getBytes(CharsetUtil.UTF_8));
+                final byte [] bytes = textSerializer.serializeRequestAsString(requestMessage).getBytes(CharsetUtil.UTF_8);
+                byteBuf.writeInt(bytes.length);
+                byteBuf.writeBytes(bytes);
             }
         } catch (Exception ex) {
             logger.warn(String.format("An error occurred during serialization of this request [%s] - it could not be sent to the server.", requestMessage), ex);

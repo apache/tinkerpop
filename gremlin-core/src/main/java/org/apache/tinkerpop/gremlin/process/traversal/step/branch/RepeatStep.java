@@ -28,7 +28,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -164,6 +169,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         if (doUntil(start, true)) {
             start.resetLoops();
             start.setStepId(this.getNextStep().getId());
+            start.addLabels(this.labels);
             return IteratorUtils.of(start);
         } else {
             start.setStepId(this.repeatTraversal.getStartStep().getId());
@@ -253,6 +259,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
             if (doUntil(start, false)) {
                 start.resetLoops();
                 start.setStepId(RepeatStep.this.getNextStep().getId());
+                start.addLabels(RepeatStep.this.labels);
                 return IteratorUtils.of(start);
             } else {
                 start.setStepId(RepeatStep.this.getId());

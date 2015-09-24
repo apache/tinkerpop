@@ -18,21 +18,20 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.hdfs;
 
-import org.apache.tinkerpop.gremlin.hadoop.Constants;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.RecordReader;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.structure.Element;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -52,8 +51,8 @@ public abstract class HadoopElementIterator<E extends Element> implements Iterat
     public HadoopElementIterator(final HadoopGraph graph, final InputFormat<NullWritable, VertexWritable> inputFormat, final Path path) throws IOException, InterruptedException {
         this.graph = graph;
         final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
-        for (final FileStatus status : FileSystem.get(configuration).listStatus(path, HiddenFileFilter.instance())) {
-            this.readers.add(inputFormat.createRecordReader(new FileSplit(status.getPath(), 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
+        for (final Path path2 : HDFSTools.getAllFilePaths(FileSystem.get(configuration), path, HiddenFileFilter.instance())) {
+            this.readers.add(inputFormat.createRecordReader(new FileSplit(path2, 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContextImpl(configuration, new TaskAttemptID())));
         }
     }
 
@@ -63,8 +62,8 @@ public abstract class HadoopElementIterator<E extends Element> implements Iterat
             if (this.graph.configuration().containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION)) {
                 final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
                 final InputFormat<NullWritable, VertexWritable> inputFormat = this.graph.configuration().getGraphInputFormat().getConstructor().newInstance();
-                for (final FileStatus status : FileSystem.get(configuration).listStatus(new Path(graph.configuration().getInputLocation()), HiddenFileFilter.instance())) {
-                    this.readers.add(inputFormat.createRecordReader(new FileSplit(status.getPath(), 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContext(configuration, new TaskAttemptID())));
+                for (final Path path : HDFSTools.getAllFilePaths(FileSystem.get(configuration), new Path(graph.configuration().getInputLocation()), HiddenFileFilter.instance())) {
+                    this.readers.add(inputFormat.createRecordReader(new FileSplit(path, 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContextImpl(configuration, new TaskAttemptID())));
                 }
             }
         } catch (Exception e) {

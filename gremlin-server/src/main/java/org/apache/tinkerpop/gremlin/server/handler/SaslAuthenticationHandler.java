@@ -22,7 +22,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.Attribute;
-import io.netty.util.AttributeKey;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -46,9 +45,6 @@ import org.slf4j.LoggerFactory;
 public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(SaslAuthenticationHandler.class);
 
-    private static final AttributeKey<Authenticator.SaslNegotiator> negotiatorKey = AttributeKey.valueOf("negotiator");
-    private static final AttributeKey<RequestMessage> requestKey = AttributeKey.valueOf("request");
-
     private final Authenticator authenticator;
 
     public SaslAuthenticationHandler(final Authenticator authenticator) {
@@ -60,8 +56,8 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof RequestMessage){
             final RequestMessage requestMessage = (RequestMessage) msg;
 
-            final Attribute<Authenticator.SaslNegotiator> negotiator = ctx.attr(negotiatorKey);
-            final Attribute<RequestMessage> request = ctx.attr(requestKey);
+            final Attribute<Authenticator.SaslNegotiator> negotiator = ctx.attr(StateKey.NEGOTIATOR);
+            final Attribute<RequestMessage> request = ctx.attr(StateKey.REQUEST_MESSAGE);
             if (negotiator.get() == null) {
                 // First time through so save the request and send an AUTHENTICATE challenge with no data
                 negotiator.set(authenticator.newSaslNegotiator());

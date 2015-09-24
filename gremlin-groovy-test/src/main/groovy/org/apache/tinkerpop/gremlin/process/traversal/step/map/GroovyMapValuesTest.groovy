@@ -36,6 +36,11 @@ public abstract class GroovyMapValuesTest {
         }
 
         @Override
+        public Traversal<Vertex, Long> get_g_V_outE_valuesXweightX_groupCount_unfold_mapValues() {
+            TraversalScriptHelper.compute("g.V.outE().weight.groupCount().unfold().mapValues()", g)
+        }
+
+        @Override
         public Traversal<Vertex, Long> get_g_V_outE_valuesXweightX_groupCount_mapValues_groupCount_mapValues() {
             TraversalScriptHelper.compute("g.V.outE().weight.groupCount().mapValues().groupCount().mapValues()", g)
         }

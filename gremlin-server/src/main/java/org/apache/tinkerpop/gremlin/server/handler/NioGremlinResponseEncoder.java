@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
+import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -32,8 +33,6 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.Charset;
-
 import static com.codahale.metrics.MetricRegistry.name;
 
 /**
@@ -43,7 +42,6 @@ import static com.codahale.metrics.MetricRegistry.name;
 public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMessage> {
     private static final Logger logger = LoggerFactory.getLogger(NioGremlinResponseEncoder.class);
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
-    private static final Charset UTF8 = Charset.forName("UTF-8");
 
     @Override
     protected void encode(final ChannelHandlerContext ctx, final ResponseMessage responseMessage, final ByteBuf byteBuf) throws Exception {
@@ -54,13 +52,18 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
             if (!responseMessage.getStatus().getCode().isSuccess())
                 errorMeter.mark();
 
-            if (useBinary)
-                byteBuf.writeBytes(serializer.serializeResponseAsBinary(responseMessage, ctx.alloc()));
-            else {
+            if (useBinary) {
+                final ByteBuf bytes = serializer.serializeResponseAsBinary(responseMessage, ctx.alloc());
+                byteBuf.writeInt(bytes.capacity());
+                byteBuf.writeBytes(bytes);
+                bytes.release();
+            } else {
                 // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
                 // instance on the channel.
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                byteBuf.writeBytes(textSerializer.serializeResponseAsString(responseMessage).getBytes(UTF8));
+                final byte [] bytes = textSerializer.serializeResponseAsString(responseMessage).getBytes(CharsetUtil.UTF_8);
+                byteBuf.writeInt(bytes.length);
+                byteBuf.writeBytes(bytes);
             }
         } catch (Exception ex) {
             errorMeter.mark();
@@ -71,10 +74,15 @@ public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMess
                     .statusMessage(errorMessage)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
-                byteBuf.writeBytes(serializer.serializeResponseAsBinary(error, ctx.alloc()));
+                final ByteBuf bytes = serializer.serializeResponseAsBinary(error, ctx.alloc());
+                byteBuf.writeInt(bytes.capacity());
+                byteBuf.writeBytes(bytes);
+                bytes.release();
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                byteBuf.writeBytes(textSerializer.serializeResponseAsString(error).getBytes(UTF8));
+                final byte [] bytes = textSerializer.serializeResponseAsString(error).getBytes(CharsetUtil.UTF_8);
+                byteBuf.writeInt(bytes.length);
+                byteBuf.writeBytes(bytes);
             }
         }
     }

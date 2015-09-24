@@ -534,49 +534,4 @@ public class VertexTest {
             assertEquals(0, IteratorUtils.count(v.properties()));
         }
     }
-
-    @RunWith(Parameterized.class)
-    @ExceptionCoverage(exceptionClass = Element.Exceptions.class, methods = {
-            "elementAlreadyRemoved"
-    })
-    public static class ExceptionConsistencyWhenVertexRemovedTest extends AbstractGremlinTest {
-
-        @Parameterized.Parameters(name = "{0}")
-        public static Iterable<Object[]> data() {
-            return Arrays.asList(new Object[][]{
-                    {"property(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.property("name"))},
-                    {"remove()", FunctionUtils.wrapConsumer(Vertex::remove)},
-                    {"addEdge()", FunctionUtils.wrapConsumer((Vertex v) -> v.addEdge("self", v))},
-                    {"property(k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
-                        v.property(VertexProperty.Cardinality.single, "k", "v");
-                    })},
-                    {"property(single,k,v)", FunctionUtils.wrapConsumer((Vertex v) -> {
-                        v.property(VertexProperty.Cardinality.single, "k", "v");
-                    })},
-                    {"value(k)", FunctionUtils.wrapConsumer((Vertex v) -> v.value("name"))}});
-        }
-
-        @Parameterized.Parameter(value = 0)
-        public String name;
-
-        @Parameterized.Parameter(value = 1)
-        public Consumer<Vertex> functionToTest;
-
-        @Test
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-        @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_REMOVE_VERTICES)
-        public void shouldThrowExceptionIfVertexWasRemovedWhenCallingProperty() {
-            final Vertex v1 = graph.addVertex("name", "stephen");
-            final Object id = v1.id();
-            v1.remove();
-            tryCommit(graph, g -> {
-                try {
-                    functionToTest.accept(v1);
-                    fail("Should have thrown exception as the Vertex was already removed");
-                } catch (Exception ex) {
-                    validateException(Element.Exceptions.elementAlreadyRemoved(Vertex.class, id), ex);
-                }
-            });
-        }
-    }
 }

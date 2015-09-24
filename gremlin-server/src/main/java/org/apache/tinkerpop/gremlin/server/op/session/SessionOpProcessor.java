@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -42,8 +43,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.codahale.metrics.MetricRegistry.name;
 
 /**
- * Simple {@link org.apache.tinkerpop.gremlin.server.OpProcessor} implementation that handles {@code ScriptEngine}
- * script evaluation in the context of a session.
+ * Simple {@link org.apache.tinkerpop.gremlin.server.OpProcessor} implementation that handles
+ * {@code ScriptEngine} script evaluation in the context of a session. Note that this processor will
+ * also take a "close" op to kill the session and rollback any incomplete transactions.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
@@ -88,6 +90,34 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         return OP_PROCESSOR_NAME;
     }
 
+    /**
+     * Session based requests accept a "close" operator in addition to "eval".  A close will trigger the session to be
+     * killed and any uncommitted transaction to be rolled-back.
+     */
+    @Override
+    public Optional<ThrowingConsumer<Context>> selectOther(final RequestMessage requestMessage)  throws OpProcessorException {
+        if (requestMessage.getOp().equals(Tokens.OPS_CLOSE)) {
+            // this must be an in-session request
+            if (!requestMessage.optionalArgs(Tokens.ARGS_SESSION).isPresent()) {
+                final String msg = String.format("A message with an [%s] op code requires a [%s] argument", Tokens.OPS_CLOSE, Tokens.ARGS_SESSION);
+                throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+            }
+
+            return Optional.of(ctx -> {
+                // validate the session is present and then remove it if it is.
+                final Session sessionToClose = sessions.get(requestMessage.getArgs().get(Tokens.ARGS_SESSION).toString());
+                if (null == sessionToClose) {
+                    final String msg = String.format("There was no session named %s to close", requestMessage.getArgs().get(Tokens.ARGS_SESSION).toString());
+                    throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+                }
+
+                sessionToClose.kill();
+            });
+        } else {
+            return Optional.empty();
+        }
+    }
+
     @Override
     public ThrowingConsumer<Context> getEvalOp() {
         return this::evalOp;
@@ -98,11 +128,16 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         super.validateEvalMessage(message);
 
         if (!message.optionalArgs(Tokens.ARGS_SESSION).isPresent()) {
-            final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_EVAL, Tokens.ARGS_SESSION);
+            final String msg = String.format("A message with an [%s] op code requires a [%s] argument", Tokens.OPS_EVAL, Tokens.ARGS_SESSION);
             throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public void close() throws Exception {
+       sessions.values().forEach(Session::kill);
     }
 
     protected void evalOp(final Context context) throws OpProcessorException {

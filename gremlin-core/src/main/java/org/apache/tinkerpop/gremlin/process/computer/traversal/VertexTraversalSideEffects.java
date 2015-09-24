@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -58,17 +59,22 @@ public final class VertexTraversalSideEffects implements TraversalSideEffects {
     }
 
     @Override
-    public <S> void setSack(final Supplier<S> initialValue, final Optional<UnaryOperator<S>> splitOperator) {
+    public <S> void setSack(final Supplier<S> initialValue, final UnaryOperator<S> splitOperator, final BinaryOperator<S> mergeOperator) {
         throw EXCEPTION;
     }
 
     @Override
-    public <S> Optional<Supplier<S>> getSackInitialValue() {
+    public <S> Supplier<S> getSackInitialValue() {
         throw EXCEPTION;
     }
 
     @Override
-    public <S> Optional<UnaryOperator<S>> getSackSplitOperator() {
+    public <S> UnaryOperator<S> getSackSplitter() {
+        throw EXCEPTION;
+    }
+
+    @Override
+    public <S> BinaryOperator<S> getSackMerger() {
         throw EXCEPTION;
     }
 

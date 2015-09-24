@@ -28,13 +28,13 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputer;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComputerView;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -179,6 +179,11 @@ public final class TinkerGraph implements Graph {
     }
 
     @Override
+    public <I extends Io> I io(final Io.Builder<I> builder) {
+        return (I) builder.graph(this).registry(TinkerIoRegistry.getInstance()).create();
+    }
+
+    @Override
     public String toString() {
         return StringFactory.graphString(this, "vertices:" + this.vertices.size() + " edges:" + this.edges.size());
     }
@@ -222,16 +227,6 @@ public final class TinkerGraph implements Graph {
                                                                   final Object... ids) {
         if (0 == ids.length) {
             return elements.values().iterator();
-        } else if (1 == ids.length) {
-            if (clazz.isAssignableFrom(ids[0].getClass())) {
-                // no need to get the edge again, so just flip it back - some implementation may want to treat this
-                // as a refresh operation. that's not necessary for tinkergraph.
-                return IteratorUtils.of((T) ids[0]);
-            } else {
-                // convert the id to the expected data type and lookup the vertex
-                final T element = elements.get(idManager.convert(ids[0]));
-                return null == element ? Collections.emptyIterator() : IteratorUtils.of(element);
-            }
         } else {
             // base the conversion function on the first item in the id list as the expectation is that these
             // id values will be a uniform list
@@ -240,9 +235,11 @@ public final class TinkerGraph implements Graph {
                 if (!Stream.of(ids).allMatch(id -> clazz.isAssignableFrom(id.getClass())))
                     throw Graph.Exceptions.idArgsMustBeEitherIdOrElement();
 
-                // no need to get the vertices again, so just flip it back - some implementation may want to treat this
-                // as a refresh operation. that's not necessary for tinkergraph.
-                return Stream.of(ids).map(id -> (T) id).iterator();
+                // got a bunch of Elements - have to look each upup because it might be an Attachable instance or
+                // other implementation. the assumption is that id conversion is not required for detached
+                // stuff - doesn't seem likely someone would detach a Titan vertex then try to expect that
+                // vertex to be findable in OrientDB
+                return Stream.of(ids).map(id -> elements.get(((T) id).id())).filter(Objects::nonNull).iterator();
             } else {
                 final Class<?> firstClass = ids[0].getClass();
                 if (!Stream.of(ids).map(Object::getClass).allMatch(firstClass::equals))

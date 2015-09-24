@@ -68,11 +68,13 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
     private static final String TOKEN_CUSTOM = "custom";
     private static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
     private static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
+    private static final String TOKEN_BUFFER_SIZE = "bufferSize";
 
-    private boolean serializeToString;
+    private boolean serializeToString = false;
+    private int bufferSize = 4096;
 
     /**
-     * Creates an instance with a standard {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper} instance. Note that this instance
+     * Creates an instance with a standard {@link GryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
     public GryoMessageSerializerV1d0() {
@@ -80,7 +82,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
     }
 
     /**
-     * Creates an instance with a provided mapper configured {@link org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper} instance. Note that this instance
+     * Creates an instance with a provided mapper configured {@link GryoMapper} instance. Note that this instance
      * will be overriden by {@link #configure} is called.
      */
     public GryoMessageSerializerV1d0(final GryoMapper kryo) {
@@ -114,6 +116,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
         addCustomClasses(config, builder);
 
         this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
+        this.bufferSize = Integer.parseInt(config.getOrDefault(TOKEN_BUFFER_SIZE, "4096").toString());
 
         this.gryoMapper = builder.create();
     }
@@ -193,7 +196,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
     public ResponseMessage deserializeResponse(final ByteBuf msg) throws SerializationException {
         try {
             final Kryo kryo = kryoThreadLocal.get();
-            final byte[] payload = new byte[msg.readableBytes()];
+            final byte[] payload = new byte[msg.capacity()];
             msg.readBytes(payload);
             try (final Input input = new Input(payload)) {
                 final UUID requestId = kryo.readObjectOrNull(input, UUID.class);
@@ -223,7 +226,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
         try {
             final Kryo kryo = kryoThreadLocal.get();
             try (final OutputStream baos = new ByteArrayOutputStream()) {
-                final Output output = new Output(baos);
+                final Output output = new Output(baos, bufferSize);
 
                 // request id - if present
                 kryo.writeObjectOrNull(output, responseMessage.getRequestId() != null ? responseMessage.getRequestId() : null, UUID.class);
@@ -241,7 +244,8 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                 if (size > Integer.MAX_VALUE)
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
-                encodedMessage = allocator.buffer((int) output.total());
+                encodedMessage = allocator.buffer((int) size);
+                if (size > bufferSize) output.flush();
                 encodedMessage.writeBytes(output.toBytes());
             }
 
@@ -287,7 +291,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
         try {
             final Kryo kryo = kryoThreadLocal.get();
             try (final OutputStream baos = new ByteArrayOutputStream()) {
-                final Output output = new Output(baos);
+                final Output output = new Output(baos, bufferSize);
                 final String mimeType = serializeToString ? MIME_TYPE_STRINGD : MIME_TYPE;
                 output.writeByte(mimeType.length());
                 output.write(mimeType.getBytes(UTF8));
@@ -302,6 +306,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
                 encodedMessage = allocator.buffer((int) size);
+                if (size > bufferSize) output.flush();
                 encodedMessage.writeBytes(output.toBytes());
             }
 

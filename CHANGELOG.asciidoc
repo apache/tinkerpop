@@ -17,10 +17,55 @@ limitations under the License.
 TinkerPop3 CHANGELOG
 =====================
 
+
+TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
+--------------------------------------------------
+
+image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
+
+TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Bumped to Apache Hadoop 2.7.1.
+* Bumped to Apache Giraph 1.1.0.
+* Bumped to Apache Spark 1.5.0.
+* Split Hadoop-Gremlin apart such there is now `hadoop-gremlin`, `spark-gremlin`, and `giraph-gremlin` (and respective `GremlinPlugins`).
+* Added `LambdaCollectingBarrierStep` which generalizes `NoOpBarrierStep` and allows for `barrier(normSack)`-type operations.
+* Fixed bugs in the Gremlin Server's NIO protocol both on the server and driver side.
+* Added `Path.popEquals(Pop,Object)` to check for path equality based on `Pop` (useful for `TraverserRequirement.LABELED_PATH`).
+* Added `Operator.assign` to allow setting a direct value.
+* `Operator` is now a `BinaryOperator<Object>` with appropriate typecasting for respective number operators.
+* Simplified `SackValueStep` so it now supports both `sack(function)` and sack(function).by()`. Deprecated `sack(function,string)`.
+* Added `Parameters` object to allow for the parameters of a step to be retrieved at runtime via a traversal.
+* Redesigned (though backwards compatible) `AddEdgeStep`, `AddVertexStep`, and `AddPropertyStep` (and respective `GraphTraversal` API).
+* Added `GraphTraversalSource.inject()` so users can spawn a traverser with non-graph objects.
+* `GraphStep` can now take a single argument `Collection` which is either elements or element ids (i.e. `g.V([1,2,3])` is supported now).
+* Added `LoopsStep` to make the loop counter accessible within `repeat()`, `until()` and `emit()`.
+* Gephi Plugin no longer requires manual insert of `store` steps to visualize a traversal.
+* Gephi Plugin visualizes `Path` objects.
+* Added a `TinkerIoRegistry` that registers a custom serializer for Gryo that will serialize an entire `TinkerGraph` instance.
+* Added configuration options to Gephi Plugin for setting the size of nodes visualized.
+* Replaced `DedupBijectionStrategy` with the more effective `FilterRankingStrategy`.
+* `ComputerAwareSteps` must not only handle step ids, but also step labels.
+* Renamed `B_O_P_SE_SL_Traverser` to `B_LP_O_P_SE_SL_Traverser` as it now supports `TraverserRequirement.LABELED_PATH`.
+* Added `B_LP_O_S_SE_SL_Traverser` in support of `TraverserRequirement.LABELED_PATH`.
+* Added `TraverserRequirement.LABELED_PATH` which only generates path data for steps that are labeled (greatly increases the likelihood of bulking).
+* Fixed a bug in `Path` usage that required an API update: `Path.addLabel()` is now `Path.extend(Set<String>)` and `Traverser.addLabels(Set<String>)`.
+* Made `Path` iterable, so that it can be `unfold()`'ed and used by local steps like `min(local)`, `max(local)`, etc.
+* `WhereTraversalStep` and `WherePredicateStep` are now the only "special" `Scoping` steps after `MatchStartStep` in `match()`.
+
 TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------------------------------------
 
 image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
+
+TinkerPop 3.0.2 (NOT OFFICIALLY RELEASED YET)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Fixed a thread context bug in `TinkerGraphComputer`.
+* Improved session closing for transactional graphs during shutdown of Gremlin Server.
+* Fixed id parameter used in tests for `GroovyStoreTest` and `GroovyRepeatTest` to not be treated as an embedded string.
+* `GraphStep` will convert any `Vertex` or `Edge` ids to their id `Object` prior to submission to `GraphComputer` (OLAP).
 
 TinkerPop 3.0.1 (Release Date: September 2, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

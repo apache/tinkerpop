@@ -18,60 +18,63 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import io.netty.handler.codec.ReplayingDecoder;
+import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class NioGremlinBinaryRequestDecoder extends ByteToMessageDecoder {
-    private static final Logger logger = LoggerFactory.getLogger(WsGremlinBinaryRequestDecoder.class);
+public class NioGremlinBinaryRequestDecoder extends ReplayingDecoder<NioGremlinBinaryRequestDecoder.DecoderState> {
+    private static final Logger logger = LoggerFactory.getLogger(NioGremlinBinaryRequestDecoder.class);
 
-    private static final Charset UTF8 = Charset.forName("UTF-8");
     private final Map<String, MessageSerializer> serializers;
+    private int messageLength;
 
     public NioGremlinBinaryRequestDecoder(final Map<String, MessageSerializer> serializers) {
+        super(DecoderState.MESSAGE_LENGTH);
         this.serializers = serializers;
     }
 
     @Override
     protected void decode(final ChannelHandlerContext channelHandlerContext, final ByteBuf byteBuf, final List<Object> objects) throws Exception {
-        if (byteBuf.readableBytes() < 1) {
-            return;
-        }
+        switch (state()) {
+            case MESSAGE_LENGTH:
+                messageLength = byteBuf.readInt();
+                checkpoint(DecoderState.MESSAGE);
+            case MESSAGE:
+                try {
+                    final ByteBuf messageFrame = byteBuf.readBytes(messageLength);
+                    final int contentTypeLength = messageFrame.readByte();
+                    final ByteBuf contentTypeFrame = messageFrame.readBytes(contentTypeLength);
+                    final String contentType = contentTypeFrame.toString(CharsetUtil.UTF_8);
 
-        final byte lenOfContentType = byteBuf.readByte();
-        if (byteBuf.readableBytes() < lenOfContentType) {
-            byteBuf.resetReaderIndex();
-            return;
-        }
+                    final MessageSerializer serializer = select(contentType, Serializers.DEFAULT_REQUEST_SERIALIZER);
+                    channelHandlerContext.channel().attr(StateKey.SERIALIZER).set(serializer);
+                    channelHandlerContext.channel().attr(StateKey.USE_BINARY).set(true);
 
-        final ByteBuf contentTypeBytes = channelHandlerContext.alloc().buffer(lenOfContentType);
-        try {
-            byteBuf.readBytes(contentTypeBytes);
-            final String contentType = contentTypeBytes.toString(UTF8);
-            final MessageSerializer serializer = select(contentType, Serializers.DEFAULT_REQUEST_SERIALIZER);
+                    // subtract the contentTypeLength and the byte that held it from the full message length to
+                    // figure out how long the rest of the message is
+                    final int payloadLength = messageLength - 1 - contentTypeLength;
+                    objects.add(serializer.deserializeRequest(messageFrame.readBytes(payloadLength)));
+                } catch (SerializationException se) {
+                    objects.add(RequestMessage.INVALID);
+                }
 
-            channelHandlerContext.channel().attr(StateKey.SERIALIZER).set(serializer);
-            channelHandlerContext.channel().attr(StateKey.USE_BINARY).set(true);
-            try {
-                objects.add(serializer.deserializeRequest(byteBuf.discardReadBytes()));
-            } catch (SerializationException se) {
-                objects.add(RequestMessage.INVALID);
-            }
-        } finally {
-            contentTypeBytes.release();
+                checkpoint(DecoderState.MESSAGE_LENGTH);
+                break;
+            default:
+                throw new Error("Invalid message sent to Gremlin Server");
         }
     }
 
@@ -81,5 +84,10 @@ public class NioGremlinBinaryRequestDecoder extends ByteToMessageDecoder {
                     mimeType, defaultSerializer.getClass().getName());
 
         return serializers.getOrDefault(mimeType, defaultSerializer);
+    }
+
+    public enum DecoderState {
+        MESSAGE_LENGTH,
+        MESSAGE
     }
 }

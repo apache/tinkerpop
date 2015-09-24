@@ -812,6 +812,48 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             return list;
         }
     }
+    /////////////////////////////////////////////
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldSortMapOutput() throws Exception {
+        final ComputerResult results = graph.compute(graphComputerClass.get()).mapReduce(new MapReduceBB()).submit().get();
+        final List<Long> ids = results.memory().get("ids");
+        assertEquals(6, ids.size());
+        for (int i = 1; i < ids.size(); i++) {
+            assertTrue(ids.get(i) < ids.get(i - 1));
+        }
+    }
+
+    public static class MapReduceBB extends StaticMapReduce<Long, Long, Long, Long, List<Long>> {
+
+        @Override
+        public boolean doStage(final Stage stage) {
+            return stage.equals(Stage.MAP);
+        }
+
+        @Override
+        public void map(final Vertex vertex, final MapEmitter<Long, Long> emitter) {
+            emitter.emit(Long.valueOf(vertex.id().toString()), Long.valueOf(vertex.id().toString()));
+        }
+
+        @Override
+        public Optional<Comparator<Long>> getMapKeySort() {
+            return Optional.of(Comparator.<Long>reverseOrder());
+        }
+
+        @Override
+        public String getMemoryKey() {
+            return "ids";
+        }
+
+        @Override
+        public List<Long> generateFinalResult(final Iterator<KeyValue<Long, Long>> keyValues) {
+            final List<Long> list = new ArrayList<>();
+            keyValues.forEachRemaining(id -> list.add(id.getKey()));
+            return list;
+        }
+    }
+
 
     /////////////////////////////////////////////
     @Test

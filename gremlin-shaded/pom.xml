@@ -20,7 +20,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.0.1-incubating</version>
+        <version>3.1.0-SNAPSHOT</version>
     </parent>
     <artifactId>gremlin-shaded</artifactId>
     <name>Apache TinkerPop :: Gremlin Shaded</name>
@@ -46,6 +46,13 @@ limitations under the License.
             <version>2.1</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <!-- Update the shade plugin config whenever you change this version -->
+            <version>2.5.3</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>
@@ -67,6 +74,7 @@ limitations under the License.
                                 <includes>
                                     <include>com.esotericsoftware:*</include>
                                     <include>org.objenesis:*</include>
+                                    <include>com.fasterxml.jackson.core:*</include>
                                 </includes>
                             </artifactSet>
                             <relocations>
@@ -85,6 +93,10 @@ limitations under the License.
                                 <relocation>
                                     <pattern>com.esotericsoftware.minlog</pattern>
                                     <shadedPattern>org.apache.tinkerpop.shaded.minlog</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.fasterxml.jackson</pattern>
+                                    <shadedPattern>org.apache.tinkerpop.shaded.jackson</shadedPattern>
                                 </relocation>
                             </relocations>
                             <!-- false below means the shade plugin overwrites the main project artifact (the one with no classifier).

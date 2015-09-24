@@ -36,7 +36,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction;
+import org.apache.tinkerpop.gremlin.structure.util.AbstractThreadLocalTransaction;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.wrapped.WrappedGraph;
@@ -187,8 +187,8 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                             return ((Number) id).longValue();
                         else if (id instanceof String)
                             return Long.valueOf(id.toString());
-                        else if (id instanceof Neo4jVertex) {
-                            return (Long) ((Neo4jVertex) id).id();
+                        else if (id instanceof Vertex) {
+                            return (Long) ((Vertex) id).id();
                         } else
                             throw new IllegalArgumentException("Unknown vertex id type: " + id);
                     })
@@ -221,8 +221,8 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
                             return ((Number) id).longValue();
                         else if (id instanceof String)
                             return Long.valueOf(id.toString());
-                        else if (id instanceof Neo4jEdge) {
-                            return (Long) ((Neo4jEdge) id).id();
+                        else if (id instanceof Edge) {
+                            return (Long) ((Edge) id).id();
                         } else
                             throw new IllegalArgumentException("Unknown edge id type: " + id);
                     })
@@ -316,7 +316,7 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         return traversal;
     }
 
-    class Neo4jTransaction extends AbstractTransaction {
+    class Neo4jTransaction extends AbstractThreadLocalTransaction {
 
         protected final ThreadLocal<Neo4jTx> threadLocalTx = ThreadLocal.withInitial(() -> null);
 
@@ -344,10 +344,6 @@ public final class Neo4jGraph implements Graph, WrappedGraph<Neo4jGraphAPI> {
         @Override
         public void doRollback() throws TransactionException {
             try {
-//                javax.transaction.Transaction t = transactionManager.getTransaction();
-//                if (null == t || t.getStatus() == javax.transaction.Status.STATUS_ROLLEDBACK)
-//                    return;
-
                 threadLocalTx.get().failure();
             } catch (Exception e) {
                 throw new TransactionException(e);

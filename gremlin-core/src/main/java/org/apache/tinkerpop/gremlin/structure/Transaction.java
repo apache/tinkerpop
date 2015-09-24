@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.structure;
 
 import org.apache.tinkerpop.gremlin.structure.util.AbstractTransaction;
 
-import java.io.Closeable;
 import java.util.Collections;
 import java.util.Set;
 import java.util.function.BiFunction;

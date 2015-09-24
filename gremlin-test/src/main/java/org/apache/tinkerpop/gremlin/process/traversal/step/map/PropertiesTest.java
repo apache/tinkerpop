@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -48,10 +49,17 @@ public abstract class PropertiesTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_hasXageX_propertiesXname_ageX_value() {
-        Arrays.asList(get_g_V_hasXageX_propertiesXage_nameX_value(), get_g_V_hasXageX_propertiesXname_ageX_value()).forEach(traversal -> {
-            printTraversalForm(traversal);
-            checkResults(Arrays.asList("marko", 29, "vadas", 27, "josh", 32, "peter", 35), traversal);
-        });
+        final Traversal<Vertex, Object> traversal = get_g_V_hasXageX_propertiesXname_ageX_value();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", 29, "vadas", 27, "josh", 32, "peter", 35), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_hasXageX_propertiesXage_nameX_value() {
+        final Traversal<Vertex, Object> traversal = get_g_V_hasXageX_propertiesXage_nameX_value();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList("marko", 29, "vadas", 27, "josh", 32, "peter", 35), traversal);
     }
 
     @Test

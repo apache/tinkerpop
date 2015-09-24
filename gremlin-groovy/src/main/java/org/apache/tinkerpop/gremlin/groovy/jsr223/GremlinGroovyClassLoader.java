@@ -22,9 +22,11 @@ import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
 /**
+ * A {@code GroovyClassLoader} extension that provides access to the {@code removeClassCacheEntry(String)} method.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class GremlinGroovyClassLoader extends GroovyClassLoader {
+class GremlinGroovyClassLoader extends GroovyClassLoader {
     public GremlinGroovyClassLoader(final ClassLoader parent, final CompilerConfiguration conf) {
         super(parent, conf);
     }

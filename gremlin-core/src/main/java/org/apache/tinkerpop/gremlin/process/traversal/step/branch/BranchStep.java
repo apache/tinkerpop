@@ -116,6 +116,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
             branch.forEach(traversal -> {
                 final Traverser.Admin<E> split = (Traverser.Admin<E>) start.split();
                 split.setStepId(traversal.getStartStep().getId());
+                //split.addLabels(this.labels);
                 ends.add(split);
             });
         }
@@ -125,6 +126,7 @@ public class BranchStep<S, E, M> extends ComputerAwareStep<S, E> implements Trav
                 anyBranch.forEach(traversal -> {
                     final Traverser.Admin<E> split = (Traverser.Admin<E>) start.split();
                     split.setStepId(traversal.getStartStep().getId());
+                    //split.addLabels(this.labels);
                     ends.add(split);
                 });
             }

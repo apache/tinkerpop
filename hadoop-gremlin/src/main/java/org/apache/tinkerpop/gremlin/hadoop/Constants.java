@@ -47,7 +47,7 @@ public final class Constants {
     public static final String HIDDEN_ITERATION = Graph.Hidden.hide("gremlin.hadoop.iteration");
     public static final String GREMLIN_HADOOP_MAP_REDUCE_CLASS = "gremlin.hadoop.mapReduceClass";
 
-    public static final String MAPRED_INPUT_DIR = "mapred.input.dir";
+    public static final String MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR = "mapreduce.input.fileinputformat.inputdir";
 
     // spark based constants
     public static final String GREMLIN_HADOOP_GRAPH_INPUT_RDD = "gremlin.hadoop.graphInputRDD";

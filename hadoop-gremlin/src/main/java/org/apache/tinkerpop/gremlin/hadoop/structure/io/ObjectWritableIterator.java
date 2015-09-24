@@ -18,14 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
-import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HiddenFileFilter;
-import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
+import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HiddenFileFilter;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -44,8 +44,8 @@ public final class ObjectWritableIterator implements Iterator<KeyValue> {
 
     public ObjectWritableIterator(final Configuration configuration, final Path path) throws IOException {
         final FileSystem fs = FileSystem.get(configuration);
-        for (final FileStatus status : fs.listStatus(path, HiddenFileFilter.instance())) {
-            this.readers.add(new SequenceFile.Reader(fs, status.getPath(), configuration));
+        for (final Path path2 : HDFSTools.getAllFilePaths(fs, path, HiddenFileFilter.instance())) {
+            this.readers.add(new SequenceFile.Reader(configuration, SequenceFile.Reader.file(path2)));
         }
     }
 
