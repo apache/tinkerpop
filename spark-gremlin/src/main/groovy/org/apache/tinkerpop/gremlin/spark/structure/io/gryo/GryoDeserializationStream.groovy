@@ -32,6 +32,7 @@ public final class GryoDeserializationStream extends DeserializationStream {
 
     private final Input input;
     private final GryoSerializerInstance gryoSerializer;
+    private static final String BUFFER_UNDERFLOW = "buffer underflow";
 
     public GryoDeserializationStream(final GryoSerializerInstance gryoSerializer, final InputStream inputStream) {
         this.gryoSerializer = gryoSerializer;
@@ -48,7 +49,7 @@ public final class GryoDeserializationStream extends DeserializationStream {
         } catch (final Throwable e) {
             if (e instanceof KryoException) {
                 final KryoException kryoException = (KryoException) e;
-                if (kryoException.getMessage().toLowerCase().contains("buffer underflow")) {
+                if (kryoException.getMessage().toLowerCase().contains(BUFFER_UNDERFLOW)) {
                     throw new EOFException();
                 }
             }
