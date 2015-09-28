@@ -43,6 +43,8 @@ import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import scala.Tuple2;
 import scala.runtime.BoxedUnit;
 
+import java.util.Collections;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -72,7 +74,7 @@ public final class GryoSerializer extends Serializer {
         }
         this.gryoPool = GryoPool.build().
                 poolSize(sparkConfiguration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, 256)).
-                configuration(makeApacheConfiguration(sparkConfiguration)).
+                ioRegistries(makeApacheConfiguration(sparkConfiguration).getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).
                 initializeMapper(builder -> {
                     try {
                         builder.
