@@ -780,7 +780,7 @@ gremlin.hadoop.jarsInDistributedCache=true
 ####################################
 spark.master=local[4]
 spark.executor.memory=1g
-spark.serializer=org.apache.spark.serializer.KryoSerializer
+spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer
 #####################################
 # GiraphGraphComputer Configuration #
 #####################################

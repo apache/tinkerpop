@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `GryoSerializer` which is a Spark `Serializer` and is the recommend serializer. Handles `Graph` and `GryoMapper` registries.
+* `GryoPool` now makes use of `GryoPool.Builder` for its construction.
 * Bumped to Apache Hadoop 2.7.1.
 * Bumped to Apache Giraph 1.1.0.
 * Bumped to Apache Spark 1.5.0.
