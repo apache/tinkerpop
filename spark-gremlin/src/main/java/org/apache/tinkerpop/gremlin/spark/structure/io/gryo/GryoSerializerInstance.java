@@ -23,8 +23,6 @@ import org.apache.spark.serializer.DeserializationStream;
 import org.apache.spark.serializer.SerializationStream;
 import org.apache.spark.serializer.SerializerInstance;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import scala.reflect.ClassTag;
@@ -50,25 +48,23 @@ public final class GryoSerializerInstance extends SerializerInstance {
 
     @Override
     public <T> ByteBuffer serialize(final T t, final ClassTag<T> classTag) {
-        final GryoWriter writer = this.gryoSerializer.getGryoPool().takeWriter();
-        writer.getKryo().writeClassAndObject(this.output, t);
-        this.output.flush();
-        this.gryoSerializer.getGryoPool().offerWriter(writer);
+        this.gryoSerializer.getGryoPool().doWithWriter(writer -> writer.getKryo().writeClassAndObject(this.output, t));
         return ByteBuffer.wrap(this.output.getBuffer());
     }
 
     @Override
     public <T> T deserialize(final ByteBuffer byteBuffer, final ClassTag<T> classTag) {
         this.input.setBuffer(byteBuffer.array());
-        final GryoReader reader = this.gryoSerializer.getGryoPool().takeReader();
-        final T t = (T) reader.getKryo().readClassAndObject(this.input);
-        this.gryoSerializer.getGryoPool().offerReader(reader);
-        return t;
+        return this.gryoSerializer.getGryoPool().doWithReader(reader -> (T) reader.getKryo().readClassAndObject(this.input));
     }
 
     @Override
     public <T> T deserialize(final ByteBuffer byteBuffer, final ClassLoader classLoader, final ClassTag<T> classTag) {
-        return this.deserialize(byteBuffer, classTag);
+        this.input.setBuffer(byteBuffer.array());
+        return this.gryoSerializer.getGryoPool().doWithReader(reader -> {
+            reader.getKryo().setClassLoader(classLoader);
+            return (T) reader.getKryo().readClassAndObject(this.input);
+        });
     }
 
     @Override

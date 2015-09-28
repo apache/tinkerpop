@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
 import org.apache.spark.serializer.SerializationStream;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import scala.reflect.ClassTag;
 
@@ -41,9 +40,7 @@ public final class GryoSerializationStream extends SerializationStream {
 
     @Override
     public <T> SerializationStream writeObject(final T t, final ClassTag<T> classTag) {
-        final GryoWriter writer = this.gryoSerializer.getGryoPool().takeWriter();
-        writer.getKryo().writeClassAndObject(this.output, t);
-        this.gryoSerializer.getGryoPool().offerWriter(writer);
+        this.gryoSerializer.getGryoPool().doWithWriter(writer -> writer.getKryo().writeClassAndObject(this.output, t));
         return this;
     }
 

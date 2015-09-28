@@ -20,7 +20,6 @@
 package org.apache.tinkerpop.gremlin.spark.structure.io.gryo
 
 import org.apache.spark.serializer.DeserializationStream
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader
 import org.apache.tinkerpop.shaded.kryo.KryoException
 import org.apache.tinkerpop.shaded.kryo.io.Input
 import scala.reflect.ClassTag
@@ -42,10 +41,7 @@ public final class GryoDeserializationStream extends DeserializationStream {
     @Override
     public <T> T readObject(final ClassTag<T> classTag) {
         try {
-            final GryoReader gryoReader = this.gryoSerializer.getGryoPool().takeReader();
-            final T t = (T) gryoReader.getKryo().readClassAndObject(this.input);
-            this.gryoSerializer.getGryoPool().offerReader(gryoReader);
-            return t;
+            return this.gryoSerializer.getGryoPool().doWithReader { reader -> (T) reader.getKryo().readClassAndObject(this.input) }
         } catch (final Throwable e) {
             if (e instanceof KryoException) {
                 final KryoException kryoException = (KryoException) e;
