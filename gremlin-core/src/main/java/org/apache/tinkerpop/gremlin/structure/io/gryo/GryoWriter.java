@@ -51,6 +51,10 @@ public final class GryoWriter implements GraphWriter {
         this.kryo = gryoMapper.createMapper();
     }
 
+    public Kryo getKryo() {
+        return this.kryo;
+    }
+
     /**
      * {@inheritDoc}
      */

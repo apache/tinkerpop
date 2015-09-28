@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -47,6 +48,22 @@ public final class GryoPool {
     private Queue<GryoWriter> gryoWriters;
     private final GryoMapper mapper;
 
+    public GryoPool(final Configuration conf, final Consumer<GryoMapper.Builder> builderConsumer, final Consumer<Kryo> kryoConsumer) {
+        final GryoMapper.Builder mapperBuilder = GryoMapper.build();
+        tryCreateIoRegistry(conf.getList(CONFIG_IO_REGISTRY, Collections.<IoRegistry>emptyList())).forEach(mapperBuilder::addRegistry);
+        builderConsumer.accept(mapperBuilder);
+        // should be able to re-use the GryoMapper - it creates fresh kryo instances from its createMapper method
+        this.mapper = mapperBuilder.create();
+        this.createPool(conf.getInt(CONFIG_IO_GRYO_POOL_SIZE, 256), Type.READER_WRITER, this.mapper);
+        for (final GryoReader reader : this.gryoReaders) {
+            kryoConsumer.accept(reader.getKryo());
+        }
+        for (final GryoWriter writer : this.gryoWriters) {
+            kryoConsumer.accept(writer.getKryo());
+        }
+
+    }
+
     /**
      * Create a pool of readers and writers from a {@code Configuration} object.  There are two configuration keys
      * expected: "gremlin.io.registry" which defines comma separated list of the fully qualified class names of
@@ -73,28 +90,35 @@ public final class GryoPool {
      * Create a pool of a readers, writers or both of the specified size with an optional {@link IoRegistry} object
      * which would allow custom serializers to be registered to the pool.
      *
-     * @param poolSize initial size of the pool.
-     * @param type the type of pool.
+     * @param poolSize   initial size of the pool.
+     * @param type       the type of pool.
      * @param registries a list of registries to assign to each {@link GryoReader} and {@link GryoWriter} instances.
      */
     public GryoPool(final int poolSize, final Type type, final List<IoRegistry> registries) {
         final GryoMapper.Builder mapperBuilder = GryoMapper.build();
         registries.forEach(mapperBuilder::addRegistry);
-
         // should be able to re-use the GryoMapper - it creates fresh kryo instances from its createMapper method
-        mapper = mapperBuilder.create();
+        this.mapper = mapperBuilder.create();
+        createPool(poolSize, type, mapper);
+    }
+
+    private void createPool(final int poolSize, final Type type, final GryoMapper gryoMapper) {
         if (type.equals(Type.READER) || type.equals(Type.READER_WRITER)) {
             this.gryoReaders = new LinkedBlockingQueue<>(poolSize);
             for (int i = 0; i < poolSize; i++) {
-                this.gryoReaders.add(GryoReader.build().mapper(mapper).create());
+                this.gryoReaders.add(GryoReader.build().mapper(gryoMapper).create());
             }
         }
         if (type.equals(Type.WRITER) || type.equals(Type.READER_WRITER)) {
             this.gryoWriters = new LinkedBlockingQueue<>(poolSize);
             for (int i = 0; i < poolSize; i++) {
-                this.gryoWriters.add(GryoWriter.build().mapper(mapper).create());
+                this.gryoWriters.add(GryoWriter.build().mapper(gryoMapper).create());
             }
         }
+    }
+
+    public GryoMapper getMapper() {
+        return this.mapper;
     }
 
     public GryoReader takeReader() {

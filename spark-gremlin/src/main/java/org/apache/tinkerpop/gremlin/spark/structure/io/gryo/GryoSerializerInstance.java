@@ -17,12 +17,14 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.process.computer.io.gryo;
+package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
 import org.apache.spark.serializer.DeserializationStream;
 import org.apache.spark.serializer.SerializationStream;
 import org.apache.spark.serializer.SerializerInstance;
-import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import scala.reflect.ClassTag;
@@ -36,29 +38,37 @@ import java.nio.ByteBuffer;
  */
 public final class GryoSerializerInstance extends SerializerInstance {
 
-    private final Kryo kryo;
+    private final GryoSerializer gryoSerializer;
+    private final Output output;
+    private final Input input;
 
-    public GryoSerializerInstance(final Kryo kryo) {
-        this.kryo = kryo;
+    public GryoSerializerInstance(final GryoSerializer gryoSerializer) {
+        this.gryoSerializer = gryoSerializer;
+        this.input = new Input();
+        this.output = gryoSerializer.newOutput();
     }
 
     @Override
     public <T> ByteBuffer serialize(final T t, final ClassTag<T> classTag) {
-        final Output output = new Output(100000);
-        this.kryo.writeClassAndObject(output, t);
-        output.flush();
-        return ByteBuffer.wrap(output.getBuffer());
+        final GryoWriter writer = this.gryoSerializer.getGryoPool().takeWriter();
+        writer.getKryo().writeClassAndObject(this.output, t);
+        this.output.flush();
+        this.gryoSerializer.getGryoPool().offerWriter(writer);
+        return ByteBuffer.wrap(this.output.getBuffer());
     }
 
     @Override
     public <T> T deserialize(final ByteBuffer byteBuffer, final ClassTag<T> classTag) {
-        return (T) this.kryo.readClassAndObject(new Input(byteBuffer.array()));
+        this.input.setBuffer(byteBuffer.array());
+        final GryoReader reader = this.gryoSerializer.getGryoPool().takeReader();
+        final T t = (T) reader.getKryo().readClassAndObject(this.input);
+        this.gryoSerializer.getGryoPool().offerReader(reader);
+        return t;
     }
 
     @Override
     public <T> T deserialize(final ByteBuffer byteBuffer, final ClassLoader classLoader, final ClassTag<T> classTag) {
-        this.kryo.setClassLoader(classLoader);
-        return (T) this.kryo.readClassAndObject(new Input(byteBuffer.array()));
+        return this.deserialize(byteBuffer, classTag);
     }
 
     @Override
@@ -71,7 +81,7 @@ public final class GryoSerializerInstance extends SerializerInstance {
         return new GryoDeserializationStream(this, inputStream);
     }
 
-    public Kryo getKryo() {
-        return this.kryo;
+    public GryoPool getGryoPool() {
+        return this.gryoSerializer.getGryoPool();
     }
 }

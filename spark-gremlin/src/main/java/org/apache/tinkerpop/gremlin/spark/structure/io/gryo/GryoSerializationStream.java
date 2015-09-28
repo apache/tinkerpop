@@ -17,12 +17,13 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.process.computer.io.gryo;
+package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
 import org.apache.spark.serializer.SerializationStream;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
 import scala.reflect.ClassTag;
 
-import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -30,40 +31,29 @@ import java.io.OutputStream;
  */
 public final class GryoSerializationStream extends SerializationStream {
 
-    private final OutputStream outputStream;
-    private final GryoSerializerInstance serializer;
+    private final Output output;
+    private final GryoSerializerInstance gryoSerializer;
 
-    public GryoSerializationStream(final GryoSerializerInstance serializer, final OutputStream outputStream) {
-        this.outputStream = outputStream;
-        this.serializer = serializer;
+    public GryoSerializationStream(final GryoSerializerInstance gryoSerializer, final OutputStream outputStream) {
+        this.output = new Output(outputStream);
+        this.gryoSerializer = gryoSerializer;
     }
 
     @Override
     public <T> SerializationStream writeObject(final T t, final ClassTag<T> classTag) {
-        try {
-            this.outputStream.write(this.serializer.serialize(t, classTag).array());
-            this.outputStream.flush();
-        } catch (final IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        final GryoWriter writer = this.gryoSerializer.getGryoPool().takeWriter();
+        writer.getKryo().writeClassAndObject(this.output, t);
+        this.gryoSerializer.getGryoPool().offerWriter(writer);
         return this;
     }
 
     @Override
     public void flush() {
-        try {
-            this.outputStream.flush();
-        } catch (final IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        this.output.flush();
     }
 
     @Override
     public void close() {
-        try {
-            this.outputStream.close();
-        } catch (final IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
+        this.output.close();
     }
 }
