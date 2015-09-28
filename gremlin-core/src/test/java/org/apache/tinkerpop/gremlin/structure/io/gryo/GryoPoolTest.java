@@ -62,8 +62,7 @@ public class GryoPoolTest {
     @Test
     public void shouldConfigPoolOnConstructionWithPoolSizeOneAndNoIoRegistry() throws Exception {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, 1);
-        final GryoPool pool = GryoPool.build().ioRegistries(conf.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).create();
+        final GryoPool pool = GryoPool.build().poolSize(1).ioRegistries(conf.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).create();
         final GryoReader reader = pool.takeReader();
         final GryoWriter writer = pool.takeWriter();
 
