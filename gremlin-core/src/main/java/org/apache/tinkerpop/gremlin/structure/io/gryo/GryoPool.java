@@ -48,20 +48,15 @@ public final class GryoPool {
     private Queue<GryoWriter> gryoWriters;
     private final GryoMapper mapper;
 
-    public GryoPool(final Configuration conf, final Consumer<GryoMapper.Builder> builderConsumer, final Consumer<Kryo> kryoConsumer) {
-        final GryoMapper.Builder mapperBuilder = GryoMapper.build();
-        tryCreateIoRegistry(conf.getList(CONFIG_IO_REGISTRY, Collections.<IoRegistry>emptyList())).forEach(mapperBuilder::addRegistry);
-        builderConsumer.accept(mapperBuilder);
-        // should be able to re-use the GryoMapper - it creates fresh kryo instances from its createMapper method
-        this.mapper = mapperBuilder.create();
-        this.createPool(conf.getInt(CONFIG_IO_GRYO_POOL_SIZE, 256), Type.READER_WRITER, this.mapper);
-        for (final GryoReader reader : this.gryoReaders) {
-            kryoConsumer.accept(reader.getKryo());
-        }
-        for (final GryoWriter writer : this.gryoWriters) {
-            kryoConsumer.accept(writer.getKryo());
-        }
+    public static GryoPool.Builder build() {
+        return new GryoPool.Builder();
+    }
 
+    /**
+     * Used by {@code GryoPool.Builder}.
+     */
+    private GryoPool() {
+        this.mapper = null;
     }
 
     /**
@@ -115,10 +110,6 @@ public final class GryoPool {
                 this.gryoWriters.add(GryoWriter.build().mapper(gryoMapper).create());
             }
         }
-    }
-
-    public GryoMapper getMapper() {
-        return this.mapper;
     }
 
     public GryoReader takeReader() {
@@ -175,5 +166,60 @@ public final class GryoPool {
             }
         });
         return registries;
+    }
+
+    ////
+
+    public static class Builder {
+
+        private int poolSize = 256;
+        private Type type = Type.READER_WRITER;
+        private Consumer<GryoMapper.Builder> gryoMapperConsumer = null;
+        private Consumer<Kryo> kryoConsumer = null;
+        private Configuration configuration = null;
+
+        public Builder configuration(final Configuration configuration) {
+            this.configuration = configuration;
+            return this;
+        }
+
+        public Builder poolSize(int poolSize) {
+            this.poolSize = poolSize;
+            return this;
+        }
+
+        public Builder type(final Type type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder initializeMapper(final Consumer<GryoMapper.Builder> gryoMapperConsumer) {
+            this.gryoMapperConsumer = gryoMapperConsumer;
+            return this;
+        }
+
+        public Builder initializeKryo(final Consumer<Kryo> kryoConsumer) {
+            this.kryoConsumer = kryoConsumer;
+            return this;
+        }
+
+        public GryoPool create() {
+            final GryoMapper.Builder mapper = GryoMapper.build();
+            final GryoPool gryoPool = new GryoPool();
+            if (null != this.configuration)
+                tryCreateIoRegistry(this.configuration.getList(CONFIG_IO_REGISTRY, Collections.emptyList())).forEach(mapper::addRegistry);
+            if (null != this.gryoMapperConsumer)
+                this.gryoMapperConsumer.accept(mapper);
+            gryoPool.createPool(this.poolSize, this.type, mapper.create());
+            if (null != this.kryoConsumer) {
+                for (final GryoReader reader : gryoPool.gryoReaders) {
+                    kryoConsumer.accept(reader.getKryo());
+                }
+                for (final GryoWriter writer : gryoPool.gryoWriters) {
+                    kryoConsumer.accept(writer.getKryo());
+                }
+            }
+            return gryoPool;
+        }
     }
 }

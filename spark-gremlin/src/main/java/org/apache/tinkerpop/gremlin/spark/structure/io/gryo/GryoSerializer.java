@@ -47,58 +47,58 @@ import scala.runtime.BoxedUnit;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class GryoSerializer extends Serializer {
-    private final boolean referenceTracking;
-    private final boolean registrationRequired;
+
     //private final Option<String> userRegistrator;
-    private final long bufferSizeKb;
     private final int bufferSize;
-    private final int maxBufferSizeMb;
     private final int maxBufferSize;
 
     private final GryoPool gryoPool;
 
     public GryoSerializer(final SparkConf sparkConfiguration) {
-        this.bufferSizeKb = sparkConfiguration.getSizeAsKb("spark.kryoserializer.buffer", "64k");
-        if (this.bufferSizeKb >= ByteUnit.GiB.toKiB(2L)) {
-            throw new IllegalArgumentException("spark.kryoserializer.buffer must be less than 2048 mb, got: " + this.bufferSizeKb + " mb.");
+        final long bufferSizeKb = sparkConfiguration.getSizeAsKb("spark.kryoserializer.buffer", "64k");
+        final long maxBufferSizeMb = sparkConfiguration.getSizeAsMb("spark.kryoserializer.buffer.max", "64m");
+        final boolean referenceTracking = sparkConfiguration.getBoolean("spark.kryo.referenceTracking", true);
+        final boolean registrationRequired = sparkConfiguration.getBoolean("spark.kryo.registrationRequired", false);
+        if (bufferSizeKb >= ByteUnit.GiB.toKiB(2L)) {
+            throw new IllegalArgumentException("spark.kryoserializer.buffer must be less than 2048 mb, got: " + bufferSizeKb + " mb.");
         } else {
-            this.bufferSize = (int) ByteUnit.KiB.toBytes(this.bufferSizeKb);
-            this.maxBufferSizeMb = (int) sparkConfiguration.getSizeAsMb("spark.kryoserializer.buffer.max", "64m");
-            if (this.maxBufferSizeMb >= ByteUnit.GiB.toMiB(2L)) {
-                throw new IllegalArgumentException("spark.kryoserializer.buffer.max must be less than 2048 mb, got: " + this.maxBufferSizeMb + " mb.");
+            this.bufferSize = (int) ByteUnit.KiB.toBytes(bufferSizeKb);
+            if (maxBufferSizeMb >= ByteUnit.GiB.toMiB(2L)) {
+                throw new IllegalArgumentException("spark.kryoserializer.buffer.max must be less than 2048 mb, got: " + maxBufferSizeMb + " mb.");
             } else {
-                this.maxBufferSize = (int) ByteUnit.MiB.toBytes(this.maxBufferSizeMb);
-                this.referenceTracking = sparkConfiguration.getBoolean("spark.kryo.referenceTracking", true);
-                this.registrationRequired = sparkConfiguration.getBoolean("spark.kryo.registrationRequired", false);
+                this.maxBufferSize = (int) ByteUnit.MiB.toBytes(maxBufferSizeMb);
                 //this.userRegistrator = sparkConfiguration.getOption("spark.kryo.registrator");
-
             }
         }
-        this.gryoPool = new GryoPool(makeApacheConfiguration(sparkConfiguration), builder -> {
-            try {
-                builder.
-                        addCustom(SerializableWritable.class, new JavaSerializer()).
-                        addCustom(Tuple2.class, new JavaSerializer()).
-                        addCustom(CompressedMapStatus.class, new JavaSerializer()).
-                        addCustom(HttpBroadcast.class, new JavaSerializer()).
-                        addCustom(PythonBroadcast.class, new JavaSerializer()).
-                        addCustom(BoxedUnit.class, new JavaSerializer()).
-                        addCustom(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer()).
-                        addCustom(MessagePayload.class, new JavaSerializer()).
-                        addCustom(ViewIncomingPayload.class, new JavaSerializer()).
-                        addCustom(ViewOutgoingPayload.class, new JavaSerializer()).
-                        addCustom(ViewPayload.class, new JavaSerializer()).
-                        addCustom(SerializableConfiguration.class, new JavaSerializer()).
-                        addCustom(VertexWritable.class, new JavaSerializer()).
-                        addCustom(ObjectWritable.class, new JavaSerializer());
-            } catch (final ClassNotFoundException e) {
-                throw new IllegalStateException(e);
-            }
-        }, kryo -> {
-            kryo.setRegistrationRequired(this.registrationRequired);
-            kryo.setReferences(this.referenceTracking);
-        });
-
+        this.gryoPool = GryoPool.build().
+                poolSize(sparkConfiguration.getInt(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, 256)).
+                configuration(makeApacheConfiguration(sparkConfiguration)).
+                initializeMapper(builder -> {
+                    try {
+                        builder.
+                                addCustom(SerializableWritable.class, new JavaSerializer()).
+                                addCustom(Tuple2.class, new JavaSerializer()).
+                                addCustom(CompressedMapStatus.class, new JavaSerializer()).
+                                addCustom(HttpBroadcast.class, new JavaSerializer()).
+                                addCustom(PythonBroadcast.class, new JavaSerializer()).
+                                addCustom(BoxedUnit.class, new JavaSerializer()).
+                                addCustom(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer()).
+                                addCustom(MessagePayload.class, new JavaSerializer()).
+                                addCustom(ViewIncomingPayload.class, new JavaSerializer()).
+                                addCustom(ViewOutgoingPayload.class, new JavaSerializer()).
+                                addCustom(ViewPayload.class, new JavaSerializer()).
+                                addCustom(SerializableConfiguration.class, new JavaSerializer()).
+                                addCustom(VertexWritable.class, new JavaSerializer()).
+                                addCustom(ObjectWritable.class, new JavaSerializer());
+                                // add these as we find ClassNotFoundExceptions
+                    } catch (final ClassNotFoundException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }).
+                initializeKryo(kryo -> {
+                    kryo.setRegistrationRequired(registrationRequired);
+                    kryo.setReferences(referenceTracking);
+                }).create();
     }
 
     public Output newOutput() {
