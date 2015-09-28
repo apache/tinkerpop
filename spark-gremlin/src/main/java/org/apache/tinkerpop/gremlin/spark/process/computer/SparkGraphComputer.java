@@ -97,14 +97,6 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             // wire up a spark context
             final SparkConf sparkConfiguration = new SparkConf();
             sparkConfiguration.setAppName(Constants.GREMLIN_HADOOP_SPARK_JOB_PREFIX + (null == this.vertexProgram ? "No VertexProgram" : this.vertexProgram) + "[" + this.mapReducers + "]");
-                    /*final List<Class> classes = new ArrayList<>();
-                    classes.addAll(IOClasses.getGryoClasses(GryoMapper.build().create()));
-                    classes.addAll(IOClasses.getSharedHadoopClasses());
-                    classes.add(ViewPayload.class);
-                    classes.add(MessagePayload.class);
-                    classes.add(ViewIncomingPayload.class);
-                    classes.add(ViewOutgoingPayload.class);
-                    sparkConfiguration.registerKryoClasses(classes.toArray(new Class[classes.size()]));*/ // TODO: fix for user submitted jars in Spark 1.3.0
 
             // create the spark configuration from the graph computer configuration
             hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
