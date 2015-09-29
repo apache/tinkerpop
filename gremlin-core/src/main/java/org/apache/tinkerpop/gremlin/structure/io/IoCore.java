@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
 
 /**
  * Constructs the core {@link Io.Builder} implementations enabling a bit of shorthand syntax by importing these
@@ -51,5 +52,12 @@ public final class IoCore {
      */
     public static Io.Builder<GryoIo> gryo() {
         return GryoIo.build();
+    }
+
+    /**
+     * Creates a basic Gryo-based {@link org.apache.tinkerpop.gremlin.structure.io.Io.Builder} with an existing Kryo instance.
+     */
+    public static Io.Builder<GryoIo> gryo(Kryo kryo) {
+        return GryoIo.build(kryo);
     }
 }

@@ -47,8 +47,8 @@ import java.util.Iterator;
 public final class GryoWriter implements GraphWriter {
     private Kryo kryo;
 
-    private GryoWriter(final GryoMapper gryoMapper) {
-        this.kryo = gryoMapper.createMapper();
+    private GryoWriter(final Kryo kryo) {
+        this.kryo = kryo;
     }
 
     /**
@@ -163,6 +163,7 @@ public final class GryoWriter implements GraphWriter {
          * Always creates the most current version available.
          */
         private GryoMapper gryoMapper = GryoMapper.build().create();
+        private Kryo kryo;
 
         private Builder() {
         }
@@ -175,11 +176,16 @@ public final class GryoWriter implements GraphWriter {
             return this;
         }
 
+        public Builder kryo(Kryo kryo) {
+            this.kryo = kryo;
+            return this;
+        }
+
         /**
          * Create the {@code GryoWriter}.
          */
         public GryoWriter create() {
-            return new GryoWriter(this.gryoMapper);
+            return new GryoWriter(kryo == null ? this.gryoMapper.createMapper() : this.kryo);
         }
     }
 }
