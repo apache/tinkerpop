@@ -208,6 +208,7 @@ limitations under the License.
                             <dependencySourceIncludes>
                                 <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
                             </dependencySourceIncludes>
+                            <overview>${basedir}/docs/javadoc/overview.html</overview>
                         </configuration>
                     </execution>
                     <execution>
@@ -441,6 +442,7 @@ limitations under the License.
                             <dependencySourceIncludes>
                                 <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
                             </dependencySourceIncludes>
+                            <overview>${basedir}/docs/javadoc/overview.html</overview>
                         </configuration>
                         <reports>
                             <report>javadoc</report>
@@ -454,6 +456,7 @@ limitations under the License.
                             <dependencySourceIncludes>
                                 <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
                             </dependencySourceIncludes>
+                            <overview>${basedir}/docs/javadoc/overview.html</overview>
                         </configuration>
                         <reports>
                             <report>aggregate</report>
@@ -756,6 +759,7 @@ limitations under the License.
                                 <configuration>
                                     <destDir>full</destDir>
                                     <additionalparam>-Xdoclint:none</additionalparam>
+                                    <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
                                         hadoop-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:tinkergraph-gremlin/src/main/java
@@ -772,6 +776,7 @@ limitations under the License.
                                 <configuration>
                                     <destDir>core</destDir>
                                     <additionalparam>-Xdoclint:none</additionalparam>
+                                    <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
                                         gremlin-core/src/main/java:gremlin-driver/src/main/java
