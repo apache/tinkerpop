@@ -114,8 +114,9 @@ public final class HadoopSparkGraphProvider extends AbstractGraphProvider {
             put("mapreduce.job.reduces", 4);
             /// spark configuration
             put("spark.master", "local[4]");
-            put("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
-            // put("spark.kryo.registrationRequired",true);
+            // put("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+            put("spark.serializer", "org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer");
+            put("spark.kryo.registrationRequired", true);
         }};
     }
 

@@ -20,7 +20,6 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
 import org.apache.tinkerpop.gremlin.structure.io.IoXIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoY;
@@ -30,6 +29,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 
@@ -41,7 +41,7 @@ public class GryoPoolTest {
     @Test
     public void shouldDoWithReaderWriterMethods() throws Exception {
         final Configuration conf = new BaseConfiguration();
-        final GryoPool pool = new GryoPool(conf);
+        final GryoPool pool = GryoPool.build().ioRegistries(conf.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).create();
         try (final ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             pool.doWithWriter(writer -> writer.writeObject(os, 1));
             os.flush();
@@ -55,15 +55,14 @@ public class GryoPoolTest {
     @Test
     public void shouldConfigPoolOnConstructionWithDefaults() throws Exception {
         final Configuration conf = new BaseConfiguration();
-        final GryoPool pool = new GryoPool(conf);
+        final GryoPool pool = GryoPool.build().ioRegistries(conf.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).create();
         assertReaderWriter(pool.takeWriter(), pool.takeReader(), 1, Integer.class);
     }
 
     @Test
     public void shouldConfigPoolOnConstructionWithPoolSizeOneAndNoIoRegistry() throws Exception {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(GryoPool.CONFIG_IO_GRYO_POOL_SIZE, 1);
-        final GryoPool pool = new GryoPool(conf);
+        final GryoPool pool = GryoPool.build().poolSize(1).ioRegistries(conf.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).create();
         final GryoReader reader = pool.takeReader();
         final GryoWriter writer = pool.takeWriter();
 
@@ -88,7 +87,7 @@ public class GryoPoolTest {
     public void shouldConfigPoolOnConstructionWithCustomIoRegistryConstructor() throws Exception {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty(GryoPool.CONFIG_IO_REGISTRY, IoXIoRegistry.ConstructorBased.class.getName());
-        final GryoPool pool = new GryoPool(conf);
+        final GryoPool pool = GryoPool.build().ioRegistries(conf.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).create();
         assertReaderWriter(pool.takeWriter(), pool.takeReader(), new IoX("test"), IoX.class);
     }
 
@@ -96,7 +95,7 @@ public class GryoPoolTest {
     public void shouldConfigPoolOnConstructionWithCustomIoRegistryInstance() throws Exception {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty(GryoPool.CONFIG_IO_REGISTRY, IoXIoRegistry.InstanceBased.class.getName());
-        final GryoPool pool = new GryoPool(conf);
+        final GryoPool pool = GryoPool.build().ioRegistries(conf.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).create();
         assertReaderWriter(pool.takeWriter(), pool.takeReader(), new IoX("test"), IoX.class);
     }
 
@@ -105,7 +104,7 @@ public class GryoPoolTest {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty(GryoPool.CONFIG_IO_REGISTRY,
                 IoXIoRegistry.InstanceBased.class.getName() + "," + IoYIoRegistry.InstanceBased.class.getName());
-        final GryoPool pool = new GryoPool(conf);
+        final GryoPool pool = GryoPool.build().ioRegistries(conf.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).create();
         assertReaderWriter(pool.takeWriter(), pool.takeReader(), new IoX("test"), IoX.class);
         assertReaderWriter(pool.takeWriter(), pool.takeReader(), new IoY(100, 200), IoY.class);
     }
@@ -113,7 +112,7 @@ public class GryoPoolTest {
     @Test(expected = IllegalArgumentException.class)
     public void shouldConfigPoolOnConstructionWithoutCustomIoRegistryAndFail() throws Exception {
         final Configuration conf = new BaseConfiguration();
-        final GryoPool pool = new GryoPool(conf);
+        final GryoPool pool = GryoPool.build().ioRegistries(conf.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).create();
         assertReaderWriter(pool.takeWriter(), pool.takeReader(), new IoX("test"), IoX.class);
     }
 
@@ -121,7 +120,7 @@ public class GryoPoolTest {
     public void shouldConfigPoolOnConstructionWithoutBadIoRegistryAndFail() throws Exception {
         final Configuration conf = new BaseConfiguration();
         conf.setProperty(GryoPool.CONFIG_IO_REGISTRY, "some.class.that.does.not.exist");
-        new GryoPool(conf);
+        GryoPool.build().ioRegistries(conf.getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).create();
     }
 
     private static <T> void assertReaderWriter(final GryoWriter writer, final GryoReader reader, final T o,

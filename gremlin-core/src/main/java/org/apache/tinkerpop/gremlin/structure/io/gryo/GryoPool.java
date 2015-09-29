@@ -18,8 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -45,56 +45,26 @@ public final class GryoPool {
 
     private Queue<GryoReader> gryoReaders;
     private Queue<GryoWriter> gryoWriters;
-    private final GryoMapper mapper;
+    private Queue<Kryo> kryos;
+    private GryoMapper mapper;
 
-    /**
-     * Create a pool of readers and writers from a {@code Configuration} object.  There are two configuration keys
-     * expected: "gremlin.io.registry" which defines comma separated list of the fully qualified class names of
-     * {@link IoRegistry} implementations to use and the "gremlin.io.gryo.poolSize" which defines the initial size
-     * of the {@code GryoPool}.  As with usage of {@link GryoMapper.Builder#addRegistry(IoRegistry)}, the order in
-     * which these items are added matters greatly.  The order used for writing should be the order used for reading.
-     */
-    public GryoPool(final Configuration conf) {
-        this(conf.getInt(CONFIG_IO_GRYO_POOL_SIZE, 256), Type.READER_WRITER,
-                tryCreateIoRegistry(conf.getList(CONFIG_IO_REGISTRY, Collections.emptyList())));
+    public static GryoPool.Builder build() {
+        return new GryoPool.Builder();
     }
 
     /**
-     * Create a pool of readers and writers of specified size and use the default {@link GryoMapper} (which means
-     * that custom serializers from vendors will not be applied.
-     *
-     * @param poolSize initial size of the pool.
+     * Used by {@code GryoPool.Builder}.
      */
-    public GryoPool(final int poolSize) {
-        this(poolSize, Type.READER_WRITER, Collections.emptyList());
+    private GryoPool() {
     }
 
-    /**
-     * Create a pool of a readers, writers or both of the specified size with an optional {@link IoRegistry} object
-     * which would allow custom serializers to be registered to the pool.
-     *
-     * @param poolSize initial size of the pool.
-     * @param type the type of pool.
-     * @param registries a list of registries to assign to each {@link GryoReader} and {@link GryoWriter} instances.
-     */
-    public GryoPool(final int poolSize, final Type type, final List<IoRegistry> registries) {
-        final GryoMapper.Builder mapperBuilder = GryoMapper.build();
-        registries.forEach(mapperBuilder::addRegistry);
+    public GryoMapper getMapper() {
+        return mapper;
+    }
 
-        // should be able to re-use the GryoMapper - it creates fresh kryo instances from its createMapper method
-        mapper = mapperBuilder.create();
-        if (type.equals(Type.READER) || type.equals(Type.READER_WRITER)) {
-            this.gryoReaders = new LinkedBlockingQueue<>(poolSize);
-            for (int i = 0; i < poolSize; i++) {
-                this.gryoReaders.add(GryoReader.build().mapper(mapper).create());
-            }
-        }
-        if (type.equals(Type.WRITER) || type.equals(Type.READER_WRITER)) {
-            this.gryoWriters = new LinkedBlockingQueue<>(poolSize);
-            for (int i = 0; i < poolSize; i++) {
-                this.gryoWriters.add(GryoWriter.build().mapper(mapper).create());
-            }
-        }
+    public Kryo takeKryo() {
+        final Kryo kryo = kryos.poll();
+        return null == kryo ? mapper.createMapper() : kryo;
     }
 
     public GryoReader takeReader() {
@@ -107,49 +77,170 @@ public final class GryoPool {
         return null == writer ? GryoWriter.build().mapper(mapper).create() : writer;
     }
 
+    public void offerKryo(final Kryo kryo) {
+        kryos.offer(kryo);
+    }
+
     public void offerReader(final GryoReader gryoReader) {
-        this.gryoReaders.offer(gryoReader);
+        gryoReaders.offer(gryoReader);
     }
 
     public void offerWriter(final GryoWriter gryoWriter) {
-        this.gryoWriters.offer(gryoWriter);
+        gryoWriters.offer(gryoWriter);
+    }
+
+    public <A> A readWithKryo(final Function<Kryo, A> kryoFunction) {
+        final Kryo kryo = takeKryo();
+        final A a = kryoFunction.apply(kryo);
+        offerKryo(kryo);
+        return a;
+    }
+
+    public void writeWithKryo(final Consumer<Kryo> kryoConsumer) {
+        final Kryo kryo = takeKryo();
+        kryoConsumer.accept(kryo);
+        offerKryo(kryo);
     }
 
     public <A> A doWithReader(final Function<GryoReader, A> readerFunction) {
-        final GryoReader gryoReader = this.takeReader();
+        final GryoReader gryoReader = takeReader();
         final A a = readerFunction.apply(gryoReader);
-        this.offerReader(gryoReader);
+        offerReader(gryoReader);
         return a;
     }
 
     public void doWithWriter(final Consumer<GryoWriter> writerFunction) {
-        final GryoWriter gryoWriter = this.takeWriter();
+        final GryoWriter gryoWriter = takeWriter();
         writerFunction.accept(gryoWriter);
-        this.offerWriter(gryoWriter);
+        offerWriter(gryoWriter);
     }
 
-    private static List<IoRegistry> tryCreateIoRegistry(final List<Object> classNames) {
-        if (classNames.isEmpty()) return Collections.emptyList();
-
-        final List<IoRegistry> registries = new ArrayList<>();
-        classNames.forEach(c -> {
-            try {
-                final String className = c.toString();
-                final Class<?> clazz = Class.forName(className);
-                try {
-                    final Method instanceMethod = clazz.getDeclaredMethod("getInstance");
-                    if (IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
-                        registries.add((IoRegistry) instanceMethod.invoke(null));
-                    else
-                        throw new Exception();
-                } catch (Exception methodex) {
-                    // tried getInstance() and that failed so try newInstance() no-arg constructor
-                    registries.add((IoRegistry) clazz.newInstance());
-                }
-            } catch (Exception ex) {
-                throw new IllegalStateException(ex);
+    private void createPool(final int poolSize, final Type type, final GryoMapper gryoMapper) {
+        this.mapper = gryoMapper;
+        if (type.equals(Type.READER) || type.equals(Type.READER_WRITER)) {
+            gryoReaders = new LinkedBlockingQueue<>(poolSize);
+            for (int i = 0; i < poolSize; i++) {
+                gryoReaders.add(GryoReader.build().mapper(gryoMapper).create());
             }
-        });
-        return registries;
+        }
+        if (type.equals(Type.WRITER) || type.equals(Type.READER_WRITER)) {
+            gryoWriters = new LinkedBlockingQueue<>(poolSize);
+            for (int i = 0; i < poolSize; i++) {
+                gryoWriters.add(GryoWriter.build().mapper(gryoMapper).create());
+            }
+        }
+
+        kryos = new LinkedBlockingQueue<>(poolSize);
+        for (int i = 0; i < poolSize; i++) {
+            kryos.add(gryoMapper.createMapper());
+        }
+    }
+
+    ////
+
+    public static class Builder {
+
+        private int poolSize = 256;
+        private List<IoRegistry> ioRegistries = new ArrayList<>();
+        private Type type = Type.READER_WRITER;
+        private Consumer<GryoMapper.Builder> gryoMapperConsumer = null;
+
+        /**
+         * The {@code IoRegistry} class names to use for the {@code GryoPool}
+         *
+         * @param ioRegistryClassNames a list of class names
+         * @return the update builder
+         */
+        public Builder ioRegistries(final List<Object> ioRegistryClassNames) {
+            this.ioRegistries.addAll(tryCreateIoRegistry(ioRegistryClassNames));
+            return this;
+        }
+
+        /**
+         * The {@code IoRegistry} class name to use for the {@code GryoPool}
+         *
+         * @param ioRegistryClassName a class name
+         * @return the update builder
+         */
+        public Builder ioRegistry(final Object ioRegistryClassName) {
+            this.ioRegistries.addAll(tryCreateIoRegistry(Collections.singletonList(ioRegistryClassName)));
+            return this;
+        }
+
+        /**
+         * The size of the {@code GryoPool}. The size can not be changed once created.
+         *
+         * @param poolSize the pool size
+         * @return the updated builder
+         */
+        public Builder poolSize(int poolSize) {
+            this.poolSize = poolSize;
+            return this;
+        }
+
+        /**
+         * The type of {@code GryoPool} to support -- see {@code Type}
+         *
+         * @param type the pool type
+         * @return the updated builder
+         */
+        public Builder type(final Type type) {
+            this.type = type;
+            return this;
+        }
+
+        /**
+         * A consumer to update the {@code GryoMapper.Builder} once constructed.
+         *
+         * @param gryoMapperConsumer the {@code GryoMapper.Builder} consumer
+         * @return the updated builder
+         */
+        public Builder initializeMapper(final Consumer<GryoMapper.Builder> gryoMapperConsumer) {
+            this.gryoMapperConsumer = gryoMapperConsumer;
+            return this;
+        }
+
+        /**
+         * Create the {@code GryoPool} from this builder.
+         *
+         * @return the new pool
+         */
+        public GryoPool create() {
+            final GryoMapper.Builder mapper = GryoMapper.build();
+            final GryoPool gryoPool = new GryoPool();
+            if (null != this.ioRegistries)
+                this.ioRegistries.forEach(mapper::addRegistry);
+            if (null != this.gryoMapperConsumer)
+                this.gryoMapperConsumer.accept(mapper);
+            gryoPool.createPool(this.poolSize, this.type, mapper.create());
+            return gryoPool;
+        }
+
+        /////
+
+        private static List<IoRegistry> tryCreateIoRegistry(final List<Object> classNames) {
+            if (classNames.isEmpty()) return Collections.emptyList();
+
+            final List<IoRegistry> registries = new ArrayList<>();
+            classNames.forEach(c -> {
+                try {
+                    final String className = c.toString();
+                    final Class<?> clazz = Class.forName(className);
+                    try {
+                        final Method instanceMethod = clazz.getDeclaredMethod("getInstance");
+                        if (IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
+                            registries.add((IoRegistry) instanceMethod.invoke(null));
+                        else
+                            throw new Exception();
+                    } catch (Exception methodex) {
+                        // tried getInstance() and that failed so try newInstance() no-arg constructor
+                        registries.add((IoRegistry) clazz.newInstance());
+                    }
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            });
+            return registries;
+        }
     }
 }
