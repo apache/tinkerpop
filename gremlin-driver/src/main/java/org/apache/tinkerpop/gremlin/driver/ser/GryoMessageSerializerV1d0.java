@@ -208,7 +208,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
 
                 return ResponseMessage.build(requestId)
                         .code(ResponseStatusCode.getFromValue(status))
-                        .statusMessage(statusMsg.intern())
+                        .statusMessage(statusMsg)
                         .statusAttributes(statusAttributes)
                         .result(result)
                         .responseMetaData(metaAttributes)
