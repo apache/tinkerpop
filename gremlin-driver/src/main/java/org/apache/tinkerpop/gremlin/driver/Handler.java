@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.driver;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -27,6 +28,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.tinkerpop.gremlin.driver.ser.SerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -207,13 +209,15 @@ final class Handler {
             // if this happens enough times (like the client is unable to deserialize a response) the pending
             // messages queue will not clear.  wonder if there is some way to cope with that.  of course, if
             // there are that many failures someone would take notice and hopefully stop the client.
-            logger.error("Could not process the response - correct the problem and restart the driver.", cause);
+            logger.error("Could not process the response", cause);
 
-            // the channel is getting closed because of something pretty bad so release all the completeable
+            // the channel took an error because of something pretty bad so release all the completeable
             // futures out there
             pending.entrySet().stream().forEach(kv -> kv.getValue().markError(cause));
 
-            ctx.close();
+            // serialization exceptions should not close the channel - that's worth a retry
+            if (!ExceptionUtils.getThrowableList(cause).stream().anyMatch(t -> t instanceof SerializationException))
+                ctx.close();
         }
     }
 

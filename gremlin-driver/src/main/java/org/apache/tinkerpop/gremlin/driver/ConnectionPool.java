@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.driver;
 
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
+import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -368,7 +369,7 @@ final class ConnectionPool {
             }
 
             remaining = to - TimeUtil.timeSince(start, unit);
-            logger.debug("Continue to wait for connection on {} if {} > 0", remaining);
+            logger.debug("Continue to wait for connection on {} if {} > 0", host, remaining);
         } while (remaining > 0);
 
         logger.debug("Timed-out waiting for connection on {} - possibly unavailable", host);
@@ -385,22 +386,34 @@ final class ConnectionPool {
         // "dead".  that's probably ok for now, but this decision should likely be more flexible.
         host.makeUnavailable(this::tryReconnect);
 
+        // if the host is unavailable then we should release the connections
+        connections.forEach(this::definitelyDestroyConnection);
+
         // let the load-balancer know that the host is acting poorly
         this.cluster.loadBalancingStrategy().onUnavailable(host);
 
     }
 
+    /**
+     * Attempt to reconnect to the {@link Host} that was previously marked as unavailable.  This method gets called
+     * as part of a schedule in {@link Host} to periodically try to create working connections.
+     */
     private boolean tryReconnect(final Host h) {
         logger.debug("Trying to re-establish connection on {}", host);
 
+        Connection connection = null;
         try {
-            connections.add(new Connection(host.getHostUri(), this, settings().maxInProcessPerConnection));
-            this.open.set(connections.size());
+            connection = borrowConnection(cluster.connectionPoolSettings().maxWaitForConnection, TimeUnit.MILLISECONDS);
+            final RequestMessage ping = RequestMessage.build(Tokens.OPS_EVAL).add(Tokens.ARGS_GREMLIN, "''").create();
+            final CompletableFuture<ResultSet> f = new CompletableFuture<>();
+            connection.write(ping, f);
+            f.get().all().get();
 
             // host is reconnected and a connection is now available
             this.cluster.loadBalancingStrategy().onAvailable(host);
             return true;
         } catch (Exception ex) {
+            if (connection != null) definitelyDestroyConnection(connection);
             return false;
         }
     }
