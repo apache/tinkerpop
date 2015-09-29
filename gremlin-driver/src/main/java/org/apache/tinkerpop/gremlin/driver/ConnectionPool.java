@@ -368,7 +368,7 @@ final class ConnectionPool {
             }
 
             remaining = to - TimeUtil.timeSince(start, unit);
-            logger.debug("Continue to wait for connection on {} if {} > 0", remaining);
+            logger.debug("Continue to wait for connection on {} if {} > 0", host, remaining);
         } while (remaining > 0);
 
         logger.debug("Timed-out waiting for connection on {} - possibly unavailable", host);
