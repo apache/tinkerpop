@@ -33,7 +33,7 @@ public interface InputRDD {
 
     /**
      * Read the graphRDD from the underlying graph system.
-     * @param configuration the configuration for the {@link org.apache.tinkerpop.gremlin.hadoop.process.computer.spark.SparkGraphComputer}.
+     * @param configuration the configuration for the {@link org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer}.
      * @param sparkContext the Spark context with the requisite methods for generating a {@link JavaPairRDD}.
      * @return an adjacency list representation of the underlying graph system.
      */

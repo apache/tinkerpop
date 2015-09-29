@@ -84,7 +84,6 @@ public abstract class GroupCountTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @Ignore // TODO: fix Spark integration
     public void g_V_outXcreatedX_groupCountXxX_capXxX() {
         final Traversal<Vertex, Map<Vertex, Long>> traversal = get_g_V_outXcreatedX_groupCountXxX_capXxX();
         final Object lopId = convertToVertexId("lop");

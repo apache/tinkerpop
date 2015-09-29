@@ -26,9 +26,11 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `GryoSerializer` as the new recommended Spark `Serializer`. Handles `Graph` and `GryoMapper` registries.
+* `GryoPool` now makes use of `GryoPool.Builder` for its construction.
 * Bumped to Apache Hadoop 2.7.1.
 * Bumped to Apache Giraph 1.1.0.
-* Bumped to Apache Spark 1.5.0.
+* Bumped to Apache Spark 1.5.1.
 * Split Hadoop-Gremlin apart such there is now `hadoop-gremlin`, `spark-gremlin`, and `giraph-gremlin` (and respective `GremlinPlugins`).
 * Added `LambdaCollectingBarrierStep` which generalizes `NoOpBarrierStep` and allows for `barrier(normSack)`-type operations.
 * Fixed bugs in the Gremlin Server's NIO protocol both on the server and driver side.

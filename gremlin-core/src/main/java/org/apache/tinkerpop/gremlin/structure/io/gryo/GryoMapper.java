@@ -122,16 +122,22 @@ public final class GryoMapper implements Mapper<Kryo> {
     public static final byte[] GIO = "gio".getBytes();
     public static final byte[] HEADER = Arrays.copyOf(GIO, 16);
     private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList;
+    private boolean registrationRequired;
+    private boolean referenceTracking;
 
-    private GryoMapper(final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList) {
-        this.serializationList = serializationList;
+    private GryoMapper(final Builder builder) {
+        this.serializationList = builder.serializationList;
+        this.registrationRequired = builder.registrationRequired;
+        this.referenceTracking = builder.referenceTracking;
     }
 
     @Override
     public Kryo createMapper() {
         final Kryo kryo = new Kryo(new GryoClassResolver(), new MapReferenceResolver(), new DefaultStreamFactory());
         kryo.addDefaultSerializer(Map.Entry.class, new EntrySerializer());
-        kryo.setRegistrationRequired(true);
+        kryo.setRegistrationRequired(registrationRequired);
+        kryo.setReferences(referenceTracking);
+
         serializationList.forEach(p -> {
             final Function<Kryo, Serializer> serializer = p.getValue1();
             if (null == serializer)
@@ -251,12 +257,15 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Pair.class, kryo -> new PairSerializer(), 88)); // ***LAST ID**
         }};
 
-        private List<IoRegistry> registries = new ArrayList<>();
+        private final List<IoRegistry> registries = new ArrayList<>();
 
         /**
          * Starts numbering classes for Gryo serialization at 65536 to leave room for future usage by TinkerPop.
          */
         private final AtomicInteger currentSerializationId = new AtomicInteger(65536);
+
+        private boolean registrationRequired = true;
+        private boolean referenceTracking = true;
 
         private Builder() {
         }
@@ -299,6 +308,32 @@ public final class GryoMapper implements Mapper<Kryo> {
         }
 
         /**
+         * When set to {@code true}, all classes serialized by the {@code Kryo} instances created from this
+         * {@link GryoMapper} must have their classes known up front and registered appropriately through this
+         * builder.  By default this value is {@code true}.  This approach is more efficient than setting the
+         * value to {@code false}.
+         *
+         * @param registrationRequired set to {@code true} if the classes should be registered up front or
+         * {@code false} otherwise
+         */
+        public Builder registrationRequired(final boolean registrationRequired) {
+            this.registrationRequired = registrationRequired;
+            return this;
+        }
+
+        /**
+         * By default, each appearance of an object in the graph after the first is stored as an integer ordinal.
+         * This allows multiple references to the same object and cyclic graphs to be serialized. This has a small
+         * amount of overhead and can be disabled to save space if it is not needed.
+         *
+         * @param referenceTracking set to {@code true} to enable and {@code false} otherwise
+         */
+        public Builder referenceTracking(final boolean referenceTracking) {
+            this.referenceTracking = referenceTracking;
+            return this;
+        }
+
+        /**
          * Creates a {@code GryoMapper}.
          */
         public GryoMapper create() {
@@ -321,7 +356,7 @@ public final class GryoMapper implements Mapper<Kryo> {
                 });
             });
 
-            return new GryoMapper(serializationList);
+            return new GryoMapper(this);
         }
     }
 }
