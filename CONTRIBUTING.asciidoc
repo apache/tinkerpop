@@ -72,6 +72,13 @@ For Committers
 
 The guidelines that follow apply to those with commit access to the main repository:
 
+Mailing Lists
+~~~~~~~~~~~~~
+
+TinkerPop has a link:http://groups.google.com/group/gremlin-users[user mailing list] and a
+link:http://mail-archives.apache.org/mod_mbox/incubator-tinkerpop-dev/[developer mailing list].  As a committer,
+it is a good idea to join both.
+
 Release Notes
 ~~~~~~~~~~~~~
 
