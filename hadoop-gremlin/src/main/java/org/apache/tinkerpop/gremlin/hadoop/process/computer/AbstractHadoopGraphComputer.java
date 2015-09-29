@@ -47,6 +47,7 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     protected boolean executed = false;
     protected final Set<MapReduce> mapReducers = new HashSet<>();
     protected VertexProgram<Object> vertexProgram;
+    protected int workers = -1;
 
     protected ResultGraph resultGraph = null;
     protected Persist persist = null;
@@ -77,6 +78,12 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     @Override
     public GraphComputer mapReduce(final MapReduce mapReduce) {
         this.mapReducers.add(mapReduce);
+        return this;
+    }
+
+    @Override
+    public GraphComputer workers(final int workers) {
+        this.workers = workers;
         return this;
     }
 

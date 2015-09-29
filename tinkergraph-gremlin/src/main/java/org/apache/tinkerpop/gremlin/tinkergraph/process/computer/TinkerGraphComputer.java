@@ -55,6 +55,7 @@ public final class TinkerGraphComputer implements GraphComputer {
     private final TinkerMessageBoard messageBoard = new TinkerMessageBoard();
     private boolean executed = false;
     private final Set<MapReduce> mapReducers = new HashSet<>();
+    private int workers = Runtime.getRuntime().availableProcessors();
 
     public TinkerGraphComputer(final TinkerGraph graph) {
         this.graph = graph;
@@ -85,6 +86,12 @@ public final class TinkerGraphComputer implements GraphComputer {
     }
 
     @Override
+    public GraphComputer workers(final int workers) {
+        this.workers = workers;
+        return this;
+    }
+
+    @Override
     public Future<ComputerResult> submit() {
         // a graph computer can only be executed once
         if (this.executed)
@@ -109,7 +116,7 @@ public final class TinkerGraphComputer implements GraphComputer {
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long time = System.currentTimeMillis();
-            try (final TinkerWorkerPool workers = new TinkerWorkerPool(Runtime.getRuntime().availableProcessors())) {
+            try (final TinkerWorkerPool workers = new TinkerWorkerPool(this.workers)) {
                 if (null != this.vertexProgram) {
                     TinkerHelper.createGraphComputerView(this.graph, this.vertexProgram.getElementComputeKeys());
                     // execute the vertex program

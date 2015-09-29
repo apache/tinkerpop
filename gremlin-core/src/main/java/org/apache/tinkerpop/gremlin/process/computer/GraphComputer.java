@@ -95,6 +95,15 @@ public interface GraphComputer {
     public GraphComputer mapReduce(final MapReduce mapReduce);
 
     /**
+     * Set the desired number of workers to execute the {@code VertexProgram} and {@code MapReduce} jobs.
+     * This is a recommendation to the underlying {@code GraphComputer} implementation and is allowed to deviate accordingly by the implementation.
+     *
+     * @param workers the number of workers to execute the submission
+     * @return the updated GraphComputer with newly set worker count
+     */
+    public GraphComputer workers(final int workers);
+
+    /**
      * Submit the {@link VertexProgram} and the set of {@link MapReduce} jobs for execution by the {@link GraphComputer}.
      *
      * @return a {@link Future} denoting a reference to the asynchronous computation and where to get the {@link org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult} when its is complete.
@@ -107,6 +116,10 @@ public interface GraphComputer {
     }
 
     public interface Features {
+
+        public default boolean supportsWorkerSpecification() {
+            return true;
+        }
 
         public default boolean supportsGlobalMessageScopes() {
             return true;

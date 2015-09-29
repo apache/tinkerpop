@@ -93,6 +93,12 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     }
 
     @Override
+    public GraphComputer workers(final int workers) {
+        this.giraphConfiguration.setWorkerConfiguration(this.workers, this.workers, 100.0F);
+        return super.workers(workers);
+    }
+
+    @Override
     public Future<ComputerResult> submit() {
         final long startTime = System.currentTimeMillis();
         super.validateStatePriorToExecution();

@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.computer;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
@@ -43,6 +44,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.*;
 
@@ -67,7 +69,7 @@ import static org.junit.Assert.*;
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class GraphComputerTest extends AbstractGremlinProcessTest {
 
-    @Test
+   /* @Test
     @LoadGraphWith(MODERN)
     public void shouldHaveStandardStringRepresentation() {
         final GraphComputer computer = graph.compute(graphComputerClass.get());
@@ -116,6 +118,11 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
 
         @Override
         public GraphComputer mapReduce(final MapReduce mapReduce) {
+            return null;
+        }
+
+        @Override
+        public GraphComputer workers(final int workers) {
             return null;
         }
 
@@ -812,6 +819,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             return list;
         }
     }
+
     /////////////////////////////////////////////
     @Test
     @LoadGraphWith(MODERN)
@@ -1399,8 +1407,85 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         public GraphComputer.Persist getPreferredPersist() {
             return GraphComputer.Persist.EDGES;
         }
-    }
+    }*/
 
     /////////////////////////////////////////////
+
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void shouldSupportWorkerCount() throws Exception {
+        final GraphComputer computer = graph.compute(graphComputerClass.get());
+        if (computer.features().supportsWorkerSpecification()) {
+            ComputerResult result = computer.program(new VertexProgramL()).workers(1).submit().get();
+            assertEquals(1l, (long) result.memory().get("workerCount"));
+            ////
+            result = graph.compute(graphComputerClass.get()).program(new VertexProgramL()).workers(2).submit().get();
+            assertEquals(2l, (long) result.memory().get("workerCount"));
+        }
+    }
+
+    public static class VertexProgramL implements VertexProgram {
+
+        final Set<String> threadIds = new ConcurrentSkipListSet<>();
+
+        @Override
+        public void setup(final Memory memory) {
+            memory.set("workerCount", 0l);
+        }
+
+        @Override
+        public void execute(final Vertex vertex, final Messenger messenger, final Memory memory) {
+            if(!this.threadIds.contains(Thread.currentThread().getName())) {
+                memory.incr("workerCount", 1l);
+                this.threadIds.add(Thread.currentThread().getName());
+                System.out.println(this.threadIds);
+            }
+        }
+
+        @Override
+        public boolean terminate(final Memory memory) {
+            return true;
+        }
+
+        @Override
+        public Set<String> getMemoryComputeKeys() {
+            return new HashSet<>(Arrays.asList("workerCount"));
+        }
+
+        /*public void workerIterationStart(final Memory memory) {
+            assertEquals(0l, (long) memory.get("workerCount"));
+        }
+
+        public void workerIterationEnd(final Memory memory) {
+            assertEquals(1l, (long) memory.get("workerCount"));
+        }*/
+
+        @Override
+        public Set<MessageScope> getMessageScopes(Memory memory) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public GraphComputer.ResultGraph getPreferredResultGraph() {
+            return GraphComputer.ResultGraph.NEW;
+        }
+
+        @Override
+        public GraphComputer.Persist getPreferredPersist() {
+            return GraphComputer.Persist.NOTHING;
+        }
+
+        @Override
+        @SuppressWarnings("CloneDoesntCallSuperClone,CloneDoesntDeclareCloneNotSupportedException")
+        public VertexProgramL clone() {
+            return new VertexProgramL();
+        }
+
+        @Override
+        public void storeState(final Configuration configuration) {
+            VertexProgram.super.storeState(configuration);
+        }
+
+    }
 
 }

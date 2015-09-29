@@ -31,11 +31,6 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
-import org.apache.tinkerpop.gremlin.spark.process.computer.io.InputFormatRDD;
-import org.apache.tinkerpop.gremlin.spark.process.computer.io.InputRDD;
-import org.apache.tinkerpop.gremlin.spark.process.computer.io.OutputFormatRDD;
-import org.apache.tinkerpop.gremlin.spark.process.computer.io.OutputRDD;
-import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -48,6 +43,11 @@ import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.spark.process.computer.io.InputFormatRDD;
+import org.apache.tinkerpop.gremlin.spark.process.computer.io.InputRDD;
+import org.apache.tinkerpop.gremlin.spark.process.computer.io.OutputFormatRDD;
+import org.apache.tinkerpop.gremlin.spark.process.computer.io.OutputRDD;
+import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +62,15 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     public SparkGraphComputer(final HadoopGraph hadoopGraph) {
         super(hadoopGraph);
+    }
+
+    @Override
+    public GraphComputer workers(final int workers) {
+        super.workers(workers);
+        if (this.hadoopGraph.configuration().getString("spark.master").startsWith("local")) {
+            this.hadoopGraph.configuration().setProperty("spark.master", "local[" + this.workers + "]");
+        }
+        return this;
     }
 
     @Override
@@ -137,7 +146,6 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     this.vertexProgram.storeState(vertexProgramConfiguration);
                     ConfigurationUtils.copy(vertexProgramConfiguration, apacheConfiguration);
                     ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
-
                     // execute the vertex program
                     while (true) {
                         memory.setInTask(true);

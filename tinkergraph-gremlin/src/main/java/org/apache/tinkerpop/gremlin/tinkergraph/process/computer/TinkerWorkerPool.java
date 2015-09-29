@@ -20,13 +20,16 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.computer;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
-import org.apache.tinkerpop.gremlin.process.computer.Memory;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapReducePool;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramPool;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 /**
@@ -57,26 +60,36 @@ public final class TinkerWorkerPool implements AutoCloseable {
     }
 
     public void executeVertexProgram(final Consumer<VertexProgram> worker) {
-        try {
-            this.workerPool.submit(() -> {
+        final List<Callable<Object>> tasks = new ArrayList<>();
+        for (int i = 0; i < 1; i++) {
+            tasks.add(() -> {
                 final VertexProgram vp = this.vertexProgramPool.take();
                 worker.accept(vp);
                 this.vertexProgramPool.offer(vp);
-            }).get();
+                return null;
+            });
+        }
+        try {
+            final List<Future<Object>> futures = this.workerPool.invokeAll(tasks);
+           for(Future future : futures) {
+               future.get();
+           }
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
     public void executeMapReduce(final Consumer<MapReduce> worker) {
-        try {
-            this.workerPool.submit(() -> {
-                final MapReduce mr = this.mapReducePool.take();
-                worker.accept(mr);
-                this.mapReducePool.offer(mr);
-            }).get();
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
+        for (int i = 0; i < this.numberOfWorkers; i++) {
+            try {
+                this.workerPool.submit(() -> {
+                    final MapReduce mr = this.mapReducePool.take();
+                    worker.accept(mr);
+                    this.mapReducePool.offer(mr);
+                }).get();
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         }
     }
 
