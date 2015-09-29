@@ -45,6 +45,7 @@ public final class GryoPool {
 
     private Queue<GryoReader> gryoReaders;
     private Queue<GryoWriter> gryoWriters;
+    private Queue<Kryo> kryos;
     private GryoMapper mapper;
 
     public static GryoPool.Builder build() {
@@ -57,20 +58,13 @@ public final class GryoPool {
     private GryoPool() {
     }
 
-    private void createPool(final int poolSize, final Type type, final GryoMapper gryoMapper) {
-        this.mapper = gryoMapper;
-        if (type.equals(Type.READER) || type.equals(Type.READER_WRITER)) {
-            this.gryoReaders = new LinkedBlockingQueue<>(poolSize);
-            for (int i = 0; i < poolSize; i++) {
-                this.gryoReaders.add(GryoReader.build().mapper(gryoMapper).create());
-            }
-        }
-        if (type.equals(Type.WRITER) || type.equals(Type.READER_WRITER)) {
-            this.gryoWriters = new LinkedBlockingQueue<>(poolSize);
-            for (int i = 0; i < poolSize; i++) {
-                this.gryoWriters.add(GryoWriter.build().mapper(gryoMapper).create());
-            }
-        }
+    public GryoMapper getMapper() {
+        return mapper;
+    }
+
+    public Kryo takeKryo() {
+        final Kryo kryo = kryos.poll();
+        return null == kryo ? mapper.createMapper() : kryo;
     }
 
     public GryoReader takeReader() {
@@ -83,25 +77,63 @@ public final class GryoPool {
         return null == writer ? GryoWriter.build().mapper(mapper).create() : writer;
     }
 
+    public void offerKryo(final Kryo kryo) {
+        kryos.offer(kryo);
+    }
+
     public void offerReader(final GryoReader gryoReader) {
-        this.gryoReaders.offer(gryoReader);
+        gryoReaders.offer(gryoReader);
     }
 
     public void offerWriter(final GryoWriter gryoWriter) {
-        this.gryoWriters.offer(gryoWriter);
+        gryoWriters.offer(gryoWriter);
+    }
+
+    public <A> A readWithKryo(final Function<Kryo, A> kryoFunction) {
+        final Kryo kryo = takeKryo();
+        final A a = kryoFunction.apply(kryo);
+        offerKryo(kryo);
+        return a;
+    }
+
+    public void writeWithKryo(final Consumer<Kryo> kryoConsumer) {
+        final Kryo kryo = takeKryo();
+        kryoConsumer.accept(kryo);
+        offerKryo(kryo);
     }
 
     public <A> A doWithReader(final Function<GryoReader, A> readerFunction) {
-        final GryoReader gryoReader = this.takeReader();
+        final GryoReader gryoReader = takeReader();
         final A a = readerFunction.apply(gryoReader);
-        this.offerReader(gryoReader);
+        offerReader(gryoReader);
         return a;
     }
 
     public void doWithWriter(final Consumer<GryoWriter> writerFunction) {
-        final GryoWriter gryoWriter = this.takeWriter();
+        final GryoWriter gryoWriter = takeWriter();
         writerFunction.accept(gryoWriter);
-        this.offerWriter(gryoWriter);
+        offerWriter(gryoWriter);
+    }
+
+    private void createPool(final int poolSize, final Type type, final GryoMapper gryoMapper) {
+        this.mapper = gryoMapper;
+        if (type.equals(Type.READER) || type.equals(Type.READER_WRITER)) {
+            gryoReaders = new LinkedBlockingQueue<>(poolSize);
+            for (int i = 0; i < poolSize; i++) {
+                gryoReaders.add(GryoReader.build().mapper(gryoMapper).create());
+            }
+        }
+        if (type.equals(Type.WRITER) || type.equals(Type.READER_WRITER)) {
+            gryoWriters = new LinkedBlockingQueue<>(poolSize);
+            for (int i = 0; i < poolSize; i++) {
+                gryoWriters.add(GryoWriter.build().mapper(gryoMapper).create());
+            }
+        }
+
+        kryos = new LinkedBlockingQueue<>(poolSize);
+        for (int i = 0; i < poolSize; i++) {
+            kryos.add(gryoMapper.createMapper());
+        }
     }
 
     ////
@@ -112,7 +144,6 @@ public final class GryoPool {
         private List<IoRegistry> ioRegistries = new ArrayList<>();
         private Type type = Type.READER_WRITER;
         private Consumer<GryoMapper.Builder> gryoMapperConsumer = null;
-        private Consumer<Kryo> kryoConsumer = null;
 
         /**
          * The {@code IoRegistry} class names to use for the {@code GryoPool}
@@ -170,17 +201,6 @@ public final class GryoPool {
         }
 
         /**
-         * A consumer to update all the {@link Kryo} instances for all {@code GryoReader} and {@code GryoWriter} instances.
-         *
-         * @param kryoConsumer the consumer
-         * @return the updated builder
-         */
-        public Builder initializeKryo(final Consumer<Kryo> kryoConsumer) {
-            this.kryoConsumer = kryoConsumer;
-            return this;
-        }
-
-        /**
          * Create the {@code GryoPool} from this builder.
          *
          * @return the new pool
@@ -193,14 +213,6 @@ public final class GryoPool {
             if (null != this.gryoMapperConsumer)
                 this.gryoMapperConsumer.accept(mapper);
             gryoPool.createPool(this.poolSize, this.type, mapper.create());
-            if (null != this.kryoConsumer) {
-                for (final GryoReader reader : gryoPool.gryoReaders) {
-                    kryoConsumer.accept(reader.getKryo());
-                }
-                for (final GryoWriter writer : gryoPool.gryoWriters) {
-                    kryoConsumer.accept(writer.getKryo());
-                }
-            }
             return gryoPool;
         }
 

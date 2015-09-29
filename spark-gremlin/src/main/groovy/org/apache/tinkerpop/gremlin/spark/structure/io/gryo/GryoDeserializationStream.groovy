@@ -41,7 +41,7 @@ public final class GryoDeserializationStream extends DeserializationStream {
     @Override
     public <T> T readObject(final ClassTag<T> classTag) {
         try {
-            return this.gryoSerializer.getGryoPool().doWithReader { reader -> (T) reader.getKryo().readClassAndObject(this.input) }
+            return this.gryoSerializer.getGryoPool().readWithKryo { kryo -> (T) kryo.readClassAndObject(this.input) }
         } catch (final Throwable e) {
             if (e instanceof KryoException) {
                 final KryoException kryoException = (KryoException) e;

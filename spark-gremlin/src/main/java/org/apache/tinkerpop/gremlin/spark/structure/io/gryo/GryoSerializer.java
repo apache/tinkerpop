@@ -77,29 +77,26 @@ public final class GryoSerializer extends Serializer {
                 ioRegistries(makeApacheConfiguration(sparkConfiguration).getList(GryoPool.CONFIG_IO_REGISTRY, Collections.emptyList())).
                 initializeMapper(builder -> {
                     try {
-                        builder.
-                                addCustom(SerializableWritable.class, new JavaSerializer()).
-                                addCustom(Tuple2.class, new JavaSerializer()).
-                                addCustom(CompressedMapStatus.class, new JavaSerializer()).
-                                addCustom(HttpBroadcast.class, new JavaSerializer()).
-                                addCustom(PythonBroadcast.class, new JavaSerializer()).
-                                addCustom(BoxedUnit.class, new JavaSerializer()).
-                                addCustom(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer()).
-                                addCustom(MessagePayload.class, new JavaSerializer()).
-                                addCustom(ViewIncomingPayload.class, new JavaSerializer()).
-                                addCustom(ViewOutgoingPayload.class, new JavaSerializer()).
-                                addCustom(ViewPayload.class, new JavaSerializer()).
-                                addCustom(SerializableConfiguration.class, new JavaSerializer()).
-                                addCustom(VertexWritable.class, new JavaSerializer()).
-                                addCustom(ObjectWritable.class, new JavaSerializer());
+                        builder.addCustom(SerializableWritable.class, new JavaSerializer())
+                            .addCustom(Tuple2.class, new JavaSerializer())
+                            .addCustom(CompressedMapStatus.class, new JavaSerializer())
+                            .addCustom(HttpBroadcast.class, new JavaSerializer())
+                            .addCustom(PythonBroadcast.class, new JavaSerializer())
+                            .addCustom(BoxedUnit.class, new JavaSerializer())
+                            .addCustom(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer())
+                            .addCustom(MessagePayload.class, new JavaSerializer())
+                            .addCustom(ViewIncomingPayload.class, new JavaSerializer())
+                            .addCustom(ViewOutgoingPayload.class, new JavaSerializer())
+                            .addCustom(ViewPayload.class, new JavaSerializer())
+                            .addCustom(SerializableConfiguration.class, new JavaSerializer())
+                            .addCustom(VertexWritable.class, new JavaSerializer())
+                            .addCustom(ObjectWritable.class, new JavaSerializer())
+                            .referenceTracking(referenceTracking)
+                            .registrationRequired(registrationRequired);
                                 // add these as we find ClassNotFoundExceptions
                     } catch (final ClassNotFoundException e) {
                         throw new IllegalStateException(e);
                     }
-                }).
-                initializeKryo(kryo -> {
-                    kryo.setRegistrationRequired(registrationRequired);
-                    kryo.setReferences(referenceTracking);
                 }).create();
     }
 

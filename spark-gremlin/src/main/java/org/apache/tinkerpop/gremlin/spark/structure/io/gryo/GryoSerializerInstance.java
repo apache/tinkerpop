@@ -48,22 +48,22 @@ public final class GryoSerializerInstance extends SerializerInstance {
 
     @Override
     public <T> ByteBuffer serialize(final T t, final ClassTag<T> classTag) {
-        this.gryoSerializer.getGryoPool().doWithWriter(writer -> writer.getKryo().writeClassAndObject(this.output, t));
+        this.gryoSerializer.getGryoPool().writeWithKryo(kryo -> kryo.writeClassAndObject(this.output, t));
         return ByteBuffer.wrap(this.output.getBuffer());
     }
 
     @Override
     public <T> T deserialize(final ByteBuffer byteBuffer, final ClassTag<T> classTag) {
         this.input.setBuffer(byteBuffer.array());
-        return this.gryoSerializer.getGryoPool().doWithReader(reader -> (T) reader.getKryo().readClassAndObject(this.input));
+        return this.gryoSerializer.getGryoPool().readWithKryo(kryo -> (T) kryo.readClassAndObject(this.input));
     }
 
     @Override
     public <T> T deserialize(final ByteBuffer byteBuffer, final ClassLoader classLoader, final ClassTag<T> classTag) {
         this.input.setBuffer(byteBuffer.array());
-        return this.gryoSerializer.getGryoPool().doWithReader(reader -> {
-            reader.getKryo().setClassLoader(classLoader);
-            return (T) reader.getKryo().readClassAndObject(this.input);
+        return this.gryoSerializer.getGryoPool().readWithKryo(kryo -> {
+            kryo.setClassLoader(classLoader);
+            return (T) kryo.readClassAndObject(this.input);
         });
     }
 

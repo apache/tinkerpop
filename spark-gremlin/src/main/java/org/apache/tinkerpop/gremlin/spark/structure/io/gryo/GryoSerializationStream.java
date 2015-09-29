@@ -40,7 +40,7 @@ public final class GryoSerializationStream extends SerializationStream {
 
     @Override
     public <T> SerializationStream writeObject(final T t, final ClassTag<T> classTag) {
-        this.gryoSerializer.getGryoPool().doWithWriter(writer -> writer.getKryo().writeClassAndObject(this.output, t));
+        this.gryoSerializer.getGryoPool().writeWithKryo(kryo -> kryo.writeClassAndObject(this.output, t));
         return this;
     }
 

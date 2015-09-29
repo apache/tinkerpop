@@ -47,6 +47,27 @@ public class GryoMapperTest {
     }
 
     @Test
+    public void shouldSerializeWithoutRegistration() throws Exception {
+        final GryoMapper mapper = GryoMapper.build().registrationRequired(false).create();
+        final Kryo kryo = mapper.createMapper();
+        try (final OutputStream stream = new ByteArrayOutputStream()) {
+            final Output out = new Output(stream);
+            final IoX x = new IoX("x");
+            final IoY y = new IoY(100, 200);
+            kryo.writeClassAndObject(out, x);
+            kryo.writeClassAndObject(out, y);
+
+            try (final InputStream inputStream = new ByteArrayInputStream(out.toBytes())) {
+                final Input input = new Input(inputStream);
+                final IoX readX = (IoX) kryo.readClassAndObject(input);
+                final IoY readY = (IoY) kryo.readClassAndObject(input);
+                assertEquals(x, readX);
+                assertEquals(y, readY);
+            }
+        }
+    }
+
+    @Test
     public void shouldRegisterMultipleIoRegistryToSerialize() throws Exception {
         final GryoMapper mapper = GryoMapper.build()
                 .addRegistry(IoXIoRegistry.InstanceBased.getInstance())
