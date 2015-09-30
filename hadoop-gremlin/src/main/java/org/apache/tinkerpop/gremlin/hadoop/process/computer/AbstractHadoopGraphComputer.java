@@ -47,7 +47,7 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
     protected boolean executed = false;
     protected final Set<MapReduce> mapReducers = new HashSet<>();
     protected VertexProgram<Object> vertexProgram;
-    protected int workers = -1;
+    protected int workers = 1;
 
     protected ResultGraph resultGraph = null;
     protected Persist persist = null;
@@ -112,58 +112,72 @@ public abstract class AbstractHadoopGraphComputer implements GraphComputer {
         // determine persistence and result graph options
         if (!this.features().supportsResultGraphPersistCombination(this.resultGraph, this.persist))
             throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph, this.persist);
+        // if too many workers are requested, throw appropriate exception
+        if (this.workers > this.features().getMaxWorkers())
+            throw GraphComputer.Exceptions.computerRequiresMoreWorkersThanSupported(this.workers, this.features().getMaxWorkers());
     }
 
     @Override
     public Features features() {
-        return new Features() {
+        return new Features();
+    }
 
-            public boolean supportsVertexAddition() {
-                return false;
-            }
+    public class Features implements GraphComputer.Features {
 
-            public boolean supportsVertexRemoval() {
-                return false;
-            }
+        @Override
+        public boolean supportsVertexAddition() {
+            return false;
+        }
 
-            public boolean supportsVertexPropertyRemoval() {
-                return false;
-            }
+        @Override
+        public boolean supportsVertexRemoval() {
+            return false;
+        }
 
-            public boolean supportsEdgeAddition() {
-                return false;
-            }
+        @Override
+        public boolean supportsVertexPropertyRemoval() {
+            return false;
+        }
 
-            public boolean supportsEdgeRemoval() {
-                return false;
-            }
+        @Override
+        public boolean supportsEdgeAddition() {
+            return false;
+        }
 
-            public boolean supportsEdgePropertyAddition() {
-                return false;
-            }
+        @Override
+        public boolean supportsEdgeRemoval() {
+            return false;
+        }
 
-            public boolean supportsEdgePropertyRemoval() {
-                return false;
-            }
+        @Override
+        public boolean supportsEdgePropertyAddition() {
+            return false;
+        }
 
-            public boolean supportsResultGraphPersistCombination(final ResultGraph resultGraph, final Persist persist) {
-                if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT)) {
-                    final OutputFormat<NullWritable, VertexWritable> outputFormat = ReflectionUtils.newInstance(hadoopGraph.configuration().getGraphOutputFormat(), ConfUtil.makeHadoopConfiguration(hadoopGraph.configuration()));
-                    if (outputFormat instanceof PersistResultGraphAware)
-                        return ((PersistResultGraphAware) outputFormat).supportsResultGraphPersistCombination(resultGraph, persist);
-                    else {
-                        logger.warn(outputFormat.getClass() + " does not implement " + PersistResultGraphAware.class.getSimpleName() + " and thus, persistence options are unknown -- assuming all options are possible");
-                        return true;
-                    }
-                } else {
-                    logger.warn("Unknown OutputFormat class and thus, persistence options are unknown -- assuming all options are possible");
+        @Override
+        public boolean supportsEdgePropertyRemoval() {
+            return false;
+        }
+
+        @Override
+        public boolean supportsResultGraphPersistCombination(final ResultGraph resultGraph, final Persist persist) {
+            if (hadoopGraph.configuration().containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT)) {
+                final OutputFormat<NullWritable, VertexWritable> outputFormat = ReflectionUtils.newInstance(hadoopGraph.configuration().getGraphOutputFormat(), ConfUtil.makeHadoopConfiguration(hadoopGraph.configuration()));
+                if (outputFormat instanceof PersistResultGraphAware)
+                    return ((PersistResultGraphAware) outputFormat).supportsResultGraphPersistCombination(resultGraph, persist);
+                else {
+                    logger.warn(outputFormat.getClass() + " does not implement " + PersistResultGraphAware.class.getSimpleName() + " and thus, persistence options are unknown -- assuming all options are possible");
                     return true;
                 }
+            } else {
+                logger.warn("Unknown OutputFormat class and thus, persistence options are unknown -- assuming all options are possible");
+                return true;
             }
+        }
 
-            public boolean supportsDirectObjects() {
-                return false;
-            }
-        };
+        @Override
+        public boolean supportsDirectObjects() {
+            return false;
+        }
     }
 }

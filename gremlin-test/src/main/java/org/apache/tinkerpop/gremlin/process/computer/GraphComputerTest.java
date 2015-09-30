@@ -60,7 +60,8 @@ import static org.junit.Assert.*;
         "adjacentVertexPropertiesCanNotBeReadOrUpdated",
         "adjacentVertexEdgesAndVerticesCanNotBeReadOrUpdated",
         "resultGraphPersistCombinationNotSupported",
-        "vertexPropertiesCanNotBeUpdatedInMapReduce"
+        "vertexPropertiesCanNotBeUpdatedInMapReduce",
+        "computerRequiresMoreWorkersThanSupported"
 })
 @ExceptionCoverage(exceptionClass = Graph.Exceptions.class, methods = {
         "graphDoesNotSupportProvidedGraphComputer"
@@ -1371,19 +1372,27 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(GRATEFUL)
     public void shouldSupportWorkerCount() throws Exception {
-        assertFalse(graph.compute(graphComputerClass.get()).features().supportsWorkerCount(0));
-        for (int i = 0; i < 10; i++) { // the GraphComputer should not support 0 workers
-            final GraphComputer computer = graph.compute(graphComputerClass.get());
-            if (computer.features().supportsWorkerCount(i)) {
-                ComputerResult result = computer.program(new VertexProgramL()).workers(i).submit().get();
-                assertEquals(Integer.valueOf(i).longValue(), (long) result.memory().get("workerCount"));
+        int maxWorkers = graph.compute(graphComputerClass.get()).features().getMaxWorkers();
+        if (maxWorkers != Integer.MAX_VALUE) {
+            for (int i = maxWorkers + 1; i < maxWorkers + 10; i++) {
+                try {
+                    graph.compute(graphComputerClass.get()).program(new VertexProgramL()).workers(i).submit().get();
+                    fail("Should throw a GraphComputer.Exceptions.computerRequiresMoreWorkersThanSupported() exception");
+                } catch (final IllegalArgumentException e) {
+                    assertTrue(e.getMessage().contains("computer requires more workers"));
+                }
             }
+        }
+        if (maxWorkers > 25) maxWorkers = 25;
+        for (int i = 1; i <= maxWorkers; i++) {
+            ComputerResult result = graph.compute(graphComputerClass.get()).program(new VertexProgramL()).workers(i).submit().get();
+            assertEquals(Integer.valueOf(i).longValue(), (long) result.memory().get("workerCount"));
         }
     }
 
     public static class VertexProgramL implements VertexProgram {
 
-        final Set<String> threadIds = new HashSet<>();
+        boolean announced = false;
 
         @Override
         public void setup(final Memory memory) {
@@ -1397,9 +1406,9 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             } catch (Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            if (!this.threadIds.contains(Thread.currentThread().getName())) {
+            if (!this.announced) {
                 memory.incr("workerCount", 1l);
-                this.threadIds.add(Thread.currentThread().getName());
+                this.announced = true;
             }
         }
 

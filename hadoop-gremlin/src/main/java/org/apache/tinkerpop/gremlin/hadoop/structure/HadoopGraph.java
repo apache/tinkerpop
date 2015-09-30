@@ -156,7 +156,8 @@ import java.util.stream.Stream;
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.computer.GraphComputerTest",
         method = "shouldSupportWorkerCount",
-        reason = "It is not possible to control Spark and Giraph worker counts in integration testing.")
+        reason = "It is not possible to control Spark worker counts in integration testing.",
+        computers = {"org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer"})
 public final class HadoopGraph implements Graph {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(HadoopGraph.class);
