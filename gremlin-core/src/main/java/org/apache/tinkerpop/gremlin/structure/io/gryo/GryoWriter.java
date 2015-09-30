@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGryoSerializer;
@@ -47,7 +48,7 @@ import java.util.Iterator;
 public final class GryoWriter implements GraphWriter {
     private Kryo kryo;
 
-    private GryoWriter(final GryoMapper gryoMapper) {
+    private GryoWriter(final Mapper<Kryo> gryoMapper) {
         this.kryo = gryoMapper.createMapper();
     }
 
@@ -162,7 +163,7 @@ public final class GryoWriter implements GraphWriter {
         /**
          * Always creates the most current version available.
          */
-        private GryoMapper gryoMapper = GryoMapper.build().create();
+        private Mapper<Kryo> gryoMapper = GryoMapper.build().create();
 
         private Builder() {
         }
@@ -170,7 +171,7 @@ public final class GryoWriter implements GraphWriter {
         /**
          * Supply a mapper {@link GryoMapper} instance to use as the serializer for the {@code KryoWriter}.
          */
-        public Builder mapper(final GryoMapper gryoMapper) {
+        public Builder mapper(final Mapper<Kryo> gryoMapper) {
             this.gryoMapper = gryoMapper;
             return this;
         }

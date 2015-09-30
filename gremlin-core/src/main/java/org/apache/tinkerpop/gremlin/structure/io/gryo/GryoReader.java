@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
@@ -62,7 +63,7 @@ public final class GryoReader implements GraphReader {
 
     private final long batchSize;
 
-    private GryoReader(final long batchSize, final GryoMapper gryoMapper) {
+    private GryoReader(final long batchSize, final Mapper<Kryo> gryoMapper) {
         this.kryo = gryoMapper.createMapper();
         this.batchSize = batchSize;
     }
@@ -252,7 +253,7 @@ public final class GryoReader implements GraphReader {
         /**
          * Always use the most recent gryo version by default
          */
-        private GryoMapper gryoMapper = GryoMapper.build().create();
+        private Mapper<Kryo> gryoMapper = GryoMapper.build().create();
 
         private Builder() {
         }
@@ -269,7 +270,7 @@ public final class GryoReader implements GraphReader {
         /**
          * Supply a mapper {@link GryoMapper} instance to use as the serializer for the {@code KryoWriter}.
          */
-        public Builder mapper(final GryoMapper gryoMapper) {
+        public Builder mapper(final Mapper<Kryo> gryoMapper) {
             this.gryoMapper = gryoMapper;
             return this;
         }
