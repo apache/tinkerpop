@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 /**
- * An in-sideEffects, reference implementation of the property graph interfaces provided by Gremlin3.
+ * An in-memory, reference implementation of the property graph interfaces provided by TinkerPop.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
