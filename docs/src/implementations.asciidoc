@@ -449,7 +449,7 @@ TinkerGraph-Gremlin
 </dependency>
 ----
 
-image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory, non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other vendors to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
+image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory (with optional persistence), non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other vendors to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
 
 [source,java]
 Graph g = TinkerGraph.open();
@@ -508,9 +508,13 @@ TinkerGraph has several settings that can be provided on creation via `Configura
 |gremlin.tinkergraph.edgeIdManager |The `IdManager` implementation to use for edges.
 |gremlin.tinkergraph.vertexPropertyIdManager |The `IdManager` implementation to use for vertex properties.
 |gremlin.tinkergraph.defaultVertexPropertyCardinality |The default `VertexProperty.Cardinality` to use when `Vertex.property(k,v)` is called.
+|gremlin.tinkergraph.graphLocation |The path and file name for where TinkerGraph should persist the graph data. If a value is specified here, the the `gremlin.tinkergraph.graphFormat` should also be specified.  If this value is not included (default), then the graph will stay in-memory and not be loaded/persisted to disk.
+|gremlin.tinkergraph.graphFormat |The format to use to serialize the graph which may be one of the following: `graphml`, `graphson`, or `gryo`. If a value is specified here, the the `gremlin.tinkergraph.graphLocation` should also be specified.  If this value is not included (default), then the graph will stay in-memory and not be loaded/persisted to disk.
 |=========================================================
 
 The `IdManager` settings above refer to how TinkerGraph will control identifiers for vertices, edges and vertex properties.  There are several options for each of these settings: `ANY`, `LONG`, `INTEGER`, `UUID`, or the fully qualified class name of an `IdManager` implementation on the classpath.  When not specified, the default values for all settings is `ANY`, meaning that the graph will work with any object on the JVM as the identifier and will generate new identifiers from `Long` when the identifier is not user supplied.  TinkerGraph will also expect the user to understand the types used for identifiers when querying, meaning that `g.V(1)` and `g.V(1L)` could return two different vertices.  `LONG`, `INTEGER` and `UUID` settings will try to coerce identifier values to the expected type as well as generate new identifiers with that specified type.
+
+If the TinkerGraph is configured for persistence with `gremlin.tinkergraph.graphLocation` and `gremlin.tinkergraph.graphFormat`, then the graph will be written to the specified location with the specified format when `Graph.close()` is called.  In addition, if these settings are present, TinkerGraph will attempt to load the graph from the specified location.
 
 It is important to consider the data being imported to TinkerGraph with respect to `defaultVertexPropertyCardinality` setting.  For example, if a `.gryo` file is known to contain multi-property data, be sure to set the default cardinality to `list` or else the data will import as `single`.  Consider the following:
 
