@@ -156,4 +156,18 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             cluster.close();
         }
     }
+
+    @Test
+    public void shouldAuthenticateWithPlainTextOverGraphSONSerialization() throws Exception {
+        final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON_V1D0).credentials("stephen", "password").create();
+        final Client client = cluster.connect();
+
+        try {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
 }
