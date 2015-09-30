@@ -67,7 +67,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.0.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Fixed a `clone()` bug in `RepeatStep` and `TraversalRing`.
+* Fixed a `clone()` bug in `RepeatStep`, `TreeStep`, `GroupCountStep`, `GroupStep`, and `TraversalRing`.
 * Fixed a thread context bug in `TinkerGraphComputer`.
 * Improved session closing for transactional graphs during shutdown of Gremlin Server.
 * Fixed id parameter used in tests for `GroovyStoreTest` and `GroovyRepeatTest` to not be treated as an embedded string.

@@ -36,7 +36,12 @@ import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
@@ -49,7 +54,7 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
     public GroupCountStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier(HashMapSupplier.instance());
-        this.setBiFunction(new GroupCountBiFunction());
+        this.setBiFunction(new GroupCountBiFunction(this));
     }
 
 
@@ -78,6 +83,7 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
         final GroupCountStep<S, E> clone = (GroupCountStep<S, E>) super.clone();
         if (null != this.groupTraversal)
             clone.groupTraversal = clone.integrateChild(this.groupTraversal.clone());
+        clone.setBiFunction(new GroupCountBiFunction<>(clone));
         return clone;
     }
 
@@ -107,15 +113,18 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
 
     ///////////
 
-    private class GroupCountBiFunction implements BiFunction<Map<E, Long>, Traverser<S>, Map<E, Long>>, Serializable {
+    private static class GroupCountBiFunction<S, E> implements BiFunction<Map<E, Long>, Traverser<S>, Map<E, Long>>, Serializable {
 
-        private GroupCountBiFunction() {
+        private final GroupCountStep<S, E> groupCountStep;
+
+        private GroupCountBiFunction(final GroupCountStep<S, E> groupCountStep) {
+            this.groupCountStep = groupCountStep;
 
         }
 
         @Override
         public Map<E, Long> apply(final Map<E, Long> mutatingSeed, final Traverser<S> traverser) {
-            MapHelper.incr(mutatingSeed, TraversalUtil.applyNullable(traverser.asAdmin(), GroupCountStep.this.groupTraversal), traverser.bulk());
+            MapHelper.incr(mutatingSeed, TraversalUtil.applyNullable(traverser.asAdmin(), this.groupCountStep.groupTraversal), traverser.bulk());
             return mutatingSeed;
         }
     }
@@ -170,5 +179,4 @@ public final class GroupCountStep<S, E> extends ReducingBarrierStep<S, Map<E, Lo
             return INSTANCE;
         }
     }
-
 }
