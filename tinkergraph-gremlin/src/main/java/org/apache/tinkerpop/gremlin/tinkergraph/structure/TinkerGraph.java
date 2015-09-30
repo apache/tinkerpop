@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.IoCore;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -36,6 +38,8 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.computer.TinkerGraphComp
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization.TinkerGraphStepStrategy;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -77,6 +81,8 @@ public final class TinkerGraph implements Graph {
     public static final String CONFIG_EDGE_ID = "gremlin.tinkergraph.edgeIdManager";
     public static final String CONFIG_VERTEX_PROPERTY_ID = "gremlin.tinkergraph.vertexPropertyIdManager";
     public static final String CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
+    public static final String CONFIG_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
+    public static final String CONFIG_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
 
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
@@ -95,17 +101,28 @@ public final class TinkerGraph implements Graph {
     protected final VertexProperty.Cardinality defaultVertexPropertyCardinality;
 
     private final Configuration configuration;
+    private final String graphLocation;
+    private final String graphFormat;
 
     /**
      * An empty private constructor that initializes {@link TinkerGraph}.
      */
     private TinkerGraph(final Configuration configuration) {
         this.configuration = configuration;
-        this.vertexIdManager = selectIdManager(configuration, CONFIG_VERTEX_ID, Vertex.class);
-        this.edgeIdManager = selectIdManager(configuration, CONFIG_EDGE_ID, Edge.class);
-        this.vertexPropertyIdManager = selectIdManager(configuration, CONFIG_VERTEX_PROPERTY_ID, VertexProperty.class);
-        this.defaultVertexPropertyCardinality = VertexProperty.Cardinality.valueOf(
+        vertexIdManager = selectIdManager(configuration, CONFIG_VERTEX_ID, Vertex.class);
+        edgeIdManager = selectIdManager(configuration, CONFIG_EDGE_ID, Edge.class);
+        vertexPropertyIdManager = selectIdManager(configuration, CONFIG_VERTEX_PROPERTY_ID, VertexProperty.class);
+        defaultVertexPropertyCardinality = VertexProperty.Cardinality.valueOf(
                 configuration.getString(CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.single.name()));
+
+        graphLocation = configuration.getString(CONFIG_GRAPH_LOCATION, null);
+        graphFormat = configuration.getString(CONFIG_GRAPH_FORMAT, null);
+
+        if ((graphLocation != null && null == graphFormat) || (null == graphLocation && graphFormat != null))
+            throw new IllegalStateException(String.format("The %s and %s must both be specified if either is present",
+                    CONFIG_GRAPH_LOCATION, CONFIG_GRAPH_FORMAT));
+
+        if (graphLocation != null) loadGraph();
     }
 
     /**
@@ -195,6 +212,7 @@ public final class TinkerGraph implements Graph {
 
     @Override
     public void close() {
+        if (graphLocation != null) saveGraph();
     }
 
     @Override
@@ -215,6 +233,40 @@ public final class TinkerGraph implements Graph {
     @Override
     public Iterator<Edge> edges(final Object... edgeIds) {
         return createElementIterator(Edge.class, edges, edgeIdManager, edgeIds);
+    }
+
+    private void loadGraph() {
+        final File f = new File(graphLocation);
+        if (f.exists() && f.isFile()) {
+            try {
+                if (graphFormat.equals("graphml")) {
+                    io(IoCore.graphml()).readGraph(graphLocation);
+                } else if (graphFormat.equals("graphson")) {
+                    io(IoCore.graphson()).readGraph(graphLocation);
+                } else if (graphFormat.equals("gryo")) {
+                    io(IoCore.gryo()).readGraph(graphLocation);
+                }
+            } catch (IOException ioe) {
+                throw new RuntimeException(String.format("Could not load graph at %s with %s", graphLocation, graphFormat));
+            }
+        }
+    }
+
+    private void saveGraph() {
+        final File f = new File(graphLocation);
+        if (f.exists()) f.delete();
+
+        try {
+            if (graphFormat.equals("graphml")) {
+                io(IoCore.graphml()).writeGraph(graphLocation);
+            } else if (graphFormat.equals("graphson")) {
+                io(IoCore.graphson()).writeGraph(graphLocation);
+            } else if (graphFormat.equals("gryo")) {
+                io(IoCore.gryo()).writeGraph(graphLocation);
+            }
+        } catch (IOException ioe) {
+            throw new RuntimeException(String.format("Could not save graph at %s with %s", graphLocation, graphFormat));
+        }
     }
 
     private <T extends Element> Iterator<T> createElementIterator(final Class<T> clazz, final Map<Object, T> elements,
@@ -267,9 +319,9 @@ public final class TinkerGraph implements Graph {
     public class TinkerGraphFeatures implements Features {
 
         private final TinkerGraphGraphFeatures graphFeatures = new TinkerGraphGraphFeatures();
+
         private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures();
         private final TinkerGraphVertexFeatures vertexFeatures = new TinkerGraphVertexFeatures();
-
         private TinkerGraphFeatures() {
         }
 
@@ -292,11 +344,11 @@ public final class TinkerGraph implements Graph {
         public String toString() {
             return StringFactory.featureString(this);
         }
+
     }
-
     public class TinkerGraphVertexFeatures implements Features.VertexFeatures {
-        private final TinkerGraphVertexPropertyFeatures vertexPropertyFeatures = new TinkerGraphVertexPropertyFeatures();
 
+        private final TinkerGraphVertexPropertyFeatures vertexPropertyFeatures = new TinkerGraphVertexPropertyFeatures();
         private TinkerGraphVertexFeatures() {
         }
 
@@ -317,11 +369,10 @@ public final class TinkerGraph implements Graph {
 
         @Override
         public VertexProperty.Cardinality getCardinality(final String key) {
-            //return VertexProperty.Cardinality.single;
             return defaultVertexPropertyCardinality;
         }
-    }
 
+    }
     public class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
 
         private TinkerGraphEdgeFeatures() {
@@ -336,8 +387,8 @@ public final class TinkerGraph implements Graph {
         public boolean willAllowId(final Object id) {
             return edgeIdManager.allow(id);
         }
-    }
 
+    }
     public class TinkerGraphGraphFeatures implements Features.GraphFeatures {
 
         private TinkerGraphGraphFeatures() {
@@ -350,11 +401,6 @@ public final class TinkerGraph implements Graph {
 
         @Override
         public boolean supportsTransactions() {
-            return false;
-        }
-
-        @Override
-        public boolean supportsPersistence() {
             return false;
         }
 

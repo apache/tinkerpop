@@ -21,11 +21,11 @@ package org.apache.tinkerpop.gremlin.tinkergraph;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.AbstractGraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.GraphTest;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.IoEdgeTest;
-import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.IoVertexTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedGraphTest;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphTest;
@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerVertexProperty;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -69,6 +70,11 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
             put(TinkerGraph.CONFIG_VERTEX_PROPERTY_ID, idMaker);
             if (requiresListCardinalityAsDefault(loadGraphWith, test, testMethodName))
                 put(TinkerGraph.CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
+            if (requiresPersistence(test, testMethodName)) {
+                put(TinkerGraph.CONFIG_GRAPH_FORMAT, "gryo");
+                put(TinkerGraph.CONFIG_GRAPH_LOCATION,
+                        TestHelper.makeTestDataPath(test, "temp").getAbsolutePath() + File.separator + testMethodName + ".kryo");
+            }
         }};
     }
 
@@ -76,11 +82,25 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
     public void clear(final Graph graph, final Configuration configuration) throws Exception {
         if (graph != null)
             graph.close();
+
+        // in the even the graph is persisted we need to clean up
+        final String graphLocation = configuration.getString(TinkerGraph.CONFIG_GRAPH_LOCATION, null);
+        if (graphLocation != null) {
+            final File f = new File(graphLocation);
+            f.delete();
+        }
     }
 
     @Override
     public Set<Class> getImplementations() {
         return IMPLEMENTATION;
+    }
+
+    /**
+     * Determines if a test requires TinkerGraph persistence to be configured with graph location and format.
+     */
+    private static boolean requiresPersistence(final Class<?> test, final String testMethodName) {
+        return test == GraphTest.class && testMethodName.equals("shouldPersistDataOnClose");
     }
 
     /**
