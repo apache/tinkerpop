@@ -52,6 +52,7 @@ import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -79,6 +80,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         this.giraphConfiguration.setBoolean(GiraphConstants.STATIC_GRAPH.getKey(), true);
         this.giraphConfiguration.setVertexInputFormatClass(GiraphVertexInputFormat.class);
         this.giraphConfiguration.setVertexOutputFormatClass(GiraphVertexOutputFormat.class);
+        this.workers(this.giraphConfiguration.getNumComputeThreads() * (this.giraphConfiguration.getMaxWorkers() < 1 ? 1 : this.giraphConfiguration.getMaxWorkers()));
     }
 
     @Override
@@ -93,12 +95,6 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     }
 
     @Override
-    public GraphComputer workers(final int workers) {
-        this.giraphConfiguration.setWorkerConfiguration(this.workers, this.workers, 100.0F);
-        return super.workers(workers);
-    }
-
-    @Override
     public Future<ComputerResult> submit() {
         final long startTime = System.currentTimeMillis();
         super.validateStatePriorToExecution();
@@ -109,6 +105,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 fs.delete(new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)), true);
                 ToolRunner.run(this, new String[]{});
             } catch (final Exception e) {
+                System.out.println(this.giraphConfiguration.getMaxWorkers() + "$%$%$");
                 //e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -133,6 +130,21 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 }
                 // prepare the giraph vertex-centric computing job
                 final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
+                // split required workers across system (open map slots + max threads per machine = total amount of TinkerPop workers)
+                if (this.giraphConfiguration.getLocalTestMode()) {
+                    this.giraphConfiguration.setWorkerConfiguration(1, 1, 100.0F);
+                    this.giraphConfiguration.setNumComputeThreads(this.workers);
+                } else {
+                    int totalMappers = job.getInternalJob().getCluster().getClusterStatus().getMapSlotCapacity() - 1; // 1 is needed for master
+                    if (this.workers <= totalMappers) {
+                        this.giraphConfiguration.setWorkerConfiguration(this.workers, this.workers, 100.0F);
+                        this.giraphConfiguration.setNumComputeThreads(1);
+                    } else {
+                        int threadsPerMapper = Long.valueOf(Math.round((double) this.workers / (double) totalMappers)).intValue(); // TODO: need to find least common denominator
+                        this.giraphConfiguration.setWorkerConfiguration(totalMappers, totalMappers, 100.0F);
+                        this.giraphConfiguration.setNumComputeThreads(threadsPerMapper);
+                    }
+                }
                 // handle input paths (if any)
                 if (FileInputFormat.class.isAssignableFrom(this.giraphConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class))) {
                     final Path inputPath = new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
@@ -225,5 +237,28 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     public static void main(final String[] args) throws Exception {
         final FileConfiguration configuration = new PropertiesConfiguration(args[0]);
         new GiraphGraphComputer(HadoopGraph.open(configuration)).program(VertexProgram.createVertexProgram(HadoopGraph.open(configuration), configuration)).submit().get();
+    }
+
+    public Features features() {
+        return new Features();
+    }
+
+    public class Features extends AbstractHadoopGraphComputer.Features {
+
+        @Override
+        public int getMaxWorkers() {
+            if (GiraphGraphComputer.this.giraphConfiguration.getLocalTestMode())
+                return Runtime.getRuntime().availableProcessors();
+            else {
+                try {
+                    final GiraphJob job = new GiraphJob(GiraphGraphComputer.this.giraphConfiguration, "GiraphGraphComputer.Features.getMaxWorkers()");
+                    int maxWorkers = job.getInternalJob().getCluster().getClusterStatus().getMapSlotCapacity() * 32; // max 32 threads per machine hardcoded :|
+                    job.getInternalJob().killJob();
+                    return maxWorkers;
+                } catch (final IOException | InterruptedException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                }
+            }
+        }
     }
 }

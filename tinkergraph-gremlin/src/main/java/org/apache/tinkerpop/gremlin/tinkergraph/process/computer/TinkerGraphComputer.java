@@ -111,6 +111,10 @@ public final class TinkerGraphComputer implements GraphComputer {
         this.persist = GraphComputerHelper.getPersistState(Optional.ofNullable(this.vertexProgram), Optional.ofNullable(this.persist));
         if (!this.features().supportsResultGraphPersistCombination(this.resultGraph, this.persist))
             throw GraphComputer.Exceptions.resultGraphPersistCombinationNotSupported(this.resultGraph, this.persist);
+        // ensure requested workers are not larger than supported workers
+        if (this.workers > this.features().getMaxWorkers())
+            throw GraphComputer.Exceptions.computerRequiresMoreWorkersThanSupported(this.workers, this.features().getMaxWorkers());
+
 
         // initialize the memory
         this.memory = new TinkerMemory(this.vertexProgram, this.mapReducers);
@@ -226,30 +230,42 @@ public final class TinkerGraphComputer implements GraphComputer {
     public Features features() {
         return new Features() {
 
+            @Override
+            public int getMaxWorkers() {
+                return Runtime.getRuntime().availableProcessors();
+            }
+
+            @Override
             public boolean supportsVertexAddition() {
                 return false;
             }
 
+            @Override
             public boolean supportsVertexRemoval() {
                 return false;
             }
 
+            @Override
             public boolean supportsVertexPropertyRemoval() {
                 return false;
             }
 
+            @Override
             public boolean supportsEdgeAddition() {
                 return false;
             }
 
+            @Override
             public boolean supportsEdgeRemoval() {
                 return false;
             }
 
+            @Override
             public boolean supportsEdgePropertyAddition() {
                 return false;
             }
 
+            @Override
             public boolean supportsEdgePropertyRemoval() {
                 return false;
             }

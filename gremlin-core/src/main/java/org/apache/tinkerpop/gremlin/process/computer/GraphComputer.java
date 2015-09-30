@@ -117,8 +117,8 @@ public interface GraphComputer {
 
     public interface Features {
 
-        public default boolean supportsWorkerCount(int workers) {
-            return workers != 0;
+        public default int getMaxWorkers() {
+            return Integer.MAX_VALUE;
         }
 
         public default boolean supportsGlobalMessageScopes() {
@@ -217,6 +217,10 @@ public interface GraphComputer {
 
         public static UnsupportedOperationException vertexPropertiesCanNotBeUpdatedInMapReduce() {
             return new UnsupportedOperationException("The computer is in MapReduce mode and a vertex's properties can not be updated");
+        }
+
+        public static IllegalArgumentException computerRequiresMoreWorkersThanSupported(final int workers, final int maxWorkers) {
+            return new IllegalArgumentException("The computer requires more workers than supported: " + workers + " [max:" + maxWorkers + "]");
         }
     }
 

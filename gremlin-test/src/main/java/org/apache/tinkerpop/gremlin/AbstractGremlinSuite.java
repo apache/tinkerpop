@@ -333,11 +333,15 @@ public abstract class AbstractGremlinSuite extends Suite {
                     || optOut.computers().length == 0) {
                 return true;
             }
-
             // can assume that that GraphProvider.Descriptor is not null at this point.  a test should
             // only opt out if it matches the expected computer
-            final boolean x = Stream.of(optOut.computers()).anyMatch(c -> c == graphProviderDescriptor.get().computer());
-            return Stream.of(optOut.computers()).anyMatch(c -> c == graphProviderDescriptor.get().computer());
+            return Stream.of(optOut.computers()).map(c -> {
+                try {
+                    return Class.forName(c);
+                } catch (ClassNotFoundException e) {
+                    return Object.class;
+                }
+            }).filter(c -> c.equals(Object.class)).anyMatch(c -> c == graphProviderDescriptor.get().computer());
         }
     }
 }
