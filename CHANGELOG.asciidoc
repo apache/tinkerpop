@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 TinkerPop3 CHANGELOG
-=====================
+====================
 
 
 TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
@@ -27,7 +27,6 @@ TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a severe threading issue in `TinkerGraphComputer`.
-* Fixed a `clone()` bug in `RepeatStep` and `TraversalRing`.
 * `GiraphGraphComputer.workers()` is smart about using threads and machines to load balance TinkerPop workers across cluster.
 * `GraphComputer.workers(int)` allows the user to programmatically set the number of workers to spawn.
 * Added `GryoSerializer` as the new recommended Spark `Serializer`. Handles `Graph` and `GryoMapper` registries.
@@ -68,6 +67,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.0.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a `clone()` bug in `RepeatStep` and `TraversalRing`.
 * Fixed a thread context bug in `TinkerGraphComputer`.
 * Improved session closing for transactional graphs during shutdown of Gremlin Server.
 * Fixed id parameter used in tests for `GroovyStoreTest` and `GroovyRepeatTest` to not be treated as an embedded string.
