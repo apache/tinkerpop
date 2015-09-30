@@ -341,7 +341,7 @@ public abstract class AbstractGremlinSuite extends Suite {
                 } catch (ClassNotFoundException e) {
                     return Object.class;
                 }
-            }).filter(c -> c.equals(Object.class)).anyMatch(c -> c == graphProviderDescriptor.get().computer());
+            }).filter(c -> !c.equals(Object.class)).anyMatch(c -> c == graphProviderDescriptor.get().computer());
         }
     }
 }
