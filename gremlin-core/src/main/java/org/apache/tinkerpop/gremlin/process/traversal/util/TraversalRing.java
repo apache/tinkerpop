@@ -32,8 +32,7 @@ import java.util.List;
  */
 public final class TraversalRing<A, B> implements Serializable, Cloneable {
 
-    private final IdentityTraversal<A, B> identityTraversal = new IdentityTraversal<>();
-
+    private IdentityTraversal<A, B> identityTraversal = new IdentityTraversal<>();
     private List<Traversal.Admin<A, B>> traversals = new ArrayList<>();
     private int currentTraversal = -1;
 
@@ -80,6 +79,7 @@ public final class TraversalRing<A, B> implements Serializable, Cloneable {
         try {
             final TraversalRing<A, B> clone = (TraversalRing<A, B>) super.clone();
             clone.traversals = new ArrayList<>();
+            clone.identityTraversal = new IdentityTraversal<>();
             for (final Traversal.Admin<A, B> traversal : this.traversals) {
                 clone.addTraversal(traversal.clone());
             }
