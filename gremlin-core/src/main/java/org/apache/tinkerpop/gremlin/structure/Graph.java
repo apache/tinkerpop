@@ -281,7 +281,7 @@ public interface Graph extends AutoCloseable, Host {
 
     /**
      * Get the {@link org.apache.commons.configuration.Configuration} associated with the construction of this graph.
-     * Whatever configuration was passed to {@link org.apache.tinkerpop.gremlin.structure.util.GraphFactory#open(org.apache.commons.configuration.Configuration)}
+     * Whatever configuration was passed to {@link GraphFactory#open(org.apache.commons.configuration.Configuration)}
      * is what should be returned by this method.
      *
      * @return the configuration used during graph construction.
@@ -289,7 +289,7 @@ public interface Graph extends AutoCloseable, Host {
     public Configuration configuration();
 
     /**
-     * Graph variables are a set of key/value pairs associated with the graph.The keys are String and the values
+     * Graph variables are a set of key/value pairs associated with the graph. The keys are String and the values
      * are Objects.
      */
     public interface Variables {
@@ -400,8 +400,7 @@ public interface Graph extends AutoCloseable, Host {
             public static final String FEATURE_CONCURRENT_ACCESS = "ConcurrentAccess";
 
             /**
-             * Determines if the {@code Graph} implementation supports
-             * {@link org.apache.tinkerpop.gremlin.process.computer.GraphComputer} based processing.
+             * Determines if the {@code Graph} implementation supports {@link GraphComputer} based processing.
              */
             @FeatureDescriptor(name = FEATURE_COMPUTER)
             public default boolean supportsComputer() {
@@ -441,7 +440,7 @@ public interface Graph extends AutoCloseable, Host {
 
             /**
              * Determines if the {@code Graph} implementation supports threaded transactions which allow a transaction
-             * to be executed across multiple threads via {@link org.apache.tinkerpop.gremlin.structure.Transaction#createThreadedTx()}.
+             * to be executed across multiple threads via {@link Transaction#createThreadedTx()}.
              */
             @FeatureDescriptor(name = FEATURE_THREADED_TRANSACTIONS)
             public default boolean supportsThreadedTransactions() {
