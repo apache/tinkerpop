@@ -42,7 +42,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -1372,19 +1371,19 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(GRATEFUL)
     public void shouldSupportWorkerCount() throws Exception {
-        final GraphComputer computer = graph.compute(graphComputerClass.get());
-        if (computer.features().supportsWorkerSpecification()) {
-            ComputerResult result = computer.program(new VertexProgramL()).workers(1).submit().get();
-            assertEquals(1l, (long) result.memory().get("workerCount"));
-            ////
-            result = graph.compute(graphComputerClass.get()).program(new VertexProgramL()).workers(2).submit().get();
-            assertEquals(2l, (long) result.memory().get("workerCount"));
+        assertFalse(graph.compute(graphComputerClass.get()).features().supportsWorkerCount(0));
+        for (int i = 0; i < 10; i++) { // the GraphComputer should not support 0 workers
+            final GraphComputer computer = graph.compute(graphComputerClass.get());
+            if (computer.features().supportsWorkerCount(i)) {
+                ComputerResult result = computer.program(new VertexProgramL()).workers(i).submit().get();
+                assertEquals(Integer.valueOf(i).longValue(), (long) result.memory().get("workerCount"));
+            }
         }
     }
 
     public static class VertexProgramL implements VertexProgram {
 
-        final Set<String> threadIds = new ConcurrentSkipListSet<>();
+        final Set<String> threadIds = new HashSet<>();
 
         @Override
         public void setup(final Memory memory) {

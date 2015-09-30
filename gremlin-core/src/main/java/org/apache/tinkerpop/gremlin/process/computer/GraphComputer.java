@@ -117,8 +117,8 @@ public interface GraphComputer {
 
     public interface Features {
 
-        public default boolean supportsWorkerSpecification() {
-            return true;
+        public default boolean supportsWorkerCount(int workers) {
+            return workers != 0;
         }
 
         public default boolean supportsGlobalMessageScopes() {
