@@ -28,6 +28,7 @@ import org.apache.giraph.job.GiraphJob;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.Cluster;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -135,7 +136,9 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                     this.giraphConfiguration.setWorkerConfiguration(1, 1, 100.0F);
                     this.giraphConfiguration.setNumComputeThreads(this.workers);
                 } else {
-                    int totalMappers = job.getInternalJob().getCluster().getClusterStatus().getMapSlotCapacity() - 1; // 1 is needed for master
+                    final Cluster cluster = new Cluster(GiraphGraphComputer.this.giraphConfiguration);
+                    int totalMappers = cluster.getClusterStatus().getMapSlotCapacity() - 1; // 1 is needed for master
+                    cluster.close();
                     if (this.workers <= totalMappers) {
                         this.giraphConfiguration.setWorkerConfiguration(this.workers, this.workers, 100.0F);
                         this.giraphConfiguration.setNumComputeThreads(1);
@@ -251,9 +254,9 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 return Runtime.getRuntime().availableProcessors();
             else {
                 try {
-                    final GiraphJob job = new GiraphJob(GiraphGraphComputer.this.giraphConfiguration, "GiraphGraphComputer.Features.getMaxWorkers()");
-                    int maxWorkers = job.getInternalJob().getCluster().getClusterStatus().getMapSlotCapacity() * 32; // max 32 threads per machine hardcoded :|
-                    job.getInternalJob().killJob();
+                    final Cluster cluster = new Cluster(GiraphGraphComputer.this.giraphConfiguration);
+                    int maxWorkers = cluster.getClusterStatus().getMapSlotCapacity() * 32; // max 32 threads per machine hardcoded :|
+                    cluster.close();
                     return maxWorkers;
                 } catch (final IOException | InterruptedException e) {
                     throw new IllegalStateException(e.getMessage(), e);
