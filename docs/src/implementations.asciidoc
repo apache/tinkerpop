@@ -792,11 +792,10 @@ giraph.minWorkers=2
 giraph.maxWorkers=2
 giraph.useOutOfCoreGraph=true
 giraph.useOutOfCoreMessages=true
-mapred.map.child.java.opts=-Xmx1024m
-mapred.reduce.child.java.opts=-Xmx1024m
-giraph.numInputThreads=4
-giraph.numComputeThreads=4
-giraph.maxMessagesInMemory=100000
+mapreduce.map.java.opts=-Xmx1024m
+mapreduce.reduce.java.opts=-Xmx1024m
+giraph.numInputThreads=2
+giraph.numComputeThreads=2
 
 A review of the Hadoop-Gremlin specific properties are provided in the table below. For the respective OLAP engines (<<sparkgraphcomputer,`SparkGraphComputer`>> or <<giraphgraphcomputer,`GiraphGraphComputer`>>) refer to their respective documentation for configuration options.
 
@@ -981,6 +980,8 @@ result.memory.runtime
 result.memory.keys()
 result.memory.get('~reducing')
 ----
+
+NOTE: If the user explicitly specifies `giraph.maxWorkers` and/or `giraph.numComputeThreads` in the configuration, then these values will be used by Giraph. However, if these are not specified and the user never calls `GraphComputer.workers()` then `GiraphGraphComputer` will try to compute the number of workers/threads to use based on the cluster's profile.
 
 Input/Output Formats
 ~~~~~~~~~~~~~~~~~~~~
