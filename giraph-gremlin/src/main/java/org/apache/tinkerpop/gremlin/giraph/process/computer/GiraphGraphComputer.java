@@ -66,6 +66,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
 
     protected GiraphConfiguration giraphConfiguration = new GiraphConfiguration();
     private MapMemory memory = new MapMemory();
+    private boolean useWorkerThreadsInConfiguration;
 
     public GiraphGraphComputer(final HadoopGraph hadoopGraph) {
         super(hadoopGraph);
@@ -81,7 +82,13 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         this.giraphConfiguration.setBoolean(GiraphConstants.STATIC_GRAPH.getKey(), true);
         this.giraphConfiguration.setVertexInputFormatClass(GiraphVertexInputFormat.class);
         this.giraphConfiguration.setVertexOutputFormatClass(GiraphVertexOutputFormat.class);
-        this.workers(this.giraphConfiguration.getNumComputeThreads() * (this.giraphConfiguration.getMaxWorkers() < 1 ? 1 : this.giraphConfiguration.getMaxWorkers()));
+        this.useWorkerThreadsInConfiguration = this.giraphConfiguration.getInt(GiraphConstants.MAX_WORKERS, -666) != -666 || this.giraphConfiguration.getInt(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), -666) != -666;
+    }
+
+    @Override
+    public GraphComputer workers(final int workers) {
+        this.useWorkerThreadsInConfiguration = false;
+        return super.workers(workers);
     }
 
     @Override
@@ -106,7 +113,6 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 fs.delete(new Path(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)), true);
                 ToolRunner.run(this, new String[]{});
             } catch (final Exception e) {
-                System.out.println(this.giraphConfiguration.getMaxWorkers() + "$%$%$");
                 //e.printStackTrace();
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -132,10 +138,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 // prepare the giraph vertex-centric computing job
                 final GiraphJob job = new GiraphJob(this.giraphConfiguration, Constants.GREMLIN_HADOOP_GIRAPH_JOB_PREFIX + this.vertexProgram);
                 // split required workers across system (open map slots + max threads per machine = total amount of TinkerPop workers)
-                if (this.giraphConfiguration.getLocalTestMode()) {
-                    this.giraphConfiguration.setWorkerConfiguration(1, 1, 100.0F);
-                    this.giraphConfiguration.setNumComputeThreads(this.workers);
-                } else {
+                if (!this.useWorkerThreadsInConfiguration) {
                     final Cluster cluster = new Cluster(GiraphGraphComputer.this.giraphConfiguration);
                     int totalMappers = cluster.getClusterStatus().getMapSlotCapacity() - 1; // 1 is needed for master
                     cluster.close();
@@ -143,6 +146,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                         this.giraphConfiguration.setWorkerConfiguration(this.workers, this.workers, 100.0F);
                         this.giraphConfiguration.setNumComputeThreads(1);
                     } else {
+                        if (totalMappers == 0) totalMappers = 1; // happens in local mode
                         int threadsPerMapper = Long.valueOf(Math.round((double) this.workers / (double) totalMappers)).intValue(); // TODO: need to find least common denominator
                         this.giraphConfiguration.setWorkerConfiguration(totalMappers, totalMappers, 100.0F);
                         this.giraphConfiguration.setNumComputeThreads(threadsPerMapper);
@@ -255,7 +259,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
             else {
                 try {
                     final Cluster cluster = new Cluster(GiraphGraphComputer.this.giraphConfiguration);
-                    int maxWorkers = cluster.getClusterStatus().getMapSlotCapacity() * 32; // max 32 threads per machine hardcoded :|
+                    int maxWorkers = (cluster.getClusterStatus().getMapSlotCapacity() - 1) * 16; // max 16 threads per machine hardcoded :|
                     cluster.close();
                     return maxWorkers;
                 } catch (final IOException | InterruptedException e) {

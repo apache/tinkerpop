@@ -123,11 +123,11 @@ public final class HadoopGiraphGraphProvider extends AbstractGraphProvider {
             put(GiraphConstants.NETTY_SERVER_USE_EXECUTION_HANDLER.getKey(), false); // this prevents so many integration tests running out of threads
             put(GiraphConstants.NETTY_CLIENT_USE_EXECUTION_HANDLER.getKey(), false); // this prevents so many integration tests running out of threads
             put(GiraphConstants.NETTY_USE_DIRECT_MEMORY.getKey(),true);
-            put(GiraphConstants.NUM_INPUT_THREADS.getKey(), 3);
-            put(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 3);
+            put(GiraphConstants.NUM_INPUT_THREADS.getKey(), 2);
+            put(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 2);
             put(GiraphConstants.MAX_MASTER_SUPERSTEP_WAIT_MSECS.getKey(), TimeUnit.MINUTES.toMillis(60L));
             put(GiraphConstants.VERTEX_OUTPUT_FORMAT_THREAD_SAFE.getKey(), false);
-            put(GiraphConstants.NUM_OUTPUT_THREADS.getKey(), 3);
+            put(GiraphConstants.NUM_OUTPUT_THREADS.getKey(), 2);
         }};
     }
 
