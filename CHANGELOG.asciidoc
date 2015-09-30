@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `GraphComputer.workers(int)` allows the user to programmatically set the number of workers to spawn.
 * Added `GryoSerializer` as the new recommended Spark `Serializer`. Handles `Graph` and `GryoMapper` registries.
 * `GryoPool` now makes use of `GryoPool.Builder` for its construction.
 * Bumped to Apache Hadoop 2.7.1.
