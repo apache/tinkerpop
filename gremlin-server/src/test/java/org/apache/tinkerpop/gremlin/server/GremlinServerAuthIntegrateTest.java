@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 
 import static org.junit.Assert.assertEquals;
 
@@ -137,6 +138,34 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());
             assertEquals("Username and/or password are incorrect", root.getMessage());
+        } finally {
+            cluster.close();
+        }
+    }
+    
+    @Test
+    public void shouldAuthenticateWithPlainTextOverJSONSerialization() throws Exception {
+        final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON).credentials("stephen", "password").create();
+        final Client client = cluster.connect();
+
+        try {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldAuthenticateWithPlainTextOverGraphSONSerialization() throws Exception {
+        final Cluster cluster = Cluster.build().serializer(Serializers.GRAPHSON_V1D0).credentials("stephen", "password").create();
+        final Client client = cluster.connect();
+
+        try {
+            assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+            assertEquals(3, client.submit("1+2").all().get().get(0).getInt());
+            assertEquals(4, client.submit("1+3").all().get().get(0).getInt());
         } finally {
             cluster.close();
         }

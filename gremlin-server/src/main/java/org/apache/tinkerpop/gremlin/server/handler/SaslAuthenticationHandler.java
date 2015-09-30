@@ -22,6 +22,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.Attribute;
+import java.util.Base64;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -67,7 +68,22 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                 ctx.writeAndFlush(authenticate);
             } else {
                 if (requestMessage.getOp().equals(Tokens.OPS_AUTHENTICATION) && requestMessage.getArgs().containsKey(Tokens.ARGS_SASL)) {
-                    final byte[] saslResponse = (byte[]) requestMessage.getArgs().get(Tokens.ARGS_SASL);
+                    
+                    final Object saslObject = requestMessage.getArgs().get(Tokens.ARGS_SASL);
+                    final byte[] saslResponse;
+                    
+                    if (saslObject instanceof byte[]) {
+                        saslResponse = (byte[]) saslObject;
+                    } else if(saslObject instanceof String) {
+                        saslResponse = Base64.getDecoder().decode((String) saslObject);
+                    } else {
+                        final ResponseMessage error = ResponseMessage.build(request.get())
+                                .statusMessage("Incorrect type for : " + Tokens.ARGS_SASL + ". byte[] or String is expected")
+                                .code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).create();
+                        ctx.writeAndFlush(error);
+                        return;
+                    }
+                    
                     try {
                         final byte[] saslMessage = negotiator.get().evaluateResponse(saslResponse);
                         if (negotiator.get().isComplete()) {
