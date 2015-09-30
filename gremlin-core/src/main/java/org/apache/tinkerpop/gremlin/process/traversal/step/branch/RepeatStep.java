@@ -224,7 +224,7 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     ///////////////////////////////////
 
-    public class RepeatEndStep extends ComputerAwareStep<S, S> {
+    public static class RepeatEndStep<S> extends ComputerAwareStep<S, S> {
 
         public RepeatEndStep(final Traversal.Admin traversal) {
             super(traversal);
@@ -232,18 +232,19 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
         @Override
         protected Iterator<Traverser<S>> standardAlgorithm() throws NoSuchElementException {
+            final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             while (true) {
                 final Traverser.Admin<S> start = this.starts.next();
                 start.incrLoops(this.getId());
-                if (doUntil(start, false)) {
+                if (repeatStep.doUntil(start, false)) {
                     start.resetLoops();
                     return IteratorUtils.of(start);
                 } else {
-                    if (!RepeatStep.this.untilFirst && !RepeatStep.this.emitFirst)
-                        RepeatStep.this.repeatTraversal.addStart(start);
+                    if (!repeatStep.untilFirst && !repeatStep.emitFirst)
+                        repeatStep.repeatTraversal.addStart(start);
                     else
-                        RepeatStep.this.addStart(start);
-                    if (doEmit(start, false)) {
+                        repeatStep.addStart(start);
+                    if (repeatStep.doEmit(start, false)) {
                         final Traverser.Admin<S> emitSplit = start.split();
                         emitSplit.resetLoops();
                         return IteratorUtils.of(emitSplit);
@@ -254,19 +255,20 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
         @Override
         protected Iterator<Traverser<S>> computerAlgorithm() throws NoSuchElementException {
+            final RepeatStep<S> repeatStep = (RepeatStep<S>) this.getTraversal().getParent();
             final Traverser.Admin<S> start = this.starts.next();
-            start.incrLoops(RepeatStep.this.getId());
-            if (doUntil(start, false)) {
+            start.incrLoops(repeatStep.getId());
+            if (repeatStep.doUntil(start, false)) {
                 start.resetLoops();
-                start.setStepId(RepeatStep.this.getNextStep().getId());
-                start.addLabels(RepeatStep.this.labels);
+                start.setStepId(repeatStep.getNextStep().getId());
+                start.addLabels(repeatStep.labels);
                 return IteratorUtils.of(start);
             } else {
-                start.setStepId(RepeatStep.this.getId());
-                if (doEmit(start, false)) {
+                start.setStepId(repeatStep.getId());
+                if (repeatStep.doEmit(start, false)) {
                     final Traverser.Admin<S> emitSplit = start.split();
                     emitSplit.resetLoops();
-                    emitSplit.setStepId(RepeatStep.this.getNextStep().getId());
+                    emitSplit.setStepId(repeatStep.getNextStep().getId());
                     return IteratorUtils.of(start, emitSplit);
                 }
                 return IteratorUtils.of(start);

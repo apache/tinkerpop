@@ -93,8 +93,11 @@ public final class TinkerMessenger<M> implements Messenger<M> {
     }
 
     private void addMessage(final Vertex vertex, final M message) {
-        final Queue<M> queue = this.messageBoard.sendMessages.computeIfAbsent(vertex, v -> new ConcurrentLinkedQueue<>());
-        queue.add(null != this.combiner && !queue.isEmpty() ? this.combiner.combine(queue.remove(), message) : message);
+        this.messageBoard.sendMessages.compute(vertex, (v,queue) -> {
+            if(null == queue) queue = new ConcurrentLinkedQueue<>();
+            queue.add(null != this.combiner && !queue.isEmpty() ? this.combiner.combine(queue.remove(), message) : message);
+            return queue;
+        });
     }
 
     ///////////

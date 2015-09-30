@@ -24,12 +24,10 @@ import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapReducePool;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramPool;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 /**
@@ -38,17 +36,19 @@ import java.util.function.Consumer;
  */
 public final class TinkerWorkerPool implements AutoCloseable {
 
-    private static final BasicThreadFactory threadFactoryWorker = new BasicThreadFactory.Builder().namingPattern("tinker-worker-%d").build();
+    private static final BasicThreadFactory THREAD_FACTORY_WORKER = new BasicThreadFactory.Builder().namingPattern("tinker-worker-%d").build();
 
     private final int numberOfWorkers;
     private final ExecutorService workerPool;
+    private final CompletionService<Object> completionService;
 
     private VertexProgramPool vertexProgramPool;
     private MapReducePool mapReducePool;
 
     public TinkerWorkerPool(final int numberOfWorkers) {
         this.numberOfWorkers = numberOfWorkers;
-        workerPool = Executors.newFixedThreadPool(numberOfWorkers, threadFactoryWorker);
+        this.workerPool = Executors.newFixedThreadPool(numberOfWorkers, THREAD_FACTORY_WORKER);
+        this.completionService = new ExecutorCompletionService<>(this.workerPool);
     }
 
     public void setVertexProgram(final VertexProgram vertexProgram) {
@@ -60,33 +60,35 @@ public final class TinkerWorkerPool implements AutoCloseable {
     }
 
     public void executeVertexProgram(final Consumer<VertexProgram> worker) {
-        final List<Callable<Object>> tasks = new ArrayList<>();
-        for (int i = 0; i < 1; i++) {
-            tasks.add(() -> {
+        for (int i = 0; i < this.numberOfWorkers; i++) {
+            this.completionService.submit(() -> {
                 final VertexProgram vp = this.vertexProgramPool.take();
                 worker.accept(vp);
                 this.vertexProgramPool.offer(vp);
                 return null;
             });
         }
-        try {
-            final List<Future<Object>> futures = this.workerPool.invokeAll(tasks);
-           for(Future future : futures) {
-               future.get();
-           }
-        } catch (final Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
+        for (int i = 0; i < this.numberOfWorkers; i++) {
+            try {
+                this.completionService.take().get();
+            } catch (final Exception e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
         }
     }
 
     public void executeMapReduce(final Consumer<MapReduce> worker) {
         for (int i = 0; i < this.numberOfWorkers; i++) {
+            this.completionService.submit(() -> {
+                final MapReduce mr = this.mapReducePool.take();
+                worker.accept(mr);
+                this.mapReducePool.offer(mr);
+                return null;
+            });
+        }
+        for (int i = 0; i < this.numberOfWorkers; i++) {
             try {
-                this.workerPool.submit(() -> {
-                    final MapReduce mr = this.mapReducePool.take();
-                    worker.accept(mr);
-                    this.mapReducePool.offer(mr);
-                }).get();
+                this.completionService.take().get();
             } catch (final Exception e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
@@ -95,6 +97,6 @@ public final class TinkerWorkerPool implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        workerPool.shutdown();
+        this.workerPool.shutdown();
     }
 }

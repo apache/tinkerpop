@@ -131,7 +131,7 @@ public final class TinkerGraphComputer implements GraphComputer {
                                 final Vertex vertex = vertices.next();
                                 if (null == vertex) break;
                                 vertexProgram.execute(
-                                        ComputerGraph.vertexProgram(vertex, this.vertexProgram),
+                                        ComputerGraph.vertexProgram(vertex, vertexProgram),
                                         new TinkerMessenger<>(vertex, this.messageBoard, vertexProgram.getMessageCombiner()),
                                         this.memory
                                 );
