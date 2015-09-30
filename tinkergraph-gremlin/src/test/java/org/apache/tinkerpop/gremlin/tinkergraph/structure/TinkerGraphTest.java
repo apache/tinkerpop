@@ -18,11 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -256,5 +261,71 @@ public class TinkerGraphTest {
         }, 0.5)).has("oid", "1").count().next());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void shouldRequireGraphLocationIfFormatIsSet() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "graphml");
+        TinkerGraph.open(conf);
+    }
 
+    @Test(expected = IllegalStateException.class)
+    public void shouldRequireGraphFormatIfLocationIsSet() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, "/tmp");
+        TinkerGraph.open(conf);
+    }
+
+    @Test
+    public void shouldPersistToGraphML() {
+        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGraphML.xml";
+        final File f = new File(graphLocation);
+        if (f.exists() && f.isFile()) f.delete();
+
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "graphml");
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, graphLocation);
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        TinkerFactory.generateModern(graph);
+        graph.close();
+
+        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
+        IoTest.assertModernGraph(reloadedGraph, true, true);
+        reloadedGraph.close();
+    }
+
+    @Test
+    public void shouldPersistToGraphSON() {
+        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGraphSON.json";
+        final File f = new File(graphLocation);
+        if (f.exists() && f.isFile()) f.delete();
+
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "graphson");
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, graphLocation);
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        TinkerFactory.generateModern(graph);
+        graph.close();
+
+        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
+        IoTest.assertModernGraph(reloadedGraph, true, false);
+        reloadedGraph.close();
+    }
+
+    @Test
+    public void shouldPersistToGryo() {
+        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGryo.kryo";
+        final File f = new File(graphLocation);
+        if (f.exists() && f.isFile()) f.delete();
+
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "gryo");
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, graphLocation);
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        TinkerFactory.generateModern(graph);
+        graph.close();
+
+        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
+        IoTest.assertModernGraph(reloadedGraph, true, false);
+        reloadedGraph.close();
+    }
 }
