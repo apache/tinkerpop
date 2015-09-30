@@ -18,192 +18,30 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
-import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
-import org.apache.tinkerpop.gremlin.util.TimeUtil;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
-import java.util.List;
+import java.io.File;
 import java.util.Set;
-import java.util.function.Supplier;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TinkerGraphTest {
-
-    @Test
-    @Ignore
-    public void testPlay() {
-        Graph g = TinkerGraph.open();
-        Vertex v1 = g.addVertex(T.id, "1", "animal", "males");
-        Vertex v2 = g.addVertex(T.id, "2", "animal", "puppy");
-        Vertex v3 = g.addVertex(T.id, "3", "animal", "mama");
-        Vertex v4 = g.addVertex(T.id, "4", "animal", "puppy");
-        Vertex v5 = g.addVertex(T.id, "5", "animal", "chelsea");
-        Vertex v6 = g.addVertex(T.id, "6", "animal", "low");
-        Vertex v7 = g.addVertex(T.id, "7", "animal", "mama");
-        Vertex v8 = g.addVertex(T.id, "8", "animal", "puppy");
-        Vertex v9 = g.addVertex(T.id, "9", "animal", "chula");
-
-        v1.addEdge("link", v2, "weight", 2f);
-        v2.addEdge("link", v3, "weight", 3f);
-        v2.addEdge("link", v4, "weight", 4f);
-        v2.addEdge("link", v5, "weight", 5f);
-        v3.addEdge("link", v6, "weight", 1f);
-        v4.addEdge("link", v6, "weight", 2f);
-        v5.addEdge("link", v6, "weight", 3f);
-        v6.addEdge("link", v7, "weight", 2f);
-        v6.addEdge("link", v8, "weight", 3f);
-        v7.addEdge("link", v9, "weight", 1f);
-        v8.addEdge("link", v9, "weight", 7f);
-
-        g.traversal().withSack(Float.MIN_VALUE).V(v1).repeat(outE().sack(Operator.max, "weight").inV()).times(5).sack().forEachRemaining(System.out::println);
-    }
-
-   /* @Test
-    public void testTraversalDSL() throws Exception {
-        Graph g = TinkerFactory.createClassic();
-        assertEquals(2, g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().toList().size());
-        g.of(TinkerFactory.SocialTraversal.class).people("marko").knows().name().forEachRemaining(name -> assertTrue(name.equals("josh") || name.equals("vadas")));
-        assertEquals(1, g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().toList().size());
-        g.of(TinkerFactory.SocialTraversal.class).people("marko").created().name().forEachRemaining(name -> assertEquals("lop", name));
-    }*/
-
-    @Test
-    @Ignore
-    public void benchmarkStandardTraversals() throws Exception {
-        Graph graph = TinkerGraph.open();
-        GraphTraversalSource g = graph.traversal();
-        graph.io(GraphMLIo.build()).readGraph("data/grateful-dead.xml");
-        final List<Supplier<Traversal>> traversals = Arrays.asList(
-                () -> g.V().outE().inV().outE().inV().outE().inV(),
-                () -> g.V().out().out().out(),
-                () -> g.V().out().out().out().path(),
-                () -> g.V().repeat(out()).times(2),
-                () -> g.V().repeat(out()).times(3),
-                () -> g.V().local(out().out().values("name").fold()),
-                () -> g.V().out().local(out().out().values("name").fold()),
-                () -> g.V().out().map(v -> g.V(v.get()).out().out().values("name").toList())
-        );
-        traversals.forEach(traversal -> {
-            System.out.println("\nTESTING: " + traversal.get());
-            for (int i = 0; i < 7; i++) {
-                final long t = System.currentTimeMillis();
-                traversal.get().iterate();
-                System.out.print("   " + (System.currentTimeMillis() - t));
-            }
-        });
-    }
-
-    @Test
-    @Ignore
-    public void testPlay4() throws Exception {
-        Graph graph = TinkerGraph.open();
-        graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
-        GraphTraversalSource g = graph.traversal();
-        final List<Supplier<Traversal>> traversals = Arrays.asList(
-                () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
-                        g.V(t).choose(r -> g.V(r).has(T.label, "artist").hasNext(),
-                                in("writtenBy", "sungBy"),
-                                both("followedBy")).values("name").next()).fold(),
-                () -> g.V().has(T.label, "song").out().groupCount().<Vertex>by(t ->
-                        g.V(t).choose(has(T.label, "artist"),
-                                in("writtenBy", "sungBy"),
-                                both("followedBy")).values("name").next()).fold(),
-                () -> g.V().has(T.label, "song").out().groupCount().by(
-                        choose(has(T.label, "artist"),
-                                in("writtenBy", "sungBy"),
-                                both("followedBy")).values("name")).fold(),
-                () -> g.V().has(T.label, "song").both().groupCount().<Vertex>by(t -> g.V(t).both().values("name").next()),
-                () -> g.V().has(T.label, "song").both().groupCount().by(both().values("name")));
-        traversals.forEach(traversal -> {
-            System.out.println("\nTESTING: " + traversal.get());
-            for (int i = 0; i < 10; i++) {
-                final long t = System.currentTimeMillis();
-                traversal.get().iterate();
-                //System.out.println(traversal.get().toList());
-                System.out.print("   " + (System.currentTimeMillis() - t));
-            }
-        });
-    }
-
-    @Test
-    @Ignore
-    public void testPlayDK() throws Exception {
-        final Graph graph = TinkerFactory.createModern();
-        final GraphTraversalSource g = graph.traversal();
-        Traversal traversal = g.V().dedup().filter(__.out()).has("age", P.gt(0));
-        System.out.println(traversal.toString());
-        //traversal.asAdmin().applyStrategies();
-        System.out.println(traversal.iterate().toString());
-    }
-
-    @Test
-    @Ignore
-    public void testPlay7() throws Exception {
-        final Graph graph = TinkerFactory.createModern();
-        final GraphTraversalSource g = graph.traversal();
-        g.withSack(1.0, Operator.sum).V(1).local(outE("knows").barrier(SackFunctions.Barrier.normSack)).inV().in("knows").barrier().sack().forEachRemaining(System.out::println);
-    }
-
-    @Test
-    @Ignore
-    public void testPlay5() throws Exception {
-        TinkerGraph graph = TinkerGraph.open();
-        graph.createIndex("name", Vertex.class);
-        graph.io(GraphMLIo.build()).readGraph("/Users/marko/software/tinkerpop/tinkerpop3/data/grateful-dead.xml");
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.computer());
-
-        final Supplier<Traversal<?, ?>> traversal = () ->
-                g.V().repeat(out()).times(5).as("a").out("writtenBy").as("b").select("a", "b").count();
-
-        System.out.println(traversal.get());
-        System.out.println(traversal.get().iterate());
-        System.out.println(TimeUtil.clockWithResult(1, () -> traversal.get().next()));
-    }
-
-    @Test
-    @Ignore
-    public void testPlay6() throws Exception {
-        final Graph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
-        for (int i = 0; i < 1000; i++) {
-            graph.addVertex(T.label, "person", T.id, i);
-        }
-        graph.vertices().forEachRemaining(a -> {
-            graph.vertices().forEachRemaining(b -> {
-                if (a != b) {
-                    a.addEdge("knows", b);
-                }
-            });
-        });
-        graph.vertices(50).next().addEdge("uncle", graph.vertices(70).next());
-        System.out.println(TimeUtil.clockWithResult(500, () -> g.V().match(as("a").out("knows").as("b"), as("a").out("uncle").as("b")).toList()));
-    }
 
     @Test
     public void shouldManageIndices() {
@@ -444,6 +282,12 @@ public class TinkerGraphTest {
             }
         }
     }
+    @Test(expected = IllegalStateException.class)
+    public void shouldRequireGraphLocationIfFormatIsSet() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "graphml");
+        TinkerGraph.open(conf);
+    }
 
     @Test(expected = IllegalStateException.class)
     public void shouldNotModifyAVertexThatWasRemoved() {
@@ -477,5 +321,65 @@ public class TinkerGraphTest {
         assertEquals("stephen", v.value("name"));
         v.remove();
         v.value("name");
+    }
+    @Test(expected = IllegalStateException.class)
+    public void shouldRequireGraphFormatIfLocationIsSet() {
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, "/tmp");
+        TinkerGraph.open(conf);
+    }
+
+    @Test
+    public void shouldPersistToGraphML() {
+        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGraphML.xml";
+        final File f = new File(graphLocation);
+        if (f.exists() && f.isFile()) f.delete();
+
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "graphml");
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, graphLocation);
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        TinkerFactory.generateModern(graph);
+        graph.close();
+
+        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
+        IoTest.assertModernGraph(reloadedGraph, true, true);
+        reloadedGraph.close();
+    }
+
+    @Test
+    public void shouldPersistToGraphSON() {
+        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGraphSON.json";
+        final File f = new File(graphLocation);
+        if (f.exists() && f.isFile()) f.delete();
+
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "graphson");
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, graphLocation);
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        TinkerFactory.generateModern(graph);
+        graph.close();
+
+        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
+        IoTest.assertModernGraph(reloadedGraph, true, false);
+        reloadedGraph.close();
+    }
+
+    @Test
+    public void shouldPersistToGryo() {
+        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGryo.kryo";
+        final File f = new File(graphLocation);
+        if (f.exists() && f.isFile()) f.delete();
+
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "gryo");
+        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, graphLocation);
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        TinkerFactory.generateModern(graph);
+        graph.close();
+
+        final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
+        IoTest.assertModernGraph(reloadedGraph, true, false);
+        reloadedGraph.close();
     }
 }
