@@ -51,7 +51,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 /**
- * An in-memory, reference implementation of the property graph interfaces provided by TinkerPop.
+ * An in-memory (with optional persistence on calls to {@link #close()}), reference implementation of the property
+ * graph interfaces provided by TinkerPop.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
