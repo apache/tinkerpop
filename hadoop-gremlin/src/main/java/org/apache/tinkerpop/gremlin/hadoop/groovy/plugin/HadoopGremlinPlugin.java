@@ -71,10 +71,6 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + MapReduceGraphComputer.class.getPackage().getName() + DOT_STAR);
     }};
 
-    public HadoopGremlinPlugin() {
-        super(true);
-    }
-
     @Override
     public String getName() {
         return NAME;
