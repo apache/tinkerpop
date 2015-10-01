@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.0.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* The `RepeatStep` clauses (`until()`,`emit()`,`repeat()`) can only be set at most one time in order to prevent user confusion.
 * Fixed a `clone()` bug in `RepeatStep`, `TreeStep`, `GroupCountStep`, `GroupStep`, and `TraversalRing`.
 * Fixed a thread context bug in `TinkerGraphComputer`.
 * Improved session closing for transactional graphs during shutdown of Gremlin Server.
