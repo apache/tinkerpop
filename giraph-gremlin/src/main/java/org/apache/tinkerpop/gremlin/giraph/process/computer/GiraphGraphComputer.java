@@ -51,6 +51,7 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.VertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.DefaultComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.util.MapMemory;
+import org.apache.tinkerpop.gremlin.util.Gremlin;
 
 import java.io.File;
 import java.io.IOException;
@@ -210,20 +211,21 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     }
 
     private void loadJars(final FileSystem fs) {
-        final String hadoopGremlinLibsRemote = "hadoop-gremlin-libs";
+        final String hadoopGremlinLibsRemote = "hadoop-gremlin-" + Gremlin.version() + "-libs";
         if (this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true)) {
-            final String hadoopGremlinLocalLibs = null == System.getProperty(Constants.HADOOP_GREMLIN_LIBS) ? System.getenv(Constants.HADOOP_GREMLIN_LIBS) : System.getProperty(Constants.HADOOP_GREMLIN_LIBS);
-            if (null == hadoopGremlinLocalLibs)
+            final String hadoopGremlinLibsLocal = null == System.getProperty(Constants.HADOOP_GREMLIN_LIBS) ? System.getenv(Constants.HADOOP_GREMLIN_LIBS) : System.getProperty(Constants.HADOOP_GREMLIN_LIBS);
+            if (null == hadoopGremlinLibsLocal)
                 this.logger.warn(Constants.HADOOP_GREMLIN_LIBS + " is not set -- proceeding regardless");
             else {
-                final String[] paths = hadoopGremlinLocalLibs.split(":");
+                final String[] paths = hadoopGremlinLibsLocal.split(":");
                 for (final String path : paths) {
                     final File file = new File(path);
                     if (file.exists()) {
                         Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> {
                             try {
                                 final Path jarFile = new Path(fs.getHomeDirectory() + "/" + hadoopGremlinLibsRemote + "/" + f.getName());
-                                fs.copyFromLocalFile(new Path(f.getPath()), jarFile);
+                                if (!fs.exists(jarFile))
+                                    fs.copyFromLocalFile(new Path(f.getPath()), jarFile);
                                 try {
                                     DistributedCache.addArchiveToClassPath(jarFile, this.giraphConfiguration, fs);
                                 } catch (final Exception e) {
