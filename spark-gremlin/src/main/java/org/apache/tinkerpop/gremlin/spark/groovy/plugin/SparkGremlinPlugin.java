@@ -42,10 +42,6 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + SparkGraphComputer.class.getPackage().getName() + DOT_STAR);
     }};
 
-    public SparkGremlinPlugin() {
-        super(true);
-    }
-
     @Override
     public String getName() {
         return NAME;
