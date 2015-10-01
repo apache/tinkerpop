@@ -1230,10 +1230,11 @@ WARNING: The anonymous traversal of `emit()` and `until()` (not `repeat()`) proc
 Sack Step
 ~~~~~~~~~
 
-image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a local data structure called a "sack". The `sack()`-step is used to read and write sacks (*sideEffect* or *map*). Each sack of each traverser is created when using `GraphTraversal.withSack(initialValueSupplier,splitOperator?)`.
+image:gremlin-sacks-running.png[width=175,float=right] A traverser can contain a local data structure called a "sack". The `sack()`-step is used to read and write sacks (*sideEffect* or *map*). Each sack of each traverser is created when using `GraphTraversal.withSack(initialValueSupplier,splitOperator?,mergeOperator?)`.
 
 * *Initial value supplier*: A `Supplier` providing the initial value of each traverser's sack.
 * *Split operator*: a `UnaryOperator` that clones the traverser's sack when the traverser splits. If no split operator is provided, then `UnaryOperator.identity()` is assumed.
+* *Merge operator*: A `BinaryOperator` that unites two traverser's sack when they are merged. If no merge operator is provided, then traversers with sacks can not be merged.
 
 Two trivial examples are presented below to demonstrate the *initial value supplier*. In the first example below, a traverser is created at each vertex in the graph (`g.V()`), with a 1.0 sack (`withSack(1.0f)`), and then the sack value is accessed (`sack()`). In the second example, a random float supplier is used to generate sack values.
 
@@ -1265,6 +1266,26 @@ g.withSack {[:]}{it.clone()}.V().out().out().
 ----
 
 NOTE: For primitives (i.e. integers, longs, floats, etc.), a split operator is not required as a primitives are encoded in the memory address of the sack, not as a reference to an object.
+
+If a *merge operator* is not provided, then traversers with sacks can not be bulked. However, in many situations, merging the sacks of two traversers at the same location is algorithmically sound and good to provide so as to gain the bulking optimization. In the examples below, the binary merge operator is `Operator.sum`. Thus, when two traverser merge, their respective sacks are added together.
+
+[gremlin-groovy,modern]
+----
+g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()) <1>
+g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).sack() <2>
+g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows') <3>
+g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').sack() <4>
+g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier().sack() <5>
+g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier().sideEffect{it.setBulk(1)}.sack() <6>
+----
+
+<1> The knows-adjacent vertices of vertex 1 are vertices 2 and 4.
+<2> The `local(...barrier(normSack)...)` ensures that all traversers leaving vertex 1 have an evenly distributed amount of the initial 1.0 "energy" (50-50).
+<3> Going from vertices 2 and 4 yield two traversers at vertex 1.
+<4> Those two traversers each have a sack of 0.5.
+<5> The `barrier()` merges the two traversers at vertex 1 into a single traverser whose sack is 1.0.
+<6> There is now a single traverser with bulk of 2 and sack of 1.0 and thus, setting the bulk to 1 yields the expected 1.0.
+
 
 [[sample-step]]
 Sample Step
