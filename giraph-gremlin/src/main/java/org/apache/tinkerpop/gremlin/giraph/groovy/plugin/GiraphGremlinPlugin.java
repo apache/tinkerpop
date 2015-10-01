@@ -41,10 +41,6 @@ public final class GiraphGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);
     }};
 
-    public GiraphGremlinPlugin() {
-        super(true);
-    }
-
     @Override
     public String getName() {
         return NAME;
