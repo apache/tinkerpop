@@ -64,6 +64,14 @@ limitations under the License.
         </fileSet>
     </fileSets>
 
+    <files>
+        <file>
+            <source>../hadoop-gremlin/conf/hadoop-gryo.properties</source>
+            <outputDirectory>/conf</outputDirectory>
+            <filtered>false</filtered>
+        </file>
+    </files>
+
     <dependencySets>
         <dependencySet>
             <outputDirectory>/lib</outputDirectory>
