@@ -43,10 +43,21 @@ public abstract class AbstractGremlinPlugin implements GremlinPlugin {
     protected Groovysh shell;
     protected final boolean requireConsoleEnvironment;
 
+    /**
+     * Creates a new instance that does not force the plugin to require the console.  This will create a plugin that
+     * will work in Gremlin Console and Gremlin Server.
+     */
     public AbstractGremlinPlugin() {
         this(false);
     }
 
+    /**
+     * Creates a new instance that allows the plugin to specify whether the console is required or not.  It is only
+     * necessary to require the console if there are specific required calls to {@code IO} or to {@code Groovysh}
+     * methods in the plugin (as those classes are Gremlin Console related and cannot be provided outside of that
+     * environment).  For a plugin to work in the Gremlin Console and in Gremlin Server this value must be set
+     * to {@code false}.
+     */
     public AbstractGremlinPlugin(final boolean requireConsoleEnvironment) {
         this.requireConsoleEnvironment = requireConsoleEnvironment;
     }
