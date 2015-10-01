@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
+import org.slf4j.Logger;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -39,6 +40,7 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
     protected static String NAME = "tinkerpop.spark";
 
     protected static final Set<String> IMPORTS = new HashSet<String>() {{
+        add("import org.apache.log4j.*");
         add(IMPORT_SPACE + SparkGraphComputer.class.getPackage().getName() + DOT_STAR);
     }};
 
