@@ -16,9 +16,15 @@
 # under the License.
 
 # This is an example Gremlin Server configuration file that
-# configures Gremlin Server to use Spark.  In this case the
-# "graph" gets constructed as a HadoopGraph as defined by
-# conf/hadoop-gryo.properties.
+# configures Gremlin Server to use Spark.  It assumes that
+# Hadoop 2 is running and properly configured (e.g. if it
+# is possible to execute a spark based traversal in the Gremlin
+# Console locally then Gremlin Server should work as well).
+# It further assumes that data/tinkerpop-modern.kryo has been
+# copied to hdfs.
+#
+# In this case the "graph" gets constructed as a HadoopGraph as
+# defined by conf/hadoop-gryo.properties.
 #
 # Note that the tinkerpop.spark plugin is listed in the
 # plugins configuration key.
