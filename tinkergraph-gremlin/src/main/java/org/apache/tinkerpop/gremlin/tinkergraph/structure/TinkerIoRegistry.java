@@ -62,7 +62,7 @@ public final class TinkerIoRegistry extends AbstractIoRegistry {
         @Override
         public void write(final Kryo kryo, final Output output, final TinkerGraph graph) {
             try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-                graph.io(IoCore.gryo()).writer().create().writeGraph(stream, graph);
+                graph.io(IoCore.gryo(kryo)).writer().create().writeGraph(stream, graph);
                 final byte[] bytes = stream.toByteArray();
                 output.writeInt(bytes.length);
                 output.write(bytes);
@@ -77,7 +77,7 @@ public final class TinkerIoRegistry extends AbstractIoRegistry {
             final int len = input.readInt();
             final byte[] bytes = input.readBytes(len);
             try (final ByteArrayInputStream stream = new ByteArrayInputStream(bytes)) {
-                graph.io(IoCore.gryo()).reader().create().readGraph(stream, graph);
+                graph.io(IoCore.gryo(kryo)).reader().create().readGraph(stream, graph);
             } catch (Exception io) {
                 throw new RuntimeException(io);
             }

@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.structure.io.gryo;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -38,10 +39,12 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
 
     private final IoRegistry registry;
     private final Graph graph;
+    private final Kryo kryo;
 
-    private GryoIo(final IoRegistry registry, final Graph graph) {
+    private GryoIo(final IoRegistry registry, final Graph graph, final Kryo kryo) {
         this.registry = registry;
         this.graph = graph;
+        this.kryo = kryo;
     }
 
     /**
@@ -49,14 +52,15 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
      */
     @Override
     public GryoReader.Builder reader() {
-        return GryoReader.build().mapper(mapper().create());
+        return GryoReader.build().kryo(kryo).mapper(mapper().create());
     }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public GryoWriter.Builder writer() {
-        return GryoWriter.build().mapper(mapper().create());
+        return GryoWriter.build().kryo(kryo).mapper(mapper().create());
     }
 
     /**
@@ -91,10 +95,15 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
         return new Builder();
     }
 
+    public static Io.Builder<GryoIo> build(Kryo kryo) {
+        return new Builder().kryo(kryo);
+    }
+
     public final static class Builder implements Io.Builder<GryoIo> {
 
         private IoRegistry registry = null;
         private Graph graph;
+        private Kryo kryo;
 
         @Override
         public Io.Builder<GryoIo> registry(final IoRegistry registry) {
@@ -108,10 +117,15 @@ public final class GryoIo implements Io<GryoReader.Builder, GryoWriter.Builder, 
             return this;
         }
 
+        public Builder kryo(final Kryo kryo) {
+            this.kryo = kryo;
+            return this;
+        }
+
         @Override
         public GryoIo create() {
             if (null == graph) throw new IllegalArgumentException("The graph argument was not specified");
-            return new GryoIo(registry, graph);
+            return new GryoIo(registry, graph, kryo);
         }
     }
 }
