@@ -138,21 +138,43 @@ public interface Graph extends AutoCloseable, Host {
      */
     public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) throws IllegalArgumentException;
 
+    /**
+     * Generate a {@link GraphComputer} using the default engine of the underlying graph system.
+     * This is a shorthand method for the more involved method that uses {@link Graph#compute(Class)}.
+     *
+     * @return A default graph computer
+     * @throws IllegalArgumentException if there is no default graph computer
+     */
     public GraphComputer compute() throws IllegalArgumentException;
 
     /**
+<<<<<<< HEAD
      * Construct a {@link TraversalSource} using the specified {@code sourceBuilder}.  The {@link TraversalSource}
      * provides methods for creating a {@link Traversal} given the context of {@link TraversalStrategy} implementations
      * and a {@link GraphComputer}.
+=======
+     * Generate a {@link TraversalSource} given a {@link TraversalSource.Builder} for this {@link Graph}.
+     *
+     * @param sourceBuilder The traversal source builder to use
+     * @param <C>           The traversal source class
+     * @return a traversal source for this graph given the traversal source builder
+>>>>>>> tp30
      */
     public default <C extends TraversalSource> C traversal(final TraversalSource.Builder<C> sourceBuilder) {
         return sourceBuilder.create(this);
     }
 
     /**
+<<<<<<< HEAD
      * Construct a {@link GraphTraversalSource} instance using the {@link StandardTraversalEngine}. The
      * {@link TraversalSource} provides methods for creating a {@link Traversal} given the context of
      * {@link TraversalStrategy} implementations and a {@link GraphComputer}.
+=======
+     * Generate a {@link GraphTraversalSource} using the {@link StandardTraversalEngine} (i.e. classic Gremlin with OLTP).
+     * This is a short hand method for the more involved method that uses {@link Graph#traversal(TraversalSource.Builder)}.
+     *
+     * @return A standard graph traversal source
+>>>>>>> tp30
      */
     public default GraphTraversalSource traversal() {
         return this.traversal(GraphTraversalSource.build().engine(StandardTraversalEngine.build()));
@@ -167,40 +189,40 @@ public interface Graph extends AutoCloseable, Host {
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsNumericIds()} then it should support
      * filters as with:
      * <ul>
-     *     <li>g.vertices(v.id())</li>
-     *     <li>g.vertices(1)</li>
-     *     <li>g.vertices(1L)</li>
-     *     <li>g.vertices(1.0d)</li>
-     *     <li>g.vertices(1.0f)</li>
-     *     <li>g.vertices("1")</li>
+     * <li>g.vertices(v.id())</li>
+     * <li>g.vertices(1)</li>
+     * <li>g.vertices(1L)</li>
+     * <li>g.vertices(1.0d)</li>
+     * <li>g.vertices(1.0f)</li>
+     * <li>g.vertices("1")</li>
      * </ul>
      * <p/>
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsCustomIds()} ()} then it should support
      * filters as with:
      * <ul>
-     *     <li>g.vertices(v.id())</li>
-     *     <li>g.vertices(v.id().toString())</li>
+     * <li>g.vertices(v.id())</li>
+     * <li>g.vertices(v.id().toString())</li>
      * </ul>
      * <p/>
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsAnyIds()} ()} then it should support
      * filters as with:
      * <ul>
-     *     <li>g.vertices(v.id())</li>
+     * <li>g.vertices(v.id())</li>
      * </ul>
      * <p/>                                                                                                         
      * If the graph return {@code true} for {@link Features.VertexFeatures#supportsStringIds()} ()} then it should support
      * filters as with:
      * <ul>
-     *     <li>g.vertices(v)</li>
-     *     <li>g.vertices(v.id().toString())</li>
-     *     <li>g.vertices("id")</li>
+     * <li>g.vertices(v)</li>
+     * <li>g.vertices(v.id().toString())</li>
+     * <li>g.vertices("id")</li>
      * </ul>
      * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsStringIds()} ()} then it should support
      * filters as with:
      * <ul>
-     *     <li>g.vertices(v.id().toString())</li>
-     *     <li>g.vertices("id")</li>
+     * <li>g.vertices(v.id().toString())</li>
+     * <li>g.vertices("id")</li>
      * </ul>
      *
      * @param vertexIds the ids of the vertices to get
@@ -217,32 +239,32 @@ public interface Graph extends AutoCloseable, Host {
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsNumericIds()} then it should support
      * filters as with:
      * <ul>
-     *     <li>g.edges(e.id())</li>
-     *     <li>g.edges(1)</li>
-     *     <li>g.edges(1L)</li>
-     *     <li>g.edges(1.0d)</li>
-     *     <li>g.edges(1.0f)</li>
-     *     <li>g.edges("1")</li>
+     * <li>g.edges(e.id())</li>
+     * <li>g.edges(1)</li>
+     * <li>g.edges(1L)</li>
+     * <li>g.edges(1.0d)</li>
+     * <li>g.edges(1.0f)</li>
+     * <li>g.edges("1")</li>
      * </ul>
      * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsCustomIds()} ()} then it should support
      * filters as with:
      * <ul>\
-     *     <li>g.edges(e.id())</li>
-     *     <li>g.edges(e.id().toString())</li>
+     * <li>g.edges(e.id())</li>
+     * <li>g.edges(e.id().toString())</li>
      * </ul>
      * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsAnyIds()} ()} then it should support
      * filters as with:
      * <ul>
-     *     <li>g.edges(e.id())</li>
+     * <li>g.edges(e.id())</li>
      * </ul>
      * <p/>
      * If the graph return {@code true} for {@link Features.EdgeFeatures#supportsStringIds()} ()} then it should support
      * filters as with:
      * <ul>
-     *     <li>g.edges(e.id().toString())</li>
-     *     <li>g.edges("id")</li>
+     * <li>g.edges(e.id().toString())</li>
+     * <li>g.edges("id")</li>
      * </ul>
      *
      * @param edgeIds the ids of the edges to get
@@ -1196,6 +1218,7 @@ public interface Graph extends AutoCloseable, Host {
          * {@code OptOut} annotation is used, therefore this value must be overridden to be more specific.
          */
         public String[] computers() default { };
+
     }
 
     /**
