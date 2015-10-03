@@ -148,33 +148,23 @@ public interface Graph extends AutoCloseable, Host {
     public GraphComputer compute() throws IllegalArgumentException;
 
     /**
-<<<<<<< HEAD
-     * Construct a {@link TraversalSource} using the specified {@code sourceBuilder}.  The {@link TraversalSource}
+     * Generate a {@link TraversalSource} using the specified {@code TraversalSource.Builder}. The {@link TraversalSource}
      * provides methods for creating a {@link Traversal} given the context of {@link TraversalStrategy} implementations
      * and a {@link GraphComputer}.
-=======
-     * Generate a {@link TraversalSource} given a {@link TraversalSource.Builder} for this {@link Graph}.
      *
      * @param sourceBuilder The traversal source builder to use
      * @param <C>           The traversal source class
-     * @return a traversal source for this graph given the traversal source builder
->>>>>>> tp30
      */
     public default <C extends TraversalSource> C traversal(final TraversalSource.Builder<C> sourceBuilder) {
         return sourceBuilder.create(this);
     }
 
     /**
-<<<<<<< HEAD
-     * Construct a {@link GraphTraversalSource} instance using the {@link StandardTraversalEngine}. The
+     * Generate a {@link GraphTraversalSource} instance using the {@link StandardTraversalEngine}. The
      * {@link TraversalSource} provides methods for creating a {@link Traversal} given the context of
      * {@link TraversalStrategy} implementations and a {@link GraphComputer}.
-=======
-     * Generate a {@link GraphTraversalSource} using the {@link StandardTraversalEngine} (i.e. classic Gremlin with OLTP).
-     * This is a short hand method for the more involved method that uses {@link Graph#traversal(TraversalSource.Builder)}.
      *
      * @return A standard graph traversal source
->>>>>>> tp30
      */
     public default GraphTraversalSource traversal() {
         return this.traversal(GraphTraversalSource.build().engine(StandardTraversalEngine.build()));
