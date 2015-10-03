@@ -74,7 +74,7 @@ public final class ComputerGraph implements Graph {
     }
 
     @Override
-    public Vertex addVertex(final Object... keyValues) {
+    public Vertex addVertex(final Object[] keyValues) {
         throw new UnsupportedOperationException();
     }
 

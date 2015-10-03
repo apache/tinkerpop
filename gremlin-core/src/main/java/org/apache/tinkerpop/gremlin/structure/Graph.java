@@ -107,14 +107,40 @@ public interface Graph extends AutoCloseable, Host {
     }
 
     /**
-     * Add a {@link Vertex} to the graph given an optional series of key/value pairs.  These key/values
-     * must be provided in an even number where the odd numbered arguments are {@link String} property keys and the
-     * even numbered arguments are the related property values.
+     * Add a {@link Vertex} to the graph with default label and no properties.
+     * @return The newly created vertex
+     */
+    public default Vertex addVertex() {
+        return this.addVertex(T.label, Vertex.DEFAULT_LABEL);
+    }
+
+    /**
+     * Add a {@link Vertex} to the graph given a series of key/value pairs.  These key/values must be provided in an
+     * even number where the odd numbered arguments are {@link String} property keys or {@link T} tokens and the even
+     * numbered arguments are the related values.
+     *
+     * @param key {@link String} property key or {@link T} token
+     * @param value Value related to key
+     * @param keyValues Additional key/value pairs to turn into vertex properties
+     * @return The newly created vertex
+     */
+    public default Vertex addVertex(final Object key, final Object value, final Object... keyValues) {
+        final Object[] allKeyValues = new Object[2 + keyValues.length];
+        allKeyValues[0] = key;
+        allKeyValues[1] = value;
+        System.arraycopy(keyValues, 0, allKeyValues, 2, keyValues.length);
+        return this.addVertex(allKeyValues);
+    }
+
+    /**
+     * Add a {@link Vertex} to the graph given an optional series of key/value pairs.  These key/values must be
+     * provided in an even number where the odd numbered arguments are {@link String} property keys or {@link T}
+     * tokens and the even numbered arguments are the related values.
      *
      * @param keyValues The key/value pairs to turn into vertex properties
      * @return The newly created vertex
      */
-    public Vertex addVertex(final Object... keyValues);
+    public Vertex addVertex(final Object[] keyValues);
 
     /**
      * Add a {@link Vertex} to the graph with provided vertex label.
