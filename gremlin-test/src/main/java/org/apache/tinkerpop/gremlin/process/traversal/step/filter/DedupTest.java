@@ -34,7 +34,7 @@ import java.util.*;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.dedup;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.*;
 
 /**
@@ -57,7 +57,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_both_both_dedup_byXlabelX();
 
-    public abstract Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX();
+    public abstract Traversal<Vertex, Map<String, List<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX();
 
     public abstract Traversal<Vertex, Map<String, Vertex>> get_g_V_asXaX_both_asXbX_dedupXa_bX_byXlabelX_selectXa_bX();
 
@@ -142,17 +142,23 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
-        final Traversal<Vertex, Map<String, Set<Double>>> traversal =
+        final Traversal<Vertex, Map<String, List<Double>>> traversal =
                 get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
-        final Map<String, Set<Double>> map = traversal.next();
+        final Map<String, List<Double>> map = traversal.next();
         assertFalse(traversal.hasNext());
         assertEquals(2, map.size());
         assertEquals(3, map.get("software").size());
         assertEquals(4, map.get("person").size());
-        assertEquals(new HashSet<>(Arrays.asList(0.2, 0.4, 1.0)), map.get("software"));
-        assertEquals(new HashSet<>(Arrays.asList(0.2, 0.4, 0.5, 1.0)), map.get("person"));
+        assertTrue(map.get("software").contains(0.2));
+        assertTrue(map.get("software").contains(0.4));
+        assertTrue(map.get("software").contains(1.0));
+        //
+        assertTrue(map.get("person").contains(0.2));
+        assertTrue(map.get("person").contains(0.4));
+        assertTrue(map.get("person").contains(0.5));
+        assertTrue(map.get("person").contains(1.0));
     }
 
     @Test
@@ -243,8 +249,9 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
-            return g.V().<String, Set<Double>>group().by(T.label).by(bothE().values("weight").fold()).by(dedup(Scope.local));
+        public Traversal<Vertex, Map<String, List<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
+            //return g.V().<String, Set<Double>>group().by(T.label).by(bothE().values("weight").fold()).by(dedup(Scope.local));
+            return g.V().<String, List<Double>>group().by(T.label).by(bothE().values("weight").fold()).by(unfold().dedup().fold());
         }
 
         @Override

@@ -19,20 +19,20 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.util.VertexProgramHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -43,7 +43,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements MapReducer, EngineDependent {
+public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements MapReducer, EngineDependent, BarrierStep {
 
     public static final String REDUCING = Graph.Hidden.hide("reducing");
 
@@ -51,6 +51,8 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     protected BiFunction<E, Traverser<S>, E> reducingBiFunction;
     private boolean done = false;
     protected boolean byPass = false;
+
+    private E seed = null;
 
     public ReducingBarrierStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -76,17 +78,26 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     }
 
     @Override
+    public void processAllStarts() {
+        if (this.seed == null) this.seed = this.seedSupplier.get();
+        while (this.starts.hasNext())
+            this.seed = this.reducingBiFunction.apply(this.seed, this.starts.next());
+    }
+
+    @Override
     public Traverser<E> processNextStart() {
         if (this.byPass) {
             return (Traverser<E>) this.starts.next();
         } else {
             if (this.done)
                 throw FastNoSuchElementException.instance();
-            E seed = this.seedSupplier.get();
+            if (this.seed == null) this.seed = this.seedSupplier.get();
             while (this.starts.hasNext())
-                seed = this.reducingBiFunction.apply(seed, this.starts.next());
+                this.seed = this.reducingBiFunction.apply(this.seed, this.starts.next());
             this.done = true;
-            return TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(FinalGet.tryFinalGet(seed), (Step) this, 1l);
+            final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(FinalGet.tryFinalGet(this.seed), (Step) this, 1l);
+            this.seed = null;
+            return traverser;
         }
     }
 
@@ -94,6 +105,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     public ReducingBarrierStep<S, E> clone() {
         final ReducingBarrierStep<S, E> clone = (ReducingBarrierStep<S, E>) super.clone();
         clone.done = false;
+        clone.seed = null;
         return clone;
     }
 

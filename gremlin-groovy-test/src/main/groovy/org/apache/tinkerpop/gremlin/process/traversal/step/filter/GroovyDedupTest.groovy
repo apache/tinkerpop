@@ -37,7 +37,7 @@ public abstract class GroovyDedupTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Set<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
+        public Traversal<Vertex, Map<String, List<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
             TraversalScriptHelper.compute("g.V.group.by(label).by(__.bothE.weight.fold).by(dedup(local))", g);
         }
 
