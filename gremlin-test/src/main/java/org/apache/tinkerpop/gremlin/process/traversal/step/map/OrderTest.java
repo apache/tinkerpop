@@ -304,7 +304,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_byXnameX_byXorderXlocalX_byXdecrXX() {
-            return g.V().<String, List<Vertex>>group().by(T.label).by("name").by(__.order().by(Order.decr).fold());
+            return g.V().<String, List<Vertex>>group().by(T.label).by(__.values("name").order().by(Order.decr).fold());
         }
 
     }

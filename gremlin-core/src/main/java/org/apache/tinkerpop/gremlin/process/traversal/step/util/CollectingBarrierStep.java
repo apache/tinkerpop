@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
+public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements BarrierStep {
     private TraverserSet<S> traverserSet = new TraverserSet<>();
 
     private int maxBarrierSize;
@@ -49,6 +49,21 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> {
     @Override
     public Set<TraverserRequirement> getRequirements() {
         return Collections.singleton(TraverserRequirement.BULK);
+    }
+
+    @Override
+    public void processAllStarts() {
+        if (this.starts.hasNext()) {
+            if (Integer.MAX_VALUE == this.maxBarrierSize) {
+                this.starts.forEachRemaining(this.traverserSet::add);
+                this.barrierConsumer(this.traverserSet);
+            } else {
+                while (this.starts.hasNext() && this.traverserSet.size() < this.maxBarrierSize) {
+                    this.traverserSet.add(this.starts.next());
+                }
+                this.barrierConsumer(this.traverserSet);
+            }
+        }
     }
 
     @Override

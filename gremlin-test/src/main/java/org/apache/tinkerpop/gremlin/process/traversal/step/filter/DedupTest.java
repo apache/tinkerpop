@@ -251,7 +251,7 @@ public abstract class DedupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, List<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXdedupXlocalXX() {
             //return g.V().<String, Set<Double>>group().by(T.label).by(bothE().values("weight").fold()).by(dedup(Scope.local));
-            return g.V().<String, List<Double>>group().by(T.label).by(bothE().values("weight").fold()).by(unfold().dedup().fold());
+            return g.V().<String, List<Double>>group().by(T.label).by(bothE().values("weight").dedup().fold());
         }
 
         @Override
