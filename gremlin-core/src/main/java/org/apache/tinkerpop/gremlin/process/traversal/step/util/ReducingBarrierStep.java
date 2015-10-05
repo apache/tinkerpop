@@ -177,16 +177,4 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
             emitter.emit(FinalGet.tryFinalGet(mutatingSeed));
         }
     }
-
-    /////
-
-    public interface FinalGet<A> {
-
-        public A getFinal();
-
-        public static <A> A tryFinalGet(final Object object) {
-            return object instanceof FinalGet ? ((FinalGet<A>) object).getFinal() : (A) object;
-        }
-    }
-
 }

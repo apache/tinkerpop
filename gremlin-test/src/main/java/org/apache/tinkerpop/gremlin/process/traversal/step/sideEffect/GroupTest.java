@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -162,7 +161,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX() {
-            return g.V().has("lang").group("a").by("lang").by(values("name").fold()).out().cap("a");
+            return g.V().has("lang").group("a").by("lang").by("name").out().cap("a");
         }
 
         @Override
@@ -177,7 +176,7 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
-            return g.V().<Long, Collection<String>>group().by(outE().count()).by(values("name").fold());
+            return g.V().<Long, Collection<String>>group().by(outE().count()).by("name");
         }
     }
 }
