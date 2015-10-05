@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
@@ -42,6 +43,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,7 +67,8 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     public GroupSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
         this.sideEffectKey = sideEffectKey;
-        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, HashMapSupplier.instance());
+        final FinalGroupMap<S, K, V> finalGroupMap = new FinalGroupMap<>(new HashMap<>());
+        this.traversal.asAdmin().getSideEffects().registerSupplierIfAbsent(this.sideEffectKey, () -> finalGroupMap); // HashMapSupplier.instance());
     }
 
     @Override
@@ -80,7 +83,8 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             }
             values.add(traverser);
         } else {
-            final Map<K, Traversal.Admin<S, V>> groupMap = traverser.sideEffects(this.sideEffectKey); // for nested traversals and not !starts.hasNext()
+            final FinalGroupMap<S, K, V> finalGroupMap = traverser.sideEffects(this.sideEffectKey); // for nested traversals and not !starts.hasNext()
+            final Map<K, Traversal.Admin<S, V>> groupMap = finalGroupMap.get();
             final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
             Traversal.Admin<S, V> traversal = groupMap.get(key);
             if (null == traversal) {
@@ -91,11 +95,6 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             splitTraverser.setBulk(1l);
             traversal.addStart(splitTraverser);
             TraversalHelper.getStepsOfClass(BarrierStep.class, traversal).stream().findFirst().ifPresent(BarrierStep::processAllStarts);
-            if (!this.starts.hasNext()) {
-                final Map<K, V> reduceMap = new HashMap<>();
-                groupMap.forEach((k, t) -> reduceMap.put(k, t.next()));
-                traverser.sideEffects(this.sideEffectKey, reduceMap);
-            }
         }
     }
 
@@ -107,6 +106,8 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     @Override
     public void onEngine(final TraversalEngine traversalEngine) {
         this.onGraphComputer = traversalEngine.isComputer();
+        if (this.onGraphComputer)
+            this.traversal.asAdmin().getSideEffects().registerSupplier(this.sideEffectKey, HashMapSupplier.instance());
     }
 
     @Override
@@ -167,6 +168,30 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
 
     ///////////
 
+    public static class FinalGroupMap<S, K, V> implements ReducingBarrierStep.FinalGet<Map<K, V>>, Serializable {
+
+        private final Map<K, Traversal.Admin<S, V>> mapTraversal;
+
+        public FinalGroupMap(final Map<K, Traversal.Admin<S, V>> mapTraversal) {
+            this.mapTraversal = mapTraversal;
+        }
+
+        public Map<K, Traversal.Admin<S, V>> get() {
+            return this.mapTraversal;
+        }
+
+        @Override
+        public Map<K, V> getFinal() {
+            final Map<K, V> map = new HashMap<>();
+            this.mapTraversal.forEach((k, v) -> {
+                map.put(k, v.next());
+            });
+            return map;
+        }
+    }
+
+    ///////////
+
     public static final class GroupSideEffectMapReduce<S, K, V> implements MapReduce<K, Traverser<S>, K, V, Map<K, V>> {
 
         public static final String GROUP_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY = "gremlin.groupSideEffectStep.sideEffectKey";
@@ -217,7 +242,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
 
         @Override
         public void reduce(final K key, final Iterator<Traverser<S>> values, final ReduceEmitter<K, V> emitter) {
-            final Traversal.Admin<S,V> cloneValueTraversal = this.valueTraversal.clone();
+            final Traversal.Admin<S, V> cloneValueTraversal = this.valueTraversal.clone();
             cloneValueTraversal.addStarts(values);
             emitter.emit(key, cloneValueTraversal.next());
         }
@@ -251,4 +276,5 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             return StringFactory.mapReduceString(this, this.getMemoryKey());
         }
     }
+
 }

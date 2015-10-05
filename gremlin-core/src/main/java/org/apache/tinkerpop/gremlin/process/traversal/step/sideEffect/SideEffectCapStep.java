@@ -19,11 +19,17 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -66,15 +72,18 @@ public final class SideEffectCapStep<S, E> extends SupplyingBarrierStep<S, E> {
 
     @Override
     protected E supply() {
-        return this.sideEffectKeys.size() == 1 ?
-                this.getTraversal().asAdmin().getSideEffects().<E>get(this.sideEffectKeys.get(0)).get() :
-                (E) this.getMapOfSideEffects();
+        if (this.sideEffectKeys.size() == 1) {
+            final Object object = this.getTraversal().getSideEffects().<E>get(this.sideEffectKeys.get(0)).get();
+            return (E) (object instanceof ReducingBarrierStep.FinalGet ? ((ReducingBarrierStep.FinalGet) object).getFinal() : object);
+        } else {
+            return (E) this.getMapOfSideEffects();
+        }
     }
 
     public Map<String, Object> getMapOfSideEffects() {
         final Map<String, Object> sideEffects = new HashMap<>();
         for (final String sideEffectKey : this.sideEffectKeys) {
-            this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey).ifPresent(value -> sideEffects.put(sideEffectKey, value));
+            this.getTraversal().asAdmin().getSideEffects().get(sideEffectKey).ifPresent(value -> sideEffects.put(sideEffectKey, value instanceof ReducingBarrierStep.FinalGet ? ((ReducingBarrierStep.FinalGet) value).getFinal() : value));
         }
         return sideEffects;
     }
