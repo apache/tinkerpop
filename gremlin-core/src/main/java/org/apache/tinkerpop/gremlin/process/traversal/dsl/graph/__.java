@@ -429,15 +429,23 @@ public class __ {
     /**
      * @see {@link GraphTraversal#group()}
      */
-    public static <A, K, R> GraphTraversal<A, Map<K, R>> group() {
+    public static <A, K, V> GraphTraversal<A, Map<K, V>> group() {
         return __.<A>start().group();
+    }
+
+    /**
+     * @see {@link GraphTraversal#group()}
+     */
+    @Deprecated
+    public static <A, K, V> GraphTraversal<A, Map<K, V>> groupV3d0() {
+        return __.<A>start().groupV3d0();
     }
 
     /**
      * @see {@link GraphTraversal#groupCount()}
      */
-    public static <A, B> GraphTraversal<A, Map<B, Long>> groupCount() {
-        return __.<A>start().<B>groupCount();
+    public static <A, K> GraphTraversal<A, Map<K, Long>> groupCount() {
+        return __.<A>start().<K>groupCount();
     }
 
     /**
@@ -688,6 +696,14 @@ public class __ {
         return __.<A>start().group(sideEffectKey);
     }
 
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #group(String)}.
+     */
+    @Deprecated
+    public static <A> GraphTraversal<A, A> groupV3d0(final String sideEffectKey) {
+        return __.<A>start().groupV3d0(sideEffectKey);
+    }
+
     public static <A> GraphTraversal<A, A> groupCount(final String sideEffectKey) {
         return __.<A>start().groupCount(sideEffectKey);
     }
@@ -705,7 +721,7 @@ public class __ {
     }
 
     /**
-     * @deprecated As of release 3.1.0, replaced by {@link #sack(BiFunction)}
+     * @deprecated As of release 3.1.0, replaced by {@link #sack(BiFunction)}.
      */
     @Deprecated
     public static <A, V, U> GraphTraversal<A, A> sack(final BiFunction<V, U, V> sackOperator, final String elementPropertyKey) {

@@ -74,6 +74,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
@@ -112,6 +113,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AddPropert
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupSideEffectStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.IdentityStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.InjectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.LambdaSideEffectStep;
@@ -624,11 +626,19 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep<>(this.asAdmin()) : new MeanLocalStep<>(this.asAdmin()));
     }
 
-    public default <K, R> GraphTraversal<S, Map<K, R>> group() {
+    public default <K, V> GraphTraversal<S, Map<K, V>> group() {
         return this.asAdmin().addStep(new GroupStep<>(this.asAdmin()));
     }
 
-    public default <E2> GraphTraversal<S, Map<E2, Long>> groupCount() {
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #group()}
+     */
+    @Deprecated
+    public default <K, V> GraphTraversal<S, Map<K, V>> groupV3d0() {
+        return this.asAdmin().addStep(new GroupStepV3d0<>(this.asAdmin()));
+    }
+
+    public default <K> GraphTraversal<S, Map<K, Long>> groupCount() {
         return this.asAdmin().addStep(new GroupCountStep<>(this.asAdmin()));
     }
 
@@ -959,6 +969,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new GroupSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
 
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #group(String)}.
+     */
+    public default GraphTraversal<S, E> groupV3d0(final String sideEffectKey) {
+        return this.asAdmin().addStep(new GroupSideEffectStepV3d0<>(this.asAdmin(), sideEffectKey));
+    }
+
     public default GraphTraversal<S, E> groupCount(final String sideEffectKey) {
         return this.asAdmin().addStep(new GroupCountSideEffectStep<>(this.asAdmin(), sideEffectKey));
     }
@@ -988,7 +1005,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Sets a {@link Property} value and related meta properties if supplied, if supported by the {@link Graph}
+     * Sets a {@link Property} value and related meta properties if supplied, if supported by the {@link org.apache.tinkerpop.gremlin.structure.Graph}
      * and if the {@link Element} is a {@link VertexProperty}.  This method is the long-hand version of
      * {@link #property(Object, Object, Object...)} with the difference that the {@link VertexProperty.Cardinality}
      * can be supplied.
@@ -998,11 +1015,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * {@link AddVertexStartStep}.  This potential optimization can only happen if cardinality is not supplied
      * and when meta-properties are not included.
      *
-     * @param cardinality the specified cardinality of the property where {@code null} will allow the {@link Graph}
+     * @param cardinality the specified cardinality of the property where {@code null} will allow the {@link org.apache.tinkerpop.gremlin.structure.Graph}
      *                    to use its default settings
-     * @param key the key for the property
-     * @param value the value for the property
-     * @param keyValues any meta properties to be assigned to this property
+     * @param key         the key for the property
+     * @param value       the value for the property
+     * @param keyValues   any meta properties to be assigned to this property
      */
     public default GraphTraversal<S, E> property(final VertexProperty.Cardinality cardinality, final Object key, final Object value, final Object... keyValues) {
         // if it can be detected that this call to property() is related to an addV/E() then we can attempt to fold
@@ -1019,15 +1036,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     /**
      * Sets the key and value of a {@link Property}. If the {@link Element} is a {@link VertexProperty} and the
-     * {@link Graph} supports it, meta properties can be set.  Use of this method assumes that the
+     * {@link org.apache.tinkerpop.gremlin.structure.Graph} supports it, meta properties can be set.  Use of this method assumes that the
      * {@link VertexProperty.Cardinality} is defaulted to {@code null} which means that the default cardinality
-     * for the {@link Graph} will be used.
+     * for the {@link org.apache.tinkerpop.gremlin.structure.Graph} will be used.
      * <p/>
      * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)} as
      * {@code property(null, key, value, keyValues}.
      *
-     * @param key the key for the property
-     * @param value the value for the property
+     * @param key       the key for the property
+     * @param value     the value for the property
      * @param keyValues any meta properties to be assigned to this property
      */
     public default GraphTraversal<S, E> property(final Object key, final Object value, final Object... keyValues) {
