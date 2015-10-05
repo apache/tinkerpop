@@ -19,9 +19,10 @@
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
-import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
@@ -56,13 +57,13 @@ public final class TinkerIoRegistry extends AbstractIoRegistry {
 
     /**
      * Provides a method to serialize an entire {@link TinkerGraph} into itself.  This is useful when shipping small
-     * graphs around through Gremlin Server.
+     * graphs around through Gremlin Server. Reuses the existing Kryo instance for serialization.
      */
     final static class TinkerGraphSerializer extends Serializer<TinkerGraph> {
         @Override
         public void write(final Kryo kryo, final Output output, final TinkerGraph graph) {
             try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
-                graph.io(IoCore.gryo()).writer().create().writeGraph(stream, graph);
+                GryoWriter.build().mapper(() -> kryo).create().writeGraph(stream, graph);
                 final byte[] bytes = stream.toByteArray();
                 output.writeInt(bytes.length);
                 output.write(bytes);
@@ -77,7 +78,7 @@ public final class TinkerIoRegistry extends AbstractIoRegistry {
             final int len = input.readInt();
             final byte[] bytes = input.readBytes(len);
             try (final ByteArrayInputStream stream = new ByteArrayInputStream(bytes)) {
-                graph.io(IoCore.gryo()).reader().create().readGraph(stream, graph);
+                GryoReader.build().mapper(() -> kryo).create().readGraph(stream, graph);
             } catch (Exception io) {
                 throw new RuntimeException(io);
             }
