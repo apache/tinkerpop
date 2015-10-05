@@ -32,7 +32,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry.TinkerGraphSerializer}
@@ -55,20 +58,18 @@ public class TinkerGraphSerializerTest {
     @Before
     public void setUp() throws Exception {
 
-        when(kryo.getRegistration(any())).thenReturn(registration);
+        when(kryo.getRegistration((Class) any())).thenReturn(registration);
         when(input.readBytes(anyInt())).thenReturn(Arrays.copyOf(GryoMapper.HEADER, 100));
     }
 
     @Test
-    public void testWrite_verify_kryo_used() throws Exception {
-
+    public void shouldVerifyKryoUsedForWrite() throws Exception {
         serializer.write(kryo, output, graph);
-        verify(kryo, atLeastOnce()).getRegistration(any());
+        verify(kryo, atLeastOnce()).getRegistration((Class) any());
     }
 
     @Test
-    public void testRead_verify_kryo_used() throws Exception {
-
+    public void shouldVerifyKryoUsedForRead() throws Exception {
         // Not possible to mock an entire deserialization so just verify the same kryo instances are being used
         try {
             serializer.read(kryo, input, TinkerGraph.class);
