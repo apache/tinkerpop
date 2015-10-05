@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
 import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
+import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 import org.apache.tinkerpop.gremlin.structure.util.Host;
@@ -267,7 +268,7 @@ public final class GraphSONReader implements GraphReader {
     public final static class Builder implements ReaderBuilder<GraphSONReader> {
         private long batchSize = 10000;
 
-        private GraphSONMapper mapper = GraphSONMapper.build().create();
+        private Mapper<ObjectMapper> mapper = GraphSONMapper.build().create();
         private boolean unwrapAdjacencyList = false;
 
         private Builder() {}
@@ -286,7 +287,7 @@ public final class GraphSONReader implements GraphReader {
          * options with this mapper.  If this value is set to something other than null then that value will be
          * used to construct the writer.
          */
-        public Builder mapper(final GraphSONMapper mapper) {
+        public Builder mapper(final Mapper<ObjectMapper> mapper) {
             this.mapper = mapper;
             return this;
         }
