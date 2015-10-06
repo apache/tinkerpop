@@ -175,7 +175,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
         public GroupMapReduce(final GroupStep<S, K, V> step) {
             this.groupStepId = step.getId();
-            this.valueTraversal = step.valueTraversal;
+            this.valueTraversal = step.valueTraversal.clone();
         }
 
         @Override
@@ -226,8 +226,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         public GroupMapReduce<S, K, V> clone() {
             try {
                 final GroupMapReduce<S, K, V> clone = (GroupMapReduce<S, K, V>) super.clone();
-                if (null != clone.valueTraversal)
-                    clone.valueTraversal = this.valueTraversal.clone();
+                clone.valueTraversal = this.valueTraversal.clone();
                 return clone;
             } catch (final CloneNotSupportedException e) {
                 throw new IllegalStateException(e.getMessage(), e);
