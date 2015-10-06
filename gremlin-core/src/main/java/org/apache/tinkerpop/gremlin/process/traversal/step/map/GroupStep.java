@@ -39,7 +39,13 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -57,7 +63,7 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier((Supplier) new GroupMapSupplier());
-        this.setBiFunction((BiFunction) new GroupBiFunction());
+        this.setBiFunction(new GroupBiFunction(this));
     }
 
     @Override
@@ -106,6 +112,7 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
             clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone());
         if (null != this.reduceTraversal)
             clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone());
+        clone.setBiFunction(new GroupBiFunction<>((GroupStep) clone));
         return clone;
     }
 
@@ -141,16 +148,18 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
 
     ///////////
 
-    private class GroupBiFunction implements BiFunction<Map<K, Collection<V>>, Traverser.Admin<S>, Map<K, Collection<V>>>, Serializable {
+    private static class GroupBiFunction<S, K, V> implements BiFunction<Map<K, Collection<V>>, Traverser.Admin<S>, Map<K, Collection<V>>>, Serializable {
 
-        private GroupBiFunction() {
+        private final GroupStep<S, K, V, ?> groupStep;
 
+        private GroupBiFunction(final GroupStep<S, K, V, ?> groupStep) {
+            this.groupStep = groupStep;
         }
 
         @Override
         public Map<K, Collection<V>> apply(final Map<K, Collection<V>> mutatingSeed, final Traverser.Admin<S> traverser) {
-            final K key = TraversalUtil.applyNullable(traverser, GroupStep.this.keyTraversal);
-            final V value = TraversalUtil.applyNullable(traverser, GroupStep.this.valueTraversal);
+            final K key = TraversalUtil.applyNullable(traverser, this.groupStep.keyTraversal);
+            final V value = TraversalUtil.applyNullable(traverser, this.groupStep.valueTraversal);
             Collection<V> values = mutatingSeed.get(key);
             if (null == values) {
                 values = new BulkSet<>();
@@ -273,5 +282,4 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
             return StringFactory.mapReduceString(this, this.getMemoryKey());
         }
     }
-
 }

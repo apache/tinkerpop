@@ -55,7 +55,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
     public TreeStep(final Traversal.Admin traversal) {
         super(traversal);
         this.setSeedSupplier((Supplier) TreeSupplier.instance());
-        this.setBiFunction(new TreeBiFunction());
+        this.setBiFunction(new TreeBiFunction(this));
     }
 
 
@@ -84,6 +84,7 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
         final TreeStep<S> clone = (TreeStep<S>) super.clone();
         clone.traversalRing = this.traversalRing.clone();
         clone.getLocalChildren().forEach(clone::integrateChild);
+        clone.setBiFunction(new TreeBiFunction<>(clone));
         return clone;
     }
 
@@ -115,10 +116,12 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
 
     ///////////
 
-    private class TreeBiFunction implements BiFunction<Tree, Traverser<S>, Tree>, Serializable {
+    private static class TreeBiFunction<S> implements BiFunction<Tree, Traverser<S>, Tree>, Serializable {
 
-        private TreeBiFunction() {
+        private final TreeStep<S> treeStep;
 
+        private TreeBiFunction(final TreeStep<S> treeStep) {
+            this.treeStep = treeStep;
         }
 
         @Override
@@ -126,12 +129,12 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
             Tree depth = mutatingSeed;
             final Path path = traverser.path();
             for (int i = 0; i < path.size(); i++) {
-                final Object object = TraversalUtil.apply(path.<Object>get(i), TreeStep.this.traversalRing.next());
+                final Object object = TraversalUtil.apply(path.<Object>get(i), this.treeStep.traversalRing.next());
                 if (!depth.containsKey(object))
                     depth.put(object, new Tree<>());
                 depth = (Tree) depth.get(object);
             }
-            TreeStep.this.traversalRing.reset();
+            this.treeStep.traversalRing.reset();
             return mutatingSeed;
         }
     }
@@ -182,5 +185,4 @@ public final class TreeStep<S> extends ReducingBarrierStep<S, Tree> implements M
             return INSTANCE;
         }
     }
-
 }

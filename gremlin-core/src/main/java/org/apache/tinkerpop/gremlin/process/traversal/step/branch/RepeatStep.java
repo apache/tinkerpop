@@ -61,17 +61,23 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
 
     @SuppressWarnings("unchecked")
     public void setRepeatTraversal(final Traversal.Admin<S, S> repeatTraversal) {
+        if (null != this.repeatTraversal)
+            throw new IllegalStateException("The repeat()-step already has its loop section declared: " + this);
         this.repeatTraversal = repeatTraversal; // .clone();
         this.repeatTraversal.addStep(new RepeatEndStep(this.repeatTraversal));
         this.integrateChild(this.repeatTraversal);
     }
 
     public void setUntilTraversal(final Traversal.Admin<S, ?> untilTraversal) {
+        if (null != this.untilTraversal)
+            throw new IllegalStateException("The repeat()-step already has its until()-modulator declared: " + this);
         if (null == this.repeatTraversal) this.untilFirst = true;
         this.untilTraversal = this.integrateChild(untilTraversal);
     }
 
     public void setEmitTraversal(final Traversal.Admin<S, ?> emitTraversal) {
+        if (null != this.emitTraversal)
+            throw new IllegalStateException("The repeat()-step already has its emit()-modulator declared: " + this);
         if (null == this.repeatTraversal) this.emitFirst = true;
         this.emitTraversal = this.integrateChild(emitTraversal);
     }
