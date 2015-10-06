@@ -39,7 +39,7 @@ public class GroupStepTest extends StepTest {
         return Arrays.asList(
                 __.group().by(T.label),
                 __.group().by(T.label).by("name"),
-                __.group().by(T.label).by("name").by(count(Scope.local))
+                __.group().by(T.label).by(__.values("name").count())
         );
     }
 }

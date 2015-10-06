@@ -51,4 +51,8 @@ public final class LambdaMapStep<S, E> extends MapStep<S, E> implements LambdaHo
     public int hashCode() {
         return super.hashCode() ^ this.function.hashCode();
     }
+
+    public Function<Traverser<S>, E> getMapFunction() {
+        return this.function;
+    }
 }

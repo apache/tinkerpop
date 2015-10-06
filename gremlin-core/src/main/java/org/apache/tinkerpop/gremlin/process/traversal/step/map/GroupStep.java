@@ -26,11 +26,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BarrierStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.FinalGet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.GroupStepHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -59,32 +58,30 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     private char state = 'k';
 
     private Traversal.Admin<S, K> keyTraversal = null;
-    private Traversal.Admin<S, V> valueTraversal = this.integrateChild((Traversal.Admin) __.<V>fold().asAdmin());
+    private Traversal.Admin<S, V> valueTraversal = this.integrateChild(__.<V>fold().asAdmin());
 
     public GroupStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier((Supplier) new GroupMapSupplier());
+        this.setSeedSupplier((Supplier) new GroupStepHelper.GroupMapSupplier());
         this.setBiFunction(new GroupBiFunction(this));
     }
 
     @Override
     public <A, B> List<Traversal.Admin<A, B>> getLocalChildren() {
-        final List<Traversal.Admin<A, B>> children = new ArrayList<>(3);
+        final List<Traversal.Admin<A, B>> children = new ArrayList<>(2);
         if (null != this.keyTraversal)
             children.add((Traversal.Admin) this.keyTraversal);
-        if (null != this.valueTraversal)
-            children.add((Traversal.Admin) this.valueTraversal);
-        ;
+        children.add((Traversal.Admin) this.valueTraversal);
         return children;
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> kvrTraversal) {
+    public void addLocalChild(final Traversal.Admin<?, ?> kvTraversal) {
         if ('k' == this.state) {
-            this.keyTraversal = this.integrateChild(kvrTraversal);
+            this.keyTraversal = this.integrateChild(kvTraversal);
             this.state = 'v';
         } else if ('v' == this.state) {
-            this.valueTraversal = this.integrateChild(kvrTraversal instanceof ElementValueTraversal ? ((Traversal.Admin) __.map(kvrTraversal).fold()) : kvrTraversal);
+            this.valueTraversal = this.integrateChild(GroupStepHelper.convertChildTraversal(kvTraversal));
             this.state = 'x';
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
@@ -93,7 +90,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.SIDE_EFFECTS, TraverserRequirement.BULK);
+        return this.getSelfAndChildRequirements(TraverserRequirement.SIDE_EFFECTS);
     }
 
     @Override
@@ -125,9 +122,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public Traverser<Map<K, V>> processNextStart() {
         if (this.byPass) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            final Traverser.Admin<S> traverserSplit = traverser.split();
-            traverserSplit.setBulk(1l);
-            final Object[] kvPair = new Object[]{TraversalUtil.applyNullable(traverser, (Traversal.Admin<S, Map>) this.keyTraversal), traverserSplit};
+            final Object[] kvPair = new Object[]{TraversalUtil.applyNullable(traverser, (Traversal.Admin<S, Map>) this.keyTraversal), traverser.get()};
             return traverser.asAdmin().split(kvPair, (Step) this);
         } else {
             return super.processNextStart();
@@ -157,38 +152,17 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                 traversal = this.groupStep.valueTraversal.clone();
                 mutatingSeed.put(key, traversal);
             }
-            traversal.addStart(traverser.split());
-            TraversalHelper.getStepsOfClass(BarrierStep.class, traversal).stream().findFirst().ifPresent(BarrierStep::processAllStarts);
+            final Traverser.Admin<S> clonedTraverser = traverser.split();
+            clonedTraverser.setBulk(1l);
+            traversal.addStart(clonedTraverser);
+            TraversalHelper.getFirstStepOfAssignableClass(BarrierStep.class, traversal).ifPresent(BarrierStep::processAllStarts);
             return mutatingSeed;
-        }
-    }
-
-    //////////
-
-    private static class GroupMap<K, V, R> extends HashMap<K, Traversal.Admin<V, R>> implements FinalGet<Map<K, R>> {
-
-        @Override
-        public Map<K, R> getFinal() {
-            final Map<K, R> reduceMap = new HashMap<>();
-            this.forEach((key, traversal) -> reduceMap.put(key, traversal.next()));
-            return reduceMap;
-        }
-    }
-
-    private static class GroupMapSupplier implements Supplier<GroupMap>, Serializable {
-
-        private GroupMapSupplier() {
-        }
-
-        @Override
-        public GroupMap get() {
-            return new GroupMap();
         }
     }
 
     ///////////
 
-    public static final class GroupMapReduce<S, K, V> implements MapReduce<K, Traverser<S>, K, V, Map<K, V>> {
+    public static final class GroupMapReduce<S, K, V> implements MapReduce<K, S, K, V, Map<K, V>> {
 
         public static final String GROUP_BY_STEP_STEP_ID = "gremlin.groupStep.stepId";
 
@@ -222,17 +196,17 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         }
 
         @Override
-        public void map(final Vertex vertex, final MapEmitter<K, Traverser<S>> emitter) {
+        public void map(final Vertex vertex, final MapEmitter<K, S> emitter) {
             vertex.<TraverserSet<Object[]>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> {
                 final Object[] objects = traverser.get();
-                emitter.emit((K) objects[0], (Traverser<S>) objects[1]);
+                emitter.emit((K) objects[0], (S) objects[1]);
             }));
         }
 
         @Override
-        public void reduce(final K key, final Iterator<Traverser<S>> values, final ReduceEmitter<K, V> emitter) {
+        public void reduce(final K key, final Iterator<S> values, final ReduceEmitter<K, V> emitter) {
             Traversal.Admin<S, V> valueTraversalClone = this.valueTraversal.clone();
-            valueTraversalClone.addStarts(values);
+            valueTraversalClone.addStarts(valueTraversalClone.getTraverserGenerator().generateIterator((Iterator) values, valueTraversalClone.getStartStep(), 1l));
             emitter.emit(key, valueTraversalClone.next());
         }
 

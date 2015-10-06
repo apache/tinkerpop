@@ -21,13 +21,12 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
-import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -35,7 +34,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.bothE;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.junit.Assert.*;
 
 /**
@@ -89,6 +89,7 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
+    @Ignore
     public void g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
         final Traversal<Vertex, Map<String, Collection<Double>>> traversal =
                 get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX();
@@ -133,12 +134,12 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
-            return g.V().<String, Collection<Double>>group().by(T.label).by(bothE().values("weight").fold().sample(Scope.local, 2));
+            return g.V().<String, Collection<Double>>group().by(T.label).by(bothE().values("weight").sample(2).fold());
         }
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
-            return g.V().<String, Collection<Double>>group().by(T.label).by(bothE().values("weight").fold().sample(Scope.local,5));
+            return g.V().<String, Collection<Double>>group().by(T.label).by(bothE().values("weight").fold().sample(Scope.local, 5));
         }
     }
 }

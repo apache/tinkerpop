@@ -16,30 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-import org.apache.tinkerpop.gremlin.structure.T;
 
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author Daniel Kuppitz (http://gremlin.guru)
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GroupSideEffectStepTest extends StepTest {
+@Deprecated
+public class GroupSideEffectStepV3d0Test extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
-                __.group("x").by(T.label),
-                __.group("x").by(T.label).by("name"),
-                __.group("x").by(T.label).by(__.values("name").count()),
-                __.group("y").by(T.label),
-                __.group("y").by(T.label).by("name"),
-                __.group("y").by(T.label).by(__.values("name").count())
+                __.groupCount("x"),
+                __.groupCount("x").by("name"),
+                __.groupCount("x").by("age"),
+                __.groupCount("y"),
+                __.groupCount("y").by("name"),
+                __.groupCount("y").by("age")
         );
     }
 }

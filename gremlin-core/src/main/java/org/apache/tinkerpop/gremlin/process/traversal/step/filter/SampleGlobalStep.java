@@ -84,7 +84,7 @@ public final class SampleGlobalStep<S> extends CollectingBarrierStep<S> implemen
                     final double currentWeight = TraversalUtil.apply(s, this.probabilityTraversal).doubleValue();
                     for (int i = 0; i < (s.bulk() - sampleBulk); i++) {
                         runningWeight = runningWeight + currentWeight;
-                        if (RANDOM.nextDouble() <= (runningWeight / totalWeight)) {
+                        if (RANDOM.nextDouble() <= ((runningWeight / totalWeight))) {
                             final Traverser.Admin<S> split = s.asAdmin().split();
                             split.asAdmin().setBulk(1l);
                             sampledSet.add(split);

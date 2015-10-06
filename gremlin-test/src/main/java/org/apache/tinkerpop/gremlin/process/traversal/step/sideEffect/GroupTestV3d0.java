@@ -16,11 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
+import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -38,19 +40,18 @@ import static org.junit.Assert.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @RunWith(GremlinProcessRunner.class)
-public abstract class GroupTest extends AbstractGremlinProcessTest {
+@Deprecated
+public abstract class GroupTestV3d0 extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX();
-
-    public abstract Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX_by();
 
     public abstract Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupXaX_byXnameX_capXaX();
 
     public abstract Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX();
 
-    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byXcountX();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXcountXlocalXX();
 
-    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_byXcountX_timesX2X_capXaX();
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX();
 
     public abstract Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX();
 
@@ -58,15 +59,6 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_group_byXnameX() {
         final Traversal<Vertex, Map<String, Collection<Vertex>>> traversal = get_g_V_group_byXnameX();
-        printTraversalForm(traversal);
-        assertCommonA(traversal);
-    }
-
-
-    @Test
-    @LoadGraphWith(MODERN)
-    public void g_V_group_byXnameX_by() {
-        final Traversal<Vertex, Map<String, Collection<Vertex>>> traversal = get_g_V_group_byXnameX_by();
         printTraversalForm(traversal);
         assertCommonA(traversal);
     }
@@ -105,8 +97,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasXlangX_group_byXlangX_byXcountX() {
-        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_hasXlangX_group_byXlangX_byXcountX();
+    public void g_V_hasXlangX_group_byXlangX_byX1X_byXsizeX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_hasXlangX_group_byXlangX_byX1X_byXcountXlocalXX();
         printTraversalForm(traversal);
         final Map<String, Long> map = traversal.next();
         assertEquals(1, map.size());
@@ -117,8 +109,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_repeatXout_groupXaX_byXnameX_byXcountX_timesX2X_capXaX() {
-        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_repeatXout_groupXaX_byXnameX_byXcountX_timesX2X_capXaX();
+    public void g_V_repeatXout_groupXaX_byXnameX_byXitX_byXsizeXX_timesX2X_capXaX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX();
         printTraversalForm(traversal);
         final Map<String, Long> map = traversal.next();
         assertFalse(traversal.hasNext());
@@ -158,41 +150,36 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertTrue(map.get(3l).contains("marko"));
     }
 
-    public static class Traversals extends GroupTest {
+    public static class Traversals extends GroupTestV3d0 {
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX() {
-            return g.V().<String, Collection<Vertex>>group().by("name");
-        }
-
-        @Override
-        public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_group_byXnameX_by() {
-            return g.V().<String, Collection<Vertex>>group().by("name").by();
+            return g.V().<String, Collection<Vertex>>groupV3d0().by("name");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Collection<Vertex>>> get_g_V_groupXaX_byXnameX_capXaX() {
-            return g.V().<String, Collection<Vertex>>group("a").by("name").cap("a");
+            return g.V().<String, Collection<Vertex>>groupV3d0("a").by("name").cap("a");
         }
 
         @Override
         public Traversal<Vertex, Map<String, Collection<String>>> get_g_V_hasXlangX_groupXaX_byXlangX_byXnameX_out_capXaX() {
-            return g.V().has("lang").group("a").by("lang").by("name").out().cap("a");
+            return g.V().has("lang").groupV3d0("a").by("lang").by("name").out().cap("a");
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byXcountX() {
-            return g.V().has("lang").<String, Long>group().by("lang").by(count());
+        public Traversal<Vertex, Map<String, Long>> get_g_V_hasXlangX_group_byXlangX_byX1X_byXcountXlocalXX() {
+            return g.V().has("lang").<String, Long>groupV3d0().by("lang").by(inject(1)).<Collection>by(count(Scope.local));
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_byXcountX_timesX2X_capXaX() {
-            return g.V().repeat(out().group("a").by("name").by(count())).times(2).cap("a");
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX() {
+            return g.V().repeat(out().groupV3d0("a").by("name").by().<Collection>by(count(Scope.local))).times(2).cap("a");
         }
 
         @Override
         public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
-            return g.V().<Long, Collection<String>>group().by(outE().count()).by("name");
+            return g.V().<Long, Collection<String>>groupV3d0().by(outE().count()).by("name");
         }
     }
 }
