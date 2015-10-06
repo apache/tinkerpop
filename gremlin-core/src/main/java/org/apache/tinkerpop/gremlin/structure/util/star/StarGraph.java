@@ -84,7 +84,7 @@ public final class StarGraph implements Graph, Serializable {
     }
 
     @Override
-    public Vertex addVertex(final Object... keyValues) {
+    public Vertex addVertex(final Object[] keyValues) {
         if (null == this.starVertex) {
             ElementHelper.legalPropertyKeyValueArray(keyValues);
             this.starVertex = new StarVertex(ElementHelper.getIdValue(keyValues).orElse(this.nextId()), ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL));

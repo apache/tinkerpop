@@ -52,7 +52,7 @@ public final class EmptyGraph implements Graph {
     }
 
     @Override
-    public Vertex addVertex(final Object... keyValues) {
+    public Vertex addVertex(final Object[] keyValues) {
         throw Exceptions.vertexAdditionsNotSupported();
     }
 

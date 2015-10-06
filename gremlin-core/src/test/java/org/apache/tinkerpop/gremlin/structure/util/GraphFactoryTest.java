@@ -434,7 +434,7 @@ public class GraphFactoryTest {
         }
 
         @Override
-        public Vertex addVertex(Object... keyValues) {
+        public Vertex addVertex(Object[] keyValues) {
             return null;
         }
 

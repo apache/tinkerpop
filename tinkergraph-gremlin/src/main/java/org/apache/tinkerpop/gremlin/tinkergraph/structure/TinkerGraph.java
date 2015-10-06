@@ -158,7 +158,7 @@ public final class TinkerGraph implements Graph {
     ////////////// STRUCTURE API METHODS //////////////////
 
     @Override
-    public Vertex addVertex(final Object... keyValues) {
+    public Vertex addVertex(final Object[] keyValues) {
         ElementHelper.legalPropertyKeyValueArray(keyValues);
         Object idValue = vertexIdManager.convert(ElementHelper.getIdValue(keyValues).orElse(null));
         final String label = ElementHelper.getLabelValue(keyValues).orElse(Vertex.DEFAULT_LABEL);
