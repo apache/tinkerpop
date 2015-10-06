@@ -255,7 +255,14 @@ public final class TinkerGraph implements Graph {
 
     private void saveGraph() {
         final File f = new File(graphLocation);
-        if (f.exists()) f.delete();
+        if (f.exists()) {
+            f.delete();
+        } else {
+            final File parent = f.getParentFile();
+            if (!parent.exists()) {
+                parent.mkdirs();
+            }
+        }
 
         try {
             if (graphFormat.equals("graphml")) {
