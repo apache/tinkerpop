@@ -31,7 +31,6 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.spark.process.computer.HadoopSparkGraphProvider;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -39,6 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -135,17 +135,17 @@ public class HadoopGremlinPluginTest extends AbstractGremlinTest {
         AbstractGremlinProcessTest.checkResults(Arrays.asList("ripple", "lop"), traversal);
         assertTrue((Boolean) this.console.eval("hdfs.exists('target/test-output/m')"));
         assertTrue((Boolean) this.console.eval("hdfs.exists('target/test-output/" + TraverserMapReduce.TRAVERSERS + "')"));
-        final List<KeyValue<Integer, BulkSet<String>>> mList = IteratorUtils.asList(this.console.eval("hdfs.head('target/test-output/m',ObjectWritable)"));
+        final List<KeyValue<Integer, Collection<String>>> mList = IteratorUtils.asList(this.console.eval("hdfs.head('target/test-output/m',ObjectWritable)"));
         assertEquals(4, mList.size());
         mList.forEach(keyValue -> {
             if (keyValue.getKey().equals(29))
-                assertEquals(1l, keyValue.getValue().get("marko"));
+                assertTrue(keyValue.getValue().contains("marko"));
             else if (keyValue.getKey().equals(35))
-                assertEquals(1l, keyValue.getValue().get("peter"));
+                assertTrue(keyValue.getValue().contains("peter"));
             else if (keyValue.getKey().equals(32))
-                assertEquals(1l, keyValue.getValue().get("josh"));
+                assertTrue(keyValue.getValue().contains("josh"));
             else if (keyValue.getKey().equals(27))
-                assertEquals(1l, keyValue.getValue().get("vadas"));
+                assertTrue(keyValue.getValue().contains("vadas"));
             else
                 throw new IllegalStateException("The provided key/value is unknown: " + keyValue);
         });
