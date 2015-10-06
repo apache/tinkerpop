@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.spark.process.computer.payload;
 
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,7 +28,10 @@ import java.util.List;
  */
 public final class ViewPayload implements Payload {
 
-    private final List<DetachedVertexProperty<Object>> view;
+    private List<DetachedVertexProperty<Object>> view;
+
+    private ViewPayload() {
+    }
 
     public ViewPayload(final List<DetachedVertexProperty<Object>> view) {
         this.view = view;
