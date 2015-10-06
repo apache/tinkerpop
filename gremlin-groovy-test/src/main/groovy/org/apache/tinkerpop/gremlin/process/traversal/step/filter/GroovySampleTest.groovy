@@ -46,13 +46,13 @@ public abstract class GroovySampleTest {
         }
 
         @Override
-        Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
-            TraversalScriptHelper.compute("g.V().group().by(T.label).by(bothE().values('weight').fold().sample(local, 2))",g)
+        Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_sampleX2X_foldX() {
+            TraversalScriptHelper.compute("g.V().group().by(T.label).by(bothE().weight.sample(2).fold)",g)
         }
 
         @Override
-        Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
-            TraversalScriptHelper.compute("g.V().group().by(label).by(bothE().values('weight').fold().sample(local, 5))",g)
+        Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_fold_sampleXlocal_5XX() {
+            TraversalScriptHelper.compute("g.V().group().by(label).by(bothE().weight.fold().sample(local, 5))",g)
         }
     }
 }

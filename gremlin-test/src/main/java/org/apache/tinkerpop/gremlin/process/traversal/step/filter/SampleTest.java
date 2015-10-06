@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,9 +49,9 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Edge> get_g_V_localXoutE_sampleX1X_byXweightXX();
 
-    public abstract Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX();
+    public abstract Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_sampleX2X_foldX();
 
-    public abstract Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX();
+    public abstract Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_fold_sampleXlocal_5XX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -89,10 +88,9 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    @Ignore
-    public void g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
+    public void g_V_group_byXlabelX_byXbothE_weight_sampleX2X_foldX() {
         final Traversal<Vertex, Map<String, Collection<Double>>> traversal =
-                get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX();
+                get_g_V_group_byXlabelX_byXbothE_weight_sampleX2X_foldX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         final Map<String, Collection<Double>> map = traversal.next();
@@ -104,9 +102,9 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
+    public void g_V_group_byXlabelX_byXbothE_weight_fold_sampleXlocal_5XX() {
         final Traversal<Vertex, Map<String, Collection<Double>>> traversal =
-                get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX();
+                get_g_V_group_byXlabelX_byXbothE_weight_fold_sampleXlocal_5XX();
         printTraversalForm(traversal);
         assertTrue(traversal.hasNext());
         final Map<String, Collection<Double>> map = traversal.next();
@@ -133,12 +131,12 @@ public abstract class SampleTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_2XX() {
+        public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_sampleX2X_foldX() {
             return g.V().<String, Collection<Double>>group().by(T.label).by(bothE().values("weight").sample(2).fold());
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_valuesXweightX_foldX_byXsampleXlocal_5XX() {
+        public Traversal<Vertex, Map<String, Collection<Double>>> get_g_V_group_byXlabelX_byXbothE_weight_fold_sampleXlocal_5XX() {
             return g.V().<String, Collection<Double>>group().by(T.label).by(bothE().values("weight").fold().sample(Scope.local, 5));
         }
     }

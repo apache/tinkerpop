@@ -40,7 +40,7 @@ public abstract class GroovyMinTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXminXlocalXX() {
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_minX() {
             TraversalScriptHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().weight.min())", g)
         }
     }

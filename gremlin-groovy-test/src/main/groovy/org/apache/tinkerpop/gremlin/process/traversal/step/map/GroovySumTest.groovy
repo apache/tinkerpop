@@ -35,7 +35,7 @@ public abstract class GroovySumTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_valuesXweightX_foldX_byXsumXlocalXX() {
+        public Traversal<Vertex, Map<String, Number>> get_g_V_hasLabelXsoftwareX_group_byXnameX_byXbothE_weight_sumX() {
             TraversalScriptHelper.compute("g.V().hasLabel('software').group().by('name').by(bothE().weight.sum)", g)
         }
     }

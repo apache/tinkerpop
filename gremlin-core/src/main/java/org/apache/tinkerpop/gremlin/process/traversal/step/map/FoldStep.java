@@ -85,8 +85,11 @@ public final class FoldStep<S, E> extends ReducingBarrierStep<S, E> {
         }
 
         @Override
-        public E apply(final E seed, final Traverser<S> traverser) {
-            return this.biFunction.apply(seed, traverser.get());
+        public E apply(E seed, final Traverser<S> traverser) {
+            for (int i = 0; i < traverser.bulk(); i++) {
+                seed = this.biFunction.apply(seed, traverser.get());
+            }
+            return seed;
         }
 
     }
