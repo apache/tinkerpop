@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GroupStepHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -70,13 +71,13 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     @Override
-    public <A, B> List<Traversal.Admin<A, B>> getLocalChildren() {
-        final List<Traversal.Admin<A, B>> children = new ArrayList<>(4);
+    public List<Traversal.Admin<?,?>> getLocalChildren() {
+        final List<Traversal.Admin<?,?>> children = new ArrayList<>(4);
         if (null != this.keyTraversal)
             children.add((Traversal.Admin) this.keyTraversal);
-        children.add((Traversal.Admin) this.valueReduceTraversal);
-        //children.add((Traversal.Admin) this.valueTraversal);   // TODO: Need to figure when OLTP and when OLAP :/
-        //children.add((Traversal.Admin) this.reduceTraversal);
+        children.add(this.valueReduceTraversal);
+        children.add(this.valueTraversal);
+        children.add(this.reduceTraversal);
         return children;
     }
 
@@ -88,8 +89,8 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
         } else if ('v' == this.state) {
             this.valueReduceTraversal = this.integrateChild(GroupStepHelper.convertValueTraversal(kvTraversal));
             final List<Traversal.Admin<?, ?>> splitTraversal = GroupStepHelper.splitOnBarrierStep(this.valueReduceTraversal);
-            this.valueTraversal = (Traversal.Admin) splitTraversal.get(0);
-            this.reduceTraversal = (Traversal.Admin) splitTraversal.get(1);
+            this.valueTraversal = this.integrateChild(splitTraversal.get(0));
+            this.reduceTraversal = this.integrateChild(splitTraversal.get(1));
             this.state = 'x';
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
@@ -115,10 +116,8 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        for (final Traversal.Admin traversal : this.getLocalChildren()) {
-            result ^= traversal.hashCode();
-        }
+        int result = this.valueReduceTraversal.hashCode();
+        if (this.keyTraversal != null) result ^= this.keyTraversal.hashCode();
         return result;
     }
 
@@ -131,11 +130,10 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     public Traverser<Map<K, V>> processNextStart() {
         if (this.byPass) {
             final Traverser.Admin<S> traverser = this.starts.next();
-            final Traverser.Admin<S> traverserSplit = traverser.split();
-            traverserSplit.setBulk(1l);
-            this.valueTraversal.addStart((Traverser.Admin) traverserSplit);
-            final Object[] kvPair = new Object[]{TraversalUtil.applyNullable(traverser, (Traversal.Admin<S, Map>) this.keyTraversal), this.valueTraversal.toBulkSet()};
-            return traverser.asAdmin().split(kvPair, (Step) this);
+            final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
+            this.valueTraversal.addStart(traverser);
+            final BulkSet<?> value = this.valueTraversal.toBulkSet();
+            return traverser.asAdmin().split(new Object[]{key, value}, (Step) this);
         } else {
             return super.processNextStart();
         }
@@ -164,9 +162,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
                 traversal = this.groupStep.valueReduceTraversal.clone();
                 mutatingSeed.put(key, traversal);
             }
-            final Traverser.Admin<S> clonedTraverser = traverser.split();
-            clonedTraverser.setBulk(1l);
-            traversal.addStart(clonedTraverser);
+            traversal.addStart(traverser);
             TraversalHelper.getFirstStepOfAssignableClass(BarrierStep.class, traversal).ifPresent(BarrierStep::processAllStarts);
             return mutatingSeed;
         }

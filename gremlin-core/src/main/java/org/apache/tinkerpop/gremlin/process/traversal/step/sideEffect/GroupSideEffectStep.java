@@ -81,8 +81,8 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         } else if ('v' == this.state) {
             this.valueReduceTraversal = this.integrateChild(GroupStepHelper.convertValueTraversal(kvTraversal));
             final List<Traversal.Admin<?, ?>> splitTraversal = GroupStepHelper.splitOnBarrierStep(this.valueReduceTraversal);
-            this.valueTraversal = (Traversal.Admin) splitTraversal.get(0);
-            this.reduceTraversal = (Traversal.Admin) splitTraversal.get(1);
+            this.valueTraversal = this.integrateChild(splitTraversal.get(0));
+            this.reduceTraversal = this.integrateChild(splitTraversal.get(1));
             this.state = 'x';
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
@@ -91,7 +91,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
 
     @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
-        if (this.onGraphComputer) {
+        if (this.onGraphComputer) {      // OLAP
             final Map<K, Collection<?>> map = traverser.sideEffects(this.sideEffectKey);
             final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
             Collection<?> values = map.get(key);
@@ -99,11 +99,9 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
                 values = new BulkSet<>();
                 map.put(key, values);
             }
-            final Traverser.Admin<S> traverserSplit = traverser.split();
-            //traverserSplit.setBulk(1l);  // TODO: EEK! is this really how we play this?
-            this.valueTraversal.addStart((Traverser.Admin) traverserSplit);
+            this.valueTraversal.addStart(traverser); // the full traverser is provided (not a bulk 1 traverser)
             this.valueTraversal.fill((Collection) values);
-        } else {
+        } else {                        // OLTP
             if (null == this.groupMap) {
                 final Object object = traverser.sideEffects(this.sideEffectKey);
                 if (!(object instanceof GroupStepHelper.GroupMap))
@@ -115,9 +113,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
                 traversal = this.valueReduceTraversal.clone();
                 this.groupMap.put(key, traversal);
             }
-            final Traverser.Admin<S> splitTraverser = traverser.split();
-            splitTraverser.setBulk(1l);
-            traversal.addStart(splitTraverser);
+            traversal.addStart(traverser);
             TraversalHelper.getStepsOfAssignableClass(BarrierStep.class, traversal).stream().findFirst().ifPresent(BarrierStep::processAllStarts);
         }
     }
@@ -143,13 +139,13 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     @Override
-    public <A, B> List<Traversal.Admin<A, B>> getLocalChildren() {
-        final List<Traversal.Admin<A, B>> children = new ArrayList<>(4);
+    public List<Traversal.Admin<?,?>> getLocalChildren() {
+        final List<Traversal.Admin<?,?>> children = new ArrayList<>(4);
         if (null != this.keyTraversal)
             children.add((Traversal.Admin) this.keyTraversal);
-        children.add((Traversal.Admin) this.valueReduceTraversal);
-        //children.add((Traversal.Admin) this.valueTraversal);   // TODO: Need to figure when OLTP and when OLAP :/
-        //children.add((Traversal.Admin) this.reduceTraversal);
+        children.add(this.valueReduceTraversal);
+        children.add(this.valueTraversal);
+        children.add(this.reduceTraversal);
         return children;
     }
 
