@@ -134,7 +134,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             this.keyTraversal = this.integrateChild(kvTraversal);
             this.state = 'v';
         } else if ('v' == this.state) {
-            this.valueTraversal = this.integrateChild(GroupStepHelper.convertChildTraversal(kvTraversal));
+            this.valueTraversal = this.integrateChild(GroupStepHelper.convertValueTraversal(kvTraversal));
             this.state = 'x';
         } else {
             throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);

@@ -19,16 +19,21 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -41,16 +46,36 @@ public final class GroupStepHelper {
 
     }
 
-    public static <S, E> Traversal.Admin<S, E> convertChildTraversal(final Traversal.Admin<S, E> childTraversal) {
-        if (childTraversal instanceof ElementValueTraversal ||
-                childTraversal instanceof TokenTraversal ||
-                childTraversal instanceof IdentityTraversal ||
-                childTraversal.getStartStep() instanceof LambdaMapStep && ((LambdaMapStep) childTraversal.getStartStep()).getMapFunction() instanceof FunctionTraverser) {
-            return (Traversal.Admin<S, E>) __.map(childTraversal).fold();
+    public static <S, E> Traversal.Admin<S, E> convertValueTraversal(final Traversal.Admin<S, E> valueTraversal) {
+        if (valueTraversal instanceof ElementValueTraversal ||
+                valueTraversal instanceof TokenTraversal ||
+                valueTraversal instanceof IdentityTraversal ||
+                valueTraversal.getStartStep() instanceof LambdaMapStep && ((LambdaMapStep) valueTraversal.getStartStep()).getMapFunction() instanceof FunctionTraverser) {
+            return (Traversal.Admin<S, E>) __.map(valueTraversal).fold();
         } else {
-            return childTraversal;
+            return valueTraversal;
         }
     }
+
+    public static List<Traversal.Admin<?, ?>> splitOnBarrierStep(final Traversal.Admin<?, ?> valueTraversal) {
+        if (TraversalHelper.getFirstStepOfAssignableClass(BarrierStep.class, valueTraversal).isPresent()) {
+            final Traversal.Admin<?, ?> first = __.identity().asAdmin();
+            final Traversal.Admin<?, ?> second = __.identity().asAdmin();
+            boolean onSecond = false;
+            for (final Step step : valueTraversal.getSteps()) {
+                if (step instanceof BarrierStep || step instanceof DedupGlobalStep)
+                    onSecond = true;
+                if (onSecond)
+                    second.addStep(step.clone());
+                else
+                    first.addStep(step.clone());
+            }
+            return Arrays.asList(first, second);
+        } else {
+            return Arrays.asList(valueTraversal, __.identity().asAdmin());
+        }
+    }
+
 
     /////////
 
