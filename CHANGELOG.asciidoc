@@ -26,6 +26,11 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a bug in `FoldStep` around bulking. This could be a breaking change, but it is the correct semantics.
+* Previous `group()`-behavior steps are accessible via the deprecated `groupV3d0()`-steps.
+* `GroupStep` and `GroupSideEffectStep` now do lazy reductions to reduce memory footprint. Breaking change for `group()` semantics.
+* Added `GroupStepHelper` with various static methods and classes that are used by both `GroupStep` and `GroupSideEffectStep`.
+* Added `BarrierStep` interface with `processAllStarts()` method which process all starts up to yielding the barrier result.
 * Fixed a severe threading issue in `TinkerGraphComputer`.
 * The location of the jars in HDFS is now `hadoop-gremlin-x.y.z-libs` to ensure multiple TinkerPop versions don't clash.
 * `GiraphGraphComputer` will only upload the jars to HDFS if it doesn't already exist (to help speed up startup time).

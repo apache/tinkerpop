@@ -321,14 +321,14 @@ The `by()`-step is not an actual step, but instead is a "step-modulator" similar
 
 [gremlin-groovy,modern]
 ----
-g.V().group().by(bothE().count())                                  <1>
-g.V().group().by(bothE().count()).by('name')                       <2>
-g.V().group().by(bothE().count()).by('name').by(count(local))  <3>
+g.V().group().by(bothE().count()) <1>
+g.V().group().by(bothE().count()).by('name') <2>
+g.V().group().by(bothE().count()).by(count())  <3>
 ----
 
 <1> `by(outE().count())` will group the elements by their edge count (*traversal*).
 <2> `by('name')` will process the grouped elements by their name (*element property projection*).
-<3> `by(count(local))` will count the number of elements in each group (*traversal*).
+<3> `by(count())` will count the number of elements in each group (*traversal*).
 
 [cap-step]]
 Cap Step
@@ -555,7 +555,7 @@ As traversers propagate across a graph as defined by a traversal, sideEffect com
 ----
 g.V().group().by(label) <1>
 g.V().group().by(label).by('name') <2>
-g.V().group().by(label).by('name').by(count(local)) <3>
+g.V().group().by(label).by(count()) <3>
 ----
 
 <1> Group the vertices by their label.

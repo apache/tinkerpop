@@ -808,7 +808,7 @@ A review of the Hadoop-Gremlin specific properties are provided in the table bel
 [width="100%",cols="2,10",options="header"]
 |=========================================================
 |Property |Description
-|gremlin.graph |The class of the graph to construct using GraphFactory
+|gremlin.graph |The class of the graph to construct using GraphFactory.
 |gremlin.hadoop.inputLocation |The location of the input file(s) for Hadoop-Gremlin to read the graph from.
 |gremlin.hadoop.graphInputFormat |The format that the graph input file(s) are represented in.
 |gremlin.hadoop.outputLocation |The location to write the computed HadoopGraph to.
@@ -934,13 +934,15 @@ The `SparkGraphComputer` algorithm leverages Spark's caching abilities to reduce
 
 image::spark-algorithm.png[width=775]
 
-Spark-Gremlin Provides specific properties in the table below.
 [width="100%",cols="2,10",options="header"]
 |========================================================
 |Property |Description
-|gremlin.hadoop.graphInputRDD |A class for creating RDD's from underlying graph data, defaults to Hadoop `InputFormat`
-|gremlin.hadoop.graphOutputRDD |A class for output RDD's, defaults to Hadoop `OutputFormat`
-|gremlin.spark.persistContext |Whether to create a new context for every SparkGraphComputer or to reuse an available SparkContext in the JVM (or start one if not running)
+|gremlin.hadoop.graphInputRDD |A class for creating RDD's from underlying graph data, defaults to Hadoop `InputFormat`.
+|gremlin.hadoop.graphOutputRDD |A class for output RDD's, defaults to Hadoop `OutputFormat`.
+|gremlin.spark.persistContext |Whether to create a new context for every `SparkGraphComputer` or to reuse an existing `SparkContext`.
+|========================================================
+
+
 
 IMPORTANT: If the vendor/user wishes to bypass using Hadoop `InputFormats` for pulling data from the underlying graph system, it is possible to leverage Spark's RDD constructs directly. There is a `gremlin.hadoop.graphInputRDD` configuration that references a `Class<? extends InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, to bypass `OutputFormat`, use `gremlin.hadoop.graphOutputRDD` and the respective `OutputRDD` with its write-based method.
 
