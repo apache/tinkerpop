@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
@@ -110,7 +111,9 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             // create the spark configuration from the graph computer configuration
             hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
             // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
-            try (final JavaSparkContext sparkContext = new JavaSparkContext(sparkConfiguration)) {
+            JavaSparkContext sparkContext = null;
+            try  {
+                sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
                 // add the project jars to the cluster
                 this.loadJars(sparkContext, hadoopConfiguration);
                 // create a message-passing friendly rdd from the input rdd
@@ -186,6 +189,11 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // update runtime and return the newly computed graph
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);
                 return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, this.resultGraph, this.persist), finalMemory.asImmutable());
+            }
+            finally
+            {
+                if (sparkContext != null && !hadoopGraph.configuration().getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
+                    sparkContext.stop();
             }
         });
     }

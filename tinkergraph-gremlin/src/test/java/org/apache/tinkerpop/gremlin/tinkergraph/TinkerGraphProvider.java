@@ -73,7 +73,6 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
             if (requiresPersistence(test, testMethodName)) {
                 put(TinkerGraph.CONFIG_GRAPH_FORMAT, "gryo");
                 final File tempDir = TestHelper.makeTestDataPath(test, "temp");
-                if (!tempDir.exists()) tempDir.mkdirs();
                 put(TinkerGraph.CONFIG_GRAPH_LOCATION,
                         tempDir.getAbsolutePath() + File.separator + testMethodName + ".kryo");
             }
