@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,6 +54,8 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_byXcountX_timesX2X_capXaX();
 
     public abstract Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX();
+
+    public abstract Traversal<Vertex, Map<String, Double>> get_g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -158,6 +161,19 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertTrue(map.get(3l).contains("marko"));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX() {
+        final Traversal<Vertex, Map<String, Double>> traversal = get_g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX();
+        printTraversalForm(traversal);
+        assertTrue(traversal.hasNext());
+        final Map<String, Double> map = traversal.next();
+        assertFalse(traversal.hasNext());
+        assertEquals(2, map.size());
+        assertEquals(0.0d, map.get("software"), 0.01d);
+        assertEquals(3.5d, map.get("person"), 0.01d);
+    }
+
     public static class Traversals extends GroupTest {
 
         @Override
@@ -193,6 +209,11 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
             return g.V().<Long, Collection<String>>group().by(outE().count()).by("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Double>> get_g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX() {
+            return g.V().<String, Double>group("a").by(T.label).by(outE().values("weight").sum()).cap("a");
         }
     }
 }

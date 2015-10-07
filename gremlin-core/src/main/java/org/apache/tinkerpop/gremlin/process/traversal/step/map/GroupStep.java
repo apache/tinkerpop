@@ -98,7 +98,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.SIDE_EFFECTS);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
     }
 
     @Override

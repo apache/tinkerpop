@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.VertexTraversalSideEffects;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -54,11 +55,14 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, EngineDependent, MapReducer<K, S, K, V, Map<K, V>> {
+public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implements SideEffectCapable, TraversalParent, EngineDependent, MapReducer<K, Collection<?>, K, V, Map<K, V>> {
 
     private char state = 'k';
     private Traversal.Admin<S, K> keyTraversal = null;
-    private Traversal.Admin<S, V> valueTraversal = this.integrateChild(__.<V>fold().asAdmin());
+    private Traversal.Admin<S, ?> valueTraversal = this.integrateChild(__.identity().asAdmin());   // used in OLAP
+    private Traversal.Admin<?, V> reduceTraversal = this.integrateChild(__.fold().asAdmin());      // used in OLAP
+    private Traversal.Admin<S, V> valueReduceTraversal = this.integrateChild(__.fold().asAdmin()); // used in OLTP
+    ///
     private String sideEffectKey;
     private boolean onGraphComputer = false;
     private GroupStepHelper.GroupMap<S, K, V> groupMap;
@@ -70,16 +74,35 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     @Override
+    public void addLocalChild(final Traversal.Admin<?, ?> kvTraversal) {
+        if ('k' == this.state) {
+            this.keyTraversal = this.integrateChild(kvTraversal);
+            this.state = 'v';
+        } else if ('v' == this.state) {
+            this.valueReduceTraversal = this.integrateChild(GroupStepHelper.convertValueTraversal(kvTraversal));
+            final List<Traversal.Admin<?, ?>> splitTraversal = GroupStepHelper.splitOnBarrierStep(this.valueReduceTraversal);
+            this.valueTraversal = (Traversal.Admin) splitTraversal.get(0);
+            this.reduceTraversal = (Traversal.Admin) splitTraversal.get(1);
+            this.state = 'x';
+        } else {
+            throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
+        }
+    }
+
+    @Override
     protected void sideEffect(final Traverser.Admin<S> traverser) {
         if (this.onGraphComputer) {
-            final Map<K, Collection<Traverser<S>>> map = traverser.sideEffects(this.sideEffectKey);
+            final Map<K, Collection<?>> map = traverser.sideEffects(this.sideEffectKey);
             final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
-            Collection<Traverser<S>> values = map.get(key);
+            Collection<?> values = map.get(key);
             if (null == values) {
                 values = new BulkSet<>();
                 map.put(key, values);
             }
-            values.add(traverser);
+            final Traverser.Admin<S> traverserSplit = traverser.split();
+            //traverserSplit.setBulk(1l);  // TODO: EEK! is this really how we play this?
+            this.valueTraversal.addStart((Traverser.Admin) traverserSplit);
+            this.valueTraversal.fill((Collection) values);
         } else {
             if (null == this.groupMap) {
                 final Object object = traverser.sideEffects(this.sideEffectKey);
@@ -89,7 +112,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             final K key = TraversalUtil.applyNullable(traverser, this.keyTraversal);
             Traversal.Admin<S, V> traversal = this.groupMap.get(key);
             if (null == traversal) {
-                traversal = this.valueTraversal.clone();
+                traversal = this.valueReduceTraversal.clone();
                 this.groupMap.put(key, traversal);
             }
             final Traverser.Admin<S> splitTraverser = traverser.split();
@@ -110,40 +133,29 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     @Override
-    public MapReduce<K, S, K, V, Map<K, V>> getMapReduce() {
-        return new GroupSideEffectMapReduce(this);
+    public MapReduce<K, Collection<?>, K, V, Map<K, V>> getMapReduce() {
+        return new GroupSideEffectMapReduce<>(this);
     }
 
     @Override
     public String toString() {
-        return StringFactory.stepString(this, this.sideEffectKey, this.keyTraversal, this.valueTraversal);
+        return StringFactory.stepString(this, this.sideEffectKey, this.keyTraversal, this.valueReduceTraversal);
     }
 
     @Override
     public <A, B> List<Traversal.Admin<A, B>> getLocalChildren() {
-        final List<Traversal.Admin<A, B>> children = new ArrayList<>(2);
+        final List<Traversal.Admin<A, B>> children = new ArrayList<>(4);
         if (null != this.keyTraversal)
             children.add((Traversal.Admin) this.keyTraversal);
-        children.add((Traversal.Admin) this.valueTraversal);
+        children.add((Traversal.Admin) this.valueReduceTraversal);
+        //children.add((Traversal.Admin) this.valueTraversal);   // TODO: Need to figure when OLTP and when OLAP :/
+        //children.add((Traversal.Admin) this.reduceTraversal);
         return children;
     }
 
     @Override
-    public void addLocalChild(final Traversal.Admin<?, ?> kvTraversal) {
-        if ('k' == this.state) {
-            this.keyTraversal = this.integrateChild(kvTraversal);
-            this.state = 'v';
-        } else if ('v' == this.state) {
-            this.valueTraversal = this.integrateChild(GroupStepHelper.convertValueTraversal(kvTraversal));
-            this.state = 'x';
-        } else {
-            throw new IllegalStateException("The key and value traversals for group()-step have already been set: " + this);
-        }
-    }
-
-    @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.SIDE_EFFECTS, TraverserRequirement.BULK);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
     }
 
     @Override
@@ -151,8 +163,9 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         final GroupSideEffectStep<S, K, V> clone = (GroupSideEffectStep<S, K, V>) super.clone();
         if (null != this.keyTraversal)
             clone.keyTraversal = clone.integrateChild(this.keyTraversal.clone());
-        if (null != this.valueTraversal)
-            clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone());
+        clone.valueReduceTraversal = clone.integrateChild(this.valueReduceTraversal.clone());
+        clone.valueTraversal = clone.integrateChild(this.valueTraversal.clone());
+        clone.reduceTraversal = clone.integrateChild(this.reduceTraversal.clone());
         return clone;
     }
 
@@ -160,20 +173,20 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     public int hashCode() {
         int result = super.hashCode() ^ this.sideEffectKey.hashCode();
         if (this.keyTraversal != null) result ^= this.keyTraversal.hashCode();
-        if (this.valueTraversal != null) result ^= this.valueTraversal.hashCode();
+        result ^= this.valueReduceTraversal.hashCode();
         return result;
     }
 
     ///////////
 
-    public static final class GroupSideEffectMapReduce<S, K, V> implements MapReduce<K, Traverser<S>, K, V, Map<K, V>> {
+    public static final class GroupSideEffectMapReduce<S, K, V> implements MapReduce<K, Collection<?>, K, V, Map<K, V>> {
 
         public static final String GROUP_SIDE_EFFECT_STEP_SIDE_EFFECT_KEY = "gremlin.groupSideEffectStep.sideEffectKey";
         public static final String GROUP_SIDE_EFFECT_STEP_STEP_ID = "gremlin.groupSideEffectStep.stepId";
 
         private String sideEffectKey;
         private String groupStepId;
-        private Traversal.Admin<S, V> valueTraversal;
+        private Traversal.Admin<?, V> reduceTraversal;
         private Supplier<Map<K, V>> mapSupplier;
 
         private GroupSideEffectMapReduce() {
@@ -183,7 +196,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         public GroupSideEffectMapReduce(final GroupSideEffectStep<S, K, V> step) {
             this.groupStepId = step.getId();
             this.sideEffectKey = step.getSideEffectKey();
-            this.valueTraversal = step.valueTraversal;
+            this.reduceTraversal = step.reduceTraversal.clone();
             this.mapSupplier = step.getTraversal().asAdmin().getSideEffects().<Map<K, V>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMapSupplier.instance());
         }
 
@@ -200,7 +213,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             this.groupStepId = configuration.getString(GROUP_SIDE_EFFECT_STEP_STEP_ID);
             final Traversal.Admin<?, ?> traversal = TraversalVertexProgram.getTraversal(graph, configuration);
             final GroupSideEffectStep<S, K, V> groupSideEffectStep = new TraversalMatrix<>(traversal).getStepById(this.groupStepId);
-            this.valueTraversal = groupSideEffectStep.valueTraversal.clone();
+            this.reduceTraversal = groupSideEffectStep.reduceTraversal.clone();
             this.mapSupplier = traversal.getSideEffects().<Map<K, V>>getRegisteredSupplier(this.sideEffectKey).orElse(HashMapSupplier.instance());
         }
 
@@ -210,15 +223,18 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         }
 
         @Override
-        public void map(final Vertex vertex, final MapEmitter<K, Traverser<S>> emitter) {
-            VertexTraversalSideEffects.of(vertex).<Map<K, Collection<Traverser<S>>>>get(this.sideEffectKey).ifPresent(map -> map.forEach((k, v) -> v.forEach(t -> emitter.emit(k, t))));
+        public void map(final Vertex vertex, final MapEmitter<K, Collection<?>> emitter) {
+            VertexTraversalSideEffects.of(vertex).<Map<K, Collection<?>>>get(this.sideEffectKey).ifPresent(map -> map.forEach(emitter::emit));
         }
 
         @Override
-        public void reduce(final K key, final Iterator<Traverser<S>> values, final ReduceEmitter<K, V> emitter) {
-            final Traversal.Admin<S, V> cloneValueTraversal = this.valueTraversal.clone();
-            cloneValueTraversal.addStarts(values);
-            emitter.emit(key, cloneValueTraversal.next());
+        public void reduce(final K key, final Iterator<Collection<?>> values, final ReduceEmitter<K, V> emitter) {
+            Traversal.Admin<?, V> reduceTraversalClone = this.reduceTraversal.clone();
+            while (values.hasNext()) {
+                reduceTraversalClone.addStarts(reduceTraversalClone.getTraverserGenerator().generateIterator(values.next().iterator(), (Step) reduceTraversalClone.getStartStep(), 1l));
+                TraversalHelper.getFirstStepOfAssignableClass(BarrierStep.class, reduceTraversalClone).ifPresent(BarrierStep::processAllStarts);
+            }
+            emitter.emit(key, reduceTraversalClone.next());
         }
 
         @Override
@@ -237,8 +253,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
         public GroupSideEffectMapReduce<S, K, V> clone() {
             try {
                 final GroupSideEffectMapReduce<S, K, V> clone = (GroupSideEffectMapReduce<S, K, V>) super.clone();
-                if (null != clone.valueTraversal)
-                    clone.valueTraversal = this.valueTraversal.clone();
+                clone.reduceTraversal = this.reduceTraversal.clone();
                 return clone;
             } catch (final CloneNotSupportedException e) {
                 throw new IllegalStateException(e.getMessage(), e);
