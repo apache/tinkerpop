@@ -52,4 +52,6 @@ public final class Constants {
     // spark based constants
     public static final String GREMLIN_HADOOP_GRAPH_INPUT_RDD = "gremlin.hadoop.graphInputRDD";
     public static final String GREMLIN_HADOOP_GRAPH_OUTPUT_RDD = "gremlin.hadoop.graphOutputRDD";
+    public static final String GREMLIN_SPARK_PERSIST_CONTEXT = "gremlin.spark.persistContext";
+
 }
