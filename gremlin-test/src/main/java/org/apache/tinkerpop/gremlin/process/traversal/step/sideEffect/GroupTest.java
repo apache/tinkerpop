@@ -59,7 +59,10 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Double>> get_g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX();
 
+
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX();
+
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -190,6 +193,19 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX();
+
+        checkMap(new HashMap<String, Long>() {{
+            put("original", 771317l);
+            put("", 160968l);
+            put("cover", 368579l);
+        }}, traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends GroupTest {
 
         @Override
@@ -235,6 +251,11 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX() {
             return g.V().repeat(both("followedBy")).times(2).<String, Long>group().by("songType").by(count());
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX() {
+            return g.V().repeat(both("followedBy")).times(2).<String, Long>group("a").by("songType").by(count()).cap("a");
         }
     }
 }

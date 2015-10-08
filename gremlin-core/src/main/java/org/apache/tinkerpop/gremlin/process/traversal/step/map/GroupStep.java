@@ -166,9 +166,9 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             }
 
             traversal.addStart(traverser);
-            int count = this.counters.compute(key, (k,i) -> ++i);
+            int count = this.counters.compute(key, (k, i) -> ++i);
             if (count > 10000) {
-                this.counters.put(key,0);
+                this.counters.put(key, 0);
                 TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, traversal).ifPresent(Barrier::processAllStarts);
             }
             return mutatingSeed;
