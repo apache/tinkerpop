@@ -24,13 +24,17 @@ import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.ietf.jgss.GSSException;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -101,11 +105,12 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         final Client client = cluster.connect();
 
         try {
-            client.submit("1+1").all();
+            client.submit("1+1").all().get();
+            fail("This should not succeed as the client did not provide credentials");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
-            assertEquals(ResponseException.class, root.getClass());
-            assertEquals("Username and/or password are incorrect", root.getMessage());
+            assertEquals(GSSException.class, root.getClass());
+            assertThat(root.getMessage(), startsWith("Invalid name provided"));
         } finally {
             cluster.close();
         }
@@ -117,7 +122,8 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         final Client client = cluster.connect();
 
         try {
-            client.submit("1+1").all();
+            client.submit("1+1").all().get();
+            fail("This should not succeed as the client did not provide valid credentials");
         } catch(Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertEquals(ResponseException.class, root.getClass());
