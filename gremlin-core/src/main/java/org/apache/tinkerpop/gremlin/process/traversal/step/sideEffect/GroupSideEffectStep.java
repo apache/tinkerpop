@@ -28,11 +28,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GroupStepHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -46,6 +46,7 @@ import org.apache.tinkerpop.gremlin.util.function.HashMapSupplier;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     private String sideEffectKey;
     private boolean onGraphComputer = false;
     private GroupStepHelper.GroupMap<S, K, V> groupMap;
+    private final Map<K, Integer> counters = new HashMap<>();
 
     public GroupSideEffectStep(final Traversal.Admin traversal, final String sideEffectKey) {
         super(traversal);
@@ -99,7 +101,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
                 values = new BulkSet<>();
                 map.put(key, values);
             }
-            this.valueTraversal.addStart(traverser); // the full traverser is provided (not a bulk 1 traverser)
+            this.valueTraversal.addStart(traverser.clone()); // the full traverser is provided (not a bulk 1 traverser) and clone is needed cause sideEffect steps don't split the traverser
             this.valueTraversal.fill((Collection) values);
         } else {                        // OLTP
             if (null == this.groupMap) {
@@ -112,9 +114,14 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             if (null == traversal) {
                 traversal = this.valueReduceTraversal.clone();
                 this.groupMap.put(key, traversal);
+                this.counters.put(key, 0);
             }
-            traversal.addStart(traverser);
-            TraversalHelper.getStepsOfAssignableClass(Barrier.class, traversal).stream().findFirst().ifPresent(Barrier::processAllStarts);
+            traversal.addStart(traverser.clone()); // this is because sideEffect steps don't split the traverser
+            final int count = this.counters.compute(key, (k, i) -> ++i);
+            if (count > 10000) {
+                this.counters.put(key, 0);
+                TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, traversal).ifPresent(Barrier::processAllStarts);
+            }
         }
     }
 
@@ -225,9 +232,10 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
 
         @Override
         public void reduce(final K key, final Iterator<Collection<?>> values, final ReduceEmitter<K, V> emitter) {
-            Traversal.Admin<?, V> reduceTraversalClone = this.reduceTraversal.clone();
+            Traversal.Admin<?,V> reduceTraversalClone = this.reduceTraversal.clone();
             while (values.hasNext()) {
-                reduceTraversalClone.addStarts(reduceTraversalClone.getTraverserGenerator().generateIterator(values.next().iterator(), (Step) reduceTraversalClone.getStartStep(), 1l));
+                final BulkSet<?> value = (BulkSet<?>) values.next();
+                value.forEach((v,bulk) -> reduceTraversalClone.addStart(reduceTraversalClone.getTraverserGenerator().generate(v, (Step) reduceTraversalClone.getStartStep(), bulk)));
                 TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, reduceTraversalClone).ifPresent(Barrier::processAllStarts);
             }
             emitter.emit(key, reduceTraversalClone.next());
