@@ -631,13 +631,13 @@ gremlin> g.E()
 Namespace Conventions
 ---------------------
 
-End users, <<implementations,vendors>>, <<graphcomputer,`GraphComputer`>> algorithm designers, <<gremlin-plugins,GremlinPlugin>> creators, etc. all leverage properties on elements to store information. There are a few conventions that should be respected when naming property keys to ensure that conflicts between these stakeholders do not conflict.
+End users, <<implementations,graph system providers>>, <<graphcomputer,`GraphComputer`>> algorithm designers, <<gremlin-plugins,GremlinPlugin>> creators, etc. all leverage properties on elements to store information. There are a few conventions that should be respected when naming property keys to ensure that conflicts between these stakeholders do not conflict.
 
 * End users are granted the _flat namespace_ (e.g. `name`, `age`, `location`) to key their properties and label their elements.
-* Vendors are granted the _hidden namespace_ (e.g. `~metadata`) to key their properties and labels. Data key'd as such is only accessible via the vendor implementation code and no other stakeholders are granted read nor write access to data prefixed with "~" (see `Graph.Hidden`). Test coverage and exceptions exist to ensure that vendors respect this hard boundary.
+* Graph system providers are granted the _hidden namespace_ (e.g. `~metadata`) to key their properties and labels. Data key'd as such is only accessible via the graph system implementation and no other stakeholders are granted read nor write access to data prefixed with "~" (see `Graph.Hidden`). Test coverage and exceptions exist to ensure that graph systems respect this hard boundary.
 * <<vertexprogram,`VertexProgram`>> and <<mapreduce,`MapReduce`>> developers should, like `GraphStrategy` developers, leverage _qualified namespaces_ particular to their domain (e.g. `mydomain.myvertexprogram.computedata`).
 * `GremlinPlugin` creators should prefix their plugin name with their domain (e.g. `mydomain.myplugin`).
 
 IMPORTANT: TinkerPop uses `tinkerpop.` and `gremlin.` as the prefixes for provided strategies, vertex programs, map reduce implementations, and plugins.
 
-The only truly protected namespace is the _hidden namespace_ provided to vendors. From there, its up to engineers to respect the namespacing conventions presented.
+The only truly protected namespace is the _hidden namespace_ provided to graph systems. From there, its up to engineers to respect the namespacing conventions presented.

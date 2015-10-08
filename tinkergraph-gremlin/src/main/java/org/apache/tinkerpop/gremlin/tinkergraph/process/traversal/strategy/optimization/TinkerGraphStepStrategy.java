@@ -30,7 +30,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffec
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.VendorOptimizationStrategy> implements TraversalStrategy.VendorOptimizationStrategy {
+public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy> implements TraversalStrategy.ProviderOptimizationStrategy {
 
     private static final TinkerGraphStepStrategy INSTANCE = new TinkerGraphStepStrategy();
 

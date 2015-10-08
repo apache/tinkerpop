@@ -20,20 +20,20 @@ Implementations
 
 image::gremlin-racecar.png[width=325]
 
-[[vendor-requirements]]
-Vendor Requirements
--------------------
+[[graph-system-provider-requirements]]
+Graph System Provider Requirements
+----------------------------------
 
-image:tinkerpop-enabled.png[width=140,float=left] At the core of TinkerPop3 is a Java8 API. The implementation of this core API and its validation via the `gremlin-test` suite is all that is required of a vendor wishing to provide a TinkerPop3-enabled graph engine. Once a vendor has a valid implementation, then all the applications provided by TinkerPop (e.g. Gremlin Console, Gremlin Server, etc.) and 3rd-party developers (e.g. Gremlin-Scala, Gremlin-JS, etc.) will integrate properly with their graph engine. Finally, please feel free to use the logo on the left to promote your TinkerPop3 implementation.
+image:tinkerpop-enabled.png[width=140,float=left] At the core of TinkerPop3 is a Java8 API. The implementation of this core API and its validation via the `gremlin-test` suite is all that is required of a graph system provider wishing to provide a TinkerPop3-enabled graph engine. Once a graph system has a valid implementation, then all the applications provided by TinkerPop (e.g. Gremlin Console, Gremlin Server, etc.) and 3rd-party developers (e.g. Gremlin-Scala, Gremlin-JS, etc.) will integrate properly. Finally, please feel free to use the logo on the left to promote your TinkerPop3 implementation.
 
 Implementing Gremlin-Core
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The classes that a vendor should focus on implementing are itemized below. It is a good idea to study the <<tinkergraph-gremlin,TinkerGraph>> (in-memory OLTP and OLAP in `tinkergraph-gremlin`), <<neo4j-gremlin,Neo4jGraph>> (OTLP w/ transactions in `neo4j-gremlin`) and/or <<hadoop-gremlin,HadoopGraph>> (OLAP in `hadoop-gremlin`) implementations for ideas and patterns.
+The classes that a graph system provider should focus on implementing are itemized below. It is a good idea to study the <<tinkergraph-gremlin,TinkerGraph>> (in-memory OLTP and OLAP in `tinkergraph-gremlin`), <<neo4j-gremlin,Neo4jGraph>> (OTLP w/ transactions in `neo4j-gremlin`) and/or <<hadoop-gremlin,HadoopGraph>> (OLAP in `hadoop-gremlin`) implementations for ideas and patterns.
 
 . Online Transactional Processing Graph Systems (*OLTP*)
  .. Structure API: `Graph`, `Element`, `Vertex`, `Edge`, `Property` and `Transaction` (if transactions are supported).
- .. Process API: `TraversalStrategy` instances for optimizing Gremlin traversals to the vendors graph system (i.e. `TinkerGraphStepStrategy`).
+ .. Process API: `TraversalStrategy` instances for optimizing Gremlin traversals to the provider's graph system (i.e. `TinkerGraphStepStrategy`).
 . Online Analytics Processing Graph Systems (*OLAP*)
  .. Everything required of OTLP is required of OLAP (but not vice versa).
  .. GraphComputer API: `GraphComputer`, `Messenger`, `Memory`.
@@ -52,7 +52,7 @@ Please consider the following implementation notes:
 OLTP Implementations
 ^^^^^^^^^^^^^^^^^^^^
 
-image:pipes-character-1.png[width=110,float=right] The most important interfaces to implement are in the `structure/` package. These include interfaces like Graph, Vertex, Edge, Property, Transaction, etc. The `StructureStandardSuite` will ensure that the semantics of the methods implemented are correct. Moreover, there are numerous `Exceptions` classes with static exceptions that should be thrown by the vendor so that all the exceptions and their messages are consistent amongst all TinkerPop3 implementations.
+image:pipes-character-1.png[width=110,float=right] The most important interfaces to implement are in the `structure/` package. These include interfaces like Graph, Vertex, Edge, Property, Transaction, etc. The `StructureStandardSuite` will ensure that the semantics of the methods implemented are correct. Moreover, there are numerous `Exceptions` classes with static exceptions that should be thrown by the graph system so that all the exceptions and their messages are consistent amongst all TinkerPop3 implementations.
 
 [[olap-implementations]]
 OLAP Implementations
@@ -66,7 +66,7 @@ image:furnace-character-1.png[width=110,float=right] Implementing the OLAP inter
 . `MapReduce.MapEmitter`: The system that collects key/value pairs being emitted by the MapReduce applications map-phase.
 . `MapReduce.ReduceEmitter`: The system that collects key/value pairs being emitted by the MapReduce applications combine- and reduce-phases.
 
-NOTE: The VertexProgram and MapReduce interfaces in the `process/computer/` package are not required by the vendor to implement. Instead, these are interfaces to be implemented by application developers writing VertexPrograms and MapReduce jobs.
+NOTE: The VertexProgram and MapReduce interfaces in the `process/computer/` package are not required by the graph system. Instead, these are interfaces to be implemented by application developers writing VertexPrograms and MapReduce jobs.
 
 IMPORTANT: TinkerPop3 provides three OLAP implementations: <<tinkergraph-gremlin,TinkerGraphComputer>> (TinkerGraph), <<giraphgraphcomputer,GiraphGraphComputer>> (HadoopGraph), and <<sparkgraphcomputer,`SparkGraphComputer`>> (Hadoop). Given the complexity of the OLAP system, it is good to study and copy many of the patterns used in these reference implementations.
 
@@ -101,7 +101,7 @@ The Messenger object is similar to the Memory object in that a vertex can read a
 Implementing MapReduce Emitters
 +++++++++++++++++++++++++++++++
 
-image:hadoop-logo-notext.png[width=150,float=left] The MapReduce framework in TinkerPop3 is similar to the model popularized by link:http://apache.hadoop.org[Hadoop]. The primary difference is that all Mappers process the vertices of the graph, not an arbitrary key/value pair. However, the vertices' edges can not be accessed -- only their properties. This greatly reduces the amount of data needed to be pushed through the MapReduce engine as any edge information required, can be computed in the VertexProgram.execute() method. Moreover, at this stage, vertices can not be mutated, only their token and property data read. A Gremlin OLAP vendor needs to provide implementations for to particular classes: `MapReduce.MapEmitter` and `MapReduce.ReduceEmitter`. TinkerGraph's implementation is provided below which demonstrates the simplicity of the algorithm (especially when the data is all within the same JVM).
+image:hadoop-logo-notext.png[width=150,float=left] The MapReduce framework in TinkerPop3 is similar to the model popularized by link:http://apache.hadoop.org[Hadoop]. The primary difference is that all Mappers process the vertices of the graph, not an arbitrary key/value pair. However, the vertices' edges can not be accessed -- only their properties. This greatly reduces the amount of data needed to be pushed through the MapReduce engine as any edge information required, can be computed in the VertexProgram.execute() method. Moreover, at this stage, vertices can not be mutated, only their token and property data read. A Gremlin OLAP system needs to provide implementations for to particular classes: `MapReduce.MapEmitter` and `MapReduce.ReduceEmitter`. TinkerGraph's implementation is provided below which demonstrates the simplicity of the algorithm (especially when the data is all within the same JVM).
 
 [source,java]
 ----
@@ -323,7 +323,7 @@ The above set of tests represent the minimum test suite set to implement.  There
 
 IMPORTANT: It is as important to look at "ignored" tests as it is to look at ones that fail.  The `gremlin-test` suite utilizes the `Feature` implementation exposed by the `Graph` to determine which tests to execute.  If a test utilizes features that are not supported by the graph, it will ignore them.  While that may be fine, implementers should validate that the ignored tests are appropriately bypassed and that there are no mistakes in their feature definitions.  Moreover, implementers should consider filling gaps in their own test suites, especially when IO-related tests are being ignored.
 
-The only test-class that requires any code investment is the `GraphProvider` implementation class. This class is a used by the test suite to construct `Graph` configurations and instances and provides information about the vendor's implementation itself.  In most cases, it is best to simply extend `AbstractGraphProvider` as it provides many default implementations of the `GraphProvider` interface.
+The only test-class that requires any code investment is the `GraphProvider` implementation class. This class is a used by the test suite to construct `Graph` configurations and instances and provides information about the implementation itself.  In most cases, it is best to simply extend `AbstractGraphProvider` as it provides many default implementations of the `GraphProvider` interface.
 
 Finally, specify the test suites that will be supported by the `Graph` implementation using the `@Graph.OptIn` annotation.  See the `TinkerGraph` implementation below as an example:
 
@@ -389,7 +389,7 @@ CAUTION: Configuring tests to run in parallel might result in errors that are di
 Accessibility via GremlinPlugin
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-image:gremlin-plugin.png[width=100,float=left] The applications distributed with TinkerPop3 do not distribute with any vendor implementations besides TinkerGraph. If your implementation is stored in a Maven repository (e.g. Maven Central Repository), then it is best to provide a `GremlinPlugin` implementation so the respective jars can be downloaded according and when required by the user. Neo4j's GremlinPlugin is provided below for reference.
+image:gremlin-plugin.png[width=100,float=left] The applications distributed with TinkerPop3 do not distribute with any graph system implementations besides TinkerGraph. If your implementation is stored in a Maven repository (e.g. Maven Central Repository), then it is best to provide a `GremlinPlugin` implementation so the respective jars can be downloaded according and when required by the user. Neo4j's GremlinPlugin is provided below for reference.
 
 [source,java]
 ----
@@ -430,10 +430,10 @@ gremlin> g = Neo4jGraph.open('/tmp/neo4j')
 In-Depth Implementations
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-image:gremlin-painting.png[width=200,float=right] The vendor implementation details presented thus far are minimum requirements necessary to yield a valid TinkerPop3 implementation. However, there are other areas that a vendor can tweak to provide an implementation more optimized for their underlying graph engine. Typical areas of focus include:
+image:gremlin-painting.png[width=200,float=right] The graph system implementation details presented thus far are minimum requirements necessary to yield a valid TinkerPop3 implementation. However, there are other areas that a graph system provider can tweak to provide an implementation more optimized for their underlying graph engine. Typical areas of focus include:
 
 * Traversal Strategies: A <<traversalstrategy,TraversalStrategy>> can be used to alter a traversal prior to its execution. A typical example is converting a pattern of `g.V().has('name','marko')` into a global index lookup for all vertices with name "marko". In this way, a `O(|V|)` lookup becomes an `O(log(|V|))`. Please review `TinkerGraphStepStrategy` for ideas.
-* Step Implementations: Every <<graph-traversal-steps,step>> is ultimately referenced by the `GraphTraversal` interface. It is possible to extend `GraphTraversal` to use a vendor-specific step implementation.
+* Step Implementations: Every <<graph-traversal-steps,step>> is ultimately referenced by the `GraphTraversal` interface. It is possible to extend `GraphTraversal` to use a graph system specific step implementation.
 
 
 [[tinkergraph-gremlin]]
@@ -449,7 +449,7 @@ TinkerGraph-Gremlin
 </dependency>
 ----
 
-image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory (with optional persistence), non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other vendors to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
+image:tinkerpop-character.png[width=100,float=left] TinkerGraph is a single machine, in-memory (with optional persistence), non-transactional graph engine that provides both OLTP and OLAP functionality. It is deployed with TinkerPop3 and serves as the reference implementation for other providers to study in order to understand the semantics of the various methods of the TinkerPop3 API. Constructing a simple graph in Java8 is presented below.
 
 [source,java]
 Graph g = TinkerGraph.open();
@@ -491,7 +491,7 @@ clock(1000){g.V().has('name','Garcia').iterate()} <2>
 <1> Determine the average runtime of 1000 vertex lookups when no `name`-index is defined.
 <2> Determine the average runtime of 1000 vertex lookups when a `name`-index is defined.
 
-IMPORTANT: Each graph vendor will have different mechanism by which indices and schemas are defined. TinkerPop3 does not require any conformance in this area. In TinkerGraph, the only definitions are around indices. With other vendors, property value types, indices, edge labels, etc. may be required to be defined _a priori_ to adding data to the graph.
+IMPORTANT: Each graph system will have different mechanism by which indices and schemas are defined. TinkerPop3 does not require any conformance in this area. In TinkerGraph, the only definitions are around indices. With other graph systems, property value types, indices, edge labels, etc. may be required to be defined _a priori_ to adding data to the graph.
 
 NOTE: TinkerGraph is distributed with Gremlin Server and is therefore automatically available to it for configuration.
 
@@ -942,7 +942,7 @@ image::spark-algorithm.png[width=775]
 |gremlin.spark.persistContext |Whether to create a new `SparkContext` for every `SparkGraphComputer` or to reuse an existing one.
 |========================================================
 
-IMPORTANT: If the vendor/user wishes to not use Hadoop `InputFormats`, it is possible to leverage Spark's RDD constructs directly. There is a `gremlin.spark.graphInputRDD` configuration that references a `Class<? extends InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, use `gremlin.spark.graphOutputRDD` and the respective `OutputRDD`.
+IMPORTANT: If the provider/user wishes to not use Hadoop `InputFormats`, it is possible to leverage Spark's RDD constructs directly. There is a `gremlin.spark.graphInputRDD` configuration that references a `Class<? extends InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, use `gremlin.spark.graphOutputRDD` and the respective `OutputRDD`.
 
 [[giraphgraphcomputer]]
 GiraphGraphComputer
@@ -1290,12 +1290,12 @@ Vertex 4 ("josh") is isolated below:
 }
 ----
 
-Hadoop-Gremlin for Vendors
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Hadoop-Gremlin for Graph System Providers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Hadoop-Gremlin is centered around `InputFormats` and `OutputFormats`. If a 3rd-party vendor wishes to leverage Hadoop-Gremlin (and its respective `GraphComputer` engines), then they simply need to provide, at minimum, a Hadoop 1.x `InputFormat<NullWritable,VertexWritable>` for their graph system. If the vendor wishes to persist computed results back to their graph system (and not just to HDFS via a `FileOutputFormat`), then a vendor-specific `OutputFormat<NullWritable,VertexWritable>` must be developed as well.
+Hadoop-Gremlin is centered around `InputFormats` and `OutputFormats`. If a 3rd-party graph system provider wishes to leverage Hadoop-Gremlin (and its respective `GraphComputer` engines), then they need to provide, at minimum, a Hadoop2 `InputFormat<NullWritable,VertexWritable>` for their graph system. If the provider wishes to persist computed results back to their graph system (and not just to HDFS via a `FileOutputFormat`), then a graph system specific `OutputFormat<NullWritable,VertexWritable>` must be developed as well.
 
-Conceptually, `HadoopGraph` is a wrapper around a `Configuration` object. There is no "data" in the `HadoopGraph` as the `InputFormat` specifies where and how to get the graph data at OLAP (and OLTP) runtime. Thus, `HadoopGraph` is a small object with little overhead. Vendors should realize `HadoopGraph` as the gateway to the OLAP features offered by Hadoop-Gremlin. An example, vendor-specific `Graph.compute(Class<? extends GraphComputer> graphComputerClass)`-method may look as follows:
+Conceptually, `HadoopGraph` is a wrapper around a `Configuration` object. There is no "data" in the `HadoopGraph` as the `InputFormat` specifies where and how to get the graph data at OLAP (and OLTP) runtime. Thus, `HadoopGraph` is a small object with little overhead. Graph system providers should realize `HadoopGraph` as the gateway to the OLAP features offered by Hadoop-Gremlin. For example, a graph system specific `Graph.compute(Class<? extends GraphComputer> graphComputerClass)`-method may look as follows:
 
 [source,java]
 ----
@@ -1313,5 +1313,5 @@ public <C extends GraphComputer> C compute(final Class<C> graphComputerClass) th
 
 Note that the configurations for Hadoop are assumed to be in the `Graph.configuration()` object. If this is not the case, then the `Configuration` provided to `HadoopGraph.open()` should be dynamically created within the `compute()`-method. It is in the provided configuration that `HadoopGraph` gets the various properties which determine how to read and write data to and from Hadoop. For instance, `gremlin.hadoop.graphInputFormat` and `gremlin.hadoop.graphOutputFormat`.
 
-IMPORTANT: A vendor's `OutputFormat` should implement the `PersistResultGraphAware` interface which determines which persistence options are available to the user. For the standard file-based `OutputFormats` provided by Hadoop-Gremlin (e.g. <<gryo-io-format,`GryoOutputFormat`>>, <<graphson-io-format,`GraphSONOutputFormat`>>, and <<script-io-format,`ScriptInputOutputFormat`>>) `ResultGraph.ORIGINAL` is not supported as the original graph data files are not random access and are, in essence, immutable. Thus, these file-based `OutputFormats` only support `ResultGraph.NEW` which creates a copy of the data specified by the `Persist` enum.
+IMPORTANT: A graph system provider's `OutputFormat` should implement the `PersistResultGraphAware` interface which determines which persistence options are available to the user. For the standard file-based `OutputFormats` provided by Hadoop-Gremlin (e.g. <<gryo-io-format,`GryoOutputFormat`>>, <<graphson-io-format,`GraphSONOutputFormat`>>, and <<script-io-format,`ScriptInputOutputFormat`>>) `ResultGraph.ORIGINAL` is not supported as the original graph data files are not random access and are, in essence, immutable. Thus, these file-based `OutputFormats` only support `ResultGraph.NEW` which creates a copy of the data specified by the `Persist` enum.
 

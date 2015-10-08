@@ -931,7 +931,7 @@ traversal <5> <6>
 traversal.toString() <7>
 ----
 
-<1> Any `has()`-step traversal patterns that start with the match-key are pulled out of `match()` to enable the vendor to leverage the filter for index lookups.
+<1> Any `has()`-step traversal patterns that start with the match-key are pulled out of `match()` to enable the graph system to leverage the filter for index lookups.
 <2> A `where()`-step with a traversal containing variable bindings declared in `match()`.
 <3> A useful trick to ensure that the traversal is not iterated by Gremlin Console.
 <4> The string representation of the traversal prior to its strategies being applied.
@@ -1744,7 +1744,7 @@ g.V().as('a').both().both().as('b').count()
 g.V().as('a').both().both().as('b').where('a',neq('b')).count()
 ----
 
-NOTE: It is possible for vendors and users to extend `P` and provide new predicates. For instance, a `regex(pattern)` could be a vendor-specific `P`.
+NOTE: It is possible for graph system providers and users to extend `P` and provide new predicates. For instance, a `regex(pattern)` could be a graph system specific `P`.
 
 [[a-note-on-barrier-steps]]
 A Note on Barrier Steps
@@ -1800,7 +1800,7 @@ image:traversal-strategy.png[width=125,float=right] A `TraversalStrategy` can an
 
  * There is an application-level feature that can be embedded into the traversal logic (*decoration*).
  * There is a more efficient way to express the traversal at the TinkerPop3 level (*optimization*).
- * There is a more efficient way to express the traversal at the graph vendor level (*vendor optimization*).
+ * There is a more efficient way to express the traversal at the graph system/language/driver level (*provider optimization*).
  * There are are some final adjustments required before executing the traversal (*finalization*).
  * There are certain traversals that are not legal for the application or traversal engine (*verification*).
 
@@ -1835,7 +1835,7 @@ public final class IdentityRemovalStrategy extends AbstractTraversalStrategy<Tra
 }
 ----
 
-This strategy simply removes any `IdentityStep` steps in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. For those traversal strategies that require other strategies to execute prior or post to the strategy, then the following two methods can be defined in `TraversalStrategy` (with defaults being an empty set). If the `TraversalStrategy` is in a particular traversal category (i.e. decoration, optimization, vendor-optimization, finalization, or verification), then priors and posts are only possible within the category.
+This strategy simply removes any `IdentityStep` steps in the Traversal as `aStep().identity().identity().bStep()` is equivalent to `aStep().bStep()`. For those traversal strategies that require other strategies to execute prior or post to the strategy, then the following two methods can be defined in `TraversalStrategy` (with defaults being an empty set). If the `TraversalStrategy` is in a particular traversal category (i.e. decoration, optimization, provider-optimization, finalization, or verification), then priors and posts are only possible within the category.
 
 [source,java]
 public Set<Class<? extends S>> applyPrior();
@@ -1843,7 +1843,7 @@ public Set<Class<? extends S>> applyPost();
 
 IMPORTANT: `TraversalStrategy` categories are sorted within their category and the categories are then executed in the following order: decoration, optimization, finalization, and verification. If a designed strategy does not fit cleanly into these categories, then it can implement `TraversalStrategy` and its prior and posts can reference strategies within any category.
 
-An example of a `VendorOptimizationStrategy` is provided below.
+An example of a `GraphSystemOptimizationStrategy` is provided below.
 
 [source,groovy]
 g.V().has('name','marko')
@@ -1852,7 +1852,7 @@ The expression above can be executed in a `O(|V|)` or `O(log(|V|)` fashion in <<
 
 [source,java]
 ----
-public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.VendorOptimizationStrategy> implements TraversalStrategy.VendorOptimizationStrategy {
+public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<TraversalStrategy.ProviderOptimizationStrategy> implements TraversalStrategy.ProviderOptimizationStrategy {
 
     private static final TinkerGraphStepStrategy INSTANCE = new TinkerGraphStepStrategy();
 
@@ -1886,7 +1886,7 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
 }
 ----
 
-The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to `TinkerGraphStep` to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied. Given that the strategy uses non-TinkerPop3 provided steps, it should go into the `VendorOptimizationStrategy` category to ensure the added step does not corrupt the `OptimizationStrategy` strategies.
+The traversal is redefined by simply taking a chain of `has()`-steps after `g.V()` (`TinkerGraphStep`) and providing them to `TinkerGraphStep`. Then its up to `TinkerGraphStep` to determine if an appropriate index exists. In the code below, review the `vertices()` method and note how if an index exists, for a particular `HasContainer`, then that index is first queried before the remaining `HasContainer` filters are serially applied. Given that the strategy uses non-TinkerPop3 provided steps, it should go into the `ProviderOptimizationStrategy` category to ensure the added step does not corrupt the `OptimizationStrategy` strategies.
 
 [gremlin-groovy,modern]
 ----
@@ -1896,7 +1896,7 @@ t.iterate(); null
 t.toString()
 ----
 
-CAUTION: The reason that `OptimizationStrategy` and `VendorOptimizationStrategy` are two different categories is that optimization strategies should only rewrite the traversal using TinkerPop3 steps. This ensures that the optimizations executed at the end of the optimization strategy round are TinkerPop3 compliant. From there, vendor optimizations can analyze the traversal and rewrite the traversal as desired using vendor specific steps (e.g. replacing `GraphStep.HasStep...HasStep` with `TinkerGraphStep`). If vendor's optimizations use vendor-specific steps and implement `OptimizationStrategy`, then other TinkerPop3 optimizations may fail to optimize the traversal or mis-understand the vendor-specific step behaviors (e.g. `VendorVertexStep extends VertexStep`) and yield incorrect semantics.
+CAUTION: The reason that `OptimizationStrategy` and `ProviderOptimizationStrategy` are two different categories is that optimization strategies should only rewrite the traversal using TinkerPop3 steps. This ensures that the optimizations executed at the end of the optimization strategy round are TinkerPop3 compliant. From there, provider optimizations can analyze the traversal and rewrite the traversal as desired using graph system specific steps (e.g. replacing `GraphStep.HasStep...HasStep` with `TinkerGraphStep`). If provider optimizations use graph system specific steps and implement `OptimizationStrategy`, then other TinkerPop3 optimizations may fail to optimize the traversal or mis-understand the graph system specific step behaviors (e.g. `ProviderVertexStep extends VertexStep`) and yield incorrect semantics.
 
 A collection of useful `DecorationStrategy` strategies are provided with TinkerPop3 and are generally useful to end-users.  The following sub-sections detail these strategies:
 
