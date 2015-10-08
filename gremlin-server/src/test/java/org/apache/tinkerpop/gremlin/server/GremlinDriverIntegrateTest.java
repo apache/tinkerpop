@@ -678,7 +678,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
         }
 
-        final Vertex v = client.rebind("graph").submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
+        final Client rebound = cluster.connect().rebind("graph");
+        final Vertex v = rebound.submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
         assertEquals("stephen", v.value("name"));
 
         cluster.close();
