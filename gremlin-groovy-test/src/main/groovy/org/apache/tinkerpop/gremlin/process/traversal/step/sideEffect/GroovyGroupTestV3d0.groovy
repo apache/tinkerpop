@@ -65,5 +65,10 @@ public abstract class GroovyGroupTestV3d0 {
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX() {
             TraversalScriptHelper.compute("g.V.repeat(both('followedBy')).times(2).groupV3d0.by('songType').by(count())", g)
         }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX() {
+            TraversalScriptHelper.compute("g.V.repeat(both('followedBy')).times(2).groupV3d0('a').by('songType').by(count()).cap('a')", g)
+        }
     }
 }
