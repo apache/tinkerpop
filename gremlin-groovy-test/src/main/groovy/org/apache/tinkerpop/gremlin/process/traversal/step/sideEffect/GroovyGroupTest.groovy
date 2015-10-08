@@ -18,9 +18,12 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
+
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.both
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.count
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -57,6 +60,16 @@ public abstract class GroovyGroupTest {
         @Override
         public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
             TraversalScriptHelper.compute("g.V.group.by(__.outE.count).by('name')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX() {
+            TraversalScriptHelper.compute("g.V.repeat(both('followedBy')).times(2).group.by('songType').by(count())", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX() {
+            TraversalScriptHelper.compute("g.V.repeat(both('followedBy')).times(2).group('a').by('songType').by(count()).cap('a')", g)
         }
     }
 }

@@ -236,12 +236,14 @@ public final class GroupStep<S, K, V, R> extends ReducingBarrierStep<S, Map<K, R
         public void map(final Vertex vertex, final MapEmitter<K, Collection<V>> emitter) {
             vertex.<TraverserSet<Object[]>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> {
                 final Object[] objects = traverser.get();
-                if (objects[1] instanceof Collection)
-                    emitter.emit((K) objects[0], (Collection<V>) objects[1]);
-                else {
-                    final List<V> collection = new ArrayList<>();
-                    collection.add((V) objects[1]);
-                    emitter.emit((K) objects[0], collection);
+                for (int i = 0; i < traverser.bulk(); i++) {
+                    if (objects[1] instanceof Collection)
+                        emitter.emit((K) objects[0], (Collection<V>) objects[1]);
+                    else {
+                        final List<V> collection = new ArrayList<>();
+                        collection.add((V) objects[1]);
+                        emitter.emit((K) objects[0], collection);
+                    }
                 }
             }));
         }
