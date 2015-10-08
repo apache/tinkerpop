@@ -26,7 +26,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;

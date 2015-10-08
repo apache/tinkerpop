@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.lambda.ElementValueTravers
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.FunctionTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.DedupGlobalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -58,12 +58,12 @@ public final class GroupStepHelper {
     }
 
     public static List<Traversal.Admin<?, ?>> splitOnBarrierStep(final Traversal.Admin<?, ?> valueTraversal) {
-        if (TraversalHelper.getFirstStepOfAssignableClass(BarrierStep.class, valueTraversal).isPresent()) {
+        if (TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).isPresent()) {
             final Traversal.Admin<?, ?> first = __.identity().asAdmin();
             final Traversal.Admin<?, ?> second = __.identity().asAdmin();
             boolean onSecond = false;
             for (final Step step : valueTraversal.getSteps()) {
-                if (step instanceof BarrierStep || step instanceof DedupGlobalStep)
+                if (step instanceof Barrier)
                     onSecond = true;
                 if (onSecond)
                     second.addStep(step.clone());

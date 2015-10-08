@@ -16,13 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-package org.apache.tinkerpop.gremlin.process.traversal.step.util;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public interface BarrierStep {
+public class LambdaCollectingBarrierStepTest extends StepTest {
 
-    public void processAllStarts();
+    @Override
+    protected List<Traversal> getTraversals() {
+        return Collections.singletonList(__.barrier());
+    }
 }

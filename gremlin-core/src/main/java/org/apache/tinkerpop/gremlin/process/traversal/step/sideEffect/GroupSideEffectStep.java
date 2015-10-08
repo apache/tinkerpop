@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.SideEffectCapable;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.BarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GroupStepHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -114,7 +114,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
                 this.groupMap.put(key, traversal);
             }
             traversal.addStart(traverser);
-            TraversalHelper.getStepsOfAssignableClass(BarrierStep.class, traversal).stream().findFirst().ifPresent(BarrierStep::processAllStarts);
+            TraversalHelper.getStepsOfAssignableClass(Barrier.class, traversal).stream().findFirst().ifPresent(Barrier::processAllStarts);
         }
     }
 
@@ -139,8 +139,8 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
     }
 
     @Override
-    public List<Traversal.Admin<?,?>> getLocalChildren() {
-        final List<Traversal.Admin<?,?>> children = new ArrayList<>(4);
+    public List<Traversal.Admin<?, ?>> getLocalChildren() {
+        final List<Traversal.Admin<?, ?>> children = new ArrayList<>(4);
         if (null != this.keyTraversal)
             children.add((Traversal.Admin) this.keyTraversal);
         children.add(this.valueReduceTraversal);
@@ -151,7 +151,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.SIDE_EFFECTS);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.BULK, TraverserRequirement.SIDE_EFFECTS);
     }
 
     @Override
@@ -228,7 +228,7 @@ public final class GroupSideEffectStep<S, K, V> extends SideEffectStep<S> implem
             Traversal.Admin<?, V> reduceTraversalClone = this.reduceTraversal.clone();
             while (values.hasNext()) {
                 reduceTraversalClone.addStarts(reduceTraversalClone.getTraverserGenerator().generateIterator(values.next().iterator(), (Step) reduceTraversalClone.getStartStep(), 1l));
-                TraversalHelper.getFirstStepOfAssignableClass(BarrierStep.class, reduceTraversalClone).ifPresent(BarrierStep::processAllStarts);
+                TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, reduceTraversalClone).ifPresent(Barrier::processAllStarts);
             }
             emitter.emit(key, reduceTraversalClone.next());
         }

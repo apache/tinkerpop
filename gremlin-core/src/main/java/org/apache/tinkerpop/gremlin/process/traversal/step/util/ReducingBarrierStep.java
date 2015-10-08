@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.EngineDependent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -43,7 +44,7 @@ import java.util.function.Supplier;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements MapReducer, EngineDependent, BarrierStep {
+public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> implements MapReducer, EngineDependent, Barrier {
 
     public static final String REDUCING = Graph.Hidden.hide("reducing");
 
@@ -79,9 +80,11 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
 
     @Override
     public void processAllStarts() {
-        if (this.seed == null) this.seed = this.seedSupplier.get();
-        while (this.starts.hasNext())
-            this.seed = this.reducingBiFunction.apply(this.seed, this.starts.next());
+        if (!this.byPass) {
+            if (this.seed == null) this.seed = this.seedSupplier.get();
+            while (this.starts.hasNext())
+                this.seed = this.reducingBiFunction.apply(this.seed, this.starts.next());
+        }
     }
 
     @Override
@@ -91,9 +94,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
         } else {
             if (this.done)
                 throw FastNoSuchElementException.instance();
-            if (this.seed == null) this.seed = this.seedSupplier.get();
-            while (this.starts.hasNext())
-                this.seed = this.reducingBiFunction.apply(this.seed, this.starts.next());
+            this.processAllStarts();
             this.done = true;
             final Traverser<E> traverser = TraversalHelper.getRootTraversal(this.getTraversal()).getTraverserGenerator().generate(FinalGet.tryFinalGet(this.seed), (Step) this, 1l);
             this.seed = null;
