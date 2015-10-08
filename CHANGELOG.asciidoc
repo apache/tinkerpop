@@ -75,6 +75,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.0.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Gremlin Server binary distribution now packages `tinkergraph-gremlin` and `gremlin-groovy` as plugins to be consistent with Gremlin Console's packaging.
 * The `RepeatStep` clauses (`until()`,`emit()`,`repeat()`) can only be set at most one time in order to prevent user confusion.
 * Fixed a `clone()` bug in `RepeatStep`, `TreeStep`, `GroupCountStep`, `GroupStep`, and `TraversalRing`.
 * Fixed a thread context bug in `TinkerGraphComputer`.

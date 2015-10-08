@@ -351,8 +351,11 @@ public abstract class Client {
 
         @Override
         public synchronized Client init() {
-            // no init required
             if (close.isDone()) throw new IllegalStateException("Client is closed");
+
+            // the underlying client may not have been init'd
+            clusteredClient.init();
+
             return this;
         }
 

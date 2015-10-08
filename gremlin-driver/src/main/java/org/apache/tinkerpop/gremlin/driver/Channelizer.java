@@ -22,6 +22,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinRequestEncoder;
 import org.apache.tinkerpop.gremlin.driver.handler.NioGremlinResponseDecoder;
 import org.apache.tinkerpop.gremlin.driver.handler.WebSocketClientHandler;
@@ -44,6 +45,7 @@ import java.io.File;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Client-side channel initializer interface.  It is responsible for constructing the Netty {@code ChannelPipeline}
@@ -194,9 +196,13 @@ public interface Channelizer extends ChannelHandler {
         @Override
         public void connected() {
             try {
-                handler.handshakeFuture().sync();
+                // block for a few seconds - if the handshake takes longer than there's gotta be issues with that
+                // server. more than likely, SSL is enabled on the server, but the client forgot to enable it or
+                // perhaps the server is not configured for websockets.
+                handler.handshakeFuture().get(15000, TimeUnit.MILLISECONDS);
             } catch (Exception ex) {
-                throw new RuntimeException(ex);
+                throw new RuntimeException(new ConnectionException(connection.getUri(),
+                        "Could not complete websocket handshake - ensure that client protocol matches server", ex));
             }
         }
     }
