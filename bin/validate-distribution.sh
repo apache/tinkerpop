@@ -34,11 +34,16 @@ if [ -z ${URL} ]; then
   CONSOLE_URL="https://www.apache.org/dist/incubator/tinkerpop/${VERSION}/apache-gremlin-console-${VERSION}-bin.zip"
   SERVER_URL="https://www.apache.org/dist/incubator/tinkerpop/${VERSION}/apache-gremlin-server-${VERSION}-bin.zip"
 
-  echo -e "\nValidating binary distribution\n"
+  echo -e "\nValidating binary distributions\n"
 
-  ${0} ${VERSION} ${CONSOLE_URL} "CONSOLE" && ${0} ${VERSION} ${SERVER_URL} "SERVER"
-
+  ${0} ${VERSION} ${CONSOLE_URL} "CONSOLE"
   EXIT_CODE=$?
+
+  if [ ${EXIT_CODE} -eq 0 ]; then
+    echo
+    ${0} ${VERSION} ${SERVER_URL} "SERVER"
+    EXIT_CODE=$?
+  fi
 
   [[ ${EXIT_CODE} -eq 0 ]] && rm -rf ${TMP_DIR}
 
@@ -54,7 +59,7 @@ ZIP_FILENAME=`grep -o '[^/]*$' <<< ${URL}`
 DIR_NAME=`sed -e 's/-[^-]*$//' <<< ${ZIP_FILENAME}`
 COMPONENT=`tr '-' $'\n' <<< ${ZIP_FILENAME} | head -n3 | sed -e 's/^./\U&/' | paste -sd ' '`
 
-echo -n "* downloading ${COMPONENT} ... "
+echo -n "* downloading ${COMPONENT} (${ZIP_FILENAME})... "
 curl -Ls ${URL} -o ${ZIP_FILENAME}
 for ext in "asc" "md5" "sha1"
 do
@@ -63,16 +68,24 @@ done
 echo "OK"
 
 # validate zip file
-echo -n "* validating checksums ... "
+echo "* validating signatures and checksums ... "
+
+echo -n "  * PGP signature ... "
 [ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Stephen Mallette <spmallette@apache.org>"$'` -eq 1 ] || \
 [ `gpg ${ZIP_FILENAME}.asc 2>&1 | grep -c '^gpg: Good signature from "Marko Rodriguez <okram@apache.org>"$'` -eq 1 ] || \
-{ echo "${COMPONENT}'s PGP checksum verification failed"; exit 1; }
+{ echo "failed"; exit 1; }
+echo "OK"
+
+echo -n "  * MD5 checksum ... "
 EXPECTED=`cat ${ZIP_FILENAME}.md5`
 ACTUAL=`md5sum ${ZIP_FILENAME} | awk '{print $1}'`
-[ "$ACTUAL" = "${EXPECTED}" ] || { echo "${COMPONENT}'s MD5 checksum verification failed"; exit 1; }
+[ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
+echo "OK"
+
+echo -n "  * SHA1 chacksum ... "
 EXPECTED=`cat ${ZIP_FILENAME}.sha1`
 ACTUAL=`sha1sum ${ZIP_FILENAME} | awk '{print $1}'`
-[ "$ACTUAL" = "${EXPECTED}" ] || { echo "${COMPONENT}'s SHA1 checksum verification failed"; exit 1; }
+[ "$ACTUAL" = "${EXPECTED}" ] || { echo "failed"; exit 1; }
 echo "OK"
 
 echo -n "* unzipping ${COMPONENT} ... "
@@ -99,13 +112,13 @@ GREMLIN_BATCH_SCRIPT=`find bin/ -name "gremlin*.bat"`
 [ ! -z ${GREMLIN_BATCH_SCRIPT} ] && [ -s ${GREMLIN_BATCH_SCRIPT} ] || { echo "Gremlin batch script is not present or empty"; exit 1; }
 echo "OK"
 
-echo -n "* validating ${COMPONENT}'s legal files ... "
+echo "* validating ${COMPONENT}'s legal files ... "
 for file in "LICENSE" "NOTICE" "DISCLAIMER"
 do
-  [ -f ${file} ] || { echo "${file} is not present"; exit 1; }
-  [ -s ${file} ] || { echo "${file} is empty"; exit 1; }
+  echo -n "  * ${file} ... "
+  [ -s ${file} ] || { echo "${file} is not present or empty"; exit 1; }
+  echo "OK"
 done
-echo "OK"
 
 echo -n "* validating ${COMPONENT}'s plugin directory ... "
 [ -d "ext" ] || { echo "ext/ directory is not present"; exit 1; }
@@ -120,6 +133,10 @@ echo "OK"
 
 if [ "${TYPE}" = "CONSOLE" ]; then
   echo -n "* testing script evaluation ... "
-  [[ `bin/gremlin.sh <<< 'TinkerFactory.createModern().traversal().V().count()' | grep '^==>' | sed -e 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
+  SCRIPT="x = org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.createModern().traversal().V().count().next(); println x; x"
+  SCRIPT_FILENAME="${TMP_DIR}/test.groovy"
+  echo ${SCRIPT} > ${SCRIPT_FILENAME}
+  [[ `bin/gremlin.sh <<< ${SCRIPT} | grep '^==>' | sed -e 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
+  [[ `bin/gremlin.sh -e ${SCRIPT_FILENAME}` -eq 6 ]] || { echo "failed to evaluate sample script using -e option"; exit 1; }
   echo "OK"
 fi
