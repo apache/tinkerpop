@@ -51,11 +51,15 @@ cd ${TMP_DIR}
 
 # validate downloads
 ZIP_FILENAME=`grep -o '[^/]*$' <<< ${URL}`
-DIR_NAME=`sed 's/-[^-]*$//' <<< ${ZIP_FILENAME}`
-COMPONENT=`tr '-' $'\n' <<< ${ZIP_FILENAME} | head -n3 | while read word ; do echo "${word^}" ; done | paste -sd ' '`
+DIR_NAME=`sed -e 's/-[^-]*$//' <<< ${ZIP_FILENAME}`
+COMPONENT=`tr '-' $'\n' <<< ${ZIP_FILENAME} | head -n3 | sed -e 's/^./\U&/' | paste -sd ' '`
 
 echo -n "* downloading ${COMPONENT} ... "
-wget -q ${URL} ${URL}.asc ${URL}.md5 ${URL}.sha1 || (echo "Failed to download ${COMPONENT}" ; exit 1)
+curl -Ls ${URL} -o ${ZIP_FILENAME}
+for ext in "asc" "md5" "sha1"
+do
+  curl -Ls ${URL}.${ext} -o ${ZIP_FILENAME}.${ext} || (echo "Failed to download ${COMPONENT} (${ext})" ; exit 1)
+done
 echo "OK"
 
 # validate zip file
@@ -105,7 +109,7 @@ echo "OK"
 
 echo -n "* validating ${COMPONENT}'s plugin directory ... "
 [ -d "ext" ] || { echo "ext/ directory is not present"; exit 1; }
-if [ "${TYPE}" = "CONSOLE" ] || [[ `tr -d '.' <<< ${VERSION} | sed 's/-.*//'` -gt 301 ]]; then
+if [ "${TYPE}" = "CONSOLE" ] || [[ `tr -d '.' <<< ${VERSION} | sed -e 's/-.*//'` -gt 301 ]]; then
   [ -d "ext/gremlin-groovy" ] && [ -d "ext/tinkergraph-gremlin" ] && [ -s "ext/plugins.txt" ] || { echo "ext/ directory is not present or incomplete"; exit 1; }
 fi
 echo "OK"
@@ -116,6 +120,6 @@ echo "OK"
 
 if [ "${TYPE}" = "CONSOLE" ]; then
   echo -n "* testing script evaluation ... "
-  [[ `bin/gremlin.sh <<< 'TinkerFactory.createModern().traversal().V().count()' | grep '^==>' | sed 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
+  [[ `bin/gremlin.sh <<< 'TinkerFactory.createModern().traversal().V().count()' | grep '^==>' | sed -e 's/^==>//'` -eq 6 ]] || { echo "failed to evaluate sample script"; exit 1; }
   echo "OK"
 fi
