@@ -29,6 +29,8 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
+
 import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -60,6 +62,7 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         final String nameOfTest = name.getMethodName();
         switch (nameOfTest) {
             case "shouldAuthenticateOverSslWithPlainText":
+            case "shouldFailIfSslEnabledOnServerButNotClient":
                 final Settings.SslSettings sslConfig = new Settings.SslSettings();
                 sslConfig.enabled = true;
                 settings.ssl = sslConfig;
@@ -67,6 +70,23 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldFailIfSslEnabledOnServerButNotClient() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("1+1").all().get();
+            fail("This should not succeed as the client did not enable SSL");
+        } catch(Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertEquals(TimeoutException.class, root.getClass());
+            assertEquals("Timed out waiting for an available host.", root.getMessage());
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
