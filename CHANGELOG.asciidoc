@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Renamed `gremlin.hadoop.graphInputRDD` and `gremlin.hadoop.graphOutputRDD` to `gremlin.spark.graphInputRDD` and `gremlin.spark.graphOutputRDD`, respectively.
 * Fixed a bug in `FoldStep` around bulking. This could be a breaking change, but it is the correct semantics.
 * Previous `group()`-behavior steps are accessible via the deprecated `groupV3d0()`-steps.
 * `GroupStep` and `GroupSideEffectStep` now do lazy reductions to reduce memory footprint. Breaking change for `group()` semantics.

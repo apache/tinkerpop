@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop;
 
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 /**
@@ -34,7 +33,7 @@ public final class Constants {
     public static final String GREMLIN_HADOOP_GRAPH_INPUT_FORMAT = "gremlin.hadoop.graphInputFormat";
     public static final String GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT = "gremlin.hadoop.graphOutputFormat";
     public static final String GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES = "gremlin.hadoop.graphOutputFormat.hasEdges";
-    public static final String GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES = "gremlin.hadoop.graphInputFormat.hasEdges";;
+    public static final String GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES = "gremlin.hadoop.graphInputFormat.hasEdges";
 
     public static final String GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE = "gremlin.hadoop.jarsInDistributedCache";
     public static final String HIDDEN_G = Graph.Hidden.hide("g");
@@ -50,8 +49,8 @@ public final class Constants {
     public static final String MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR = "mapreduce.input.fileinputformat.inputdir";
 
     // spark based constants
-    public static final String GREMLIN_HADOOP_GRAPH_INPUT_RDD = "gremlin.hadoop.graphInputRDD";
-    public static final String GREMLIN_HADOOP_GRAPH_OUTPUT_RDD = "gremlin.hadoop.graphOutputRDD";
+    public static final String GREMLIN_SPARK_GRAPH_INPUT_RDD = "gremlin.spark.graphInputRDD";
+    public static final String GREMLIN_SPARK_GRAPH_OUTPUT_RDD = "gremlin.spark.graphOutputRDD";
     public static final String GREMLIN_SPARK_PERSIST_CONTEXT = "gremlin.spark.persistContext";
 
 }

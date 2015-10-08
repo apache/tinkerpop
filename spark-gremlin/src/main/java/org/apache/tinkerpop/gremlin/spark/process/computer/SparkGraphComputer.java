@@ -119,7 +119,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // create a message-passing friendly rdd from the input rdd
                 final JavaPairRDD<Object, VertexWritable> graphRDD;
                 try {
-                    graphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
+                    graphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
                             .newInstance()
                             .readGraphRDD(apacheConfiguration, sparkContext)
                             .setName("graphRDD")
@@ -156,7 +156,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     // write the graph rdd using the output rdd
                     if (!this.persist.equals(GraphComputer.Persist.NOTHING)) {
                         try {
-                            hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class)
+                            hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class)
                                     .newInstance()
                                     .writeGraphRDD(apacheConfiguration, graphRDD);
                         } catch (final InstantiationException | IllegalAccessException e) {

@@ -788,8 +788,8 @@ spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerial
 ####################################
 # SparkGraphComputer Configuration #
 ####################################
-gremlin.hadoop.graphInputRDD=org.apache.tinkerpop.gremlin.spark.process.computer.io.InputRDDFormat
-gremlin.hadoop.graphOutputRDD=org.apache.tinkerpop.gremlin.spark.process.computer.io.OutputRDDFormat
+gremlin.spark.graphInputRDD=org.apache.tinkerpop.gremlin.spark.process.computer.io.InputRDDFormat
+gremlin.spark.graphOutputRDD=org.apache.tinkerpop.gremlin.spark.process.computer.io.OutputRDDFormat
 gremlin.spark.persistContext=true
 #####################################
 # GiraphGraphComputer Configuration #
@@ -937,14 +937,12 @@ image::spark-algorithm.png[width=775]
 [width="100%",cols="2,10",options="header"]
 |========================================================
 |Property |Description
-|gremlin.hadoop.graphInputRDD |A class for creating RDD's from underlying graph data, defaults to Hadoop `InputFormat`.
-|gremlin.hadoop.graphOutputRDD |A class for output RDD's, defaults to Hadoop `OutputFormat`.
-|gremlin.spark.persistContext |Whether to create a new context for every `SparkGraphComputer` or to reuse an existing `SparkContext`.
+|gremlin.spark.graphInputRDD |A class for creating RDD's from underlying graph data, defaults to Hadoop `InputFormat`.
+|gremlin.spark.graphOutputRDD |A class for output RDD's, defaults to Hadoop `OutputFormat`.
+|gremlin.spark.persistContext |Whether to create a new `SparkContext` for every `SparkGraphComputer` or to reuse an existing one.
 |========================================================
 
-
-
-IMPORTANT: If the vendor/user wishes to bypass using Hadoop `InputFormats` for pulling data from the underlying graph system, it is possible to leverage Spark's RDD constructs directly. There is a `gremlin.hadoop.graphInputRDD` configuration that references a `Class<? extends InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, to bypass `OutputFormat`, use `gremlin.hadoop.graphOutputRDD` and the respective `OutputRDD` with its write-based method.
+IMPORTANT: If the vendor/user wishes to not use Hadoop `InputFormats`, it is possible to leverage Spark's RDD constructs directly. There is a `gremlin.spark.graphInputRDD` configuration that references a `Class<? extends InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, use `gremlin.spark.graphOutputRDD` and the respective `OutputRDD`.
 
 [[giraphgraphcomputer]]
 GiraphGraphComputer
@@ -960,8 +958,6 @@ GiraphGraphComputer
 ----
 
 image:giraph-logo.png[width=100,float=left] link:http://giraph.apache.org[Giraph] is an Apache Software Foundation project focused on OLAP-based graph processing. Giraph makes use of the distributed graph computing paradigm made popular by Google's Pregel. In Giraph, developers write "vertex programs" that get executed at each vertex in parallel. These programs communicate with one another in a bulk synchronous parallel (BSP) manner. This model aligns with TinkerPop3's `GraphComputer` API. TinkerPop3 provides an implementation of `GraphComputer` that works for Giraph called `GiraphGraphComputer`. Moreover, with TinkerPop3's <<mapreduce,MapReduce>>-framework, the standard Giraph/Pregel model is extended to support an arbitrary number of MapReduce phases to aggregate and yield results from the graph. Below are examples using `GiraphGraphComputer` from the <<gremlin-console,Gremlin-Console>>.
-
-WARNING: Be sure that the link:http://www.slf4j.org/[SLF4J] of Hadoop matches that of Giraph or else there will be conflicts. Simply copy the following jars to the `lib/` of the machines in the Hadoop cluster: `slf4j-api-a.b.c.jar` and `slf4j-log4j12-a.b.c.jar`.
 
 WARNING: Giraph uses a large number of Hadoop counters. The default for Hadoop is 120. In `mapred-site.xml` it is possible to increase the limit it via the `mapreduce.job.counters.max` property. A good value to use is 1000. This is a cluster-wide property so be sure to restart the cluster after updating.
 
