@@ -29,8 +29,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.*;
@@ -54,6 +56,8 @@ public abstract class GroupTestV3d0 extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXout_groupXaX_byXnameX_by_byXcountXlocalXX_timesX2X_capXaX();
 
     public abstract Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX();
+
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -150,6 +154,18 @@ public abstract class GroupTestV3d0 extends AbstractGremlinProcessTest {
         assertTrue(map.get(3l).contains("marko"));
     }
 
+    @Test
+    @LoadGraphWith(GRATEFUL)
+    public void g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX();
+        checkMap(new HashMap<String, Long>() {{
+            put("original", 771317l);
+            put("", 160968l);
+            put("cover", 368579l);
+        }}, traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends GroupTestV3d0 {
 
         @Override
@@ -180,6 +196,11 @@ public abstract class GroupTestV3d0 extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<Long, Collection<String>>> get_g_V_group_byXoutE_countX_byXnameX() {
             return g.V().<Long, Collection<String>>groupV3d0().by(outE().count()).by("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX() {
+            return g.V().repeat(both("followedBy")).times(2).<String, Long>groupV3d0().by("songType").by(count());
         }
     }
 }

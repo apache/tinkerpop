@@ -29,10 +29,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.FinalGet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.FinalGet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMatrix;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -239,12 +239,14 @@ public final class GroupStepV3d0<S, K, V, R> extends ReducingBarrierStep<S, Map<
         public void map(final Vertex vertex, final MapEmitter<K, Collection<V>> emitter) {
             vertex.<TraverserSet<Object[]>>property(TraversalVertexProgram.HALTED_TRAVERSERS).ifPresent(traverserSet -> traverserSet.forEach(traverser -> {
                 final Object[] objects = traverser.get();
-                if (objects[1] instanceof Collection)
-                    emitter.emit((K) objects[0], (Collection<V>) objects[1]);
-                else {
-                    final List<V> collection = new ArrayList<>();
-                    collection.add((V) objects[1]);
-                    emitter.emit((K) objects[0], collection);
+                for (int i = 0; i < traverser.bulk(); i++) {
+                    if (objects[1] instanceof Collection)
+                        emitter.emit((K) objects[0], (Collection<V>) objects[1]);
+                    else {
+                        final List<V> collection = new ArrayList<>();
+                        collection.add((V) objects[1]);
+                        emitter.emit((K) objects[0], collection);
+                    }
                 }
             }));
         }

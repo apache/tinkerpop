@@ -49,7 +49,7 @@ public class TinkerGraphPlayTest {
     @Ignore
     public void benchmarkGroup() throws Exception {
         Graph graph = TinkerGraph.open();
-        GraphTraversalSource g = graph.traversal();
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.computer());
         graph.io(GraphMLIo.build()).readGraph("data/grateful-dead.xml");
         /////////
 
