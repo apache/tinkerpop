@@ -33,6 +33,7 @@ if [ -z ${URL} ]; then
 
   CONSOLE_URL="https://www.apache.org/dist/incubator/tinkerpop/${VERSION}/apache-gremlin-console-${VERSION}-bin.zip"
   SERVER_URL="https://www.apache.org/dist/incubator/tinkerpop/${VERSION}/apache-gremlin-server-${VERSION}-bin.zip"
+  SOURCE_URL="https://www.apache.org/dist/incubator/tinkerpop/${VERSION}/apache-tinkerpop-${VERSION}-src.zip"
 
   echo -e "\nValidating binary distributions\n"
 
@@ -42,6 +43,12 @@ if [ -z ${URL} ]; then
   if [ ${EXIT_CODE} -eq 0 ]; then
     echo
     ${0} ${VERSION} ${SERVER_URL} "SERVER"
+    EXIT_CODE=$?
+  fi
+
+  if [ ${EXIT_CODE} -eq 0 ]; then
+    echo -e "\nValidating source distribution\n"
+    ${0} ${VERSION} ${SOURCE_URL} "SOURCE"
     EXIT_CODE=$?
   fi
 
@@ -57,7 +64,11 @@ cd ${TMP_DIR}
 # validate downloads
 ZIP_FILENAME=`grep -o '[^/]*$' <<< ${URL}`
 DIR_NAME=`sed -e 's/-[^-]*$//' <<< ${ZIP_FILENAME}`
-COMPONENT=`tr '-' $'\n' <<< ${ZIP_FILENAME} | head -n3 | sed -e 's/^./\U&/' | paste -sd ' '`
+COMPONENT=`tr '-' $'\n' <<< ${ZIP_FILENAME} | head -n3 | sed -e 's/^./\U&/' | paste -sd ' ' -`
+
+if [ "${TYPE}" = "SOURCE" ]; then
+  DIR_NAME=`sed -e 's/^[^-]*-//' <<< ${DIR_NAME}`
+fi
 
 echo -n "* downloading ${COMPONENT} (${ZIP_FILENAME})... "
 curl -Ls ${URL} -o ${ZIP_FILENAME}
@@ -92,6 +103,14 @@ echo -n "* unzipping ${COMPONENT} ... "
 unzip -q ${ZIP_FILENAME} || { echo "Failed to unzip ${COMPONENT}"; exit 1; }
 [ -d ${DIR_NAME} ] || { echo "${COMPONENT} was not extracted into the expected directory"; exit 1; }
 echo "OK"
+
+if [ "${TYPE}" = "SOURCE" ]; then
+cd ${DIR_NAME}
+echo -n "* building project ... "
+mvn clean install -Dmaven.test.skip=true 2>&1 > /dev/null || { echo "failed"; exit 1; }
+echo "OK"
+exit 0
+fi
 
 # validate docs/ and javadocs/ directories
 echo -n "* validating ${COMPONENT}'s docs ... "

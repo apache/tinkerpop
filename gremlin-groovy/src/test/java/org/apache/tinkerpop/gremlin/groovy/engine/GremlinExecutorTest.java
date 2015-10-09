@@ -247,6 +247,50 @@ public class GremlinExecutorTest {
     }
 
     @Test
+    public void shouldOverrideBeforeEval() throws Exception {
+        final AtomicInteger called = new AtomicInteger(0);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().beforeEval(b -> called.set(1)).create();
+        assertEquals(2, gremlinExecutor.eval("1+1", null, new SimpleBindings(),
+                GremlinExecutor.LifeCycle.build().beforeEval(b -> called.set(200)).create()).get());
+
+        // need to wait long enough for the callback to register
+        Thread.sleep(500);
+
+        assertEquals(200, called.get());
+    }
+
+    @Test
+    public void shouldOverrideAfterSuccess() throws Exception {
+        final AtomicInteger called = new AtomicInteger(0);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().afterSuccess(b -> called.set(1)).create();
+        assertEquals(2, gremlinExecutor.eval("1+1", null, new SimpleBindings(),
+                GremlinExecutor.LifeCycle.build().afterSuccess(b -> called.set(200)).create()).get());
+
+        // need to wait long enough for the callback to register
+        Thread.sleep(500);
+
+        assertEquals(200, called.get());
+    }
+
+    @Test
+    public void shouldOverrideAfterFailure() throws Exception {
+        final AtomicInteger called = new AtomicInteger(0);
+        final GremlinExecutor gremlinExecutor = GremlinExecutor.build().afterFailure((b,t) -> called.set(1)).create();
+        try {
+            gremlinExecutor.eval("10/0", null, new SimpleBindings(),
+                    GremlinExecutor.LifeCycle.build().afterFailure((b,t) -> called.set(200)).create()).get();
+            fail("Should have failed with division by zero");
+        } catch (Exception ignored) {
+
+        }
+
+        // need to wait long enough for the callback to register
+        Thread.sleep(500);
+
+        assertEquals(200, called.get());
+    }
+
+    @Test
     public void shouldCallFail() throws Exception {
         final AtomicBoolean timeoutCalled = new AtomicBoolean(false);
         final AtomicBoolean successCalled = new AtomicBoolean(false);
@@ -260,8 +304,8 @@ public class GremlinExecutorTest {
             fail();
         } catch (Exception ignored) { }
 
-        // need to wait long enough for the script to complete
-        Thread.sleep(750);
+        // need to wait long enough for the callback to register
+        Thread.sleep(500);
 
         assertFalse(timeoutCalled.get());
         assertFalse(successCalled.get());
@@ -280,8 +324,8 @@ public class GremlinExecutorTest {
                 .afterTimeout((b) -> timeoutCalled.set(true)).create();
         assertEquals(2, gremlinExecutor.eval("1+1").get());
 
-        // need to wait long enough for the script to complete
-        Thread.sleep(750);
+        // need to wait long enough for the callback to register
+        Thread.sleep(500);
 
         assertFalse(timeoutCalled.get());
         assertTrue(successCalled.get());
