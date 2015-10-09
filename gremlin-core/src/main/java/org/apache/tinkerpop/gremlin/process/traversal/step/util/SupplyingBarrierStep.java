@@ -18,15 +18,16 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> {
+public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> implements Barrier {
 
     private boolean done = false;
 
@@ -46,8 +47,7 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> {
     public Traverser<E> processNextStart() {
         if (this.done)
             throw FastNoSuchElementException.instance();
-        while (this.starts.hasNext())
-            this.starts.next();
+        this.processAllStarts();
         this.done = true;
         return this.getTraversal().asAdmin().getTraverserGenerator().generate(this.supply(), (Step) this, 1l);
     }
@@ -57,5 +57,10 @@ public abstract class SupplyingBarrierStep<S, E> extends AbstractStep<S, E> {
         final SupplyingBarrierStep<S, E> clone = (SupplyingBarrierStep<S, E>) super.clone();
         clone.done = false;
         return clone;
+    }
+
+    public void processAllStarts() {
+        while (this.starts.hasNext())
+            this.starts.next();
     }
 }

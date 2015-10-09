@@ -98,6 +98,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 break;
             case "shouldExecuteScriptInSessionOnTransactionalGraph":
             case "shouldExecuteSessionlessScriptOnTransactionalGraph":
+            case "shouldExecuteScriptInSessionOnTransactionalWithManualTransactionsGraph":
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
@@ -583,6 +584,38 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldExecuteScriptInSessionOnTransactionalWithManualTransactionsGraph() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect(name.getMethodName());
+
+        client.submit("graph.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);null").all().get();
+        client.submit("graph.tx().open()").all().get();
+
+        final Vertex vertexBeforeTx = client.submit("v=graph.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexBeforeTx.values("name").next());
+
+        final Vertex vertexFromV = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexFromV.values("name").next());
+
+        final Vertex vertexFromBinding = client.submit("v").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexFromBinding.values("name").next());
+
+        client.submit("v.property(\"color\",\"blue\")").all().get();
+        client.submit("graph.tx().commit()").all().get();
+        client.submit("graph.tx().open()").all().get();
+
+        final Vertex vertexAfterTx = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexAfterTx.values("name").next());
+        assertEquals("blue", vertexAfterTx.values("color").next());
+
+        client.submit("graph.tx().rollback()").all().get();
+
+        cluster.close();
+    }
+
+    @Test
     public void shouldExecuteSessionlessScriptOnTransactionalGraph() throws Exception {
         assumeNeo4jIsPresent();
 
@@ -698,7 +731,8 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
         }
 
-        final Vertex v = client.rebind("graph").submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
+        final Client rebound = cluster.connect().rebind("graph");
+        final Vertex v = rebound.submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
         assertEquals("stephen", v.value("name"));
 
         cluster.close();

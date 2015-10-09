@@ -26,9 +26,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.BarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.GroupStepHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
@@ -71,8 +71,8 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     }
 
     @Override
-    public List<Traversal.Admin<?,?>> getLocalChildren() {
-        final List<Traversal.Admin<?,?>> children = new ArrayList<>(4);
+    public List<Traversal.Admin<?, ?>> getLocalChildren() {
+        final List<Traversal.Admin<?, ?>> children = new ArrayList<>(4);
         if (null != this.keyTraversal)
             children.add((Traversal.Admin) this.keyTraversal);
         children.add(this.valueReduceTraversal);
@@ -99,7 +99,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
 
     @Override
     public Set<TraverserRequirement> getRequirements() {
-        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT);
+        return this.getSelfAndChildRequirements(TraverserRequirement.OBJECT, TraverserRequirement.BULK);
     }
 
     @Override
@@ -149,6 +149,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
     private static class GroupBiFunction<S, K, V> implements BiFunction<Map<K, Traversal.Admin<S, V>>, Traverser.Admin<S>, Map<K, Traversal.Admin<S, V>>>, Serializable {
 
         private final GroupStep<S, K, V> groupStep;
+        private Map<K, Integer> counters = new HashMap<>();
 
         private GroupBiFunction(final GroupStep<S, K, V> groupStep) {
             this.groupStep = groupStep;
@@ -160,10 +161,16 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             Traversal.Admin<S, V> traversal = mutatingSeed.get(key);
             if (null == traversal) {
                 traversal = this.groupStep.valueReduceTraversal.clone();
+                this.counters.put(key, 0);
                 mutatingSeed.put(key, traversal);
             }
+
             traversal.addStart(traverser);
-            TraversalHelper.getFirstStepOfAssignableClass(BarrierStep.class, traversal).ifPresent(BarrierStep::processAllStarts);
+            final int count = this.counters.compute(key, (k, i) -> ++i);
+            if (count > 10000) {
+                this.counters.put(key, 0);
+                TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, traversal).ifPresent(Barrier::processAllStarts);
+            }
             return mutatingSeed;
         }
     }
@@ -216,7 +223,7 @@ public final class GroupStep<S, K, V> extends ReducingBarrierStep<S, Map<K, V>> 
             Traversal.Admin<?, V> reduceTraversalClone = this.reduceTraversal.clone();
             while (values.hasNext()) {
                 reduceTraversalClone.addStarts(reduceTraversalClone.getTraverserGenerator().generateIterator(values.next().iterator(), (Step) reduceTraversalClone.getStartStep(), 1l));
-                TraversalHelper.getFirstStepOfAssignableClass(BarrierStep.class, reduceTraversalClone).ifPresent(BarrierStep::processAllStarts);
+                TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, reduceTraversalClone).ifPresent(Barrier::processAllStarts);
             }
             emitter.emit(key, reduceTraversalClone.next());
         }

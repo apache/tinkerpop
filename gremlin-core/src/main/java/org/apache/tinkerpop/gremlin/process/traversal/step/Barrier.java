@@ -16,22 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
-
-import java.util.Collections;
-import java.util.List;
+package org.apache.tinkerpop.gremlin.process.traversal.step;
 
 /**
- * @author Daniel Kuppitz (http://gremlin.guru)
+ * A Barrier is any step that requires all left traversers to be processed prior to emitting result traversers to the right.
+ * Note that some barrier steps may be "lazy" in that if their algorithm permits, they can emit right traversers prior to all traversers being aggregated.
+ *
+ * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class NoOpBarrierStepTest extends StepTest {
+public interface Barrier {
 
-    @Override
-    protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.barrier());
-    }
+    /**
+     * Process all left traversers by do not yield the resultant output.
+     * This method is useful for steps like {@link org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep}, where traversers can be processed "on the fly" and thus, reduce memory consumption.
+     */
+    public void processAllStarts();
 }

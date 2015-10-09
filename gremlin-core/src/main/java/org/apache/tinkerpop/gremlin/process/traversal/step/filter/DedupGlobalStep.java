@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.filter;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -38,7 +39,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, Bypassing {
+public final class DedupGlobalStep<S> extends FilterStep<S> implements TraversalParent, Scoping, Bypassing, Barrier {
 
     private Traversal.Admin<S, Object> dedupTraversal = null;
     private Set<Object> duplicateSet = new HashSet<>();
@@ -116,5 +117,10 @@ public final class DedupGlobalStep<S> extends FilterStep<S> implements Traversal
     @Override
     public Set<String> getScopeKeys() {
         return null == this.dedupLabels ? Collections.emptySet() : this.dedupLabels;
+    }
+
+    @Override
+    public void processAllStarts() {
+
     }
 }

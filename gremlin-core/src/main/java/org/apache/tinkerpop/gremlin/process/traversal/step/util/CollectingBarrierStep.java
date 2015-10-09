@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Barrier;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -30,7 +31,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements BarrierStep {
+public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implements Barrier {
     private TraverserSet<S> traverserSet = new TraverserSet<>();
 
     private int maxBarrierSize;
@@ -71,15 +72,7 @@ public abstract class CollectingBarrierStep<S> extends AbstractStep<S, S> implem
         if (!this.traverserSet.isEmpty()) {
             return this.traverserSet.remove();
         } else if (this.starts.hasNext()) {
-            if (Integer.MAX_VALUE == this.maxBarrierSize) {
-                this.starts.forEachRemaining(this.traverserSet::add);
-                this.barrierConsumer(this.traverserSet);
-            } else {
-                while (this.starts.hasNext() && this.traverserSet.size() < this.maxBarrierSize) {
-                    this.traverserSet.add(this.starts.next());
-                }
-                this.barrierConsumer(this.traverserSet);
-            }
+            this.processAllStarts();
         }
         return this.traverserSet.remove();
     }
