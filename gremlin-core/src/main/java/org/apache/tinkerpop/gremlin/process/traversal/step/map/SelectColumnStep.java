@@ -50,6 +50,10 @@ public final class SelectColumnStep<S, E> extends MapStep<S, Collection<E>> {
         final S start = traverser.get();
         if (start instanceof Map)
             return this.column.equals(Column.keys) ? ((Map<E, ?>) start).keySet() : ((Map<?, E>) start).values();
+        /*
+        else if (start instanceof Element)
+            return (Collection<E>) (this.column.equals(Column.keys) ? ((Element) start).keys() : IteratorUtils.asList(((Element) start).properties()));
+         */
         else if (start instanceof Path)
             return (Collection<E>) (this.column.equals(Column.keys) ? ((Path) start).labels() : ((Path) start).objects());
         else if (start instanceof Map.Entry)
