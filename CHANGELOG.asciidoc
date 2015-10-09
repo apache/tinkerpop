@@ -30,6 +30,7 @@ TinkerPop 3.0.2 (NOT OFFICIALLY RELEASED YET)
 * The `RepeatStep` clauses (`until()`,`emit()`,`repeat()`) can only be set at most one time in order to prevent user confusion.
 * Fixed a `clone()` bug in `RepeatStep`, `TreeStep`, `GroupCountStep`, `GroupStep`, and `TraversalRing`.
 * Fixed a thread context bug in `TinkerGraphComputer`.
+* Added an overload for `GremlinExecutor.eval()` that takes a `Lifecycle` object to override some default settings from `GremlinExecutor.Builder`.
 * Improved session closing for transactional graphs during shutdown of Gremlin Server.
 * Fixed id parameter used in tests for `GroovyStoreTest` and `GroovyRepeatTest` to not be treated as an embedded string.
 * `GraphStep` will convert any `Vertex` or `Edge` ids to their id `Object` prior to submission to `GraphComputer` (OLAP).
