@@ -16,33 +16,52 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
+import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
- * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class MapKeysStep<S, E> extends FlatMapStep<S, E> {
+public final class SelectColumnStep<S, E> extends MapStep<S, Collection<E>> {
 
-    public MapKeysStep(final Traversal.Admin traversal) {
+    public enum Column {
+        keys,
+        values
+    }
+
+    private final Column column;
+
+    public SelectColumnStep(final Traversal.Admin traversal, final Column column) {
         super(traversal);
+        this.column = column;
     }
 
     @Override
-    protected Iterator<E> flatMap(final Traverser.Admin<S> traverser) {
-        final S s = traverser.get();
-        if (s instanceof Map)
-            return ((Map) s).keySet().iterator();
-        if (s instanceof Map.Entry)
-            return Collections.singleton((E) ((Map.Entry) s).getKey()).iterator();
-        return EmptyIterator.instance();
+    protected Collection<E> map(Traverser.Admin<S> traverser) {
+        final S start = traverser.get();
+        if (start instanceof Map)
+            return this.column.equals(Column.keys) ? ((Map<E, ?>) start).keySet() : ((Map<?, E>) start).values();
+        else if (start instanceof Map.Entry)
+            return Collections.singleton(this.column.equals(Column.keys) ? ((Map.Entry<E, ?>) start).getKey() : ((Map.Entry<?, E>) start).getValue());
+        else
+            throw new IllegalStateException("The traverser does not reference a map-like object: " + traverser);
+    }
+
+    @Override
+    public String toString() {
+        return StringFactory.stepString(this, this.column);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode() ^ this.column.hashCode();
     }
 }

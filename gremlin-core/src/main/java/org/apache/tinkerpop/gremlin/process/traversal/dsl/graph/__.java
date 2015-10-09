@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectColumnStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -33,6 +34,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -251,9 +253,14 @@ public class __ {
         return __.<A>start().valueMap(includeTokens, propertyKeys);
     }
 
+    public static <A, B> GraphTraversal<A, Collection<B>> select(final SelectColumnStep.Column column) {
+        return __.<A>start().select(column);
+    }
+
     /**
      * @see {@link GraphTraversal#mapValues()}
      */
+    @Deprecated
     public static <A, B> GraphTraversal<A, B> mapValues() {
         return __.<A>start().mapValues();
     }
@@ -261,6 +268,7 @@ public class __ {
     /**
      * @see {@link GraphTraversal#mapKeys()}
      */
+    @Deprecated
     public static <A, B> GraphTraversal<A, B> mapKeys() {
         return __.<A>start().mapKeys();
     }
