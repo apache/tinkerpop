@@ -46,23 +46,23 @@ public final class GroupStepHelper {
 
     }
 
-    public static <S, E> Traversal.Admin<S, E> convertValueTraversal(final Traversal.Admin<S, E> valueTraversal) {
-        if (valueTraversal instanceof ElementValueTraversal ||
-                valueTraversal instanceof TokenTraversal ||
-                valueTraversal instanceof IdentityTraversal ||
-                valueTraversal.getStartStep() instanceof LambdaMapStep && ((LambdaMapStep) valueTraversal.getStartStep()).getMapFunction() instanceof FunctionTraverser) {
-            return (Traversal.Admin<S, E>) __.map(valueTraversal).fold();
+    public static <S, E> Traversal.Admin<S, E> convertValueTraversal(final Traversal.Admin<S, E> valueReduceTraversal) {
+        if (valueReduceTraversal instanceof ElementValueTraversal ||
+                valueReduceTraversal instanceof TokenTraversal ||
+                valueReduceTraversal instanceof IdentityTraversal ||
+                valueReduceTraversal.getStartStep() instanceof LambdaMapStep && ((LambdaMapStep) valueReduceTraversal.getStartStep()).getMapFunction() instanceof FunctionTraverser) {
+            return (Traversal.Admin<S, E>) __.map(valueReduceTraversal).fold();
         } else {
-            return valueTraversal;
+            return valueReduceTraversal;
         }
     }
 
-    public static List<Traversal.Admin<?, ?>> splitOnBarrierStep(final Traversal.Admin<?, ?> valueTraversal) {
-        if (TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueTraversal).isPresent()) {
+    public static List<Traversal.Admin<?, ?>> splitOnBarrierStep(final Traversal.Admin<?, ?> valueReduceTraversal) {
+        if (TraversalHelper.getFirstStepOfAssignableClass(Barrier.class, valueReduceTraversal).isPresent()) {
             final Traversal.Admin<?, ?> first = __.identity().asAdmin();
             final Traversal.Admin<?, ?> second = __.identity().asAdmin();
             boolean onSecond = false;
-            for (final Step step : valueTraversal.getSteps()) {
+            for (final Step step : valueReduceTraversal.getSteps()) {
                 if (step instanceof Barrier)
                     onSecond = true;
                 if (onSecond)
@@ -72,7 +72,7 @@ public final class GroupStepHelper {
             }
             return Arrays.asList(first, second);
         } else {
-            return Arrays.asList(valueTraversal, __.identity().asAdmin());
+            return Arrays.asList(valueReduceTraversal.clone(), __.identity().asAdmin());
         }
     }
 
@@ -98,7 +98,7 @@ public final class GroupStepHelper {
 
         @Override
         public GroupMap get() {
-            return new GroupMap(new HashMap<>());
+            return new GroupMap<>(new HashMap<>());
         }
     }
 }

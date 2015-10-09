@@ -63,6 +63,10 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX();
 
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_group_byXname_substring_1X_byXconstantX1XX();
+
+    public abstract Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_group_byXnameX() {
@@ -204,6 +208,37 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_group_byXname_substring_1X_byXconstantX1XX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_group_byXname_substring_1X_byXconstantX1XX();
+        checkMap(new HashMap<String, Long>() {{
+            put("m", 1l);
+            put("v", 1l);
+            put("p", 1l);
+            put("l", 1l);
+            put("r", 1l);
+            put("j", 1l);
+        }}, traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX() {
+        final Traversal<Vertex, Map<String, Long>> traversal = get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX();
+        checkMap(new HashMap<String, Long>() {{
+            put("m", 1l);
+            put("v", 1l);
+            put("p", 1l);
+            put("l", 1l);
+            put("r", 1l);
+            put("j", 1l);
+        }}, traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
+
     public static class Traversals extends GroupTest {
 
         @Override
@@ -254,6 +289,16 @@ public abstract class GroupTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX() {
             return g.V().repeat(both("followedBy")).times(2).<String, Long>group("a").by("songType").by(count()).cap("a");
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_group_byXname_substring_1X_byXconstantX1XX() {
+            return g.V().<String, Long>group().<Vertex>by(v -> v.<String>value("name").substring(0, 1)).by(constant(1l));
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX() {
+            return g.V().<String, Long>group("a").<Vertex>by(v -> v.<String>value("name").substring(0, 1)).by(constant(1l)).cap("a");
         }
     }
 }

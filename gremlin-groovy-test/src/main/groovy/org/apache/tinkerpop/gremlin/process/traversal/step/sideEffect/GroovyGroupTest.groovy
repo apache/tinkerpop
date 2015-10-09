@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.constant
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -77,6 +79,16 @@ public abstract class GroovyGroupTest {
         @Override
         public Traversal<Vertex, Map<String, Long>> get_g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX() {
             TraversalScriptHelper.compute("g.V.repeat(both('followedBy')).times(2).group('a').by('songType').by(count()).cap('a')", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_group_byXname_substring_1X_byXconstantX1XX() {
+            TraversalScriptHelper.compute("g.V.group.by{it.name[0]}.by(constant(1l))", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Long>> get_g_V_groupXaX_byXname_substring_1X_byXconstantX1XX_capXaX() {
+            TraversalScriptHelper.compute("g.V.group('a').by{it.name[0]}.by(constant(1l)).cap('a')", g)
         }
     }
 }

@@ -76,6 +76,7 @@ public abstract class ReducingBarrierStep<S, E> extends AbstractStep<S, E> imple
     public void reset() {
         super.reset();
         this.done = false;
+        this.seed = null;
     }
 
     @Override
