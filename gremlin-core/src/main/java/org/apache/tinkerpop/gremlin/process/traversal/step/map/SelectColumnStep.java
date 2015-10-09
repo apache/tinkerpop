@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -49,6 +50,8 @@ public final class SelectColumnStep<S, E> extends MapStep<S, Collection<E>> {
         final S start = traverser.get();
         if (start instanceof Map)
             return this.column.equals(Column.keys) ? ((Map<E, ?>) start).keySet() : ((Map<?, E>) start).values();
+        else if (start instanceof Path)
+            return (Collection<E>) (this.column.equals(Column.keys) ? ((Path) start).labels() : ((Path) start).objects());
         else if (start instanceof Map.Entry)
             return Collections.singleton(this.column.equals(Column.keys) ? ((Map.Entry<E, ?>) start).getKey() : ((Map.Entry<?, E>) start).getValue());
         else

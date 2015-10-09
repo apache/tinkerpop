@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,8 +44,9 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectColumnStep.Column.keys;
+import static org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectColumnStep.Column.values;
 import static org.junit.Assert.*;
-import static org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectColumnStep.Column.*;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -132,6 +134,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Double> get_g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold();
 
+    public abstract Traversal<Vertex, Collection<Set<String>>> get_g_V_asXa_bX_out_asXcX_path_selectXkeysX();
 
     // Useful for permuting Pop use cases
     protected final static List<Pop> POPS = Arrays.asList(null, Pop.first, Pop.last, Pop.all);
@@ -604,6 +607,24 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(2l, 2l), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXa_bX_out_asXcX_selectXkeysX() {
+        final Traversal<Vertex, Collection<Set<String>>> traversal = get_g_V_asXa_bX_out_asXcX_path_selectXkeysX();
+        int counter = 0;
+        while(traversal.hasNext()) {
+            final List<Set<String>> set = (List) traversal.next();
+            assertTrue(set.get(0).contains("a"));
+            assertTrue(set.get(0).contains("b"));
+            assertEquals(2, set.get(0).size());
+            assertTrue(set.get(1).contains("c"));
+            assertEquals(1, set.get(1).size());
+            counter++;
+        }
+        assertEquals(6,counter);
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends SelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX(final Object v1Id) {
@@ -793,6 +814,11 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Double> get_g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold() {
             return g.V().outE().values("weight").groupCount().unfold().select(keys).unfold();
+        }
+
+        @Override
+        public Traversal<Vertex, Collection<Set<String>>> get_g_V_asXa_bX_out_asXcX_path_selectXkeysX() {
+            return g.V().as("a","b").out().as("c").path().select(keys);
         }
     }
 }

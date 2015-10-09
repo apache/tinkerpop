@@ -228,5 +228,10 @@ public abstract class GroovySelectTest {
         public Traversal<Vertex, Double> get_g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold() {
             TraversalScriptHelper.compute("g.V.outE.weight.groupCount.unfold.select(keys).unfold", g)
         }
+
+        @Override
+        public Traversal<Vertex, Collection<Set<String>>> get_g_V_asXa_bX_out_asXcX_path_selectXkeysX() {
+            TraversalScriptHelper.compute("g.V.as('a','b').out.as('c').path.select(keys)", g)
+        }
     }
 }
