@@ -102,7 +102,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXaX_hasXname_markoX_asXbX_asXcX_selectXa_b_cX_by_byXnameX_byXageX();
 
-    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX();
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_name_fold_orderXlocalXX();
 
     // TINKERPOP3-619: select should not throw
 
@@ -471,8 +471,8 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
-        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX();
+    public void g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_name_fold_orderXlocalXX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_name_fold_orderXlocalXX();
         printTraversalForm(traversal);
         for (int i = 0; i < 2; i++) {
             assertTrue(traversal.hasNext());
@@ -569,7 +569,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outE_valuesXweightX_groupCount_selectXkeysX_unfold() {
+    public void g_V_outE_weight_groupCount_selectXkeysX_unfold() {
         final Traversal<Vertex, Double> traversal = get_g_V_outE_weight_groupCount_selectXkeysX_unfold();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(0.2, 0.4, 0.5, 1.0), traversal);
@@ -577,7 +577,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outE_valuesXweightX_groupCount_unfold_selectXkeysX_unfold() {
+    public void g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold() {
         final Traversal<Vertex, Double> traversal = get_g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(0.2, 0.4, 0.5, 1.0), traversal);
@@ -585,7 +585,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outE_valuesXweightX_groupCount_selectXvaluesX_unfold() {
+    public void g_V_outE_weight_groupCount_selectXvaluesX_unfold() {
         final Traversal<Vertex, Long> traversal = get_g_V_outE_weight_groupCount_selectXvaluesX_unfold();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(1l, 1l, 2l, 2l), traversal);
@@ -593,7 +593,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outE_valuesXweightX_groupCount_unfold_selectXvaluesX_unfold() {
+    public void g_V_outE_weight_groupCount_unfold_selectXvaluesX_unfold() {
         final Traversal<Vertex, Long> traversal = get_g_V_outE_weight_groupCount_unfold_selectXvaluesX_unfold();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(1l, 1l, 2l, 2l), traversal);
@@ -601,7 +601,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     @Test
     @LoadGraphWith(MODERN)
-    public void g_V_outE_valuesXweightX_groupCount_selectXvaluesX_unfold_groupCount_selectXvaluesX_unfold() {
+    public void g_V_outE_weight_groupCount_selectXvaluesX_unfold_groupCount_selectXvaluesX_unfold() {
         final Traversal<Vertex, Long> traversal = get_g_V_outE_weight_groupCount_selectXvaluesX_unfold_groupCount_selectXvaluesX_unfold();
         printTraversalForm(traversal);
         checkResults(Arrays.asList(2l, 2l), traversal);
@@ -741,7 +741,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_valuesXnameX_fold_orderXlocalXX() {
+        public Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_name_fold_orderXlocalXX() {
             return g.V().hasLabel("software").as("name").as("language").as("creators").select("name", "language", "creators").by("name").by("lang").
                     by(__.in("created").values("name").fold().order(local));
         }
