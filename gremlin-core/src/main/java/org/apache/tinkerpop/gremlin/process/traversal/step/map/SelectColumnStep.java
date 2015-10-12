@@ -50,16 +50,12 @@ public final class SelectColumnStep<S, E> extends MapStep<S, Collection<E>> {
         final S start = traverser.get();
         if (start instanceof Map)
             return this.column.equals(Column.keys) ? ((Map<E, ?>) start).keySet() : ((Map<?, E>) start).values();
-        /*
-        else if (start instanceof Element)
-            return (Collection<E>) (this.column.equals(Column.keys) ? ((Element) start).keys() : IteratorUtils.asList(((Element) start).properties()));
-         */
         else if (start instanceof Path)
             return (Collection<E>) (this.column.equals(Column.keys) ? ((Path) start).labels() : ((Path) start).objects());
-        else if (start instanceof Map.Entry)
+        else if (start instanceof Map.Entry)   // TODO: remove support for this?
             return Collections.singleton(this.column.equals(Column.keys) ? ((Map.Entry<E, ?>) start).getKey() : ((Map.Entry<?, E>) start).getValue());
         else
-            throw new IllegalStateException("The traverser does not reference a map-like object: " + traverser);
+            throw new IllegalStateException("The traverser does not reference a map or path: " + traverser);
     }
 
     @Override
