@@ -1,0 +1,101 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+
+TinkerPop 3.0.1-incubating
+==========================
+
+image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
+
+__Release Date: September 2, 2015__
+
+Important Changes
+-----------------
+
+* Gremlin Server now supports a link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL-based] (Simple Authentication and Security Layer) authentication model and a default `SimpleAuthenticator` which implements the `PLAIN` SASL mechanism (i.e. plain text) to authenticate requests.  This gives Gremlin Server some basic security capabilities, especially when combined with its built-in SSL feature.
+* Gremlin Server now allows for a `Map` of values that can be returned from initialization scripts.  That `Map` will be used to set global bindings for the server. See this link:https://github.com/apache/incubator-tinkerpop/blob/3.0.1-incubating/gremlin-server/scripts/generate-modern.groovy[sample script] for an example.
+* The Neo4j plugin should now install properly on Windows operating systems.
+* For those who are interested in writing documentation for TinkerPop, there is now a `--dryRun` option that can be supplied to the `bin/process-docs.sh` command.  This command is useful in that it does not pre-process the documentation and execute the code samples within.  That step is time-intensive and therefore the `--dryRun` option can save a lot of time when editing the documentation, especially if there are only text or formatting changes to test.
+
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.0.1-incubating/CHANGELOG.asciidoc#tinkerpop-301-release-date-september-2-2015[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+-------------------
+
+Aside from learning about new features, users should not expect to find any changes in this release that will cause compile errors or other problems during upgrade.
+
+Upgrading for Providers
+-----------------------
+
+This section is offers details to those who develop against the core APIs and protocols of TinkerPop.  These details are helpful to any of the following:
+
+* Graph System Provider
+** Graph Database Provider
+** Graph Processor Provider
+* Graph Driver Provider
+* Graph Language Provider
+
+Graph System Providers
+~~~~~~~~~~~~~~~~~~~~~~
+
+GraphFactoryClass Annotation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Providers can consider the use of the new `GraphFactoryClass` annotation to specify the factory class that `GraphFactory` will use to open a new `Graph` instance. This is an optional feature and will generally help implementations that have an interface extending `Graph`.  If that is the case, then this annotation can be used in the following fashion:
+
+[source,java]
+----
+@GraphFactory(MyGraphFactory.class)
+public interface MyGraph extends Graph{
+}
+----
+
+`MyGraphFactory` must contain the static `open` method that is normally expected by `GraphFactory`.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP3-778[TINKERPOP3-778] for more information.
+
+GraphProvider.Descriptor Annotation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There was a change that affected providers who implemented `GraphComputer` related tests such as the `ProcessComputerSuite`.  If the provider runs those tests, then edit the `GraphProvider` implementation for those suites to include the `GraphProvider.Descriptor` annotation as follows:
+
+[source,java]
+----
+@GraphProvider.Descriptor(computer = GiraphGraphComputer.class)
+public final class HadoopGiraphGraphProvider extends HadoopGraphProvider {
+
+    public GraphTraversalSource traversal(final Graph graph) {
+        return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(GiraphGraphComputer.class)).create(graph);
+    }
+}
+----
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP3-690[TINKERPOP3-690] for more information.
+
+Semantics of Transaction.close()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There were some adjustments to the test suite with respect to how `Transaction.close()` was being validated.  For most providers, this will generally mean checking `OptOut` annotations for test renaming problems.  The error that occurs when running the test suite should make it apparent that a test name is incorrect in an `OptOut` if there are issues there.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP3-764[TINKERPOP3-764] for more information.
+
+Graph Driver Providers
+~~~~~~~~~~~~~~~~~~~~~~
+
+Authentication
+^^^^^^^^^^^^^^
+
+Gremlin Server now supports SASL-based authentication.  By default, Gremlin Server is not configured with authentication turned on and authentication is not required, so existing drivers should still work without any additional change.  Drivers should however consider implementing this feature as it is likely that many users will want the security capabilities that it provides.  Please read more about how to implement authentication link:http://tinkerpop.incubator.apache.org/docs/3.0.1-incubating/#_authentication[here].
