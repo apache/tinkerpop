@@ -173,51 +173,6 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
             def graph = (Graph) o
             def g = graph.traversal()
             g.V().sideEffect { addVertexToGephi(g, it.get()) }.iterate()
-        } else {
-            // an individual Path needs a special case as it is an iterator and gets unrolled by
-            // IteratorUtils.asIterator() if not wrapped in a list prior.
-            final Iterator itty = (o instanceof Path) ? IteratorUtils.asIterator([o]) : IteratorUtils.asIterator(o)
-            def first = true
-            while (itty.hasNext()) {
-                final Object current = itty.next();
-                if (current instanceof Path) {
-                    // paths get returned as iterators - so basically any Iterator that has vertices in it will have
-                    // their path highlighted
-                    final Path path = (Path) current
-                    final List<Vertex> verticesInPath = path.stream().map { Pair pair -> pair.getValue0() }
-                            .filter { Object e -> e instanceof Vertex }.collect(Collectors.toList())
-
-                    for (int ix = 0; ix < verticesInPath.size(); ix++) {
-                        final Vertex v = (Vertex) verticesInPath.get(ix)
-
-                        // if this vertex has already been highlighted in gephi then no need to do it again,
-                        // just update the touch count in memory
-                        if (!vertexAttributes.containsKey(v.id().toString())) {
-                            // this is a new vertex visited so it needs to get highlighted in gephi
-                            visitVertexInGephi(v)
-                            if (ix > 0) {
-                                final Vertex previous = (Vertex) verticesInPath.get(ix - 1)
-                                v.edges(Direction.BOTH).findAll { Edge edge ->
-                                    edge.bothVertices().any { Vertex vertex -> vertex == previous }
-                                }.each { Object edge ->
-                                    visitEdgeInGephi((Edge) edge)
-                                }
-                            }
-                        }
-
-                        // need to increment the touch even though this may be the first time passed through
-                        // because the default for touch=1 when it is added to the graph
-                        touch(v)
-                    }
-
-                    if (itty.hasNext() || !first) {
-                        sleep(vizStepDelay)
-                        applyRelativeSizingInGephi()
-                    }
-
-                    first = false
-                }
-            }
         }
 
         traversalSubmittedForViz = false

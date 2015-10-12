@@ -1132,13 +1132,6 @@ NOTE: Issuing `:> graph` again will clear the Gephi workspace and then re-write 
 
 Now that the graph is visualized in Gephi, it is possible to link:https://gephi.github.io/users/tutorial-layouts/[apply a layout algorithm], change the size and/or color of vertices and edges, and display labels/properties of interest.  Further information can be found in Gephi's tutorial on link:https://gephi.github.io/users/tutorial-visualization/[Visualization].  After applying the Fruchterman Reingold layout, increasing the node size, decreasing the edge scale, and displaying the id, name, and weight attributes the graph looks as displayed in the right image above.
 
-In addition to providing a way to pipe a `Graph` instance to Gephi, the plugin also enables methods for visualizing a `Path` and a `Traversal`.  In both cases, the `Graph` underlying the `Path` and `Traversal` must be visualized in Gephi as defined above.  To visualize a `Path`, simple get a `Path` object and `:submit` it:
-
-[source,groovy]
-gremlin> :> g.V(1).repeat(both().dedup()).until(hasId(3)).path().next()
-
-The above line of code will visualize the "shortest path" between vertex `1` and vertex `3`, highlighting vertex `1` first then stepping through the path to `3` highlighting each vertex found as it goes.
-
 WARNING: On some platforms, Gephi may not properly refresh the edges in the "Overview" panel for `Path` visualizations.  If this problem occurs, manually refreshing the "Overview" will allow the `Path` visualization to become fully realized (e.g. click the "Show Hulls" button).
 
 Visualization of a `Traversal` has a different approach as the visualization occurs as the `Traversal` is executing, thus showing a real-time view of its execution.  A `Traversal` must be "configured" to operate in this format and for that it requires use of the `visualTraversal` option on the `config` function of the `:remote` command:
