@@ -64,7 +64,7 @@ cd ${TMP_DIR}
 # validate downloads
 ZIP_FILENAME=`grep -o '[^/]*$' <<< ${URL}`
 DIR_NAME=`sed -e 's/-[^-]*$//' <<< ${ZIP_FILENAME}`
-COMPONENT=`tr '-' $'\n' <<< ${ZIP_FILENAME} | head -n3 | sed -e 's/^./\U&/' | paste -sd ' ' -`
+COMPONENT=`tr '-' $'\n' <<< ${ZIP_FILENAME} | head -n3 | awk '{for (i = 1; i <= NF; i++) sub(/./, toupper(substr($i, 1, 1)), $1); print}' | paste -sd ' ' -`
 
 if [ "${TYPE}" = "SOURCE" ]; then
   DIR_NAME=`sed -e 's/^[^-]*-//' <<< ${DIR_NAME}`

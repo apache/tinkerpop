@@ -18,7 +18,13 @@
  */
 package org.apache.tinkerpop.gremlin.console.plugin
 
+import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
+import org.apache.http.client.methods.RequestBuilder
+import org.apache.http.entity.StringEntity
+import org.apache.http.impl.client.CloseableHttpClient
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException
 import org.apache.tinkerpop.gremlin.process.traversal.Path
@@ -28,15 +34,12 @@ import org.apache.tinkerpop.gremlin.structure.Edge
 import org.apache.tinkerpop.gremlin.structure.Graph
 import org.apache.tinkerpop.gremlin.structure.Vertex
 import groovy.json.JsonSlurper
-import groovyx.net.http.HTTPBuilder
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.IO
 import org.javatuples.Pair
 
 import java.util.stream.Collectors
-
-import static groovyx.net.http.ContentType.JSON
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -60,6 +63,8 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     private float vizStartSize
     private float vizSizeDecrementRate
     private Map vertexAttributes = [:]
+
+    private CloseableHttpClient httpclient = HttpClients.createDefault();
 
     public GephiRemoteAcceptor(final Groovysh shell, final IO io) {
         this.shell = shell
@@ -220,7 +225,7 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     void close() throws IOException {
-
+        httpclient.close()
     }
 
     /**
@@ -355,8 +360,10 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     def getFromGephiGraph(def Map queryArgs) {
-        def http = new HTTPBuilder("http://$host:$port/")
-        def resp = http.get(path: "/$workspace", query: queryArgs).getText()
+        def requestBuilder = RequestBuilder.get("http://$host:$port/$workspace")
+        queryArgs.each { requestBuilder = requestBuilder.addParameter(it.key, it.value) }
+
+        def resp = EntityUtils.toString(httpclient.execute(requestBuilder.build()).entity)
 
         // gephi streaming plugin does not set the content type or respect the Accept header - treat as text
         if (resp.isEmpty())
@@ -366,8 +373,11 @@ class GephiRemoteAcceptor implements RemoteAcceptor {
     }
 
     def updateGephiGraph(def Map postBody) {
-        def http = new HTTPBuilder("http://$host:$port/")
-        http.post(path: "/$workspace", requestContentType: JSON, body: postBody, query: [format: "JSON", operation: "updateGraph"])
+        def requestBuilder = RequestBuilder.post("http://$host:$port/$workspace")
+                                           .addParameter("format", "JSON")
+                                           .addParameter("operation", "updateGraph")
+                                           .setEntity(new StringEntity(JsonOutput.toJson(postBody)))
+        EntityUtils.consume(httpclient.execute(requestBuilder.build()).entity)
     }
 
     @Override
