@@ -1135,9 +1135,9 @@ Now that the graph is visualized in Gephi, it is possible to link:https://gephi.
 In addition to providing a way to pipe a `Graph` instance to Gephi, the plugin also enables methods for visualizing a `Path` and a `Traversal`.  In both cases, the `Graph` underlying the `Path` and `Traversal` must be visualized in Gephi as defined above.  To visualize a `Path`, simple get a `Path` object and `:submit` it:
 
 [source,groovy]
-gremlin> :> g.V(1).repeat(both().dedup()).until(hasId(582)).path().next()
+gremlin> :> g.V(1).repeat(both().dedup()).until(hasId(3)).path().next()
 
-The above line of code will visualize the "shortest path" between vertex `1` and vertex `582`, highlighting vertex `1` first then stepping through the path to `582` highlighting each vertex found as it goes.
+The above line of code will visualize the "shortest path" between vertex `1` and vertex `3`, highlighting vertex `1` first then stepping through the path to `3` highlighting each vertex found as it goes.
 
 WARNING: On some platforms, Gephi may not properly refresh the edges in the "Overview" panel for `Path` visualizations.  If this problem occurs, manually refreshing the "Overview" will allow the `Path` visualization to become fully realized (e.g. click the "Show Hulls" button).
 
@@ -1148,7 +1148,7 @@ Visualization of a `Traversal` has a different approach as the visualization occ
 :remote config visualTraversal graph                   <1>
 traversal = vg.V(2).in().out('knows').
                     has('age',gt(30)).outE('created').
-                    has('weight',gt(0.5d)).inV()
+                    has('weight',gt(0.5d)).inV();null
 :> traversal                                           <2>
 ----
 
