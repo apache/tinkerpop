@@ -62,11 +62,9 @@ public abstract class TreeTest extends AbstractGremlinProcessTest {
         assertCommonA(traversal);
     }
 
-    @org.junit.Ignore("Temporariliy ignore this guy until we sort out why ComputerVerificationStrategy isn't working")
     @Test
     @LoadGraphWith(MODERN)
     public void g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX() {
-        // todo: get this test working
         final Traversal<Vertex, Tree> traversal = get_g_VX1X_out_out_treeXaX_byXnameX_both_both_capXaX(convertToVertexId("marko"));
         printTraversalForm(traversal);
         assertCommonA(traversal);
