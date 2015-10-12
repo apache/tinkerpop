@@ -199,7 +199,39 @@ public abstract class GroovySelectTest {
 
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXaX_whereXoutXknowsXX_selectXaX() {
-            TraversalScriptHelper.compute("g.V().as('a').where(out('knows')).select('a')",g)
+            TraversalScriptHelper.compute("g.V().as('a').where(out('knows')).select('a')", g)
+        }
+
+        // select column tests
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_outE_weight_groupCount_selectXvaluesX_unfold() {
+            TraversalScriptHelper.compute("g.V.outE.weight.groupCount.select(values).unfold", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_outE_weight_groupCount_unfold_selectXvaluesX_unfold() {
+            TraversalScriptHelper.compute("g.V.outE.weight.groupCount.unfold.select(values).unfold", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_outE_weight_groupCount_selectXvaluesX_unfold_groupCount_selectXvaluesX_unfold() {
+            TraversalScriptHelper.compute("g.V.outE.weight.groupCount.select(values).unfold.groupCount.select(values).unfold", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_outE_weight_groupCount_selectXkeysX_unfold() {
+            TraversalScriptHelper.compute("g.V.outE.weight.groupCount.select(keys).unfold", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold() {
+            TraversalScriptHelper.compute("g.V.outE.weight.groupCount.unfold.select(keys).unfold", g)
+        }
+
+        @Override
+        public Traversal<Vertex, Collection<Set<String>>> get_g_V_asXa_bX_out_asXcX_path_selectXkeysX() {
+            TraversalScriptHelper.compute("g.V.as('a','b').out.as('c').path.select(keys)", g)
         }
     }
 }

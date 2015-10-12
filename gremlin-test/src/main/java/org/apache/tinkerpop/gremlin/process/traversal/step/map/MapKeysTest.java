@@ -35,6 +35,7 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 @RunWith(GremlinProcessRunner.class)
+@Deprecated
 public abstract class MapKeysTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Double> get_g_V_outE_valuesXweightX_groupCount_mapKeys();

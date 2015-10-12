@@ -77,11 +77,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.IdStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LabelStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaFlatMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaMapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.LoopsStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapKeysStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapValuesStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MatchStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MaxLocalStep;
@@ -99,6 +98,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SampleLocalStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectColumnStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
@@ -128,7 +128,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEf
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementFunctionComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementValueComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.LambdaCollectingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -144,6 +143,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -465,12 +465,24 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), includeTokens, PropertyType.VALUE, propertyKeys));
     }
 
-    public default <E2> GraphTraversal<S, E2> mapValues() {
-        return this.asAdmin().addStep(new MapValuesStep<>(this.asAdmin()));
+    public default <E2> GraphTraversal<S, Collection<E2>> select(final SelectColumnStep.Column column) {
+        return this.asAdmin().addStep(new SelectColumnStep<>(this.asAdmin(), column));
     }
 
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #select(SelectColumnStep.Column)}
+     */
+    @Deprecated
+    public default <E2> GraphTraversal<S, E2> mapValues() {
+        return this.select(SelectColumnStep.Column.values).unfold();
+    }
+
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #select(SelectColumnStep.Column)}
+     */
+    @Deprecated
     public default <E2> GraphTraversal<S, E2> mapKeys() {
-        return this.asAdmin().addStep(new MapKeysStep<>(this.asAdmin()));
+        return this.select(SelectColumnStep.Column.keys).unfold();
     }
 
     /**

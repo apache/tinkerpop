@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,6 +44,8 @@ import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
+import static org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectColumnStep.Column.keys;
+import static org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectColumnStep.Column.values;
 import static org.junit.Assert.*;
 
 /**
@@ -119,6 +122,20 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_asXaX_whereXoutXknowsXX_selectXaX();
 
+    // select column tests
+
+    public abstract Traversal<Vertex, Long> get_g_V_outE_weight_groupCount_selectXvaluesX_unfold();
+
+    public abstract Traversal<Vertex, Long> get_g_V_outE_weight_groupCount_unfold_selectXvaluesX_unfold();
+
+    public abstract Traversal<Vertex, Long> get_g_V_outE_weight_groupCount_selectXvaluesX_unfold_groupCount_selectXvaluesX_unfold();
+
+    public abstract Traversal<Vertex, Double> get_g_V_outE_weight_groupCount_selectXkeysX_unfold();
+
+    public abstract Traversal<Vertex, Double> get_g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold();
+
+    public abstract Traversal<Vertex, Collection<Set<String>>> get_g_V_asXa_bX_out_asXcX_path_selectXkeysX();
+
     // Useful for permuting Pop use cases
     protected final static List<Pop> POPS = Arrays.asList(null, Pop.first, Pop.last, Pop.all);
 
@@ -184,7 +201,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_out_asXbX_selectXa_bX_byXnameX() {
-        final Traversal<Vertex, Map<String,String>> traversal = get_g_V_asXaX_out_asXbX_selectXa_bX_byXnameX();
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_asXbX_selectXa_bX_byXnameX();
         printTraversalForm(traversal);
         assertCommonA(traversal);
     }
@@ -192,7 +209,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_out_aggregateXxX_asXbX_selectXa_bX_byXnameX() {
-        final Traversal<Vertex, Map<String,String>> traversal = get_g_V_asXaX_out_aggregateXxX_asXbX_selectXa_bX_byXnameX();
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_out_aggregateXxX_asXbX_selectXa_bX_byXnameX();
         printTraversalForm(traversal);
         assertCommonA(traversal);
     }
@@ -211,7 +228,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_asXaX_name_order_asXbX_selectXa_bX_byXnameX_by_XitX() {
-        final Traversal<Vertex, Map<String,String>> traversal = get_g_V_asXaX_name_order_asXbX_selectXa_bX_byXnameX_by_XitX();
+        final Traversal<Vertex, Map<String, String>> traversal = get_g_V_asXaX_name_order_asXbX_selectXa_bX_byXnameX_by_XitX();
         printTraversalForm(traversal);
         final List<Map<String, String>> expected = makeMapList(2,
                 "a", "marko", "b", "marko",
@@ -548,6 +565,66 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
+    //////
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outE_valuesXweightX_groupCount_selectXkeysX_unfold() {
+        final Traversal<Vertex, Double> traversal = get_g_V_outE_weight_groupCount_selectXkeysX_unfold();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(0.2, 0.4, 0.5, 1.0), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outE_valuesXweightX_groupCount_unfold_selectXkeysX_unfold() {
+        final Traversal<Vertex, Double> traversal = get_g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(0.2, 0.4, 0.5, 1.0), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outE_valuesXweightX_groupCount_selectXvaluesX_unfold() {
+        final Traversal<Vertex, Long> traversal = get_g_V_outE_weight_groupCount_selectXvaluesX_unfold();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(1l, 1l, 2l, 2l), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outE_valuesXweightX_groupCount_unfold_selectXvaluesX_unfold() {
+        final Traversal<Vertex, Long> traversal = get_g_V_outE_weight_groupCount_unfold_selectXvaluesX_unfold();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(1l, 1l, 2l, 2l), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_outE_valuesXweightX_groupCount_selectXvaluesX_unfold_groupCount_selectXvaluesX_unfold() {
+        final Traversal<Vertex, Long> traversal = get_g_V_outE_weight_groupCount_selectXvaluesX_unfold_groupCount_selectXvaluesX_unfold();
+        printTraversalForm(traversal);
+        checkResults(Arrays.asList(2l, 2l), traversal);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXa_bX_out_asXcX_selectXkeysX() {
+        final Traversal<Vertex, Collection<Set<String>>> traversal = get_g_V_asXa_bX_out_asXcX_path_selectXkeysX();
+        int counter = 0;
+        while(traversal.hasNext()) {
+            final List<Set<String>> set = (List) traversal.next();
+            assertTrue(set.get(0).contains("a"));
+            assertTrue(set.get(0).contains("b"));
+            assertEquals(2, set.get(0).size());
+            assertTrue(set.get(1).contains("c"));
+            assertEquals(1, set.get(1).size());
+            counter++;
+        }
+        assertEquals(6,counter);
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends SelectTest {
         @Override
         public Traversal<Vertex, Map<String, Vertex>> get_g_VX1X_asXaX_outXknowsX_asXbX_selectXa_bX(final Object v1Id) {
@@ -710,6 +787,38 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Vertex> get_g_V_asXaX_whereXoutXknowsXX_selectXaX() {
             return g.V().as("a").where(__.out("knows")).<Vertex>select("a");
+        }
+
+        // select columns test
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_outE_weight_groupCount_selectXvaluesX_unfold() {
+            return g.V().outE().values("weight").groupCount().select(values).unfold();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_outE_weight_groupCount_unfold_selectXvaluesX_unfold() {
+            return g.V().outE().values("weight").groupCount().unfold().select(values).unfold();
+        }
+
+        @Override
+        public Traversal<Vertex, Long> get_g_V_outE_weight_groupCount_selectXvaluesX_unfold_groupCount_selectXvaluesX_unfold() {
+            return g.V().outE().values("weight").groupCount().select(values).unfold().groupCount().select(values).unfold();
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_outE_weight_groupCount_selectXkeysX_unfold() {
+            return g.V().outE().values("weight").groupCount().select(keys).unfold();
+        }
+
+        @Override
+        public Traversal<Vertex, Double> get_g_V_outE_weight_groupCount_unfold_selectXkeysX_unfold() {
+            return g.V().outE().values("weight").groupCount().unfold().select(keys).unfold();
+        }
+
+        @Override
+        public Traversal<Vertex, Collection<Set<String>>> get_g_V_asXa_bX_out_asXcX_path_selectXkeysX() {
+            return g.V().as("a","b").out().as("c").path().select(keys);
         }
     }
 }

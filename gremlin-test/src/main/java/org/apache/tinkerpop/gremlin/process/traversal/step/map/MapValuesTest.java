@@ -27,13 +27,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
+@Deprecated
 @RunWith(GremlinProcessRunner.class)
 public abstract class MapValuesTest extends AbstractGremlinProcessTest {
 

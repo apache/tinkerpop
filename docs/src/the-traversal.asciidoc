@@ -549,7 +549,7 @@ g.V().values('age').sum() <6>
 Group Step
 ~~~~~~~~~~
 
-As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actual path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `group()`-step (*sideEffect*) is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
+As traversers propagate across a graph as defined by a traversal, sideEffect computations are sometimes required. That is, the actual path taken or the current location of a traverser is not the ultimate output of the computation, but some other representation of the traversal. The `group()`-step (*map*/*sideEffect*) is one such sideEffect that organizes the objects according to some function of the object. Then, if required, that organization (a list) is reduced. An example is provided below.
 
 [gremlin-groovy,modern]
 ----
@@ -572,7 +572,7 @@ The three projection parameters available to `group()` via `by()` are:
 GroupCount Step
 ~~~~~~~~~~~~~~~
 
-When it is important to know how many times a particular object has been at a particular part of a traversal, `groupCount()`-step (*sideEffect*) is used.
+When it is important to know how many times a particular object has been at a particular part of a traversal, `groupCount()`-step (*map*/*sideEffect*) is used.
 
     "What is the distribution of ages in the graph?"
 
@@ -730,43 +730,6 @@ g.V().as('person').
 The two traversals above look nearly identical save the inclusion of `local()` which wraps a section of the traversal in a object-local traversal. As such, the `order().by()` and the `limit()` refer to a particular object, not to the stream as a whole.
 
 WARNING: The anonymous traversal of `local()` processes the current object "locally." In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
-
-[[mapkeys-step]]
-MapKeys Step
-~~~~~~~~~~~~
- 
-The `mapKeys()`-step (*flatMap*) takes an incoming map and emits its keys. This is especially useful when one is only interested in the top N elements in a `groupCount()` ranking.
- 
-[gremlin-groovy]
-----
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal(standard())
-g.V().hasLabel("song").out("followedBy").groupCount().by("name").
-      order(local).by(valueDecr).limit(local, 5)
-g.V().hasLabel("song").out("followedBy").groupCount().by("name").
-      order(local).by(valueDecr).limit(local, 5).mapKeys()
-----
-
-[[mapvalues-step]]
-MapValues Step
-~~~~~~~~~~~~~~
- 
-The `mapValues()`-step (*flatMap*) takes an incoming map and emits its values.
- 
-[gremlin-groovy]
-----
-graph.io(graphml()).readGraph('data/grateful-dead.xml')
-g = graph.traversal(standard())
-:set max-iteration 10
-g.V().hasLabel("song").out("sungBy").groupCount().by("name").next() <1>
-g.V().hasLabel("song").out("sungBy").groupCount().by("name").mapValues() <2>
-g.V().hasLabel("song").out("sungBy").groupCount().by("name").mapValues().groupCount().
-      order(local).by(valueDecr).limit(local, 5).next() <3>
-----
- 
-<1> Which artist sung how many songs?
-<2> Get an anonymized set of song repertoire sizes.
-<3> What are the 5 most common song repertoire sizes?
 
 [[match-step]]
 Match Step
@@ -1350,11 +1313,43 @@ g.V().out().out().as('x').select('x') // pointless
 
 NOTE: When executing a traversal with `select()` on a standard traversal engine (i.e. OLTP), `select()` will do its best to avoid calculating the path history and instead, will rely on a global data structure for storing the currently selected object. As such, if only a subset of the path walked is required, `select()` should be used over the more resource intensive <<path-step,`path()`>>-step.
 
+When the set of keys or values (i.e. columns) of a path or map are needed, use `select(keys)` and `select(values)`, respectively. This is especially useful when one is only interested in the top N elements in a `groupCount()` ranking.
+
+[gremlin-groovy]
+----
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g = graph.traversal()
+g.V().hasLabel('song').out('followedBy').groupCount().by('name').
+      order(local).by(valueDecr).limit(local, 5)
+g.V().hasLabel('song').out('followedBy').groupCount().by('name').
+      order(local).by(valueDecr).limit(local, 5).select(keys)
+g.V().hasLabel('song').out('followedBy').groupCount().by('name').
+      order(local).by(valueDecr).limit(local, 5).select(keys).unfold()
+----
+
+Similarly, for extracting the values from a path or map.
+
+[gremlin-groovy]
+----
+graph.io(graphml()).readGraph('data/grateful-dead.xml')
+g = graph.traversal()
+g.V().hasLabel('song').out('sungBy').groupCount().by('name') <1>
+g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values) <2>
+g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values).unfold().
+      groupCount().order(local).by(valueDecr).limit(local, 5) <3>
+----
+
+<1> Which artist sung how many songs?
+<2> Get an anonymized set of song repertoire sizes.
+<3> What are the 5 most common song repertoire sizes?
+
+CAUTION: Note that `by()`-modulation is not supported with `select(keys)` and `select(values)`.
+
 [[using-where-with-select]]
 Using Where with Select
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Finally, like <<match-step,`match()`>>-step, it is possible to use `where()`, as where is a filter that processes `Map<String,Object>` streams.
+Like <<match-step,`match()`>>-step, it is possible to use `where()`, as where is a filter that processes `Map<String,Object>` streams.
 
 [gremlin-groovy,modern]
 ----
