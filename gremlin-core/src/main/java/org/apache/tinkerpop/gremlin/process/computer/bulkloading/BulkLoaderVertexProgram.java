@@ -172,9 +172,6 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
             graph = GraphFactory.open(configuration.subset(WRITE_GRAPH_CFG_KEY));
             LOGGER.info("Opened Graph instance: {}", graph);
             try {
-                if (!graph.features().graph().supportsConcurrentAccess()) {
-                    throw new IllegalStateException("The given graph instance does not allow concurrent access.");
-                }
                 g = graph.traversal();
             } catch (Exception e) {
                 try {
