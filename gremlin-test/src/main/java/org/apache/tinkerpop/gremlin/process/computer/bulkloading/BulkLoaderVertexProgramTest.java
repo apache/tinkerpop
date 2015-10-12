@@ -24,11 +24,15 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.junit.After;
 import org.junit.Test;
 
+import java.io.File;
 import java.lang.reflect.Field;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -37,16 +41,30 @@ import static org.junit.Assert.assertTrue;
  */
 public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
 
+    final static String TINKERGRAPH_LOCATION = "/tmp/tinkertest.kryo";
+
     private BulkLoader getBulkLoader(final BulkLoaderVertexProgram blvp) throws Exception {
         final Field field = BulkLoaderVertexProgram.class.getDeclaredField("bulkLoader");
         field.setAccessible(true);
         return (BulkLoader) field.get(blvp);
     }
 
-    private Graph getTargetGraph() {
+    private Configuration getWriteGraphConfiguration() {
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty(Graph.GRAPH, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph");
-        return GraphFactory.open(configuration);
+        configuration.setProperty("gremlin.tinkergraph.graphLocation", TINKERGRAPH_LOCATION);
+        configuration.setProperty("gremlin.tinkergraph.graphFormat", "gryo");
+        return configuration;
+    }
+
+    private Graph getWriteGraph() {
+        return GraphFactory.open(getWriteGraphConfiguration());
+    }
+
+    @After
+    public void cleanup() {
+        final File graph = new File(TINKERGRAPH_LOCATION);
+        assertTrue(!graph.exists() || graph.delete());
     }
 
     @Test
@@ -60,23 +78,43 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldStoreOriginalIds() throws Exception {
-        final BulkLoader loader = getBulkLoader(BulkLoaderVertexProgram.build().userSuppliedIds(false).create(graph));
+        final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
+                .userSuppliedIds(false)
+                .writeGraph(getWriteGraphConfiguration()).create(graph);
+        final BulkLoader loader = getBulkLoader(blvp);
         assertFalse(loader.useUserSuppliedIds());
-        final Graph target = getTargetGraph();
-        graph.vertices().forEachRemaining(v -> loader.getOrCreateVertex(v, target, target.traversal()));
+        graph.compute().program(blvp).submit().get();
+        final Graph target = getWriteGraph();
+        assertEquals(IteratorUtils.count(graph.vertices()), IteratorUtils.count(target.vertices()));
+        assertEquals(IteratorUtils.count(graph.edges()), IteratorUtils.count(target.edges()));
         target.vertices().forEachRemaining(v -> assertTrue(v.property(loader.getVertexIdProperty()).isPresent()));
     }
 
     @Test
     @LoadGraphWith(MODERN)
     public void shouldNotStoreOriginalIds() throws Exception {
-        final BulkLoader loader = getBulkLoader(BulkLoaderVertexProgram.build().userSuppliedIds(true).create(graph));
+        final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
+                .userSuppliedIds(true)
+                .writeGraph(getWriteGraphConfiguration()).create(graph);
+        final BulkLoader loader = getBulkLoader(blvp);
         assertTrue(loader.useUserSuppliedIds());
-        final Graph target = getTargetGraph();
-        graph.vertices().forEachRemaining(v -> loader.getOrCreateVertex(v, target, target.traversal()));
+        graph.compute().program(blvp).submit().get();
+        final Graph target = getWriteGraph();
+        assertEquals(IteratorUtils.count(graph.vertices()), IteratorUtils.count(target.vertices()));
+        assertEquals(IteratorUtils.count(graph.edges()), IteratorUtils.count(target.edges()));
         target.vertices().forEachRemaining(v -> assertFalse(v.property(loader.getVertexIdProperty()).isPresent()));
     }
 
-    // TODO: once Neo4j supports concurrent connections, write a real integration test that leverages BLVP
-    // TODO: also, once Neo4j can be used, remove the tinkergraph-gremlin dependency from hadoop-gremlin and clean up the existing tests
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldOverwriteExistingElements() throws Exception {
+        final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
+                .userSuppliedIds(true)
+                .writeGraph(getWriteGraphConfiguration()).create(graph);
+        graph.compute().program(blvp).submit().get(); // initial
+        graph.compute().program(blvp).submit().get(); // incremental
+        final Graph target = getWriteGraph();
+        assertEquals(IteratorUtils.count(graph.vertices()), IteratorUtils.count(target.vertices()));
+        assertEquals(IteratorUtils.count(graph.edges()), IteratorUtils.count(target.edges()));
+    }
 }

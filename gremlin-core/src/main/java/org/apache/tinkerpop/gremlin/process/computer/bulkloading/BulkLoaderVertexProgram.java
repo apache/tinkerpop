@@ -381,8 +381,14 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
          * A configuration for the target graph that can be passed to GraphFactory.open().
          */
         public Builder writeGraph(final String configurationFile) throws ConfigurationException {
-            final Configuration conf = new PropertiesConfiguration(configurationFile);
-            conf.getKeys().forEachRemaining(key -> setGraphConfigurationProperty(key, conf.getProperty(key)));
+            return writeGraph(new PropertiesConfiguration(configurationFile));
+        }
+
+        /**
+         * A configuration for the target graph that can be passed to GraphFactory.open().
+         */
+        public Builder writeGraph(final Configuration configuration) {
+            configuration.getKeys().forEachRemaining(key -> setGraphConfigurationProperty(key, configuration.getProperty(key)));
             return this;
         }
     }
