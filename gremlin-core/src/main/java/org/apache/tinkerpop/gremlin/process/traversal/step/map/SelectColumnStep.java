@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -32,11 +33,6 @@ import java.util.Map;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class SelectColumnStep<S, E> extends MapStep<S, Collection<E>> {
-
-    public enum Column {
-        keys,
-        values
-    }
 
     private final Column column;
 

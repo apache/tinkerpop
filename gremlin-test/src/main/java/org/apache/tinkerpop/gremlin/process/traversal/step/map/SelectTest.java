@@ -42,10 +42,10 @@ import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.CREW;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.structure.Column.keys;
+import static org.apache.tinkerpop.gremlin.structure.Column.values;
 import static org.apache.tinkerpop.gremlin.process.traversal.Scope.local;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.as;
-import static org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectColumnStep.Column.keys;
-import static org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectColumnStep.Column.values;
 import static org.junit.Assert.*;
 
 /**
@@ -612,7 +612,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
     public void g_V_asXa_bX_out_asXcX_selectXkeysX() {
         final Traversal<Vertex, Collection<Set<String>>> traversal = get_g_V_asXa_bX_out_asXcX_path_selectXkeysX();
         int counter = 0;
-        while(traversal.hasNext()) {
+        while (traversal.hasNext()) {
             final List<Set<String>> set = (List) traversal.next();
             assertTrue(set.get(0).contains("a"));
             assertTrue(set.get(0).contains("b"));
@@ -621,7 +621,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
             assertEquals(1, set.get(1).size());
             counter++;
         }
-        assertEquals(6,counter);
+        assertEquals(6, counter);
         assertFalse(traversal.hasNext());
     }
 
@@ -818,7 +818,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Collection<Set<String>>> get_g_V_asXa_bX_out_asXcX_path_selectXkeysX() {
-            return g.V().as("a","b").out().as("c").path().select(keys);
+            return g.V().as("a", "b").out().as("c").path().select(keys);
         }
     }
 }

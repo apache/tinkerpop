@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -465,7 +466,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.asAdmin().addStep(new PropertyMapStep<>(this.asAdmin(), includeTokens, PropertyType.VALUE, propertyKeys));
     }
 
-    public default <E2> GraphTraversal<S, Collection<E2>> select(final SelectColumnStep.Column column) {
+    public default <E2> GraphTraversal<S, Collection<E2>> select(final Column column) {
         return this.asAdmin().addStep(new SelectColumnStep<>(this.asAdmin(), column));
     }
 
@@ -474,7 +475,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     @Deprecated
     public default <E2> GraphTraversal<S, E2> mapValues() {
-        return this.select(SelectColumnStep.Column.values).unfold();
+        return this.select(Column.values).unfold();
     }
 
     /**
@@ -482,7 +483,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     @Deprecated
     public default <E2> GraphTraversal<S, E2> mapKeys() {
-        return this.select(SelectColumnStep.Column.keys).unfold();
+        return this.select(Column.keys).unfold();
     }
 
     /**
