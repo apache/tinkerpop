@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
@@ -27,9 +28,7 @@ import org.junit.runners.model.RunnerBuilder;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class HadoopPluginSuite extends AbstractGremlinSuite {
-
     public HadoopPluginSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
         super(klass, builder, new Class<?>[]{HadoopGremlinPluginTest.class}, new Class<?>[]{HadoopGremlinPluginTest.class}, true, TraversalEngine.Type.COMPUTER);
     }
-
 }

@@ -27,6 +27,6 @@ import org.junit.runner.RunWith;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(ProcessComputerSuite.class)
-@GraphProviderClass(provider = HadoopSparkGraphProvider.class, graph = HadoopGraph.class)
+@GraphProviderClass(provider = SparkHadoopGraphProvider.class, graph = HadoopGraph.class)
 public class SparkGraphComputerProcessIntegrateTest {
 }

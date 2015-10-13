@@ -112,7 +112,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
             // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
             JavaSparkContext sparkContext = null;
-            try  {
+            try {
                 sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
                 // add the project jars to the cluster
                 this.loadJars(sparkContext, hadoopConfiguration);
@@ -189,9 +189,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // update runtime and return the newly computed graph
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);
                 return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, this.resultGraph, this.persist), finalMemory.asImmutable());
-            }
-            finally
-            {
+            } finally {
                 if (sparkContext != null && !hadoopGraph.configuration().getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
                     sparkContext.stop();
             }

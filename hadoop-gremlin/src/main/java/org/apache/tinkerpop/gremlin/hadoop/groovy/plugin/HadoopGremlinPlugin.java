@@ -92,9 +92,8 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
             pluginAcceptor.addBinding("local", FileSystem.getLocal(new Configuration()));
             if (null == System.getenv(Constants.HADOOP_GREMLIN_LIBS))
                 HadoopGraph.LOGGER.warn("Be sure to set the environmental variable: " + Constants.HADOOP_GREMLIN_LIBS);
-            else {
+            else
                 HadoopGraph.LOGGER.info(Constants.HADOOP_GREMLIN_LIBS + " is set to: " + System.getenv(Constants.HADOOP_GREMLIN_LIBS));
-            }
         } catch (final Exception e) {
             throw new PluginInitializationException(e.getMessage(), e);
         }
