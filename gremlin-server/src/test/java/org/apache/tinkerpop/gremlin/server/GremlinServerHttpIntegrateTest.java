@@ -73,6 +73,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             case "should401OnPOSTWithNoAuthorizationHeader":
             case "should401OnGETWithBadAuthorizationHeader":
             case "should401OnPOSTWithBadAuthorizationHeader":
+            case "should401OnGETWithBadEncodedAuthorizationHeader":
+            case "should401OnPOSTWithBadEncodedAuthorizationHeader":
             case "should401OnGETWithInvalidPasswordAuthorizationHeader":
             case "should401OnPOSTWithInvalidPasswordAuthorizationHeader":
             case "should200OnGETWithAuthorizationHeader":
@@ -143,10 +145,34 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
+    public void should401OnGETWithBadEncodedAuthorizationHeader() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
+        httpget.addHeader("Authorization", "Basic: not-base-64-encoded");
+
+        try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
+    public void should401OnPOSTWithBadEncodedAuthorizationHeader() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.addHeader("Authorization", "Basic: not-base-64-encoded");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(401, response.getStatusLine().getStatusCode());
+        }
+    }
+
+    @Test
     public void should401OnGETWithInvalidPasswordAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
-        httpget.addHeader("Authorization", encoder.encodeToString("stephen:not-my-password".getBytes()));
+        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:not-my-password".getBytes()));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(401, response.getStatusLine().getStatusCode());
@@ -158,7 +184,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost("http://localhost:8182");
         httppost.addHeader("Content-Type", "application/json");
-        httppost.addHeader("Authorization", encoder.encodeToString("stephen:not-my-password".getBytes()));
+        httppost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:not-my-password".getBytes()));
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
@@ -170,7 +196,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     public void should200OnGETWithAuthorizationHeader() throws Exception {
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=1-1");
-        httpget.addHeader("Authorization", encoder.encodeToString("stephen:password".getBytes()));
+        httpget.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -186,7 +212,7 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost("http://localhost:8182");
         httppost.addHeader("Content-Type", "application/json");
-        httppost.addHeader("Authorization", encoder.encodeToString("stephen:password".getBytes()));
+        httppost.addHeader("Authorization", "Basic " + encoder.encodeToString("stephen:password".getBytes()));
         httppost.setEntity(new StringEntity("{\"gremlin\":\"1-1\"}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
