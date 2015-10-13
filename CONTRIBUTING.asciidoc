@@ -206,6 +206,11 @@ committer wanting to put code into a release branch.
 ** If there is a higher version release branch that requires your fix (e.g. `3.0.z` fix going to a `3.y.z` release), be sure to merge to that release branch as well.
 * Be conscious of deleting your branch if it is no longer going to be used so stale branches don't pollute the repository.
 
+NOTE: These steps also generally apply to external pull requests from those who are not official Apache committers. In
+this case, the person responsible for the merge after voting is typically the first person available
+who is knowledgeable in the area that the pull request affects. Any additional coordination on merging can be handled
+via the pull request comment system.
+
 The following exceptions to the RTC (review-then-commit) model presented above are itemized below. It is up to the
 committer to self-regulate as the itemization below is not complete and only hints and the types of commits that do not
 require a review.
