@@ -212,5 +212,6 @@ require a review.
 
 * You are responsible for a release and need to manipulate files accordingly for the release.
 ** `Gremlin.version()`, CHANGELOG dates, `pom.xml` version bumps, etc.
-* You are doing an minor change and it is plainly obvious that that an RTC is not required (would be a pointless burden to the community).
+* You are doing an minor change and it is obvious that an RTC is not required (would be a pointless burden to the community).
+** The fix is under the link:http://www.apache.org/foundation/glossary.html#CommitThenReview[commit-then-review] (CTR) policy and lazy consensus is sufficient, where a single -1 vote requires you to revert your changes.
 ** Adding a test case, fixing spelling/grammar mistakes in the documentation, fixing LICENSE/NOTICE/etc. files, fixing a minor issue in an already merged branch.
