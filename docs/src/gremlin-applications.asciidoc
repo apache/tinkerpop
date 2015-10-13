@@ -628,6 +628,31 @@ Cluster cluster = Cluster.build().credentials("stephen", "password")
 
 If connecting with Gremlin Console, which utilizes `gremlin-driver` for remote script execution, use the provided `config/remote-secure.yaml` file when defining the remote.  That file contains configuration for the username and password as well as enablement of SSL from the client side.
 
+Similarly, Gremlin Server can be configured for REST and security.
+
+[source,text]
+----
+$ bin/gremlin-server.sh conf/gremlin-server-rest-secure.yaml
+[INFO] GremlinServer -
+         \,,,/
+         (o o)
+-----oOOo-(3)-oOOo-----
+
+[INFO] GremlinServer - Configuring Gremlin Server from conf/gremlin-server-secure.yaml
+...
+[WARN] AbstractChannelizer - Enabling SSL with self-signed certificate (NOT SUITABLE FOR PRODUCTION)
+[INFO] AbstractChannelizer - SSL enabled
+[INFO] SimpleAuthenticator - Initializing authentication with the org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator
+[INFO] SimpleAuthenticator - CredentialGraph initialized at CredentialGraph{graph=tinkergraph[vertices:1 edges:0]}
+[INFO] GremlinServer$1 - Gremlin Server configured with worker thread pool of 1, gremlin pool of 8 and boss thread pool of 1.
+[INFO] GremlinServer$1 - Channel started at port 8182.
+----
+
+Once the server has started, issue a request passing the credentials with an `Authentication` header, as described in link:http://tools.ietf.org/html/rfc2617#section-2[RFC2617]. Here's a HTTP Basic authentication example with cURL:
+
+[source,text]
+curl -X POST --insecure -u stephen:password -d "{\"gremlin\":\"100-1\"}" "https://localhost:8182"
+
 [[credentials-dsl]]
 Credentials Graph DSL
 +++++++++++++++++++++

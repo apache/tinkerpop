@@ -156,7 +156,7 @@ Code Style
 ~~~~~~~~~~
 
 Contributors should examine the current code base to determine what the code style patterns are and should match their
-style to what is already present.  Of specific note however, TinkerPop does not use "import wildcards" - IDEs should
+style to what is already present. Of specific note however, TinkerPop does not use "import wildcards" - IDEs should
 be adjusted accordingly to not auto-wildcard the imports.
 
 Deprecation
@@ -184,3 +184,39 @@ call out this fact.
 
 The JIRA issues that track removal of deprecated methods should be periodically evaluated to determine if it is
 prudent to schedule them into a release.
+
+Review then Commit
+~~~~~~~~~~~~~~~~~~
+
+Code modifications must go through a link:http://www.apache.org/foundation/glossary.html#ReviewThenCommit[review-then-committ] (RTC)
+process before being merged into a release branch. All committers should follow the pattern below, where "you" refers to the
+committer wanting to put code into a release branch.
+
+* Make a JIRA ticket for the software problem you want to solve (i.e. a fix).
+* Fork the release branch that the fix will be put into.
+** The branch name should be the JIRA issue identifier (e.g. `TINKERPOP3-XXX`).
+* Develop your fix in your branch.
+* When your fix is complete and ready to merge, issue a link:https://git-scm.com/docs/git-request-pull[pull request].
+** Be certain that the test suite is passing.
+** If you updated documentation, be sure that the `process-docs.sh` is building the documentation correctly.
+* Before you can merge your branch into the release branch, you must have at least 3 +1 link:http://www.apache.org/foundation/glossary.html#ConsensusApproval[consensus votes].
+** Please see the Apache Software Foundations regulations regarding link:http://www.apache.org/foundation/voting.html#votes-on-code-modification[Voting on Code Modifications].
+* Votes are issued by TinkerPop committers as comments to the pull request.
+* Once 3 +1 votes are received, you are responsible for merging to the release branch and handling any merge conflicts.
+** If there is a higher version release branch that requires your fix (e.g. `3.0.z` fix going to a `3.y.z` release), be sure to merge to that release branch as well.
+* Be conscious of deleting your branch if it is no longer going to be used so stale branches don't pollute the repository.
+
+NOTE: These steps also generally apply to external pull requests from those who are not official Apache committers. In
+this case, the person responsible for the merge after voting is typically the first person available
+who is knowledgeable in the area that the pull request affects. Any additional coordination on merging can be handled
+via the pull request comment system.
+
+The following exceptions to the RTC (review-then-commit) model presented above are itemized below. It is up to the
+committer to self-regulate as the itemization below is not complete and only hints and the types of commits that do not
+require a review.
+
+* You are responsible for a release and need to manipulate files accordingly for the release.
+** `Gremlin.version()`, CHANGELOG dates, `pom.xml` version bumps, etc.
+* You are doing an minor change and it is obvious that an RTC is not required (would be a pointless burden to the community).
+** The fix is under the link:http://www.apache.org/foundation/glossary.html#CommitThenReview[commit-then-review] (CTR) policy and lazy consensus is sufficient, where a single -1 vote requires you to revert your changes.
+** Adding a test case, fixing spelling/grammar mistakes in the documentation, fixing LICENSE/NOTICE/etc. files, fixing a minor issue in an already merged branch.

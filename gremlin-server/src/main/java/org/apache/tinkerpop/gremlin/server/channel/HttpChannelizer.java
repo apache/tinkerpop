@@ -48,11 +48,6 @@ public class HttpChannelizer extends AbstractChannelizer {
     public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
         httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager);
-
-        // configure authentication - null means don't bother to add authentication to the pipeline
-        if (authenticator != null)
-            authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
-                    null : new HttpBasicAuthenticationHandler(authenticator);
     }
 
     @Override
@@ -67,8 +62,16 @@ public class HttpChannelizer extends AbstractChannelizer {
 
         pipeline.addLast(new HttpObjectAggregator(settings.maxContentLength));
 
-        if (authenticationHandler != null)
-            pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
+        if (authenticator != null) {
+            // Cannot add the same handler instance to multiple times unless
+            // it is marked as @Sharable, indicating a race condition will
+            // not occur. It may not be a safe assumption that the handler
+            // is sharable so create a new handler each time.
+            authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
+                    null : new HttpBasicAuthenticationHandler(authenticator);
+            if (authenticationHandler != null)
+                pipeline.addLast(PIPELINE_AUTHENTICATOR, authenticationHandler);
+        }
 
         pipeline.addLast("http-gremlin-handler", httpGremlinEndpointHandler);
     }

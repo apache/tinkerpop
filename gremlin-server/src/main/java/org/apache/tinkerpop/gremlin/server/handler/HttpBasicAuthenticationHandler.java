@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -51,21 +52,36 @@ public class HttpBasicAuthenticationHandler extends ChannelInboundHandlerAdapter
     }
 
     @Override
-    public void channelRead(final ChannelHandlerContext ctx, final Object msg) throws Exception {
+    public void channelRead(final ChannelHandlerContext ctx, final Object msg) {
         if (msg instanceof FullHttpMessage) {
             final FullHttpMessage request = (FullHttpMessage) msg;
             if (!request.headers().contains("Authorization")) {
-                ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, UNAUTHORIZED));
-                ReferenceCountUtil.release(msg);
+                sendError(ctx, msg);
                 return;
             }
 
+            // strip off "Basic " from the Authorization header (RFC 2617)
+            final String basic = "Basic ";
             final String authorizationHeader = request.headers().get("Authorization");
-            final String authorization = new String(decoder.decode(authorizationHeader), Charset.forName("UTF-8"));
+            if (!authorizationHeader.startsWith(basic)) {
+                sendError(ctx, msg);
+                return;
+            }
+            byte[] decodedUserPass = null;
+            try {
+                final String encodedUserPass = authorizationHeader.substring(basic.length());
+                decodedUserPass = decoder.decode(encodedUserPass);
+            } catch (IndexOutOfBoundsException iae) {
+                sendError(ctx, msg);
+                return;
+            } catch (IllegalArgumentException iae) {
+                sendError(ctx, msg);
+                return;
+            }
+            final String authorization = new String(decodedUserPass, Charset.forName("UTF-8"));
             final String[] split = authorization.split(":");
             if (split.length != 2) {
-                ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, UNAUTHORIZED));
-                ReferenceCountUtil.release(msg);
+                sendError(ctx, msg);
                 return;
             }
 
@@ -77,9 +93,14 @@ public class HttpBasicAuthenticationHandler extends ChannelInboundHandlerAdapter
                 authenticator.authenticate(credentials);
                 ctx.fireChannelRead(request);
             } catch (AuthenticationException ae) {
-                ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, UNAUTHORIZED));
-                ReferenceCountUtil.release(msg);
+                sendError(ctx, msg);
             }
         }
+    }
+
+    private void sendError(final ChannelHandlerContext ctx, final Object msg) {
+        // Close the connection as soon as the error message is sent.
+        ctx.writeAndFlush(new DefaultFullHttpResponse(HTTP_1_1, UNAUTHORIZED)).addListener(ChannelFutureListener.CLOSE);
+        ReferenceCountUtil.release(msg);
     }
 }
