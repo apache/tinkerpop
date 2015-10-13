@@ -30,13 +30,35 @@ TinkerPop 3.0.2
 Important Changes
 ~~~~~~~~~~~~~~~~~
 
+* TinkerGraph can now be configured to support persistence, where TinkerGraph will try to load a graph from a specified
+location and calls to `close()` will save the graph data to that location.
+* There were a number of fixes to `gremlin-driver` that prevent protocol desynchronization when talking to Gremlin
+Server.
+* The Gremlin Server sub-protocol introduces a new "close" operation to explicitly close sessions.
+
 Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.0.2-incubating/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Aside from learning about new features, users should not expect to find any changes in this release that will cause compile errors or other problems during upgrade.
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
+
+Graph Driver Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+Gremlin Server close Operation
+++++++++++++++++++++++++++++++
+
+It is important to note that this feature of the sub-protocol applies to the `SessionOpProcessor` (i.e. for
+session-based requests).  Prior to this change, there was no way to explicitly close a session.  Sessions would get
+closed by the server after timeout of activity.  This new "op" gives drivers the ability to close the session
+explicitly and as needed.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP3-849[TINKERPOP3-849] and the
+link:http://tinkerpop.incubator.apache.org/docs/3.0.2-incubating/#_opprocessors_arguments[documentation] for more information.
 
 TinkerPop 3.0.1
 ---------------
@@ -111,4 +133,9 @@ Graph Driver Providers
 Authentication
 ++++++++++++++
 
-Gremlin Server now supports SASL-based authentication.  By default, Gremlin Server is not configured with authentication turned on and authentication is not required, so existing drivers should still work without any additional change.  Drivers should however consider implementing this feature as it is likely that many users will want the security capabilities that it provides.  Please read more about how to implement authentication link:http://tinkerpop.incubator.apache.org/docs/3.0.1-incubating/#_authentication[here].
+Gremlin Server now supports SASL-based authentication.  By default, Gremlin Server is not configured with
+authentication turned on and authentication is not required, so existing drivers should still work without any
+additional change.  Drivers should however consider implementing this feature as it is likely that many users will
+want the security capabilities that it provides.
+
+Please read more about how to implement authentication link:http://tinkerpop.incubator.apache.org/docs/3.0.1-incubating/#_authentication[here].
