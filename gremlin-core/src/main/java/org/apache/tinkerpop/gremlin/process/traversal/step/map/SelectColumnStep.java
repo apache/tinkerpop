@@ -24,7 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.function.ArrayListSupplier;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -47,7 +49,7 @@ public final class SelectColumnStep<S, E> extends MapStep<S, Collection<E>> {
         if (start instanceof Map)
             return this.column.equals(Column.keys) ? ((Map<E, ?>) start).keySet() : ((Map<?, E>) start).values();
         else if (start instanceof Path)
-            return (Collection<E>) (this.column.equals(Column.keys) ? ((Path) start).labels() : ((Path) start).objects());
+            return (Collection<E>) (this.column.equals(Column.keys) ? new ArrayList<>(((Path) start).labels()) : new ArrayList(((Path) start).objects()));  // necessary for serialization in complex GraphComputers (find fix)
         else if (start instanceof Map.Entry)   // TODO: remove support for this?
             return Collections.singleton(this.column.equals(Column.keys) ? ((Map.Entry<E, ?>) start).getKey() : ((Map.Entry<?, E>) start).getValue());
         else
