@@ -51,18 +51,6 @@ limitations under the License.
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-tinkerpop-api</artifactId>
-            <version>0.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-            <version>0.1-2.2</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <build>
         <directory>${basedir}/target</directory>
