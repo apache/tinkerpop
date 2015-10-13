@@ -1,0 +1,37 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+image::apache-tinkerpop-logo.png[width=500]
+
+:toc-position: left
+
+TinkerPop Upgrade Information
+=============================
+
+This document helps users of TinkerPop to understand the changes that come with each software release.  It outlines
+new features, how to resolve breaking changes and other information specific to a release.  This document is useful
+to end-users who are building applications on TinkerPop, but it is equally useful to TinkerPop providers, who
+build libraries and other systems on the the core APIs and protocols that TinkerPop exposes.
+
+These providers include:
+
+* Graph System Provider
+** Graph Database Provider
+** Graph Processor Provider
+* Graph Driver Provider
+* Graph Language Provider
+
+include::upgrade-release-3.0.x-incubating.asciidoc[]

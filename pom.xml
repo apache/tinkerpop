@@ -707,6 +707,33 @@ limitations under the License.
                                     </attributes>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>asciidoc-to-upgrade</id>
+                                <phase>generate-resources</phase>
+                                <goals>
+                                    <goal>process-asciidoc</goal>
+                                </goals>
+                                <configuration>
+                                    <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
+                                    <sourceDocumentName>upgrade.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
+                                    <backend>html5</backend>
+                                    <doctype>book</doctype>
+                                    <attributes>
+                                        <imagesdir>images</imagesdir>
+                                        <encoding>UTF-8</encoding>
+                                        <toc>true</toc>
+                                        <toclevels>3</toclevels>
+                                        <toc-position>left</toc-position>
+                                        <!--<iconsdir>images/icons</iconsdir>-->
+                                        <!-- AsciiDoctor CSS3-based theme configuration -->
+                                        <stylesdir>${asciidoctor.style.dir}</stylesdir>
+                                        <stylesheet>tinkerpop.css</stylesheet>
+                                        <source-highlighter>coderay</source-highlighter>
+                                        <basedir>${project.basedir}</basedir>
+                                    </attributes>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
