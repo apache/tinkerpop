@@ -43,8 +43,11 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.0-inc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Gremlin Structure
+^^^^^^^^^^^^^^^^^
+
 Transaction.close() Default Behavior
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+++++++++++++++++++++++++++++++++++++
 
 The default behavior of `Transaction.close()` is to rollback the transaction.  This is in contrast to previous versions
 where the default behavior was commit.  Using rollback as the default should be thought of as a like a safer approach
