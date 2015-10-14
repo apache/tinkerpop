@@ -160,7 +160,7 @@ public class HadoopGremlinPluginTest extends AbstractGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
-    public void shouldGracefullyBadHandleHadoopGremlinLibs() throws Exception {
+    public void shouldGracefullyHandleBadGremlinHadoopLibs() throws Exception {
         System.setProperty(Constants.HADOOP_GREMLIN_LIBS, "test/" + UUID.randomUUID());
         this.graph.configuration().setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true);
         this.console.addBinding("graph", this.graph);
