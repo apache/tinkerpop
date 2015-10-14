@@ -272,8 +272,9 @@ gremlin.neo4j.conf.relationship_auto_indexing=true
 
 [gremlin-groovy]
 ----
+hdfs.copyFromLocal('data/grateful-dead.kryo', 'data/grateful-dead.kryo')
 wgConf = 'conf/tinkergraph-gryo.properties'
-grateful = GraphFactory.open("conf/hadoop/hadoop-grateful-gryo.properties")
+grateful = GraphFactory.open('conf/hadoop/hadoop-grateful-gryo.properties')
 blvp = BulkLoaderVertexProgram.build().
            keepOriginalIds(false).
            writeGraph(wgConf).create(grateful)
@@ -289,8 +290,9 @@ graph.close()
 
 [gremlin-groovy]
 ----
+hdfs.copyFromLocal('data/grateful-dead.kryo', 'data/grateful-dead.kryo')
 wgConf = 'conf/tinkergraph-gryo.properties'
-grateful = GraphFactory.open("conf/hadoop/hadoop-grateful-gryo.properties")
+grateful = GraphFactory.open('conf/hadoop/hadoop-grateful-gryo.properties')
 blvp = BulkLoaderVertexProgram.build().
            keepOriginalIds(false).
            writeGraph(wgConf).create(grateful)
@@ -359,6 +361,8 @@ gremlin.tinkergraph.graphLocation=/tmp/tinkergraph.kryo
 |`intermediateBatchSize(int)` |Sets the batch size for intermediate transactions. This is per thread in a multi-threaded environment. +0+ means that transactions will only be committed at the end of an iteration cycle. It's recommended to tune this property for the target graph and not use the default value of +0+. | `0`
 |`writeGraph(String)` | Sets the path to a `GraphFactory` compatible configuration file for the target graph. | _none_
 |========================================
+
+NOTE: `BulkLoaderVertexProgram` comes with a default `BulkLoader` implementation, namely `IncrementalBulkLoader`. It will work for the most use-cases, but has one limitation though: It doesn't support multi-valued properties. `IncrementalBulkLoader` will handle every property as a single-valued property. A custom `BulkLoader` implementation has to be used if the default behavior is not sufficient.
 
 [[traversalvertexprogram]]
 TraversalVertexProgram
