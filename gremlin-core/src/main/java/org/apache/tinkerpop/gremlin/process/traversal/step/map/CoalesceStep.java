@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComputerAwareStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.EmptyIterator;
@@ -30,7 +31,7 @@ import java.util.*;
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements TraversalParent {
+public final class CoalesceStep<S, E> extends ComputerAwareStep<S, E> implements TraversalParent {
 
     private List<Traversal.Admin<S, E>> coalesceTraversals;
 
@@ -39,19 +40,35 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
         super(traversal);
         this.coalesceTraversals = Arrays.asList(coalesceTraversals);
         for (final Traversal.Admin<S, ?> conjunctionTraversal : this.coalesceTraversals) {
+            conjunctionTraversal.addStep(new EndStep(conjunctionTraversal));
             this.integrateChild(conjunctionTraversal);
         }
     }
 
     @Override
-    protected Iterator<E> flatMap(final Traverser.Admin<S> traverser) {
+    protected Iterator<Traverser<E>> standardAlgorithm() {
+        final Traverser.Admin<S> start = this.starts.next();
         for (final Traversal.Admin<S, E> coalesceTraversal : this.coalesceTraversals) {
             coalesceTraversal.reset();
-            coalesceTraversal.addStart(traverser.asAdmin().split());
-            if (coalesceTraversal.hasNext())
-                return coalesceTraversal;
+            coalesceTraversal.addStart(start.split());
+            if (coalesceTraversal.getEndStep().hasNext())
+                return coalesceTraversal.getEndStep();
         }
         return EmptyIterator.instance();
+    }
+
+    @Override
+    protected Iterator<Traverser<E>> computerAlgorithm() {
+        // TODO: How to stop after the first successful option?
+        final List<Traverser<E>> ends = new ArrayList<>();
+        final Traverser.Admin<S> start = this.starts.next();
+        this.coalesceTraversals.forEach(
+            coalesceTraversal -> {
+                final Traverser.Admin<E> split = (Traverser.Admin<E>) start.split();
+                split.setStepId(coalesceTraversal.getStartStep().getId());
+                ends.add(split);
+            });
+        return ends.iterator();
     }
 
     @Override
@@ -60,7 +77,7 @@ public final class CoalesceStep<S, E> extends FlatMapStep<S, E> implements Trave
     }
 
     @Override
-    public List<Traversal.Admin<S, E>> getLocalChildren() {
+    public List<Traversal.Admin<S, E>> getGlobalChildren() {
         return Collections.unmodifiableList(this.coalesceTraversals);
     }
 

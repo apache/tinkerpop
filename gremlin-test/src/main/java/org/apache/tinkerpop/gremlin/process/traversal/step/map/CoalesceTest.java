@@ -55,6 +55,8 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Path> get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX();
 
+    public abstract Traversal<Vertex, Path> get_g_V_coalesceXout_outX_path();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_coalesceXoutXfooX_outXbarXX() {
@@ -89,7 +91,7 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
         assertTrue(traversal.hasNext());
         final Map<String, Long> result = traversal.next();
         assertEquals(4, result.size());
-        assertTrue(result.containsKey("josh") && result.containsKey("lop") && result.containsKey("ripple") && result.containsKey("vadas"));
+        assertTrue(result.keySet().toString(), result.containsKey("josh") && result.containsKey("lop") && result.containsKey("ripple") && result.containsKey("vadas"));
         assertEquals(1L, (long) result.get("josh"));
         assertEquals(2L, (long) result.get("lop"));
         assertEquals(1L, (long) result.get("ripple"));
@@ -111,7 +113,8 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
             first.compute(path.<String>get(0), (k, v) -> v != null ? v + 1 : 1);
             last.compute(path.<String>get(2), (k, v) -> v != null ? v + 1 : 1);
             assertEquals(3, path.size());
-            assertTrue((path.<String>get(0).equals("marko") && path.<String>get(1).equals("knows") && path.<String>get(2).equals("vadas"))
+            assertTrue(path.toString(),
+                       (path.<String>get(0).equals("marko") && path.<String>get(1).equals("knows") && path.<String>get(2).equals("vadas"))
                     || (path.<String>get(0).equals("marko") && path.<String>get(1).equals("knows") && path.<String>get(2).equals("josh"))
                     || (path.<String>get(0).equals("josh") && path.<String>get(1).equals("created") && path.<String>get(2).equals("lop"))
                     || (path.<String>get(0).equals("josh") && path.<String>get(1).equals("created") && path.<String>get(2).equals("ripple"))
@@ -126,6 +129,20 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
         assertEquals(2, (int) last.get("lop"));
         assertEquals(1, (int) last.get("ripple"));
         assertFalse(traversal.hasNext());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_coalesceXout_outX_path() {
+        final Traversal<Vertex, Path> traversal = get_g_V_coalesceXout_outX_path();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            ++counter;
+            final Path path = traversal.next();
+            assertEquals(3, path.size());
+        }
+        assertEquals(2, counter);
     }
 
     public static class Traversals extends CoalesceTest {
@@ -152,6 +169,11 @@ public abstract class CoalesceTest extends AbstractGremlinProcessTest {
         @Override
         public Traversal<Vertex, Path> get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
             return g.V().coalesce(outE("knows"), outE("created")).otherV().path().by("name").by(T.label);
+        }
+
+        @Override
+        public Traversal<Vertex, Path> get_g_V_coalesceXout_outX_path() {
+            return g.V().coalesce(out().out()).path();
         }
     }
 }

@@ -55,5 +55,10 @@ public abstract class GroovyCoalesceTest {
         Traversal<Vertex, Path> get_g_V_coalesceXoutEXknowsX_outEXcreatedXX_otherV_path_byXnameX_byXlabelX() {
             TraversalScriptHelper.compute("g.V.coalesce(outE('knows'), outE('created')).otherV.path.by('name').by(T.label)", g)
         }
+
+        @Override
+        Traversal<Vertex, Path> get_g_V_coalesceXout_outX_path() {
+            TraversalScriptHelper.compute("g.V.coalesce(out.out).path", g);
+        }
     }
 }
