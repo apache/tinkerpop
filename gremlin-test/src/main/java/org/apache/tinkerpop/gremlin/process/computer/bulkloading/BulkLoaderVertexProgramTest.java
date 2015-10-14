@@ -22,7 +22,13 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.After;
@@ -30,10 +36,13 @@ import org.junit.Test;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.Iterator;
+import java.util.function.Function;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -84,10 +93,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
         final BulkLoader loader = getBulkLoader(blvp);
         assertFalse(loader.useUserSuppliedIds());
         graph.compute().program(blvp).submit().get();
-        final Graph target = getWriteGraph();
-        assertEquals(IteratorUtils.count(graph.vertices()), IteratorUtils.count(target.vertices()));
-        assertEquals(IteratorUtils.count(graph.edges()), IteratorUtils.count(target.edges()));
-        target.vertices().forEachRemaining(v -> assertTrue(v.property(loader.getVertexIdProperty()).isPresent()));
+        assertGraphEquality(graph, getWriteGraph(), v -> v.value(loader.getVertexIdProperty()));
     }
 
     @Test
@@ -99,10 +105,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
         final BulkLoader loader = getBulkLoader(blvp);
         assertTrue(loader.useUserSuppliedIds());
         graph.compute().program(blvp).submit().get();
-        final Graph target = getWriteGraph();
-        assertEquals(IteratorUtils.count(graph.vertices()), IteratorUtils.count(target.vertices()));
-        assertEquals(IteratorUtils.count(graph.edges()), IteratorUtils.count(target.edges()));
-        target.vertices().forEachRemaining(v -> assertFalse(v.property(loader.getVertexIdProperty()).isPresent()));
+        assertGraphEquality(graph, getWriteGraph());
     }
 
     @Test
@@ -113,8 +116,63 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
                 .writeGraph(getWriteGraphConfiguration()).create(graph);
         graph.compute().program(blvp).submit().get(); // initial
         graph.compute().program(blvp).submit().get(); // incremental
-        final Graph target = getWriteGraph();
-        assertEquals(IteratorUtils.count(graph.vertices()), IteratorUtils.count(target.vertices()));
-        assertEquals(IteratorUtils.count(graph.edges()), IteratorUtils.count(target.edges()));
+        assertGraphEquality(graph, getWriteGraph());
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldProperlyHandleMetaProperties() throws Exception {
+        graph.traversal().V().has("name", "marko").properties("name").property("alias", "okram").iterate();
+        final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
+                .userSuppliedIds(true)
+                .writeGraph(getWriteGraphConfiguration()).create(graph);
+        graph.compute().program(blvp).submit().get();
+        assertGraphEquality(graph, getWriteGraph());
+    }
+
+    private static void assertGraphEquality(final Graph source, final Graph target) {
+        assertGraphEquality(source, target, Element::id);
+    }
+
+    private static void assertGraphEquality(final Graph source, final Graph target, final Function<Vertex, Object> idAccessor) {
+        final GraphTraversalSource sg = source.traversal();
+        final GraphTraversalSource tg = target.traversal();
+        assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
+        assertEquals(IteratorUtils.count(target.edges()), IteratorUtils.count(target.edges()));
+        source.vertices().forEachRemaining(originalVertex -> {
+            Vertex tmpVertex = null;
+            final Iterator<Vertex> vertexIterator = target.vertices();
+            while (vertexIterator.hasNext()) {
+                final Vertex v = vertexIterator.next();
+                if (idAccessor.apply(v).equals(originalVertex.id())) {
+                    tmpVertex = v;
+                    break;
+                }
+            }
+            assertNotNull(tmpVertex);
+            final Vertex clonedVertex = tmpVertex;
+            assertEquals(IteratorUtils.count(originalVertex.edges(Direction.IN)), IteratorUtils.count(clonedVertex.edges(Direction.IN)));
+            assertEquals(IteratorUtils.count(originalVertex.edges(Direction.OUT)), IteratorUtils.count(clonedVertex.edges(Direction.OUT)));
+            assertEquals(originalVertex.label(), clonedVertex.label());
+            originalVertex.properties().forEachRemaining(originalProperty -> {
+                VertexProperty clonedProperty = null;
+                final Iterator<VertexProperty<Object>> vertexPropertyIterator = clonedVertex.properties(originalProperty.key());
+                while (vertexPropertyIterator.hasNext()) {
+                    final VertexProperty p = vertexPropertyIterator.next();
+                    if (p.value().equals(originalProperty.value())) {
+                        clonedProperty = p;
+                        break;
+                    }
+                }
+                assertNotNull(clonedProperty);
+                assertEquals(originalProperty.isPresent(), clonedProperty.isPresent());
+                assertEquals(originalProperty.value(), clonedProperty.value());
+            });
+            originalVertex.edges(Direction.OUT).forEachRemaining(originalEdge -> {
+                GraphTraversal t = tg.V(clonedVertex).outE(originalEdge.label());
+                originalEdge.properties().forEachRemaining(p -> t.has(p.key(), p.value()));
+                assertTrue(t.hasNext());
+            });
+        });
     }
 }
