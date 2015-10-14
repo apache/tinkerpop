@@ -93,6 +93,12 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     }
 
     @Override
+    public GraphComputer config(final String key, final Object value) {
+        this.giraphConfiguration.set(key, value.toString());
+        return this;
+    }
+
+    @Override
     public GraphComputer program(final VertexProgram vertexProgram) {
         super.program(vertexProgram);
         this.memory.addVertexProgramMemoryComputeKeys(this.vertexProgram);
