@@ -34,4 +34,6 @@ These providers include:
 * Graph Driver Provider
 * Graph Language Provider
 
+include::upgrade-release-3.1.x-incubating.asciidoc[]
+
 include::upgrade-release-3.0.x-incubating.asciidoc[]
