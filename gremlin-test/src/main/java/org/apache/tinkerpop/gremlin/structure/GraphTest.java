@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -820,10 +821,121 @@ public class GraphTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldHaveDefaultLabelAndNoPropertiesOnAddVertex() {
+        final Vertex v = graph.addVertex();
+        tryCommit(graph, graph -> {
+            assertEquals(Vertex.DEFAULT_LABEL, v.label());
+            assertEquals(0, IteratorUtils.count(v.properties()));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldSaveLabelOnAddVertex() {
+        final Vertex v = graph.addVertex("theLabel");
+        tryCommit(graph, graph -> {
+            assertEquals("theLabel", v.label());
+            assertEquals(0, IteratorUtils.count(v.properties()));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    public void shouldSaveLabelSpecifiedWithTOnAddVertex() {
+        final Vertex v = graph.addVertex(T.label, "theLabel");
+        tryCommit(graph, graph -> {
+            assertEquals("theLabel", v.label());
+            assertEquals(0, IteratorUtils.count(v.properties()));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES)
+    public void shouldSaveSinglePropertyOnAddVertex() {
+        final Vertex v = graph.addVertex("keyA", "valueA");
+        tryCommit(graph, graph -> {
+            assertEquals(Vertex.DEFAULT_LABEL, v.label());
+            assertEquals(1, IteratorUtils.count(v.properties()));
+            assertTrue(IteratorUtils.stream(v.values("keyA")).allMatch(t -> t.equals("valueA")));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES)
+    public void shouldSaveSeveralPropertiesOnAddVertex() {
+        final Vertex v = graph.addVertex("keyA", "valueA", "keyB", "valueB", "keyC", "valueC");
+        tryCommit(graph, graph -> {
+            assertEquals(Vertex.DEFAULT_LABEL, v.label());
+            assertEquals(3, IteratorUtils.count(v.properties()));
+            assertTrue(IteratorUtils.stream(v.values("keyA")).allMatch(t -> t.equals("valueA")));
+            assertTrue(IteratorUtils.stream(v.values("keyB")).allMatch(t -> t.equals("valueB")));
+            assertTrue(IteratorUtils.stream(v.values("keyC")).allMatch(t -> t.equals("valueC")));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES)
+    public void shouldSaveArrayOfSeveralPropertiesOnAddVertex() {
+        final Vertex v = graph.addVertex(new Object[] { "keyA", "valueA", "keyB", "valueB", "keyC", "valueC" });
+        tryCommit(graph, graph -> {
+            assertEquals(Vertex.DEFAULT_LABEL, v.label());
+            assertEquals(3, IteratorUtils.count(v.properties()));
+            assertTrue(IteratorUtils.stream(v.values("keyA")).allMatch(t -> t.equals("valueA")));
+            assertTrue(IteratorUtils.stream(v.values("keyB")).allMatch(t -> t.equals("valueB")));
+            assertTrue(IteratorUtils.stream(v.values("keyC")).allMatch(t -> t.equals("valueC")));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES)
+    public void shouldAllowLabelAfterSeveralPropertiesOnAddVertex() {
+        final Vertex v = graph.addVertex("keyA", "valueA", "keyB", "valueB", T.label, "theLabel");
+        tryCommit(graph, graph -> {
+            assertEquals("theLabel", v.label());
+            assertEquals(2, IteratorUtils.count(v.properties()));
+            assertTrue(IteratorUtils.stream(v.values("keyA")).allMatch(t -> t.equals("valueA")));
+            assertTrue(IteratorUtils.stream(v.values("keyB")).allMatch(t -> t.equals("valueB")));
+        });
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES)
+    public void shouldRejectOddNumberedArgListOnAddVertex() {
+        try {
+            graph.addVertex("keyA", "valueA", "keyB");
+            fail("IllegalArgumentException expected");
+        } catch (Exception exc) {
+            assertThat(exc, instanceOf(IllegalArgumentException.class));
+            assertThat(exc.toString(), containsString("The provided key/value array length must be a multiple of two"));
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES)
+    public void shouldRejectWrongKeyTypeOnAddVertex() {
+        try {
+            graph.addVertex(123, "valueA");
+            fail("IllegalArgumentException expected");
+        } catch (Exception exc) {
+            assertThat(exc, instanceOf(IllegalArgumentException.class));
+            assertThat(exc.toString(), containsString("The provided key/value array must have a String or T on even array indices"));
+        }
+    }
+
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES, supported = false)
     public void shouldOverwriteEarlierKeyValuesWithLaterKeyValuesOnAddVertexIfNoMultiProperty() {
         final Vertex v = graph.addVertex("test", "A", "test", "B", "test", "C");
         tryCommit(graph, graph -> {
+            assertEquals(Vertex.DEFAULT_LABEL, v.label());
             assertEquals(1, IteratorUtils.count(v.properties("test")));
             assertTrue(IteratorUtils.stream(v.values("test")).anyMatch(t -> t.equals("C")));
         });
@@ -831,10 +943,12 @@ public class GraphTest extends AbstractGremlinTest {
 
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
+    @FeatureRequirement(featureClass = Graph.Features.VertexPropertyFeatures.class, feature = Graph.Features.DataTypeFeatures.FEATURE_STRING_VALUES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_MULTI_PROPERTIES)
-    public void shouldOverwriteEarlierKeyValuesWithLaterKeyValuesOnAddVertexIfMultiProperty() {
+    public void shouldAppendKeyValuesWithLaterKeyValuesOnAddVertexIfMultiProperty() {
         final Vertex v = graph.addVertex("test", "A", "test", "B", "test", "C");
         tryCommit(graph, graph -> {
+            assertEquals(Vertex.DEFAULT_LABEL, v.label());
             assertEquals(3, IteratorUtils.count(v.properties("test")));
             assertTrue(IteratorUtils.stream(v.values("test")).anyMatch(t -> t.equals("A")));
             assertTrue(IteratorUtils.stream(v.values("test")).anyMatch(t -> t.equals("B")));
