@@ -779,6 +779,20 @@ g.V().match(
       select('a','c').by('name')
 ----
 
+In order to improve readability, `as()`-steps can be given meaningful labels which better reflect your domain. The previous query can thus be written in a more expressive way as shown below.
+
+[gremlin-groovy,modern]
+----
+g.V().match(
+        __.as('creators').out('created').has('name', 'lop').as('projects'), <1>
+        __.as('projects').in('created').has('age', 29).as('cocreators')). <2>
+      select('creators','cocreators').by('name') <3>
+----
+
+<1> Find vertices that created something and match them as 'creators', then find out what they created which is named 'lop' and match these vertices as 'projects'.
+<2> Using these 'projects' vertices, find out their creators aged 29 and remember these as 'cocreators'.
+<3> Return the name of both 'creators' and 'cocreators'.
+
 [[grateful-dead]]
 .Grateful Dead
 image::grateful-dead-schema.png[width=475]
