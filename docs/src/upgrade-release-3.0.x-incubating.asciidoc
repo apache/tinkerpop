@@ -35,6 +35,8 @@ location and calls to `close()` will save the graph data to that location.
 * There were a number of fixes to `gremlin-driver` that prevent protocol desynchronization when talking to Gremlin
 Server.
 * The Gremlin Server sub-protocol introduces a new "close" operation to explicitly close sessions.
+* `BulkLoaderVertexProgram` does now support arbitrary inputs (besides the `HadoopGraph`, which was already supported in
+version 3.0.1, `BulkLoaderVertexProgram` can now also read from any TP3 enabled graph, like `TinkerGraph` or `Neo4jGraph`).
 
 Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.0.2-incubating/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
 
