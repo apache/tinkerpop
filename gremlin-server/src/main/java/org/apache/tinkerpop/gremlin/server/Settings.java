@@ -81,6 +81,11 @@ public class Settings {
     public int threadPoolWorker = 1;
 
     /**
+     * detect if the OS is linux, then use epoll instead of NIO which causes less GC
+     */
+    public boolean useEpollEventLoop = false;
+
+    /**
      * Size of the Gremlin thread pool. This pool handles Gremlin script execution and other related "long-run"
      * processing.  This setting should be sufficiently large to ensure that requests processed by the non-blocking
      * worker threads are processed with limited queuing.  Defaults to 8.
