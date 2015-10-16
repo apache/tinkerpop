@@ -38,6 +38,7 @@ and communicating with other members of the community.
 .. Note any important issues open in JIRA in that post.
 .. Request review and update of the "upgrade documentation" and CHANGELOG.
 . At some point during the week:
+.. Deploy a final SNAPSHOT to the snapshot repository.
 .. Review LICENSE and NOTICE files to make sure that no changes are needed.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
