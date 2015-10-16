@@ -38,6 +38,9 @@ other members of the community.
 .. Note any important issues open in JIRA in that post.
 .. Request review and update of the "upgrade documentation" and CHANGELOG.
 . At some point during the week, review LICENSE and NOTICE files to make sure that no changes are needed.
+. When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
+of the docs and thus validate that there are no issues with the documentation generation process. Request review
+of the published documentation on the dev mailing list.
 
 Release Candidate
 ~~~~~~~~~~~~~~~~~
