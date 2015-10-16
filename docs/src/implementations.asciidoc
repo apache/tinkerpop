@@ -714,6 +714,35 @@ graph.close()
 
 IMPORTANT: `LabelP.of()` is only required if multi-labels are leveraged. `LabelP.of()` is used when filtering/looking-up vertices by their label(s) as the standard `P.eq()` does a direct match on the `::`-representation of `vertex.label()`
 
+Loading with BulkLoaderVertexProgram
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The <<bulkloadervertexprogram, BulkLoaderVertexProgram>> is a generalized bulk loader that can be used to load large amounts of data to and from Neo4j. The following code demonstrates how to load the modern graph from TinkerGraph into Neo4j:
+
+[gremlin-groovy]
+----
+wgConf = 'conf/neo4j-standalone.properties'
+modern = TinkerFactory.createModern()
+blvp = BulkLoaderVertexProgram.build().
+           keepOriginalIds(false).
+           writeGraph(wgConf).create(modern)
+modern.compute().workers(1).program(blvp).submit().get()
+graph = GraphFactory.open(wgConf)
+g = graph.traversal()
+g.V().valueMap()
+graph.close()
+----
+
+[source,properties]
+----
+# neo4j-standalone.properties
+
+gremlin.graph=org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph
+gremlin.neo4j.directory=/tmp/neo4j
+gremlin.neo4j.conf.node_auto_indexing=true
+gremlin.neo4j.conf.relationship_auto_indexing=true
+----
+
 [[hadoop-gremlin]]
 Hadoop-Gremlin
 --------------
@@ -944,6 +973,62 @@ image::spark-algorithm.png[width=775]
 
 IMPORTANT: If the provider/user wishes to not use Hadoop `InputFormats`, it is possible to leverage Spark's RDD constructs directly. There is a `gremlin.spark.graphInputRDD` configuration that references a `Class<? extends InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, use `gremlin.spark.graphOutputRDD` and the respective `OutputRDD`.
 
+Loading with BulkLoaderVertexProgram
+++++++++++++++++++++++++++++++++++++
+
+The <<bulkloadervertexprogram, BulkLoaderVertexProgram>> is a generalized bulk loader that can be used to load large amounts of data to and from different `Graph` implementations. The following code demonstrates how to load the Grateful Dead graph from HadoopGraph into TinkerGraph over Spark:
+
+[gremlin-groovy]
+----
+hdfs.copyFromLocal('data/grateful-dead.kryo', 'data/grateful-dead.kryo')
+wgConf = 'conf/tinkergraph-gryo.properties'
+grateful = GraphFactory.open('conf/hadoop/hadoop-grateful-gryo.properties')
+blvp = BulkLoaderVertexProgram.build().
+           keepOriginalIds(false).
+           writeGraph(wgConf).create(grateful)
+grateful.compute(SparkGraphComputer).workers(1).program(blvp).submit().get()
+:set max-iteration 10
+graph = GraphFactory.open(wgConf)
+g = graph.traversal()
+g.V().valueMap()
+graph.close()
+----
+
+[source,properties]
+----
+# hadoop-grateful-gryo.properties
+
+#
+# Hadoop Graph Configuration
+#
+gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
+gremlin.hadoop.graphInputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
+gremlin.hadoop.graphOutputFormat=org.apache.hadoop.mapreduce.lib.output.NullOutputFormat
+gremlin.hadoop.memoryOutputFormat=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
+gremlin.hadoop.inputLocation=data/grateful-dead.kryo
+gremlin.hadoop.outputLocation=output
+gremlin.hadoop.deriveMemory=false
+gremlin.hadoop.jarsInDistributedCache=true
+
+#
+# SparkGraphComputer Configuration
+#
+spark.master=local[1]
+spark.executor.memory=1g
+spark.serializer=org.apache.spark.serializer.KryoSerializer
+----
+
+[source,properties]
+----
+# tinkergraph-gryo.properties
+
+gremlin.graph=org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
+gremlin.tinkergraph.graphFormat=gryo
+gremlin.tinkergraph.graphLocation=/tmp/tinkergraph.kryo
+----
+
+NOTE: The path to TinkerGraph needs to be included in the `HADOOP_GREMLIN_LIBS` for the above example to work.
+
 [[giraphgraphcomputer]]
 GiraphGraphComputer
 ^^^^^^^^^^^^^^^^^^^
@@ -996,6 +1081,68 @@ result.memory.get('~reducing')
 ----
 
 NOTE: If the user explicitly specifies `giraph.maxWorkers` and/or `giraph.numComputeThreads` in the configuration, then these values will be used by Giraph. However, if these are not specified and the user never calls `GraphComputer.workers()` then `GiraphGraphComputer` will try to compute the number of workers/threads to use based on the cluster's profile.
+
+Loading with BulkLoaderVertexProgram
+++++++++++++++++++++++++++++++++++++
+
+The <<bulkloadervertexprogram, BulkLoaderVertexProgram>> is a generalized bulk loader that can be used to load large amounts of data to and from different `Graph` implementations. The following code demonstrates how to load the Grateful Dead graph from HadoopGraph into TinkerGraph over Giraph:
+
+[gremlin-groovy]
+----
+hdfs.copyFromLocal('data/grateful-dead.kryo', 'data/grateful-dead.kryo')
+wgConf = 'conf/tinkergraph-gryo.properties'
+grateful = GraphFactory.open('conf/hadoop/hadoop-grateful-gryo.properties')
+blvp = BulkLoaderVertexProgram.build().
+           keepOriginalIds(false).
+           writeGraph(wgConf).create(grateful)
+grateful.compute(GiraphGraphComputer).workers(1).program(blvp).submit().get()
+:set max-iteration 10
+graph = GraphFactory.open(wgConf)
+g = graph.traversal()
+g.V().valueMap()
+graph.close()
+----
+
+[source,properties]
+----
+# hadoop-grateful-gryo.properties
+
+#
+# Hadoop Graph Configuration
+#
+gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
+gremlin.hadoop.graphInputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
+gremlin.hadoop.graphOutputFormat=org.apache.hadoop.mapreduce.lib.output.NullOutputFormat
+gremlin.hadoop.memoryOutputFormat=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
+gremlin.hadoop.inputLocation=data/grateful-dead.kryo
+gremlin.hadoop.outputLocation=output
+gremlin.hadoop.deriveMemory=false
+gremlin.hadoop.jarsInDistributedCache=true
+
+#
+# GiraphGraphComputer Configuration
+#
+giraph.minWorkers=1
+giraph.maxWorkers=1
+giraph.useOutOfCoreGraph=true
+giraph.useOutOfCoreMessages=true
+mapred.map.child.java.opts=-Xmx1024m
+mapred.reduce.child.java.opts=-Xmx1024m
+giraph.numInputThreads=4
+giraph.numComputeThreads=4
+giraph.maxMessagesInMemory=100000
+----
+
+[source,properties]
+----
+# tinkergraph-gryo.properties
+
+gremlin.graph=org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph
+gremlin.tinkergraph.graphFormat=gryo
+gremlin.tinkergraph.graphLocation=/tmp/tinkergraph.kryo
+----
+
+NOTE: The path to TinkerGraph needs to be included in the `HADOOP_GREMLIN_LIBS` for the above example to work.
 
 Input/Output Formats
 ~~~~~~~~~~~~~~~~~~~~
