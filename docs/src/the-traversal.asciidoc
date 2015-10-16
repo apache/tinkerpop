@@ -761,6 +761,20 @@ g.V().match(
       select('a','c').by('name')
 ----
 
+In order to improve readability, `as()`-steps can be given meaningful labels which better reflect your domain. The previous query can thus be written in a more expressive way as shown below.
+
+[gremlin-groovy,modern]
+----
+g.V().match(
+        __.as('creators').out('created').has('name', 'lop').as('projects'), <1>
+        __.as('projects').in('created').has('age', 29).as('cocreators')). <2>
+      select('creators','cocreators').by('name') <3>
+----
+
+<1> Find vertices that created something and match them as 'creators', then find out what they created which is named 'lop' and match these vertices as 'projects'.
+<2> Using these 'projects' vertices, find out their creators aged 29 and remember these as 'cocreators'.
+<3> Return the name of both 'creators' and 'cocreators'.
+
 [[grateful-dead]]
 .Grateful Dead
 image::grateful-dead-schema.png[width=475]
@@ -1687,7 +1701,7 @@ g.V().where(__.not(out('created')).and().in('knows')).values('name') <6>
 <5> What are the names of the people who have not created anything, but are known by someone?
 <6> The concatenation of `where()`-steps is the same as a single `where()`-step with an and'd clause.
 
-WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges.
+WARNING: The anonymous traversal of `where()` processes the current object "locally". In OLAP, where the atomic unit of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or edges. Note that is only a temporary limitation that will be addressed in a future version of TinkerPop3 (see link:https://issues.apache.org/jira/browse/TINKERPOP3-693[JIRA#693]).
 
 [[a-note-on-predicates]]
 A Note on Predicates
