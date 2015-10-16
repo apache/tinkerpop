@@ -53,6 +53,12 @@ class InstallCommand extends CommandSupport {
             final def pluginsThatNeedRestart = grabDeps(dep)
             return "Loaded: " + arguments + (pluginsThatNeedRestart.size() == 0 ? "" : " - restart the console to use $pluginsThatNeedRestart")
         } catch (Exception ex) {
+            if (!(ex instanceof IllegalStateException)) {
+                // IllegalStateException is thrown if a module with the same name is already installed.
+                final def uninstall = new UninstallCommand(shell, mediator)
+                final List<String> module = Collections.singletonList(artifact.getArtifact())
+                uninstall.execute(module)
+            }
             return ex.message
         }
     }

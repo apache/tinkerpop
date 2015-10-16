@@ -32,11 +32,15 @@ public class GremlinServerInstall {
         if (arguments.length != 3) {
             System.out.println("Usage: <group> <artifact> <version>");
         } else {
+            final Artifact artifact = new Artifact(arguments[0], arguments[1], arguments[2]);
+            final DependencyGrabber grabber = new DependencyGrabber(dummyClassLoader, getExtensionPath());
             try {
-                final Artifact artifact = new Artifact(arguments[0], arguments[1], arguments[2]);
-                final DependencyGrabber grabber = new DependencyGrabber(dummyClassLoader, getExtensionPath());
                 grabber.copyDependenciesToPath(artifact);
             } catch (Exception iae) {
+                if (!(iae instanceof IllegalStateException)) {
+                    // IllegalStateException is thrown if a module with the same name is already installed.
+                    grabber.deleteDependenciesFromPath(artifact);
+                }
                 System.out.println(String.format("Could not install the dependency: %s", iae.getMessage()));
                 iae.printStackTrace();
             }

@@ -47,6 +47,19 @@ class DependencyGrabber {
         this.extensionDirectory = extensionDirectory
     }
 
+    def String deleteDependenciesFromPath(final Artifact artifact) {
+        final def dep = makeDepsMap(artifact)
+        final String extClassPath = getPathFromDependency(dep)
+        final File f = new File(extClassPath)
+        if (!f.exists()) {
+            return "There is no module with the name ${dep.module} to remove - $extClassPath"
+        }
+        else {
+            f.deleteDir()
+            return "Uninstalled ${dep.module}"
+        }
+    }
+
     def Set<String> copyDependenciesToPath(final Artifact artifact) {
         final def dep = makeDepsMap(artifact)
         final String extClassPath = getPathFromDependency(dep)
