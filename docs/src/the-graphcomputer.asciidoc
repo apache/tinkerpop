@@ -260,7 +260,7 @@ modern = TinkerFactory.createModern()
 blvp = BulkLoaderVertexProgram.build().
            keepOriginalIds(false).
            writeGraph(wgConf).create(modern)
-modern.compute().program(blvp).submit().get()
+modern.compute().workers(1).program(blvp).submit().get()
 graph = GraphFactory.open(wgConf)
 g = graph.traversal()
 g.V().valueMap()
@@ -287,7 +287,7 @@ grateful = GraphFactory.open('conf/hadoop/hadoop-grateful-gryo.properties')
 blvp = BulkLoaderVertexProgram.build().
            keepOriginalIds(false).
            writeGraph(wgConf).create(grateful)
-grateful.compute(SparkGraphComputer).program(blvp).submit().get()
+grateful.compute(SparkGraphComputer).workers(1).program(blvp).submit().get()
 :set max-iteration 10
 graph = GraphFactory.open(wgConf)
 g = graph.traversal()
@@ -305,7 +305,7 @@ grateful = GraphFactory.open('conf/hadoop/hadoop-grateful-gryo.properties')
 blvp = BulkLoaderVertexProgram.build().
            keepOriginalIds(false).
            writeGraph(wgConf).create(grateful)
-grateful.compute(GiraphGraphComputer).program(blvp).submit().get()
+grateful.compute(GiraphGraphComputer).workers(1).program(blvp).submit().get()
 :set max-iteration 10
 graph = GraphFactory.open(wgConf)
 g = graph.traversal()
