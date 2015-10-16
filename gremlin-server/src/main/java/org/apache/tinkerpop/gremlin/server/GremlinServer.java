@@ -20,11 +20,7 @@ package org.apache.tinkerpop.gremlin.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -43,11 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * Start and stop Gremlin Server.
@@ -165,9 +157,9 @@ public class GremlinServer {
             b.group(bossGroup, workerGroup)
                     .childHandler(channelizer);
             if(isLinuxOS){
-                b.channel(NioServerSocketChannel.class);
-            } else{
                 b.channel(EpollServerSocketChannel.class);
+            } else{
+                b.channel(NioServerSocketChannel.class);
             }
 
             // bind to host/port and wait for channel to be ready
