@@ -25,7 +25,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.0.2 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Cleaned up `ext` directory when plugin installation fails for `gremlin-server` and `gremlin-console`.
+* Cleaned up `ext/` directory when plugin installation fails for `gremlin-server` and `gremlin-console`.
 * Fixed issues in `gremlin-server` when configured for HTTP basic authentication.
 * Made `BulkLoaderVertexProgram` work for any persistent TP3-supporting graph (input and output).
 * `TreeSideEffectStep` now implements `PathProcessor` which fixed a `ComputerVerificationStrategy` issue.
