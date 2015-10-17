@@ -24,8 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import java.util.function.UnaryOperator;
 
 /**
+ * @deprecated As of release 3.1.0, use {@code as UnaryOperator} in Groovy.
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Deprecated
 public final class GUnaryOperator<A> implements UnaryOperator<A>, LambdaHolder {
 
     private final Closure closure;

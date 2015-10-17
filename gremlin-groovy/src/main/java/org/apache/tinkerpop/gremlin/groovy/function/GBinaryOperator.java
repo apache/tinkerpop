@@ -25,8 +25,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import java.util.function.BinaryOperator;
 
 /**
+ * @deprecated  As of release 3.1.0, use {@code as BinaryOperator} in Groovy.
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Deprecated
 public final class GBinaryOperator<A> implements BinaryOperator<A>, LambdaHolder {
 
     private final Closure closure;
