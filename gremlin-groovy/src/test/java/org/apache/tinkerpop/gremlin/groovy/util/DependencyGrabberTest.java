@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -49,7 +50,7 @@ public class DependencyGrabberTest {
     }
 
     @Test
-    public void shouldInstallAndUninstallDependencies() {
+    @Ignore public void shouldInstallAndUninstallDependencies() {
         final String pkg = "org.apache.tinkerpop";
         final String name = "gremlin-groovy";
         final String ver = Gremlin.version();
@@ -66,7 +67,7 @@ public class DependencyGrabberTest {
     }
 
     @Test(expected=IllegalStateException.class)
-    public void shouldThrowIllegalStateException() {
+    @Ignore public void shouldThrowIllegalStateException() {
         final String pkg = "org.apache.tinkerpop";
         final String name = "gremlin-groovy";
         final String ver = Gremlin.version();
