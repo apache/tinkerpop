@@ -22,10 +22,7 @@ import groovy.lang.GroovyClassLoader;
 import java.io.File;
 import org.apache.commons.io.FileUtils;
 import org.apache.tinkerpop.gremlin.groovy.plugin.Artifact;
-import org.apache.tinkerpop.gremlin.util.Gremlin;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -36,24 +33,18 @@ import static org.junit.Assert.assertTrue;
 public class DependencyGrabberTest {
     private static final GroovyClassLoader dummyClassLoader = new GroovyClassLoader();
     private static final File extTestDir = new File(System.getProperty("user.dir"), "/target/test-dep-ext");
-    DependencyGrabber dg = null;
+    private static final DependencyGrabber dg = new DependencyGrabber(dummyClassLoader, extTestDir.getAbsolutePath());
 
-    @Before
-    public void setUp() {
-        FileUtils.deleteQuietly(extTestDir);
-        dg = new DependencyGrabber(dummyClassLoader, extTestDir.getAbsolutePath());
-    }
-
-    @After
-    public void tearDown() {
+    @AfterClass
+    public static void tearDown() {
         FileUtils.deleteQuietly(extTestDir);
     }
 
     @Test
-    @Ignore public void shouldInstallAndUninstallDependencies() {
+    public void should0_InstallAndUninstallDependencies() {
         final String pkg = "org.apache.tinkerpop";
-        final String name = "gremlin-groovy";
-        final String ver = Gremlin.version();
+        final String name = "tinkergraph-gremlin";
+        final String ver = "3.0.1-incubating";
         final Artifact a = new Artifact(pkg, name, ver);
 
         // install the plugin
@@ -67,15 +58,15 @@ public class DependencyGrabberTest {
     }
 
     @Test(expected=IllegalStateException.class)
-    @Ignore public void shouldThrowIllegalStateException() {
+    public void should1_ThrowIllegalStateException() {
         final String pkg = "org.apache.tinkerpop";
         final String name = "gremlin-groovy";
-        final String ver = Gremlin.version();
+        final String ver = "3.0.1-incubating";
         final Artifact a = new Artifact(pkg, name, ver);
 
         // install the plugin for the first time
-        dg.copyDependenciesToPath(a);
         final File pluginDir = new File(extTestDir, name);
+        dg.copyDependenciesToPath(a);
         assertTrue(pluginDir.exists());
 
         // attempt to install plugin a second time
@@ -86,6 +77,25 @@ public class DependencyGrabberTest {
             assertTrue(pluginDir.exists());
             // throw the IllegalStateException
             throw ise;
+        }
+    }
+
+    @Test(expected=RuntimeException.class)
+    public void should2_ThrowRuntimeException() {
+        final String pkg = "org.apache.tinkerpop";
+        final String name = "gremlin-bogus";
+        final String ver = "3.0.1-incubating";
+        final Artifact a = new Artifact(pkg, name, ver);
+
+        // attempt to install bogus plugin
+        try {
+            dg.copyDependenciesToPath(a);
+        } catch (RuntimeException re) {
+            // validate that the plugin dir was deleted
+            final File pluginDir = new File(extTestDir, name);
+            assertFalse(pluginDir.exists());
+            // throw the RuntimeException
+            throw re;
         }
     }
 }
