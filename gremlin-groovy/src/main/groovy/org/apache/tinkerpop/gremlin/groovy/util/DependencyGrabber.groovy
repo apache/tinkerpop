@@ -47,6 +47,19 @@ class DependencyGrabber {
         this.extensionDirectory = extensionDirectory
     }
 
+    def String deleteDependenciesFromPath(final Artifact artifact) {
+        final def dep = makeDepsMap(artifact)
+        final String extClassPath = getPathFromDependency(dep)
+        final File f = new File(extClassPath)
+        if (!f.exists()) {
+            return "There is no module with the name ${dep.module} to remove - ${extClassPath}"
+        }
+        else {
+            f.deleteDir()
+            return "Uninstalled ${dep.module}"
+        }
+    }
+
     def Set<String> copyDependenciesToPath(final Artifact artifact) {
         final def dep = makeDepsMap(artifact)
         final String extClassPath = getPathFromDependency(dep)
@@ -55,9 +68,16 @@ class DependencyGrabber {
         final File f = new File(extClassPath)
 
         if (f.exists()) throw new IllegalStateException("a module with the name ${dep.module} is already installed")
-        if (!f.mkdirs()) throw new IOException("could not create directory at ${f}")
-        if (!new File(extLibPath).mkdirs()) throw new IOException("could not create directory at ${extLibPath}")
-        if (!new File(extPluginPath).mkdirs()) throw new IOException("could not create directory at ${extPluginPath}")
+
+        try {
+            if (!f.mkdirs()) throw new IOException("could not create directory at ${f}")
+            if (!new File(extLibPath).mkdirs()) throw new IOException("could not create directory at ${extLibPath}")
+            if (!new File(extPluginPath).mkdirs()) throw new IOException("could not create directory at ${extPluginPath}")
+        } catch (IOException ioe) {
+            // installation failed. make sure to cleanup directories.
+            deleteDependenciesFromPath(artifact)
+            throw ioe
+        }
 
         new File(extClassPath + fileSep + "plugin-info.txt").withWriter { out -> out << [artifact.group, artifact.artifact, artifact.version].join(":") }
 
@@ -82,28 +102,35 @@ class DependencyGrabber {
                     "structure can lead to unexpected behavior.")
         }
 
-        final def dependencyLocations = [] as Set<URI>
-        dependencyLocations.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, dep))
+        try {
+            final def dependencyLocations = [] as Set<URI>
+            dependencyLocations.addAll(Grape.resolve([classLoader: this.classLoaderToUse], null, dep))
 
-        // for the "plugin" path ignore slf4j related jars.  they are already in the path and will create duplicate
-        // bindings which generate annoying log messages that make you think stuff is wrong.  also, don't bring
-        // over files that are already on the path. these dependencies will be part of the classpath
-        //
-        // additional dependencies are outside those pulled by grape and are defined in the manifest of the plugin jar.
-        // if a plugin uses that setting, it should force "restart" when the plugin is activated.  right now,
-        // it is up to the plugin developer to enforce that setting.
-        dependencyLocations.collect(convertUriToPath(fs))
+            // for the "plugin" path ignore slf4j related jars.  they are already in the path and will create duplicate
+            // bindings which generate annoying log messages that make you think stuff is wrong.  also, don't bring
+            // over files that are already on the path. these dependencies will be part of the classpath
+            //
+            // additional dependencies are outside those pulled by grape and are defined in the manifest of the plugin jar.
+            // if a plugin uses that setting, it should force "restart" when the plugin is activated.  right now,
+            // it is up to the plugin developer to enforce that setting.
+            dependencyLocations.collect(convertUriToPath(fs))
+                    .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
+                    .findAll {!filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
+                    .each(copyTo(targetPluginPath))
+            getAdditionalDependencies(targetPluginPath, artifact).collect(convertUriToPath(fs))
                 .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
-                .findAll {!filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
+                .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
                 .each(copyTo(targetPluginPath))
-        getAdditionalDependencies(targetPluginPath, artifact).collect(convertUriToPath(fs))
-            .findAll { !(it.fileName.toFile().name ==~ /(slf4j|logback\-classic)-.*\.jar/) }
-            .findAll { !filesAlreadyInPath.collect { it.getFileName().toString() }.contains(it.fileName.toFile().name)}
-            .each(copyTo(targetPluginPath))
 
-        // get dependencies for the lib path.  the lib path should not filter out any jars - used for reference
-        dependencyLocations.collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
-        getAdditionalDependencies(targetLibPath, artifact).collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
+            // get dependencies for the lib path.  the lib path should not filter out any jars - used for reference
+            dependencyLocations.collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
+            getAdditionalDependencies(targetLibPath, artifact).collect(convertUriToPath(fs)).each(copyTo(targetLibPath))
+        }
+        catch (Exception e) {
+            // installation failed. make sure to cleanup directories.
+            deleteDependenciesFromPath(artifact)
+            throw e
+        }
 
         // the ordering of jars seems to matter in some cases (e.g. neo4j).  the plugin system allows the plugin
         // to place a Gremlin-Plugin-Paths entry in the jar manifest file to define where specific jar files should
