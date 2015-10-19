@@ -24,8 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import java.util.function.Function;
 
 /**
+ * @deprecated As of release 3.1.0, use {@code as Function} in Groovy.
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Deprecated
 public final class GFunction<A, B> implements Function<A, B>, LambdaHolder {
 
     private final Closure closure;

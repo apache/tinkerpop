@@ -18,10 +18,14 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.loaders
 
-import org.apache.tinkerpop.gremlin.groovy.function.*
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
 import org.apache.tinkerpop.gremlin.util.function.ConstantSupplier
+
+import java.util.function.BinaryOperator
+import java.util.function.Function
+import java.util.function.Supplier
+import java.util.function.UnaryOperator
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -31,45 +35,45 @@ class StepLoader {
     public static void load() {
 
         GraphTraversal.metaClass.by = { final Closure closure ->
-            return ((GraphTraversal) delegate).by(1 == closure.getMaximumNumberOfParameters() ? new GFunction(closure) : new GComparator(closure));
+            return ((GraphTraversal) delegate).by(1 == closure.getMaximumNumberOfParameters() ? closure as Function : closure as Comparator);
         }
 
         GraphTraversalSource.metaClass.withSideEffect = { final String key, final Object object ->
-            return ((GraphTraversalSource) delegate).withSideEffect(key, object instanceof Closure ? new GSupplier((Closure) object) : new ConstantSupplier<>(object));
+            return ((GraphTraversalSource) delegate).withSideEffect(key, object instanceof Closure ? ((Closure) object) as Supplier : new ConstantSupplier<>(object));
         }
 
         GraphTraversalSource.metaClass.withSack = { final Closure closure ->
-            return ((GraphTraversalSource) delegate).withSack(new GSupplier(closure));
+            return ((GraphTraversalSource) delegate).withSack(closure as Supplier);
         }
 
         GraphTraversalSource.metaClass.withSack = { final Closure closure, final Closure splitOrMergeOperator ->
-            return ((GraphTraversalSource) delegate).withSack(new GSupplier(closure), splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? new GUnaryOperator(splitOrMergeOperator) : new GBinaryOperator(splitOrMergeOperator));
+            return ((GraphTraversalSource) delegate).withSack(closure as Supplier, splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? splitOrMergeOperator as UnaryOperator : splitOrMergeOperator as BinaryOperator);
         }
 
         GraphTraversalSource.metaClass.withSack = {
             final Closure closure, final Closure splitOperator, final Closure mergeOperator ->
-                return ((GraphTraversalSource) delegate).withSack(new GSupplier(closure), new GUnaryOperator(splitOperator), new GBinaryOperator(mergeOperator));
+                return ((GraphTraversalSource) delegate).withSack(closure as Supplier, splitOperator as UnaryOperator, mergeOperator as BinaryOperator);
         }
 
         ///////////////////
 
         GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSideEffect = {
             final String key, final Object object ->
-                return (((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSideEffect(key, object instanceof Closure ? new GSupplier((Closure) object) : new ConstantSupplier<>(object)));
+                return (((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSideEffect(key, object instanceof Closure ? ((Closure) object) as Supplier : new ConstantSupplier<>(object)));
         }
 
         GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSack = { final Closure closure ->
-            return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(new GSupplier(closure));
+            return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(closure as Supplier);
         }
 
         GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSack = {
             final Closure closure, final Closure splitOrMergeOperator ->
-                return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(new GSupplier(closure), splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? new GUnaryOperator(splitOrMergeOperator) : new GBinaryOperator(splitOrMergeOperator));
+                return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(closure as Supplier, splitOrMergeOperator.getMaximumNumberOfParameters() == 1 ? splitOrMergeOperator as UnaryOperator : splitOrMergeOperator as BinaryOperator);
         }
 
         GraphTraversalSource.GraphTraversalSourceStub.metaClass.withSack = {
             final Closure closure, final Closure splitOperator, Closure mergeOperator ->
-                return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(new GSupplier(closure), new GUnaryOperator(splitOperator), new GBinaryOperator(mergeOperator));
+                return ((GraphTraversalSource.GraphTraversalSourceStub) delegate).withSack(closure as Supplier, splitOperator as UnaryOperator, mergeOperator as BinaryOperator);
         }
     }
 }
