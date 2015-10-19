@@ -31,9 +31,9 @@ fi
 
 if [ -z ${URL} ]; then
 
-  CONSOLE_URL="https://www.apache.org/dist/incubator/tinkerpop/${VERSION}/apache-gremlin-console-${VERSION}-bin.zip"
-  SERVER_URL="https://www.apache.org/dist/incubator/tinkerpop/${VERSION}/apache-gremlin-server-${VERSION}-bin.zip"
-  SOURCE_URL="https://www.apache.org/dist/incubator/tinkerpop/${VERSION}/apache-tinkerpop-${VERSION}-src.zip"
+  CONSOLE_URL="https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/${VERSION}/apache-gremlin-console-${VERSION}-bin.zip"
+  SERVER_URL="https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/${VERSION}/apache-gremlin-server-${VERSION}-bin.zip"
+  SOURCE_URL="https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/${VERSION}/apache-tinkerpop-${VERSION}-src.zip"
 
   echo -e "\nValidating binary distributions\n"
 
