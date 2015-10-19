@@ -27,15 +27,19 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
+import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -53,6 +57,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected TraversalStrategies strategies;
     protected TraversalEngine traversalEngine = StandardTraversalEngine.instance(); // necessary for strategies that need the engine in OLAP message passing (not so bueno)
     protected boolean locked = false;
+    protected Set<TraverserRequirement> traverserRequirements = new HashSet<>();
 
     public DefaultTraversal() {
         this.graph = null;
@@ -104,6 +109,28 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public void setEngine(final TraversalEngine engine) {
         this.traversalEngine = engine;
+    }
+
+    @Override
+    public Set<TraverserRequirement> getTraverserRequirements() {
+        final Set<TraverserRequirement> requirements = this.getSteps().stream()
+                .flatMap(step -> ((Step<?, ?>) step).getRequirements().stream())
+                .collect(Collectors.toSet());
+        requirements.addAll(this.traverserRequirements);
+        if (this.getSideEffects().keys().size() > 0)
+            requirements.add(TraverserRequirement.SIDE_EFFECTS);
+        if (null != this.getSideEffects().getSackInitialValue())
+            requirements.add(TraverserRequirement.SACK);
+        if (this.getEngine().isComputer())
+            requirements.add(TraverserRequirement.BULK);
+        if (requirements.contains(TraverserRequirement.ONE_BULK))
+            requirements.remove(TraverserRequirement.BULK);
+        return requirements;
+    }
+
+    @Override
+    public void addTraverserRequirement(final TraverserRequirement traverserRequirement) {
+        this.traverserRequirements.add(traverserRequirement);
     }
 
     @Override
