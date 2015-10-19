@@ -149,6 +149,7 @@ Two binary distributions are provided for user convenience:
 
 The online docs can be found here:
 	http://tinkerpop.incubator.apache.org/docs/x.y.z/ (user docs)
+	http://tinkerpop.incubator.apache.org/docs/x.y.z/upgrade.html (upgrade docs)
 	http://tinkerpop.incubator.apache.org/javadocs/x.y.z/core/ (core javadoc)
 	http://tinkerpop.incubator.apache.org/javadocs/x.y.z/full/ (full javadoc)
 
