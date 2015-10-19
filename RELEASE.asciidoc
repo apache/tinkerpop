@@ -97,7 +97,7 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/x.y.z/gremlin-console-x.y.z-distribution.zip* dev/x.y.z`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/x.y.z/gremlin-server-x.y.z-distribution.zip* dev/x.y.z`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/x.y.z/tinkerpop-x.y.z-source-release.zip* dev/x.y.z`
-.. `cd dev/x.y.z` and `for f in *.zip*; do  mv "$f" "apache-$f"; done`
+.. `cd dev/x.y.z` and `for f in \*.zip*; do  mv "$f" "apache-$f"; done`
 .. `cd ..; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
 . Perform JIRA administration tasks:
 .. "Release" the current version and set the "release date"
