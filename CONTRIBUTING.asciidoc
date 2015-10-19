@@ -221,7 +221,7 @@ committer wanting to put code into a release branch.
 ** Please see the Apache Software Foundations regulations regarding link:http://www.apache.org/foundation/voting.html#votes-on-code-modification[Voting on Code Modifications].
 * Votes are issued by TinkerPop committers as comments to the pull request.
 * Once 3 +1 votes are received, you are responsible for merging to the release branch and handling any merge conflicts.
-** If there is a higher version release branch that requires your fix (e.g. `3.0.z` fix going to a `3.y.z` release), be sure to merge to that release branch as well.
+** If there is a higher version release branch that requires your fix (e.g. `3.y-1.z` fix going to a `3.y.z` release), be sure to merge to that release branch as well.
 * Be conscious of deleting your branch if it is no longer going to be used so stale branches don't pollute the repository.
 
 NOTE: These steps also generally apply to external pull requests from those who are not official Apache committers. In
@@ -238,3 +238,21 @@ require a review.
 * You are doing an minor change and it is obvious that an RTC is not required (would be a pointless burden to the community).
 ** The fix is under the link:http://www.apache.org/foundation/glossary.html#CommitThenReview[commit-then-review] (CTR) policy and lazy consensus is sufficient, where a single -1 vote requires you to revert your changes.
 ** Adding a test case, fixing spelling/grammar mistakes in the documentation, fixing LICENSE/NOTICE/etc. files, fixing a minor issue in an already merged branch.
+
+Pull Request Format
+^^^^^^^^^^^^^^^^^^^
+
+When you submit a pull request, be sure it uses the following style.
+
+* The title of the pull request is the JIRA ticket number + "colon" + the title of the JIRA ticket.
+* The first line of the pull request message should contain a link to the JIRA ticket.
+* Discuss what you did to solve the problem articulated in the JIRA ticket.
+* Discuss any "extra" work done that go beyond the assumed requirements of the JIRA ticket.
+* Be sure to explain what you did to prove that the issue is resolved.
+** Test cases written.
+** Integration tests run (if required for the work accomplished).
+** Documentation building (if required for the work accomplished).
+** Any manual testing (though this should be embodied in a test case).
+* Notes about what you will do when you merge to the respective release branch (e.g. update CHANGELOG).
+** These types of "on merge tweaks" are typically done to extremely dynamic files to combat and merge conflicts.
+* If you are a TinkerPop committer, you can VOTE on your own pull request, so please do so.
