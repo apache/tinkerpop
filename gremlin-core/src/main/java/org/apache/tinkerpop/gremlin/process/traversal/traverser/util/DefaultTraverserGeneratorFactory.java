@@ -55,11 +55,11 @@ public class DefaultTraverserGeneratorFactory implements TraverserGeneratorFacto
             if (O_OB_S_SE_SL_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
                 return O_OB_S_SE_SL_TraverserGenerator.instance();
 
-            if (LP_O_OB_P_S_SE_SL_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
-                return LP_O_OB_P_S_SE_SL_TraverserGenerator.instance();
-
             if (LP_O_OB_S_SE_SL_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
                 return LP_O_OB_S_SE_SL_TraverserGenerator.instance();
+
+            if (LP_O_OB_P_S_SE_SL_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
+                return LP_O_OB_P_S_SE_SL_TraverserGenerator.instance();
         } else {
             if (O_TraverserGenerator.instance().getProvidedRequirements().containsAll(requirements))
                 return O_TraverserGenerator.instance();
