@@ -63,6 +63,8 @@ Gremlin Process
 Graph Traversal Updates
 +++++++++++++++++++++++
 
+* `ConjunctionStrategy` has been renamed to `ConnectiveStrategy` (no other behaviors changed).
+* `ConjunctionP` has been renamed to `ConnectiveP` (no other behaviors changed).
 * `DedupBijectionStrategy` has been renamed (and made more effective) as `FilterRankingStrategy`.
 * The `GraphTraversal` mutation API has change significantly with all previous methods being supported but deprecated.
 ** The general pattern used now is `addE('knows').from(select('a')).to(select('b')).property('weight',1.0)`.
