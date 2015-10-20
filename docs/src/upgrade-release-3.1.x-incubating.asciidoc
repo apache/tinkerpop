@@ -55,6 +55,15 @@ to closing where a user must now explicitly call `commit()` to persist their mut
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-805[TINKERPOP3-805] for more information.
 
+Transaction.onReadWrite() and Transaction.onClose() are now `ThreadLocal` settings
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The `Transaction.onReadWrite()` and `Transaction.onClose()` settings now need to be set for each thread (if another behavior than the default is desired).
+For gremlin-server users that may be changing these settings via scripts :
+If the settings are changed from a sessionless request they will now only apply to that one request.
+If the settings are changed from an in-session request they will now only apply to all future requests made in the scope of that session. 
+
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -73,3 +82,13 @@ previously asserted the opposite (i.e. commit on close).  These tests have been 
 If these tests were referenced in an `OptOut`, then their names should be updated.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-805[TINKERPOP3-805] for more information.
+
+Driver Implementers
+^^^^^^^^^^^^^^^^^^^
+
+Transaction.onReadWrite() and Transaction.onClose() are now `ThreadLocal` settings
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+If your driver configures the `Transaction.onReadWrite()` or `Transaction.onClose()` settings, note that these no longer apply to all future requests. 
+If the settings are changed from a sessionless request they will only apply to that one request.
+If the settings are changed from an in-session request they will only apply to all future requests made in the scope of that session. 

@@ -21,8 +21,6 @@ package org.apache.tinkerpop.gremlin.structure.util;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -37,18 +35,23 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractTransaction implements Transaction {
-    protected Consumer<Transaction> readWriteConsumer;
-    protected Consumer<Transaction> closeConsumer;
-
+    protected static final ThreadLocal<Consumer<Transaction>> readWriteConsumer = 
+        new ThreadLocal<Consumer<Transaction>>() {
+            @Override protected Consumer<Transaction> initialValue() {
+                return READ_WRITE_BEHAVIOR.AUTO;
+            }
+        };
+    
+    protected static final ThreadLocal<Consumer<Transaction>> closeConsumer = 
+        new ThreadLocal<Consumer<Transaction>>() {
+            @Override protected Consumer<Transaction> initialValue() {
+                return CLOSE_BEHAVIOR.ROLLBACK;
+            }
+        };
+    
     private Graph g;
 
     public AbstractTransaction(final Graph g) {
-        // auto transaction behavior
-        readWriteConsumer = READ_WRITE_BEHAVIOR.AUTO;
-
-        // default is to rollback transactions on close
-        closeConsumer = CLOSE_BEHAVIOR.ROLLBACK;
-
         this.g = g;
     }
 
@@ -100,7 +103,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void commit() {
-        readWriteConsumer.accept(this);
+        readWriteConsumer.get().accept(this);
         try {
             doCommit();
             fireOnCommit();
@@ -114,7 +117,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void rollback() {
-        readWriteConsumer.accept(this);
+        readWriteConsumer.get().accept(this);
         try {
             doRollback();
             fireOnRollback();
@@ -143,7 +146,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void readWrite() {
-        readWriteConsumer.accept(this);
+        readWriteConsumer.get().accept(this);
     }
 
     /**
@@ -151,7 +154,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void close() {
-        closeConsumer.accept(this);
+        closeConsumer.get().accept(this);
     }
 
     /**
@@ -159,7 +162,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public synchronized Transaction onReadWrite(final Consumer<Transaction> consumer) {
-        readWriteConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull);
+        readWriteConsumer.set(Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull));
         return this;
     }
 
@@ -168,7 +171,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public synchronized Transaction onClose(final Consumer<Transaction> consumer) {
-        closeConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onCloseBehaviorCannotBeNull);
+        closeConsumer.set(Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onCloseBehaviorCannotBeNull));
         return this;
     }
 
