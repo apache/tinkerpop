@@ -142,7 +142,7 @@ done
 echo -n "* validating ${COMPONENT}'s plugin directory ... "
 [ -d "ext" ] || { echo "ext/ directory is not present"; exit 1; }
 if [ "${TYPE}" = "CONSOLE" ] || [[ `tr -d '.' <<< ${VERSION} | sed -e 's/-.*//'` -gt 301 ]]; then
-  [ -d "ext/gremlin-groovy" ] && [ -d "ext/tinkergraph-gremlin" ] && [ -s "ext/plugins.txt" ] || { echo "ext/ directory is not present or incomplete"; exit 1; }
+  [ -d "ext/gremlin-groovy" ] && [ -d "ext/tinkergraph-gremlin" ] && ([ "${TYPE}" = "SERVER" ] || [ -s "ext/plugins.txt" ]) || { echo "ext/ directory is not present or incomplete"; exit 1; }
 fi
 echo "OK"
 
