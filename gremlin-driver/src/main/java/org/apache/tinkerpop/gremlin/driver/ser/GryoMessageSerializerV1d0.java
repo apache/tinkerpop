@@ -225,7 +225,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
         ByteBuf encodedMessage = null;
         try {
             final Kryo kryo = kryoThreadLocal.get();
-            try (final OutputStream baos = new ByteArrayOutputStream()) {
+            try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 final Output output = new Output(baos, bufferSize);
 
                 // request id - if present
@@ -244,9 +244,9 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                 if (size > Integer.MAX_VALUE)
                     throw new SerializationException(String.format("Message size of %s exceeds allocatable space", size));
 
+                output.flush();
                 encodedMessage = allocator.buffer((int) size);
-                if (size > bufferSize) output.flush();
-                encodedMessage.writeBytes(output.toBytes());
+                encodedMessage.writeBytes(baos.toByteArray());
             }
 
             return encodedMessage;
