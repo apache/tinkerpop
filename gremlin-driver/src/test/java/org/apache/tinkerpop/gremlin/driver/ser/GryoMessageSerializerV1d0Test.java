@@ -49,9 +49,7 @@ import java.util.UUID;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Serializer tests that cover non-lossy serialization/deserialization methods.
@@ -346,6 +344,38 @@ public class GryoMessageSerializerV1d0Test {
     }
 
     @Test
+    public void shouldReturnAllBytesInResponse() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        final Map<String, Object> metaData = new HashMap<>();
+        metaData.put("test", "this");
+        metaData.put("one", 1);
+
+        final Map<String, Object> attributes = new HashMap<>();
+        attributes.put("test", "that");
+        attributes.put("two", 2);
+
+        final ResponseMessage response = ResponseMessage.build(id)
+                .responseMetaData(metaData)
+                .code(ResponseStatusCode.SUCCESS)
+                .result("some-result")
+                .statusAttributes(attributes)
+                .statusMessage("worked")
+                .create();
+
+        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
+            // set to bufferSize < total message size but still greater than any individual object requires
+            put("bufferSize", 50);
+        }};
+        binarySerializerWithSmallBuffer.configure(configWithSmallBuffer, null);
+
+        ByteBuf buf = binarySerializerWithSmallBuffer.serializeResponseAsBinary(response, allocator);
+        assertTrue(buf.isReadable());
+        assertEquals(82, buf.readableBytes());
+    }
+
+    @Test
     public void shouldSerializeFullRequestMessage() throws Exception {
         final UUID id = UUID.randomUUID();
 
@@ -388,6 +418,28 @@ public class GryoMessageSerializerV1d0Test {
             final Throwable root = ExceptionUtils.getRootCause(ex);
             assertThat(root, instanceOf(KryoException.class));
         }
+    }
+
+    @Test
+    public void shouldReturnAllBytesInRequest() throws Exception {
+        final UUID id = UUID.randomUUID();
+
+        final RequestMessage request = RequestMessage.build("try")
+                .overrideRequestId(id)
+                .processor("pro")
+                .addArg("test", "this")
+                .create();
+
+        final MessageSerializer binarySerializerWithSmallBuffer = new GryoMessageSerializerV1d0();
+        final Map<String, Object> configWithSmallBuffer = new HashMap<String, Object>() {{
+            // set to bufferSize < total message size but still greater than any individual object requires
+            put("bufferSize", 50);
+        }};
+        binarySerializerWithSmallBuffer.configure(configWithSmallBuffer, null);
+
+        ByteBuf buf = binarySerializerWithSmallBuffer.serializeRequestAsBinary(request, allocator);
+        assertTrue(buf.isReadable());
+        assertEquals(71, buf.readableBytes());
     }
 
     private void assertCommon(final ResponseMessage response) {
