@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
@@ -74,7 +74,7 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
             final Step curr = steps.get(i);
             if (i == size && isOptimizable(curr)) {
                 final TraversalParent parent = curr.getTraversal().getParent();
-                if (parent instanceof NotStep || parent instanceof TraversalFilterStep || parent instanceof WhereTraversalStep || parent instanceof ConjunctionStep) {
+                if (parent instanceof NotStep || parent instanceof TraversalFilterStep || parent instanceof WhereTraversalStep || parent instanceof ConnectiveStep) {
                     optimizeStep(traversal, curr);
                 }
             } else if (isOptimizable(prev)) {

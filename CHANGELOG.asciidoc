@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Renamed `ConjunctionX` to `ConnectiveX` because "conjunction" is assumed "and" (disjunction "or"), where "connective" is the parent concept.
 * Removed `PathIdentityStep` as it was a hack that is now solved by `Traversal.Admin.addTraverserRequirement()`.
 * Added `Traversal.Admin.addTraverserRequirement()` to allow a traversal strategy or source to add requirements (not only step determined anymore).
 * Added `TraverserRequirement.ONE_BULK` to state the traverser does not handle bulk.

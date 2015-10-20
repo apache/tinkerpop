@@ -21,7 +21,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.EngineDependentStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.finalization.ProfileStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.verification.ComputerVerificationStrategy;
@@ -39,7 +39,7 @@ public class TinkerGraphNoStrategyComputerProvider extends TinkerGraphComputerPr
             ComputerVerificationStrategy.class,
             EngineDependentStrategy.class,
             ProfileStrategy.class,
-            ConjunctionStrategy.class,
+            ConnectiveStrategy.class,
             ComputerTraversalEngine.ComputerResultStrategy.class));
 
     @Override
