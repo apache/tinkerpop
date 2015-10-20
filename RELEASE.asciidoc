@@ -17,9 +17,10 @@ limitations under the License.
 Release Process
 ---------------
 
-This document describes the steps required to release a version of TinkerPop.  The process is multi-phased and can
-therefore take several weeks to complete given the time needed for Apache voting and community feedback.  Once a
-release point has been identified, the following phases represent the flow of "release":
+This document describes the steps required to release a version of TinkerPop.  The release is handled by a "release
+manager" (a committer fulfills this role), who ensures that the steps in this document are executed. The process is
+multi-phased and can therefore take several weeks to complete given the time needed for Apache voting and community
+feedback.  Once a release point has been identified, the following phases represent the flow of "release":
 
 * Pre-flight check.
 * Optionally, produce a release candidate for community feedback.
@@ -30,13 +31,16 @@ release point has been identified, the following phases represent the flow of "r
 Pre-flight Check
 ~~~~~~~~~~~~~~~~
 
-The "pre-flight check" is a list of things performed by the "release manager" during the week before the scheduled
+The "pre-flight check" is a list of things performed by the release manager during the weeks leading up to a scheduled
 day to release.  These checks will help to ensure that that release day goes smoothly by identifying problems up early
 and communicating with other members of the community.
 
-. Seven days before release, issue an email to the dev mailing list to remind the community of the pending release.
+. Fourteen days before release, issue an email to the dev mailing list to remind the community of the pending release.
 .. Note any important issues open in JIRA in that post.
 .. Request review and update of the "upgrade documentation" and CHANGELOG.
+. Seven days before release, announce the code freeze on the dev mailing list to remind the community that the branch
+under release is protected. Tweaks to documentation and other odds and ends related to release are still allowed
+during this period.
 . At some point during the week:
 .. Deploy a final SNAPSHOT to the snapshot repository.
 .. Review LICENSE and NOTICE files to make sure that no changes are needed.
