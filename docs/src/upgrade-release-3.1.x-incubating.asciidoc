@@ -37,6 +37,8 @@ Important Changes
 
 * The Gephi Plugin has improved integration with Gephi, where manually inserting {{store}} steps to visualize a running traversal is no longer required.
 * Entire TinkerGraph instances can be serialized over Gryo.
+* Hadoop1 support has been dropped. Hadoop2 is now supported. Giraph 1.1.0 is now supported and Spark of Hadoop2 YARN.
+* The implementation and semantics of `GraphTraversal.group()` has changed. The previous model is deprecated and renamed to `groupV3d0()`.
 
 Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.0-incubating/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
 
@@ -54,6 +56,38 @@ where the default behavior was commit.  Using rollback as the default should be 
 to closing where a user must now explicitly call `commit()` to persist their mutations.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-805[TINKERPOP3-805] for more information.
+
+Gremlin Process
+^^^^^^^^^^^^^^^
+
+Graph Traversal Updates
++++++++++++++++++++++++
+
+* `DedupBijectionStrategy` has been renamed (and made more effective) as `FilterRankingStrategy`.
+* The `GraphTraversal` mutation API has change significantly with all previous methods being supported but deprecated.
+** The general pattern used now is `addE('knows').from(select('a')).to(select('b')).property('weight',1.0)`.
+* The `GraphTraversal` sack API has changed with all previous methods being supported but deprecated.
+** The old `sack(mult,'weight')` is now `sack(mult).by('weight')`.
+* `GroupStep` has been redesigned such that there is now only a key- and value-traversal. No more reduce-traversal.
+** The previous `group()`-methods have been renamed to `groupV3d0()`. To immediately upgrade, rename all your `group()`-calls to `groupV3d0()`.
+** To migrate to the new `group()`-methods, what was `group().by('age').by(outE()).by(sum(local))` is now `group().by('age').by(outE().sum())`.
+* There was a bug in `fold()`, where if a bulked traverser was provided, the traverser was only represented once.
+** This bug fix might cause a breaking change to a user query if the non-bulk behavior was being counted on. If so, used `dedup()` prior to `fold()`.
+* Both `GraphTraversal().mapKeys()` and `GraphTraversal.mapValues()` has been deprecated.
+** Use `select(keys)` and `select(columns)`. However, note that `select()` will not unroll the keys/values. Thus, `mapKeys()` => `select(keys).unfold()`.
+
+Gremlin-Groovy Updates
+++++++++++++++++++++++
+
+* The closure wrappers classes `GFunction`, `GSupplier`, `GConsumer` have been deprecated.
+** In Groovy, a closure can be specified using `as Function` and thus, these wrappers are not needed.
+
+Hadoop-Gremlin Updates
+++++++++++++++++++++++
+
+* Hadoop1 is no longer supported. Hadoop2 is now the only supported Hadoop version in TinkerPop.
+* The directory where application jars are stored in HDFS is now `hadoop-gremlin-x.y.z-libs`.
+** This versioning is important so that cross-version TinkerPop use does not cause jar conflicts.
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,3 +107,8 @@ previously asserted the opposite (i.e. commit on close).  These tests have been 
 If these tests were referenced in an `OptOut`, then their names should be updated.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-805[TINKERPOP3-805] for more information.
+
+Graph Traversal Updates
++++++++++++++++++++++++
+
+There were numerous changes to the `GraphTraversal` API. Nearly all changes are backwards compatible with respective "deprecated" annotations. Please review the respective updates specified in the "Graph System Users" section.
