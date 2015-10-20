@@ -47,6 +47,17 @@ public class TinkerGraphPlayTest {
 
     @Test
     @Ignore
+    public void testPlay8() throws Exception {
+        Graph graph = TinkerFactory.createModern();
+        GraphTraversalSource g = graph.traversal(); //GraphTraversalSource.computer());
+        Traversal traversal = g.V(1).V().values("name");
+        traversal.forEachRemaining(System.out::println);
+        System.out.println(traversal);
+
+    }
+
+    @Test
+    @Ignore
     public void benchmarkGroup() throws Exception {
         Graph graph = TinkerGraph.open();
         GraphTraversalSource g = graph.traversal(GraphTraversalSource.computer());

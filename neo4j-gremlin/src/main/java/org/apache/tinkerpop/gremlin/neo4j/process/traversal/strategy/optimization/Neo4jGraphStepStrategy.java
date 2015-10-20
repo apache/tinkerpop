@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 
@@ -43,12 +43,9 @@ public final class Neo4jGraphStepStrategy extends AbstractTraversalStrategy<Trav
         if (traversal.getEngine().isComputer())
             return;
 
-        final Step<?, ?> startStep = traversal.getStartStep();
-        if (startStep instanceof GraphStep) {
-            final GraphStep<?> originalGraphStep = (GraphStep) startStep;
-            final Neo4jGraphStep<?> neo4jGraphStep = new Neo4jGraphStep<>(originalGraphStep);
-            TraversalHelper.replaceStep(startStep, (Step) neo4jGraphStep, traversal);
-
+        TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {
+            final Neo4jGraphStep<?, ?> neo4jGraphStep = new Neo4jGraphStep<>(originalGraphStep);
+            TraversalHelper.replaceStep(originalGraphStep, (Step) neo4jGraphStep, traversal);
             Step<?, ?> currentStep = neo4jGraphStep.getNextStep();
             while (currentStep instanceof HasContainerHolder) {
                 ((HasContainerHolder) currentStep).getHasContainers().forEach(neo4jGraphStep::addHasContainer);
@@ -56,7 +53,7 @@ public final class Neo4jGraphStepStrategy extends AbstractTraversalStrategy<Trav
                 traversal.removeStep(currentStep);
                 currentStep = currentStep.getNextStep();
             }
-        }
+        });
     }
 
     public static Neo4jGraphStepStrategy instance() {

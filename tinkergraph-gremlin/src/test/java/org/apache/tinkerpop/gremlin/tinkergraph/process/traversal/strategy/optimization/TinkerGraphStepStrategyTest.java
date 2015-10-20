@@ -47,8 +47,8 @@ public class TinkerGraphStepStrategyTest {
         assertEquals(TinkerGraphStep.class, traversal.getStartStep().getClass());
         assertEquals(TinkerGraphStep.class, traversal.getEndStep().getClass());
         assertEquals(1, ((TinkerGraphStep) traversal.getStartStep()).getHasContainers().size());
-        assertEquals("name", ((TinkerGraphStep<?>) traversal.getStartStep()).getHasContainers().get(0).getKey());
-        assertEquals("marko", ((TinkerGraphStep<?>) traversal.getStartStep()).getHasContainers().get(0).getValue());
+        assertEquals("name", ((TinkerGraphStep<?,?>) traversal.getStartStep()).getHasContainers().get(0).getKey());
+        assertEquals("marko", ((TinkerGraphStep<?,?>) traversal.getStartStep()).getHasContainers().get(0).getValue());
         ////
         traversal = g.V().has("name", "marko").has("age", P.gt(20)).asAdmin();
         traversal.applyStrategies();
@@ -61,8 +61,8 @@ public class TinkerGraphStepStrategyTest {
         assertEquals(3, traversal.getSteps().size());
         assertEquals(TinkerGraphStep.class, traversal.getStartStep().getClass());
         assertEquals(1, ((TinkerGraphStep) traversal.getStartStep()).getHasContainers().size());
-        assertEquals("name", ((TinkerGraphStep<?>) traversal.getStartStep()).getHasContainers().get(0).getKey());
-        assertEquals("marko", ((TinkerGraphStep<?>) traversal.getStartStep()).getHasContainers().get(0).getValue());
+        assertEquals("name", ((TinkerGraphStep<?,?>) traversal.getStartStep()).getHasContainers().get(0).getKey());
+        assertEquals("marko", ((TinkerGraphStep<?,?>) traversal.getStartStep()).getHasContainers().get(0).getValue());
         assertEquals(HasStep.class, traversal.getEndStep().getClass());
     }
 
