@@ -74,14 +74,18 @@ public class GremlinServer {
     private final EventLoopGroup workerGroup;
     private final ExecutorService gremlinExecutorService;
     private final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor;
-    private final boolean isLinuxOS;
+    private final boolean isEpollEnabled;
 
     /**
      * Construct a Gremlin Server instance from {@link Settings}.
      */
     public GremlinServer(final Settings settings) {
         this.settings = settings;
-        this.isLinuxOS = settings.useEpollEventLoop && SystemUtils.IS_OS_LINUX;
+        this.isEpollEnabled = settings.useEpollEventLoop && SystemUtils.IS_OS_LINUX;
+        if(settings.useEpollEventLoop && !SystemUtils.IS_OS_LINUX){
+            logger.warn("cannot use epoll in non-linux env, falling back to NIO");
+        }
+
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> this.stop().join(), SERVER_THREAD_PREFIX + "shutdown"));
 
@@ -89,14 +93,14 @@ public class GremlinServer {
         // if linux os use epoll else fallback to nio based eventloop
         // epoll helps in reducing GC and has better  performance
         // http://netty.io/wiki/native-transports.html
-        if(isLinuxOS){
+        if(isEpollEnabled){
             bossGroup = new EpollEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
         } else {
             bossGroup = new NioEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
         }
 
         final ThreadFactory threadFactoryWorker = ThreadFactoryUtil.create("worker-%d");
-        if(isLinuxOS) {
+        if(isEpollEnabled) {
             workerGroup = new EpollEventLoopGroup(settings.threadPoolWorker, threadFactoryWorker);
         }else {
             workerGroup = new NioEventLoopGroup(settings.threadPoolWorker, threadFactoryWorker);
@@ -114,12 +118,15 @@ public class GremlinServer {
     public GremlinServer(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
         this.serverGremlinExecutor = serverGremlinExecutor;
         this.settings = serverGremlinExecutor.getSettings();
-        this.isLinuxOS = settings.useEpollEventLoop && SystemUtils.IS_OS_LINUX;
+        this.isEpollEnabled = settings.useEpollEventLoop && SystemUtils.IS_OS_LINUX;
+        if(settings.useEpollEventLoop && !SystemUtils.IS_OS_LINUX){
+            logger.warn("cannot use epoll in non-linux env, falling back to NIO");
+        }
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> this.stop().join(), SERVER_THREAD_PREFIX + "shutdown"));
 
         final ThreadFactory threadFactoryBoss = ThreadFactoryUtil.create("boss-%d");
-        if(isLinuxOS) {
+        if(isEpollEnabled) {
             bossGroup = new EpollEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
         } else{
             bossGroup = new NioEventLoopGroup(settings.threadPoolBoss, threadFactoryBoss);
@@ -164,7 +171,7 @@ public class GremlinServer {
             channelizer.init(serverGremlinExecutor);
             b.group(bossGroup, workerGroup)
                     .childHandler(channelizer);
-            if(isLinuxOS){
+            if(isEpollEnabled){
                 b.channel(EpollServerSocketChannel.class);
             } else{
                 b.channel(NioServerSocketChannel.class);
