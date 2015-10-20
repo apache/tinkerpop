@@ -361,8 +361,18 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
                 requirements.add(TraverserRequirement.SACK);
             if (this.getEngine().isComputer())
                 requirements.add(TraverserRequirement.BULK);
+            if (requirements.contains(TraverserRequirement.ONE_BULK))
+                requirements.remove(TraverserRequirement.BULK);
             return requirements;
         }
+
+        /**
+         * Add a {@link TraverserRequirement} to this traversal and respective nested sub-traversals.
+         * This is here to allow {@link TraversalStrategy} and {@link TraversalSource} instances to insert requirements.
+         *
+         * @param traverserRequirement the traverser requirement to add
+         */
+        public void addTraverserRequirement(final TraverserRequirement traverserRequirement);
 
         /**
          * Call the {@link Step#reset} method on every step in the traversal.

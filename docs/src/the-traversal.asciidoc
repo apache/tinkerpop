@@ -1253,7 +1253,7 @@ g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).sack() <2
 g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows') <3>
 g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').sack() <4>
 g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier().sack() <5>
-g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier().sideEffect{it.setBulk(1)}.sack() <6>
+g.withBulk(false).withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows').barrier().sack() <6>
 ----
 
 <1> The knows-adjacent vertices of vertex 1 are vertices 2 and 4.
@@ -1261,7 +1261,7 @@ g.withSack(1.0f,sum).V(1).local(outE('knows').barrier(normSack).inV()).in('knows
 <3> Going from vertices 2 and 4 yield two traversers at vertex 1.
 <4> Those two traversers each have a sack of 0.5.
 <5> The `barrier()` merges the two traversers at vertex 1 into a single traverser whose sack is 1.0.
-<6> There is now a single traverser with bulk of 2 and sack of 1.0 and thus, setting the bulk to 1 yields the expected 1.0.
+<6> There is now a single traverser with bulk of 2 and sack of 1.0 and thus, setting `withBulk(false)` yields the expected 1.0.
 
 
 [[sample-step]]
