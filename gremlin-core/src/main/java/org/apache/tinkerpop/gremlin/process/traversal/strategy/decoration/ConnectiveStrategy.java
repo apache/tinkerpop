@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.AndStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.OrStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
@@ -35,7 +35,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import java.util.Set;
 
 /**
- * ConjunctionStrategy rewrites the binary conjunction form of {@code a.and().b} into a {@link AndStep} of
+ * ConnectiveStrategy rewrites the binary conjunction form of {@code a.and().b} into a {@link AndStep} of
  * {@code and(a,b)} (likewise for {@link OrStep}).
  * <p/>
  *
@@ -47,16 +47,16 @@ import java.util.Set;
  * __.as("a").out().as("b").and().as("c").in().as("d")                          // is replaced by __.and(__.as("a").out().as("b"), __.as("c").in().as("d"))
  * </pre>
  */
-public final class ConjunctionStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
+public final class ConnectiveStrategy extends AbstractTraversalStrategy<TraversalStrategy.DecorationStrategy> implements TraversalStrategy.DecorationStrategy {
 
-    private static final ConjunctionStrategy INSTANCE = new ConjunctionStrategy();
+    private static final ConnectiveStrategy INSTANCE = new ConnectiveStrategy();
 
-    private ConjunctionStrategy() {
+    private ConnectiveStrategy() {
     }
 
     @Override
     public void apply(final Traversal.Admin<?, ?> traversal) {
-        if (TraversalHelper.hasStepOfAssignableClass(ConjunctionStep.class, traversal)) {
+        if (TraversalHelper.hasStepOfAssignableClass(ConnectiveStep.class, traversal)) {
             processConjunctionMarkers(traversal);
         }
     }
@@ -70,7 +70,7 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy<Travers
         processConjunctionMarker(AndStep.class, traversal);
     }
 
-    private static void processConjunctionMarker(final Class<? extends ConjunctionStep> markerClass, final Traversal.Admin<?, ?> traversal) {
+    private static void processConjunctionMarker(final Class<? extends ConnectiveStep> markerClass, final Traversal.Admin<?, ?> traversal) {
 
         TraversalHelper.getStepsOfClass(markerClass, traversal).stream()
                 .filter(conjunctionStep -> conjunctionStep.getLocalChildren().isEmpty())
@@ -108,7 +108,7 @@ public final class ConjunctionStrategy extends AbstractTraversalStrategy<Travers
         });
     }
 
-    public static ConjunctionStrategy instance() {
+    public static ConnectiveStrategy instance() {
         return INSTANCE;
     }
 }

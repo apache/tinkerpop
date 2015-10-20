@@ -27,7 +27,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrP<V> extends ConjunctionP<V> {
+public final class OrP<V> extends ConnectiveP<V> {
 
     public OrP(final P<V>... predicates) {
         super(predicates);

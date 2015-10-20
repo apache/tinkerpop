@@ -27,7 +27,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.MapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.StartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConjunctionStrategy;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.ConnectiveStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
@@ -56,10 +56,10 @@ public final class WhereTraversalStep<S> extends FilterStep<S> implements Traver
     }
 
     private void configureStartAndEndSteps(final Traversal.Admin<?, ?> whereTraversal) {
-        ConjunctionStrategy.instance().apply(whereTraversal);
+        ConnectiveStrategy.instance().apply(whereTraversal);
         //// START STEP to WhereStartStep
         final Step<?, ?> startStep = whereTraversal.getStartStep();
-        if (startStep instanceof ConjunctionStep || startStep instanceof NotStep) {       // for conjunction- and not-steps
+        if (startStep instanceof ConnectiveStep || startStep instanceof NotStep) {       // for conjunction- and not-steps
             ((TraversalParent) startStep).getLocalChildren().forEach(this::configureStartAndEndSteps);
         } else if (StartStep.isVariableStartStep(startStep)) {  // as("a").out()... traversals
             final String label = startStep.getLabels().iterator().next();

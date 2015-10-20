@@ -33,13 +33,13 @@ import java.util.stream.Stream;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements TraversalParent {
+public abstract class ConnectiveStep<S> extends AbstractStep<S, S> implements TraversalParent {
 
-    public enum Conjunction {AND, OR}
+    public enum Connective {AND, OR}
 
     protected List<Traversal.Admin<S, ?>> traversals;
 
-    public ConjunctionStep(final Traversal.Admin traversal, final Traversal<S, ?>... traversals) {
+    public ConnectiveStep(final Traversal.Admin traversal, final Traversal<S, ?>... traversals) {
         super(traversal);
         this.traversals = Stream.of(traversals).map(Traversal::asAdmin).collect(Collectors.toList());
         this.traversals.forEach(this::integrateChild);
@@ -60,8 +60,8 @@ public abstract class ConjunctionStep<S> extends AbstractStep<S, S> implements T
     }
 
     @Override
-    public ConjunctionStep<S> clone() {
-        final ConjunctionStep<S> clone = (ConjunctionStep<S>) super.clone();
+    public ConnectiveStep<S> clone() {
+        final ConnectiveStep<S> clone = (ConnectiveStep<S>) super.clone();
         clone.traversals = new ArrayList<>();
         for (final Traversal.Admin<S, ?> traversal : this.traversals) {
             clone.traversals.add(clone.integrateChild(traversal.clone()));

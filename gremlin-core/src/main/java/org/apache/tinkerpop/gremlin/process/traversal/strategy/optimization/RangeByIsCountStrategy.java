@@ -25,13 +25,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.IsStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.RangeGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.CountGlobalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ConjunctionP;
-import org.apache.tinkerpop.gremlin.process.traversal.util.OrP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.Contains;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.util.AndP;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -80,7 +78,7 @@ public final class RangeByIsCountStrategy extends AbstractTraversalStrategy<Trav
                     final IsStep isStep = (IsStep) next;
                     final P isStepPredicate = isStep.getPredicate();
                     Long highRange = null;
-                    for (P p : isStepPredicate instanceof ConjunctionP ? ((ConjunctionP<?>) isStepPredicate).getPredicates() : Collections.singletonList(isStepPredicate)) {
+                    for (P p : isStepPredicate instanceof ConnectiveP ? ((ConnectiveP<?>) isStepPredicate).getPredicates() : Collections.singletonList(isStepPredicate)) {
                         final Object value = p.getValue();
                         final BiPredicate predicate = p.getBiPredicate();
                         if (value instanceof Number) {
