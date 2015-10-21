@@ -182,7 +182,7 @@ public class NumberHelper {
             } else if (clazz.equals(Double.class)) {
                 bits = bits < 64 ? 64 : bits;
                 fp = true;
-            } else if (clazz.equals(BigDecimal.class)) {
+            } else /*if (clazz.equals(BigDecimal.class))*/ {
                 bits = bits < 128 ? 128 : bits;
                 fp = true;
                 break; // maxed out, no need to check remaining numbers

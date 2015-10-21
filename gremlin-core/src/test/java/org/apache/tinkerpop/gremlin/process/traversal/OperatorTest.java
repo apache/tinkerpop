@@ -34,6 +34,42 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Parameterized.class)
 public class OperatorTest {
+
+    /**
+     * Required to verify that Operator can handle Number type, that it doesn't know explicitly.
+     */
+    static class CustomNumber extends Number {
+
+        public final static CustomNumber ONE = new CustomNumber(1);
+        public final static CustomNumber TEN = new CustomNumber(10);
+
+        private int n;
+
+        private CustomNumber(final int number) {
+            this.n = number;
+        }
+
+        @Override
+        public int intValue() {
+            return n;
+        }
+
+        @Override
+        public long longValue() {
+            return n;
+        }
+
+        @Override
+        public float floatValue() {
+            return n;
+        }
+
+        @Override
+        public double doubleValue() {
+            return n;
+        }
+    }
+
     @Parameterized.Parameters(name = "{0}({1},{2}) = {3}")
     public static Iterable<Object[]> data() {
         return new ArrayList<>(Arrays.asList(new Object[][]{
@@ -50,6 +86,7 @@ public class OperatorTest {
                 {Operator.div, BigInteger.TEN, 2, BigInteger.valueOf(5l)},
                 {Operator.div, BigInteger.TEN, 2f, BigDecimal.valueOf(5l)},
                 {Operator.div, BigDecimal.TEN, 2, BigDecimal.valueOf(5l)},
+                {Operator.div, CustomNumber.TEN, 2, BigDecimal.valueOf(5l)},
                 {Operator.max, 10, 2, 10},
                 {Operator.max, 10l, 2l, 10l},
                 {Operator.max, 10f, 2f, 10f},
@@ -67,6 +104,7 @@ public class OperatorTest {
                 {Operator.max, BigInteger.TEN, 1, BigInteger.TEN},
                 {Operator.max, BigInteger.TEN, BigDecimal.ONE, BigDecimal.TEN},
                 {Operator.max, BigDecimal.TEN, 1, BigDecimal.TEN},
+                {Operator.max, 1, CustomNumber.TEN, BigDecimal.TEN},
                 {Operator.min, 10, 2, 2},
                 {Operator.min, 10l, 2l, 2l},
                 {Operator.min, 10f, 2f, 2f},
@@ -84,6 +122,7 @@ public class OperatorTest {
                 {Operator.min, BigInteger.TEN, 1, BigInteger.ONE},
                 {Operator.min, BigInteger.TEN, BigDecimal.ONE, BigDecimal.ONE},
                 {Operator.min, BigDecimal.TEN, 1, BigDecimal.ONE},
+                {Operator.min, 1, CustomNumber.TEN, BigDecimal.ONE},
                 {Operator.minus, 10, 2, 8},
                 {Operator.minus, 10l, 2l, 8l},
                 {Operator.minus, 10f, 2f, 8f},
@@ -97,6 +136,7 @@ public class OperatorTest {
                 {Operator.minus, BigInteger.TEN, 2, BigInteger.valueOf(8l)},
                 {Operator.minus, BigInteger.TEN, 2f, BigDecimal.valueOf(8d)},
                 {Operator.minus, BigDecimal.TEN, 2, BigDecimal.valueOf(8l)},
+                {Operator.minus, CustomNumber.TEN, 2, BigDecimal.valueOf(8l)},
                 {Operator.mult, 5, 4, 20},
                 {Operator.mult, 5l, 4l, 20l},
                 {Operator.mult, 5f, 4f, 20f},
@@ -110,6 +150,7 @@ public class OperatorTest {
                 {Operator.mult, BigInteger.valueOf(5l), 4, BigInteger.valueOf(20l)},
                 {Operator.mult, BigInteger.valueOf(5l), 4f, BigDecimal.valueOf(20d)},
                 {Operator.mult, BigDecimal.valueOf(5d), 4, BigDecimal.valueOf(20d)},
+                {Operator.mult, CustomNumber.TEN, 2f, BigDecimal.valueOf(20d)},
                 {Operator.sum, 7, 3, 10},
                 {Operator.sum, 7l, 3l, 10l},
                 {Operator.sum, 7f, 3f, 10f},
@@ -122,7 +163,8 @@ public class OperatorTest {
                 {Operator.sum, 7f, 3, 10f},
                 {Operator.sum, BigInteger.valueOf(7l), 3, BigInteger.TEN},
                 {Operator.sum, BigInteger.valueOf(7l), 3f, BigDecimal.valueOf(10d)},
-                {Operator.sum, BigDecimal.valueOf(7d), 3, BigDecimal.valueOf(10d)}
+                {Operator.sum, BigDecimal.valueOf(7d), 3, BigDecimal.valueOf(10d)},
+                {Operator.sum, CustomNumber.TEN, CustomNumber.ONE, BigDecimal.valueOf(11l)}
         }));
     }
 
