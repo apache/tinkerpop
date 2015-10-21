@@ -121,6 +121,11 @@ If these tests were referenced in an `OptOut`, then their names should be update
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-805[TINKERPOP3-805] for more information.
 
+Graph Traversal Updates
++++++++++++++++++++++++
+
+There were numerous changes to the `GraphTraversal` API. Nearly all changes are backwards compatible with respective "deprecated" annotations. Please review the respective updates specified in the "Graph System Users" section.
+
 Driver Implementers
 ^^^^^^^^^^^^^^^^^^^
 
@@ -130,8 +135,3 @@ Transaction.onReadWrite() and Transaction.onClose() are now `ThreadLocal` settin
 If your driver configures the `Transaction.onReadWrite()` or `Transaction.onClose()` settings, note that these no longer apply to all future requests. 
 If the settings are changed from a sessionless request they will only apply to that one request.
 If the settings are changed from an in-session request they will only apply to all future requests made in the scope of that session. 
-
-Graph Traversal Updates
-+++++++++++++++++++++++
-
-There were numerous changes to the `GraphTraversal` API. Nearly all changes are backwards compatible with respective "deprecated" annotations. Please review the respective updates specified in the "Graph System Users" section.
