@@ -78,8 +78,8 @@ TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 
 image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
 
-TinkerPop 3.0.2 (NOT OFFICIALLY RELEASED YET)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+TinkerPop 3.0.2 (Release Date: October 19, 2015)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Cleaned up `ext/` directory when plugin installation fails for `gremlin-server` and `gremlin-console`.
 * Fixed issues in `gremlin-server` when configured for HTTP basic authentication.
@@ -97,6 +97,30 @@ TinkerPop 3.0.2 (NOT OFFICIALLY RELEASED YET)
 * Improved session closing for transactional graphs during shutdown of Gremlin Server.
 * Fixed id parameter used in tests for `GroovyStoreTest` and `GroovyRepeatTest` to not be treated as an embedded string.
 * `GraphStep` will convert any `Vertex` or `Edge` ids to their id `Object` prior to submission to `GraphComputer` (OLAP).
+
+Bugs
+^^^^
+
+* [TINKERPOP3-814] - ConnectionPool can fill with dead Connections
+* [TINKERPOP3-816] - Gryo deserialization of error response with null message causes NPE and protocol desync
+* [TINKERPOP3-817] - Gryo serialization of large responses fails and causes protocol desync
+* [TINKERPOP3-840] - TreeTest Is not being ignored via ComputerVerificationStrategy
+* [TINKERPOP3-849] - gremlin-server doesn't close sessions on 'close' opcode
+* [TINKERPOP3-855] - sasl authentication type error due to Json format
+* [TINKERPOP3-865] - Errors with HTTP REST basic auth
+* [TINKERPOP3-867] - TinkerGraphProvider does not initialize temp dir
+* [TINKERPOP3-870] - Rebound client requires a connection to occur on the underlying client.
+* [TINKERPOP3-877] - Driver hangs if SSL enabled on server but not on client
+
+Improvements
+^^^^^^^^^^^^
+
+* [TINKERPOP3-828] - TinkerGraph can supportPersistence(), should we allow it.
+* [TINKERPOP3-830] - process-docs.sh introduces extra white space dependent on console width
+* [TINKERPOP3-839] - Docs should have a ${version.number} under the logo.
+* [TINKERPOP3-852] - A shell script that validates the distribution artifacts at release time
+* [TINKERPOP3-853] - TinkerPop Logo in JavaDoc index.html
+* [TINKERPOP3-858] - Cleanup after failed :install
 
 TinkerPop 3.0.1 (Release Date: September 2, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
