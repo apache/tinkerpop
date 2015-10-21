@@ -64,5 +64,10 @@ public abstract class GroovySackTest {
                 final Object v1Id) {
             TraversalScriptHelper.compute("g.withSack(1.0d,sum).V(${v1Id}).local(out('knows').barrier(normSack)).in('knows').barrier.sack", g, "v1Id", v1Id)
         }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack() {
+            TraversalScriptHelper.compute("g.withBulk(false).withSack(1, sum).V.out.barrier.sack", g);
+        }
     }
 }
