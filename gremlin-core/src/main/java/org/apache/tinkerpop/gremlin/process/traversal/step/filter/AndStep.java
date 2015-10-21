@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AndStep<S> extends ConjunctionStep<S> {
+public final class AndStep<S> extends ConnectiveStep<S> {
 
     public AndStep(final Traversal.Admin traversal, final Traversal<S, ?>... traversals) {
         super(traversal, traversals);

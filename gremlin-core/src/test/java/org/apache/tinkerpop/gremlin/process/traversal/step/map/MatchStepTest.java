@@ -23,7 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.CoinStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.EmptyTraverser;
@@ -89,7 +89,7 @@ public class MatchStepTest extends StepTest {
             //
             pattern = matchStep.getGlobalChildren().get(1);
             assertEquals(MatchStep.class, pattern.getStartStep().getClass());
-            assertEquals(ConjunctionStep.Conjunction.OR, ((MatchStep<?, ?>) pattern.getStartStep()).getConjunction());
+            assertEquals(ConnectiveStep.Connective.OR, ((MatchStep<?, ?>) pattern.getStartStep()).getConnective());
             assertEquals("c", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep()).getSelectKey().get());
             assertEquals(PathStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep().getNextStep().getClass());
             assertEquals("d", ((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getEndStep()).getMatchKey().get());
@@ -115,7 +115,7 @@ public class MatchStepTest extends StepTest {
             //
             pattern = matchStep.getGlobalChildren().get(1);
             assertEquals(MatchStep.class, pattern.getStartStep().getClass());
-            assertEquals(ConjunctionStep.Conjunction.AND, ((MatchStep<?, ?>) pattern.getStartStep()).getConjunction());
+            assertEquals(ConnectiveStep.Connective.AND, ((MatchStep<?, ?>) pattern.getStartStep()).getConnective());
             assertEquals("c", ((MatchStep.MatchStartStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep()).getSelectKey().get());
             assertEquals(PathStep.class, ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getStartStep().getNextStep().getClass());
             assertEquals("d", ((MatchStep.MatchEndStep) ((MatchStep<?, ?>) pattern.getStartStep()).getGlobalChildren().get(0).getEndStep()).getMatchKey().get());

@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import java.io.Serializable;
 import java.util.function.BiPredicate;
@@ -28,7 +27,7 @@ import java.util.function.Predicate;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class AndP<V> extends ConjunctionP<V> {
+public final class AndP<V> extends ConnectiveP<V> {
 
     public AndP(final P<V>... predicates) {
         super(predicates);

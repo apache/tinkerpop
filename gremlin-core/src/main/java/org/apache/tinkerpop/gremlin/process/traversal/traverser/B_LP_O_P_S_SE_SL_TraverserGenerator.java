@@ -28,17 +28,17 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class B_LP_O_P_S_SE_SL_TraverserGenerator implements TraverserGenerator {
+public final class B_LP_O_P_S_SE_SL_TraverserGenerator implements TraverserGenerator {
 
     private static final B_LP_O_P_S_SE_SL_TraverserGenerator INSTANCE = new B_LP_O_P_S_SE_SL_TraverserGenerator();
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
-            TraverserRequirement.OBJECT,
             TraverserRequirement.BULK,
-            TraverserRequirement.SINGLE_LOOP,
             TraverserRequirement.LABELED_PATH,
+            TraverserRequirement.OBJECT,
             TraverserRequirement.PATH,
             TraverserRequirement.SACK,
-            TraverserRequirement.SIDE_EFFECTS);
+            TraverserRequirement.SIDE_EFFECTS,
+            TraverserRequirement.SINGLE_LOOP);
 
     private B_LP_O_P_S_SE_SL_TraverserGenerator() {
     }

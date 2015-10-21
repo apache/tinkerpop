@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class OrStep<S> extends ConjunctionStep<S> {
+public final class OrStep<S> extends ConnectiveStep<S> {
 
     public OrStep(final Traversal.Admin traversal, final Traversal<S, ?>... traversals) {
         super(traversal, traversals);

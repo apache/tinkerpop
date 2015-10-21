@@ -39,10 +39,10 @@ import static org.mockito.Mockito.when;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 @RunWith(Enclosed.class)
-public class ConjunctionStrategyTest {
+public class ConnectiveStrategyTest {
 
     @RunWith(Parameterized.class)
-    public static class StandardTest extends AbstractConjunctionStrategyTest {
+    public static class StandardTest extends AbstractConnectiveStrategyTest {
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
@@ -68,7 +68,7 @@ public class ConjunctionStrategyTest {
     }
 
     @RunWith(Parameterized.class)
-    public static class ComputerTest extends AbstractConjunctionStrategyTest {
+    public static class ComputerTest extends AbstractConnectiveStrategyTest {
 
         @Parameterized.Parameters(name = "{0}")
         public static Iterable<Object[]> data() {
@@ -93,13 +93,13 @@ public class ConjunctionStrategyTest {
         }
     }
 
-    private static abstract class AbstractConjunctionStrategyTest {
+    private static abstract class AbstractConnectiveStrategyTest {
 
         protected TraversalEngine traversalEngine;
 
         void applyMatchWhereStrategy(final Traversal traversal) {
             final TraversalStrategies strategies = new DefaultTraversalStrategies();
-            strategies.addStrategies(ConjunctionStrategy.instance());
+            strategies.addStrategies(ConnectiveStrategy.instance());
 
             traversal.asAdmin().setStrategies(strategies);
             traversal.asAdmin().applyStrategies();
