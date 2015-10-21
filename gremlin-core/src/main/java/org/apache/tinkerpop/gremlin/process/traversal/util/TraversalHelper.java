@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.branch.RepeatStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConjunctionStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.filter.ConnectiveStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.NotStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WherePredicateStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.WhereTraversalStep;
@@ -424,7 +424,7 @@ public final class TraversalHelper {
                 variables.add(Scoping.Variable.START);
         } else if (startStep instanceof MatchStep) {
             ((MatchStep<?, ?>) startStep).getGlobalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
-        } else if (startStep instanceof ConjunctionStep || startStep instanceof NotStep || startStep instanceof WhereTraversalStep)
+        } else if (startStep instanceof ConnectiveStep || startStep instanceof NotStep || startStep instanceof WhereTraversalStep)
             ((TraversalParent) startStep).getLocalChildren().forEach(child -> TraversalHelper.getVariableLocations(variables, child));
         ///
         final Step<?, ?> endStep = traversal.getEndStep();

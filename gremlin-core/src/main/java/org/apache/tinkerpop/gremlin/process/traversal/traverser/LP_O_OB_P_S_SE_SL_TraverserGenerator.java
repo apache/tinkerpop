@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.process.traversal.traverser;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
@@ -28,20 +29,26 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class B_O_TraverserGenerator implements TraverserGenerator {
+public final class LP_O_OB_P_S_SE_SL_TraverserGenerator implements TraverserGenerator {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
-            TraverserRequirement.BULK,
-            TraverserRequirement.OBJECT);
+            TraverserRequirement.LABELED_PATH,
+            TraverserRequirement.OBJECT,
+            TraverserRequirement.ONE_BULK,
+            TraverserRequirement.PATH,
+            TraverserRequirement.SACK,
+            TraverserRequirement.SIDE_EFFECTS,
+            TraverserRequirement.SINGLE_LOOP);
 
-    private static final B_O_TraverserGenerator INSTANCE = new B_O_TraverserGenerator();
 
-    private B_O_TraverserGenerator() {
+    private static final LP_O_OB_P_S_SE_SL_TraverserGenerator INSTANCE = new LP_O_OB_P_S_SE_SL_TraverserGenerator();
+
+    private LP_O_OB_P_S_SE_SL_TraverserGenerator() {
     }
 
     @Override
     public <S> Traverser.Admin<S> generate(final S start, final Step<S, ?> startStep, final long initialBulk) {
-        return new B_O_Traverser<>(start, initialBulk);
+        return new LP_O_OB_P_S_SE_SL_Traverser<>(start, startStep);
     }
 
     @Override
@@ -49,7 +56,7 @@ public final class B_O_TraverserGenerator implements TraverserGenerator {
         return REQUIREMENTS;
     }
 
-    public static B_O_TraverserGenerator instance() {
+    public static LP_O_OB_P_S_SE_SL_TraverserGenerator instance() {
         return INSTANCE;
     }
 }
