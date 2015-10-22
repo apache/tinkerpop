@@ -17,7 +17,6 @@ limitations under the License.
 TinkerPop3 CHANGELOG
 ====================
 
-
 TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 --------------------------------------------------
 
@@ -32,6 +31,7 @@ TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 * Added `Traversal.Admin.addTraverserRequirement()` to allow a traversal strategy or source to add requirements (not only step determined anymore).
 * Added `TraverserRequirement.ONE_BULK` to state the traverser does not handle bulk.
 * Added `GraphTraversalSource.withBulk(boolean)` to enabled users to compute only using `bulk=1`.
+* Gremlin Server supports Netty native transport on linux.
 * Removed the need for `GFunction` (etc.) closure wrappers in Gremlin-Groovy as `as Function` can be used to convert closures accordingly.
 * Added `SelectColumnStep` (`select(keys)` and `select(values)`). Deprecated `mapKeys()` and `mapValues()`.
 * Renamed `gremlin.hadoop.graphInputRDD` and `gremlin.hadoop.graphOutputRDD` to `gremlin.spark.graphInputRDD` and `gremlin.spark.graphOutputRDD`, respectively.
