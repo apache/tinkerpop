@@ -28,7 +28,8 @@ Building and Testing
 TinkerPop requires `Java 1.8.0_40+` for proper building and proper operations.
 
 * Build Project: `mvn clean install`
-** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the Maven project list argument, e.g.:
+** Specify specific tests in a TinkerPop Suite to run with the `GREMLIN_TESTS` environment variable, along with the
+Maven project list argument, e.g.:
 +
 ----
 export GREMLIN_TESTS='org.apache.tinkerpop.gremlin.process.traversal.step.map.PathTest$Traversals,org.apache.tinkerpop.gremlin.process.traversal.PathTest'
@@ -42,7 +43,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Check license headers are present: `mvn apache-rat:check`
 * Build AsciiDocs (Hadoop and ZooKeeper must be running): `bin/process-docs.sh`
 ** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
-** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-gremlin-console-*-standalone `pwd`/docs/src/xyz.asciidoc]+
+** Process a single AsciiDoc file: `docs/preprocessor/preprocess-file.sh \`pwd\`/gremlin-console/target/apache-gremlin-console-*-standalone \`pwd\`/docs/src/xyz.asciidoc`
 * Build JavaDocs: `mvn process-resources -Djavadoc`
 * Check for Apache License headers: `mvn apache-rat:check`
 * Check for newer dependencies: `mvn versions:display-dependency-updates` or `mvn versions:display-plugin-updates`
@@ -55,18 +56,24 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 IDE Setup with Intellij
 -----------------------
 
-This section refers specifically to setup within Intellij.  TinkerPop has a module called `gremlin-shaded` which contains shaded dependencies for some libraries that are widely used and tend to introduce conflicts.  To ensure that Intellij properly interprets this module after importing the Maven `pom.xml` perform the following steps:
+This section refers specifically to setup within Intellij.  TinkerPop has a module called `gremlin-shaded` which
+contains shaded dependencies for some libraries that are widely used and tend to introduce conflicts.  To ensure
+that Intellij properly interprets this module after importing the Maven `pom.xml` perform the following steps:
 
 . Build `gremlin-shaded` from the command line with `mvn clean install`.
 . Right-click on the `gremlin-shaded` module in the project viewer of Intellij and select "Remove module".
-. In the "Maven Projects" Tool window and click the tool button for "Reimport All Maven projects" (go to `View | Tool Windows | Maven Projects` on the main menu if this panel is not activated).
-. At this point it should be possible to compile and run the tests within Intellij, but in the worst case, use `File | Invalidate Caches/Restart` to ensure that indices properly rebuild.
+. In the "Maven Projects" Tool window and click the tool button for "Reimport All Maven projects" (go to
+`View | Tool Windows | Maven Projects` on the main menu if this panel is not activated).
+. At this point it should be possible to compile and run the tests within Intellij, but in the worst case, use
+`File | Invalidate Caches/Restart` to ensure that indices properly rebuild.
 
 Note that it maybe be necessary to re-execute these steps if the `gremlin-shaded` `pom.xml` is ever updated.
 
-Developers working on the `neo4j-gremlin` module should enabled the `include-neo4j` Maven profile in Intellij.  This will ensure that tests will properly execute within the IDE.
+Developers working on the `neo4j-gremlin` module should enabled the `include-neo4j` Maven profile in Intellij.
+This will ensure that tests will properly execute within the IDE.
 
-If Intellij complains about "duplicate sources" for the Groovy files when attempting to compile/run tests, then install the link:http://plugins.jetbrains.com/plugin/7442?pr=idea[GMavenPlus Intellij plugin].
+If Intellij complains about "duplicate sources" for the Groovy files when attempting to compile/run tests, then
+install the link:http://plugins.jetbrains.com/plugin/7442?pr=idea[GMavenPlus Intellij plugin].
 
 For Committers
 --------------
@@ -80,7 +87,9 @@ TinkerPop has a link:http://groups.google.com/group/gremlin-users[user mailing l
 link:http://mail-archives.apache.org/mod_mbox/incubator-tinkerpop-dev/[developer mailing list].  As a committer,
 it is a good idea to join both.
 
-It would also be helpful to join the public link:https://s.apache.org/tinkerpop[TinkerPop HipChat room] for developer discussion.  This helps contributors to communicate in a more real-time way.  Anyone can join as a guest, but for regular contributors it may be best to request that an Apache HipChat account be created.
+It would also be helpful to join the public link:https://s.apache.org/tinkerpop[TinkerPop HipChat room] for developer
+discussion.  This helps contributors to communicate in a more real-time way.  Anyone can join as a guest, but for
+regular contributors it may be best to request that an Apache HipChat account be created.
 
 Release Notes
 ~~~~~~~~~~~~~
