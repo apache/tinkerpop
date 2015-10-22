@@ -35,7 +35,8 @@ Additional upgrade information can be found here:
 Important Changes
 ~~~~~~~~~~~~~~~~~
 
-* The Gephi Plugin has improved integration with Gephi, where manually inserting {{store}} steps to visualize a running traversal is no longer required.
+* The data type of `Operator` enums will now always be the highest common data type of the two given numbers, rather than the data type of the first number, as it's been before.
+* The Gephi Plugin has improved integration with Gephi, where manually inserting `store` steps to visualize a running traversal is no longer required.
 * Entire TinkerGraph instances can be serialized over Gryo.
 * Hadoop1 support has been dropped. Hadoop2 is now supported. Giraph 1.1.0 is now supported and Spark of Hadoop2 YARN.
 * The implementation and semantics of `GraphTraversal.group()` has changed. The previous model is deprecated and renamed to `groupV3d0()`.
