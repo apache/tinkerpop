@@ -149,11 +149,11 @@ limitations under the License.
     </build>
     <profiles>
         <profile>
-            <id>linux</id>
+            <id>use-epoll</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <property>
-                    <name>EPOLL</name>
+                    <name>useEpoll</name>
                 </property>
             </activation>
             <build>
