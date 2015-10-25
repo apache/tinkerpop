@@ -29,9 +29,15 @@ import org.apache.tinkerpop.gremlin.structure.Vertex
 public abstract class GroovyGraphTest {
 
     public static class Traversals extends GraphTest {
+
         @Override
         public Traversal<Vertex, String> get_g_VX1X_V_valuesXnameX(final Object v1Id) {
             TraversalScriptHelper.compute("g.V(v1Id).V.name", g, "v1Id", v1Id);
+        }
+
+        @Override
+        public Traversal<Vertex, String> get_g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name() {
+            TraversalScriptHelper.compute("g.V.has('name','Garcia').in('sungBy').as('song').V.has('name','Willie_Dixon').in('writtenBy').where(eq('song')).name", g)
         }
     }
 }
