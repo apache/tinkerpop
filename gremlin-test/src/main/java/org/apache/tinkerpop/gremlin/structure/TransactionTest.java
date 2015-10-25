@@ -36,6 +36,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
@@ -1041,5 +1043,177 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals(e.id(), id.get());
 
         g.tx().rollback();
+    }
+    
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldNotShareTransactionReadWriteConsumersAccrossThreads() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean commitFailed = new AtomicBoolean(false);
+        final AtomicBoolean commitOccured = new AtomicBoolean(false);
+        
+        final Thread manualThread = new Thread(() -> {
+            graph.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+            try {
+                latch.await();
+            } catch (InterruptedException ie) {
+                throw new RuntimeException(ie);
+            }
+            
+            try{
+                graph.tx().commit();
+                commitFailed.set(false);
+            } catch (Exception ex) {
+                commitFailed.set(true);
+            }
+        });
+        
+        manualThread.start();
+        
+        final Thread autoThread = new Thread(() -> {
+            latch.countDown();
+            try {
+                graph.tx().commit();
+                commitOccured.set(true);
+            } catch (Exception ex) {
+                commitOccured.set(false);
+            }
+        });
+        
+        autoThread.start();
+        
+        manualThread.join();
+        autoThread.join();
+        
+        assertTrue(
+                "manualThread transaction readWrite should be MANUAL and should fail to commit the transaction",
+                commitFailed.get()
+        );
+        assertTrue(
+                "autoThread transaction readWrite should be AUTO and should commit the transaction",
+                commitOccured.get()
+        );
+    }
+    
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldNotShareTransactionCloseConsumersAccrossThreads() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        
+        final Thread manualThread = new Thread(() -> {
+            graph.tx().onClose(Transaction.CLOSE_BEHAVIOR.COMMIT);
+            try {
+                latch.await();
+            } catch (InterruptedException ie) {
+                throw new RuntimeException(ie);
+            }
+        });
+        
+        manualThread.start();
+        
+        final Thread autoThread = new Thread(() -> {
+            latch.countDown();
+            graph.addVertex();
+            graph.tx().close();
+        });
+        
+        autoThread.start();
+        
+        manualThread.join();
+        autoThread.join();
+        
+        assertEquals(
+                "Graph should be empty. autoThread transaction.onClose() should be ROLLBACK (default)",
+                0,
+                IteratorUtils.count(graph.vertices())
+        );
+    }
+    
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS)
+    public void shouldShareTransactionReadWriteConsumersAccrossThreads() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        final AtomicBoolean commitFailed = new AtomicBoolean(false);
+        final AtomicBoolean commitFailedAgain = new AtomicBoolean(false);
+        
+        final Thread manualThread = new Thread(() -> {
+            Transaction tx = graph.tx().createThreadedTx();
+            tx.onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+            try {
+                latch.await();
+            } catch (InterruptedException ie) {
+                throw new RuntimeException(ie);
+            }
+            
+            try{
+                tx.commit();
+                commitFailed.set(false);
+            } catch (Exception ex) {
+                commitFailed.set(true);
+            }
+        });
+        
+        manualThread.start();
+        
+        final Thread autoThread = new Thread(() -> {
+            latch.countDown();
+            Transaction tx = graph.tx().createThreadedTx();
+            try {
+                tx.commit();
+                commitFailedAgain.set(false);
+            } catch (Exception ex) {
+                commitFailedAgain.set(true);
+            }
+        });
+        
+        autoThread.start();
+        
+        manualThread.join();
+        autoThread.join();
+        
+        assertTrue(
+                "manualThread transaction readWrite should be MANUAL and should fail to commit the transaction",
+                commitFailed.get()
+        );
+        assertTrue(
+                "autoThread transaction readWrite should be AUTO and should commit the transaction",
+                commitFailedAgain.get()
+        );
+    }
+    
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS)
+    public void shouldShareTransactionCloseConsumersAccrossThreads() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+        
+        final Thread manualThread = new Thread(() -> {
+            Transaction tx = graph.tx().createThreadedTx();
+            tx.onClose(Transaction.CLOSE_BEHAVIOR.COMMIT);
+            try {
+                latch.await();
+            } catch (InterruptedException ie) {
+                throw new RuntimeException(ie);
+            }
+        });
+        
+        manualThread.start();
+        
+        final Thread autoThread = new Thread(() -> {
+            latch.countDown();
+            Transaction tx = graph.tx().createThreadedTx();
+            graph.addVertex();
+            tx.close();
+        });
+        
+        autoThread.start();
+        
+        manualThread.join();
+        autoThread.join();
+        
+        assertEquals(
+                "Graph should contain elements. autoThread.onClose() should be COMMIT.",
+                1,
+                IteratorUtils.count(graph.vertices())
+        );
     }
 }
