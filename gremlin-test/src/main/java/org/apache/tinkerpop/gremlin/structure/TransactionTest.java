@@ -36,6 +36,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.EdgePropertyFeatures;
 import static org.apache.tinkerpop.gremlin.structure.Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS;
@@ -1041,5 +1043,97 @@ public class TransactionTest extends AbstractGremlinTest {
         assertEquals(e.id(), id.get());
 
         g.tx().rollback();
+    }
+    
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_TRANSACTIONS)
+    public void shouldShareTransactionConsumersAccrossThreads() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(2);
+        final AtomicBoolean openOccured1 = new AtomicBoolean(false);
+        final AtomicBoolean openOccured2 = new AtomicBoolean(false);
+        
+        final Thread t1 = new Thread(() -> {
+            try {
+                g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+            
+                latch.countDown();
+                latch.await();
+                g.tx().open();
+                openOccured1.set(true);
+            } catch (Exception ex) {
+                openOccured1.set(false);
+            }
+            
+        });
+        
+        final Thread t2 = new Thread(() -> {
+            try {
+                
+                latch.countDown();
+                latch.await();
+                g.tx().open();
+                openOccured2.set(true);
+            } catch (Exception ex) {
+                openOccured2.set(false);
+            }
+            
+        });
+        
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        
+        assertTrue(
+                "Thread t1 transaction should have been set to MANUAL and capable of opening a transaction",
+                openOccured1.get()
+        );
+        assertTrue(
+                "Thread t2 transation should have been set to MANUAL and capable of opening a transaction",
+                openOccured2.get()
+        );
+    }
+    
+    @Test
+    @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_THREADED_TRANSACTIONS)
+    public void shouldNotShareTransactionConsumersAccrossThreads() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(2);
+        final AtomicBoolean openOccured1 = new AtomicBoolean(false);
+        final AtomicBoolean openOccured2 = new AtomicBoolean(false);
+        
+        final Thread t1 = new Thread(() -> {
+            try {
+                g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);
+            
+                latch.countDown();
+                latch.await();
+                g.tx().open();
+                openOccured1.set(true);
+            } catch (Exception ex) {
+                openOccured1.set(false);
+            }
+            
+        });
+        
+        final Thread t2 = new Thread(() -> {
+            try {
+                
+                latch.countDown();
+                latch.await();
+                g.tx().open();
+                openOccured2.set(true);
+            } catch (Exception ex) {
+                openOccured2.set(false);
+            }
+            
+        });
+        
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        
+        assertTrue("Thread t1 transaction should have been set to MANUAL and capable of opening a transaction", openOccured1.get());
+        assertTrue("Thread t2 transaction should have been set to MANUAL and capable of opening a transaction", !openOccured2.get());
     }
 }
