@@ -99,6 +99,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldExecuteScriptInSessionOnTransactionalGraph":
             case "shouldExecuteSessionlessScriptOnTransactionalGraph":
             case "shouldExecuteScriptInSessionOnTransactionalWithManualTransactionsGraph":
+            case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransaction":
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
@@ -613,6 +614,33 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         client.submit("graph.tx().rollback()").all().get();
 
         cluster.close();
+    }
+
+    @Test
+    public void shouldExecuteInSessionAndSessionlessWithoutOpeningTransaction() throws Exception {
+        assumeNeo4jIsPresent();
+        
+        final Cluster cluster = Cluster.build().create();
+        final Client sessionClient = cluster.connect(name.getMethodName());
+        final Client sessionlessClient = cluster.connect();
+        
+        //open transaction in session, then add vertex and commit
+        sessionClient.submit("graph.tx().open()").all().get();
+        final Vertex vertexBeforeTx = sessionClient.submit("v=graph.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexBeforeTx.values("name").next());
+        sessionClient.submit("graph.tx().commit()").all().get();
+        
+        // check that session transaction is closed
+        final boolean isOpen = sessionClient.submit("graph.tx().isOpen()").all().get().get(0).getBoolean();
+        assertTrue("Transaction should be closed", !isOpen);
+        
+        //run a sessionless read
+        sessionlessClient.submit("graph.traversal().V()").all().get();
+        
+        // check that session transaction is still closed
+        final boolean isOpenAfterSessionless = sessionClient.submit("graph.tx().isOpen()").all().get().get(0).getBoolean();
+        assertTrue("Transaction should stil be closed", !isOpenAfterSessionless);
+        
     }
 
     @Test

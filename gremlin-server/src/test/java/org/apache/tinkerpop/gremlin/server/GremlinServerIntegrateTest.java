@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.server;
 
+import java.io.File;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.apache.tinkerpop.gremlin.driver.Client;
@@ -41,6 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.nio.channels.ClosedChannelException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -118,6 +120,10 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 processorSettings.config = new HashMap<>();
                 processorSettings.config.put(SessionOpProcessor.CONFIG_SESSION_TIMEOUT, 3000l);
                 settings.processors.add(processorSettings);
+                break;
+            case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient":
+                deleteDirectory(new File("/tmp/neo4j"));
+                settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
         }
 
@@ -562,4 +568,98 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             cluster.close();
         }
     }
+    
+    @Test
+    public void shouldExecuteInSessionAndSessionlessWithoutOpeningTransactionWithSingleClient() throws Exception {
+        assumeNeo4jIsPresent();
+        
+        final SimpleClient client = new WebSocketClient();
+        
+        //open a transaction, create a vertex, commit
+        final CountDownLatch latch = new CountDownLatch(1);
+        final RequestMessage OpenRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                .processor("session")
+                .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                .addArg(Tokens.ARGS_GREMLIN, "graph.tx().open()")
+                .create();
+        client.submit(OpenRequest, (r) -> {
+            latch.countDown();
+        });
+        assertTrue(latch.await(1500, TimeUnit.MILLISECONDS));
+        
+        final CountDownLatch latch2 = new CountDownLatch(1);
+        final RequestMessage AddRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                .processor("session")
+                .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                .addArg(Tokens.ARGS_GREMLIN, "v=graph.addVertex(\"name\",\"stephen\")")
+                .create();
+        client.submit(AddRequest, (r) -> {
+            latch2.countDown();
+        });
+        assertTrue(latch2.await(1500, TimeUnit.MILLISECONDS));
+        
+        final CountDownLatch latch3 = new CountDownLatch(1);
+        final RequestMessage CommitRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                .processor("session")
+                .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                .addArg(Tokens.ARGS_GREMLIN, "graph.tx().commit()")
+                .create();
+        client.submit(CommitRequest, (r) -> {
+            latch3.countDown();
+            
+        });
+        latch3.await(1500, TimeUnit.MILLISECONDS);
+        
+        // Check to see if the transaction is closed.
+        final CountDownLatch latch4 = new CountDownLatch(1);
+        final AtomicBoolean isOpen = new AtomicBoolean(false);
+        final RequestMessage CheckRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                .processor("session")
+                .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                .addArg(Tokens.ARGS_GREMLIN, "graph.tx().isOpen()")
+                .create();
+        client.submit(CheckRequest, (r) -> {
+            ArrayList<Boolean> response = (ArrayList) r.getResult().getData();
+            isOpen.set(response.get(0));
+            latch4.countDown();
+        });
+        assertTrue(latch4.await(1500, TimeUnit.MILLISECONDS));
+        
+        // make sure no extra message sneak in
+        Thread.sleep(1000);
+        
+        assertTrue("Transaction should be closed", !isOpen.get());
+        
+        //lets run a sessionless read
+        final CountDownLatch latch5 = new CountDownLatch(1);
+        final RequestMessage sessionlessRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                .addArg(Tokens.ARGS_GREMLIN, "graph.traversal().V()")
+                .create();
+        client.submit(sessionlessRequest, (r) -> {
+            latch5.countDown();
+        });
+        assertTrue(latch5.await(1500, TimeUnit.MILLISECONDS));
+        
+        // Check to see if the transaction is still closed.
+        final CountDownLatch latch6 = new CountDownLatch(1);
+        final AtomicBoolean isStillOpen = new AtomicBoolean(false);
+        final RequestMessage CheckAgainRequest = RequestMessage.build(Tokens.OPS_EVAL)
+                .processor("session")
+                .addArg(Tokens.ARGS_SESSION, name.getMethodName())
+                .addArg(Tokens.ARGS_GREMLIN, "graph.tx().isOpen()")
+                .create();
+        client.submit(CheckAgainRequest, (r) -> {
+            ArrayList<Boolean> response = (ArrayList) r.getResult().getData();
+            isStillOpen.set(response.get(0));
+            latch6.countDown();
+        });
+        assertTrue(latch6.await(1500, TimeUnit.MILLISECONDS));
+        
+        // make sure no extra message sneak in
+        Thread.sleep(1000);
+        
+        assertTrue("Transaction should still be closed", !isStillOpen.get());
+    }
+ 
+    
 }
