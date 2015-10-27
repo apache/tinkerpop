@@ -22,10 +22,13 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.neo4j.AbstractNeo4jGremlinTest;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.sideEffect.Neo4jGraphStep;
 import org.apache.tinkerpop.gremlin.neo4j.structure.trait.MultiMetaNeo4jTrait;
+import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -43,7 +46,10 @@ import javax.script.ScriptException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -480,4 +486,22 @@ public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
         });
     }
 
+    @Test
+    public void shouldFoldHasContainerIntoGraphStep() {
+        final GraphTraversal<Vertex, Edge> t = g
+                .V().has("name", "foo").as("foo")
+                .V().has("name", "bar").addE("foobar").from("foo");
+
+        assertEquals(0, t.asAdmin().getSteps().stream().filter(s -> s instanceof Neo4jGraphStep).count());
+
+        int neo4jGraphStepCounter = 0;
+        for (final Step step : t.iterate().asAdmin().getSteps()) {
+            if (step instanceof Neo4jGraphStep) {
+                final Neo4jGraphStep gs = (Neo4jGraphStep) step;
+                assertEquals(1, gs.getHasContainers().size());
+                neo4jGraphStepCounter++;
+            }
+        }
+        assertEquals(2, neo4jGraphStepCounter);
+    }
 }
