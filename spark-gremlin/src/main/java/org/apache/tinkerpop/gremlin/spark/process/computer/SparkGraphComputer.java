@@ -29,6 +29,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
@@ -49,6 +50,7 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.io.InputRDD;
 import org.apache.tinkerpop.gremlin.spark.process.computer.io.OutputFormatRDD;
 import org.apache.tinkerpop.gremlin.spark.process.computer.io.OutputRDD;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.ViewIncomingPayload;
+import org.apache.tinkerpop.gremlin.spark.process.computer.util.SparkHelper;
 
 import java.io.File;
 import java.io.IOException;
@@ -118,15 +120,23 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 this.loadJars(sparkContext, hadoopConfiguration);
                 // create a message-passing friendly rdd from the input rdd
                 final JavaPairRDD<Object, VertexWritable> graphRDD;
-                try {
-                    graphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
-                            .newInstance()
-                            .readGraphRDD(apacheConfiguration, sparkContext)
-                            .setName("graphRDD")
-                            .cache();
-                } catch (final InstantiationException | IllegalAccessException e) {
-                    throw new IllegalStateException(e.getMessage(), e);
+                if (null != sparkConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD_NAME, null)) {
+                    if (!SparkHelper.getPersistedRDD(sparkContext, sparkConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD_NAME)).isPresent())
+                        throw new IllegalArgumentException("The provided graphRDD name is not in the persisted RDDs of the SparkContext: " + sparkConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD_NAME, null));
+                    final JavaRDD rdd = SparkHelper.getPersistedRDD(sparkContext, sparkConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD_NAME)).get().toJavaRDD();
+                    graphRDD = JavaPairRDD.fromJavaRDD(rdd).cache();
+                } else {
+                    try {
+                        graphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
+                                .newInstance()
+                                .readGraphRDD(apacheConfiguration, sparkContext)
+                                .setName(sparkConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD_NAME, "graphRDD"))
+                                .cache();
+                    } catch (final InstantiationException | IllegalAccessException e) {
+                        throw new IllegalStateException(e.getMessage(), e);
+                    }
                 }
+
                 JavaPairRDD<Object, ViewIncomingPayload<Object>> viewIncomingRDD = null;
 
                 ////////////////////////////////
@@ -186,11 +196,12 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         SparkExecutor.saveMapReduceRDD(null == reduceRDD ? mapRDD : reduceRDD, mapReduce, finalMemory, hadoopConfiguration);
                     }
                 }
+
                 // update runtime and return the newly computed graph
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);
                 return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, this.resultGraph, this.persist), finalMemory.asImmutable());
             } finally {
-                if (sparkContext != null && !hadoopGraph.configuration().getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
+                if (sparkContext != null && !this.hadoopGraph.configuration().getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
                     sparkContext.stop();
             }
         });
