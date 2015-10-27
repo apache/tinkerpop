@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 Release Process
----------------
+===============
 
 This document describes the steps required to release a version of TinkerPop.  The release is handled by a "release
 manager" (a committer fulfills this role), who ensures that the steps in this document are executed. The process is
@@ -29,7 +29,7 @@ feedback.  Once a release point has been identified, the following phases repres
 * Release and promote.
 
 Pre-flight Check
-~~~~~~~~~~~~~~~~
+----------------
 
 The "pre-flight check" is a list of things performed by the release manager during the weeks leading up to a scheduled
 day to release.  These checks will help to ensure that that release day goes smoothly by identifying problems up early
@@ -50,7 +50,7 @@ of the docs and thus validate that there are no issues with the documentation ge
 of the published documentation on the dev mailing list.
 
 Release Candidate
-~~~~~~~~~~~~~~~~~
+-----------------
 
 A release candidate is an unofficial release that is represented by a tagged version in the Git repository.  It is
 offered in cases where there is significant change in a particular version and the potential for upgrades and problems
@@ -71,7 +71,7 @@ might be high.
 . Repeat as required or proceed to the next phase
 
 PMC Vote
-~~~~~~~~
+--------
 
 A positive vote for a particular release from the TinkerPop PMC is required to move to the following phase.
 
@@ -112,7 +112,7 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 . *Wait for vote acceptance* (72 hours)
 
 Incubator Vote
-~~~~~~~~~~~~~~
+--------------
 
 A positive vote for a particular release from the Apache Incubator is required to move to the following phase.
 
@@ -121,7 +121,7 @@ A positive vote for a particular release from the Apache Incubator is required t
 . *Wait for vote acceptance* (72 hours)
 
 Release & Promote
-~~~~~~~~~~~~~~~~~
+-----------------
 
 . `mvn clean install -Djavadoc -Dmaven.test.skip=true; bin/process-docs.sh` - rebuild source and docs of tagged release
 . `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
