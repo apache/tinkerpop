@@ -136,4 +136,14 @@ public class GraphStep<S, E extends Element> extends AbstractStep<S, E> implemen
         this.head = null;
         this.iterator = EmptyIterator.instance();
     }
+
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode() ^ this.returnClass.hashCode();
+        for (final Object id : this.ids) {
+            result ^= id.hashCode();
+        }
+        return result;
+    }
 }
