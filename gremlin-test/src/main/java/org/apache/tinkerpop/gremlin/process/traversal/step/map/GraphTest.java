@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
@@ -26,14 +27,18 @@ import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -44,6 +49,8 @@ public abstract class GraphTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, String> get_g_VX1X_V_valuesXnameX(final Object v1Id);
 
     public abstract Traversal<Vertex, String> get_g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name();
+
+    public abstract Traversal<Vertex, Edge> get_g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -62,6 +69,24 @@ public abstract class GraphTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList("MY BABE", "HOOCHIE COOCHIE MAN"), traversal);
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
+    @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
+    public void g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX() {
+        final Traversal<Vertex, Edge> traversal = get_g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX();
+        printTraversalForm(traversal);
+        int counter = 0;
+        while (traversal.hasNext()) {
+            final Edge edge = traversal.next();
+            assertEquals("uses", edge.label());
+            assertEquals("person", edge.outVertex().label());
+            assertEquals("software", edge.inVertex().label());
+            counter++;
+        }
+        assertEquals(8, counter);
+    }
+
     public static class Traversals extends GraphTest {
 
         @Override
@@ -73,6 +98,12 @@ public abstract class GraphTest extends AbstractGremlinProcessTest {
         public Traversal<Vertex, String> get_g_V_hasXname_GarciaX_inXsungByX_asXsongX_V_hasXname_Willie_DixonX_inXwrittenByX_whereXeqXsongXX_name() {
             return g.V().has("artist", "name", "Garcia").in("sungBy").as("song")
                     .V().has("artist", "name", "Willie_Dixon").in("writtenBy").where(P.eq("song")).values("name");
+        }
+
+        @Override
+        public Traversal<Vertex, Edge> get_g_V_hasLabelXpersonX_asXpX_VXsoftwareX_addInEXuses_pX() {
+            final List<Vertex> software = g.V().hasLabel("software").toList();
+            return g.V().hasLabel("person").as("p").V(software).addE("uses").from("p");
         }
     }
 }
