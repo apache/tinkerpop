@@ -20,8 +20,11 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.driver.*;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
+import org.apache.tinkerpop.gremlin.driver.Client;
+import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -105,6 +108,45 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldHandleResultsOfAllSizes() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final String script = "g.V().drop().iterate();\n" +
+                "\n" +
+                "List ids = new ArrayList();\n" +
+                "\n" +
+                "int ii = 0;\n" +
+                "Vertex v = graph.addVertex();\n" +
+                "v.property(\"ii\", ii);\n" +
+                "v.property(\"sin\", Math.sin(ii));\n" +
+                "ids.add(v.id());\n" +
+                "\n" +
+                "Random rand = new Random();\n" +
+                "for (; ii < size; ii++) {\n" +
+                "    v = graph.addVertex();\n" +
+                "    v.property(\"ii\", ii);\n" +
+                "    v.property(\"sin\", Math.sin(ii/5.0));\n" +
+                "    Vertex u = g.V(ids.get(rand.nextInt(ids.size()))).next();\n" +
+                "    v.addEdge(\"linked\", u);\n" +
+                "    ids.add(u.id());\n" +
+                "    ids.add(v.id());\n" +
+                "}\n" +
+                "g.V()";
+
+        final List<Integer> sizes = Arrays.asList(1, 10, 20, 50, 75, 100, 250, 500, 750, 1000, 5000, 10000);
+        for (Integer size : sizes) {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("size", size - 1);
+            final ResultSet results = client.submit(script, params);
+
+            assertEquals(size.intValue(), results.all().get().size());
+        }
+
+        cluster.close();
     }
 
     @Test
