@@ -18,8 +18,10 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
+import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
+import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect.TinkerGraphStep;
@@ -32,9 +34,10 @@ import static org.junit.Assert.assertEquals;
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 
-public class TinkerGraphStepStrategyTest extends AbstractGremlinTest {
+public class TinkerGraphStepStrategyTest extends AbstractGremlinProcessTest {
 
     @Test
+    @IgnoreEngine(TraversalEngine.Type.COMPUTER)
     public void shouldFoldInHasContainers() {
         GraphTraversal.Admin traversal = g.V().has("name", "marko").asAdmin();
         assertEquals(2, traversal.getSteps().size());
