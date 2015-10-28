@@ -52,7 +52,7 @@ public final class HadoopPools {
 
     public static GryoPool getGryoPool() {
         if (!INITIALIZED)
-            HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not be initialized, using the default pool");     // TODO: this is necessary because we can't get the pool intialized in the Merger code of the Hadoop process.
+            HadoopGraph.LOGGER.warn("The " + HadoopPools.class.getSimpleName() + " has not been initialized, using the default pool");     // TODO: this is necessary because we can't get the pool intialized in the Merger code of the Hadoop process.
         return GRYO_POOL;
     }
 }

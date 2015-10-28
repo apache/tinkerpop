@@ -36,6 +36,8 @@ import static org.junit.Assume.assumeThat;
  */
 public abstract class AbstractGremlinServerIntegrationTest {
     private GremlinServer server;
+    private final static String epollOption = "gremlin.server.epoll";
+    private static final boolean GREMLIN_SERVER_EPOLL = "true".equalsIgnoreCase(System.getProperty(epollOption));
 
     @Rule
     public TestName name = new TestName();
@@ -51,12 +53,15 @@ public abstract class AbstractGremlinServerIntegrationTest {
     @Before
     public void setUp() throws Exception {
         System.out.println("* Testing: " + name.getMethodName());
+        System.out.println("* Epoll option enabled:" + GREMLIN_SERVER_EPOLL);
 
         final InputStream stream = getSettingsInputStream();
         final Settings settings = Settings.read(stream);
-
         final Settings overridenSettings = overrideSettings(settings);
         ServerTestHelper.rewritePathsInGremlinServerSettings(overridenSettings);
+        if (GREMLIN_SERVER_EPOLL) {
+            overridenSettings.useEpollEventLoop = true;
+        }
 
         this.server = new GremlinServer(overridenSettings);
 
