@@ -150,3 +150,11 @@ Element Removal
  Providers are free to deal with deleted elements as they see fit.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-297[TINKERPOP3-297] for more information.
+
+VendorOptimizationStrategy Rename
++++++++++++++++++++++++++++++++++
+
+The `VendorOptimizationStrategy` has been renamed to `ProviderOptimizationStrategy`.  This renaming is consistent
+with revised terminology for what were formerly referred to as "vendors".
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP3-876[TINKERPOP3-876] for more information.
