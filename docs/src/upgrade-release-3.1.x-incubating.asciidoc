@@ -35,6 +35,7 @@ Additional upgrade information can be found here:
 Important Changes
 ~~~~~~~~~~~~~~~~~
 
+* Traversals now support mid-traversal `V()`-steps. Graph system providers should ensure that a mid-traversal `V()` can leverage any suitable index.
 * The Gephi Plugin has improved integration with Gephi, where manually inserting {{store}} steps to visualize a running traversal is no longer required.
 * Entire TinkerGraph instances can be serialized over Gryo.
 * Hadoop1 support has been dropped. Hadoop2 is now supported. Giraph 1.1.0 is now supported and Spark of Hadoop2 YARN.
