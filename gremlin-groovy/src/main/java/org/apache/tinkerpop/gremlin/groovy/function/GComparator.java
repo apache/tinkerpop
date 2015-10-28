@@ -24,8 +24,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.LambdaHolder;
 import java.util.Comparator;
 
 /**
+ * @deprecated As of release 3.1.0, use {@code as Comparator} in Groovy.
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
+@Deprecated
 public final class GComparator<A> implements Comparator<A>, LambdaHolder {
 
     private final Closure closure;

@@ -28,11 +28,11 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class B_O_TraverserGenerator implements TraverserGenerator {
+public final class B_O_TraverserGenerator implements TraverserGenerator {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
-            TraverserRequirement.OBJECT,
-            TraverserRequirement.BULK);
+            TraverserRequirement.BULK,
+            TraverserRequirement.OBJECT);
 
     private static final B_O_TraverserGenerator INSTANCE = new B_O_TraverserGenerator();
 

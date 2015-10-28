@@ -46,6 +46,11 @@ if [ -e /tmp/neo4j ]; then
   exit 1
 fi
 
+if [ -e /tmp/tinkergraph.kryo ]; then
+  echo "The file '/tmp/tinkergraph.kryo' is required by the pre-processor, be sure to delete it before processing the docs."
+  exit 1
+fi
+
 function directory {
   d1=`pwd`
   cd $1
@@ -134,5 +139,6 @@ tput smam
 if [ ${ec} -ne 0 ]; then
   exit 1
 else
+  rm -rf /tmp/neo4j /tmp/tinkergraph.kryo
   echo
 fi

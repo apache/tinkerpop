@@ -40,7 +40,7 @@ public abstract class GroovySackTest {
         }
 
         @Override
-        public Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
+        public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
             TraversalScriptHelper.compute("g.withSack(0.0f).V.repeat(__.outE.sack(sum).by('weight').inV).times(2).sack()", g)
         }
 
@@ -50,7 +50,7 @@ public abstract class GroovySackTest {
         }
 
         @Override
-        public Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
+        public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
             TraversalScriptHelper.compute("g.withSack(0.0f).V.repeat(__.outE.sack(sum, 'weight').inV).times(2).sack", g)
         }
 
@@ -63,6 +63,11 @@ public abstract class GroovySackTest {
         public Traversal<Vertex, Double> get_g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack(
                 final Object v1Id) {
             TraversalScriptHelper.compute("g.withSack(1.0d,sum).V(${v1Id}).local(out('knows').barrier(normSack)).in('knows').barrier.sack", g, "v1Id", v1Id)
+        }
+
+        @Override
+        public Traversal<Vertex, Integer> get_g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack() {
+            TraversalScriptHelper.compute("g.withBulk(false).withSack(1, sum).V.out.barrier.sack", g);
         }
     }
 }

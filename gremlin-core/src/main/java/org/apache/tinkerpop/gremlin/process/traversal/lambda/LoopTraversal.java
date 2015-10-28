@@ -32,6 +32,10 @@ public final class LoopTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
         this.maxLoops = maxLoops;
     }
 
+    public long getMaxLoops() {
+        return maxLoops;
+    }
+
     @Override
     public boolean hasNext() {
         return this.allow;

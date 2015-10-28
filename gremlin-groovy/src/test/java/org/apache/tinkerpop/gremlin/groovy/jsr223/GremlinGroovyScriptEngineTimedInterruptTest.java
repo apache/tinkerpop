@@ -64,19 +64,19 @@ public class GremlinGroovyScriptEngineTimedInterruptTest {
     @Test
     public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine(
-                new TimedInterruptCustomizerProvider(50), new DefaultImportCustomizerProvider());
+                new TimedInterruptCustomizerProvider(1000), new DefaultImportCustomizerProvider());
 
-        for (int ix = 0; ix < 10; ix++) {
+        for (int ix = 0; ix < 5; ix++) {
             try {
-                // this script takes 10 ms longer than the interruptionTimeout
-                engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 60) {}");
+                // this script takes 1000 ms longer than the interruptionTimeout
+                engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 2000) {}");
                 fail("This should have timed out");
             } catch (ScriptException se) {
                 assertEquals(TimeoutException.class, se.getCause().getCause().getClass());
             }
 
-            // this script takes 10 ms less than the interruptionTimeout
-            assertEquals("test", engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 40) {};'test'"));
+            // this script takes 500 ms less than the interruptionTimeout
+            assertEquals("test", engine.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 500) {};'test'"));
         }
 
         assertEquals(2, engine.eval("1+1"));

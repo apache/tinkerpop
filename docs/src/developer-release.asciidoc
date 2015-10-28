@@ -15,11 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ////
 Release Process
----------------
+===============
 
-This document describes the steps required to release a version of TinkerPop.  The process is multi-phased and can
-therefore take several weeks to complete given the time needed for Apache voting and community feedback.  Once a
-release point has been identified, the following phases represent the flow of "release":
+This document describes the steps required to release a version of TinkerPop.  The release is handled by a "release
+manager" (a committer fulfills this role), who ensures that the steps in this document are executed. The process is
+multi-phased and can therefore take several weeks to complete given the time needed for Apache voting and community
+feedback.  Once a release point has been identified, the following phases represent the flow of "release":
 
 * Pre-flight check.
 * Optionally, produce a release candidate for community feedback.
@@ -28,19 +29,28 @@ release point has been identified, the following phases represent the flow of "r
 * Release and promote.
 
 Pre-flight Check
-~~~~~~~~~~~~~~~~
+----------------
 
-The "pre-flight check" is a list of things performed during the week before the schedule day to release.  These checks
-will help to ensure that that release day goes smoothly by identifying problems up early and communicating with
-other members of the community.
+The "pre-flight check" is a list of things performed by the release manager during the weeks leading up to a scheduled
+day to release.  These checks will help to ensure that that release day goes smoothly by identifying problems up early
+and communicating with other members of the community.
 
-. Seven days before release, issue an email to the dev mailing list to remind the community of the pending release.
+. Fourteen days before release, issue an email to the dev mailing list to remind the community of the pending release.
 .. Note any important issues open in JIRA in that post.
 .. Request review and update of the "upgrade documentation" and CHANGELOG.
-. At some point during the week, review LICENSE and NOTICE files to make sure that no changes are needed.
+. Seven days before release, announce the code freeze on the dev mailing list to remind the community that the branch
+under release is protected. Tweaks to documentation and other odds and ends related to release are still allowed
+during this period.
+. At some point during the week:
+.. Deploy a final SNAPSHOT to the snapshot repository.
+.. Review LICENSE and NOTICE files to make sure that no changes are needed.
+.. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
+. When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
+of the docs and thus validate that there are no issues with the documentation generation process. Request review
+of the published documentation on the dev mailing list.
 
 Release Candidate
-~~~~~~~~~~~~~~~~~
+-----------------
 
 A release candidate is an unofficial release that is represented by a tagged version in the Git repository.  It is
 offered in cases where there is significant change in a particular version and the potential for upgrades and problems
@@ -61,7 +71,7 @@ might be high.
 . Repeat as required or proceed to the next phase
 
 PMC Vote
-~~~~~~~~
+--------
 
 A positive vote for a particular release from the TinkerPop PMC is required to move to the following phase.
 
@@ -91,8 +101,9 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/x.y.z/gremlin-console-x.y.z-distribution.zip* dev/x.y.z`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/x.y.z/gremlin-server-x.y.z-distribution.zip* dev/x.y.z`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/x.y.z/tinkerpop-x.y.z-source-release.zip* dev/x.y.z`
-.. `cd dev/x.y.z` and `for f in *.zip*; do  mv "$f" "apache-$f"; done`
+.. `cd dev/x.y.z` and `for f in \*.zip*; do  mv "$f" "apache-$f"; done`
 .. `cd ..; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
+. Execute `bin/validate-distribution.sh` and any other relevant testing.
 . Perform JIRA administration tasks:
 .. "Release" the current version and set the "release date"
 .. If there is to be a follow on release in the current line of code, create that new version specifying the "start date"
@@ -101,7 +112,7 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 . *Wait for vote acceptance* (72 hours)
 
 Incubator Vote
-~~~~~~~~~~~~~~
+--------------
 
 A positive vote for a particular release from the Apache Incubator is required to move to the following phase.
 
@@ -110,14 +121,14 @@ A positive vote for a particular release from the Apache Incubator is required t
 . *Wait for vote acceptance* (72 hours)
 
 Release & Promote
-~~~~~~~~~~~~~~~~~
+-----------------
 
 . `mvn clean install -Djavadoc -Dmaven.test.skip=true; bin/process-docs.sh` - rebuild source and docs of tagged release
 . `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
 . Review and close the staging repository (Apache Nexus at link:https://repository.apache.org/[https://repository.apache.org/]) - check that versions are correct and that all artifacts are present
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/x.y.z`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/x.y.z`
-. `ls dev/x.y.z/ | grep '\-\(distribution\|source\-release\)\.zip' | sed -e 's/\(^[^ ]*\)-distribution\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-bin\2/' -e 's/\(^[^ ]*\)-source-release\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-src\2/' | /bin/sh`
+. `ls dev/x.y.z/ | grep '\-\(distribution\|source\-release\)\.zip' | sed -e 's/\(^[^ ]\*\)-distribution\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-bin\2/' -e 's/\(^[^ ]\*\)-source-release\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-src\2/' | /bin/sh`
 . `cd release; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
@@ -142,6 +153,7 @@ Two binary distributions are provided for user convenience:
 
 The online docs can be found here:
 	http://tinkerpop.incubator.apache.org/docs/x.y.z/ (user docs)
+	http://tinkerpop.incubator.apache.org/docs/x.y.z/upgrade.html (upgrade docs)
 	http://tinkerpop.incubator.apache.org/javadocs/x.y.z/core/ (core javadoc)
 	http://tinkerpop.incubator.apache.org/javadocs/x.y.z/full/ (full javadoc)
 

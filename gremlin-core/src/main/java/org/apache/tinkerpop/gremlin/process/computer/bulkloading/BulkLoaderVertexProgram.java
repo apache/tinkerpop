@@ -172,9 +172,6 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
             graph = GraphFactory.open(configuration.subset(WRITE_GRAPH_CFG_KEY));
             LOGGER.info("Opened Graph instance: {}", graph);
             try {
-                if (!graph.features().graph().supportsConcurrentAccess()) {
-                    throw new IllegalStateException("The given graph instance does not allow concurrent access.");
-                }
                 g = graph.traversal();
             } catch (Exception e) {
                 try {
@@ -384,8 +381,14 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
          * A configuration for the target graph that can be passed to GraphFactory.open().
          */
         public Builder writeGraph(final String configurationFile) throws ConfigurationException {
-            final Configuration conf = new PropertiesConfiguration(configurationFile);
-            conf.getKeys().forEachRemaining(key -> setGraphConfigurationProperty(key, conf.getProperty(key)));
+            return writeGraph(new PropertiesConfiguration(configurationFile));
+        }
+
+        /**
+         * A configuration for the target graph that can be passed to GraphFactory.open().
+         */
+        public Builder writeGraph(final Configuration configuration) {
+            configuration.getKeys().forEachRemaining(key -> setGraphConfigurationProperty(key, configuration.getProperty(key)));
             return this;
         }
     }

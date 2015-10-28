@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class O_TraverserGenerator implements TraverserGenerator {
+public final class O_TraverserGenerator implements TraverserGenerator {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = Collections.singleton(TraverserRequirement.OBJECT);
     private static final O_TraverserGenerator INSTANCE = new O_TraverserGenerator();

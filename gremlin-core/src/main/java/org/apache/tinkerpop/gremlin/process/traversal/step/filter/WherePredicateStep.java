@@ -24,7 +24,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
-import org.apache.tinkerpop.gremlin.process.traversal.util.ConjunctionP;
+import org.apache.tinkerpop.gremlin.process.traversal.util.ConnectiveP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 
@@ -51,8 +51,8 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     }
 
     private void configurePredicates(final P<Object> predicate) {
-        if (predicate instanceof ConjunctionP)
-            ((ConjunctionP<Object>) predicate).getPredicates().forEach(this::configurePredicates);
+        if (predicate instanceof ConnectiveP)
+            ((ConnectiveP<Object>) predicate).getPredicates().forEach(this::configurePredicates);
         else {
             final String selectKey = (String) (predicate.getValue() instanceof Collection ? ((Collection) predicate.getValue()).iterator().next() : predicate.getValue()); // hack for within("x"))
             this.selectKeys.add(selectKey);
@@ -61,8 +61,8 @@ public final class WherePredicateStep<S> extends FilterStep<S> implements Scopin
     }
 
     private void setPredicateValues(final P<Object> predicate, final Traverser.Admin<S> traverser, final Iterator<String> selectKeysIterator) {
-        if (predicate instanceof ConjunctionP)
-            ((ConjunctionP<Object>) predicate).getPredicates().forEach(p -> this.setPredicateValues(p, traverser, selectKeysIterator));
+        if (predicate instanceof ConnectiveP)
+            ((ConnectiveP<Object>) predicate).getPredicates().forEach(p -> this.setPredicateValues(p, traverser, selectKeysIterator));
         else
             predicate.setValue(this.getScopeValue(Pop.last, selectKeysIterator.next(), traverser));
     }

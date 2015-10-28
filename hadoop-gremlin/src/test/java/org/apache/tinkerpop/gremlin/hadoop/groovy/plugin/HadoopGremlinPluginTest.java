@@ -16,12 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.util.TestableConsolePluginAcceptor;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
@@ -29,14 +31,15 @@ import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -129,23 +132,23 @@ public class HadoopGremlinPluginTest extends AbstractGremlinTest {
         this.remote.connect(Arrays.asList("graph", "g"));
         Traversal<Vertex, String> traversal = (Traversal<Vertex, String>) this.remote.submit(Arrays.asList("g.V().hasLabel('person').group('m').by('age').by('name').out('knows').out('created').values('name')"));
         AbstractGremlinProcessTest.checkResults(Arrays.asList("ripple", "lop"), traversal);
-        assertTrue((Boolean) this.console.eval("hdfs.exists('hadoop-gremlin/target/test-output/m')"));
-        assertTrue((Boolean) this.console.eval("hdfs.exists('hadoop-gremlin/target/test-output/" + TraverserMapReduce.TRAVERSERS + "')"));
-        final List<KeyValue<Integer, BulkSet<String>>> mList = IteratorUtils.asList(this.console.eval("hdfs.head('hadoop-gremlin/target/test-output/m',ObjectWritable)"));
+        assertTrue((Boolean) this.console.eval("hdfs.exists('target/test-output/m')"));
+        assertTrue((Boolean) this.console.eval("hdfs.exists('target/test-output/" + TraverserMapReduce.TRAVERSERS + "')"));
+        final List<KeyValue<Integer, Collection<String>>> mList = IteratorUtils.asList(this.console.eval("hdfs.head('target/test-output/m',ObjectWritable)"));
         assertEquals(4, mList.size());
         mList.forEach(keyValue -> {
             if (keyValue.getKey().equals(29))
-                assertEquals(1l, keyValue.getValue().get("marko"));
+                assertTrue(keyValue.getValue().contains("marko"));
             else if (keyValue.getKey().equals(35))
-                assertEquals(1l, keyValue.getValue().get("peter"));
+                assertTrue(keyValue.getValue().contains("peter"));
             else if (keyValue.getKey().equals(32))
-                assertEquals(1l, keyValue.getValue().get("josh"));
+                assertTrue(keyValue.getValue().contains("josh"));
             else if (keyValue.getKey().equals(27))
-                assertEquals(1l, keyValue.getValue().get("vadas"));
+                assertTrue(keyValue.getValue().contains("vadas"));
             else
                 throw new IllegalStateException("The provided key/value is unknown: " + keyValue);
         });
-        final List<KeyValue<MapReduce.NullObject, Traverser<String>>> traversersList = IteratorUtils.asList(this.console.eval("hdfs.head('hadoop-gremlin/target/test-output/" + TraverserMapReduce.TRAVERSERS + "',ObjectWritable)"));
+        final List<KeyValue<MapReduce.NullObject, Traverser<String>>> traversersList = IteratorUtils.asList(this.console.eval("hdfs.head('target/test-output/" + TraverserMapReduce.TRAVERSERS + "',ObjectWritable)"));
         assertEquals(2, traversersList.size());
         traversersList.forEach(keyValue -> {
             assertEquals(MapReduce.NullObject.instance(), keyValue.getKey());
@@ -155,4 +158,16 @@ public class HadoopGremlinPluginTest extends AbstractGremlinTest {
         ////////////////
     }
 
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldGracefullyHandleBadGremlinHadoopLibs() throws Exception {
+        System.setProperty(Constants.HADOOP_GREMLIN_LIBS, "test/" + UUID.randomUUID());
+        this.graph.configuration().setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true);
+        this.console.addBinding("graph", this.graph);
+        this.console.addBinding("g", this.g);
+        this.remote.connect(Arrays.asList("graph", "g"));
+        Traversal<?, ?> traversal = (Traversal<?, ?>) this.remote.submit(Arrays.asList("g.V()"));
+        assertEquals(6, IteratorUtils.count(traversal));
+        assertNotNull(this.console.getBindings().get(RemoteAcceptor.RESULT));
+    }
 }

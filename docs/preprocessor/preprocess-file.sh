@@ -58,7 +58,7 @@ if [ $(grep -c '^\[gremlin' ${input}) -gt 0 ]; then
 
   awk -f ${AWK_SCRIPTS}/prepare.awk ${input} |
   awk -f ${AWK_SCRIPTS}/init-code-blocks.awk |
-  awk -f ${AWK_SCRIPTS}/progressbar.awk -v tpl=${AWK_SCRIPTS}/progressbar.groovy.template | HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/giraph-gremlin/lib" bin/gremlin.sh |
+  awk -f ${AWK_SCRIPTS}/progressbar.awk -v tpl=${AWK_SCRIPTS}/progressbar.groovy.template | HADOOP_GREMLIN_LIBS="${CONSOLE_HOME}/ext/giraph-gremlin/lib:${CONSOLE_HOME}/ext/tinkergraph-gremlin/lib" bin/gremlin.sh |
   ${lb} awk -f ${AWK_SCRIPTS}/ignore.awk   |
   ${lb} awk -f ${AWK_SCRIPTS}/prettify.awk |
   ${lb} awk -f ${AWK_SCRIPTS}/cleanup.awk  > ${output}

@@ -19,23 +19,21 @@
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public abstract class ConjunctionP<V> extends P<V> {
+public abstract class ConnectiveP<V> extends P<V> {
 
     protected List<P<V>> predicates;
 
-    public ConjunctionP(final P<V>... predicates) {
+    public ConnectiveP(final P<V>... predicates) {
         super(null, null);
         if (predicates.length < 2)
             throw new IllegalArgumentException("The provided " + this.getClass().getSimpleName() + " array must have at least two arguments: " + predicates.length);
@@ -57,7 +55,7 @@ public abstract class ConjunctionP<V> extends P<V> {
         return this;
     }
 
-    protected P<V> negate(final ConjunctionP<V> p) {
+    protected P<V> negate(final ConnectiveP<V> p) {
         final List<P<V>> negated = new ArrayList<>();
         for (final P<V> predicate : this.predicates) {
             negated.add(predicate.negate());
@@ -78,7 +76,7 @@ public abstract class ConjunctionP<V> extends P<V> {
     @Override
     public boolean equals(final Object other) {
         if (other != null && other.getClass().equals(this.getClass())) {
-            final List<P<V>> otherPredicates = ((ConjunctionP<V>) other).predicates;
+            final List<P<V>> otherPredicates = ((ConnectiveP<V>) other).predicates;
             if (this.predicates.size() == otherPredicates.size()) {
                 for (int i = 0; i < this.predicates.size(); i++) {
                     if (!this.predicates.get(i).equals(otherPredicates.get(i))) {
@@ -92,8 +90,8 @@ public abstract class ConjunctionP<V> extends P<V> {
     }
 
     @Override
-    public ConjunctionP<V> clone() {
-        final ConjunctionP<V> clone = (ConjunctionP<V>) super.clone();
+    public ConnectiveP<V> clone() {
+        final ConnectiveP<V> clone = (ConnectiveP<V>) super.clone();
         clone.predicates = new ArrayList<>();
         for (final P<V> p : this.predicates) {
             clone.predicates.add(p.clone());
