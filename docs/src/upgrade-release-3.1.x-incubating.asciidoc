@@ -63,6 +63,18 @@ to closing where a user must now explicitly call `commit()` to persist their mut
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-805[TINKERPOP3-805] for more information.
 
+Hadoop-Gremlin Updates
+++++++++++++++++++++++
+
+* Hadoop1 is no longer supported. Hadoop2 is now the only supported Hadoop version in TinkerPop.
+* The directory where application jars are stored in HDFS is now `hadoop-gremlin-x.y.z-libs`.
+** This versioning is important so that cross-version TinkerPop use does not cause jar conflicts.
+
+TinkerGraph-Gremlin Updates
++++++++++++++++++++++++++++
+
+* The `public static String` configurations have been renamed. The old `public static` variables have been deprecated.
+
 Gremlin Process
 ^^^^^^^^^^^^^^^
 
@@ -90,13 +102,6 @@ Gremlin-Groovy Updates
 * The closure wrappers classes `GFunction`, `GSupplier`, `GConsumer` have been deprecated.
 ** In Groovy, a closure can be specified using `as Function` and thus, these wrappers are not needed.
 * The `GremlinExecutor.promoteBindings()` method which was previously deprecated has been removed.
-
-Hadoop-Gremlin Updates
-++++++++++++++++++++++
-
-* Hadoop1 is no longer supported. Hadoop2 is now the only supported Hadoop version in TinkerPop.
-* The directory where application jars are stored in HDFS is now `hadoop-gremlin-x.y.z-libs`.
-** This versioning is important so that cross-version TinkerPop use does not cause jar conflicts.
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
