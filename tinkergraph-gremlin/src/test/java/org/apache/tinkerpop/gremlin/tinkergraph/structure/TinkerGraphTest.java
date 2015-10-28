@@ -22,14 +22,10 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Step;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
-import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect.TinkerGraphStep;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -286,7 +282,6 @@ public class TinkerGraphTest {
             }
         }
     }
-
     @Test(expected = IllegalStateException.class)
     public void shouldRequireGraphLocationIfFormatIsSet() {
         final Configuration conf = new BaseConfiguration();
@@ -327,7 +322,6 @@ public class TinkerGraphTest {
         v.remove();
         v.value("name");
     }
-
     @Test(expected = IllegalStateException.class)
     public void shouldRequireGraphFormatIfLocationIsSet() {
         final Configuration conf = new BaseConfiguration();
@@ -387,26 +381,5 @@ public class TinkerGraphTest {
         final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
         IoTest.assertModernGraph(reloadedGraph, true, false);
         reloadedGraph.close();
-    }
-
-    @Test
-    public void shouldFoldHasContainerIntoGraphStep() {
-        final TinkerGraph graph = TinkerGraph.open();
-        final GraphTraversalSource g = graph.traversal();
-        final GraphTraversal<Vertex, Edge> t = g
-                .V().has("name", "foo").as("foo")
-                .V().has("name", "bar").addE("foobar").from("foo");
-
-        assertEquals(0, t.asAdmin().getSteps().stream().filter(s -> s instanceof TinkerGraphStep).count());
-
-        int tinkerGraphStepCounter = 0;
-        for (final Step step : t.iterate().asAdmin().getSteps()) {
-            if (step instanceof TinkerGraphStep) {
-                final TinkerGraphStep gs = (TinkerGraphStep) step;
-                assertEquals(1, gs.getHasContainers().size());
-                tinkerGraphStepCounter++;
-            }
-        }
-        assertEquals(2, tinkerGraphStepCounter);
     }
 }
