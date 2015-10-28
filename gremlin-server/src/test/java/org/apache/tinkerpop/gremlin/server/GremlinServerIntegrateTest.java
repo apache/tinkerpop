@@ -608,7 +608,7 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             latch3.countDown();
             
         });
-        latch3.await(1500, TimeUnit.MILLISECONDS);
+        assertTrue(latch3.await(1500, TimeUnit.MILLISECONDS));
         
         // Check to see if the transaction is closed.
         final CountDownLatch latch4 = new CountDownLatch(1);
