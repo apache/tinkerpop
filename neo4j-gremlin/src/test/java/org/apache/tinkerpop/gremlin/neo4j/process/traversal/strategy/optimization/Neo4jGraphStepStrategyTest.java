@@ -1,6 +1,5 @@
 package org.apache.tinkerpop.gremlin.neo4j.process.traversal.strategy.optimization;
 
-import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.neo4j.AbstractNeo4jGremlinTest;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.step.sideEffect.Neo4jGraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -16,7 +15,6 @@ import static org.junit.Assert.assertEquals;
 public class Neo4jGraphStepStrategyTest extends AbstractNeo4jGremlinTest {
 
     @Test
-    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldFoldInHasContainers() {
         GraphTraversal.Admin traversal = g.V().has("name", "marko").asAdmin();
         assertEquals(2, traversal.getSteps().size());

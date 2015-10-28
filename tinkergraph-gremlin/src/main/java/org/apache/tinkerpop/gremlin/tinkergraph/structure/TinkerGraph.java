@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -68,6 +67,7 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE)
+@Graph.OptIn("org.apache.tinkerpop.gremlin.tinkergraph.TinkerGraphStrategySuite")
 public final class TinkerGraph implements Graph {
 
     static {
@@ -324,9 +324,9 @@ public final class TinkerGraph implements Graph {
     public class TinkerGraphFeatures implements Features {
 
         private final TinkerGraphGraphFeatures graphFeatures = new TinkerGraphGraphFeatures();
-private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures();
+        private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures();
         private final TinkerGraphVertexFeatures vertexFeatures = new TinkerGraphVertexFeatures();
-        
+
         private TinkerGraphFeatures() {
         }
 
@@ -351,11 +351,11 @@ private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures
         }
 
     }
-    
+
     public class TinkerGraphVertexFeatures implements Features.VertexFeatures {
 
         private final TinkerGraphVertexPropertyFeatures vertexPropertyFeatures = new TinkerGraphVertexPropertyFeatures();
-        
+
         private TinkerGraphVertexFeatures() {
         }
 
@@ -379,7 +379,7 @@ private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures
             return defaultVertexPropertyCardinality;
         }
     }
-    
+
     public class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
 
         private TinkerGraphEdgeFeatures() {
@@ -395,7 +395,7 @@ private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures
             return edgeIdManager.allow(id);
         }
     }
-    
+
     public class TinkerGraphGraphFeatures implements Features.GraphFeatures {
 
         private TinkerGraphGraphFeatures() {
