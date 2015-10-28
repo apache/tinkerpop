@@ -107,6 +107,7 @@ public interface GraphComputer {
      * Set an arbitrary configuration key/value for the underlying {@link org.apache.commons.configuration.Configuration} in the {@link GraphComputer}.
      * Typically, the other fluent methods in {@link GraphComputer} should be used to configure the computation.
      * However, for some custom configuration in the underlying engine, this method should be used.
+     * Different GraphComputer implementations will have different key/values and thus, parameters placed here are generally not universal to all GraphComputer implementations.
      *
      * @param key   the key of the configuration
      * @param value the value of the configuration

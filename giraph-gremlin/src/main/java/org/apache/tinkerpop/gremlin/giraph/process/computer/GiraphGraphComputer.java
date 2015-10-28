@@ -95,6 +95,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     @Override
     public GraphComputer config(final String key, final Object value) {
         this.giraphConfiguration.set(key, value.toString());
+        this.useWorkerThreadsInConfiguration = this.giraphConfiguration.getInt(GiraphConstants.MAX_WORKERS, -666) != -666 || this.giraphConfiguration.getInt(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), -666) != -666;
         return this;
     }
 
