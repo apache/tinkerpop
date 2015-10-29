@@ -61,16 +61,26 @@ import java.util.stream.Stream;
  */
 public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
+    private final org.apache.commons.configuration.Configuration sparkConfiguration;
+
     public SparkGraphComputer(final HadoopGraph hadoopGraph) {
         super(hadoopGraph);
+        this.sparkConfiguration = new HadoopConfiguration();
+        ConfigurationUtils.copy(this.hadoopGraph.configuration(), this.sparkConfiguration);
     }
 
     @Override
     public GraphComputer workers(final int workers) {
         super.workers(workers);
-        if (this.hadoopGraph.configuration().getString("spark.master").startsWith("local")) {
-            this.hadoopGraph.configuration().setProperty("spark.master", "local[" + this.workers + "]");
+        if (this.sparkConfiguration.getString("spark.master").startsWith("local")) {
+            this.sparkConfiguration.setProperty("spark.master", "local[" + this.workers + "]");
         }
+        return this;
+    }
+
+    @Override
+    public GraphComputer config(final String key, final Object value) {
+        this.sparkConfiguration.setProperty(key, value);
         return this;
     }
 
@@ -78,13 +88,12 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
     public Future<ComputerResult> submit() {
         super.validateStatePriorToExecution();
         // apache and hadoop configurations that are used throughout the graph computer computation
-        final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.hadoopGraph.configuration());
-        apacheConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
-        final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(apacheConfiguration);
+        this.sparkConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
+        final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(this.sparkConfiguration);
         if (FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class))) {
             try {
                 final String inputLocation = FileSystem.get(hadoopConfiguration).getFileStatus(new Path(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION))).getPath().toString();
-                apacheConfiguration.setProperty(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, inputLocation);
+                this.sparkConfiguration.setProperty(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, inputLocation);
                 hadoopConfiguration.set(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, inputLocation);
             } catch (final IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
@@ -121,7 +130,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 try {
                     graphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
                             .newInstance()
-                            .readGraphRDD(apacheConfiguration, sparkContext)
+                            .readGraphRDD(this.sparkConfiguration, sparkContext)
                             .setName("graphRDD")
                             .cache();
                 } catch (final InstantiationException | IllegalAccessException e) {
@@ -139,7 +148,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     memory.broadcastMemory(sparkContext);
                     final HadoopConfiguration vertexProgramConfiguration = new HadoopConfiguration();
                     this.vertexProgram.storeState(vertexProgramConfiguration);
-                    ConfigurationUtils.copy(vertexProgramConfiguration, apacheConfiguration);
+                    ConfigurationUtils.copy(vertexProgramConfiguration, this.sparkConfiguration);
                     ConfUtil.mergeApacheIntoHadoopConfiguration(vertexProgramConfiguration, hadoopConfiguration);
                     // execute the vertex program
                     while (true) {
@@ -158,7 +167,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         try {
                             hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class)
                                     .newInstance()
-                                    .writeGraphRDD(apacheConfiguration, graphRDD);
+                                    .writeGraphRDD(this.sparkConfiguration, graphRDD);
                         } catch (final InstantiationException | IllegalAccessException e) {
                             throw new IllegalStateException(e.getMessage(), e);
                         }
@@ -175,7 +184,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = SparkExecutor.prepareGraphRDDForMapReduce(graphRDD, viewIncomingRDD, elementComputeKeys).setName("mapReduceGraphRDD").cache();
                     for (final MapReduce mapReduce : this.mapReducers) {
                         // execute the map reduce job
-                        final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
+                        final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(this.sparkConfiguration);
                         mapReduce.storeState(newApacheConfiguration);
                         // map
                         final JavaPairRDD mapRDD = SparkExecutor.executeMap((JavaPairRDD) mapReduceGraphRDD, mapReduce, newApacheConfiguration).setName("mapRDD");
