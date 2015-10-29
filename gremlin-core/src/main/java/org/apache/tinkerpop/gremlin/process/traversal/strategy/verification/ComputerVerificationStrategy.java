@@ -22,9 +22,6 @@ import org.apache.tinkerpop.gremlin.process.computer.traversal.step.map.Computer
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.ConstantTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.IdentityTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.lambda.TokenTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Bypassing;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.process.traversal.step.PathProcessor;
@@ -46,9 +43,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierS
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.SupplyingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -83,10 +77,7 @@ public final class ComputerVerificationStrategy extends AbstractTraversalStrateg
                 throw new VerificationException("GraphComputer does not support traversals starting from a non-GraphStep: " + traversal.getStartStep(), traversal);
             ///
             if (endStep instanceof CollectingBarrierStep && endStep instanceof TraversalParent) {
-                if (((TraversalParent) endStep).getLocalChildren().stream().filter(t ->
-                        !(t instanceof IdentityTraversal) &&
-                                !(t instanceof ConstantTraversal) &&  // for SampleStep
-                                !(t instanceof TokenTraversal && ((TokenTraversal) t).getToken().equals(T.id))).findAny().isPresent())
+                if (((TraversalParent) endStep).getLocalChildren().stream().filter(t -> !TraversalHelper.isNotBeyondElementId(t)).findAny().isPresent())
                     throw new VerificationException("A final CollectingBarrierStep can not process an element beyond its id: " + endStep, traversal);
             }
             ///
