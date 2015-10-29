@@ -1330,8 +1330,7 @@ session state is not shared among them.
 !Key !Description
 !`authentication` !A request that contains the response to a server challenge for authentication
 !`eval` !Evaluate a Gremlin script provided as a `String`
-|`close` |Close the specified session and rollback any open transactions.
-!=========================================================
+!`close` !Close the specified session and rollback any open transactions.
 |=========================================================
 
 '`authentication` operation arguments'
