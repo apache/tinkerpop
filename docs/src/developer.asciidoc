@@ -14,13 +14,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ////
-Contributing to Apache TinkerPop
---------------------------------
+image::apache-tinkerpop-logo.png[width=500]
 
-Contributions via GitHub pull requests are gladly accepted from their original
-author. By submitting any copyrighted material via pull request, email, or other means
-you agree to license the material under the project's open source license and
-warrant that you have the legal authority to do so.
+:toc-position: left
 
-Please see the "Developer Documentation" for more information on
-link:http://tinkerpop.incubator.apache.org/docs/3.1.0-SNAPSHOT/developer.html#_contributing[contributing] to TinkerPop.
+Developer Documentation
+=======================
+
+This document contains information for TinkerPop developers, contributors, and community members. It focuses on
+technical information and other internal processes related to the project.
+
+include::developer-contributing.asciidoc[]
+
+include::developer-release.asciidoc[]
+
+include::developer-meetings.asciidoc[]

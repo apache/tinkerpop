@@ -605,6 +605,31 @@ g.V().values('age').sum() <6>
 <5> The same as before, but using a built-in bi-function.
 <6> The same as before, but using the <<sum-step,`sum()`-step>>.
 
+[[graph-step]]
+Graph Step
+~~~~~~~~~~
+
+The `V()`-step is usually used to start a `GraphTraversal`, but can also be used mid-traversal.
+
+[gremlin-groovy,modern]
+----
+g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
+  V().has('name', within('lop', 'ripple')).addE('uses').from('person')
+----
+
+NOTE: Whether a mid-traversal `V()` uses an index or not, depends on a) whether suitable index exists and b) if the particular graph system provider implemented this functionality.
+
+[gremlin-groovy,modern]
+----
+g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
+  V().has('name', within('lop', 'ripple')).addE('uses').from('person').toString() <1>
+g.V().has('name', within('marko', 'vadas', 'josh')).as('person').
+  V().has('name', within('lop', 'ripple')).addE('uses').from('person').iterate().toString() <2>
+----
+
+<1> Normally the `V()`-step will iterate over all vertices. However, graph strategies can fold `HasContainer`'s into a `GraphStep` to allow index lookups.
+<2> Whether the graph system provider supports mid-traversal `V()` index lookups or not can easily be determined by inspecting the `toString()` output of the iterated traversal. If `has` conditions were folded into the `V()`-step, an index - if one exists - will be used.
+
 [[group-step]]
 Group Step
 ~~~~~~~~~~

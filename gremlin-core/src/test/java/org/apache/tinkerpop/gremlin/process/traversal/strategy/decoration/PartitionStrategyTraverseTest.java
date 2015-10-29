@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.filter.HasStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -149,7 +149,7 @@ public class PartitionStrategyTraverseTest {
         when(features.vertex()).thenReturn(vertexFeatures);
         when(vertexFeatures.getCardinality(any())).thenReturn(VertexProperty.Cardinality.single);
         final DefaultGraphTraversal t = new DefaultGraphTraversal<>(mockedGraph);
-        if (clazz != null) t.asAdmin().addStep(new GraphStep<>(t.asAdmin(), clazz));
+        if (clazz != null) t.asAdmin().addStep(new GraphStep<>(t.asAdmin(), clazz, true));
         return t;
     }
 }

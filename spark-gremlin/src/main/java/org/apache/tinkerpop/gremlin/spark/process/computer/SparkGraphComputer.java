@@ -63,16 +63,26 @@ import java.util.stream.Stream;
  */
 public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
+    private final org.apache.commons.configuration.Configuration sparkConfiguration;
+
     public SparkGraphComputer(final HadoopGraph hadoopGraph) {
         super(hadoopGraph);
+        this.sparkConfiguration = new HadoopConfiguration();
+        ConfigurationUtils.copy(this.hadoopGraph.configuration(), this.sparkConfiguration);
     }
 
     @Override
     public GraphComputer workers(final int workers) {
         super.workers(workers);
-        if (this.hadoopGraph.configuration().getString("spark.master").startsWith("local")) {
-            this.hadoopGraph.configuration().setProperty("spark.master", "local[" + this.workers + "]");
+        if (this.sparkConfiguration.getString("spark.master").startsWith("local")) {
+            this.sparkConfiguration.setProperty("spark.master", "local[" + this.workers + "]");
         }
+        return this;
+    }
+
+    @Override
+    public GraphComputer config(final String key, final Object value) {
+        this.sparkConfiguration.setProperty(key, value);
         return this;
     }
 
@@ -80,7 +90,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
     public Future<ComputerResult> submit() {
         super.validateStatePriorToExecution();
         // apache and hadoop configurations that are used throughout the graph computer computation
-        final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.hadoopGraph.configuration());
+        final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.sparkConfiguration);
         apacheConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
         final Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(apacheConfiguration);
         if (null == hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD_NAME, null)) {

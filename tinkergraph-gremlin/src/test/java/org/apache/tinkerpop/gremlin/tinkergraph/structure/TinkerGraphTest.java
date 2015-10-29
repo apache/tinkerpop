@@ -285,7 +285,7 @@ public class TinkerGraphTest {
     @Test(expected = IllegalStateException.class)
     public void shouldRequireGraphLocationIfFormatIsSet() {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "graphml");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "graphml");
         TinkerGraph.open(conf);
     }
 
@@ -325,7 +325,7 @@ public class TinkerGraphTest {
     @Test(expected = IllegalStateException.class)
     public void shouldRequireGraphFormatIfLocationIsSet() {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, "/tmp");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, "/tmp");
         TinkerGraph.open(conf);
     }
 
@@ -336,8 +336,8 @@ public class TinkerGraphTest {
         if (f.exists() && f.isFile()) f.delete();
 
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "graphml");
-        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, graphLocation);
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "graphml");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
         final TinkerGraph graph = TinkerGraph.open(conf);
         TinkerFactory.generateModern(graph);
         graph.close();
@@ -354,8 +354,8 @@ public class TinkerGraphTest {
         if (f.exists() && f.isFile()) f.delete();
 
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "graphson");
-        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, graphLocation);
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "graphson");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
         final TinkerGraph graph = TinkerGraph.open(conf);
         TinkerFactory.generateModern(graph);
         graph.close();
@@ -372,8 +372,8 @@ public class TinkerGraphTest {
         if (f.exists() && f.isFile()) f.delete();
 
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "gryo");
-        conf.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, graphLocation);
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
         final TinkerGraph graph = TinkerGraph.open(conf);
         TinkerFactory.generateModern(graph);
         graph.close();

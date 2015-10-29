@@ -30,7 +30,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
@@ -68,6 +67,7 @@ import java.util.stream.Stream;
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_INTEGRATE)
 @Graph.OptIn(Graph.OptIn.SUITE_GROOVY_ENVIRONMENT_PERFORMANCE)
+@Graph.OptIn("org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.strategy.TinkerGraphStrategySuite")
 public final class TinkerGraph implements Graph {
 
     static {
@@ -78,12 +78,43 @@ public final class TinkerGraph implements Graph {
         this.setProperty(Graph.GRAPH, TinkerGraph.class.getName());
     }};
 
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER}
+     */
+    @Deprecated
     public static final String CONFIG_VERTEX_ID = "gremlin.tinkergraph.vertexIdManager";
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER}
+     */
+    @Deprecated
     public static final String CONFIG_EDGE_ID = "gremlin.tinkergraph.edgeIdManager";
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER}
+     */
+    @Deprecated
     public static final String CONFIG_VERTEX_PROPERTY_ID = "gremlin.tinkergraph.vertexPropertyIdManager";
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY}
+     */
+    @Deprecated
     public static final String CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_GRAPH_LOCATION}
+     */
+    @Deprecated
     public static final String CONFIG_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link TinkerGraph#GREMLIN_TINKERGRAPH_GRAPH_FORMAT}
+     */
+    @Deprecated
     public static final String CONFIG_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
+    ///////
+    public static final String GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER = "gremlin.tinkergraph.vertexIdManager";
+    public static final String GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER = "gremlin.tinkergraph.edgeIdManager";
+    public static final String GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER = "gremlin.tinkergraph.vertexPropertyIdManager";
+    public static final String GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY = "gremlin.tinkergraph.defaultVertexPropertyCardinality";
+    public static final String GREMLIN_TINKERGRAPH_GRAPH_LOCATION = "gremlin.tinkergraph.graphLocation";
+    public static final String GREMLIN_TINKERGRAPH_GRAPH_FORMAT = "gremlin.tinkergraph.graphFormat";
 
     private final TinkerGraphFeatures features = new TinkerGraphFeatures();
 
@@ -110,18 +141,18 @@ public final class TinkerGraph implements Graph {
      */
     private TinkerGraph(final Configuration configuration) {
         this.configuration = configuration;
-        vertexIdManager = selectIdManager(configuration, CONFIG_VERTEX_ID, Vertex.class);
-        edgeIdManager = selectIdManager(configuration, CONFIG_EDGE_ID, Edge.class);
-        vertexPropertyIdManager = selectIdManager(configuration, CONFIG_VERTEX_PROPERTY_ID, VertexProperty.class);
+        vertexIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, Vertex.class);
+        edgeIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, Edge.class);
+        vertexPropertyIdManager = selectIdManager(configuration, GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, VertexProperty.class);
         defaultVertexPropertyCardinality = VertexProperty.Cardinality.valueOf(
-                configuration.getString(CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.single.name()));
+                configuration.getString(GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.single.name()));
 
-        graphLocation = configuration.getString(CONFIG_GRAPH_LOCATION, null);
-        graphFormat = configuration.getString(CONFIG_GRAPH_FORMAT, null);
+        graphLocation = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
+        graphFormat = configuration.getString(GREMLIN_TINKERGRAPH_GRAPH_FORMAT, null);
 
         if ((graphLocation != null && null == graphFormat) || (null == graphLocation && graphFormat != null))
             throw new IllegalStateException(String.format("The %s and %s must both be specified if either is present",
-                    CONFIG_GRAPH_LOCATION, CONFIG_GRAPH_FORMAT));
+                    GREMLIN_TINKERGRAPH_GRAPH_LOCATION, GREMLIN_TINKERGRAPH_GRAPH_FORMAT));
 
         if (graphLocation != null) loadGraph();
     }
@@ -324,9 +355,9 @@ public final class TinkerGraph implements Graph {
     public class TinkerGraphFeatures implements Features {
 
         private final TinkerGraphGraphFeatures graphFeatures = new TinkerGraphGraphFeatures();
-private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures();
+        private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures();
         private final TinkerGraphVertexFeatures vertexFeatures = new TinkerGraphVertexFeatures();
-        
+
         private TinkerGraphFeatures() {
         }
 
@@ -351,11 +382,11 @@ private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures
         }
 
     }
-    
+
     public class TinkerGraphVertexFeatures implements Features.VertexFeatures {
 
         private final TinkerGraphVertexPropertyFeatures vertexPropertyFeatures = new TinkerGraphVertexPropertyFeatures();
-        
+
         private TinkerGraphVertexFeatures() {
         }
 
@@ -379,7 +410,7 @@ private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures
             return defaultVertexPropertyCardinality;
         }
     }
-    
+
     public class TinkerGraphEdgeFeatures implements Features.EdgeFeatures {
 
         private TinkerGraphEdgeFeatures() {
@@ -395,7 +426,7 @@ private final TinkerGraphEdgeFeatures edgeFeatures = new TinkerGraphEdgeFeatures
             return edgeIdManager.allow(id);
         }
     }
-    
+
     public class TinkerGraphGraphFeatures implements Features.GraphFeatures {
 
         private TinkerGraphGraphFeatures() {

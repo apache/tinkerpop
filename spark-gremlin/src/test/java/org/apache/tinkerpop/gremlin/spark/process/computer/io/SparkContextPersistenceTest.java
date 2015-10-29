@@ -40,12 +40,12 @@ import org.apache.tinkerpop.gremlin.spark.process.computer.SparkHadoopGraphProvi
 import org.apache.tinkerpop.gremlin.spark.process.computer.util.SparkHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -109,18 +109,18 @@ public class SparkContextPersistenceTest {
         ///////////////
         final Configuration writeConfiguration = new BaseConfiguration();
         writeConfiguration.setProperty(Graph.GRAPH, "org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph");
-        writeConfiguration.setProperty(TinkerGraph.CONFIG_GRAPH_FORMAT, "gryo");
-        writeConfiguration.setProperty(TinkerGraph.CONFIG_GRAPH_LOCATION, "target/test-output/tinkergraph.kryo");
+        writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
+        writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, "target/test-output/tinkergraph.kryo");
         final Graph secondGraph = graph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.NOTHING).program(PageRankVertexProgram.build().create(graph)).submit().get().graph();
-        secondGraph.configuration().setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD_NAME, "a-random-name-for-testing");
-        secondGraph.configuration().setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD_NAME, null);
         secondGraph.compute(SparkGraphComputer.class)
                 .persist(GraphComputer.Persist.NOTHING)
                 .workers(1)
+                .config(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD_NAME, "a-random-name-for-testing")
+                .config(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD_NAME, null)
                 .program(BulkLoaderVertexProgram.build().userSuppliedIds(true).writeGraph(writeConfiguration).create(secondGraph))
                 .submit().get();
         final Graph finalGraph = TinkerGraph.open();
         finalGraph.io(IoCore.gryo()).readGraph("target/test-output/tinkergraph.kryo");
-        assertEquals(6l,finalGraph.traversal().V().count().next().longValue());
+        assertEquals(6l, finalGraph.traversal().V().count().next().longValue());
     }
 }

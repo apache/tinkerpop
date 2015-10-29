@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -118,12 +118,12 @@ public class GraphTraversalSource implements TraversalSource {
 
     public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
         final GraphTraversal.Admin<Vertex, Vertex> traversal = this.generateTraversal();
-        return traversal.addStep(new GraphStep<>(traversal, Vertex.class, vertexIds));
+        return traversal.addStep(new GraphStep<>(traversal, Vertex.class, true, vertexIds));
     }
 
     public GraphTraversal<Edge, Edge> E(final Object... edgesIds) {
         final GraphTraversal.Admin<Edge, Edge> traversal = this.generateTraversal();
-        return traversal.addStep(new GraphStep<>(traversal, Edge.class, edgesIds));
+        return traversal.addStep(new GraphStep<>(traversal, Edge.class, true, edgesIds));
     }
 
     //// UTILITIES
@@ -292,11 +292,11 @@ public class GraphTraversalSource implements TraversalSource {
         }
 
         public GraphTraversal<Vertex, Vertex> V(final Object... vertexIds) {
-            return this.traversal.addStep(new GraphStep<>(this.traversal, Vertex.class, vertexIds));
+            return this.traversal.addStep(new GraphStep<>(this.traversal, Vertex.class, true, vertexIds));
         }
 
         public GraphTraversal<Edge, Edge> E(final Object... edgesIds) {
-            return this.traversal.addStep(new GraphStep<>(this.traversal, Edge.class, edgesIds));
+            return this.traversal.addStep(new GraphStep<>(this.traversal, Edge.class, true, edgesIds));
         }
 
         //// UTILITIES
