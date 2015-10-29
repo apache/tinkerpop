@@ -60,23 +60,6 @@ public final class TraversalHelper {
     private TraversalHelper() {
     }
 
-    public static boolean isNotBeyondElementId(final Traversal.Admin<?, ?> traversal) {
-        if (traversal instanceof TokenTraversal && !((TokenTraversal) traversal).getToken().equals(T.id))
-            return false;
-        else if (traversal instanceof ElementValueTraversal)
-            return false;
-        else
-            return !traversal.getSteps().stream()
-                    .filter(step -> step instanceof VertexStep ||
-                            step instanceof EdgeVertexStep ||
-                            step instanceof PropertiesStep ||
-                            step instanceof PropertyMapStep ||
-                            (step instanceof TraversalParent &&
-                                    (((TraversalParent) step).getLocalChildren().stream().filter(t -> !TraversalHelper.isNotBeyondElementId(t)).findAny().isPresent() ||
-                                            ((TraversalParent) step).getGlobalChildren().stream().filter(t -> !TraversalHelper.isNotBeyondElementId(t)).findAny().isPresent())))
-                    .findAny().isPresent();
-    }
-
     public static boolean isLocalStarGraph(final Traversal.Admin<?, ?> traversal) {
         return isLocalStarGraph(traversal, 'v');
     }
