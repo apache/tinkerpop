@@ -240,7 +240,7 @@ who is knowledgeable in the area that the pull request affects. Any additional c
 via the pull request comment system.
 
 The following exceptions to the RTC (review-then-commit) model presented above are itemized below. It is up to the
-committer to self-regulate as the itemization below is not complete and only hints and the types of commits that do not
+committer to self-regulate as the itemization below is not complete and only hints at the types of commits that do not
 require a review.
 
 * You are responsible for a release and need to manipulate files accordingly for the release.
@@ -248,6 +248,10 @@ require a review.
 * You are doing an minor change and it is obvious that an RTC is not required (would be a pointless burden to the community).
 ** The fix is under the link:http://www.apache.org/foundation/glossary.html#CommitThenReview[commit-then-review] (CTR) policy and lazy consensus is sufficient, where a single -1 vote requires you to revert your changes.
 ** Adding a test case, fixing spelling/grammar mistakes in the documentation, fixing LICENSE/NOTICE/etc. files, fixing a minor issue in an already merged branch.
+
+When the committer chooses CTR, it is considered good form to include something in the commit message that explains
+that CTR was invoked and the reason for doing so.  For example, "Invoking CTR as this change encompasses minor
+adjustments to text formatting."
 
 Pull Request Format
 ^^^^^^^^^^^^^^^^^^^
