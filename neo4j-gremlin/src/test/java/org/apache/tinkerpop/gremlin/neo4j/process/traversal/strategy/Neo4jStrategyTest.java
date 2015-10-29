@@ -16,9 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.neo4j;
+package org.apache.tinkerpop.gremlin.neo4j.process.traversal.strategy;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.neo4j.NoMultiNoMetaNeo4jGraphProvider;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.junit.runner.RunWith;
 

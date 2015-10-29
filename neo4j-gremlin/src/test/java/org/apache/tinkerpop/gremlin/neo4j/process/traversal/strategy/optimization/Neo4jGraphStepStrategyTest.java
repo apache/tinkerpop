@@ -59,5 +59,18 @@ public class Neo4jGraphStepStrategyTest extends AbstractNeo4jGremlinTest {
         assertEquals("name", ((Neo4jGraphStep<?, ?>) traversal.getStartStep()).getHasContainers().get(0).getKey());
         assertEquals("marko", ((Neo4jGraphStep<?, ?>) traversal.getStartStep()).getHasContainers().get(0).getValue());
         assertEquals(HasStep.class, traversal.getEndStep().getClass());
+        ////
+        traversal = g.V().has("name", "marko").out().V().has("name", "daniel").asAdmin();
+        traversal.applyStrategies();
+        assertEquals(3, traversal.getSteps().size());
+        assertEquals(Neo4jGraphStep.class, traversal.getStartStep().getClass());
+        assertEquals(1, ((Neo4jGraphStep) traversal.getStartStep()).getHasContainers().size());
+        assertEquals("name", ((Neo4jGraphStep<?, ?>) traversal.getStartStep()).getHasContainers().get(0).getKey());
+        assertEquals("marko", ((Neo4jGraphStep<?, ?>) traversal.getStartStep()).getHasContainers().get(0).getValue());
+        assertEquals(Neo4jGraphStep.class, traversal.getSteps().get(2).getClass());
+        assertEquals(1, ((Neo4jGraphStep) traversal.getSteps().get(2)).getHasContainers().size());
+        assertEquals("name", ((Neo4jGraphStep<?, ?>) traversal.getSteps().get(2)).getHasContainers().get(0).getKey());
+        assertEquals("daniel", ((Neo4jGraphStep<?,?>) traversal.getSteps().get(2)).getHasContainers().get(0).getValue());
+        assertEquals(Neo4jGraphStep.class, traversal.getEndStep().getClass());
     }
 }

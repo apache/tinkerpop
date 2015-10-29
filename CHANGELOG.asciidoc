@@ -27,6 +27,7 @@ TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 
 * Renamed the `public static String` configuration variable names of TinkerGraph (deprecated old variables).
 * Added `GraphComputer.config(key,value)` to allow engine-specific configurations.
+* `GraphStep` is no longer in the `sideEffect`-package and is now in `map`-package (breaking change).
 * Added suppport for mid-traversal `V()`-steps (`GraphStep` semantics updated).
 * Fixed `Number` handling in `Operator` enums. Prior this change a lot of operations on mixed `Number` types returned a wrong result (wrong data type).
 * Fixed a bug in Gremlin Server/Driver serializer where empty buffers were getting returned in certain cases.
