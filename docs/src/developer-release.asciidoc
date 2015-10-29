@@ -92,9 +92,10 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
-. `mvn clean install -Dmaven.test.skip=true`
+. `mvn clean install -Dmaven.test.skip=true` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
 . `bin/publish-docs.sh <username>`
-. `mvn install -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`
+. `mvn install -Papache-release -Djavadoc -DcreateChecksum=true -Dmaven.test.skip=true`
+. `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus]. Review (artifacts versions, file sizes, anything that might be out of place - request another committer to review as well) but do NOT close/release the staging repository at this time.
 . Review generated artifacts to be sure they have both javadocs and asciidocs present
 . Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
 .. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/ dev` and `mkdir dev/x.y.z`
@@ -123,9 +124,7 @@ A positive vote for a particular release from the Apache Incubator is required t
 Release & Promote
 -----------------
 
-. `mvn clean install -Djavadoc -Dmaven.test.skip=true; bin/process-docs.sh` - rebuild source and docs of tagged release
-. `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
-. Review and close the staging repository (Apache Nexus at link:https://repository.apache.org/[https://repository.apache.org/]) - check that versions are correct and that all artifacts are present
+. Close the staging repository at link:https://repository.apache.org/[Apache Nexus]) and then release.
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/x.y.z`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/x.y.z`
 . `ls dev/x.y.z/ | grep '\-\(distribution\|source\-release\)\.zip' | sed -e 's/\(^[^ ]\*\)-distribution\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-bin\2/' -e 's/\(^[^ ]\*\)-source-release\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-src\2/' | /bin/sh`
