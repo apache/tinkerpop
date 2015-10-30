@@ -25,8 +25,9 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `PersistedInputRDD` and `PersistedOutputRDD` which enables `SparkGraphComputer` to store the graph RDD in the context between jobs.
 * Renamed the `public static String` configuration variable names of TinkerGraph (deprecated old variables).
-* Added `GraphComputer.config(key,value)` to allow engine-specific configurations.
+* Added `GraphComputer.configure(key,value)` to allow engine-specific configurations.
 * `GraphStep` is no longer in the `sideEffect`-package and is now in `map`-package (breaking change).
 * Added suppport for mid-traversal `V()`-steps (`GraphStep` semantics updated).
 * Fixed `Number` handling in `Operator` enums. Prior this change a lot of operations on mixed `Number` types returned a wrong result (wrong data type).
