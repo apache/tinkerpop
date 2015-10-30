@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.spark.structure.io;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
@@ -32,6 +31,11 @@ import static org.junit.Assert.assertEquals;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class ExampleOutputRDD implements OutputRDD {
+
+    static {
+        InputOutputHelper.registerInputOutputPair(ExampleInputRDD.class, ExampleOutputRDD.class);
+    }
+
     @Override
     public void writeGraphRDD(final Configuration configuration, final JavaPairRDD<Object, VertexWritable> graphRDD) {
         int totalAge = 0;

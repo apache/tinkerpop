@@ -22,7 +22,6 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.spark.structure.io.InputRDD;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
@@ -36,13 +35,17 @@ import java.util.List;
  */
 public final class ExampleInputRDD implements InputRDD {
 
+    static {
+        InputOutputHelper.registerInputOutputPair(ExampleInputRDD.class, ExampleOutputRDD.class);
+    }
+
     @Override
     public JavaPairRDD<Object, VertexWritable> readGraphRDD(final Configuration configuration, final JavaSparkContext sparkContext) {
         final List<Vertex> list = new ArrayList<>();
-        list.add(StarGraph.open().addVertex(T.id, 1l, T.label,"person","age", 29));
-        list.add(StarGraph.open().addVertex(T.id, 2l, T.label,"person","age", 27));
-        list.add(StarGraph.open().addVertex(T.id, 4l, T.label,"person","age", 32));
-        list.add(StarGraph.open().addVertex(T.id, 6l, T.label,"person","age", 35));
+        list.add(StarGraph.open().addVertex(T.id, 1l, T.label, "person", "age", 29));
+        list.add(StarGraph.open().addVertex(T.id, 2l, T.label, "person", "age", 27));
+        list.add(StarGraph.open().addVertex(T.id, 4l, T.label, "person", "age", 32));
+        list.add(StarGraph.open().addVertex(T.id, 6l, T.label, "person", "age", 35));
         return sparkContext.parallelize(list).mapToPair(vertex -> new Tuple2<>(vertex.id(), new VertexWritable(vertex)));
     }
 }
