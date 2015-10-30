@@ -142,7 +142,7 @@ public class PersistedInputOutputRDDTest {
         writeConfiguration.setProperty(Graph.GRAPH, TinkerGraph.class.getCanonicalName());
         writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
         writeConfiguration.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, "target/test-output/tinkergraph.kryo");
-        final Graph bulkLoaderGraph = pageRankGraph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.NOTHING).program(PageRankVertexProgram.build().create(pageRankGraph)).submit().get().graph();
+        final Graph bulkLoaderGraph = pageRankGraph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.VERTEX_PROPERTIES).program(PageRankVertexProgram.build().create(pageRankGraph)).submit().get().graph();
         bulkLoaderGraph.compute(SparkGraphComputer.class)
                 .persist(GraphComputer.Persist.NOTHING)
                 .workers(1)
@@ -153,10 +153,14 @@ public class PersistedInputOutputRDDTest {
                 .program(BulkLoaderVertexProgram.build().userSuppliedIds(true).writeGraph(writeConfiguration).create(bulkLoaderGraph))
                 .submit().get();
         ////
+        SparkConf sparkConfiguration = new SparkConf();
+        sparkConfiguration.setAppName("testBulkLoaderVertexProgramChain");
+        JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
+        assertFalse(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
         graph.io(IoCore.gryo()).readGraph("target/test-output/tinkergraph.kryo");
-
         assertEquals(6l, g.V().count().next().longValue());
         assertEquals(6l, g.E().count().next().longValue());
         assertEquals("marko", g.V().has("name", "marko").values("name").next());

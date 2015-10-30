@@ -45,5 +45,6 @@ public final class OutputFormatRDD implements OutputRDD {
                             VertexWritable.class,
                             (Class<OutputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class), hadoopConfiguration);
         }
+        graphRDD.unpersist();
     }
 }

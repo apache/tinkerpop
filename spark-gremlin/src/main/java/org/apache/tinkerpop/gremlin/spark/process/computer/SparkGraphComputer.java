@@ -211,6 +211,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     }
                 }
 
+                // unpersist the graphRDD if it will no longer be used
+                if (hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null) == null || this.persist.equals(GraphComputer.Persist.NOTHING)) {
+                    graphRDD.unpersist();
+                }
                 // update runtime and return the newly computed graph
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);
                 return new DefaultComputerResult(HadoopHelper.getOutputGraph(this.hadoopGraph, this.resultGraph, this.persist), finalMemory.asImmutable());
