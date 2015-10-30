@@ -16,26 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package org.apache.tinkerpop.gremlin.spark.process.computer.io;
+package org.apache.tinkerpop.gremlin.spark.structure.io;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import java.util.Iterator;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class PersistedOutputRDD implements OutputRDD {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(PersistedOutputRDD.class);
-
+public final class ExampleOutputRDD implements OutputRDD {
     @Override
     public void writeGraphRDD(final Configuration configuration, final JavaPairRDD<Object, VertexWritable> graphRDD) {
-        if (!configuration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
-            LOGGER.warn("The SparkContext should be persisted in order for the RDD to persist across jobs. To do so, set " + Constants.GREMLIN_SPARK_PERSIST_CONTEXT + " to true");
+        int totalAge = 0;
+        final Iterator<VertexWritable> iterator = graphRDD.values().toLocalIterator();
+        while (iterator.hasNext()) {
+            final Vertex vertex = iterator.next().get();
+            if (vertex.label().equals("person"))
+                totalAge = totalAge + vertex.<Integer>value("age");
+        }
+        assertEquals(123, totalAge);
     }
 }

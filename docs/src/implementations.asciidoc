@@ -1001,8 +1001,8 @@ spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerial
 ####################################
 # SparkGraphComputer Configuration #
 ####################################
-gremlin.spark.graphInputRDD=org.apache.tinkerpop.gremlin.spark.process.computer.io.InputRDDFormat
-gremlin.spark.graphOutputRDD=org.apache.tinkerpop.gremlin.spark.process.computer.io.OutputRDDFormat
+gremlin.spark.graphInputRDD=org.apache.tinkerpop.gremlin.spark.structure.io.InputRDDFormat
+gremlin.spark.graphOutputRDD=org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDDFormat
 gremlin.spark.persistContext=true
 #####################################
 # GiraphGraphComputer Configuration #
