@@ -114,6 +114,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     public Future<ComputerResult> submit() {
         final long startTime = System.currentTimeMillis();
         super.validateStatePriorToExecution();
+        final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(this.giraphConfiguration);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             try {
                 final FileSystem fs = FileSystem.get(this.giraphConfiguration);
@@ -126,7 +127,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
             }
 
             this.memory.setRuntime(System.currentTimeMillis() - startTime);
-            return new DefaultComputerResult(InputOutputHelper.getOutputGraph(ConfUtil.makeApacheConfiguration(this.giraphConfiguration), this.resultGraph, this.persist), this.memory.asImmutable());
+            return new DefaultComputerResult(InputOutputHelper.getOutputGraph(apacheConfiguration, this.resultGraph, this.persist), this.memory.asImmutable());
         });
     }
 
