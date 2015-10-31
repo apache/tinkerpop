@@ -25,10 +25,11 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Bumped to Neo4j 2.3.0.
 * Renamed the `public static String` configuration variable names of TinkerGraph (deprecated old variables).
 * Added `GraphComputer.config(key,value)` to allow engine-specific configurations.
 * `GraphStep` is no longer in the `sideEffect`-package and is now in `map`-package (breaking change).
-* Added suppport for mid-traversal `V()`-steps (`GraphStep` semantics updated).
+* Added support for mid-traversal `V()`-steps (`GraphStep` semantics updated).
 * Fixed `Number` handling in `Operator` enums. Prior this change a lot of operations on mixed `Number` types returned a wrong result (wrong data type).
 * Fixed a bug in Gremlin Server/Driver serializer where empty buffers were getting returned in certain cases.
 * Renamed `ConjunctionX` to `ConnectiveX` because "conjunction" is assumed "and" (disjunction "or"), where "connective" is the parent concept.
