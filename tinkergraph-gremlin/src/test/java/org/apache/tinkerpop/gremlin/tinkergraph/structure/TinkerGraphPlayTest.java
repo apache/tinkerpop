@@ -192,20 +192,12 @@ public class TinkerGraphPlayTest {
     @Test
     @Ignore
     public void testPlayDK() throws Exception {
-        final Graph graph = TinkerFactory.createModern();
-        final GraphTraversalSource g = graph.traversal();
-        Traversal traversal = g.V().where(out().and().in()).profile().cap(TraversalMetrics.METRICS_KEY);
-        //traversal.forEachRemaining(System.out::println);
-        System.out.println(traversal.toString());
-        traversal.asAdmin().applyStrategies();
-        System.out.println(traversal.toString());
-        traversal.forEachRemaining(System.out::println);
-        traversal = g.V().where(and(out(), in())).profile().cap(TraversalMetrics.METRICS_KEY);
-        //traversal.forEachRemaining(System.out::println);
-        System.out.println(traversal.toString());
-        traversal.asAdmin().applyStrategies();
-        System.out.println(traversal.toString());
-        //System.out.println(traversal.toString());
+        final Number n = __.inject(1, 2L, 3f).sum().next();
+        System.out.println(n.toString());
+        System.out.println(n.getClass().toString());
+        final Double d = __.inject(1, 2L, 3f).<Double>sum().next();
+        System.out.println(d.toString());
+        System.out.println(d.getClass().toString());
     }
 
     @Test

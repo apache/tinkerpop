@@ -612,12 +612,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @return the traversal with an appended {@link SumGlobalStep}.
      */
-    public default GraphTraversal<S, Double> sum() {
+    public default <E2 extends Number> GraphTraversal<S, E2> sum() {
         return this.sum(Scope.global);
     }
 
-    public default GraphTraversal<S, Double> sum(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new SumGlobalStep(this.asAdmin()) : new SumLocalStep<>(this.asAdmin()));
+    public default <E2 extends Number> GraphTraversal<S, E2> sum(final Scope scope) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new SumGlobalStep(this.asAdmin()) : new SumLocalStep(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> max() {
