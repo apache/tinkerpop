@@ -43,7 +43,7 @@ import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.mul;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class SumGlobalStep extends ReducingBarrierStep<Number, Number> implements MapReducer {
+public final class SumGlobalStep<S extends Number> extends ReducingBarrierStep<S, S> implements MapReducer {
 
     private static final Set<TraverserRequirement> REQUIREMENTS = EnumSet.of(
             TraverserRequirement.BULK,
@@ -52,7 +52,7 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Number> imp
 
     public SumGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
-        this.setSeedSupplier(new ConstantSupplier<>(0));
+        this.setSeedSupplier(new ConstantSupplier<>((S) Integer.valueOf(0)));
         this.setBiFunction(SumGlobalBiFunction.instance());
     }
 
@@ -69,7 +69,7 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Number> imp
 
     /////
 
-    private static class SumGlobalBiFunction<S extends Number> implements BiFunction<Number, Traverser<S>, Number>, Serializable {
+    private static class SumGlobalBiFunction<S extends Number> implements BiFunction<S, Traverser<S>, S>, Serializable {
 
         private static final SumGlobalBiFunction INSTANCE = new SumGlobalBiFunction<>();
 
@@ -78,8 +78,8 @@ public final class SumGlobalStep extends ReducingBarrierStep<Number, Number> imp
         }
 
         @Override
-        public Number apply(final Number mutatingSeed, final Traverser<S> traverser) {
-            return add(mutatingSeed, mul(traverser.get(), traverser.bulk()));
+        public S apply(final S mutatingSeed, final Traverser<S> traverser) {
+            return (S) add(mutatingSeed, mul(traverser.get(), traverser.bulk()));
         }
 
         public static <S extends Number> SumGlobalBiFunction<S> instance() {
