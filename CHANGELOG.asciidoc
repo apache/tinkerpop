@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Integrated `NumberHelper` in `SumStep`, `MinStep`, `MaxStep` and `MeanStep` (local and global step variants).
 * Renamed the `public static String` configuration variable names of TinkerGraph (deprecated old variables).
 * Added `GraphComputer.config(key,value)` to allow engine-specific configurations.
 * Added suppport for mid-traversal `V()`-steps (`GraphStep` semantics updated).
