@@ -192,12 +192,9 @@ public class TinkerGraphPlayTest {
     @Test
     @Ignore
     public void testPlayDK() throws Exception {
-        final Number n = __.inject(1, 2L, 3f).sum().next();
-        System.out.println(n.toString());
-        System.out.println(n.getClass().toString());
-        final Double d = __.inject(1, 2L, 3f).<Double>sum().next();
-        System.out.println(d.toString());
-        System.out.println(d.getClass().toString());
+        TinkerGraph graph = TinkerFactory.createModern();
+        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
+        final Number m = g.V().values("age").mean().next();
     }
 
     @Test

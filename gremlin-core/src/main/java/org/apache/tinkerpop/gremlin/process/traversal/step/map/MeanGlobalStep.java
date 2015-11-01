@@ -18,17 +18,18 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.util.StaticMapReduce;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.NumberHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.FinalGet;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
-import org.apache.tinkerpop.gremlin.process.traversal.step.util.FinalGet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.function.MeanNumberSupplier;
 
@@ -38,6 +39,10 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+
+import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.add;
+import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.div;
+import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.mul;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -59,7 +64,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
     }
 
     @Override
-    public MapReduce<Number, Long, Number, Long, Double> getMapReduce() {
+    public MapReduce<Number, Long, Number, Long, Number> getMapReduce() {
         return MeanGlobalMapReduce.instance();
     }
 
@@ -78,14 +83,14 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
             return (S) ((MeanNumber) mutatingSeed).add(traverser.get(), traverser.bulk());
         }
 
-        public final static <S extends Number> MeanGlobalBiFunction<S> instance() {
+        public static <S extends Number> MeanGlobalBiFunction<S> instance() {
             return INSTANCE;
         }
     }
 
     ///////////
 
-    private static final class MeanGlobalMapReduce extends StaticMapReduce<Number, Long, Number, Long, Double> {
+    private static final class MeanGlobalMapReduce extends StaticMapReduce<Number, Long, Number, Long, Number> {
 
         private static final MeanGlobalMapReduce INSTANCE = new MeanGlobalMapReduce();
 
@@ -123,81 +128,83 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
         }
 
         @Override
-        public Double generateFinalResult(final Iterator<KeyValue<Number, Long>> keyValues) {
+        public Number generateFinalResult(final Iterator<KeyValue<Number, Long>> keyValues) {
             if (keyValues.hasNext()) {
                 KeyValue<Number, Long> pair = keyValues.next();
-                double result = pair.getKey().doubleValue() * pair.getValue();
                 long counter = pair.getValue();
+                Number result = mul(pair.getKey(), counter);
                 while (keyValues.hasNext()) {
+                    long incr = pair.getValue();
                     pair = keyValues.next();
-                    result += pair.getKey().doubleValue() * pair.getValue();
-                    counter += pair.getValue();
+                    result = add(result, mul(pair.getKey(), incr));
+                    counter += incr;
                 }
-                return result / counter;
+                return div(result, counter, true);
             }
             return Double.NaN;
         }
 
-        public static final MeanGlobalMapReduce instance() {
+        public static MeanGlobalMapReduce instance() {
             return INSTANCE;
         }
     }
 
     ///
 
-    public static final class MeanNumber extends Number implements Comparable<Number>, FinalGet<Double> {
+    public static final class MeanNumber extends Number implements Comparable<Number>, FinalGet<Number> {
 
         private long count;
-        private double sum;
+        private Number sum;
 
         public MeanNumber() {
-            this(0.0d, 0l);
+            this(0, 0);
         }
 
-        public MeanNumber(final double number, final long count) {
+        public MeanNumber(final Number number, final long count) {
             this.count = count;
-            this.sum = number * count;
+            this.sum = mul(number, count);
         }
 
         public MeanNumber add(final Number amount, final long count) {
             this.count += count;
-            this.sum += amount.doubleValue() * count;
+            this.sum = NumberHelper.add(sum, mul(amount, count));
             return this;
         }
 
         public MeanNumber add(final MeanNumber other) {
             this.count += other.count;
-            this.sum += other.sum;
+            this.sum = NumberHelper.add(sum, other.sum);
             return this;
         }
 
         @Override
         public int intValue() {
-            return (int) (this.sum / this.count);
+            return div(this.sum, this.count).intValue();
         }
 
         @Override
         public long longValue() {
-            return (long) (this.sum / this.count);
+            return div(this.sum, this.count).longValue();
         }
 
         @Override
         public float floatValue() {
-            return (float) (this.sum / this.count);
+            return div(this.sum, this.count, true).floatValue();
         }
 
         @Override
         public double doubleValue() {
-            return this.sum / this.count;
+            return div(this.sum, this.count, true).doubleValue();
         }
 
         @Override
         public String toString() {
-            return Double.toString(this.doubleValue());
+            return div(this.sum, this.count, true).toString();
         }
 
         @Override
         public int compareTo(final Number number) {
+            // TODO: NumberHelper should provide a compareTo() implementation
             return Double.valueOf(this.doubleValue()).compareTo(number.doubleValue());
         }
 
