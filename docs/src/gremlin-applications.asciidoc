@@ -1350,6 +1350,13 @@ session state is not shared among them.
 |language |String |The flavor used (e.g. `gremlin-groovy`)
 |=========================================================
 
+'`close` operation arguments'
+[width="100%",cols="2,2,9",options="header"]
+|=========================================================
+|Key |Type |Description
+|session |String | *Required* The session identifier for the session to close.
+|=========================================================
+
 Authentication
 ^^^^^^^^^^^^^^
 

@@ -64,6 +64,19 @@ public class TinkerGraphStepStrategyTest extends AbstractGremlinProcessTest {
         assertEquals("name", ((TinkerGraphStep<?, ?>) traversal.getStartStep()).getHasContainers().get(0).getKey());
         assertEquals("marko", ((TinkerGraphStep<?, ?>) traversal.getStartStep()).getHasContainers().get(0).getValue());
         assertEquals(HasStep.class, traversal.getEndStep().getClass());
+        ////
+        traversal = g.V().has("name", "marko").out().V().has("name", "daniel").asAdmin();
+        traversal.applyStrategies();
+        assertEquals(3, traversal.getSteps().size());
+        assertEquals(TinkerGraphStep.class, traversal.getStartStep().getClass());
+        assertEquals(1, ((TinkerGraphStep) traversal.getStartStep()).getHasContainers().size());
+        assertEquals("name", ((TinkerGraphStep<?, ?>) traversal.getStartStep()).getHasContainers().get(0).getKey());
+        assertEquals("marko", ((TinkerGraphStep<?, ?>) traversal.getStartStep()).getHasContainers().get(0).getValue());
+        assertEquals(TinkerGraphStep.class, traversal.getSteps().get(2).getClass());
+        assertEquals(1, ((TinkerGraphStep) traversal.getSteps().get(2)).getHasContainers().size());
+        assertEquals("name", ((TinkerGraphStep<?, ?>) traversal.getSteps().get(2)).getHasContainers().get(0).getKey());
+        assertEquals("daniel", ((TinkerGraphStep<?,?>) traversal.getSteps().get(2)).getHasContainers().get(0).getValue());
+        assertEquals(TinkerGraphStep.class, traversal.getEndStep().getClass());
     }
 
 }

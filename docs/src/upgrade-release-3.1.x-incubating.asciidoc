@@ -36,6 +36,7 @@ Important Changes
 ~~~~~~~~~~~~~~~~~
 
 * `sum()`, `min()`, `max()` and `mean()` make now use of `NumberHelper`, leading to a more appropriate result type, instead of just `Double`.
+* `GraphStep` is no longer in `sideEffect`-package, but now in `map`-package as traversals support mid-traversal `V()`.
 * Traversals now support mid-traversal `V()`-steps. Graph system providers should ensure that a mid-traversal `V()` can leverage any suitable index.
 * The data type of `Operator` enums will now always be the highest common data type of the two given numbers, rather than the data type of the first number, as it's been before.
 * The Gephi Plugin has improved integration with Gephi, where manually inserting `store` steps to visualize a running traversal is no longer required.
@@ -144,6 +145,10 @@ Graph Traversal Updates
 
 There were numerous changes to the `GraphTraversal` API. Nearly all changes are backwards compatible with respective
 "deprecated" annotations. Please review the respective updates specified in the "Graph System Users" section.
+
+* `GraphStep` is no longer in `sideEffect` package. Now in `map` package.
+* Make sure mid-traversal `GraphStep` calls are folding `HasContainers` in for index-lookups.
+* Think about copying `TinkerGraphStepStrategyTest` for your implementation so you know folding is happening correctly.
 
 Element Removal
 +++++++++++++++
