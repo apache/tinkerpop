@@ -136,7 +136,33 @@ limitations under the License.
                 <dependency>
                     <groupId>org.neo4j</groupId>
                     <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-                    <version>0.1-2.2</version>
+                    <version>0.3-2.3.0</version>
+                    <scope>test</scope>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.apache.commons</groupId>
+                            <artifactId>commons-lang3</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+                            <artifactId>concurrentlinkedhashmap-lru</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.scala-lang</groupId>
+                            <artifactId>scala-library</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+                <dependency>
+                    <groupId>org.scala-lang</groupId>
+                    <artifactId>scala-library</artifactId>
+                    <version>2.11.6</version>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+                    <artifactId>concurrentlinkedhashmap-lru</artifactId>
+                    <version>1.4.2</version>
                     <scope>test</scope>
                 </dependency>
                 <!-- *** WARNING *** -->
