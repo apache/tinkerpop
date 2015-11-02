@@ -108,12 +108,15 @@ public interface GraphComputer {
      * Typically, the other fluent methods in {@link GraphComputer} should be used to configure the computation.
      * However, for some custom configuration in the underlying engine, this method should be used.
      * Different GraphComputer implementations will have different key/values and thus, parameters placed here are generally not universal to all GraphComputer implementations.
+     * The default implementation simply does nothing and returns the {@link GraphComputer} unchanged.
      *
      * @param key   the key of the configuration
      * @param value the value of the configuration
      * @return the updated GraphComputer with newly set key/value configuration
      */
-    public GraphComputer config(final String key, final Object value);
+    public default GraphComputer configure(final String key, final Object value) {
+        return this;
+    }
 
     /**
      * Submit the {@link VertexProgram} and the set of {@link MapReduce} jobs for execution by the {@link GraphComputer}.

@@ -92,11 +92,6 @@ public final class TinkerGraphComputer implements GraphComputer {
     }
 
     @Override
-    public GraphComputer config(final String key, final Object value) {
-        return this;
-    }
-
-    @Override
     public Future<ComputerResult> submit() {
         // a graph computer can only be executed once
         if (this.executed)

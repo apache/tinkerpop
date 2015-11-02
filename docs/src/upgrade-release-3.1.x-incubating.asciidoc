@@ -164,3 +164,11 @@ The `VendorOptimizationStrategy` has been renamed to `ProviderOptimizationStrate
 with revised terminology for what were formerly referred to as "vendors".
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-876[TINKERPOP3-876] for more information.
+
+GraphComputer Updates
++++++++++++++++++++++
+
+`GraphComputer.configure(String key, Object value)` is now a method. This allows the user to specify engine-specific
+parameters to the underlying OLAP system. These parameters are not intended to be cross engine supported. Moreover, if
+there are not parameters that can be altered (beyond the standard `GraphComputer` methods), then the provider's `GraphComputer`
+implementation should simply return and do nothing.
