@@ -199,7 +199,7 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
 
         @Override
         public String toString() {
-            return div(this.sum, this.count, true).toString();
+            return getFinal().toString();
         }
 
         @Override
@@ -219,8 +219,8 @@ public final class MeanGlobalStep<S extends Number, E extends Number> extends Re
         }
 
         @Override
-        public Double getFinal() {
-            return this.doubleValue();
+        public Number getFinal() {
+            return div(this.sum, this.count, true);
         }
     }
 }
