@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.process.traversal.Pop;
 import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Scoping;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -64,8 +65,9 @@ import java.util.stream.Stream;
  */
 public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> implements TraversalParent, Scoping {
 
-    public static enum TraversalType {WHERE_PREDICATE, WHERE_TRAVERSAL, MATCH_TRAVERSAL}
+    public enum TraversalType {WHERE_PREDICATE, WHERE_TRAVERSAL, MATCH_TRAVERSAL}
 
+    private TraversalEngine.Type traversalEngineType;
     private List<Traversal.Admin<Object, Object>> matchTraversals = new ArrayList<>();
     private boolean first = true;
     private Set<String> matchStartLabels = new HashSet<>();
@@ -153,6 +155,12 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
     }
 
+    @Override
+    public void onEngine(final TraversalEngine engine) {
+        super.onEngine(engine);
+        this.traversalEngineType = engine.getType();
+    }
+
     public ConnectiveStep.Connective getConnective() {
         return this.connective;
     }
@@ -216,7 +224,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             clone.matchTraversals.add(clone.integrateChild(traversal.clone()));
         }
         if (this.dedups != null) clone.dedups = new HashSet<>();
-        clone.initializeMatchAlgorithm();
+        clone.initializeMatchAlgorithm(this.traversalEngineType);
         return clone;
     }
 
@@ -281,13 +289,13 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         return bindings;
     }
 
-    private void initializeMatchAlgorithm() {
+    private void initializeMatchAlgorithm(final TraversalEngine.Type traversalEngineType) {
         try {
             this.matchAlgorithm = this.matchAlgorithmClass.getConstructor().newInstance();
         } catch (final NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
-        this.matchAlgorithm.initialize(this.matchTraversals);
+        this.matchAlgorithm.initialize(traversalEngineType, this.matchTraversals);
     }
 
     @Override
@@ -296,7 +304,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             Traverser.Admin traverser = null;
             if (this.first) {
                 this.first = false;
-                this.initializeMatchAlgorithm();
+                this.initializeMatchAlgorithm(this.traversalEngineType);
             } else {
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
                     if (matchTraversal.hasNext()) {
@@ -420,7 +428,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
                 if (null != this.selectKey)
                     this.scopeKeys.add(this.selectKey);
                 if (this.getNextStep() instanceof WhereTraversalStep || this.getNextStep() instanceof WherePredicateStep)
-                   this.scopeKeys.addAll(((Scoping) this.getNextStep()).getScopeKeys());
+                    this.scopeKeys.addAll(((Scoping) this.getNextStep()).getScopeKeys());
                 this.scopeKeys = Collections.unmodifiableSet(this.scopeKeys);
             }
             return this.scopeKeys;
@@ -555,7 +563,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         public static Function<List<Traversal.Admin<Object, Object>>, IllegalStateException> UNMATCHABLE_PATTERN = traversals -> new IllegalStateException("The provided match pattern is unsolvable: " + traversals);
 
 
-        public void initialize(final List<Traversal.Admin<Object, Object>> traversals);
+        public void initialize(final TraversalEngine.Type traversalEngineType, final List<Traversal.Admin<Object, Object>> traversals);
 
         public default void recordStart(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
 
@@ -571,7 +579,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         private List<Traversal.Admin<Object, Object>> traversals;
 
         @Override
-        public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
+        public void initialize(final TraversalEngine.Type traversalEngineType, final List<Traversal.Admin<Object, Object>> traversals) {
             this.traversals = traversals;
         }
 
@@ -589,14 +597,26 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
         protected List<Bundle> bundles;
         protected int counter = 0;
+        protected boolean onComputer;
 
-        @Override
-        public void initialize(final List<Traversal.Admin<Object, Object>> traversals) {
+        public void initialize(final TraversalEngine.Type traversalEngineType, final List<Traversal.Admin<Object, Object>> traversals) {
+            this.onComputer = traversalEngineType.equals(TraversalEngine.Type.COMPUTER);
             this.bundles = traversals.stream().map(Bundle::new).collect(Collectors.toList());
         }
 
         @Override
         public Traversal.Admin<Object, Object> apply(final Traverser.Admin<Object> traverser) {
+            // optimization to favor processing StarGraph local objects first to limit message passing (GraphComputer only)
+            // TODO: generalize this for future MatchAlgorithms (given that 3.2.0 will focus on RealTimeStrategy, it will probably go there)
+            if (this.onComputer) {
+                final List<Set<String>> labels = traverser.path().labels();
+                final Set<String> lastLabels = labels.get(labels.size() - 1);
+                Collections.sort(this.bundles,
+                        Comparator.<Bundle>comparingLong(b -> Helper.getStartLabels(b.traversal).stream().filter(startLabel -> !lastLabels.contains(startLabel)).count()).
+                                thenComparingInt(b -> b.traversalType.ordinal()).
+                                thenComparingDouble(b -> b.multiplicity));
+            }
+
             Bundle startLabelsBundle = null;
             for (final Bundle bundle : this.bundles) {
                 if (!Helper.hasExecutedTraversal(traverser, bundle.traversal) && Helper.hasStartLabels(traverser, bundle.traversal)) {
@@ -618,9 +638,11 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         @Override
         public void recordEnd(final Traverser.Admin<Object> traverser, final Traversal.Admin<Object, Object> traversal) {
             this.getBundle(traversal).incrementEndCount();
-            if (this.counter < 200 || this.counter % 250 == 0) // aggressively sort for the first 200 results -- after that, sort every 250
-                Collections.sort(this.bundles, Comparator.<Bundle>comparingInt(b -> b.traversalType.ordinal()).thenComparingDouble(b -> b.multiplicity));
-            this.counter++;
+            if (!this.onComputer) {  // if on computer, sort on a per traverser-basis with bias towards local star graph
+                if (this.counter < 200 || this.counter % 250 == 0) // aggressively sort for the first 200 results -- after that, sort every 250
+                    Collections.sort(this.bundles, Comparator.<Bundle>comparingInt(b -> b.traversalType.ordinal()).thenComparingDouble(b -> b.multiplicity));
+                this.counter++;
+            }
         }
 
         protected Bundle getBundle(final Traversal.Admin<Object, Object> traversal) {
