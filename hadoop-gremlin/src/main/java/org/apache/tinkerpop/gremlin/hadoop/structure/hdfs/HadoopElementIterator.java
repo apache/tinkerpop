@@ -52,7 +52,7 @@ public abstract class HadoopElementIterator<E extends Element> implements Iterat
         this.graph = graph;
         final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
         for (final Path path2 : HDFSTools.getAllFilePaths(FileSystem.get(configuration), path, HiddenFileFilter.instance())) {
-            this.readers.add(inputFormat.createRecordReader(new FileSplit(path2, 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContextImpl(configuration, new TaskAttemptID())));
+            this.readers.add(inputFormat.createRecordReader(new FileSplit(path2, 0, Long.MAX_VALUE, new String[]{}), new TaskAttemptContextImpl(configuration, new TaskAttemptID())));
         }
     }
 
@@ -63,7 +63,7 @@ public abstract class HadoopElementIterator<E extends Element> implements Iterat
                 final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
                 final InputFormat<NullWritable, VertexWritable> inputFormat = this.graph.configuration().getGraphInputFormat().getConstructor().newInstance();
                 for (final Path path : HDFSTools.getAllFilePaths(FileSystem.get(configuration), new Path(graph.configuration().getInputLocation()), HiddenFileFilter.instance())) {
-                    this.readers.add(inputFormat.createRecordReader(new FileSplit(path, 0, Integer.MAX_VALUE, new String[]{}), new TaskAttemptContextImpl(configuration, new TaskAttemptID())));
+                    this.readers.add(inputFormat.createRecordReader(new FileSplit(path, 0, Long.MAX_VALUE, new String[]{}), new TaskAttemptContextImpl(configuration, new TaskAttemptID())));
                 }
             }
         } catch (Exception e) {

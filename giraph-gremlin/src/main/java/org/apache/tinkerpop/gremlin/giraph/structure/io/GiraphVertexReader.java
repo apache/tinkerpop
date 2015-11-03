@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.giraph.process.computer.io;
+package org.apache.tinkerpop.gremlin.giraph.structure.io;
 
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;

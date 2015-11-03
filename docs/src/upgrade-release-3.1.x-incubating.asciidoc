@@ -41,7 +41,7 @@ Important Changes
 * The data type of `Operator` enums will now always be the highest common data type of the two given numbers, rather than the data type of the first number, as it's been before.
 * The Gephi Plugin has improved integration with Gephi, where manually inserting `store` steps to visualize a running traversal is no longer required.
 * Entire TinkerGraph instances can be serialized over Gryo.
-* Hadoop1 support has been dropped. Hadoop2 is now supported. Giraph 1.1.0 is now supported and Spark of Hadoop2 YARN.
+* Hadoop1 support has been dropped. Hadoop2 is now supported. Giraph and Spark can work over Hadoop2 YARN.
 * The implementation and semantics of `GraphTraversal.group()` has changed. The previous model is deprecated and renamed to `groupV3d0()`.
 * `PartitionStrategy` now supports `VertexProperty` such those properties can be added to partitions.
 * The Jackson library is now "shaded" and included in the `gremlin-shaded` module.
@@ -70,13 +70,21 @@ Hadoop-Gremlin Updates
 ++++++++++++++++++++++
 
 * Hadoop1 is no longer supported. Hadoop2 is now the only supported Hadoop version in TinkerPop.
+* Spark and Giraph have been split out of Hadoop-Gremlin into their own respective packages (Spark-Gremlin and Giraph-Gremlin).
 * The directory where application jars are stored in HDFS is now `hadoop-gremlin-x.y.z-libs`.
 ** This versioning is important so that cross-version TinkerPop use does not cause jar conflicts.
+
+Spark-Gremlin Updates
++++++++++++++++++++++
+
+* Providers that wish to reuse a graphRDD can leverage the new `PersistedInputRDD` and `PersistedOutputRDD`.
+** This allows the graphRDD to avoid serialization into HDFS for reuse. Be sure to enabled persisted `SparkContext` (see documentation).
 
 TinkerGraph-Gremlin Updates
 +++++++++++++++++++++++++++
 
 * The `public static String` configurations have been renamed. The old `public static` variables have been deprecated.
+
 
 Gremlin Process
 ^^^^^^^^^^^^^^^
@@ -165,3 +173,11 @@ The `VendorOptimizationStrategy` has been renamed to `ProviderOptimizationStrate
 with revised terminology for what were formerly referred to as "vendors".
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-876[TINKERPOP3-876] for more information.
+
+GraphComputer Updates
++++++++++++++++++++++
+
+`GraphComputer.configure(String key, Object value)` is now a method (with default implementation).
+This allows the user to specify engine-specific parameters to the underlying OLAP system. These parameters are not intended
+to be cross engine supported. Moreover, if there are not parameters that can be altered (beyond the standard `GraphComputer`
+methods), then the provider's `GraphComputer` implementation should simply return and do nothing.

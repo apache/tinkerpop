@@ -130,7 +130,7 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public GraphComputer config(final String key, final Object value) {
+        public GraphComputer configure(final String key, final Object value) {
             return null;
         }
 
