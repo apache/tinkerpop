@@ -67,7 +67,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
 
     public enum TraversalType {WHERE_PREDICATE, WHERE_TRAVERSAL, MATCH_TRAVERSAL}
 
-    private TraversalEngine.Type traversalEngineType;
     private List<Traversal.Admin<Object, Object>> matchTraversals = new ArrayList<>();
     private boolean first = true;
     private Set<String> matchStartLabels = new HashSet<>();
@@ -155,12 +154,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
         }
     }
 
-    @Override
-    public void onEngine(final TraversalEngine engine) {
-        super.onEngine(engine);
-        this.traversalEngineType = engine.getType();
-    }
-
     public ConnectiveStep.Connective getConnective() {
         return this.connective;
     }
@@ -213,6 +206,8 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     }
 
     public MatchAlgorithm getMatchAlgorithm() {
+        if(null == this.matchAlgorithm)
+            this.initializeMatchAlgorithm(this.traverserStepIdAndLabelsSetByChild ? TraversalEngine.Type.COMPUTER : TraversalEngine.Type.STANDARD);
         return this.matchAlgorithm;
     }
 
@@ -224,7 +219,6 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             clone.matchTraversals.add(clone.integrateChild(traversal.clone()));
         }
         if (this.dedups != null) clone.dedups = new HashSet<>();
-        clone.initializeMatchAlgorithm(this.traversalEngineType);
         return clone;
     }
 
@@ -304,7 +298,7 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
             Traverser.Admin traverser = null;
             if (this.first) {
                 this.first = false;
-                this.initializeMatchAlgorithm(this.traversalEngineType);
+                this.initializeMatchAlgorithm(TraversalEngine.Type.STANDARD);
             } else {
                 for (final Traversal.Admin<?, ?> matchTraversal : this.matchTraversals) {
                     if (matchTraversal.hasNext()) {
@@ -339,6 +333,10 @@ public final class MatchStep<S, E> extends ComputerAwareStep<S, Map<String, E>> 
     @Override
     protected Iterator<Traverser<Map<String, E>>> computerAlgorithm() throws NoSuchElementException {
         while (true) {
+            if (this.first) {
+                this.first = false;
+                this.initializeMatchAlgorithm(TraversalEngine.Type.COMPUTER);
+            }
             final Traverser.Admin traverser = this.starts.next();
             final Path path = traverser.path();
             if (!this.matchStartLabels.stream().filter(path::hasLabel).findAny().isPresent())

@@ -314,7 +314,7 @@ public class MatchStepTest extends StepTest {
 
     @Test
     public void testComputerAwareCountMatchAlgorithm() {
-        // MAKE SURE THE SORT ORDER CHANGES AS MORE RESULTS ARE RETURNED BY ONE OR THE OTHER TRAVERSAL
+        // MAKE SURE OLAP JOBS ARE BIASED TOWARDS STAR GRAPH DATA
         final Consumer doNothing = s -> {
         };
         Traversal.Admin<?, ?> traversal = __.match(
