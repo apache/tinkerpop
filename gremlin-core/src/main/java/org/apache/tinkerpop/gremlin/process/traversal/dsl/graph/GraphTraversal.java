@@ -617,7 +617,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> sum(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new SumGlobalStep(this.asAdmin()) : new SumLocalStep(this.asAdmin()));
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new SumGlobalStep<>(this.asAdmin()) : new SumLocalStep(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> max() {
@@ -625,7 +625,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> max(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MaxGlobalStep<E2>(this.asAdmin()) : new MaxLocalStep(this.asAdmin()));
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MaxGlobalStep<>(this.asAdmin()) : new MaxLocalStep(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> min() {
@@ -633,15 +633,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> min(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<E2>(this.asAdmin()) : new MinLocalStep(this.asAdmin()));
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<>(this.asAdmin()) : new MinLocalStep(this.asAdmin()));
     }
 
-    public default GraphTraversal<S, Double> mean() {
+    public default <E2 extends Number> GraphTraversal<S, E2> mean() {
         return this.mean(Scope.global);
     }
 
-    public default GraphTraversal<S, Double> mean(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep<>(this.asAdmin()) : new MeanLocalStep<>(this.asAdmin()));
+    public default <E2 extends Number> GraphTraversal<S, E2> mean(final Scope scope) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep<>(this.asAdmin()) : new MeanLocalStep(this.asAdmin()));
     }
 
     public default <K, V> GraphTraversal<S, Map<K, V>> group() {
