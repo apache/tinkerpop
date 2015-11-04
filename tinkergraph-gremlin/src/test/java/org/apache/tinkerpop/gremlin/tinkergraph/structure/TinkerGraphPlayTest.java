@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
@@ -30,10 +31,12 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
@@ -192,9 +195,19 @@ public class TinkerGraphPlayTest {
     @Test
     @Ignore
     public void testPlayDK() throws Exception {
-        TinkerGraph graph = TinkerFactory.createModern();
-        GraphTraversalSource g = graph.traversal(GraphTraversalSource.standard());
-        final Number m = g.V().values("age").mean().next();
+
+        new File("/tmp/tinkergraph2.kryo").deleteOnExit();
+        new File("/tmp/tinkergraph3.kryo").deleteOnExit();
+
+        final Graph graph1 = TinkerFactory.createModern();
+        final Graph graph2 = GraphFactory.open("/tmp/graph2.properties");
+        TinkerFactory.generateModern((TinkerGraph) graph2);
+        graph2.close();
+
+        System.out.println("graph1 -> graph2");
+        graph1.compute().workers(1).program(BulkLoaderVertexProgram.build().userSuppliedIds(true).writeGraph("/tmp/graph2.properties").create(graph1)).submit().get();
+        System.out.println("graph1 -> graph3");
+        graph1.compute().workers(1).program(BulkLoaderVertexProgram.build().userSuppliedIds(true).writeGraph("/tmp/graph3.properties").create(graph1)).submit().get();
     }
 
     @Test

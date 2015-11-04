@@ -368,6 +368,10 @@ will work for the most use-cases, but has one limitation though: It doesn't supp
 `IncrementalBulkLoader` will handle every property as a single-valued property. A custom `BulkLoader` implementation
 has to be used if the default behavior is not sufficient.
 
+NOTE: A custom `BulkLoader` implementation for incremental loading should use `GraphTraversal` methods to create/update
+elements (e.g. `g.addV()` instead of `graph.addVertex()`). This way the `BulkLoaderVertexProgram` is able to efficiently
+track changes in the underlying graph and can apply several optimization techniques.
+
 [[traversalvertexprogram]]
 TraversalVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~~
