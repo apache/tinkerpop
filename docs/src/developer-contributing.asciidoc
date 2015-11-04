@@ -247,7 +247,7 @@ When writing a test case for a Gremlin step, be sure to use the following conven
 ** `checkResults(Arrays.asList("marko","josh"), traversal)`
 ** `checkMap(new HashMap<String,Long>() {{ put("marko",1l); }}, traversal.next())`
 
-[rtc]
+[[rtc]]
 Review then Commit
 ~~~~~~~~~~~~~~~~~~
 
