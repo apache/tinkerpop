@@ -80,7 +80,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final String nameOfTest = name.getMethodName();
 
         switch (nameOfTest) {
-            case "shouldRebindTraversalSourceVariables":
+            case "shouldAliasTraversalSourceVariables":
                 try {
                     final String p = TestHelper.generateTempFileFromResource(
                             GremlinDriverIntegrateTest.class, "generate-shouldRebindTraversalSourceVariables.groovy", "").getAbsolutePath();
@@ -787,7 +787,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldRebindGraphVariables() throws Exception {
+    public void shouldAliasGraphVariables() throws Exception {
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect();
 
@@ -801,20 +801,25 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
         }
 
-        final Client rebound = cluster.connect().rebind("graph");
-        final Vertex v = rebound.submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
-        assertEquals("stephen", v.value("name"));
+        // keep the testing here until "rebind" is completely removed
+        final Client reboundLegacy = cluster.connect().rebind("graph");
+        final Vertex vLegacy = reboundLegacy.submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
+        assertEquals("stephen", vLegacy.value("name"));
+
+        final Client rebound = cluster.connect().alias("graph");
+        final Vertex v = rebound.submit("g.addVertex('name','jason')").all().get().get(0).getVertex();
+        assertEquals("jason", v.value("name"));
 
         cluster.close();
     }
 
     @Test
-    public void shouldRebindTraversalSourceVariables() throws Exception {
+    public void shouldAliasTraversalSourceVariables() throws Exception {
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect();
 
         try {
-            client.submit("g.addV('name','stephen');").all().get().get(0).getVertex();
+            client.submit("g.addV('name','stephen')").all().get().get(0).getVertex();
             fail("Should have tossed an exception because \"g\" is readonly in this context");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
@@ -823,8 +828,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
         }
 
-        final Vertex v = client.rebind("g1").submit("g.addV('name','stephen')").all().get().get(0).getVertex();
-        assertEquals("stephen", v.value("name"));
+        // keep the testing here until "rebind" is completely removed
+        final Client clientLegacy = client.rebind("g1");
+        final Vertex vLegacy = clientLegacy.submit("g.addV('name','stephen')").all().get().get(0).getVertex();
+        assertEquals("stephen", vLegacy.value("name"));
+
+        final Client clientAliased = client.alias("g1");
+        final Vertex v = clientAliased.submit("g.addV('name','jason')").all().get().get(0).getVertex();
+        assertEquals("jason", v.value("name"));
 
         cluster.close();
     }

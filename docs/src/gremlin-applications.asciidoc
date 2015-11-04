@@ -491,8 +491,8 @@ In this case, they are streamed from the server as they arrive.
 <5> Parameterized request are considered the most efficient way to send Gremlin to the server as they can be cached,
 which will boost performance and reduce resources required on the server.
 
-Rebinding
-^^^^^^^^^
+Aliases
+^^^^^^^
 
 Scripts submitted to Gremlin Server automatically have the globally configured `Graph` and `TraversalSource` instances
 made available to them.  Therefore, if Gremlin Server configures two `TraversalSource` instances called "g1" and "g2"
@@ -505,15 +505,15 @@ client.submit("g2.V()")
 While this is an acceptable way to submit scripts, it has the downside of forcing the client to encode the server-side
 variable name directly into the script being sent.  If the server configuration ever changed such that "g1" became
 "g100", the client-side code might have to see a significant amount of change.  Decoupling the script code from the
-server configuration can be managed by the `rebind` method on `Client` as follows:
+server configuration can be managed by the `alias` method on `Client` as follows:
 
 [source,java]
-Client g1Client = client.rebind("g1")
-Client g2Client = client.rebind("g2")
+Client g1Client = client.alias("g1")
+Client g2Client = client.alias("g2")
 g1Client.submit("g.V()")
 g2Client.submit("g.V()")
 
-The above code demonstrates how the `rebind` method can be used such that the script need only contain a reference
+The above code demonstrates how the `alias` method can be used such that the script need only contain a reference
 to "g" and "g1" and "g2" are automatically rebound into "g" on the server-side.
 
 Serialization
@@ -1303,11 +1303,11 @@ evaluated and is committed when the script completes (or rolled back if an error
 |gremlin |String | *Required* The Gremlin script to evaluate
 |bindings |Map |A map of key/value pairs to apply as variables in the context of the Gremlin script
 |language |String |The flavor used (e.g. `gremlin-groovy`)
-|rebindings |Map |A map of key/value pairs that allow globally bound `Graph` and `TraversalSource` objects to
-be rebound to different variable names for purposes of the current request.  The value represents the name the
+|aliases |Map |A map of key/value pairs that allow globally bound `Graph` and `TraversalSource` objects to
+be aliased to different variable names for purposes of the current request.  The value represents the name the
 global variable and its key represents the new binding name as it will be referenced in the Gremlin query.  For
 example, if the Gremlin Server defines two `TraversalSource` instances named `g1` and `g2`, it would be possible
-to send a `rebinding` pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
+to send an alias pair with key of "g" and value of "g2" and thus allow the script to refer to "g2" simply as "g".
 |=========================================================
 
 Session OpProcessor
