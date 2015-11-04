@@ -424,7 +424,6 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         public BulkLoadingListener() {
             this.counter = 0L;
             this.isNewVertex = false;
-            ;
         }
 
         public boolean isNewVertex() {
