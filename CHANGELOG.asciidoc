@@ -26,6 +26,8 @@ TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Integrated `NumberHelper` in `SumStep`, `MinStep`, `MaxStep` and `MeanStep` (local and global step variants).
+* `CountMatchAlgorithm`, in OLAP, now biases traversal selection towards those traversals that start at the current traverser location to reduce message passing.
+* Fixed a file stream bug in Hadoop OLTP that showed up if the streamed file was more than 2G of data.
 * Bumped to Neo4j 2.3.0.
 * Added `PersistedInputRDD` and `PersistedOutputRDD` which enables `SparkGraphComputer` to store the graph RDD in the context between jobs (no HDFS serialization required).
 * Renamed the `public static String` configuration variable names of TinkerGraph (deprecated old variables).
