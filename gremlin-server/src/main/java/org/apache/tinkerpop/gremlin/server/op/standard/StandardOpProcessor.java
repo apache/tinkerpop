@@ -80,9 +80,21 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
         super.evalOpInternal(context, context::getGremlinExecutor, () -> {
             final Bindings bindings = new SimpleBindings();
 
-            // rebind any global bindings to a different variable.
-            if (msg.getArgs().containsKey(Tokens.ARGS_REBINDINGS)) {
-                final Map<String, String> rebinds = (Map<String, String>) msg.getArgs().get(Tokens.ARGS_REBINDINGS);
+            // don't allow both rebindings and aliases parameters as they are the same thing. aliases were introduced
+            // as of 3.1.0 as a replacement for rebindings. this check can be removed when rebindings are completely
+            // removed from the protocol
+            final boolean hasRebindings = msg.getArgs().containsKey(Tokens.ARGS_REBINDINGS);
+            final boolean hasAliases = msg.getArgs().containsKey(Tokens.ARGS_ALIASES);
+            if (hasRebindings && hasAliases) {
+                final String error = "Prefer use of the 'aliases' parameter over 'rebindings' and do not use both";
+                throw new OpProcessorException(error, ResponseMessage.build(msg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(error).create());
+            }
+
+            final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
+
+            // alias any global bindings to a different variable.
+            if (msg.getArgs().containsKey(rebindingOrAliasParameter)) {
+                final Map<String, String> rebinds = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
                 for (Map.Entry<String,String> kv : rebinds.entrySet()) {
                     boolean found = false;
                     final Map<String, Graph> graphs = context.getGraphManager().getGraphs();
@@ -100,7 +112,7 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
                     }
 
                     if (!found) {
-                        final String error = String.format("Could not rebind [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
+                        final String error = String.format("Could not alias [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
                                 kv.getKey(), kv.getValue(), kv.getValue());
                         throw new OpProcessorException(error, ResponseMessage.build(msg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(error).create());
                     }

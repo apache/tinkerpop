@@ -36,6 +36,7 @@ import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
+import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.util.Log4jRecordingAppender;
 import org.junit.After;
 import org.junit.Before;
@@ -44,6 +45,7 @@ import org.junit.Test;
 import java.nio.channels.ClosedChannelException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -660,6 +662,29 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
         
         assertTrue("Transaction should still be closed", !isStillOpen.get());
     }
- 
+
+    @Test
+    public void shouldStillSupportDeprecatedRebindingsParameterOnServer() throws Exception {
+        // this test can be removed when the rebindings arg is removed
+        try (SimpleClient client = new WebSocketClient()) {
+            final Map<String,String> rebindings = new HashMap<>();
+            rebindings.put("xyz", "graph");
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "xyz.addVertex('name','jason')")
+                    .addArg(Tokens.ARGS_REBINDINGS, rebindings).create();
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicBoolean pass = new AtomicBoolean(false);
+            client.submit(request, result -> {
+                final List<Object> results = (List<Object>) result.getResult().getData();
+                final DetachedVertex v = (DetachedVertex) results.get(0);
+                pass.set(ResponseStatusCode.SUCCESS == result.getStatus().getCode() && v.value("name").equals("jason"));
+                latch.countDown();
+            });
+
+            if (!latch.await(300, TimeUnit.MILLISECONDS)) fail("Request should have returned a response");
+
+            assertTrue(pass.get());
+        }
+    }
     
 }
