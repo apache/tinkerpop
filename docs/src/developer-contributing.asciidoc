@@ -17,10 +17,26 @@ limitations under the License.
 Contributing
 ============
 
-Contributions via GitHub pull requests are gladly accepted from their original
-author. By submitting any copyrighted material via pull request, email, or other means
-you agree to license the material under the project's open source license and
-warrant that you have the legal authority to do so.
+Contributions via GitHub pull requests are gladly accepted from their original author. By submitting any copyrighted
+material via pull request, email, or other means you agree to license the material under the project's open source
+license and warrant that you have the legal authority to do so.
+
+Getting Started
+---------------
+
+New contributors can start development with TinkerPop by first link:https://help.github.com/articles/fork-a-repo/[forking
+then cloning] the Apache TinkerPop link:https://github.com/apache/incubator-tinkerpop[GitHub repository]. Generally
+speaking it is best to tie any work done to an issue in link:https://issues.apache.org/jira/browse/TINKERPOP3[JIRA].
+Either scan through JIRA for an existing open issue to work on or create a new one.
+
+NOTE: For those who are trying to find a place to start to contribute, consider looking at unresolved issues that
+have the "trivial" priority as these issues are specifically set aside as
+link:https://issues.apache.org/jira/issues/?jql=project%20%3D%20TINKERPOP3%20AND%20resolution%20%3D%20Unresolved%20AND%20priority%20%3D%20Trivial%20ORDER%20BY%20key%20DESC[low-hanging fruit]
+for newcomers.
+
+After making changes, submit a link:https://help.github.com/articles/using-pull-requests/[pull request] through
+GitHub, where the name of the pull request is prefixed with the JIRA issue number.  In this way, the pull request
+and its comments get tied back to the JIRA issue it references.
 
 Building and Testing
 --------------------
@@ -161,6 +177,9 @@ as one that is representative of a change in the API that might affect users or 
 organizing release notes.
 * The "affects/fix version(s)" fields should be appropriately set, where the "fix version" implies the version on
 which that particular issue will completed.
+* The "priority" field can be arbitrarily applied with one exception.  The "trivial" option should be reserved for
+tasks that are "easy" for a potential new contributor to jump into and do not have significant impact to urgently
+required improvements.
 
 Code Style
 ~~~~~~~~~~
