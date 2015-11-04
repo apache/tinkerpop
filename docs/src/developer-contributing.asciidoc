@@ -38,6 +38,21 @@ After making changes, submit a link:https://help.github.com/articles/using-pull-
 GitHub, where the name of the pull request is prefixed with the JIRA issue number.  In this way, the pull request
 and its comments get tied back to the JIRA issue it references.
 
+Before issuing your pull request, please be sure of the following:
+
+. `mvn clean install` works successfully.
+. If the change requires modification to the documentation, which can be found in `docs/src`, please be sure to try to
+generate the docs.  If the changes are minimal and do not include code examples, it might be sufficient to test
+generate the docs to validate formatting by just doing `bin/process-docs.sh --dryRun`.  If there are code examples,
+please be sure to have Zookeeper and Hadoop running when doing a `bin/process-docs.sh`.  The documentation is
+generated to `/target/docs/htmlsingle`.
+. If necessary, run the integration tests.  For example, if the changes affect serialization or Gremlin Server/Driver
+operations then running the integration tests assures in addition to unit tests will definitely be necessary. After
+a successful `mvn clean install`, do `mvn verify -DskipIntegrationTests=false -pl gremlin-server`.
+
+Once a pull request is submitted it must go through <<rtc,review>> and will be merged once three TinkerPop committers
+offer positive vote and achieve Apache consensus.
+
 Building and Testing
 --------------------
 
@@ -232,6 +247,7 @@ When writing a test case for a Gremlin step, be sure to use the following conven
 ** `checkResults(Arrays.asList("marko","josh"), traversal)`
 ** `checkMap(new HashMap<String,Long>() {{ put("marko",1l); }}, traversal.next())`
 
+[rtc]
 Review then Commit
 ~~~~~~~~~~~~~~~~~~
 
