@@ -1001,8 +1001,8 @@ spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerial
 ####################################
 # SparkGraphComputer Configuration #
 ####################################
-gremlin.spark.graphInputRDD=org.apache.tinkerpop.gremlin.spark.process.computer.io.InputRDDFormat
-gremlin.spark.graphOutputRDD=org.apache.tinkerpop.gremlin.spark.process.computer.io.OutputRDDFormat
+gremlin.spark.graphInputRDD=org.apache.tinkerpop.gremlin.spark.structure.io.InputRDDFormat
+gremlin.spark.graphOutputRDD=org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDDFormat
 gremlin.spark.persistContext=true
 #####################################
 # GiraphGraphComputer Configuration #
@@ -1196,10 +1196,24 @@ image::spark-algorithm.png[width=775]
 |gremlin.spark.persistContext |Whether to create a new `SparkContext` for every `SparkGraphComputer` or to reuse an existing one.
 |========================================================
 
-IMPORTANT: If the provider/user wishes to not use Hadoop `InputFormats`, it is possible to leverage Spark's RDD
+If the provider/user wishes to not use Hadoop `InputFormats`, it is possible to leverage Spark's RDD
 constructs directly. There is a `gremlin.spark.graphInputRDD` configuration that references a `Class<? extends
 InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, use
 `gremlin.spark.graphOutputRDD` and the respective `OutputRDD`.
+
+It is possible to persist the graph RDD between jobs within the `SparkContext` (e.g. SparkServer) by leveraging `PersistedOutputRDD`.
+Note that `gremlin.spark.persistContext` should be set to `true` or else the persisted RDD will be destroyed when the `SparkContext` closes.
+The persisted RDD is named by the `gremlin.hadoop.outputLocation` configuration (i.e. named in `SparkContext.getPersistedRDDs()`).
+Finally, `PersistedInputRDD` is used with respective  `gremlin.hadoop.inputLocation` to retrieve the persisted RDD from the `SparkContext`.
+
+When using a persistent `Spark Context` the configuration used by the original Spark Configuration will be inherited by all threaded
+references to that Spark Context. The exception to this rule are those properties which have a specific thread local effect.
+
+.Thread Local Properties
+. spark.jobGroup.id
+. spark.job.description
+. spark.job.interruptOnCancel
+. spark.scheduler.pool
 
 Loading with BulkLoaderVertexProgram
 ++++++++++++++++++++++++++++++++++++
@@ -1211,14 +1225,14 @@ Grateful Dead graph from HadoopGraph into TinkerGraph over Spark:
 [gremlin-groovy]
 ----
 hdfs.copyFromLocal('data/grateful-dead.kryo', 'data/grateful-dead.kryo')
-wgConf = 'conf/tinkergraph-gryo.properties'
-grateful = GraphFactory.open('conf/hadoop/hadoop-grateful-gryo.properties')
+readGraph = GraphFactory.open('conf/hadoop/hadoop-grateful-gryo.properties')
+writeGraph = 'conf/tinkergraph-gryo.properties'
 blvp = BulkLoaderVertexProgram.build().
            keepOriginalIds(false).
-           writeGraph(wgConf).create(grateful)
-grateful.compute(SparkGraphComputer).workers(1).program(blvp).submit().get()
+           writeGraph(writeGraph).create(readGraph)
+readGraph.compute(SparkGraphComputer).workers(1).program(blvp).submit().get()
 :set max-iteration 10
-graph = GraphFactory.open(wgConf)
+graph = GraphFactory.open(writeGraph)
 g = graph.traversal()
 g.V().valueMap()
 graph.close()
@@ -1233,7 +1247,6 @@ graph.close()
 #
 gremlin.graph=org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph
 gremlin.hadoop.graphInputFormat=org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat
-gremlin.hadoop.graphOutputFormat=org.apache.hadoop.mapreduce.lib.output.NullOutputFormat
 gremlin.hadoop.memoryOutputFormat=org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
 gremlin.hadoop.inputLocation=data/grateful-dead.kryo
 gremlin.hadoop.outputLocation=output
@@ -1245,7 +1258,7 @@ gremlin.hadoop.jarsInDistributedCache=true
 #
 spark.master=local[1]
 spark.executor.memory=1g
-spark.serializer=org.apache.spark.serializer.KryoSerializer
+spark.serializer=org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer
 ----
 
 [source,properties]
@@ -1257,7 +1270,7 @@ gremlin.tinkergraph.graphFormat=gryo
 gremlin.tinkergraph.graphLocation=/tmp/tinkergraph.kryo
 ----
 
-NOTE: The path to TinkerGraph needs to be included in the `HADOOP_GREMLIN_LIBS` for the above example to work.
+IMPORTANT: The path to TinkerGraph jars needs to be included in the `HADOOP_GREMLIN_LIBS` for the above example to work.
 
 [[giraphgraphcomputer]]
 GiraphGraphComputer
@@ -1341,14 +1354,14 @@ the Grateful Dead graph from HadoopGraph into TinkerGraph over Giraph:
 [gremlin-groovy]
 ----
 hdfs.copyFromLocal('data/grateful-dead.kryo', 'data/grateful-dead.kryo')
-wgConf = 'conf/tinkergraph-gryo.properties'
-grateful = GraphFactory.open('conf/hadoop/hadoop-grateful-gryo.properties')
+readGraph = GraphFactory.open('conf/hadoop/hadoop-grateful-gryo.properties')
+writeGraph = 'conf/tinkergraph-gryo.properties'
 blvp = BulkLoaderVertexProgram.build().
            keepOriginalIds(false).
-           writeGraph(wgConf).create(grateful)
-grateful.compute(GiraphGraphComputer).workers(1).program(blvp).submit().get()
+           writeGraph(writeGraph).create(readGraph)
+readGraph.compute(GiraphGraphComputer).workers(1).program(blvp).submit().get()
 :set max-iteration 10
-graph = GraphFactory.open(wgConf)
+graph = GraphFactory.open(writeGraph)
 g = graph.traversal()
 g.V().valueMap()
 graph.close()

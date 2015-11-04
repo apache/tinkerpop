@@ -70,6 +70,10 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, List<Vertex>>> get_g_V_group_byXlabelX_byXnameX_byXorderXlocalX_byXdecrXX();
 
+    public abstract Traversal<Vertex, List<Double>> get_g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX();
+
+    public abstract Traversal<Vertex, Map<String, Object>> get_g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_decrX();
+
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_name_order() {
@@ -97,7 +101,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_order_byXname_incrX_name() {
-        final Traversal<Vertex,String> traversal = get_g_V_order_byXname_incrX_name();
+        final Traversal<Vertex, String> traversal = get_g_V_order_byXname_incrX_name();
         printTraversalForm(traversal);
         assertCommon(traversal);
     }
@@ -105,7 +109,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_order_byXnameX_name() {
-        final Traversal<Vertex,String> traversal = get_g_V_order_byXnameX_name();
+        final Traversal<Vertex, String> traversal = get_g_V_order_byXnameX_name();
         printTraversalForm(traversal);
         assertCommon(traversal);
     }
@@ -246,6 +250,47 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
         assertEquals("vadas", list.get(0));
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX() {
+        final Traversal<Vertex, List<Double>> traversal = get_g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX();
+        final List<List<Double>> list = traversal.toList();
+        assertEquals(list.get(0).size(), 3);
+        assertEquals(list.get(1).size(), 3);
+        //assertEquals(list.get(2).size(),3);  // they both have value 1.0 and thus can't guarantee a tie order
+        //assertEquals(list.get(3).size(),1);
+        assertEquals(list.get(4).size(), 1);
+        assertEquals(list.get(5).size(), 1);
+        ///
+        assertEquals(2.4d, list.get(0).stream().reduce(0.0d, (a, b) -> a + b), 0.01d);
+        assertEquals(1.9d, list.get(1).stream().reduce(0.0d, (a, b) -> a + b), 0.01d);
+        assertEquals(1.0d, list.get(2).stream().reduce(0.0d, (a, b) -> a + b), 0.01d);
+        assertEquals(1.0d, list.get(3).stream().reduce(0.0d, (a, b) -> a + b), 0.01d);
+        assertEquals(0.5d, list.get(4).stream().reduce(0.0d, (a, b) -> a + b), 0.01d);
+        assertEquals(0.2d, list.get(5).stream().reduce(0.0d, (a, b) -> a + b), 0.01d);
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_decrX() {
+        final Traversal<Vertex, Map<String, Object>> traversal = get_g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_decrX();
+        final List<Map<String, Object>> list = traversal.toList();
+        assertEquals(convertToVertex(graph, "josh"), list.get(0).get("v"));
+        assertEquals(2.4d, (Double) list.get(0).get("s"), 0.1d);
+        ///
+        assertEquals(convertToVertex(graph, "marko"), list.get(1).get("v"));
+        assertEquals(1.9d, (Double) list.get(1).get("s"), 0.1d);
+        //
+        assertEquals(1.0d, (Double) list.get(2).get("s"), 0.1d);   // they both have 1.0 so you can't test the "v" as().
+        assertEquals(1.0d, (Double) list.get(3).get("s"), 0.1d);
+        ///
+        assertEquals(convertToVertex(graph, "vadas"), list.get(4).get("v"));
+        assertEquals(0.5d, (Double) list.get(4).get("s"), 0.1d);
+        ///
+        assertEquals(convertToVertex(graph, "peter"), list.get(5).get("v"));
+        assertEquals(0.2d, (Double) list.get(5).get("s"), 0.1d);
+    }
+
     public static class Traversals extends OrderTest {
 
         @Override
@@ -307,5 +352,14 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
             return g.V().<String, List<Vertex>>group().by(T.label).by(__.values("name").order().by(Order.decr).fold());
         }
 
+        @Override
+        public Traversal<Vertex, List<Double>> get_g_V_localXbothE_weight_foldX_order_byXsumXlocalX_decrX() {
+            return g.V().local(__.bothE().<Double>values("weight").fold()).order().by(__.sum(Scope.local), Order.decr);
+        }
+
+        @Override
+        public Traversal<Vertex, Map<String, Object>> get_g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_decrX() {
+            return g.V().as("v").map(__.bothE().<Double>values("weight").fold()).sum(Scope.local).as("s").select("v", "s").order().by(__.select("s"), Order.decr);
+        }
     }
 }

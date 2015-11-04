@@ -92,16 +92,18 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
 . `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
-. `mvn clean install -Dmaven.test.skip=true`
+. `mvn clean install -Dmaven.test.skip=true` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
 . `bin/publish-docs.sh <username>`
-. `mvn install -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`
+. `mvn install -Papache-release -Djavadoc -DcreateChecksum=true -Dmaven.test.skip=true`
+. `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus]. Review (artifacts versions, file sizes, anything that might be out of place - request another committer to review as well) but do NOT close/release the staging repository at this time.
 . Review generated artifacts to be sure they have both javadocs and asciidocs present
 . Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
 .. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/ dev` and `mkdir dev/x.y.z`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/x.y.z/gremlin-console-x.y.z-distribution.zip* dev/x.y.z`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-server/x.y.z/gremlin-server-x.y.z-distribution.zip* dev/x.y.z`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/tinkerpop/x.y.z/tinkerpop-x.y.z-source-release.zip* dev/x.y.z`
-.. `cd dev/x.y.z` and `for f in \*.zip*; do  mv "$f" "apache-$f"; done`
+.. `cd dev/x.y.z`
+.. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
 .. `cd ..; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
 . Execute `bin/validate-distribution.sh` and any other relevant testing.
 . Perform JIRA administration tasks:
@@ -123,12 +125,9 @@ A positive vote for a particular release from the Apache Incubator is required t
 Release & Promote
 -----------------
 
-. `mvn clean install -Djavadoc -Dmaven.test.skip=true; bin/process-docs.sh` - rebuild source and docs of tagged release
-. `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to Apache Nexus
-. Review and close the staging repository (Apache Nexus at link:https://repository.apache.org/[https://repository.apache.org/]) - check that versions are correct and that all artifacts are present
+. Close the staging repository at link:https://repository.apache.org/[Apache Nexus]) and then release.
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/x.y.z`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/x.y.z`
-. `ls dev/x.y.z/ | grep '\-\(distribution\|source\-release\)\.zip' | sed -e 's/\(^[^ ]\*\)-distribution\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-bin\2/' -e 's/\(^[^ ]\*\)-source-release\([^ ]*\)/cp dev\/x.y.z\/\0 release\/x.y.z\/\1-src\2/' | /bin/sh`
 . `cd release; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).

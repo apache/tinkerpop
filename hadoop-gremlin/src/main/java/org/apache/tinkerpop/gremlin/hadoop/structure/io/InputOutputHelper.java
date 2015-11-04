@@ -18,15 +18,21 @@
  */
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.OutputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.script.ScriptOutputFormat;
+import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,5 +70,21 @@ public final class InputOutputHelper {
     public static void registerInputOutputPair(final Class<? extends InputFormat<NullWritable, VertexWritable>> inputFormat, final Class<? extends OutputFormat<NullWritable, VertexWritable>> outputFormat) {
         INPUT_TO_OUTPUT_CACHE.put(inputFormat, outputFormat);
         OUTPUT_TO_INPUT_CACHE.put(outputFormat, inputFormat);
+    }
+
+    public static HadoopGraph getOutputGraph(final Configuration configuration, final GraphComputer.ResultGraph resultGraph, final GraphComputer.Persist persist) {
+        final HadoopConfiguration hadoopConfiguration = new HadoopConfiguration(configuration);
+        final BaseConfiguration newConfiguration = new BaseConfiguration();
+        newConfiguration.copy(hadoopConfiguration);
+        if (resultGraph.equals(GraphComputer.ResultGraph.NEW)) {
+            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, hadoopConfiguration.getOutputLocation() + "/" + Constants.HIDDEN_G);
+            if (hadoopConfiguration.containsKey(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT))
+                newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputOutputHelper.getInputFormat(hadoopConfiguration.getGraphOutputFormat()).getCanonicalName());
+            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, hadoopConfiguration.getOutputLocation() + "_");
+            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, persist.equals(GraphComputer.Persist.EDGES));
+        } else {
+            newConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, hadoopConfiguration.getOutputLocation() + "_");
+        }
+        return HadoopGraph.open(newConfiguration);
     }
 }
