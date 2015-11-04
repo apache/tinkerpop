@@ -135,6 +135,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             JavaSparkContext sparkContext = null;
             try {
                 sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
+                updateLocalConfiguration(sparkContext, sparkConfiguration);
                 // add the project jars to the cluster
                 this.loadJars(sparkContext, hadoopConfiguration);
                 // create a message-passing friendly rdd from the input rdd
@@ -242,6 +243,37 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     else
                         this.logger.warn(path + " does not reference a valid directory -- proceeding regardless");
                 }
+            }
+        }
+    }
+
+    /**
+     * When using a persistent context the running Context's configuration will override a passed
+     * in configuration. Spark allows us to override these inherited properties via
+     * SparkContext.setLocalProperty
+     */
+    private void updateLocalConfiguration(final JavaSparkContext sparkContext, final SparkConf sparkConfiguration) {
+        /*
+         * While we could enumerate over the entire SparkConfiguration and copy into the Thread
+         * Local properties of the Spark Context this could cause adverse effects with future
+         * versions of Spark. Since the api for setting multiple local properties at once is
+         * restricted as private, we will only set those properties we know can effect SparkGraphComputer
+         * Execution rather than applying the entire configuration.
+         */
+        final String[] validPropertyNames = {
+            "spark.job.description",
+            "spark.jobGroup.id",
+            "spark.job.interruptOnCancel",
+            "spark.scheduler.pool"
+        };
+
+        for (String propertyName: validPropertyNames){
+            if (sparkConfiguration.contains(propertyName)){
+                String propertyValue = sparkConfiguration.get(propertyName);
+                this.logger.info("Setting Thread Local SparkContext Property - "
+                        + propertyName + " : " + propertyValue);
+
+                sparkContext.setLocalProperty(propertyName, sparkConfiguration.get(propertyName));
             }
         }
     }

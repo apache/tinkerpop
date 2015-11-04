@@ -1206,6 +1206,15 @@ Note that `gremlin.spark.persistContext` should be set to `true` or else the per
 The persisted RDD is named by the `gremlin.hadoop.outputLocation` configuration (i.e. named in `SparkContext.getPersistedRDDs()`).
 Finally, `PersistedInputRDD` is used with respective  `gremlin.hadoop.inputLocation` to retrieve the persisted RDD from the `SparkContext`.
 
+When using a persistent `Spark Context` the configuration used by the original Spark Configuration will be inherited by all threaded
+references to that Spark Context. The exception to this rule are those properties which have a specific thread local effect.
+
+.Thread Local Properties
+. spark.jobGroup.id
+. spark.job.description
+. spark.job.interruptOnCancel
+. spark.scheduler.pool
+
 Loading with BulkLoaderVertexProgram
 ++++++++++++++++++++++++++++++++++++
 
