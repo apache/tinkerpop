@@ -162,8 +162,12 @@ public class NumberHelper {
     }
 
     public static Class<? extends Number> getHighestCommonNumberClass(final Number... numbers) {
+        return getHighestCommonNumberClass(false, numbers);
+    }
+
+    public static Class<? extends Number> getHighestCommonNumberClass(final boolean forceFloatingPoint, final Number... numbers) {
         int bits = 8;
-        boolean fp = false;
+        boolean fp = forceFloatingPoint;
         for (final Number number : numbers) {
             if (number == null) continue;
             final Class<? extends Number> clazz = number.getClass();
@@ -207,7 +211,11 @@ public class NumberHelper {
     }
 
     public static Number div(final Number a, final Number b) {
-        final Class<? extends Number> clazz = getHighestCommonNumberClass(a, b);
+        return div(a, b, false);
+    }
+
+    public static Number div(final Number a, final Number b, final boolean forceFloatingPoint) {
+        final Class<? extends Number> clazz = getHighestCommonNumberClass(forceFloatingPoint, a, b);
         return getHelper(clazz).div.apply(a, b);
     }
 

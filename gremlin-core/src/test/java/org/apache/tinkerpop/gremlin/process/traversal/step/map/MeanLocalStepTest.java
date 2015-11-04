@@ -22,9 +22,14 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.junit.Test;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -34,5 +39,14 @@ public class MeanLocalStepTest extends StepTest {
     @Override
     protected List<Traversal> getTraversals() {
         return Collections.singletonList(__.mean(Scope.local));
+    }
+
+    @Test
+    public void testReturnTypes() {
+        assertEquals(3d, __.__(2, 4).fold().mean(Scope.local).next());
+        assertEquals(3d, __.__((short) 2, (short) 4).fold().mean(Scope.local).next()); // why? because the internal counter is a Long value
+        assertEquals(BigDecimal.ONE, __.__(BigInteger.ONE, BigInteger.ONE).fold().mean(Scope.local).next());
+        assertEquals(BigDecimal.ONE, __.__((short) 1, BigInteger.ONE).fold().mean(Scope.local).next());
+        assertEquals(BigDecimal.ONE, __.__(BigInteger.ONE, (short) 1).fold().mean(Scope.local).next());
     }
 }

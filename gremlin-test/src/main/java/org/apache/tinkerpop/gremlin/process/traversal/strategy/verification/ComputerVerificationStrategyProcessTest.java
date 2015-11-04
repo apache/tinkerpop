@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.junit.Test;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.mul;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -90,7 +91,7 @@ public abstract class ComputerVerificationStrategyProcessTest extends AbstractGr
             }
 
             try {
-                final GraphTraversal t = g.V().count().sum().map(x -> x.get() * 19).iterate();
+                final GraphTraversal t = g.V().count().sum().map(x -> mul(x.get(), 19)).iterate();
                 fail("Mid-traversal barrier steps are not allowed (COMPUTER): " + t);
             } catch (IllegalStateException e) {
                 assertTrue(true);

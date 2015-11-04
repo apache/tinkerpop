@@ -45,7 +45,10 @@ import java.util.concurrent.Future;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.GRATEFUL;
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -1223,13 +1226,13 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             assertEquals(Long.valueOf(0l), result.graph().traversal().E().count().next());
             assertEquals(Long.valueOf(0l), result.graph().traversal().V().values().count().next());
             assertEquals(Long.valueOf(0l), result.graph().traversal().E().values().count().next());
-            assertEquals(Double.valueOf(0.0d), result.graph().traversal().V().values("money").sum().next());
+            assertEquals(0, result.graph().traversal().V().values("money").sum().next());
             ///
             assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
             assertEquals(Long.valueOf(12l), graph.traversal().V().values().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
-            assertEquals(Double.valueOf(0.0d), graph.traversal().V().values("money").sum().next());
+            assertEquals(0, graph.traversal().V().values("money").sum().next());
         }
     }
 
@@ -1243,13 +1246,13 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             assertEquals(Long.valueOf(0l), result.graph().traversal().E().count().next());
             assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
             assertEquals(Long.valueOf(0l), result.graph().traversal().E().values().count().next());
-            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            assertEquals(28l, result.graph().traversal().V().values("money").sum().next());
             ///
             assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
             assertEquals(Long.valueOf(12l), graph.traversal().V().values().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
-            assertEquals(Double.valueOf(0.0d), graph.traversal().V().values("money").sum().next());
+            assertEquals(0, graph.traversal().V().values("money").sum().next());
         }
     }
 
@@ -1263,13 +1266,13 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             assertEquals(Long.valueOf(6l), result.graph().traversal().E().count().next());
             assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
             assertEquals(Long.valueOf(6l), result.graph().traversal().E().values().count().next());
-            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            assertEquals(28l, result.graph().traversal().V().values("money").sum().next());
             ///
             assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
             assertEquals(Long.valueOf(12l), graph.traversal().V().values().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
-            assertEquals(Double.valueOf(0.0d), graph.traversal().V().values("money").sum().next());
+            assertEquals(0, graph.traversal().V().values("money").sum().next());
         }
     }
 
@@ -1283,13 +1286,13 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             assertEquals(Long.valueOf(6l), result.graph().traversal().E().count().next());
             assertEquals(Long.valueOf(12l), result.graph().traversal().V().values().count().next());
             assertEquals(Long.valueOf(6l), result.graph().traversal().E().values().count().next());
-            assertEquals(Double.valueOf(0.0d), result.graph().traversal().V().values("money").sum().next());
+            assertEquals(0, result.graph().traversal().V().values("money").sum().next());
             ///
             assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
             assertEquals(Long.valueOf(12l), graph.traversal().V().values().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
-            assertEquals(Double.valueOf(0.0d), graph.traversal().V().values("money").sum().next());
+            assertEquals(0, graph.traversal().V().values("money").sum().next());
         }
     }
 
@@ -1303,13 +1306,13 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             assertEquals(Long.valueOf(6l), result.graph().traversal().E().count().next());
             assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
             assertEquals(Long.valueOf(6l), result.graph().traversal().E().values().count().next());
-            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            assertEquals(28l, result.graph().traversal().V().values("money").sum().next());
             ///
             assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
             assertEquals(Long.valueOf(18l), graph.traversal().V().values().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
-            assertEquals(Double.valueOf(28.0d), graph.traversal().V().values("money").sum().next());
+            assertEquals(28l, graph.traversal().V().values("money").sum().next());
         }
     }
 
@@ -1323,13 +1326,13 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
             assertEquals(Long.valueOf(6l), result.graph().traversal().E().count().next());
             assertEquals(Long.valueOf(18l), result.graph().traversal().V().values().count().next());
             assertEquals(Long.valueOf(6l), result.graph().traversal().E().values().count().next());
-            assertEquals(Double.valueOf(28.0d), result.graph().traversal().V().values("money").sum().next());
+            assertEquals(28l, result.graph().traversal().V().values("money").sum().next());
             ///
             assertEquals(Long.valueOf(6l), graph.traversal().V().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().count().next());
             assertEquals(Long.valueOf(18l), graph.traversal().V().values().count().next());
             assertEquals(Long.valueOf(6l), graph.traversal().E().values().count().next());
-            assertEquals(Double.valueOf(28.0d), graph.traversal().V().values("money").sum().next());
+            assertEquals(28l, graph.traversal().V().values("money").sum().next());
         }
     }
 

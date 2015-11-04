@@ -35,6 +35,7 @@ Additional upgrade information can be found here:
 Important Changes
 ~~~~~~~~~~~~~~~~~
 
+* `sum()`, `min()`, `max()` and `mean()` make now use of `NumberHelper`, leading to a more appropriate result type, instead of just `Double`.
 * `GraphStep` is no longer in `sideEffect`-package, but now in `map`-package as traversals support mid-traversal `V()`.
 * Traversals now support mid-traversal `V()`-steps. Graph system providers should ensure that a mid-traversal `V()` can leverage any suitable index.
 * The data type of `Operator` enums will now always be the highest common data type of the two given numbers, rather than the data type of the first number, as it's been before.
