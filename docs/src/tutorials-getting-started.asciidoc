@@ -130,3 +130,35 @@ In this first five minutes with Gremlin, you've gotten the Gremlin Console insta
 some traversals and hopefully learned something about TinkerPop in general.  You've only scratched the surface of
 what there is to know, but those accomplishments will help enable understanding of the more detailed tutorials to
 come.
+
+In Ten More Minutes
+-------------------
+
+In the first five minutes of getting started with TinkerPop, you learned some basics for telling Gremlin how to
+traverse a graph.  Of course, there wasn't much discussion about what a graph is.  A graph is a collection of
+vertices (i.e. nodes, dots, etc.) and edges (i.e. relationships, lines, etc.), where a vertex is an entity which
+represents some domain object (e.g. a person, a place, etc.) and an edge represents the relationship between two
+vertices.
+
+image:modern-edge-1-to-3-1.png[width=300,align=center]
+
+The above example shows a graph with two vertices, one with a unique identifier of "1" and another with a unique
+identifier of "3".  There is a edge connecting the two with a unique identifier of "9". It is important to consider
+that the edge has a direction which goes out from vertex "1" and in to vertex "3'.
+
+IMPORTANT: Most TinkerPop implementations do not allow for identifier assignment.  They will rather assign identifiers
+and ignore assigned identifiers you attempt to assign to them.
+
+A graph with elements that just have identifiers does not make for much of a database.  To give some meaning to
+this basic structure, vertices and edges can each be given labels to categorize them.
+
+image:modern-edge-1-to-3-2.png[width=300,align=center]
+
+You can now see that a vertex "1" is a "person" and vertex "3" is a "software" vertex.  They are joined by a "created"
+edge which allows you to see that a "person created software".  The "label" and the "id" are reserved attributes of
+vertices and edges, but you can add your own arbitrary properties as well:
+
+image:modern-edge-1-to-3-3.png[width=300,align=center]
+
+This model is referred to as a property graph and it provides a flexible and intuitive way in which to model your data.
+
