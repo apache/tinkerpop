@@ -769,16 +769,13 @@ limitations under the License.
                                 </goals>
                                 <configuration>
                                     <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
-                                    <sourceDocumentName>tutorials.asciidoc</sourceDocumentName>
+                                    <sourceDocumentName>tutorials-getting-started.asciidoc</sourceDocumentName>
                                     <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
                                     <backend>html5</backend>
-                                    <doctype>book</doctype>
+                                    <doctype>article</doctype>
                                     <attributes>
                                         <imagesdir>images</imagesdir>
                                         <encoding>UTF-8</encoding>
-                                        <toc>true</toc>
-                                        <toclevels>3</toclevels>
-                                        <toc-position>left</toc-position>
                                         <!--<iconsdir>images/icons</iconsdir>-->
                                         <!-- AsciiDoctor CSS3-based theme configuration -->
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
