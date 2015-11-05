@@ -97,7 +97,13 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     private static final String ARGS_BINDINGS_DOT = Tokens.ARGS_BINDINGS + ".";
+
+    /**
+     * @deprecated As of release 3.1.0, replaced by {@link #ARGS_ALIASES_DOT}.
+     */
+    @Deprecated
     private static final String ARGS_REBINDINGS_DOT = Tokens.ARGS_REBINDINGS + ".";
+    private static final String ARGS_ALIASES_DOT = Tokens.ARGS_ALIASES + ".";
 
     private static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
 
@@ -317,6 +323,7 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
         if (request.getMethod() == GET) {
             final QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
             final List<String> gremlinParms = decoder.parameters().get(Tokens.ARGS_GREMLIN);
+
             if (null == gremlinParms || gremlinParms.size() == 0)
                 throw new IllegalArgumentException("no gremlin script supplied");
             final String script = gremlinParms.get(0);
@@ -327,14 +334,23 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(ARGS_BINDINGS_DOT))
                     .forEach(kv -> bindings.put(kv.getKey().substring(ARGS_BINDINGS_DOT.length()), kv.getValue().get(0)));
 
-            final Map<String, String> rebindings = new HashMap<>();
-            decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(ARGS_REBINDINGS_DOT))
-                    .forEach(kv -> rebindings.put(kv.getKey().substring(ARGS_REBINDINGS_DOT.length()), kv.getValue().get(0)));
+            // don't allow both rebindings and aliases parameters as they are the same thing. aliases were introduced
+            // as of 3.1.0 as a replacement for rebindings. this check can be removed when rebindings are completely
+            // removed from the protocol
+            final boolean hasRebindings = decoder.parameters().entrySet().stream().anyMatch(kv -> kv.getKey().startsWith(ARGS_REBINDINGS_DOT));
+            final boolean hasAliases = decoder.parameters().entrySet().stream().anyMatch(kv -> kv.getKey().startsWith(ARGS_ALIASES_DOT));
+            if (hasRebindings && hasAliases)
+                throw new IllegalArgumentException("prefer use of the 'aliases' parameter over 'rebindings' and do not use both");
+
+            final Map<String, String> aliases = new HashMap<>();
+            final String rebindingOrAliasParameter = hasRebindings ? ARGS_REBINDINGS_DOT : ARGS_ALIASES_DOT;
+            decoder.parameters().entrySet().stream().filter(kv -> kv.getKey().startsWith(rebindingOrAliasParameter))
+                    .forEach(kv -> aliases.put(kv.getKey().substring(rebindingOrAliasParameter.length()), kv.getValue().get(0)));
 
             final List<String> languageParms = decoder.parameters().get(Tokens.ARGS_LANGUAGE);
             final String language = (null == languageParms || languageParms.size() == 0) ? null : languageParms.get(0);
 
-            return Quartet.with(script, bindings, language, rebindings);
+            return Quartet.with(script, bindings, language, aliases);
         } else {
             final JsonNode body;
             try {
@@ -354,18 +370,27 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
             if (bindingsNode != null)
                 bindingsNode.fields().forEachRemaining(kv -> bindings.put(kv.getKey(), fromJsonNode(kv.getValue())));
 
-            final JsonNode rebindingsNode = body.get(Tokens.ARGS_REBINDINGS);
-            if (rebindingsNode != null && !rebindingsNode.isObject())
-                throw new IllegalArgumentException("rebindings must be a Map");
+            // don't allow both rebindings and aliases parameters as they are the same thing. aliases were introduced
+            // as of 3.1.0 as a replacement for rebindings. this check can be removed when rebindings are completely
+            // removed from the protocol
+            final boolean hasRebindings = body.has(Tokens.ARGS_REBINDINGS);
+            final boolean hasAliases = body.has(Tokens.ARGS_ALIASES);
+            if (hasRebindings && hasAliases)
+                throw new IllegalArgumentException("prefer use of the 'aliases' parameter over 'rebindings' and do not use both");
 
-            final Map<String, String> rebindings = new HashMap<>();
-            if (rebindingsNode != null)
-                rebindingsNode.fields().forEachRemaining(kv -> rebindings.put(kv.getKey(), kv.getValue().asText()));
+            final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
+            final JsonNode aliasesNode = body.get(rebindingOrAliasParameter);
+            if (aliasesNode != null && !aliasesNode.isObject())
+                throw new IllegalArgumentException("aliases must be a Map");
+
+            final Map<String, String> aliases = new HashMap<>();
+            if (aliasesNode != null)
+                aliasesNode.fields().forEachRemaining(kv -> aliases.put(kv.getKey(), kv.getValue().asText()));
 
             final JsonNode languageNode = body.get(Tokens.ARGS_LANGUAGE);
             final String language = null == languageNode ? null : languageNode.asText();
 
-            return Quartet.with(scriptNode.asText(), bindings, language, rebindings);
+            return Quartet.with(scriptNode.asText(), bindings, language, aliases);
         }
     }
 

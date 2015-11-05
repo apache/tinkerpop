@@ -85,7 +85,6 @@ TinkerGraph-Gremlin Updates
 
 * The `public static String` configurations have been renamed. The old `public static` variables have been deprecated.
 
-
 Gremlin Process
 ^^^^^^^^^^^^^^^
 
@@ -181,3 +180,16 @@ GraphComputer Updates
 This allows the user to specify engine-specific parameters to the underlying OLAP system. These parameters are not intended
 to be cross engine supported. Moreover, if there are not parameters that can be altered (beyond the standard `GraphComputer`
 methods), then the provider's `GraphComputer` implementation should simply return and do nothing.
+
+Driver Providers
+^^^^^^^^^^^^^^^^
+
+Aliases Parameter
++++++++++++++++++
+
+The "rebindings" argument to the "standard" `OpProcessor` has been renamed to "aliases". While "rebindings" is still
+supported it is recommended that the upgrade to "aliases" be made as soon as possible as support will be removed in
+the future.  Gremlin Server will not accept both parameters at the same time - a request must contain either one
+parameter or the other if either is supplied.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP3-913[TINKERPOP3-913] for more information.

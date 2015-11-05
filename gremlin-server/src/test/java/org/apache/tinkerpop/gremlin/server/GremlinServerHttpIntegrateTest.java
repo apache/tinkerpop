@@ -61,8 +61,8 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
         switch (nameOfTest) {
             case "should200OnGETWithGremlinQueryStringArgumentWithIteratorResult":
             case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResult":
-            case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResultAndRebinding":
-            case "should200OnGETWithGremlinQueryStringArgumentWithIteratorResultAndRebinding":
+            case "should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResultAndAliases":
+            case "should200OnGETWithGremlinQueryStringArgumentWithIteratorResultAndAliases":
                 settings.scriptEngines.get("gremlin-groovy").scripts = Arrays.asList("scripts/generate-classic.groovy");
                 break;
             case "should200OnPOSTTransactionalGraph":
@@ -253,9 +253,21 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
-    public void should200OnGETWithGremlinQueryStringArgumentWithIteratorResultAndRebinding() throws Exception {
+    public void should200OnGETWithGremlinQueryStringArgumentWithIteratorResultAndAliases() throws Exception {
+        // we can remove this first test when rebindings are completely removed
+        final CloseableHttpClient httpclientLegacy = HttpClients.createDefault();
+        final HttpGet httpgetLegacy = new HttpGet("http://localhost:8182?gremlin=g1.V()&rebindings.g1=g");
+
+        try (final CloseableHttpResponse response = httpclientLegacy.execute(httpgetLegacy)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(6, node.get("result").get("data").size());
+        }
+
         final CloseableHttpClient httpclient = HttpClients.createDefault();
-        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=g1.V()&rebindings.g1=g");
+        final HttpGet httpget = new HttpGet("http://localhost:8182?gremlin=g1.V()&aliases.g1=g");
 
         try (final CloseableHttpResponse response = httpclient.execute(httpget)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
@@ -411,11 +423,25 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
     }
 
     @Test
-    public void should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResultAndRebinding() throws Exception {
+    public void should200OnPOSTWithGremlinJsonEndcodedBodyWithIteratorResultAndAliases() throws Exception {
+        // we can remove this first test when rebindings are completely removed
+        final CloseableHttpClient httpclientLegacy = HttpClients.createDefault();
+        final HttpPost httppostLegacy = new HttpPost("http://localhost:8182");
+        httppostLegacy.addHeader("Content-Type", "application/json");
+        httppostLegacy.setEntity(new StringEntity("{\"gremlin\":\"g1.V()\",\"rebindings\":{\"g1\":\"g\"}}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclientLegacy.execute(httppostLegacy)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(6, node.get("result").get("data").size());
+        }
+
         final CloseableHttpClient httpclient = HttpClients.createDefault();
         final HttpPost httppost = new HttpPost("http://localhost:8182");
         httppost.addHeader("Content-Type", "application/json");
-        httppost.setEntity(new StringEntity("{\"gremlin\":\"g1.V()\",\"rebindings\":{\"g1\":\"g\"}}", Consts.UTF_8));
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g1.V()\",\"aliases\":{\"g1\":\"g\"}}", Consts.UTF_8));
 
         try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
             assertEquals(200, response.getStatusLine().getStatusCode());
