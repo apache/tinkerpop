@@ -262,6 +262,30 @@ public abstract class Client {
         }
 
         /**
+         * The asynchronous version of {@link #submit(String, Map)}} where the returned future will complete when the
+         * write of the request completes.
+         *
+         * @param gremlin the gremlin script to execute
+         * @param parameters a map of parameters that will be bound to the script on execution
+         * @param aliases aliases the specified global Gremlin Server variable some other name that then be used in the
+         *                script where the key is the alias name and the value represents the global variable on the
+         *                server
+         */
+        public CompletableFuture<ResultSet> submitAsync(final String gremlin, final Map<String,String> aliases,
+                                                        final Map<String, Object> parameters) {
+            final RequestMessage.Builder request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .add(Tokens.ARGS_GREMLIN, gremlin)
+                    .add(Tokens.ARGS_BATCH_SIZE, cluster.connectionPoolSettings().resultIterationBatchSize);
+
+            Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
+
+            if (aliases != null && !aliases.isEmpty())
+                request.addArg(Tokens.ARGS_REBINDINGS, aliases);
+
+            return submitAsync(buildMessage(request));
+        }
+
+        /**
          * {@inheritDoc}
          */
         @Override

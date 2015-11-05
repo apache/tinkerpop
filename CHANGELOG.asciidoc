@@ -27,6 +27,7 @@ TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 
 * Optimized `BulkLoaderVertexProgram`. It now uses `EventStrategy` to monitor what the underlying `BulkLoader` implementation does (e.g. whether it creates a new vertex or returns an existing).
 * Integrated `NumberHelper` in `SumStep`, `MinStep`, `MaxStep` and `MeanStep` (local and global step variants).
+* Gremlin Console remoting to Gremlin Server now supports a configuration option for assigning aliases.
 * `CountMatchAlgorithm`, in OLAP, now biases traversal selection towards those traversals that start at the current traverser location to reduce message passing.
 * Fixed a file stream bug in Hadoop OLTP that showed up if the streamed file was more than 2G of data.
 * Added the ability to set thread local properties in `SparkGraphComputer` when using a persistent context.

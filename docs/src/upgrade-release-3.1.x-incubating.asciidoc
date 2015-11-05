@@ -85,7 +85,6 @@ TinkerGraph-Gremlin Updates
 
 * The `public static String` configurations have been renamed. The old `public static` variables have been deprecated.
 
-
 Gremlin Process
 ^^^^^^^^^^^^^^^
 
@@ -108,11 +107,31 @@ Graph Traversal Updates
 ** Use `select(keys)` and `select(columns)`. However, note that `select()` will not unroll the keys/values. Thus, `mapKeys()` => `select(keys).unfold()`.
 
 Gremlin-Groovy Updates
-++++++++++++++++++++++
+^^^^^^^^^^^^^^^^^^^^^^
 
 * The closure wrappers classes `GFunction`, `GSupplier`, `GConsumer` have been deprecated.
 ** In Groovy, a closure can be specified using `as Function` and thus, these wrappers are not needed.
 * The `GremlinExecutor.promoteBindings()` method which was previously deprecated has been removed.
+
+
+Gremlin Console
+^^^^^^^^^^^^^^^
+
+Aliasing Remotes
+++++++++++++++++
+
+The `:remote` command in Gremlin Console has a new `alias` configuration option.  This `alias` option allows
+specification of a set of key/value alias/binding pairs to apply to the remote.  In this way, it becomes possible
+to refer to a variable on the server as something other than what it is referred to for purpose of the submitted
+script.  For example once a `:remote` is created, this command:
+
+[source,text]
+:remote alias x g
+
+would allow "g" on the server to be referred to as "x".
+
+[source,text]
+:> x.E().label().groupCount()
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
