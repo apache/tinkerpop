@@ -37,6 +37,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiFunction;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.max;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -70,10 +72,11 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public S apply(final S mutatingSeed, final Traverser<S> traverser) {
-            return mutatingSeed != null && mutatingSeed.doubleValue() >= traverser.get().doubleValue() ? mutatingSeed : traverser.get();
+            final S value = traverser.get();
+            return mutatingSeed != null ? (S) max(mutatingSeed, traverser.get()) : value;
         }
 
-        public final static <S extends Number> MaxGlobalBiFunction<S> instance() {
+        public static <S extends Number> MaxGlobalBiFunction<S> instance() {
             return INSTANCE;
         }
     }
@@ -106,11 +109,10 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
         @Override
         public void reduce(final NullObject key, final Iterator<Number> values, final ReduceEmitter<NullObject, Number> emitter) {
             if (values.hasNext()) {
-                Number max = -Double.MAX_VALUE;
+                Number max = null;
                 while (values.hasNext()) {
                     final Number value = values.next();
-                    if (value.doubleValue() > max.doubleValue())
-                        max = value;
+                    max = max != null ? max(value, max) : value;
                 }
                 emitter.emit(max);
             }
@@ -127,7 +129,7 @@ public final class MaxGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         }
 
-        public static final MaxGlobalMapReduce instance() {
+        public static MaxGlobalMapReduce instance() {
             return INSTANCE;
         }
     }

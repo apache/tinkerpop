@@ -84,12 +84,23 @@ public abstract class Client {
     public abstract CompletableFuture<Void> closeAsync();
 
     /**
-     * Create a new {@code Client} that rebinds the specified {@link Graph} or {@link TraversalSource} name on the
+     * Create a new {@code Client} that aliases the specified {@link Graph} or {@link TraversalSource} name on the
+     * server to a variable called "g" for the context of the requests made through that {@code Client}.
+     *
+     * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
+     * @deprecated As of release 3.1.0, replaced by {@link #alias(String)}
+     */
+    @Deprecated
+    public abstract Client rebind(final String graphOrTraversalSource);
+
+
+    /**
+     * Create a new {@code Client} that aliases the specified {@link Graph} or {@link TraversalSource} name on the
      * server to a variable called "g" for the context of the requests made through that {@code Client}.
      *
      * @param graphOrTraversalSource rebinds the specified global Gremlin Server variable to "g"
      */
-    public abstract Client rebind(final String graphOrTraversalSource);
+    public abstract Client alias(final String graphOrTraversalSource);
 
     /**
      * Initializes the client which typically means that a connection is established to the server.  Depending on the
@@ -256,7 +267,7 @@ public abstract class Client {
             Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
 
             if (graphOrTraversalSource != null && !graphOrTraversalSource.isEmpty())
-                request.addArg(Tokens.ARGS_REBINDINGS, makeRebindings(graphOrTraversalSource));
+                request.addArg(Tokens.ARGS_ALIASES, makeRebindings(graphOrTraversalSource));
 
             return submitAsync(buildMessage(request));
         }
@@ -265,17 +276,36 @@ public abstract class Client {
          * {@inheritDoc}
          */
         @Override
+        @Deprecated
         public Client rebind(final String graphOrTraversalSource) {
+            return alias(graphOrTraversalSource);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Client alias(String graphOrTraversalSource) {
             return new ReboundClusteredClient(this, graphOrTraversalSource);
         }
 
         /**
-         * Creates a {@code Client} that supplies the specified set of rebindings, thus allowing the user to re-name
+         * Creates a {@code Client} that supplies the specified set of aliases, thus allowing the user to re-name
          * one or more globally defined {@link Graph} or {@link TraversalSource} server bindings for the context of
          * the created {@code Client}.
          */
+        @Deprecated
         public Client rebind(final Map<String,String> rebindings) {
-            return new ReboundClusteredClient(this, rebindings);
+            return alias(rebindings);
+        }
+
+        /**
+         * Creates a {@code Client} that supplies the specified set of aliases, thus allowing the user to re-name
+         * one or more globally defined {@link Graph} or {@link TraversalSource} server bindings for the context of
+         * the created {@code Client}.
+         */
+        public Client alias(final Map<String,String> aliases) {
+            return new ReboundClusteredClient(this, aliases);
         }
 
         /**
@@ -363,7 +393,7 @@ public abstract class Client {
         public RequestMessage buildMessage(final RequestMessage.Builder builder) {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
             if (!rebindings.isEmpty())
-                builder.addArg(Tokens.ARGS_REBINDINGS, rebindings);
+                builder.addArg(Tokens.ARGS_ALIASES, rebindings);
 
             return builder.create();
         }
@@ -393,8 +423,20 @@ public abstract class Client {
             return close;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
+        @Deprecated
         public Client rebind(final String graphOrTraversalSource) {
+            return alias(graphOrTraversalSource);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Client alias(String graphOrTraversalSource) {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
             return new ReboundClusteredClient(clusteredClient, graphOrTraversalSource);
         }
@@ -419,9 +461,26 @@ public abstract class Client {
             return sessionId;
         }
 
+        /**
+         * The sessioned client does not support this feature.
+         *
+         * @throws UnsupportedOperationException
+         * @deprecated As of release 3.1.0, replaced by {@link #alias(String)}
+         */
+        @Deprecated
         @Override
         public Client rebind(final String graphOrTraversalSourceName){
-            throw new UnsupportedOperationException("Sessioned client do no support rebinding");
+            throw new UnsupportedOperationException("Sessioned client do no support aliasing");
+        }
+
+        /**
+         * The sessioned client does not support this feature.
+         *
+         * @throws UnsupportedOperationException
+         */
+        @Override
+        public Client alias(String graphOrTraversalSource) {
+            throw new UnsupportedOperationException("Sessioned client do no support aliasing");
         }
 
         /**

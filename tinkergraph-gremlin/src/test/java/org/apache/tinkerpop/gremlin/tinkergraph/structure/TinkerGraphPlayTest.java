@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
+import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
@@ -30,10 +31,12 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLIo;
+import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
@@ -44,6 +47,17 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class TinkerGraphPlayTest {
+
+    @Test
+    @Ignore
+    public void testPlay8() throws Exception {
+        Graph graph = TinkerFactory.createModern();
+        GraphTraversalSource g = graph.traversal(); //GraphTraversalSource.computer());
+        Traversal traversal = g.V(1).V().values("name");
+        traversal.forEachRemaining(System.out::println);
+        System.out.println(traversal);
+
+    }
 
     @Test
     @Ignore
@@ -181,20 +195,19 @@ public class TinkerGraphPlayTest {
     @Test
     @Ignore
     public void testPlayDK() throws Exception {
-        final Graph graph = TinkerFactory.createModern();
-        final GraphTraversalSource g = graph.traversal();
-        Traversal traversal = g.V().where(out().and().in()).profile().cap(TraversalMetrics.METRICS_KEY);
-        //traversal.forEachRemaining(System.out::println);
-        System.out.println(traversal.toString());
-        traversal.asAdmin().applyStrategies();
-        System.out.println(traversal.toString());
-        traversal.forEachRemaining(System.out::println);
-        traversal = g.V().where(and(out(), in())).profile().cap(TraversalMetrics.METRICS_KEY);
-        //traversal.forEachRemaining(System.out::println);
-        System.out.println(traversal.toString());
-        traversal.asAdmin().applyStrategies();
-        System.out.println(traversal.toString());
-        //System.out.println(traversal.toString());
+
+        new File("/tmp/tinkergraph2.kryo").deleteOnExit();
+        new File("/tmp/tinkergraph3.kryo").deleteOnExit();
+
+        final Graph graph1 = TinkerFactory.createModern();
+        final Graph graph2 = GraphFactory.open("/tmp/graph2.properties");
+        TinkerFactory.generateModern((TinkerGraph) graph2);
+        graph2.close();
+
+        System.out.println("graph1 -> graph2");
+        graph1.compute().workers(1).program(BulkLoaderVertexProgram.build().userSuppliedIds(true).writeGraph("/tmp/graph2.properties").create(graph1)).submit().get();
+        System.out.println("graph1 -> graph3");
+        graph1.compute().workers(1).program(BulkLoaderVertexProgram.build().userSuppliedIds(true).writeGraph("/tmp/graph3.properties").create(graph1)).submit().get();
     }
 
     @Test

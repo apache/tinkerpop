@@ -41,9 +41,9 @@ public final class TinkerFactory {
 
     public static TinkerGraph createClassic() {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.CONFIG_VERTEX_ID, TinkerGraph.DefaultIdManager.INTEGER.name());
-        conf.setProperty(TinkerGraph.CONFIG_EDGE_ID, TinkerGraph.DefaultIdManager.INTEGER.name());
-        conf.setProperty(TinkerGraph.CONFIG_VERTEX_PROPERTY_ID, TinkerGraph.DefaultIdManager.INTEGER.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
 
         final TinkerGraph g = TinkerGraph.open(conf);
         generateClassic(g);
@@ -88,7 +88,7 @@ public final class TinkerFactory {
 
     public static TinkerGraph createTheCrew() {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
         final TinkerGraph g = TinkerGraph.open(conf);
         generateTheCrew(g);
         return g;

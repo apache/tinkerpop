@@ -65,15 +65,15 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
         final String idMaker = (idManager.equals(TinkerGraph.DefaultIdManager.ANY) ? selectIdMakerFromTest(test, testMethodName) : idManager).name();
         return new HashMap<String, Object>() {{
             put(Graph.GRAPH, TinkerGraph.class.getName());
-            put(TinkerGraph.CONFIG_VERTEX_ID, idMaker);
-            put(TinkerGraph.CONFIG_EDGE_ID, idMaker);
-            put(TinkerGraph.CONFIG_VERTEX_PROPERTY_ID, idMaker);
+            put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, idMaker);
+            put(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, idMaker);
+            put(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, idMaker);
             if (requiresListCardinalityAsDefault(loadGraphWith, test, testMethodName))
-                put(TinkerGraph.CONFIG_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
+                put(TinkerGraph.GREMLIN_TINKERGRAPH_DEFAULT_VERTEX_PROPERTY_CARDINALITY, VertexProperty.Cardinality.list.name());
             if (requiresPersistence(test, testMethodName)) {
-                put(TinkerGraph.CONFIG_GRAPH_FORMAT, "gryo");
+                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, "gryo");
                 final File tempDir = TestHelper.makeTestDataPath(test, "temp");
-                put(TinkerGraph.CONFIG_GRAPH_LOCATION,
+                put(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION,
                         tempDir.getAbsolutePath() + File.separator + testMethodName + ".kryo");
             }
         }};
@@ -85,7 +85,7 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
             graph.close();
 
         // in the even the graph is persisted we need to clean up
-        final String graphLocation = configuration.getString(TinkerGraph.CONFIG_GRAPH_LOCATION, null);
+        final String graphLocation = configuration.getString(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, null);
         if (graphLocation != null) {
             final File f = new File(graphLocation);
             f.delete();

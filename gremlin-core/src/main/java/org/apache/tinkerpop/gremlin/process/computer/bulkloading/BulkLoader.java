@@ -41,6 +41,22 @@ public interface BulkLoader {
     public Vertex getOrCreateVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g);
 
     /**
+     * Creates a clone of the given edge between the given in- and out-vertices.
+     *
+     * @param edge      The edge to be cloned.
+     * @param outVertex The out-vertex in the given graph..
+     * @param inVertex  The in-vertex in the given graph.
+     * @param graph     The graph that holds the cloned edge after this method was called.
+     * @param g         A standard traversal source for the given graph.
+     * @return The cloned edge.
+     */
+    public default Edge createEdge(final Edge edge, final Vertex outVertex, final Vertex inVertex, final Graph graph, final GraphTraversalSource g) {
+        final Edge result = outVertex.addEdge(edge.label(), inVertex);
+        edge.properties().forEachRemaining(property -> result.property(property.key(), property.value()));
+        return result;
+    }
+
+    /**
      * Gets or creates a clone of the given edge between the given in- and out-vertices.
      *
      * @param edge      The edge to be cloned.
@@ -51,6 +67,21 @@ public interface BulkLoader {
      * @return The cloned edge.
      */
     public Edge getOrCreateEdge(final Edge edge, final Vertex outVertex, final Vertex inVertex, final Graph graph, final GraphTraversalSource g);
+
+    /**
+     * Creates a clone of the given property for the given vertex.
+     *
+     * @param property The property to be cloned.
+     * @param vertex   The vertex in the given graph..
+     * @param graph    The graph that holds the given vertex.
+     * @param g        A standard traversal source for the given graph.
+     * @return The cloned property.
+     */
+    public default VertexProperty createVertexProperty(final VertexProperty<?> property, final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
+        final VertexProperty result = vertex.property(property.key(), property.value());
+        property.properties().forEachRemaining(metaProperty -> result.property(metaProperty.key(), metaProperty.value()));
+        return result;
+    }
 
     /**
      * Gets or creates a clone of the given property for the given vertex.

@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -340,11 +341,11 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(vA.id(), sourceAA.V(vA.id()).id().next());
 
         try {
-            sourceA.V(vA.id());
+            sourceA.V(vA.id()).next();
+            fail("Vertex should not be in this partition");
         } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.elementNotFound(Vertex.class, vA.id());
+            final Exception expected = FastNoSuchElementException.instance();
             assertEquals(expected.getClass(), ex.getClass());
-            assertEquals(expected.getMessage(), ex.getMessage());
         }
     }
 
@@ -364,11 +365,11 @@ public class PartitionStrategyProcessTest extends AbstractGremlinProcessTest {
         assertEquals(e.id(), g.E(e.id()).id().next());
 
         try {
-            sourceA.E(e.id());
+            sourceA.E(e.id()).next();
+            fail("Edge should not be in this partition");
         } catch (Exception ex) {
-            final Exception expected = Graph.Exceptions.elementNotFound(Edge.class, e.id());
+            final Exception expected = FastNoSuchElementException.instance();
             assertEquals(expected.getClass(), ex.getClass());
-            assertEquals(expected.getMessage(), ex.getMessage());
         }
     }
 

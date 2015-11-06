@@ -35,20 +35,6 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractTransaction implements Transaction {
-    protected static final ThreadLocal<Consumer<Transaction>> readWriteConsumer = 
-        new ThreadLocal<Consumer<Transaction>>() {
-            @Override protected Consumer<Transaction> initialValue() {
-                return READ_WRITE_BEHAVIOR.AUTO;
-            }
-        };
-    
-    protected static final ThreadLocal<Consumer<Transaction>> closeConsumer = 
-        new ThreadLocal<Consumer<Transaction>>() {
-            @Override protected Consumer<Transaction> initialValue() {
-                return CLOSE_BEHAVIOR.ROLLBACK;
-            }
-        };
-    
     private Graph g;
 
     public AbstractTransaction(final Graph g) {
@@ -86,6 +72,30 @@ public abstract class AbstractTransaction implements Transaction {
      * {@link #addTransactionListener(Consumer)}.
      */
     protected abstract void fireOnRollback();
+    
+    /**
+     * Called {@link #readWrite}.  
+     * Implementers should run their readWrite consumer here.
+     */
+    protected abstract void doReadWrite();
+    
+    /**
+     * Called {@link #close}.  
+     * Implementers should run their readWrite consumer here.
+     */
+    protected abstract void doClose();
+    
+    /**
+     * Called {@link #onReadWrite}.  
+     * Implementers should set their readWrite consumer here.
+     */
+    protected abstract void setReadWrite(final Consumer<Transaction> consumer);
+    
+    /**
+     * Called {@link #onClose}.  
+     * Implementers should set their close consumer here.
+     */
+    protected abstract void setClose(final Consumer<Transaction> consumer);
 
     /**
      * {@inheritDoc}
@@ -103,7 +113,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void commit() {
-        readWriteConsumer.get().accept(this);
+        readWrite();
         try {
             doCommit();
             fireOnCommit();
@@ -117,7 +127,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void rollback() {
-        readWriteConsumer.get().accept(this);
+        readWrite();
         try {
             doRollback();
             fireOnRollback();
@@ -146,7 +156,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void readWrite() {
-        readWriteConsumer.get().accept(this);
+        doReadWrite();
     }
 
     /**
@@ -154,7 +164,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void close() {
-        closeConsumer.get().accept(this);
+        doClose();
     }
 
     /**
@@ -162,7 +172,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public synchronized Transaction onReadWrite(final Consumer<Transaction> consumer) {
-        readWriteConsumer.set(Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull));
+        setReadWrite(consumer);
         return this;
     }
 
@@ -171,7 +181,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public synchronized Transaction onClose(final Consumer<Transaction> consumer) {
-        closeConsumer.set(Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onCloseBehaviorCannotBeNull));
+        setClose(consumer);
         return this;
     }
 

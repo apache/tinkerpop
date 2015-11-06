@@ -16,16 +16,17 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.spark.process.computer.io;
+package org.apache.tinkerpop.gremlin.neo4j.process.traversal.strategy;
 
-import org.apache.commons.configuration.Configuration;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.neo4j.NoMultiNoMetaNeo4jGraphProvider;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.junit.runner.RunWith;
 
 /**
- * @author Marko A. Rodriguez (http://markorodriguez.com)
+ * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public interface OutputRDD {
-
-    public void writeGraphRDD(final Configuration configuration, final JavaPairRDD<Object, VertexWritable> graphRDD);
+@RunWith(Neo4jStrategySuite.class)
+@GraphProviderClass(provider = NoMultiNoMetaNeo4jGraphProvider.class, graph = Neo4jGraph.class)
+public class Neo4jStrategyTest {
 }

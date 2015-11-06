@@ -19,15 +19,14 @@
 package org.apache.tinkerpop.gremlin.neo4j.structure;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.tinkerpop.api.Neo4jNode;
-import org.neo4j.tinkerpop.api.Neo4jRelationship;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public final class Neo4jHelper {
+
+    private static final String NOT_FOUND_EXCEPTION = "NotFoundException";
 
     private Neo4jHelper() {
     }
@@ -45,13 +44,16 @@ public final class Neo4jHelper {
         try {
             node.getKeys();
             return false;
-        } catch (final IllegalStateException e) {
-            return true;
+        } catch (final RuntimeException e) {
+            if (isNotFound(e))
+                return true;
+            else
+                throw e;
         }
     }
 
-    public static boolean isNotFound(RuntimeException ex) {
-        return ex.getClass().getSimpleName().equals("NotFoundException");
+    public static boolean isNotFound(final RuntimeException ex) {
+        return ex.getClass().getSimpleName().equals(NOT_FOUND_EXCEPTION);
     }
 
     public static Neo4jNode getVertexPropertyNode(final Neo4jVertexProperty vertexProperty) {

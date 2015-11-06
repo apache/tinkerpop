@@ -72,13 +72,13 @@ public class TinkerGraphIdManagerTest {
 
         @BeforeClass
         public static void setup() {
-            longIdManagerConfig.addProperty(TinkerGraph.CONFIG_EDGE_ID, TinkerGraph.DefaultIdManager.LONG.name());
-            longIdManagerConfig.addProperty(TinkerGraph.CONFIG_VERTEX_ID, TinkerGraph.DefaultIdManager.LONG.name());
-            longIdManagerConfig.addProperty(TinkerGraph.CONFIG_VERTEX_PROPERTY_ID, TinkerGraph.DefaultIdManager.LONG.name());
+            longIdManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.LONG.name());
+            longIdManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.LONG.name());
+            longIdManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.LONG.name());
 
-            integerIdManagerConfig.addProperty(TinkerGraph.CONFIG_EDGE_ID, TinkerGraph.DefaultIdManager.INTEGER.name());
-            integerIdManagerConfig.addProperty(TinkerGraph.CONFIG_VERTEX_ID, TinkerGraph.DefaultIdManager.INTEGER.name());
-            integerIdManagerConfig.addProperty(TinkerGraph.CONFIG_VERTEX_PROPERTY_ID, TinkerGraph.DefaultIdManager.INTEGER.name());
+            integerIdManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
+            integerIdManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
+            integerIdManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.INTEGER.name());
         }
 
         @Test
@@ -138,9 +138,9 @@ public class TinkerGraphIdManagerTest {
 
         @BeforeClass
         public static void setup() {
-            idManagerConfig.addProperty(TinkerGraph.CONFIG_EDGE_ID, TinkerGraph.DefaultIdManager.UUID.name());
-            idManagerConfig.addProperty(TinkerGraph.CONFIG_VERTEX_ID, TinkerGraph.DefaultIdManager.UUID.name());
-            idManagerConfig.addProperty(TinkerGraph.CONFIG_VERTEX_PROPERTY_ID, TinkerGraph.DefaultIdManager.UUID.name());
+            idManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_EDGE_ID_MANAGER, TinkerGraph.DefaultIdManager.UUID.name());
+            idManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_ID_MANAGER, TinkerGraph.DefaultIdManager.UUID.name());
+            idManagerConfig.addProperty(TinkerGraph.GREMLIN_TINKERGRAPH_VERTEX_PROPERTY_ID_MANAGER, TinkerGraph.DefaultIdManager.UUID.name());
         }
 
         @Test

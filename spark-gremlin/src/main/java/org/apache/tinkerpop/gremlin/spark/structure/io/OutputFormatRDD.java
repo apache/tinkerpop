@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.process.computer.io;
+package org.apache.tinkerpop.gremlin.spark.structure.io;
 
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.io.NullWritable;

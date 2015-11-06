@@ -20,39 +20,38 @@ package org.apache.tinkerpop.gremlin.process.traversal;
 
 import org.junit.Test;
 
-import java.math.BigInteger;
-
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class OperatorExceptionTest {
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowIfValueToDivIsNoExpectedType() {
-        Operator.div.apply(new BigInteger("1"), new BigInteger("1"));
+
+    @Test(expected = ClassCastException.class)
+    public void shouldThrowIfValueToDivIsNotNumeric() {
+        Operator.div.apply("1", "1");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowIfValueToMaxIsNoExpectedType() {
-        Operator.max.apply(new BigInteger("1"), new BigInteger("1"));
+    @Test(expected = ClassCastException.class)
+    public void shouldThrowIfValueToMaxIsNotNumeric() {
+        Operator.max.apply("1", "1");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowIfValueToMinIsNoExpectedType() {
-        Operator.min.apply(new BigInteger("1"), new BigInteger("1"));
+    @Test(expected = ClassCastException.class)
+    public void shouldThrowIfValueToMinIsNotNumeric() {
+        Operator.min.apply("1", "1");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowIfValueToMinusIsNoExpectedType() {
-        Operator.minus.apply(new BigInteger("1"), new BigInteger("1"));
+    @Test(expected = ClassCastException.class)
+    public void shouldThrowIfValueToMinusIsNotNumeric() {
+        Operator.minus.apply("1", "1");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowIfValueToMultIsNoExpectedType() {
-        Operator.mult.apply(new BigInteger("1"), new BigInteger("1"));
+    @Test(expected = ClassCastException.class)
+    public void shouldThrowIfValueToMultIsNotNumeric() {
+        Operator.mult.apply("1", "1");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowIfValueToSumIsNoExpectedType() {
-        Operator.sum.apply(new BigInteger("1"), new BigInteger("1"));
+    @Test(expected = ClassCastException.class)
+    public void shouldThrowIfValueToSumIsNotNumeric() {
+        Operator.sum.apply("1", "1");
     }
 }

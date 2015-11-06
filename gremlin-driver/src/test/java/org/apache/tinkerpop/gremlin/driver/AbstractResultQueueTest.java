@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.driver;
 import org.junit.Before;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -48,6 +49,24 @@ public abstract class AbstractResultQueueTest {
 
     protected Thread addToQueue(final int numberOfItemsToAdd, final long pauseBetweenItemsInMillis,
                                 final boolean start, final boolean markDone) throws Exception {
+        return addToQueue(numberOfItemsToAdd, pauseBetweenItemsInMillis, start, markDone, 0);
+    }
+
+    /**
+     * Adds some test items to the {@link ResultQueue}. This method has the potential to block if the
+     * {@code itemsToWaitFor > 0}.
+     *
+     * @param numberOfItemsToAdd the number of items to add in total
+     * @param pauseBetweenItemsInMillis amount of time to wait between additions to the {@link ResultQueue}
+     * @param start set to {@code true} to start the thread
+     * @param markDone force mark the queue as complete
+     * @param itemsToWaitFor block until this many items have been added to the {@link ResultQueue}
+     * @return the thread that is doing the work of adding to the queue
+     * @throws Exception
+     */
+    protected Thread addToQueue(final int numberOfItemsToAdd, final long pauseBetweenItemsInMillis,
+                                final boolean start, final boolean markDone, final int itemsToWaitFor) throws Exception {
+        final CountDownLatch latch = new CountDownLatch(itemsToWaitFor);
         final Thread t = new Thread(() -> {
             boolean done = false;
             for (int ix = 0; ix < numberOfItemsToAdd && !done; ix++) {
@@ -57,6 +76,7 @@ public abstract class AbstractResultQueueTest {
                     pool.submit(() -> {
                         final Result result = new Result("test-" + currentIndex);
                         resultQueue.add(result);
+                        latch.countDown();
                     }).get();
                     TimeUnit.MILLISECONDS.sleep(pauseBetweenItemsInMillis);
                 } catch (Exception ie) {
@@ -69,6 +89,9 @@ public abstract class AbstractResultQueueTest {
         }, "ResultQueueTest-job-submitter");
 
         if (start) t.start();
+
+        // wait for the number of items requested to be added to the queue
+        latch.await();
 
         return t;
     }
