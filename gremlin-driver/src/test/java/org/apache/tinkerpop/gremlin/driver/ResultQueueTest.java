@@ -40,11 +40,8 @@ public class ResultQueueTest extends AbstractResultQueueTest {
 
     @Test
     public void shouldGetSizeUntilError() throws Exception {
-        final Thread t = addToQueue(100, 10, true);
+        final Thread t = addToQueue(100, 10, true, false, 1);
         try {
-            // make sure some items get added to the queue before assert
-            TimeUnit.MILLISECONDS.sleep(50);
-
             assertThat(resultQueue.size(), is(greaterThan(0)));
             assertThat(readCompleted.isDone(), is(false));
 
@@ -72,11 +69,8 @@ public class ResultQueueTest extends AbstractResultQueueTest {
 
     @Test
     public void shouldNotBeEmptyUntilError() throws Exception {
-        final Thread t = addToQueue(100, 10, true);
+        final Thread t = addToQueue(100, 10, true, false, 1);
         try {
-            // make sure some items get added to the queue before assert
-            TimeUnit.MILLISECONDS.sleep(50);
-
             assertThat(resultQueue.isEmpty(), is(false));
             assertThat(readCompleted.isDone(), is(false));
 
@@ -97,11 +91,8 @@ public class ResultQueueTest extends AbstractResultQueueTest {
 
     @Test
     public void shouldDrainUntilError() throws Exception {
-        final Thread t = addToQueue(100, 10, true);
+        final Thread t = addToQueue(100, 10, true, false, 1);
         try {
-            // make sure some items get added to the queue before assert
-            TimeUnit.MILLISECONDS.sleep(50);
-
             assertThat(resultQueue.isEmpty(), is(false));
             final List<Result> drain = new ArrayList<>();
             resultQueue.drainTo(drain);

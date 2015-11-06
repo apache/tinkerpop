@@ -56,7 +56,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
     /**
      * Script engines are evaluated in a per session context where imports/scripts are isolated per session.
      */
-    private static ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
+    protected static ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
 
     static {
         MetricManager.INSTANCE.getGuage(sessions::size, name(GremlinServer.class, "sessions"));
@@ -159,8 +159,11 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
         });
     }
 
-
-    private static Session getSession(final Context context, final RequestMessage msg) {
+    /**
+     * Examines the {@link RequestMessage} and extracts the session token. The session is then either found or a new
+     * one is created.
+     */
+    protected static Session getSession(final Context context, final RequestMessage msg) {
         final String sessionId = (String) msg.getArgs().get(Tokens.ARGS_SESSION);
 
         logger.debug("In-session request {} for eval for session {} in thread {}",

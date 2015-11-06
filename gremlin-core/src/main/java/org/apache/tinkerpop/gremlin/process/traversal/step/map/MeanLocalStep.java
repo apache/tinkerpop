@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.NumberHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -30,23 +31,23 @@ import java.util.Set;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
-public final class MeanLocalStep<E extends Number, S extends Iterable<E>> extends MapStep<S, Double> {
+public final class MeanLocalStep<E extends Number, S extends Iterable<E>> extends MapStep<S, Number> {
 
     public MeanLocalStep(final Traversal.Admin traversal) {
         super(traversal);
     }
 
     @Override
-    protected Double map(final Traverser.Admin<S> traverser) {
+    protected Number map(final Traverser.Admin<S> traverser) {
         final Iterator<E> iterator = traverser.get().iterator();
         if (iterator.hasNext()) {
             Long counter = 1L;
-            Double result = iterator.next().doubleValue();
+            E result = iterator.next();
             while (iterator.hasNext()) {
-                result += iterator.next().doubleValue();
+                result = (E) NumberHelper.add(result, iterator.next());
                 counter++;
             }
-            return result / counter;
+            return NumberHelper.div(result, counter, true);
         } else {
             return Double.NaN;
         }

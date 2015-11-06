@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.dsl.graph;
 
-import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
@@ -73,6 +72,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.DedupLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeOtherVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.EdgeVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.FoldStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupCountStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.GroupStepV3d0;
@@ -133,6 +133,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalCompara
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -256,6 +257,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      */
     public default <E2> GraphTraversal<S, E2> constant(final E2 e) {
         return this.asAdmin().addStep(new ConstantStep<E, E2>(this.asAdmin(), e));
+    }
+
+    public default GraphTraversal<S, Vertex> V(final Object... vertexIdsOrElements) {
+        return this.asAdmin().addStep(new GraphStep<>(this.asAdmin(), Vertex.class, false, vertexIdsOrElements));
     }
 
     /**
@@ -607,12 +612,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      *
      * @return the traversal with an appended {@link SumGlobalStep}.
      */
-    public default GraphTraversal<S, Double> sum() {
+    public default <E2 extends Number> GraphTraversal<S, E2> sum() {
         return this.sum(Scope.global);
     }
 
-    public default GraphTraversal<S, Double> sum(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new SumGlobalStep(this.asAdmin()) : new SumLocalStep<>(this.asAdmin()));
+    public default <E2 extends Number> GraphTraversal<S, E2> sum(final Scope scope) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new SumGlobalStep<>(this.asAdmin()) : new SumLocalStep(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> max() {
@@ -620,7 +625,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> max(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MaxGlobalStep<E2>(this.asAdmin()) : new MaxLocalStep(this.asAdmin()));
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MaxGlobalStep<>(this.asAdmin()) : new MaxLocalStep(this.asAdmin()));
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> min() {
@@ -628,15 +633,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2 extends Number> GraphTraversal<S, E2> min(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<E2>(this.asAdmin()) : new MinLocalStep(this.asAdmin()));
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MinGlobalStep<>(this.asAdmin()) : new MinLocalStep(this.asAdmin()));
     }
 
-    public default GraphTraversal<S, Double> mean() {
+    public default <E2 extends Number> GraphTraversal<S, E2> mean() {
         return this.mean(Scope.global);
     }
 
-    public default GraphTraversal<S, Double> mean(final Scope scope) {
-        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep<>(this.asAdmin()) : new MeanLocalStep<>(this.asAdmin()));
+    public default <E2 extends Number> GraphTraversal<S, E2> mean(final Scope scope) {
+        return this.asAdmin().addStep(scope.equals(Scope.global) ? new MeanGlobalStep<>(this.asAdmin()) : new MeanLocalStep(this.asAdmin()));
     }
 
     public default <K, V> GraphTraversal<S, Map<K, V>> group() {

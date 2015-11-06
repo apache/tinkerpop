@@ -22,7 +22,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Step;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffect.TinkerGraphStep;
@@ -42,12 +42,9 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
         if (traversal.getEngine().isComputer())
             return;
 
-        final Step<?, ?> startStep = traversal.getStartStep();
-        if (startStep instanceof GraphStep) {
-            final GraphStep<?> originalGraphStep = (GraphStep) startStep;
-            final TinkerGraphStep<?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
-            TraversalHelper.replaceStep(startStep, (Step) tinkerGraphStep, traversal);
-
+        TraversalHelper.getStepsOfClass(GraphStep.class, traversal).forEach(originalGraphStep -> {
+            final TinkerGraphStep<?,?> tinkerGraphStep = new TinkerGraphStep<>(originalGraphStep);
+            TraversalHelper.replaceStep(originalGraphStep, (Step) tinkerGraphStep, traversal);
             Step<?, ?> currentStep = tinkerGraphStep.getNextStep();
             while (currentStep instanceof HasContainerHolder) {
                 ((HasContainerHolder) currentStep).getHasContainers().forEach(tinkerGraphStep::addHasContainer);
@@ -55,7 +52,7 @@ public final class TinkerGraphStepStrategy extends AbstractTraversalStrategy<Tra
                 traversal.removeStep(currentStep);
                 currentStep = currentStep.getNextStep();
             }
-        }
+        });
     }
 
     public static TinkerGraphStepStrategy instance() {

@@ -49,7 +49,7 @@ public abstract class SumTest extends AbstractGremlinProcessTest {
         final Traversal<Vertex, Double> traversal = get_g_V_valuesXageX_sum();
         printTraversalForm(traversal);
         final Number sum = traversal.next();
-        assertEquals(123.0, sum);
+        assertEquals(123L, sum);
         assertFalse(traversal.hasNext());
     }
 

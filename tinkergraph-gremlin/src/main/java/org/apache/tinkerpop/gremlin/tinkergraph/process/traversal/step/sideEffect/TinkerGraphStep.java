@@ -20,7 +20,7 @@ package org.apache.tinkerpop.gremlin.tinkergraph.process.traversal.step.sideEffe
 
 import org.apache.tinkerpop.gremlin.process.traversal.Compare;
 import org.apache.tinkerpop.gremlin.process.traversal.step.HasContainerHolder;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -41,19 +41,19 @@ import java.util.stream.Collectors;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Pieter Martin
  */
-public final class TinkerGraphStep<S extends Element> extends GraphStep<S> implements HasContainerHolder {
+public final class TinkerGraphStep<S, E extends Element> extends GraphStep<S, E> implements HasContainerHolder {
 
     private final List<HasContainer> hasContainers = new ArrayList<>();
 
-    public TinkerGraphStep(final GraphStep<S> originalGraphStep) {
-        super(originalGraphStep.getTraversal(), originalGraphStep.getReturnClass(), originalGraphStep.getIds());
+    public TinkerGraphStep(final GraphStep<S, E> originalGraphStep) {
+        super(originalGraphStep.getTraversal(), originalGraphStep.getReturnClass(), originalGraphStep.isStartStep(), originalGraphStep.getIds());
         originalGraphStep.getLabels().forEach(this::addLabel);
 
         // we used to only setIteratorSupplier() if there were no ids OR the first id was instanceof Element,
         // but that allowed the filter in g.V(v).has('k','v') to be ignored.  this created problems for
         // PartitionStrategy which wants to prevent someone from passing "v" from one TraversalSource to
         // another TraversalSource using a different partition
-        this.setIteratorSupplier(() -> (Iterator<S>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
+        this.setIteratorSupplier(() -> (Iterator<E>) (Vertex.class.isAssignableFrom(this.returnClass) ? this.vertices() : this.edges()));
     }
 
     private Iterator<? extends Edge> edges() {

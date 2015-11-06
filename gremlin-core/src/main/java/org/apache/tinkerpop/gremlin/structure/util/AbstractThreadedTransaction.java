@@ -22,6 +22,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
@@ -38,8 +39,12 @@ import java.util.function.Consumer;
 public abstract class AbstractThreadedTransaction extends AbstractTransaction {
 
     protected final List<Consumer<Status>> transactionListeners = new CopyOnWriteArrayList<>();
-
-    public AbstractThreadedTransaction(final Graph g) {
+    
+    protected Consumer<Transaction> readWriteConsumerInternal = READ_WRITE_BEHAVIOR.AUTO;
+    
+    protected Consumer<Transaction> closeConsumerInternal = CLOSE_BEHAVIOR.ROLLBACK;
+    
+     public AbstractThreadedTransaction(final Graph g) {
         super(g);
     }
 
@@ -66,5 +71,25 @@ public abstract class AbstractThreadedTransaction extends AbstractTransaction {
     @Override
     public void clearTransactionListeners() {
         transactionListeners.clear();
+    }
+    
+    @Override
+    public void doReadWrite() {
+        readWriteConsumerInternal.accept(this);
+    }
+    
+    @Override
+    public void doClose() {
+        closeConsumerInternal.accept(this);
+    }
+    
+    @Override
+    public void setReadWrite(final Consumer<Transaction> consumer) {
+        readWriteConsumerInternal = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull);
+    }
+    
+    @Override
+    public void setClose(final Consumer<Transaction> consumer) {
+        closeConsumerInternal = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull);
     }
 }

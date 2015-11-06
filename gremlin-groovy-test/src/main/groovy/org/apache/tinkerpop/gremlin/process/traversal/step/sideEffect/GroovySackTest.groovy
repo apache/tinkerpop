@@ -40,7 +40,7 @@ public abstract class GroovySackTest {
         }
 
         @Override
-        public Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
+        public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
             TraversalScriptHelper.compute("g.withSack(0.0f).V.repeat(__.outE.sack(sum).by('weight').inV).times(2).sack()", g)
         }
 
@@ -50,7 +50,7 @@ public abstract class GroovySackTest {
         }
 
         @Override
-        public Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
+        public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
             TraversalScriptHelper.compute("g.withSack(0.0f).V.repeat(__.outE.sack(sum, 'weight').inV).times(2).sack", g)
         }
 
