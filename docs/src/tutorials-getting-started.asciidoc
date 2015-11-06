@@ -29,7 +29,7 @@ most recognizable citizen of The TinkerPop, is here to help with this thirty min
 thirty short minutes, you too can be fit to start building graph applications with TinkerPop. Welcome to _The Gremlin
 TinkerPop - by Gremlin_!
 
-image::gremlin-gym.png[]
+image::gremlin-gym.png[width=1024]
 
 The First Five Minutes
 ----------------------
@@ -73,7 +73,7 @@ graphs, working out complex traversals, etc.
 
 To get Gremlin to traverse a graph, you need a `Graph` instance, which holds the
 link:http://tinkerpop.incubator.apache.org/docs/x.y.z/#_the_graph_structure[structure] and data of the
-graph. TinkerPop is an graph abstraction layer over different graph databases and different graph processors, so there
+graph. TinkerPop is a graph abstraction layer over different graph databases and different graph processors, so there
 are many `Graph` instances you can choose from to instantiate in the console. The best `Graph` instance to start with
 however, is link:http://tinkerpop.incubator.apache.org/docs/x.y.z/#tinkergraph-gremlin[TinkerGraph]. TinkerGraph
 is a fast, in-memory graph database with a small handful of configuration options, making it a good choice for beginners.
@@ -335,9 +335,11 @@ step. We know how to find the "software" that "marko" created:
 g.V().has('name','marko').out('created')
 ----
 
-Let's extend on that to try to learn who "marko" collaborates with. To do that, we should first picture Gremlin
-standing on the "software" vertex. To find out who "created" that "software" we need to have Gremlin traverse back
-_in_ along the "created" edges to find the "person" vertices tied to it.
+image:gremlin-on-software-vertex.png[width=300,float=right] Let's extend on that to try to learn who "marko"
+collaborates with. In other words, let's try to answer the question of: "Who are the people that "marko" develops
+"software" with?" To do that, we should first picture Gremlin standing on the "software" vertex. To find out who
+"created" that "software" we need to have Gremlin traverse back _in_ along the "created" edges to find the "person"
+vertices tied to it.
 
 [gremlin-groovy,modern]
 ----
