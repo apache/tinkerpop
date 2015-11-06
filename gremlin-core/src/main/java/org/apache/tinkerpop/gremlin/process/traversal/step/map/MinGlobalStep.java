@@ -37,6 +37,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.function.BiFunction;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.min;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -70,10 +72,11 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
 
         @Override
         public S apply(final S mutatingSeed, final Traverser<S> traverser) {
-            return mutatingSeed != null && mutatingSeed.doubleValue() <= traverser.get().doubleValue() ? mutatingSeed : traverser.get();
+            final S value = traverser.get();
+            return mutatingSeed != null ? (S) min(mutatingSeed, traverser.get()) : value;
         }
 
-        public final static <S extends Number> MinGlobalBiFunction<S> instance() {
+        public static <S extends Number> MinGlobalBiFunction<S> instance() {
             return INSTANCE;
         }
     }
@@ -106,11 +109,10 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
         @Override
         public void reduce(final NullObject key, final Iterator<Number> values, final ReduceEmitter<NullObject, Number> emitter) {
             if (values.hasNext()) {
-                Number min = Double.MAX_VALUE;
+                Number min = null;
                 while (values.hasNext()) {
                     final Number value = values.next();
-                    if (value.doubleValue() < min.doubleValue())
-                        min = value;
+                    min = min != null ? min(value, min) : value;
                 }
                 emitter.emit(min);
             }
@@ -126,7 +128,7 @@ public final class MinGlobalStep<S extends Number> extends ReducingBarrierStep<S
             return keyValues.hasNext() ? keyValues.next().getValue() : Double.NaN;
         }
 
-        public static final MinGlobalMapReduce instance() {
+        public static MinGlobalMapReduce instance() {
             return INSTANCE;
         }
     }

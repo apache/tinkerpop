@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalUtil;
 
 import java.io.Serializable;
@@ -44,7 +45,9 @@ public final class TraversalComparator<S, E> implements Comparator<S>, Serializa
 
     @Override
     public int compare(final S start1, final S start2) {
-        return this.comparator.compare(TraversalUtil.apply(start1, this.traversal), TraversalUtil.apply(start2, this.traversal));
+        return start1 instanceof Traverser ?
+                this.comparator.compare(TraversalUtil.apply((Traverser.Admin<S>) start1, this.traversal), TraversalUtil.apply((Traverser.Admin<S>) start2, this.traversal)) :
+                this.comparator.compare(TraversalUtil.apply(start1, this.traversal), TraversalUtil.apply(start2, this.traversal));
     }
 
     @Override

@@ -22,9 +22,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.DefaultGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.filter.TraversalFilterStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -47,7 +46,7 @@ public class SubgraphStrategyTraverseTest {
     static {
         final Graph mockedGraph = mock(Graph.class);
         final DefaultGraphTraversal t = new DefaultGraphTraversal<>(mockedGraph);
-        t.asAdmin().addStep(new GraphStep<>(t.asAdmin(), Vertex.class));
+        t.asAdmin().addStep(new GraphStep<>(t.asAdmin(), Vertex.class, true));
         traversalWithAddV = t.addV();
     }
 

@@ -67,7 +67,7 @@ public abstract class GroovyGroupTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<String, Double>> get_g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX() {
+        public Traversal<Vertex, Map<String, Number>> get_g_V_groupXaX_byXlabelX_byXoutE_weight_sumX_capXaX() {
             TraversalScriptHelper.compute("g.V.group('a').by(label).by(outE().weight.sum).cap('a')", g);
         }
 

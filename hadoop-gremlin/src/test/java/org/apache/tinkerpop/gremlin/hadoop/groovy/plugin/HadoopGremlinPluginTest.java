@@ -88,7 +88,7 @@ public class HadoopGremlinPluginTest extends AbstractGremlinTest {
         this.remote.configure(Arrays.asList("useSugar", "true"));
         this.remote.connect(Arrays.asList("graph", "g"));
         Traversal<?, ?> traversal = (Traversal<?, ?>) this.remote.submit(Arrays.asList("g.V.name.map{it.length()}.sum"));
-        assertEquals(28.0d, traversal.next());
+        assertEquals(28l, traversal.next());
         assertFalse(traversal.hasNext());
         assertNotNull(this.console.getBindings().get(RemoteAcceptor.RESULT));
     }

@@ -20,8 +20,11 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.TestHelper;
-import org.apache.tinkerpop.gremlin.driver.*;
 import org.apache.tinkerpop.gremlin.driver.Channelizer;
+import org.apache.tinkerpop.gremlin.driver.Client;
+import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.Result;
+import org.apache.tinkerpop.gremlin.driver.ResultSet;
 import org.apache.tinkerpop.gremlin.driver.exception.ConnectionException;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -77,7 +80,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final String nameOfTest = name.getMethodName();
 
         switch (nameOfTest) {
-            case "shouldRebindTraversalSourceVariables":
+            case "shouldAliasTraversalSourceVariables":
                 try {
                     final String p = TestHelper.generateTempFileFromResource(
                             GremlinDriverIntegrateTest.class, "generate-shouldRebindTraversalSourceVariables.groovy", "").getAbsolutePath();
@@ -99,12 +102,52 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldExecuteScriptInSessionOnTransactionalGraph":
             case "shouldExecuteSessionlessScriptOnTransactionalGraph":
             case "shouldExecuteScriptInSessionOnTransactionalWithManualTransactionsGraph":
+            case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransaction":
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldHandleResultsOfAllSizes() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final String script = "g.V().drop().iterate();\n" +
+                "\n" +
+                "List ids = new ArrayList();\n" +
+                "\n" +
+                "int ii = 0;\n" +
+                "Vertex v = graph.addVertex();\n" +
+                "v.property(\"ii\", ii);\n" +
+                "v.property(\"sin\", Math.sin(ii));\n" +
+                "ids.add(v.id());\n" +
+                "\n" +
+                "Random rand = new Random();\n" +
+                "for (; ii < size; ii++) {\n" +
+                "    v = graph.addVertex();\n" +
+                "    v.property(\"ii\", ii);\n" +
+                "    v.property(\"sin\", Math.sin(ii/5.0));\n" +
+                "    Vertex u = g.V(ids.get(rand.nextInt(ids.size()))).next();\n" +
+                "    v.addEdge(\"linked\", u);\n" +
+                "    ids.add(u.id());\n" +
+                "    ids.add(v.id());\n" +
+                "}\n" +
+                "g.V()";
+
+        final List<Integer> sizes = Arrays.asList(1, 10, 20, 50, 75, 100, 250, 500, 750, 1000, 5000, 10000);
+        for (Integer size : sizes) {
+            final Map<String, Object> params = new HashMap<>();
+            params.put("size", size - 1);
+            final ResultSet results = client.submit(script, params);
+
+            assertEquals(size.intValue(), results.all().get().size());
+        }
+
+        cluster.close();
     }
 
     @Test
@@ -621,6 +664,33 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldExecuteInSessionAndSessionlessWithoutOpeningTransaction() throws Exception {
+        assumeNeo4jIsPresent();
+        
+        final Cluster cluster = Cluster.build().create();
+        final Client sessionClient = cluster.connect(name.getMethodName());
+        final Client sessionlessClient = cluster.connect();
+        
+        //open transaction in session, then add vertex and commit
+        sessionClient.submit("graph.tx().open()").all().get();
+        final Vertex vertexBeforeTx = sessionClient.submit("v=graph.addVertex(\"name\",\"stephen\")").all().get().get(0).getVertex();
+        assertEquals("stephen", vertexBeforeTx.values("name").next());
+        sessionClient.submit("graph.tx().commit()").all().get();
+        
+        // check that session transaction is closed
+        final boolean isOpen = sessionClient.submit("graph.tx().isOpen()").all().get().get(0).getBoolean();
+        assertTrue("Transaction should be closed", !isOpen);
+        
+        //run a sessionless read
+        sessionlessClient.submit("graph.traversal().V()").all().get();
+        
+        // check that session transaction is still closed
+        final boolean isOpenAfterSessionless = sessionClient.submit("graph.tx().isOpen()").all().get().get(0).getBoolean();
+        assertTrue("Transaction should stil be closed", !isOpenAfterSessionless);
+        
+    }
+
+    @Test
     public void shouldExecuteSessionlessScriptOnTransactionalGraph() throws Exception {
         assumeNeo4jIsPresent();
 
@@ -722,7 +792,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldRebindGraphVariables() throws Exception {
+    public void shouldAliasGraphVariables() throws Exception {
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect();
 
@@ -736,20 +806,25 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, re.getResponseStatusCode());
         }
 
-        final Client rebound = cluster.connect().rebind("graph");
-        final Vertex v = rebound.submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
-        assertEquals("stephen", v.value("name"));
+        // keep the testing here until "rebind" is completely removed
+        final Client reboundLegacy = cluster.connect().rebind("graph");
+        final Vertex vLegacy = reboundLegacy.submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
+        assertEquals("stephen", vLegacy.value("name"));
+
+        final Client rebound = cluster.connect().alias("graph");
+        final Vertex v = rebound.submit("g.addVertex('name','jason')").all().get().get(0).getVertex();
+        assertEquals("jason", v.value("name"));
 
         cluster.close();
     }
 
     @Test
-    public void shouldRebindTraversalSourceVariables() throws Exception {
+    public void shouldAliasTraversalSourceVariables() throws Exception {
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect();
 
         try {
-            client.submit("g.addV('name','stephen');").all().get().get(0).getVertex();
+            client.submit("g.addV('name','stephen')").all().get().get(0).getVertex();
             fail("Should have tossed an exception because \"g\" is readonly in this context");
         } catch (Exception ex) {
             final Throwable root = ExceptionUtils.getRootCause(ex);
@@ -758,8 +833,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR, re.getResponseStatusCode());
         }
 
-        final Vertex v = client.rebind("g1").submit("g.addV('name','stephen')").all().get().get(0).getVertex();
-        assertEquals("stephen", v.value("name"));
+        // keep the testing here until "rebind" is completely removed
+        final Client clientLegacy = client.rebind("g1");
+        final Vertex vLegacy = clientLegacy.submit("g.addV('name','stephen')").all().get().get(0).getVertex();
+        assertEquals("stephen", vLegacy.value("name"));
+
+        final Client clientAliased = client.alias("g1");
+        final Vertex v = clientAliased.submit("g.addV('name','jason')").all().get().get(0).getVertex();
+        assertEquals("jason", v.value("name"));
 
         cluster.close();
     }

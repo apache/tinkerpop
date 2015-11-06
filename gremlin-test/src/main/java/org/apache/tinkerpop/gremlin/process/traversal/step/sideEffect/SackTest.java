@@ -36,7 +36,9 @@ import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -48,13 +50,13 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsumX_byXweightX_inV_sack_sum();
 
-    public abstract Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack();
+    public abstract Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack();
 
     @Deprecated
     public abstract Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum();
 
     @Deprecated
-    public abstract Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack();
+    public abstract Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack();
 
     public abstract Traversal<Vertex, Map> get_g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack();
 
@@ -91,18 +93,18 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
-        final Traversal<Vertex, Float> traversal = get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack();
+        final Traversal<Vertex, Double> traversal = get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack();
         printTraversalForm(traversal);
-        checkResults(Arrays.asList(2.0f, 1.4f), traversal);
+        checkResults(Arrays.asList(2.0d, 1.4d), traversal);
     }
 
     @Test
     @LoadGraphWith(MODERN)
     @Deprecated
     public void g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
-        final Traversal<Vertex, Float> traversal = get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack();
+        final Traversal<Vertex, Double> traversal = get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack();
         printTraversalForm(traversal);
-        checkResults(Arrays.asList(2.0f, 1.4f), traversal);
+        checkResults(Arrays.asList(2.0d, 1.4d), traversal);
     }
 
     @Test
@@ -150,7 +152,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
+        public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsumX_byXweightX_inVX_timesX2X_sack() {
             return g.withSack(0.0f).V().repeat(outE().sack(Operator.sum).by("weight").inV()).times(2).sack();
         }
 
@@ -160,7 +162,7 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public Traversal<Vertex, Float> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
+        public Traversal<Vertex, Double> get_g_withSackX0X_V_repeatXoutE_sackXsum_weightX_inVX_timesX2X_sack() {
             return g.withSack(0.0f).V().repeat(outE().sack(Operator.sum, "weight").inV()).times(2).sack();
         }
 

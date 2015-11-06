@@ -37,7 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.TraverserGenerator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.MapReducer;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ReducingBarrierStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
@@ -152,7 +152,7 @@ public final class TraversalVertexProgram implements VertexProgram<TraverserSet<
             if (!(this.traversal.getStartStep() instanceof GraphStep))
                 throw new UnsupportedOperationException("TraversalVertexProgram currently only supports GraphStep starts on vertices or edges");
 
-            final GraphStep<Element> graphStep = (GraphStep<Element>) this.traversal.getStartStep();
+            final GraphStep<Element, Element> graphStep = (GraphStep<Element, Element>) this.traversal.getStartStep();
             final String future = graphStep.getNextStep().getId();
             final TraverserGenerator traverserGenerator = this.traversal.getTraverserGenerator();
             if (graphStep.returnsVertex()) {  // VERTICES (process the first step locally)

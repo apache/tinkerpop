@@ -35,7 +35,6 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractTransaction implements Transaction {
-    
     private Graph g;
 
     public AbstractTransaction(final Graph g) {
@@ -73,7 +72,6 @@ public abstract class AbstractTransaction implements Transaction {
      * {@link #addTransactionListener(Consumer)}.
      */
     protected abstract void fireOnRollback();
-    
     
     /**
      * Called {@link #readWrite}.  

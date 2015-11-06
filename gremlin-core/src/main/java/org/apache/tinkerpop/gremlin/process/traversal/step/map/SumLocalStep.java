@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.NumberHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -43,10 +44,10 @@ public final class SumLocalStep<E extends Number, S extends Iterable<E>> extends
         if (iterator.hasNext()) {
             result = iterator.next();
             while (iterator.hasNext()) {
-                result = result.doubleValue() + iterator.next().doubleValue();
+                result = NumberHelper.add(result, iterator.next());
             }
         } else {
-            result = 0.0d;
+            result = 0;
         }
         return (E) result;
     }

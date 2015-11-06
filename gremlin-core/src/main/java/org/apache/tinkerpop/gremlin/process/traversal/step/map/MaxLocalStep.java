@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.max;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -43,8 +45,7 @@ public final class MaxLocalStep<E extends Number, S extends Iterable<E>> extends
         if (iterator.hasNext()) {
             result = iterator.next();
             while (iterator.hasNext()) {
-                final Number curr = iterator.next();
-                if (result.doubleValue() < curr.doubleValue()) result = curr;
+                result = max(iterator.next(), result);
             }
         } else {
             result = Double.NaN;

@@ -95,13 +95,28 @@ public interface GraphComputer {
     public GraphComputer mapReduce(final MapReduce mapReduce);
 
     /**
-     * Set the desired number of workers to execute the {@code VertexProgram} and {@code MapReduce} jobs.
-     * This is a recommendation to the underlying {@code GraphComputer} implementation and is allowed to deviate accordingly by the implementation.
+     * Set the desired number of workers to execute the {@link VertexProgram} and {@link MapReduce} jobs.
+     * This is a recommendation to the underlying {@link GraphComputer} implementation and is allowed to deviate accordingly by the implementation.
      *
      * @param workers the number of workers to execute the submission
      * @return the updated GraphComputer with newly set worker count
      */
     public GraphComputer workers(final int workers);
+
+    /**
+     * Set an arbitrary configuration key/value for the underlying {@link org.apache.commons.configuration.Configuration} in the {@link GraphComputer}.
+     * Typically, the other fluent methods in {@link GraphComputer} should be used to configure the computation.
+     * However, for some custom configuration in the underlying engine, this method should be used.
+     * Different GraphComputer implementations will have different key/values and thus, parameters placed here are generally not universal to all GraphComputer implementations.
+     * The default implementation simply does nothing and returns the {@link GraphComputer} unchanged.
+     *
+     * @param key   the key of the configuration
+     * @param value the value of the configuration
+     * @return the updated GraphComputer with newly set key/value configuration
+     */
+    public default GraphComputer configure(final String key, final Object value) {
+        return this;
+    }
 
     /**
      * Submit the {@link VertexProgram} and the set of {@link MapReduce} jobs for execution by the {@link GraphComputer}.

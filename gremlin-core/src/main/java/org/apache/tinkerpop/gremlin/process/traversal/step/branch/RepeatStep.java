@@ -75,11 +75,19 @@ public final class RepeatStep<S> extends ComputerAwareStep<S, S> implements Trav
         this.untilTraversal = this.integrateChild(untilTraversal);
     }
 
+    public Traversal.Admin<S, ?> getUntilTraversal() {
+        return this.untilTraversal;
+    }
+
     public void setEmitTraversal(final Traversal.Admin<S, ?> emitTraversal) {
         if (null != this.emitTraversal)
             throw new IllegalStateException("The repeat()-step already has its emit()-modulator declared: " + this);
         if (null == this.repeatTraversal) this.emitFirst = true;
         this.emitTraversal = this.integrateChild(emitTraversal);
+    }
+
+    public Traversal.Admin<S, ?> getEmitTraversal() {
+        return this.emitTraversal;
     }
 
     public List<Traversal.Admin<S, S>> getGlobalChildren() {

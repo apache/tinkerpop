@@ -26,7 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddEdgeStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStartStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.AddVertexStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertiesStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GraphStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.map.GraphStep;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -49,7 +49,7 @@ public class ElementIdStrategyTraverseTest {
     static {
         final Graph mockedGraph = mock(Graph.class);
         final DefaultGraphTraversal t = new DefaultGraphTraversal<>(mockedGraph);
-        t.asAdmin().addStep(new GraphStep<>(t.asAdmin(), Vertex.class));
+        t.asAdmin().addStep(new GraphStep<>(t.asAdmin(), Vertex.class, true));
         traversalWithAddV = t.addV();
     }
 
