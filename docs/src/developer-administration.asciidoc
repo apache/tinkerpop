@@ -27,8 +27,8 @@ feedback on the candidate and presuming there is still positive interest in doin
 TinkerPop mailing list is started to get the official stance.  As per usual, the VOTE will be made open for no less
 than 72 hours.
 
-If the VOTE is close successfully and the candidate is made a committer, then send the following email to the
-candidate and copy the private TinkerPop mailing list:
+If the VOTE closes with a successful positive vote to make the candidate a committer, then send the following email
+to the candidate and copy the private TinkerPop mailing list:
 
 [source,text]
 ----
