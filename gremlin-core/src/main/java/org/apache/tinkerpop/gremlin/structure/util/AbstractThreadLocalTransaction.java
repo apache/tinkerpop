@@ -37,14 +37,14 @@ import java.util.function.Consumer;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractThreadLocalTransaction extends AbstractTransaction {
-protected static final ThreadLocal<Consumer<Transaction>> readWriteConsumerInternal = 
+    protected final ThreadLocal<Consumer<Transaction>> readWriteConsumerInternal =
         new ThreadLocal<Consumer<Transaction>>() {
             @Override protected Consumer<Transaction> initialValue() {
                 return READ_WRITE_BEHAVIOR.AUTO;
             }
         };
     
-    protected static final ThreadLocal<Consumer<Transaction>> closeConsumerInternal = 
+    protected final ThreadLocal<Consumer<Transaction>> closeConsumerInternal =
         new ThreadLocal<Consumer<Transaction>>() {
             @Override protected Consumer<Transaction> initialValue() {
                 return CLOSE_BEHAVIOR.ROLLBACK;
@@ -88,24 +88,26 @@ protected static final ThreadLocal<Consumer<Transaction>> readWriteConsumerInter
     }
     
     @Override
-    public void doReadWrite() {
+    protected void doReadWrite() {
         readWriteConsumerInternal.get().accept(this);
     }
     
     @Override
-    public void doClose() {
+    protected void doClose() {
         closeConsumerInternal.get().accept(this);
         closeConsumerInternal.remove();
         readWriteConsumerInternal.remove();
     }
     
     @Override
-    public void setReadWrite(final Consumer<Transaction> consumer) {
+    public Transaction onReadWrite(final Consumer<Transaction> consumer) {
         readWriteConsumerInternal.set(Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull));
+        return this;
     }
     
     @Override
-    public void setClose(final Consumer<Transaction> consumer) {
+    public Transaction onClose(final Consumer<Transaction> consumer) {
         closeConsumerInternal.set(Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull));
+        return this;
     }
 }

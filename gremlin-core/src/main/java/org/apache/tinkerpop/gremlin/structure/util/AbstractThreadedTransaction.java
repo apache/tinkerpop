@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * A base implementation of {@link Transaction} that provides core functionality for transaction listeners using a
@@ -39,10 +40,6 @@ import java.util.function.Consumer;
 public abstract class AbstractThreadedTransaction extends AbstractTransaction {
 
     protected final List<Consumer<Status>> transactionListeners = new CopyOnWriteArrayList<>();
-    
-    protected Consumer<Transaction> readWriteConsumerInternal = READ_WRITE_BEHAVIOR.AUTO;
-    
-    protected Consumer<Transaction> closeConsumerInternal = CLOSE_BEHAVIOR.ROLLBACK;
     
      public AbstractThreadedTransaction(final Graph g) {
         super(g);
@@ -72,24 +69,42 @@ public abstract class AbstractThreadedTransaction extends AbstractTransaction {
     public void clearTransactionListeners() {
         transactionListeners.clear();
     }
-    
+
+    /**
+     * Most implementations should do nothing with this as the tx is already open on creation.
+     */
     @Override
-    public void doReadWrite() {
-        readWriteConsumerInternal.accept(this);
+    protected void doReadWrite() {
+        // do nothing
     }
-    
+
+    /**
+     * Clears transaction listeners
+     */
     @Override
-    public void doClose() {
-        closeConsumerInternal.accept(this);
+    protected void doClose() {
+        clearTransactionListeners();
     }
-    
+
+    /**
+     * The nature of threaded transactions are such that they are always open when created and manual in nature,
+     * therefore setting this value is not required.
+     *
+     * @throws UnsupportedOperationException
+     */
     @Override
-    public void setReadWrite(final Consumer<Transaction> consumer) {
-        readWriteConsumerInternal = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull);
+    public synchronized Transaction onReadWrite(final Consumer<Transaction> consumer) {
+        throw new UnsupportedOperationException("Threaded transactions are open when created and in manual mode");
     }
-    
+
+    /**
+     * The nature of threaded transactions are such that they are always open when created and manual in nature,
+     * therefore setting this value is not required.
+     *
+     * @throws UnsupportedOperationException
+     */
     @Override
-    public void setClose(final Consumer<Transaction> consumer) {
-        closeConsumerInternal = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull);
+    public synchronized Transaction onClose(final Consumer<Transaction> consumer) {
+        throw new UnsupportedOperationException("Threaded transactions are open when created and in manual mode");
     }
 }

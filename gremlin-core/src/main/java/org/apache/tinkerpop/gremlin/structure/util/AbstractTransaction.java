@@ -21,7 +21,6 @@ package org.apache.tinkerpop.gremlin.structure.util;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -48,13 +47,13 @@ public abstract class AbstractTransaction implements Transaction {
     protected abstract void doOpen();
 
     /**
-     * Called with {@link #commit} after the {@link #readWriteConsumer} has been notified.  Implementers should
+     * Called with {@link #commit} after the {@link #onReadWrite(Consumer)} has been notified.  Implementers should
      * include their commit logic here.
      */
     protected abstract void doCommit() throws TransactionException;
 
     /**
-     * Called with {@link #rollback} after the {@link #readWriteConsumer} has been notified.  Implementers should
+     * Called with {@link #rollback} after the {@link #onReadWrite(Consumer)} has been notified.  Implementers should
      * include their rollback logic here.
      */
     protected abstract void doRollback() throws TransactionException;
@@ -84,18 +83,6 @@ public abstract class AbstractTransaction implements Transaction {
      * Implementers should run their readWrite consumer here.
      */
     protected abstract void doClose();
-    
-    /**
-     * Called {@link #onReadWrite}.  
-     * Implementers should set their readWrite consumer here.
-     */
-    protected abstract void setReadWrite(final Consumer<Transaction> consumer);
-    
-    /**
-     * Called {@link #onClose}.  
-     * Implementers should set their close consumer here.
-     */
-    protected abstract void setClose(final Consumer<Transaction> consumer);
 
     /**
      * {@inheritDoc}
@@ -165,24 +152,6 @@ public abstract class AbstractTransaction implements Transaction {
     @Override
     public void close() {
         doClose();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized Transaction onReadWrite(final Consumer<Transaction> consumer) {
-        setReadWrite(consumer);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized Transaction onClose(final Consumer<Transaction> consumer) {
-        setClose(consumer);
-        return this;
     }
 
     /**
