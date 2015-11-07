@@ -67,13 +67,13 @@ to closing where a user must now explicitly call `commit()` to persist their mut
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-805[TINKERPOP3-805] for more information.
 
-Transaction.onReadWrite() and Transaction.onClose() are now `ThreadLocal` settings
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ThreadLocal Transaction Settings
+++++++++++++++++++++++++++++++++
 
-The `Transaction.onReadWrite()` and `Transaction.onClose()` settings now need to be set for each thread (if another behavior than the default is desired).
-For gremlin-server users that may be changing these settings via scripts :
-If the settings are changed from a sessionless request they will now only apply to that one request.
-If the settings are changed from an in-session request they will now only apply to all future requests made in the scope of that session. 
+The `Transaction.onReadWrite()` and `Transaction.onClose()` settings now need to be set for each thread (if another
+behavior than the default is desired). For gremlin-server users that may be changing these settings via scripts.
+If the settings are changed for a sessionless request they will now only apply to that one request. If the settings are
+changed for an in-session request they will now only apply to all future requests made in the scope of that session.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-885[TINKERPOP3-885]
 
@@ -140,10 +140,17 @@ Decomposition of AbstractTransaction
 The `AbstractTransaction` class has been abstracted into two different classes supporting two different modes of
 operation: `AbstractThreadLocalTransaction` and `AbstractThreadedTransaction`, where the former should be used when
 supporting `ThreadLocal` transactions and the latter for threaded transactions.  Of course, providers may still
-choose to build their own implementation on `AbstractTransaction` itself or simply implementing the `Transaction`
+choose to build their own implementation on `AbstractTransaction` itself or simply implement the `Transaction`
 interface.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP3-765[TINKERPOP3-765] for more information.
+The `AbstractTransaction` gains the following methods to potentially implement (though default implementations
+are supplied in `AbstractThreadLocalTransaction` and `AbstractThreadedTransaction`):
+
+* `doReadWrite` that should execute the read-write consumer.
+* `doClose` that should execute the close consumer.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP3-765[TINKERPOP3-765] and
+link:https://issues.apache.org/jira/browse/TINKERPOP3-885[TINKERPOP3-885] for more information.
 
 Transaction.close() Default Behavior
 ++++++++++++++++++++++++++++++++++++
@@ -157,17 +164,6 @@ previously asserted the opposite (i.e. commit on close).  These tests have been 
 If these tests were referenced in an `OptOut`, then their names should be updated.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-805[TINKERPOP3-805] for more information.
-
-AbstractTransaction implementation changes
-++++++++++++++++++++++++++++++++++++++++++
-The `AbstractTransaction` class now requires implementing four new methods: 
-
-* `doReadWrite` that should execute the read-write consumer.
-* `doClose` that should execute the close consumer.
-* `setReadWrite` that should set the read-write consumer for the transaction.
-* `setClose` that should set the close consumer for the transaction.
-
-You can refer to `AbstractThreadLocalTransaction` and `AbstractThreadedTransaction` for examples.
 
 Graph Traversal Updates
 +++++++++++++++++++++++
@@ -216,9 +212,12 @@ parameter or the other if either is supplied.
 
 See link:https://issues.apache.org/jira/browse/TINKERPOP3-913[TINKERPOP3-913] for more information.
 
-Transaction.onReadWrite() and Transaction.onClose() are now `ThreadLocal` settings
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ThreadLocal Transaction Settings
+++++++++++++++++++++++++++++++++
 
-If your driver configures the `Transaction.onReadWrite()` or `Transaction.onClose()` settings, note that these no longer apply to all future requests. 
-If the settings are changed from a sessionless request they will only apply to that one request.
-If the settings are changed from an in-session request they will only apply to all future requests made in the scope of that session. 
+If a driver configures the `Transaction.onReadWrite()` or `Transaction.onClose()` settings, note that these settings no
+longer apply to all future requests. If the settings are changed for a sessionless request they will only apply to
+that one request. If the settings are changed from an in-session request they will only apply to all future requests
+made in the scope of that session.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP3-885[TINKERPOP3-885] for more information.
