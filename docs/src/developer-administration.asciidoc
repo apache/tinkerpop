@@ -1,0 +1,91 @@
+////
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+////
+Administration
+==============
+
+New Committers
+--------------
+
+When a candidate is identified by a PPMC member as someone who might be a good official committer to TinkerPop, the
+PPMC member should open a DISCUSS thread on the private TinkerPop mailing list.  The thread should provide some
+background and reasoning for why that member believes the candidate would be a good committer.  Given enough time for
+feedback on the candidate and presuming there is still positive interest in doing so, a VOTE thread on the private
+TinkerPop mailing list is started to get the official stance.  As per usual, the VOTE will be made open for no less
+than 72 hours.
+
+If the VOTE closes with a successful positive vote to make the candidate a committer, then send the following email
+to the candidate and copy the private TinkerPop mailing list:
+
+[source,text]
+----
+SUBJECT: Invitation to become TinkerPop committer: [candidate name]
+
+Hello,
+
+The TinkerPop Podling Project Management Committee (PPMC)  hereby offers you committer privileges to the project.
+These privileges are offered on the understanding that you'll use them reasonably and with common sense. We like to
+work on trust rather than unnecessary constraints.
+
+Being a committer enables you to more easily make changes without needing to go through the patch submission process.
+
+Being a committer does not require you to participate any more than you already do. It does tend to make one even more
+committed.  You will probably find that you spend more time here.
+
+Of course, you can decline and instead remain as a contributor, participating as you do now.
+
+A. This personal invitation is a chance for you to accept or decline in private.  Either way, please let us know in
+reply to the private@tinkerpop.incubator.apache.org address only.
+
+B. If you are accepting, the next step is to register an iCLA with the Apache Software Foundation:
+    1. Details of the iCLA and the forms are found through this link: http://www.apache.org/licenses/#clas.
+
+    2. The form (text or PDF version) provides instructions for its completion and return to the Secretary of the ASF.
+
+    3. When you transmit the completed iCLA, request to notify the Apache TinkerPop and choose a unique Apache id.
+       Look to see if your preferred id is already taken at http://people.apache.org/committer-index.html   This will
+       allow the Secretary to notify the PMC when your iCLA has been recorded.
+
+When recording of your iCLA is noticed, you will receive a follow-up message with the next steps for establishing you
+as a committer.
+----
+
+Assuming the individual accepts, the next step is to get their account created.  As we are in incubation, we will
+need to contact a mentor for help with this step.
+
+Upon confirming with the new committer that their account is established, send an announcement email to the
+developer and user mailing lists:
+
+[source,text]
+----
+SUBJECT: New Committer: [committer name]
+
+The Podling Project Management Committee (PPMC) for Apache TinkerPop has asked [committer name] to become a committer
+and we are pleased to announce that he has accepted.
+
+[describe the nature of the committers work in the community]
+
+Being a committer enables easier contribution to the project since there is no need to work via the patch submission
+process. This should enable better productivity.
+----
+
+Finally, update the TinkerPop incubator project status page by:
+
+. Adding to the "News" section
+. Adding to the "Committers" section
+
+
+

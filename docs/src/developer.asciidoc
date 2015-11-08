@@ -28,4 +28,6 @@ include::developer-contributing.asciidoc[]
 
 include::developer-release.asciidoc[]
 
+include::developer-administration.asciidoc[]
+
 include::developer-meetings.asciidoc[]

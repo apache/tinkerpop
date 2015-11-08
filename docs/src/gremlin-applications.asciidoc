@@ -1505,6 +1505,12 @@ default accepts requests at `http://localhost:8080/workspace0`:
 
 image::gephi-start-server.png[width=800]
 
+IMPORTANT: The Gephi Streaming Plugin doesn't detect port conflicts and will appear to start the plugin successfully
+even if there is something already active on that port it wants to connect to (which is 8080 by default).  Be sure
+that there is nothing running on the port before Gephi will be using before starting the plugin.  Failing to do
+this produce behavior where the console will appear to submit requests to Gephi successfully but nothing will
+render.
+
 Start the xref:gremlin-console[Gremlin Console] and activate the Gephi plugin:
 
 [gremlin-groovy]
