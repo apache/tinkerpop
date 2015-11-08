@@ -282,8 +282,12 @@ public final class TinkerGraph implements Graph {
                     io(IoCore.graphson()).readGraph(graphLocation);
                 } else if (graphFormat.equals("gryo")) {
                     io(IoCore.gryo()).readGraph(graphLocation);
+                } else {
+                    Class<Io.Builder> ioBuilderClass = (Class<Io.Builder>) Class.forName(graphFormat); //If graphFormat is not a fully qualified class, get ClassNotFoundException.  Will this be clear enough to user? currently they will just RuntimeException at end of method
+                    Io.Builder ioBuilder = ioBuilderClass.newInstance();  //If graphFormat is class not derived from Io.Builder, get ClassCastdException.  Will this be clear enough to user?
+                    io(ioBuilder).readGraph(graphLocation);
                 }
-            } catch (IOException ioe) {
+            } catch (Exception exc) {
                 throw new RuntimeException(String.format("Could not load graph at %s with %s", graphLocation, graphFormat));
             }
         }
