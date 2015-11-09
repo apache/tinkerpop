@@ -43,7 +43,7 @@ under release is protected. Tweaks to documentation and other odds and ends rela
 during this period.
 . At some point during the week:
 .. Deploy a final SNAPSHOT to the snapshot repository.
-.. Review LICENSE and NOTICE files to make sure that no changes are needed.
+.. Review LICENSE and NOTICE files to make sure that no <<dependencies,changes are needed>>.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review

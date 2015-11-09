@@ -307,6 +307,7 @@ When you submit a pull request, be sure it uses the following style.
 ** These types of "on merge tweaks" are typically done to extremely dynamic files to combat and merge conflicts.
 * If you are a TinkerPop committer, you can VOTE on your own pull request, so please do so.
 
+[[dependencies]]
 Dependencies
 ~~~~~~~~~~~~
 
