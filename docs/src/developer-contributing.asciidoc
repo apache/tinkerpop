@@ -306,3 +306,57 @@ When you submit a pull request, be sure it uses the following style.
 * Notes about what you will do when you merge to the respective release branch (e.g. update CHANGELOG).
 ** These types of "on merge tweaks" are typically done to extremely dynamic files to combat and merge conflicts.
 * If you are a TinkerPop committer, you can VOTE on your own pull request, so please do so.
+
+Dependencies
+~~~~~~~~~~~~
+
+There are many dependencies on other open source libraries in TinkerPop modules. When adding dependencies or
+altering the version of a dependency, developers must consider the implications that may apply to the TinkerPop
+LICENSE and NOTICE files. There are two implications to consider:
+
+. Does the dependency fit an Apache _approved_ license?
+. Given the addition or modification to a dependency, does it mean any change for TinkerPop LICENSE and NOTICE files?
+
+Understanding these implications is important for insuring that  TinkerPop stays compliant with the Apache 2 license
+that it releases under.
+
+Regarding the first item, refer to the Apache Legal for a list of link:http://www.apache.org/legal/resolved.html[approved licenses]
+that are compatible with the Apache 2 license.
+
+The second item requires a bit more effort to follow. The Apache website offers a
+link:http://www.apache.org/dev/licensing-howto.html[how-to guide] on the approach to maintaining appropriate LICENSE
+and NOTICE files, but this guide is designed to offer some more specific guidance as it pertains to TinkerPop
+and its distribution.
+
+To get started, TinkerPop has both "source" and "binary" LICENSE/NOTICE files:
+
+* Source LICENSE/NOTICE relate to files packaged with the released source code distribution:
+link:https://github.com/apache/incubator-tinkerpop/blob/master/LICENSE[LICENSE] / link:https://github.com/apache/incubator-tinkerpop/blob/master/NOTICE[NOTICE]
+* Binary LICENSE/NOTICE relate to files packaged with the released binary distributions:
+** Gremlin Console link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-console/src/main/LICENSE[LICENSE]
+/ link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-console/src/main/NOTICE[NOTICE]
+** Gremlin Server link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-server/src/main/LICENSE[LICENSE]
+/ link:https://github.com/apache/incubator-tinkerpop/blob/master/gremlin-server/src/main/NOTICE[NOTICE]
+
+As we don't usually include any dependencies in the source distribution (i.e. the source zip distribution), there is
+typically no need to edit source LICENSE/NOTICE when editing a TinkerPop `pom.xml`. These files only need to be edited
+if the distribution has a file added to it.  Such a situation may arise from several scenarios, but it would most
+likely come from the addition of a source file from another library. In that case, edit LICENSE to include this file
+following the pattern already present there. Refer to the
+link:http://www.apache.org/dev/licensing-howto.html#mod-notice[Modifications to Notice] section from the Apache
+"how-to" to determine if changes are necessary there.
+
+The binary LICENSE/NOTICE is perhaps most impacted by changes to the various `pom.xml` files. After altering the
+`pom.xml` file of any module, build both Gremlin Console and Gremlin Server and examine the contents of both binary
+distributions, either:
+
+* target/apache-gremlin-console-x.y.z-distribution.zip
+* target/apache-gremlin-server-x.y.z-distribution.zip
+
+There is a _near_ one-to-one mapping between the jar files in those distributions and their respective LICENSE files.
+It is described as "near" because the distributions include TinkerPop jars which don't need to be represented there
+and there are entries in LICENSE that refer to libraries that are present, but shaded in the gremlin-shaded module.
+Everything else should be listed and present under the appropriate license section.
+
+There is also a good chance that the TinkerPop binary NOTICE should be updated. Check if the newly added dependency
+contains a NOTICE of its own. If so, include that NOTICE in the TinkerPop NOTICE.
