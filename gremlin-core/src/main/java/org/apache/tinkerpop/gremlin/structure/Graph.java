@@ -364,9 +364,13 @@ public interface Graph extends AutoCloseable, Host {
             public static IllegalArgumentException variableValueCanNotBeNull() {
                 return new IllegalArgumentException("Graph variable value can not be null");
             }
-
+            
             public static UnsupportedOperationException dataTypeOfVariableValueNotSupported(final Object val) {
-                return new UnsupportedOperationException(String.format("Graph variable value [%s] is of type %s is not supported", val, val.getClass()));
+            	return dataTypeOfVariableValueNotSupported(val, null);
+            }
+
+            public static UnsupportedOperationException dataTypeOfVariableValueNotSupported(final Object val, final Exception rootCause) {
+                return new UnsupportedOperationException(String.format("Graph variable value [%s] is of type %s is not supported", val, val.getClass()), rootCause);
             }
         }
 
@@ -1128,6 +1132,16 @@ public interface Graph extends AutoCloseable, Host {
             return (null == id) ?
                     new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph") :
                     new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
+        }
+        
+        public static NoSuchElementException elementNotFound(final Class<? extends Element> elementClass, final Object id, final Exception rootCause) {
+        	NoSuchElementException elementNotFoundException;
+        	if(null == id)
+        		elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id null does not exist in the graph");
+    		else
+    			elementNotFoundException = new NoSuchElementException("The " + elementClass.getSimpleName().toLowerCase() + " with id " + id + " of type " + id.getClass().getSimpleName() + " does not exist in the graph");
+        	elementNotFoundException.initCause(rootCause);
+			return elementNotFoundException;
         }
     }
 

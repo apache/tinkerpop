@@ -120,7 +120,7 @@ public final class Neo4jEdge extends Neo4jElement implements Edge, WrappedEdge<N
             this.baseElement.setProperty(key, value);
             return new Neo4jProperty<>(this, key, value);
         } catch (final IllegalArgumentException e) {
-            throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
+            throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value, e);
         }
     }
 }

@@ -156,7 +156,11 @@ public interface Property<V> {
         }
 
         public static IllegalArgumentException dataTypeOfPropertyValueNotSupported(final Object val) {
-            return new IllegalArgumentException(String.format("Property value [%s] is of type %s is not supported", val, val.getClass()));
+        	return dataTypeOfPropertyValueNotSupported(val, null);
+        }
+
+        public static IllegalArgumentException dataTypeOfPropertyValueNotSupported(final Object val, final Exception rootCause) {
+            return new IllegalArgumentException(String.format("Property value [%s] is of type %s is not supported", val, val.getClass()), rootCause);
         }
 
         public static IllegalStateException propertyRemovalNotSupported() {
