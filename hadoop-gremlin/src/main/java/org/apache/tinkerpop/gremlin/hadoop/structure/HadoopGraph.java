@@ -20,6 +20,8 @@ package org.apache.tinkerpop.gremlin.hadoop.structure;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
@@ -163,16 +165,16 @@ import java.util.stream.Stream;
         method = "g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test= "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest",
-        method ="g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest",
+        method = "g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
         test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTestV3d0",
         method = "g_V_repeatXbothXfollowedByXX_timesX2X_group_byXsongTypeX_byXcountX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 @Graph.OptOut(
-        test= "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTestV3d0",
-        method ="g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX",
+        test = "org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTestV3d0",
+        method = "g_V_repeatXbothXfollowedByXX_timesX2X_groupXaX_byXsongTypeX_byXcountX_capXaX",
         reason = "Hadoop-Gremlin is OLAP-oriented and for OLTP operations, linear-scan joins are required. This particular tests takes many minutes to execute.")
 public final class HadoopGraph implements Graph {
 
@@ -189,11 +191,16 @@ public final class HadoopGraph implements Graph {
     }
 
     public static HadoopGraph open() {
-        return HadoopGraph.open(null);
+        return HadoopGraph.open(EMPTY_CONFIGURATION);
     }
 
     public static HadoopGraph open(final Configuration configuration) {
         return new HadoopGraph(Optional.ofNullable(configuration).orElse(EMPTY_CONFIGURATION));
+    }
+
+    public static HadoopGraph open(final String configurationFile) throws ConfigurationException {
+        if (null == configurationFile) throw Graph.Exceptions.argumentCanNotBeNull("configurationFile");
+        return open(new PropertiesConfiguration(configurationFile));
     }
 
     @Override
