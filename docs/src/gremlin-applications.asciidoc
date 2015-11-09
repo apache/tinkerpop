@@ -438,6 +438,33 @@ submitting `:> graph` will return a `Graph` instance and in most cases those are
 and will return a serialization error.  It should be noted that `TinkerGraph`, as a convenience for shipping around
 small sub-graphs, is serializable from Gremlin Server.
 
+The Gremlin Server `:remote` command has the following configuration options:
+
+[width="100%",cols="3,10a",options="header"]
+|=========================================================
+|Command |Description
+|alias |
+[width="100%",cols="3,10",options="header"]
+!=========================================================
+!Option !Description
+! _pairs_ !A set of key/value alias/binding pairs to apply to requests.
+!`reset` !Clears any aliases that were supplied in previous configurations of the remote.
+!`show` !Shows the current set of aliases which is returned as a `Map`
+!=========================================================
+|timeout |Specifies the length of time in milliseconds that the remote will wait for a response from the server.
+|=========================================================
+
+The `alias` configuration command for the Gremlin Server `:remote` can be useful in situations where there are
+multiple `Graph` or `TraversalSource` instances on the server, as it becomes possible to rename them from the client
+for purposes of execution within the context of a script.  Therefore, it becomes possible to submit commands this way:
+
+[gremlin-groovy]
+----
+:remote connect tinkerpop.server conf/remote-objects.yaml
+:remote config alias x g
+:> x.E().label().groupCount()
+----
+
 Connecting via Java
 ~~~~~~~~~~~~~~~~~~~
 
