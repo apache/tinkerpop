@@ -21,9 +21,6 @@ package org.apache.tinkerpop.gremlin.structure.util;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -37,18 +34,9 @@ import java.util.function.Function;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractTransaction implements Transaction {
-    protected Consumer<Transaction> readWriteConsumer;
-    protected Consumer<Transaction> closeConsumer;
-
     private Graph g;
 
     public AbstractTransaction(final Graph g) {
-        // auto transaction behavior
-        readWriteConsumer = READ_WRITE_BEHAVIOR.AUTO;
-
-        // default is to rollback transactions on close
-        closeConsumer = CLOSE_BEHAVIOR.ROLLBACK;
-
         this.g = g;
     }
 
@@ -59,13 +47,13 @@ public abstract class AbstractTransaction implements Transaction {
     protected abstract void doOpen();
 
     /**
-     * Called with {@link #commit} after the {@link #readWriteConsumer} has been notified.  Implementers should
+     * Called with {@link #commit} after the {@link #onReadWrite(Consumer)} has been notified.  Implementers should
      * include their commit logic here.
      */
     protected abstract void doCommit() throws TransactionException;
 
     /**
-     * Called with {@link #rollback} after the {@link #readWriteConsumer} has been notified.  Implementers should
+     * Called with {@link #rollback} after the {@link #onReadWrite(Consumer)} has been notified.  Implementers should
      * include their rollback logic here.
      */
     protected abstract void doRollback() throws TransactionException;
@@ -83,6 +71,18 @@ public abstract class AbstractTransaction implements Transaction {
      * {@link #addTransactionListener(Consumer)}.
      */
     protected abstract void fireOnRollback();
+    
+    /**
+     * Called {@link #readWrite}.  
+     * Implementers should run their readWrite consumer here.
+     */
+    protected abstract void doReadWrite();
+    
+    /**
+     * Called {@link #close}.  
+     * Implementers should run their readWrite consumer here.
+     */
+    protected abstract void doClose();
 
     /**
      * {@inheritDoc}
@@ -100,7 +100,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void commit() {
-        readWriteConsumer.accept(this);
+        readWrite();
         try {
             doCommit();
             fireOnCommit();
@@ -114,7 +114,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void rollback() {
-        readWriteConsumer.accept(this);
+        readWrite();
         try {
             doRollback();
             fireOnRollback();
@@ -143,7 +143,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void readWrite() {
-        readWriteConsumer.accept(this);
+        doReadWrite();
     }
 
     /**
@@ -151,25 +151,7 @@ public abstract class AbstractTransaction implements Transaction {
      */
     @Override
     public void close() {
-        closeConsumer.accept(this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized Transaction onReadWrite(final Consumer<Transaction> consumer) {
-        readWriteConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public synchronized Transaction onClose(final Consumer<Transaction> consumer) {
-        closeConsumer = Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onCloseBehaviorCannotBeNull);
-        return this;
+        doClose();
     }
 
     /**

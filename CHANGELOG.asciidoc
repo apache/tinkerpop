@@ -25,6 +25,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.0 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Transaction` settings for `onReadWrite` and `onClose` are now `ThreadLocal` in nature of standard transactions.
 * Optimized `BulkLoaderVertexProgram`. It now uses `EventStrategy` to monitor what the underlying `BulkLoader` implementation does (e.g. whether it creates a new vertex or returns an existing).
 * Integrated `NumberHelper` in `SumStep`, `MinStep`, `MaxStep` and `MeanStep` (local and global step variants).
 * Gremlin Console remoting to Gremlin Server now supports a configuration option for assigning aliases.

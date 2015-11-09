@@ -22,8 +22,10 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * A base implementation of {@link Transaction} that provides core functionality for transaction listeners using a
@@ -38,8 +40,8 @@ import java.util.function.Consumer;
 public abstract class AbstractThreadedTransaction extends AbstractTransaction {
 
     protected final List<Consumer<Status>> transactionListeners = new CopyOnWriteArrayList<>();
-
-    public AbstractThreadedTransaction(final Graph g) {
+    
+     public AbstractThreadedTransaction(final Graph g) {
         super(g);
     }
 
@@ -66,5 +68,43 @@ public abstract class AbstractThreadedTransaction extends AbstractTransaction {
     @Override
     public void clearTransactionListeners() {
         transactionListeners.clear();
+    }
+
+    /**
+     * Most implementations should do nothing with this as the tx is already open on creation.
+     */
+    @Override
+    protected void doReadWrite() {
+        // do nothing
+    }
+
+    /**
+     * Clears transaction listeners
+     */
+    @Override
+    protected void doClose() {
+        clearTransactionListeners();
+    }
+
+    /**
+     * The nature of threaded transactions are such that they are always open when created and manual in nature,
+     * therefore setting this value is not required.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public synchronized Transaction onReadWrite(final Consumer<Transaction> consumer) {
+        throw new UnsupportedOperationException("Threaded transactions are open when created and in manual mode");
+    }
+
+    /**
+     * The nature of threaded transactions are such that they are always open when created and manual in nature,
+     * therefore setting this value is not required.
+     *
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public synchronized Transaction onClose(final Consumer<Transaction> consumer) {
+        throw new UnsupportedOperationException("Threaded transactions are open when created and in manual mode");
     }
 }

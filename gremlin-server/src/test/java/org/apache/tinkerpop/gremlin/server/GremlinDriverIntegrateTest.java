@@ -632,7 +632,7 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
-
+        final Client sessionlessClient = cluster.connect();
         client.submit("graph.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL);null").all().get();
         client.submit("graph.tx().open()").all().get();
 
@@ -647,6 +647,11 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
 
         client.submit("v.property(\"color\",\"blue\")").all().get();
         client.submit("graph.tx().commit()").all().get();
+        
+        // Run a sessionless request to change transaction.readWriteConsumer back to AUTO
+        // The will make the next in session request fail if consumers aren't ThreadLocal
+        sessionlessClient.submit("graph.vertices().next()").all().get();
+        
         client.submit("graph.tx().open()").all().get();
 
         final Vertex vertexAfterTx = client.submit("graph.vertices().next()").all().get().get(0).getVertex();
