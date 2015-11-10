@@ -34,16 +34,6 @@ Additional upgrade information can be found here:
 * <<_tinkerpop_3_0_2,TinkerPop 3.0.2>>
 * <<_tinkerpop_3_0_1,TinkerPop 3.0.1>>
 
-Important Changes
-~~~~~~~~~~~~~~~~~
-
-* `sum()`, `min()`, `max()` and `mean()` make now use of `NumberHelper`, leading to a more appropriate result type, instead of just `Double`.
-* `GraphStep` is no longer in `sideEffect`-package, but now in `map`-package as traversals support mid-traversal `V()`.
-* Traversals now support mid-traversal `V()`-steps. Graph system providers should ensure that a mid-traversal `V()` can leverage any suitable index.
-* The data type of `Operator` enums will now always be the highest common data type of the two given numbers, rather than the data type of the first number, as it's been before.
-* Hadoop1 support has been dropped. Hadoop2 is now supported. Giraph and Spark can work over Hadoop2 YARN.
-* The implementation and semantics of `GraphTraversal.group()` has changed. The previous model is deprecated and renamed to `groupV3d0()`.
-
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
@@ -131,11 +121,16 @@ Hadoop-Gremlin
 * The directory where application jars are stored in HDFS is now `hadoop-gremlin-x.y.z-libs`.
 ** This versioning is important so that cross-version TinkerPop use does not cause jar conflicts.
 
+See link:https://issues.apache.org/jira/browse/TINKERPOP3-616
+
 Spark-Gremlin
 ^^^^^^^^^^^^^
 
 * Providers that wish to reuse a graphRDD can leverage the new `PersistedInputRDD` and `PersistedOutputRDD`.
 ** This allows the graphRDD to avoid serialization into HDFS for reuse. Be sure to enabled persisted `SparkContext` (see documentation).
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP3-868,
+link:https://issues.apache.org/jira/browse/TINKERPOP3-925
 
 TinkerGraph Serialization
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -197,6 +192,7 @@ have changed as well:
 ** This bug fix might cause a breaking change to a user query if the non-bulk behavior was being counted on. If so, used `dedup()` prior to `fold()`.
 * Both `GraphTraversal().mapKeys()` and `GraphTraversal.mapValues()` has been deprecated.
 ** Use `select(keys)` and `select(columns)`. However, note that `select()` will not unroll the keys/values. Thus, `mapKeys()` => `select(keys).unfold()`.
+* The data type of `Operator` enums will now always be the highest common data type of the two given numbers, rather than the data type of the first number, as it's been before.
 
 Aliasing Remotes in the Console
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -219,12 +215,23 @@ See: link:https://issues.apache.org/jira/browse/TINKERPOP3-914[TINKERPOP3-914]
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
+
 All providers should be aware that Jackson is now shaded to `gremlin-shaded` and could represent breaking change if
 there was usage of the dependency by way of TinkerPop, a direct dependency to Jackson may be required on the
 provider's side.
 
 Graph System Providers
 ^^^^^^^^^^^^^^^^^^^^^^
+
+GraphStep Alterations
++++++++++++++++++++++
+
+* `GraphStep` is no longer in `sideEffect`-package, but now in `map`-package as traversals support mid-traversal `V()`.
+* Traversals now support mid-traversal `V()`-steps. Graph system providers should ensure that a mid-traversal `V()` can leverage any suitable index.
+
+See link:https://issues.apache.org/jira/browse/TINKERPOP3-762
 
 Decomposition of AbstractTransaction
 ++++++++++++++++++++++++++++++++++++
