@@ -33,7 +33,7 @@ Meeting adjourned at 1:45pm EST.
 
 _None_
 
-*Minutes**
+*Minutes*
 
 * Reviewed the scope of 3.1.0-incubating in JIRA in the context of the upcoming release date on November 16, 2015.
 * It was noted that with the new one week code freeze policy that the real cut-off date for work is November 9, 2015.
