@@ -59,6 +59,7 @@ public class DependencyGrabberTest {
     }
 
     @Test(expected=IllegalStateException.class)
+    @Ignore
     public void shouldThrowIllegalStateException() {
         final String pkg = "org.apache.tinkerpop";
         final String name = "gremlin-groovy";
