@@ -63,15 +63,15 @@ public class Artifact {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Artifact artifact = (Artifact) o;
+        final Artifact a = (Artifact) o;
 
-        if (group != null ? !group.equals(artifact.group) : artifact.group != null) return false;
-        if (artifact != null ? !artifact.equals(artifact.artifact) : artifact.artifact != null) return false;
-        if (version != null ? !version.equals(artifact.version) : artifact.version != null) return false;
+        if (group != null ? !group.equals(a.group) : a.group != null) return false;
+        if (artifact != null ? !artifact.equals(a.artifact) : a.artifact != null) return false;
+        if (version != null ? !version.equals(a.version) : a.version != null) return false;
 
         return true;
     }
