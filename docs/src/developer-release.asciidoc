@@ -42,6 +42,7 @@ and communicating with other members of the community.
 under release is protected. Tweaks to documentation and other odds and ends related to release are still allowed
 during this period.
 . At some point during the week:
+.. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`
 .. Deploy a final SNAPSHOT to the snapshot repository.
 .. Review LICENSE and NOTICE files to make sure that no <<dependencies,changes are needed>>.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
