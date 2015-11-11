@@ -52,4 +52,10 @@ public final class IoCore {
     public static Io.Builder<GryoIo> gryo() {
         return GryoIo.build();
     }
+
+    public static Io.Builder createIoBuilder(String graphFormat) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        Class<Io.Builder> ioBuilderClass = (Class<Io.Builder>) Class.forName(graphFormat);
+        Io.Builder ioBuilder = ioBuilderClass.newInstance();
+        return ioBuilder;
+    }
 }

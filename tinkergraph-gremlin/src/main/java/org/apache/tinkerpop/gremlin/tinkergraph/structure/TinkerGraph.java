@@ -283,12 +283,10 @@ public final class TinkerGraph implements Graph {
                 } else if (graphFormat.equals("gryo")) {
                     io(IoCore.gryo()).readGraph(graphLocation);
                 } else {
-                    Class<Io.Builder> ioBuilderClass = (Class<Io.Builder>) Class.forName(graphFormat); //If graphFormat is not a fully qualified class, get ClassNotFoundException.  Will this be clear enough to user? currently they will just RuntimeException at end of method
-                    Io.Builder ioBuilder = ioBuilderClass.newInstance();  //If graphFormat is class not derived from Io.Builder, get ClassCastdException.  Will this be clear enough to user?
-                    io(ioBuilder).readGraph(graphLocation);
+                    io(IoCore.createIoBuilder(graphFormat)).readGraph(graphLocation);
                 }
-            } catch (Exception exc) {
-                throw new RuntimeException(String.format("Could not load graph at %s with %s", graphLocation, graphFormat));
+            } catch (Exception ex) {
+                throw new RuntimeException(String.format("Could not load graph at %s with %s", graphLocation, graphFormat), ex);
             }
         }
     }
@@ -311,11 +309,15 @@ public final class TinkerGraph implements Graph {
                 io(IoCore.graphson()).writeGraph(graphLocation);
             } else if (graphFormat.equals("gryo")) {
                 io(IoCore.gryo()).writeGraph(graphLocation);
+            } else {
+                io(IoCore.createIoBuilder(graphFormat)).writeGraph(graphLocation);
             }
-        } catch (IOException ioe) {
-            throw new RuntimeException(String.format("Could not save graph at %s with %s", graphLocation, graphFormat));
+        } catch (Exception ex) {
+            throw new RuntimeException(String.format("Could not save graph at %s with %s", graphLocation, graphFormat), ex);
         }
     }
+
+
 
     private <T extends Element> Iterator<T> createElementIterator(final Class<T> clazz, final Map<Object, T> elements,
                                                                   final IdManager idManager,
