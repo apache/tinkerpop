@@ -174,6 +174,22 @@ public final class GryoMapper implements Mapper<Kryo> {
         private static final Class LINKED_HASH_MAP_ENTRY_CLASS = m.entrySet().iterator().next().getClass();
 
         /**
+         * The {@code HashMap$Node} class comes into serialization play when a {@code Map.entrySet()} is
+         * serialized.
+         */
+        private static final Class HASH_MAP_NODE;
+
+        static {
+            // have to instantiate this via reflection because it is a private inner class of HashMap
+            final String className = HashMap.class.getName() + "$Node";
+            try {
+                HASH_MAP_NODE = Class.forName(className);
+            } catch (Exception ex) {
+                throw new RuntimeException("Could not access " + className, ex);
+            }
+        }
+
+        /**
          * Note that the following are pre-registered boolean, Boolean, byte, Byte, char, Character, double, Double,
          * int, Integer, float, Float, long, Long, short, Short, String, void.
          */
@@ -212,6 +228,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(EnumSet.class, null, 46));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashMap.class, null, 11));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashMap.Entry.class, null, 16));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HASH_MAP_NODE, null, 92));   // ***LAST ID**
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(KryoSerializable.class, null, 36));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashMap.class, null, 47));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashSet.class, null, 71));
@@ -248,7 +265,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(B_LP_O_S_SE_SL_Traverser.class, null, 87));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(O_OB_S_SE_SL_Traverser.class, null, 89));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LP_O_OB_S_SE_SL_Traverser.class, null, 90));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LP_O_OB_P_S_SE_SL_TraverserGenerator.class, null, 91)); // ***LAST ID**
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LP_O_OB_P_S_SE_SL_TraverserGenerator.class, null, 91));
 
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(TraverserSet.class, null, 58));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Tree.class, null, 61));
