@@ -158,7 +158,7 @@ public class GraphSONMapper implements Mapper<ObjectMapper> {
 
         /**
          * Try to load {@code SimpleModule} instances from the current classpath.  These are loaded in addition to
-         * the one supplied to the {@link #addCustomModule(com.fasterxml.jackson.databind.module.SimpleModule)};
+         * the one supplied to the {@link #addCustomModule(SimpleModule)};
          */
         public Builder loadCustomModules(final boolean loadCustomModules) {
             this.loadCustomModules = loadCustomModules;

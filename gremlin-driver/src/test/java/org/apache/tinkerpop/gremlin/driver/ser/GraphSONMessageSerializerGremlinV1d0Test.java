@@ -57,7 +57,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     public MessageSerializer serializer = new GraphSONMessageSerializerGremlinV1d0();
 
     @Test
-    public void serializeIterable() throws Exception {
+    public void shouldSerializeIterable() throws Exception {
         final ArrayList<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(100);
@@ -72,7 +72,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeIterableWithNull() throws Exception {
+    public void shouldSerializeIterableWithNull() throws Exception {
         final ArrayList<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(null);
@@ -89,7 +89,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeMap() throws Exception {
+    public void shouldSerializeMap() throws Exception {
         final Map<String, Object> map = new HashMap<>();
         final Map<String, String> innerMap = new HashMap<>();
         innerMap.put("a", "b");
@@ -112,7 +112,20 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeEdge() throws Exception {
+    public void shouldSerializeMapEntry() throws Exception {
+        final Map<String, Object> map = new HashMap<>();
+        map.put("x", 1);
+
+        final ResponseMessage response = convert(map.entrySet().toArray()[0]);
+        assertCommon(response);
+
+        final Map<String, Object> deserializedEntry = (Map<String, Object>) response.getResult().getData();
+        assertEquals(1, deserializedEntry.get(GraphSONTokens.VALUE));
+        assertEquals("x", deserializedEntry.get(GraphSONTokens.KEY));
+    }
+
+    @Test
+    public void shouldSerializeEdge() throws Exception {
         final Graph graph = TinkerGraph.open();
         final Vertex v1 = graph.addVertex();
         final Vertex v2 = graph.addVertex();
@@ -143,7 +156,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeEdgeProperty() throws Exception {
+    public void shouldSerializeEdgeProperty() throws Exception {
         final Graph graph = TinkerGraph.open();
         final Vertex v1 = graph.addVertex();
         final Vertex v2 = graph.addVertex();
@@ -160,7 +173,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeVertexWithEmbeddedMap() throws Exception {
+    public void shouldSerializeVertexWithEmbeddedMap() throws Exception {
         final Graph graph = TinkerGraph.open();
         final Vertex v = graph.addVertex();
         final Map<String, Object> map = new HashMap<>();
@@ -204,7 +217,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeToJsonMapWithElementForKey() throws Exception {
+    public void shouldSerializeToJsonMapWithElementForKey() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
@@ -223,7 +236,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
 
 
     @Test
-    public void serializeFullResponseMessage() throws Exception {
+    public void shouldSerializeFullResponseMessage() throws Exception {
         final UUID id = UUID.randomUUID();
 
         final Map<String, Object> metaData = new HashMap<>();

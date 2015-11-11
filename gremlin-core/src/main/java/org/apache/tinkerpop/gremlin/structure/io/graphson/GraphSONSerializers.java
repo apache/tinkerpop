@@ -324,7 +324,33 @@ final class GraphSONSerializers {
             }
             return m;
         }
+    }
 
+    final static class MapEntryJacksonSerializer extends StdSerializer<Map.Entry> {
+
+        public MapEntryJacksonSerializer() {
+            super(Map.Entry.class);
+        }
+
+        @Override
+        public void serialize(final Map.Entry entry, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
+                throws IOException {
+            ser(entry, jsonGenerator, serializerProvider, null);
+        }
+        @Override
+        public void serializeWithType(final Map.Entry entry, final JsonGenerator jsonGenerator,
+                                      final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            ser(entry, jsonGenerator, serializerProvider, typeSerializer);
+        }
+
+        private static void ser(final Map.Entry entry, final JsonGenerator jsonGenerator,
+                                final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
+            jsonGenerator.writeStartObject();
+            if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
+            serializerProvider.defaultSerializeField(GraphSONTokens.KEY, entry.getKey(), jsonGenerator);
+            serializerProvider.defaultSerializeField(GraphSONTokens.VALUE, entry.getValue(), jsonGenerator);
+            jsonGenerator.writeEndObject();
+        }
     }
 
     private static void serializerVertexProperty(final VertexProperty property, final JsonGenerator jsonGenerator,

@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -161,6 +162,19 @@ public class GryoMessageSerializerV1d0Test {
         final Map<String, String> deserializedInnerMap = (Map<String, String>) deserializedMap.get("z");
         assertEquals(1, deserializedInnerMap.size());
         assertEquals("b", deserializedInnerMap.get("a"));
+    }
+
+    @Test
+    public void shouldSerializeMapEntry() throws Exception {
+        final Map<String, Object> map = new HashMap<>();
+        map.put("x", 1);
+
+        final ResponseMessage response = convertBinary(map.entrySet().toArray()[0]);
+        assertCommon(response);
+
+        final Map.Entry<String, Object> deserializedEntry = (Map.Entry<String, Object>) response.getResult().getData();
+        assertEquals(1, deserializedEntry.getValue());
+        assertEquals("x", deserializedEntry.getKey());
     }
 
     @Test
