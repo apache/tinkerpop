@@ -42,6 +42,7 @@ public class DependencyGrabberTest {
     }
 
     @Test
+    @Ignore
     public void shouldInstallAndUninstallDependencies() {
         final String pkg = "org.apache.tinkerpop";
         final String name = "tinkergraph-gremlin";
