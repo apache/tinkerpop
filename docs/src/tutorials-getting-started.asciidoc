@@ -183,30 +183,19 @@ as an example. First, you need to create this graph:
 [gremlin-groovy]
 ----
 graph = TinkerGraph.open()
-g = graph.traversal()
-v1 = g.addV(id, 1, label, "person", "name", "marko", "age", 29).next()
-v2 = g.addV(id, 3, label, "software", "name", "lop", "lang", "java").next()
+v1 = graph.addVertex(id, 1, label, "person", "name", "marko", "age", 29)
+v2 = graph.addVertex(id, 3, label, "software", "name", "lop", "lang", "java")
 v1.addEdge("created", v2, id, 9, "weight", 0.4)
 ----
 
-IMPORTANT: The `TraversalSource` is a Java `Iterator`. It does *nothing* until it is _iterated_, by calling some
-form of `next()`. Therefore, a line of code like `x = g.addV()` does not "add a vertex" and assign that vertex to
-the variable `x`.  It creates a `Traversal` and assigns that value to `x`.
-
-There are a number of important things to consider in the above code. First, why didn't we use `graph.addVertex()`?
-Couldn't that just as easily performed the same function? Yes - it could have, however, TinkerPop encourages
-end-users to utilizes the methods of the `TraversalSource` rather than `Graph`. The `Graph` methods are considered
-"low-level" and for use by providers developing TinkerPop implementations. In addition, using `Graph` methods bypass
-features you may find important as you learn more about TinkerPop, such as
-link:http://tinkerpop.incubator.apache.org/docs/x.y.z/#traversalstrategy[traversal strategies].
-
-Second, recall that `id` and `label` are "reserved" for special usage in TinkerPop. Those "keys" supplied to the
-creation method are statically imported to the console. You would normally refer to them as `T.id` and `T.label`.
+There are a number of important things to consider in the above code. First, recall that `id` and `label` are
+"reserved" for special usage in TinkerPop. Those "keys" supplied to the creation method are statically imported to
+the console. You would normally refer to them as `T.id` and `T.label`.
 
 NOTE: The fully qualified name for `T` is `org.apache.tinkerpop.gremlin.structure.T`.
 
-Third, don't forget that you are working with TinkerGraph and so identifier assignment is allowed. That is _not_ the
-case with most graph databases (for example, don't bother to try with Neo4j or Titan).
+Second, don't forget that you are working with TinkerGraph which allows for identifier assignment. That is _not_ the
+case with most graph databases. For example, don't bother to try with Neo4j or Titan.
 
 Finally, the label for an `Edge` is required and is thus part of the method signature of `addEdge()`. It is the first
 parameter supplied, followed by the `Vertex` to which `v1` should be connected. Therefore, this usage of `addEdge` is
@@ -239,6 +228,9 @@ link:http://tinkerpop.incubator.apache.org/docs/x.y.z/#has-step[has()] step as f
 ----
 g.V().has('name','marko')
 ----
+
+NOTE: The variable `g` is the `TraversalSource`, which was introduced in the "The First Five Minutes". The
+`TraversalSource` is created with `graph.traversal()` and is the object used to spawn new traversals.
 
 We can picture this traversal in our little graph with Gremlin sitting on vertex "1".
 
