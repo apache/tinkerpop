@@ -34,15 +34,18 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.NullNode;
+import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * These tests focus on message serialization and not "result" serialization as test specific to results (e.g.
@@ -154,18 +157,32 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test
-    public void shouldShouldSerializeMapEntry() throws Exception {
-        final Map<String, Object> map = new HashMap<>();
-        map.put("x", 1);
+    public void shouldShouldSerializeMapEntries() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final Vertex v1 = graph.addVertex();
+        final Date d = new Date();
 
-        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(map).create());
+        final Map<Object, Object> map = new HashMap<>();
+        map.put("x", 1);
+        map.put(v1, 100);
+        map.put(d, "test");
+
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(IteratorUtils.asList(map)).create());
         final JsonNode json = mapper.readTree(results);
 
         assertNotNull(json);
         assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
         final JsonNode jsonObject = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
-
-        assertEquals(1, jsonObject.get("x").asInt());
+        jsonObject.elements().forEachRemaining(e -> {
+            if (e.has("x"))
+                assertEquals(1, e.get("x").asInt());
+            else if (e.has(v1.id().toString()))
+                assertEquals(100, e.get(v1.id().toString()).asInt());
+            else if (e.has(StdDateFormat.instance.format(d)))
+                assertEquals("test", e.get(StdDateFormat.instance.format(d)).asText());
+            else
+                fail("Map entries contains a key that is not part of what was serialized");
+        });
     }
 
     @Test

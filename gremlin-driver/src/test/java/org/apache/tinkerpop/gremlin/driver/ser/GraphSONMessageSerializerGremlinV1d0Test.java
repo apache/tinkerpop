@@ -34,9 +34,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,16 +114,31 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void shouldSerializeMapEntry() throws Exception {
-        final Map<String, Object> map = new HashMap<>();
-        map.put("x", 1);
+    public void shouldSerializeMapEntries() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final Vertex v1 = graph.addVertex();
+        final Date d = new Date();
 
-        final ResponseMessage response = convert(map.entrySet().toArray()[0]);
+        final Map<Object, Object> map = new HashMap<>();
+        map.put("x", 1);
+        map.put(v1, 100);
+        map.put(d, "test");
+
+        final ResponseMessage response = convert(IteratorUtils.asList(map.entrySet()));
         assertCommon(response);
 
-        final Map<String, Object> deserializedEntry = (Map<String, Object>) response.getResult().getData();
-        assertEquals(1, deserializedEntry.get(GraphSONTokens.VALUE));
-        assertEquals("x", deserializedEntry.get(GraphSONTokens.KEY));
+        final List<Map<String, Object>> deserializedEntries = (List<Map<String, Object>>) response.getResult().getData();
+        assertEquals(3, deserializedEntries.size());
+        deserializedEntries.forEach(e -> {
+            if (e.containsKey("x"))
+                assertEquals(1, e.get("x"));
+            else if (e.containsKey(v1.id().toString()))
+                assertEquals(100, e.get(v1.id().toString()));
+            else if (e.containsKey(StdDateFormat.instance.format(d)))
+                assertEquals("test", e.get(StdDateFormat.instance.format(d)));
+            else
+                fail("Map entries contains a key that is not part of what was serialized");
+        });
     }
 
     @Test

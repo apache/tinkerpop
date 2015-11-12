@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
 import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
+import org.apache.tinkerpop.shaded.jackson.databind.SerializationFeature;
 import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
 import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdKeySerializer;
@@ -40,6 +41,7 @@ import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -347,8 +349,27 @@ final class GraphSONSerializers {
                                 final SerializerProvider serializerProvider, final TypeSerializer typeSerializer) throws IOException {
             jsonGenerator.writeStartObject();
             if (typeSerializer != null) jsonGenerator.writeStringField(GraphSONTokens.CLASS, HashMap.class.getName());
-            serializerProvider.defaultSerializeField(GraphSONTokens.KEY, entry.getKey(), jsonGenerator);
-            serializerProvider.defaultSerializeField(GraphSONTokens.VALUE, entry.getValue(), jsonGenerator);
+
+            // this treatment of keys is consistent with the current GraphSONKeySerializer which extends the
+            // StdKeySerializer
+            final Object key = entry.getKey();
+            final Class cls = key.getClass();
+            String k;
+            if (cls == String.class)
+                k = (String) key;
+            else if (Element.class.isAssignableFrom(cls))
+                k = ((Element) key).id().toString();
+            else if(Date.class.isAssignableFrom(cls)) {
+                if (serializerProvider.isEnabled(SerializationFeature.WRITE_DATE_KEYS_AS_TIMESTAMPS))
+                    k = String.valueOf(((Date) key).getTime());
+                else
+                    k = serializerProvider.getConfig().getDateFormat().format((Date) key);
+            } else if(cls == Class.class)
+                k = ((Class) key).getName();
+            else
+                k = key.toString();
+
+            serializerProvider.defaultSerializeField(k, entry.getValue(), jsonGenerator);
             jsonGenerator.writeEndObject();
         }
     }
