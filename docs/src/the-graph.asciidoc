@@ -245,21 +245,19 @@ gremlin> graph.features()
 ...
 gremlin> graph.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.AUTO) <2>
 ==>org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
-gremlin> g = graph.traversal()
-==>graphtraversalsource[neo4jgraph[org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl@32b6b301], standard]
-gremlin> g.addV("name","stephen")  <3>
+gremlin> graph.addVertex("name","stephen")  <3>
 ==>v[0]
-gremlin> g.tx().commit() <4>
+gremlin> graph.tx().commit() <4>
 ==>null
-gremlin> g.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL) <5>
+gremlin> graph.tx().onReadWrite(Transaction.READ_WRITE_BEHAVIOR.MANUAL) <5>
 ==>org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph$Neo4jTransaction@1c067c0d
-gremlin> g.tx().isOpen()
+gremlin> graph.tx().isOpen()
 ==>false
-gremlin> g.addV("name","marko") <6>
+gremlin> graph.addVertex("name","marko") <6>
 Open a transaction before attempting to read/write the transaction
-gremlin> g.tx().open() <7>
+gremlin> graph.tx().open() <7>
 ==>null
-gremlin> g.addV("name","marko") <8>
+gremlin> graph.addVertex("name","marko") <8>
 ==>v[1]
 gremlin> graph.tx().commit()
 ==>null
