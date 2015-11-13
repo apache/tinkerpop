@@ -195,7 +195,7 @@ the console. You would normally refer to them as `T.id` and `T.label`.
 NOTE: The fully qualified name for `T` is `org.apache.tinkerpop.gremlin.structure.T`.
 
 Second, don't forget that you are working with TinkerGraph which allows for identifier assignment. That is _not_ the
-case with most graph databases. For example, don't bother to try with Neo4j or Titan.
+case with most graph databases.
 
 Finally, the label for an `Edge` is required and is thus part of the method signature of `addEdge()`. It is the first
 parameter supplied, followed by the `Vertex` to which `v1` should be connected. Therefore, this usage of `addEdge` is
