@@ -22,10 +22,11 @@ TinkerPop 3.1.0 (A 187 On The Undercover Gremlinz)
 
 image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-gangster.png[width=185]
 
+[[release-3.1.0-incubating]]
 TinkerPop 3.1.0 (Release Date: November 16, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This release also includes changes from <<3-0-1-incubating, 3.0.1-incubating>> and <<3-0-2-incubating, 3.0.2-incubating>>.
+This release also includes changes from <<release-3-0-1-incubating, 3.0.1-incubating>> and <<release-3-0-2-incubating, 3.0.2-incubating>>.
 
 * Fixed bug in Gryo and GraphSON (with embedded types) serialization for serialization of results returned from `Map.entrySet()`.
 * `Transaction` settings for `onReadWrite` and `onClose` are now `ThreadLocal` in nature of standard transactions.
@@ -95,91 +96,91 @@ This release also includes changes from <<3-0-1-incubating, 3.0.1-incubating>> a
 Bugs
 ^^^^
 
-TINKERPOP3-774 order / dedup issues
-TINKERPOP3-799 [Proposal] with()-modulator for stream level variable binding.
-TINKERPOP3-801 groupCount() fails for vertices (elements?) (using Spark)
-TINKERPOP3-811 AddPropertyStepTest fails "all of a sudden"
-TINKERPOP3-823 addV() broken for multi-value properties
-TINKERPOP3-843 Misspecified HADOOP_GREMLIN_LIBS generates NullPointerException
-TINKERPOP3-857 Add GraphComputer.config(key,value)
-TINKERPOP3-895 Use "as BinaryOperator" and remove GBinaryOperator
-TINKERPOP3-903 Fix empty buffer return upon buffer capacity exceeded
-TINKERPOP3-910 In session transaction opened from sessionless request
-TINKERPOP3-918 ComputerVerificationStrategy is too restrictive
-TINKERPOP3-926 Renamed TinkerGraph public statics to common pattern used for other statics.
-TINKERPOP3-948 AbstractGremlinProcessTest.checkMap not asserted in GroupTest
-TINKERPOP3-953 Artifact equality is not evaluating properly
-TINKERPOP3-955 HashMap$Node not serializable
+* TINKERPOP3-774 order / dedup issues
+* TINKERPOP3-799 [Proposal] with()-modulator for stream level variable binding.
+* TINKERPOP3-801 groupCount() fails for vertices (elements?) (using Spark)
+* TINKERPOP3-811 AddPropertyStepTest fails "all of a sudden"
+* TINKERPOP3-823 addV() broken for multi-value properties
+* TINKERPOP3-843 Misspecified HADOOP_GREMLIN_LIBS generates NullPointerException
+* TINKERPOP3-857 Add GraphComputer.config(key,value)
+* TINKERPOP3-895 Use "as BinaryOperator" and remove GBinaryOperator
+* TINKERPOP3-903 Fix empty buffer return upon buffer capacity exceeded
+* TINKERPOP3-910 In session transaction opened from sessionless request
+* TINKERPOP3-918 ComputerVerificationStrategy is too restrictive
+* TINKERPOP3-926 Renamed TinkerGraph public statics to common pattern used for other statics.
+* TINKERPOP3-948 AbstractGremlinProcessTest.checkMap not asserted in GroupTest
+* TINKERPOP3-953 Artifact equality is not evaluating properly
+* TINKERPOP3-955 HashMap$Node not serializable
 
 Improvements
 ^^^^^^^^^^^^
 
-TINKERPOP3-297 Ensure Consistent Behavior Over Deleted Elements *(breaking)*
-TINKERPOP3-333 Support VertexProperty in PartitionStrategy
-TINKERPOP3-391 More fluency in GraphComputer for parameterization.
-TINKERPOP3-616 Use Spark 1.3.0 in Hadoop-Gremlin.
-TINKERPOP3-624 Passing Detached/Referenced to Graph.vertices/edge()
-TINKERPOP3-680 Configurable Channelizer for Gremlin Driver
-TINKERPOP3-728 Improve Remote Graph Object Treatment in Console
-TINKERPOP3-756 Provide a strict parsing option for GraphMLReader
-TINKERPOP3-760 Make loop counter accessible within repeat()
-TINKERPOP3-762 Allow mid-traversal V() (and E())
-TINKERPOP3-765 Decompose AbstractTransaction for different transactional contexts *(breaking)*
-TINKERPOP3-767 Path should play well with "local" steps.
-TINKERPOP3-768 MatchStep in OLAP should be smart about current vertex.
-TINKERPOP3-769 Make the introduction of the TP3 docs story better.
-TINKERPOP3-772 TraverserRequirement.LABELED_PATH
-TINKERPOP3-796 Support merge binary operator for Gremlin sacks *(breaking)*
-TINKERPOP3-798 [Proposal] Rename mapKeys()/mapValues() to select(keys) and select(values).
-TINKERPOP3-802 Provide sack(object) so that the sack can be directly set.
-TINKERPOP3-803 A better solution to g.V(someCollection.toArray())
-TINKERPOP3-805 Enforce AutoCloseable Semantics on Transaction *(breaking)*
-TINKERPOP3-821 Improve testing around TraversalHelper around recursive methods
-TINKERPOP3-825 [Proposal] SetBulkStep (sideEffectStep)
-TINKERPOP3-826 OneToManyBarrierStrategy
-TINKERPOP3-827 Add a console session to the PageRank section of the docs.
-TINKERPOP3-829 TinkerGraphComputer should support the user specified thread/worker count.
-TINKERPOP3-835 Shade Jackson Dependencies *(breaking)*
-TINKERPOP3-836 Support Hadoop2 in place of Hadoop1
-TINKERPOP3-850 Reduce Graph.addVertex overload ambiguity *(breaking)*
-TINKERPOP3-851 GroupCountStep needs a by() for the count.
-TINKERPOP3-861 Solve "The Number Problem" for Operator (and follow on operators)
-TINKERPOP3-863 [Proposal] Turn off bulking -- or is there something more general? (hope not).
-TINKERPOP3-866 GroupStep and Traversal-Based Reductions *(breaking)*
-TINKERPOP3-868 Allow Spark Gremlin Computer to Reuse Spark Contexts
-TINKERPOP3-874 Rename Gremlin-Spark properties using gremlin.spark prefix. *(breaking)*
-TINKERPOP3-876 Rename VendorOptimizationStrategy XXXOptimizationStrategy *(breaking)*
-TINKERPOP3-879 Remove deprecated promoteBindings from GremlinExecutor *(breaking)*
-TINKERPOP3-885 Change Transaction.onReadWrite() to be a ThreadLocal setting *(breaking)*
-TINKERPOP3-888 GraphTraversal.property overloads *(breaking)*
-TINKERPOP3-896 Simplify the {{withSack}} methods of {{GraphTraversalSource}}. *(breaking)*
-TINKERPOP3-897 Remove deprecated GSupplier, GFunction, GConsumer, etc. methods. *(breaking)*
-TINKERPOP3-898 Rename ConjuctionP and ConjuctionStep to ConnectiveP and ConnectiveStep *(breaking)*
-TINKERPOP3-899 Bump to the latest version of Neo4j.
-TINKERPOP3-900 Provide by(object) which compiles to by(constant(object))
-TINKERPOP3-901 Option for use of Netty epoll on Linux to reduce GC pressure
-TINKERPOP3-904 BulkLoaderVertexProgram optimizations
-TINKERPOP3-905 Harden time oriented tests in ResultQueueTest
-TINKERPOP3-907 getters for RepeatStep.untilTraversal and RepeatStep.emitTraversal
-TINKERPOP3-908 Use line breaks in documentation
-TINKERPOP3-909 Improve steps that handle numeric data
-TINKERPOP3-911 Allow setting Thread Specific Spark JobGroup/Custom Properties based on hadoop conf
-TINKERPOP3-913 Rename Gremlin Server arguments rebinding to alias
-TINKERPOP3-914 DriverRemoteAcceptor in Gremlin Console supports aliases
-TINKERPOP3-917 Add HadoopGraph.open(String)
-TINKERPOP3-922 Add a book for Developer Documentation
-TINKERPOP3-923 Add a book for Tutorials
-TINKERPOP3-925 Use persisted SparkContext to persist an RDD across Spark jobs.
-TINKERPOP3-931 Make it possible to extend the core OpProcessor implementations
-TINKERPOP3-933 Improve release process to get files named properly
-TINKERPOP3-935 Add missing "close" operation to the session opProcessor docs
+* TINKERPOP3-297 Ensure Consistent Behavior Over Deleted Elements *(breaking)*
+* TINKERPOP3-333 Support VertexProperty in PartitionStrategy
+* TINKERPOP3-391 More fluency in GraphComputer for parameterization.
+* TINKERPOP3-616 Use Spark 1.3.0 in Hadoop-Gremlin.
+* TINKERPOP3-624 Passing Detached/Referenced to Graph.vertices/edge()
+* TINKERPOP3-680 Configurable Channelizer for Gremlin Driver
+* TINKERPOP3-728 Improve Remote Graph Object Treatment in Console
+* TINKERPOP3-756 Provide a strict parsing option for GraphMLReader
+* TINKERPOP3-760 Make loop counter accessible within repeat()
+* TINKERPOP3-762 Allow mid-traversal V() (and E())
+* TINKERPOP3-765 Decompose AbstractTransaction for different transactional contexts *(breaking)*
+* TINKERPOP3-767 Path should play well with "local" steps.
+* TINKERPOP3-768 MatchStep in OLAP should be smart about current vertex.
+* TINKERPOP3-769 Make the introduction of the TP3 docs story better.
+* TINKERPOP3-772 TraverserRequirement.LABELED_PATH
+* TINKERPOP3-796 Support merge binary operator for Gremlin sacks *(breaking)*
+* TINKERPOP3-798 [Proposal] Rename mapKeys()/mapValues() to select(keys) and select(values).
+* TINKERPOP3-802 Provide sack(object) so that the sack can be directly set.
+* TINKERPOP3-803 A better solution to g.V(someCollection.toArray())
+* TINKERPOP3-805 Enforce AutoCloseable Semantics on Transaction *(breaking)*
+* TINKERPOP3-821 Improve testing around TraversalHelper around recursive methods
+* TINKERPOP3-825 [Proposal] SetBulkStep (sideEffectStep)
+* TINKERPOP3-826 OneToManyBarrierStrategy
+* TINKERPOP3-827 Add a console session to the PageRank section of the docs.
+* TINKERPOP3-829 TinkerGraphComputer should support the user specified thread/worker count.
+* TINKERPOP3-835 Shade Jackson Dependencies *(breaking)*
+* TINKERPOP3-836 Support Hadoop2 in place of Hadoop1
+* TINKERPOP3-850 Reduce Graph.addVertex overload ambiguity *(breaking)*
+* TINKERPOP3-851 GroupCountStep needs a by() for the count.
+* TINKERPOP3-861 Solve "The Number Problem" for Operator (and follow on operators)
+* TINKERPOP3-863 [Proposal] Turn off bulking -- or is there something more general? (hope not).
+* TINKERPOP3-866 GroupStep and Traversal-Based Reductions *(breaking)*
+* TINKERPOP3-868 Allow Spark Gremlin Computer to Reuse Spark Contexts
+* TINKERPOP3-874 Rename Gremlin-Spark properties using gremlin.spark prefix. *(breaking)*
+* TINKERPOP3-876 Rename VendorOptimizationStrategy XXXOptimizationStrategy *(breaking)*
+* TINKERPOP3-879 Remove deprecated promoteBindings from GremlinExecutor *(breaking)*
+* TINKERPOP3-885 Change Transaction.onReadWrite() to be a ThreadLocal setting *(breaking)*
+* TINKERPOP3-888 GraphTraversal.property overloads *(breaking)*
+* TINKERPOP3-896 Simplify the {{withSack}} methods of {{GraphTraversalSource}}. *(breaking)*
+* TINKERPOP3-897 Remove deprecated GSupplier, GFunction, GConsumer, etc. methods. *(breaking)*
+* TINKERPOP3-898 Rename ConjuctionP and ConjuctionStep to ConnectiveP and ConnectiveStep *(breaking)*
+* TINKERPOP3-899 Bump to the latest version of Neo4j.
+* TINKERPOP3-900 Provide by(object) which compiles to by(constant(object))
+* TINKERPOP3-901 Option for use of Netty epoll on Linux to reduce GC pressure
+* TINKERPOP3-904 BulkLoaderVertexProgram optimizations
+* TINKERPOP3-905 Harden time oriented tests in ResultQueueTest
+* TINKERPOP3-907 getters for RepeatStep.untilTraversal and RepeatStep.emitTraversal
+* TINKERPOP3-908 Use line breaks in documentation
+* TINKERPOP3-909 Improve steps that handle numeric data
+* TINKERPOP3-911 Allow setting Thread Specific Spark JobGroup/Custom Properties based on hadoop conf
+* TINKERPOP3-913 Rename Gremlin Server arguments rebinding to alias
+* TINKERPOP3-914 DriverRemoteAcceptor in Gremlin Console supports aliases
+* TINKERPOP3-917 Add HadoopGraph.open(String)
+* TINKERPOP3-922 Add a book for Developer Documentation
+* TINKERPOP3-923 Add a book for Tutorials
+* TINKERPOP3-925 Use persisted SparkContext to persist an RDD across Spark jobs.
+* TINKERPOP3-931 Make it possible to extend the core OpProcessor implementations
+* TINKERPOP3-933 Improve release process to get files named properly
+* TINKERPOP3-935 Add missing "close" operation to the session opProcessor docs
 
 TinkerPop 3.0.0 (A Gremlin Rāga in 7/16 Time)
 ---------------------------------------------
 
 image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/static/images/gremlin-hindu.png[width=225]
 
-[[3-0-2-incubating]]
+[[release-3-0-2-incubating]]
 TinkerPop 3.0.2 (Release Date: October 19, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -224,7 +225,7 @@ Improvements
 * [TINKERPOP3-853] - TinkerPop Logo in JavaDoc index.html
 * [TINKERPOP3-858] - Cleanup after failed :install
 
-[[3-0-1-incubating]]
+[[release-3-0-1-incubating]]
 TinkerPop 3.0.1 (Release Date: September 2, 2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
