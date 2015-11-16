@@ -28,6 +28,11 @@ feedback.  Once a release point has been identified, the following phases repres
 * Submit the official release for Incubator vote.
 * Release and promote.
 
+NOTE: It might be helpful to use this document as generated from the currently release as opposed to one generate
+from a previous version or from recent `SNAPSHOT`. When using one generated for release, all the "versions" in the
+commands end up being set to the version that is being released, making cut and paste of those commands less labor
+intensive and error prone.
+
 Pre-flight Check
 ----------------
 
