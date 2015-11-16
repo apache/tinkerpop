@@ -27,7 +27,7 @@ TinkerPop 3.1.0
 
 *Release Date: November 16, 2015*
 
-Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.0-incubating/CHANGELOG.asciidoc#tinkerpop-310-release-date-november-16-2015] for a complete list of all the modifications that are part of this release.
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.0-incubating/CHANGELOG.asciidoc#tinkerpop-310-release-date-november-16-2015[changelog] for a complete list of all the modifications that are part of this release.
 
 Additional upgrade information can be found here:
 
