@@ -145,11 +145,11 @@ The release artifacts can be found at this location:
 	https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/x.y.z/
 
 The source distribution is provided by:
-	apache-tinkerpop-x.y.z-source-release.zip
+	apache-tinkerpop-x.y.z-src.zip
 
 Two binary distributions are provided for user convenience:
-	apache-gremlin-console-x.y.z-distribution.zip
-	apache-gremlin-server-x.y.z-distribution.zip
+	apache-gremlin-console-x.y.z-bin.zip
+	apache-gremlin-server-x.y.z-bin.zip
 
 The online docs can be found here:
 	http://tinkerpop.incubator.apache.org/docs/x.y.z/ (user docs)
