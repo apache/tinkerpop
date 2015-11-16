@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.process.traversal.step.util;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
@@ -32,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 /**
  * The parameters held by a {@link Traversal}.
@@ -100,10 +100,9 @@ public final class Parameters implements Cloneable, Serializable {
 
     public <S> Object[] getKeyValues(final Traverser.Admin<S> traverser, final Object... exceptKeys) {
         if (this.parameters.size() == 0) return EMPTY_ARRAY;
-        final List<Object> exceptions = Arrays.asList(exceptKeys);
         final List<Object> keyValues = new ArrayList<>();
         for (final Map.Entry<Object, List<Object>> entry : this.parameters.entrySet()) {
-            if (!exceptions.contains(entry.getKey())) {
+            if (!ArrayUtils.contains(exceptKeys, entry.getKey())) {
                 for (final Object value : entry.getValue()) {
                     keyValues.add(entry.getKey() instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) entry.getKey()) : entry.getKey());
                     keyValues.add(value instanceof Traversal.Admin ? TraversalUtil.apply(traverser, (Traversal.Admin<S, ?>) value) : value);
@@ -159,7 +158,15 @@ public final class Parameters implements Cloneable, Serializable {
     }
 
     public <S, E> List<Traversal.Admin<S, E>> getTraversals() {
-        return (List) this.parameters.values().stream().flatMap(List::stream).filter(t -> t instanceof Traversal.Admin).collect(Collectors.toList());
+        List<Traversal.Admin<S, E>> result = new ArrayList<>();
+        for (final List<Object> list : this.parameters.values()) {
+            for (final Object object : list) {
+                if (object instanceof Traversal.Admin) {
+                    result.add((Traversal.Admin) object);
+                }
+            }
+        }
+        return result;
     }
 
     public Parameters clone() {
