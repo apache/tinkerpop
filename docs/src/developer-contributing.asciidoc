@@ -147,15 +147,14 @@ distinguished from other changes in the release notes.
 Branches
 ~~~~~~~~
 
-The "master" branch is used for the main line of development and release branches are constructed
-for ongoing maintenance work.  For example, the "tp30" branch is used to maintain the 3.0.x line
-while work on 3.1.x proceeds on "master".
+The "master" branch is used for the main line of development and release branches are constructed as needed
+for ongoing maintenance work. If new to the project or are returning to it after some time away, it may be good
+to send an email to the developer mailing list (or ask on HipChat) to find out what the current operating branches
+are.
 
-Other branches may be created for collaborating on features or for RFC's that
-other developers may want to inspect.  It is suggested that the JIRA issue ID be
-used as the prefix, since that triggers certain automation, and it provides a
-way to account for the branch lifecycle, i.e. "Who's branch is this, and can I
-delete it?"
+Other branches may be created for collaborating on features or for RFC's that other developers may want to inspect.
+It is suggested that the JIRA issue ID be used as the prefix, since that triggers certain automation, and it provides a
+way to account for the branch lifecycle, i.e. "Who's branch is this, and can I delete it?"
 
 For branches that are NOT associated with JIRA issues, developers should utilize their Apache ID as
 a branch name prefix.  This provides a unique namespace, and also a way to account for the branch lifecycle.
