@@ -52,6 +52,8 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     private final StepPosition stepPosition = new StepPosition();
     protected transient Graph graph;
     protected List<Step> steps = new ArrayList<>();
+    // steps will be repeatedly retrieved from this traversal so wrap them once in an immutable list that can be reused
+    protected List<Step> unmodifiableSteps = Collections.unmodifiableList(steps);
     protected TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected TraversalStrategies strategies;
@@ -113,9 +115,11 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public Set<TraverserRequirement> getTraverserRequirements() {
-        final Set<TraverserRequirement> requirements = this.getSteps().stream()
-                .flatMap(step -> ((Step<?, ?>) step).getRequirements().stream())
-                .collect(Collectors.toSet());
+        Set<TraverserRequirement> requirements = new HashSet<>();
+        for (Step step : this.getSteps()) {
+            requirements.addAll(step.getRequirements());
+        }
+
         requirements.addAll(this.traverserRequirements);
         if (this.getSideEffects().keys().size() > 0)
             requirements.add(TraverserRequirement.SIDE_EFFECTS);
@@ -135,7 +139,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public List<Step> getSteps() {
-        return Collections.unmodifiableList(this.steps);
+        return unmodifiableSteps;
     }
 
     @Override
@@ -201,6 +205,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
         try {
             final DefaultTraversal<S, E> clone = (DefaultTraversal<S, E>) super.clone();
             clone.steps = new ArrayList<>();
+            clone.unmodifiableSteps = Collections.unmodifiableList(clone.steps);
             clone.sideEffects = this.sideEffects.clone();
             clone.strategies = this.strategies.clone();
             clone.lastEnd = null;
