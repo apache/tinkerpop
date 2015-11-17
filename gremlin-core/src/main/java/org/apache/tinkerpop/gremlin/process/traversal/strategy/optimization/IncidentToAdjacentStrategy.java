@@ -34,6 +34,7 @@ import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -127,5 +128,10 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
 
     public static IncidentToAdjacentStrategy instance() {
         return INSTANCE;
+    }
+
+    @Override
+    public Set<Class<? extends OptimizationStrategy>> applyPrior() {
+        return Collections.singleton(IdentityRemovalStrategy.class);
     }
 }
