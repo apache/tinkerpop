@@ -29,7 +29,7 @@ public abstract class GroovyExplainTest {
     public static class Traversals extends ExplainTest {
 
         public TraversalExplanation get_g_V_outE_identity_inV_explain() {
-            g.V().outE().inV().explain();
+            g.V().outE().identity().inV().explain();
         }
     }
 }
