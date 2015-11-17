@@ -111,7 +111,6 @@ public class TraversalExplanation {
             builder.append(" ");
         }
         builder.append(this.strategyTraversals.get(this.strategyTraversals.size() - 1).getValue1());
-        builder.append("\n");
         return builder.toString();
     }
 
