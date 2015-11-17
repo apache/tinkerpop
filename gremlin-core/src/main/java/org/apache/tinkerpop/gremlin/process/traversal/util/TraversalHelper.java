@@ -183,7 +183,13 @@ public final class TraversalHelper {
     }
 
     public static <S> List<S> getStepsOfClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
-        return (List) traversal.getSteps().stream().filter(step -> step.getClass().equals(stepClass)).collect(Collectors.toList());
+        List<S> steps = new ArrayList<>();
+        for (Step step : traversal.getSteps()) {
+            if (step.getClass().equals(stepClass)) {
+                steps.add((S) step);
+            }
+        }
+        return steps;
     }
 
     public static <S> List<S> getStepsOfAssignableClass(final Class<S> stepClass, final Traversal.Admin<?, ?> traversal) {
