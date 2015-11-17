@@ -592,7 +592,7 @@ post strategy application. The final traversal is the resultant execution plan.
 
 [gremlin-groovy,modern]
 ----
-g.V().outE().identity().inV().count().is(gt(5))
+g.V().outE().identity().inV().count().is(gt(5)).explain()
 ----
 
 For traversal profiling information, please see <<profile-step,`profile()`>>-step.
@@ -2123,6 +2123,8 @@ traversal as it deems fit. This is useful in multiple situations:
  * There is a more efficient way to express the traversal at the graph system/language/driver level (*provider optimization*).
  * There are are some final adjustments required before executing the traversal (*finalization*).
  * There are certain traversals that are not legal for the application or traversal engine (*verification*).
+
+NOTE: The <<explain-step,`explain()`>>-step shows the user how each registered strategy mutates the traversal.
 
 A simple `OptimizationStrategy` is the `IdentityRemovalStrategy`.
 
