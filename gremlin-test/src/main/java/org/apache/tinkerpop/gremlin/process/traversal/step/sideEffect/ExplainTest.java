@@ -50,27 +50,29 @@ public abstract class ExplainTest extends AbstractGremlinProcessTest {
     public void g_V_outE_identity_inV_explain() {
         final TraversalExplanation explanation = get_g_V_outE_identity_inV_explain();
         printTraversalForm(explanation.getOriginalTraversal());
-        boolean beforeIncident = true;
-        boolean beforeIdentity = true;
-        for (final Pair<TraversalStrategy, Traversal.Admin<?, ?>> pair : explanation.getStrategyTraversals()) {
-            if (pair.getValue0().getClass().equals(IncidentToAdjacentStrategy.class))
-                beforeIncident = false;
-            if (pair.getValue0().getClass().equals(IdentityRemovalStrategy.class))
-                beforeIdentity = false;
+        if (explanation.getStrategyTraversals().stream().map(Pair::getValue0).filter(s -> s.equals(IdentityRemovalStrategy.class) || s.equals(IncidentToAdjacentStrategy.class)).count() == 2) {
+            boolean beforeIncident = true;
+            boolean beforeIdentity = true;
+            for (final Pair<TraversalStrategy, Traversal.Admin<?, ?>> pair : explanation.getStrategyTraversals()) {
+                if (pair.getValue0().getClass().equals(IncidentToAdjacentStrategy.class))
+                    beforeIncident = false;
+                if (pair.getValue0().getClass().equals(IdentityRemovalStrategy.class))
+                    beforeIdentity = false;
 
-            if (beforeIdentity)
-                assertEquals(1, TraversalHelper.getStepsOfClass(IdentityStep.class, pair.getValue1()).size());
+                if (beforeIdentity)
+                    assertEquals(1, TraversalHelper.getStepsOfClass(IdentityStep.class, pair.getValue1()).size());
 
-            if (beforeIncident)
-                assertEquals(1, TraversalHelper.getStepsOfClass(EdgeVertexStep.class, pair.getValue1()).size());
+                if (beforeIncident)
+                    assertEquals(1, TraversalHelper.getStepsOfClass(EdgeVertexStep.class, pair.getValue1()).size());
 
-            if (!beforeIdentity)
-                assertEquals(0, TraversalHelper.getStepsOfClass(IdentityStep.class, pair.getValue1()).size());
+                if (!beforeIdentity)
+                    assertEquals(0, TraversalHelper.getStepsOfClass(IdentityStep.class, pair.getValue1()).size());
 
-            if (!beforeIncident)
-                assertEquals(0, TraversalHelper.getStepsOfClass(EdgeVertexStep.class, pair.getValue1()).size());
+                if (!beforeIncident)
+                    assertEquals(0, TraversalHelper.getStepsOfClass(EdgeVertexStep.class, pair.getValue1()).size());
+            }
+            assertFalse(beforeIncident);
         }
-        assertFalse(beforeIncident);
     }
 
     public static class Traversals extends ExplainTest {
