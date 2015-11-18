@@ -35,7 +35,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -60,7 +61,7 @@ public final class AdjacentToIncidentStrategy extends AbstractTraversalStrategy<
         implements TraversalStrategy.OptimizationStrategy {
 
     private static final AdjacentToIncidentStrategy INSTANCE = new AdjacentToIncidentStrategy();
-    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = Collections.singleton(IncidentToAdjacentStrategy.class);
+    private static final Set<Class<? extends OptimizationStrategy>> PRIORS = new HashSet<>(Arrays.asList(IdentityRemovalStrategy.class, IncidentToAdjacentStrategy.class));
 
     private AdjacentToIncidentStrategy() {
     }

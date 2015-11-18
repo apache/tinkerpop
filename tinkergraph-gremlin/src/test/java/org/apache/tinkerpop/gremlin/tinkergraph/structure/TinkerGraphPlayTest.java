@@ -53,9 +53,7 @@ public class TinkerGraphPlayTest {
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal(); //GraphTraversalSource.computer());
-        Traversal traversal = g.V(1).V().values("name");
-        traversal.forEachRemaining(System.out::println);
-        System.out.println(traversal);
+        System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
 
     }
 
