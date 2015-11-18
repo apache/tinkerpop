@@ -66,6 +66,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.UnfoldTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.ValueMapTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.VertexTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.AggregateTest;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ExplainTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupCountTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTest;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.GroupTestV3d0;
@@ -155,6 +156,7 @@ public class ProcessStandardSuite extends AbstractGremlinSuite {
 
             // sideEffect
             AggregateTest.Traversals.class,
+            ExplainTest.Traversals.class,
             GroupTest.Traversals.class,
             GroupTestV3d0.Traversals.class,
             GroupCountTest.Traversals.class,

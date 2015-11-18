@@ -579,6 +579,24 @@ g.V().drop()
 g.V()
 ----
 
+[[explain-step]]
+Explain Step
+~~~~~~~~~~~~
+
+The `explain()`-step (*sideEffect*) will return a `TraversalExplanation`. A traversal explanation details how the
+traversal (prior to `explain()`) will be compiled given the registered <<traversalstrategy,traversal strategies>>.
+A `TraversalExplanation` has a `toString()` representation with 3-columns. The first column is the
+traversal strategy being applied. The second column is the traversal strategy category: [D]ecoration, [O]ptimization,
+[P]rovider optimization, [F]inalization, and [V]erification. Finally, the third column is the state of the traversal
+post strategy application. The final traversal is the resultant execution plan.
+
+[gremlin-groovy,modern]
+----
+g.V().outE().identity().inV().count().is(gt(5)).explain()
+----
+
+For traversal profiling information, please see <<profile-step,`profile()`>>-step.
+
 [[fold-step]]
 Fold Step
 ~~~~~~~~~
@@ -1281,6 +1299,8 @@ and `Traversers`. Traversers can be merged and as such, when two traversers are 
 into a single traverser. That new traverser has a `Traverser.bulk()` that is the sum of the two merged traverser
 bulks. On the other hand, the `Count` represents the sum of all `Traverser.bulk()` results and thus, expresses the
 number of "represented" (not enumerated) traversers. `Traversers` will always be less than or equal to `Count`.
+
+For traversal compilation information, please see <<explain-step,`explain()`>>-step.
 
 [[range-step]]
 Range Step
@@ -2103,6 +2123,8 @@ traversal as it deems fit. This is useful in multiple situations:
  * There is a more efficient way to express the traversal at the graph system/language/driver level (*provider optimization*).
  * There are are some final adjustments required before executing the traversal (*finalization*).
  * There are certain traversals that are not legal for the application or traversal engine (*verification*).
+
+NOTE: The <<explain-step,`explain()`>>-step shows the user how each registered strategy mutates the traversal.
 
 A simple `OptimizationStrategy` is the `IdentityRemovalStrategy`.
 
