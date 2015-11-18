@@ -49,8 +49,8 @@ public abstract class ExplainTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void g_V_outE_identity_inV_explain() {
         final TraversalExplanation explanation = get_g_V_outE_identity_inV_explain();
-        printTraversalForm(explanation.getOriginalTraversal());
-        if (explanation.getStrategyTraversals().stream().map(Pair::getValue0).filter(s -> s.equals(IdentityRemovalStrategy.class) || s.equals(IncidentToAdjacentStrategy.class)).count() == 2) {
+        if (explanation.getStrategyTraversals().stream().map(Pair::getValue0).filter(s -> s instanceof IdentityRemovalStrategy || s instanceof IncidentToAdjacentStrategy).count() == 2) {
+            printTraversalForm(explanation.getOriginalTraversal());
             boolean beforeIncident = true;
             boolean beforeIdentity = true;
             for (final Pair<TraversalStrategy, Traversal.Admin<?, ?>> pair : explanation.getStrategyTraversals()) {
