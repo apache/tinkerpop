@@ -34,18 +34,24 @@ public final class GraphSONUtil {
 
     private GraphSONUtil() {}
 
+    public static void writeWithType(final Object object, final JsonGenerator jsonGenerator,
+                                     final SerializerProvider serializerProvider,
+                                     final TypeSerializer typeSerializer) throws IOException {
+        writeWithType(null, object, jsonGenerator, serializerProvider, typeSerializer);
+    }
+
     public static void writeWithType(final String key, final Object object, final JsonGenerator jsonGenerator,
                                      final SerializerProvider serializerProvider,
                                      final TypeSerializer typeSerializer) throws IOException {
         final JsonSerializer<Object> serializer = serializerProvider.findValueSerializer(object.getClass(), null);
         if (typeSerializer != null) {
             // serialize with types embedded
-            jsonGenerator.writeFieldName(key);
+            if (key != null && !key.isEmpty()) jsonGenerator.writeFieldName(key);
             serializer.serializeWithType(object, jsonGenerator, serializerProvider, typeSerializer);
         } else {
             // types are not embedded, but use the serializer when possible or else custom serializers will get
             // bypassed and you end up with the default jackson serializer when you don't want it.
-            jsonGenerator.writeFieldName(key);
+            if (key != null && !key.isEmpty()) jsonGenerator.writeFieldName(key);
             serializer.serialize(object, jsonGenerator, serializerProvider);
         }
     }

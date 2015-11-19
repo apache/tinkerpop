@@ -20,18 +20,24 @@ package org.apache.tinkerpop.gremlin.server;
 
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Result;
 import org.apache.tinkerpop.gremlin.driver.ResultSet;
+import org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0;
 import org.apache.tinkerpop.gremlin.process.traversal.Path;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedPath;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedProperty;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +70,13 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
 
     @Before
     public void beforeTest() {
-        cluster = Cluster.open();
+        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        final Map<String,Object> c = new HashMap<>();
+        c.put("ioRegistries", Arrays.asList(TinkerIoRegistry.class.getName()));
+        c.put("custom", Arrays.asList("groovy.json.JsonBuilder;org.apache.tinkerpop.gremlin.driver.ser.JsonBuilderGryoSerializer"));
+
+        serializer.configure(c, null);
+        cluster = Cluster.build().serializer(serializer).create();
         client = cluster.connect();
     }
 
@@ -124,6 +136,17 @@ public class GremlinResultSetIntegrateTest extends AbstractGremlinServerIntegrat
         final ResultSet results = client.submit("g.V().out().path()");
         final Path p = results.all().get().get(0).getPath();
         assertThat(p, instanceOf(DetachedPath.class));
+    }
+
+    @Test
+    public void shouldHandleTinkerGraphResult() throws Exception {
+        final ResultSet results = client.submit("graph");
+        final Graph graph = results.all().get().get(0).get(TinkerGraph.class);
+
+        // test is "lossy for id" because TinkerGraph is configured by default to use the ANY id manager
+        // and doesn't coerce to specific types - which is how it is on the server as well so we can expect
+        // some id shiftiness
+        IoTest.assertModernGraph(graph, true, true);
     }
 
     @Test
