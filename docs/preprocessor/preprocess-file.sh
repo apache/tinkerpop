@@ -24,8 +24,9 @@ CONSOLE_HOME=$1
 AWK_SCRIPTS="${TP_HOME}/docs/preprocessor/awk"
 
 input=$2
-name=`basename ${input}`
-output="${TP_HOME}/target/postprocess-asciidoc/${name}"
+output=`sed 's@/docs/src/@/target/postprocess-asciidoc/@' <<< "${input}"`
+
+mkdir -p `dirname ${output}`
 
 if hash stdbuf 2> /dev/null; then
   lb="stdbuf -oL"

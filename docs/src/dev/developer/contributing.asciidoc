@@ -360,3 +360,12 @@ Everything else should be listed and present under the appropriate license secti
 
 There is also a good chance that the TinkerPop binary NOTICE should be updated. Check if the newly added dependency
 contains a NOTICE of its own. If so, include that NOTICE in the TinkerPop NOTICE.
+
+[[documentation]]
+Documentation
+~~~~~~~~~~~~~
+
+The TinkerPop docs are splitted into several subdirectories, each having its own index.asciidoc file. If a new AsciiDoc
+file is added, then it should also be included in the index.asciidoc file, otherwise the preprocessor will ignore it.
+Likewise, if a whole new section (subdirectory) is added, it must include an index.asciidoc file in order to be
+recognized by the AsciiDoc preprocessor.
