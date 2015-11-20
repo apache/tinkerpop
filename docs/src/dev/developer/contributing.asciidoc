@@ -53,6 +53,7 @@ a successful `mvn clean install`, do `mvn verify -DskipIntegrationTests=false -p
 Once a pull request is submitted it must go through <<rtc,review>> and will be merged once three TinkerPop committers
 offer positive vote and achieve Apache consensus.
 
+[[building-testing]]
 Building and Testing
 --------------------
 
@@ -365,7 +366,18 @@ contains a NOTICE of its own. If so, include that NOTICE in the TinkerPop NOTICE
 Documentation
 ~~~~~~~~~~~~~
 
-The TinkerPop docs are splitted into several subdirectories, each having its own index.asciidoc file. If a new AsciiDoc
-file is added, then it should also be included in the index.asciidoc file, otherwise the preprocessor will ignore it.
-Likewise, if a whole new section (subdirectory) is added, it must include an index.asciidoc file in order to be
+The documentation for TinkerPop is stored in the git repository in `docs/src/` and are then split into several
+subdirectories, each representing a "book" (or its own publishable body of work). If a new AsciiDoc file is added to
+a book, then it should also be included in the `index.asciidoc` file for that book, otherwise the preprocessor will
+ignore it. Likewise, if a whole new book (subdirectory) is added, it must include an `index.asciidoc` file to be
 recognized by the AsciiDoc preprocessor.
+
+Adding a book also requires a change to the root `pom.xml` file. Find the "asciidoc" Maven profile and add a new
+`<execution>` to the `asciidoctor-maven-plugin` configuration. For each book in `docs/src/`, there should be a
+related `<execution>` that generates the HTML from the AsciiDoc. Follows the patterns already established by
+the existing `<execution>` entries, paying special attention to the pathing of the '<sourceDirectory>',
+`<outputDirectory>` and `<imagesdir>`.  Note that the `<outputDirectory>` represents where the book will exist when
+uploaded to the server and should preserve the directory structure in git as referenced in `<sourceDirectory>`.
+
+Please see the <<building-testing,Building and Testing>> section for more information on how to generate the
+documentation.
