@@ -26,7 +26,7 @@ if [ -d "target/docs" ]; then
   find target/docs -name index.html | while read file ; do
     awk -f "docs/postprocessor/processor.awk" "${file}"                   \
       | perl -0777 -pe 's/<span class="comment">\/\*\n \*\/<\/span>//igs' \
-      | sed "s/x\.y\.z/${TP_VERSION}/"                                    \
+      | sed "s/x\.y\.z/${TP_VERSION}/g"                                   \
       > "${file}.tmp" && mv "${file}.tmp" "${file}"
   done
 fi
