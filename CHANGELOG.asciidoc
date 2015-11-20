@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `TinkerGraph` has "native" serialization in GraphSON, which enables it to be a return value from Gremlin Server.
 * Added `explain()`-step which yields a `TraversalExplanation` with a pretty `toString()` detailing the compilation process.
 * Fixed a traversal strategy ordering bug in `AdjacentToIncidentStrategy` and `IncidentToAdjacentStrategy`.
 * Made a number of changes to improve traversal startup and execution performance.
