@@ -1,0 +1,14 @@
+language: java
+os:
+  - linux
+jdk:
+  - oraclejdk8
+sudo: false
+addons:
+  apt:
+    packages:
+      - oracle-java8-installer
+script: 
+  - "mvn clean install"
+  - "bin/process-docs.sh --dryRun"
+  - "mvn process-resources -Djavadoc"
