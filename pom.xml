@@ -658,34 +658,6 @@ limitations under the License.
                             </execution>
                         </executions>
                     </plugin>
-                    <!-- replaces x.y.z in asciidoc with the tinkerpop version from the pom.  using an attribute
-                         in the asciidoctor-maven-plugin doesn't work properly in all cases for some reasons,
-                         specifically in the code examples -->
-                    <plugin>
-                        <groupId>com.google.code.maven-replacer-plugin</groupId>
-                        <artifactId>replacer</artifactId>
-                        <version>1.5.3</version>
-                        <inherited>false</inherited>
-                        <executions>
-                            <execution>
-                                <phase>generate-resources</phase>
-                                <goals>
-                                    <goal>replace</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <includes>
-                                <include>${asciidoc.input.dir}/*.asciidoc</include>
-                            </includes>
-                            <replacements>
-                                <replacement>
-                                    <token>x\.y\.z</token>
-                                    <value>${project.version}</value>
-                                </replacement>
-                            </replacements>
-                        </configuration>
-                    </plugin>
                     <plugin>
                         <groupId>org.asciidoctor</groupId>
                         <artifactId>asciidoctor-maven-plugin</artifactId>
