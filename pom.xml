@@ -698,19 +698,17 @@ limitations under the License.
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/reference</sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}/reference</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>book</doctype>
                                     <attributes>
-                                        <imagesdir>images</imagesdir>
+                                        <imagesdir>../images</imagesdir>
                                         <encoding>UTF-8</encoding>
                                         <toc>true</toc>
                                         <toclevels>3</toclevels>
                                         <toc-position>left</toc-position>
-                                        <!--<iconsdir>images/icons</iconsdir>-->
-                                        <!-- AsciiDoctor CSS3-based theme configuration -->
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
@@ -725,19 +723,17 @@ limitations under the License.
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
-                                    <sourceDocumentName>upgrade.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/upgrade</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/upgrade</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>book</doctype>
                                     <attributes>
-                                        <imagesdir>images</imagesdir>
+                                        <imagesdir>../images</imagesdir>
                                         <encoding>UTF-8</encoding>
                                         <toc>true</toc>
                                         <toclevels>3</toclevels>
                                         <toc-position>left</toc-position>
-                                        <!--<iconsdir>images/icons</iconsdir>-->
-                                        <!-- AsciiDoctor CSS3-based theme configuration -->
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
@@ -752,19 +748,17 @@ limitations under the License.
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
-                                    <sourceDocumentName>developer.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/developer</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/dev/developer</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>book</doctype>
                                     <attributes>
-                                        <imagesdir>images</imagesdir>
+                                        <imagesdir>../../images</imagesdir>
                                         <encoding>UTF-8</encoding>
                                         <toc>true</toc>
                                         <toclevels>3</toclevels>
                                         <toc-position>left</toc-position>
-                                        <!--<iconsdir>images/icons</iconsdir>-->
-                                        <!-- AsciiDoctor CSS3-based theme configuration -->
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
@@ -779,16 +773,14 @@ limitations under the License.
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
-                                    <sourceDocumentName>tutorials-getting-started.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/getting-started</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/getting-started</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
                                     <attributes>
-                                        <imagesdir>images</imagesdir>
+                                        <imagesdir>../../images</imagesdir>
                                         <encoding>UTF-8</encoding>
-                                        <!--<iconsdir>images/icons</iconsdir>-->
-                                        <!-- AsciiDoctor CSS3-based theme configuration -->
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>

@@ -24,7 +24,7 @@ if [ "$1" == "--dryRun" ]; then
 
   mkdir -p target/postprocess-asciidoc/tmp
   cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
-  cp docs/src/*.asciidoc target/postprocess-asciidoc/
+  cp -R docs/src/. target/postprocess-asciidoc/
   ec=$?
 
 else
