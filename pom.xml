@@ -584,10 +584,19 @@ limitations under the License.
             </activation>
 
             <properties>
+                <!-- the source asciidocs are copied from /docs to asciidoc.source.dir by bin/process-docs.sh
+                     where they can the scripts embedded in the text are then executed and their results shoved
+                     back into the doc -->
                 <asciidoc.source.dir>${project.basedir}/target/postprocess-asciidoc</asciidoc.source.dir>
+
+                <!-- once code processing is over, the documents are basically ready for the formatter and are
+                     copied by way of the maven-resources-plugin to asciidoc.input.dir where they will be processed
+                     by the asciidoctor plugin -->
                 <asciidoc.input.dir>${project.basedir}/target/doc-source</asciidoc.input.dir>
-                <asciidoctor.style.dir>${asciidoc.input.dir}/stylesheets</asciidoctor.style.dir>
+
+                <!-- the output directory for the asciidoctor plugin - finalized documents can be found here -->
                 <htmlsingle.output.dir>${project.basedir}/target/docs/htmlsingle</htmlsingle.output.dir>
+                <asciidoctor.style.dir>${asciidoc.input.dir}/stylesheets</asciidoctor.style.dir>
             </properties>
 
             <build>
@@ -610,6 +619,7 @@ limitations under the License.
                         <artifactId>maven-resources-plugin</artifactId>
                         <inherited>false</inherited>
                         <executions>
+                            <!-- copies docs already handled by the preprocessor to their staging area for asciidoc formatting -->
                             <execution>
                                 <id>copy-docs-to-work-area</id>
                                 <phase>generate-resources</phase>
@@ -626,6 +636,7 @@ limitations under the License.
                                     </resources>
                                 </configuration>
                             </execution>
+                            <!-- copies images/resources to staging area for asciidoc formatting -->
                             <execution>
                                 <id>copy-static-assets-to-htmlsingle</id>
                                 <phase>process-resources</phase>
@@ -681,7 +692,7 @@ limitations under the License.
                         <inherited>false</inherited>
                         <executions>
                             <execution>
-                                <id>asciidoc-to-docbook</id>
+                                <id>reference-book</id>
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>process-asciidoc</goal>
@@ -708,7 +719,7 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>asciidoc-to-upgrade-book</id>
+                                <id>upgrade-book</id>
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>process-asciidoc</goal>
@@ -735,7 +746,7 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>asciidoc-to-developer-book</id>
+                                <id>developer-book</id>
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>process-asciidoc</goal>
@@ -762,7 +773,7 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>asciidoc-to-tutorials-book</id>
+                                <id>tutorial-getting-started</id>
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>process-asciidoc</goal>
