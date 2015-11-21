@@ -25,7 +25,7 @@ def globals = [:]
 globals << [hook : [
   onStartUp: { ctx ->
     ctx.logger.info("Loading 'modern' graph data.")
-    TinkerFactory.generateClassic(graph)
+    TinkerFactory.generateModern(graph)
   }
 ] as LifeCycleHook]
 

@@ -46,7 +46,7 @@ image::step-types.png[width=650]
 A `GraphTraversal<S,E>` is spawned from a `GraphTraversalSource`. It can also be spawned anonymously (i.e. empty)
 via `__`. A graph traversal is composed of an ordered list of steps. All the steps provided by `GraphTraversal`
 inherit from the more general forms diagrammed above. A list of all the steps (and their descriptions) are provided
-in the TinkerPop3 link:http://www.tinkerpop.com/javadocs/x.y.z/core/org/apache/tinkerpop/gremlin/process/graph/GraphTraversal.html[GraphTraversal JavaDoc].
+in the TinkerPop3 link:http://tinkerpop.incubator.apache.org/javadocs/3.0.2-incubating/core/org/apache/tinkerpop/gremlin/process/traversal/dsl/graph/GraphTraversal.html[GraphTraversal JavaDoc].
 The following subsections will demonstrate the GraphTraversal steps using the <<gremlin-console,Gremlin Console>>.
 
 NOTE: To reduce the verbosity of the expression, it is good to
@@ -578,6 +578,24 @@ g.V().valueMap()
 g.V().drop()
 g.V()
 ----
+
+[[explain-step]]
+Explain Step
+~~~~~~~~~~~~
+
+The `explain()`-step (*sideEffect*) will return a `TraversalExplanation`. A traversal explanation details how the
+traversal (prior to `explain()`) will be compiled given the registered <<traversalstrategy,traversal strategies>>.
+A `TraversalExplanation` has a `toString()` representation with 3-columns. The first column is the
+traversal strategy being applied. The second column is the traversal strategy category: [D]ecoration, [O]ptimization,
+[P]rovider optimization, [F]inalization, and [V]erification. Finally, the third column is the state of the traversal
+post strategy application. The final traversal is the resultant execution plan.
+
+[gremlin-groovy,modern]
+----
+g.V().outE().identity().inV().count().is(gt(5)).explain()
+----
+
+For traversal profiling information, please see <<profile-step,`profile()`>>-step.
 
 [[fold-step]]
 Fold Step
@@ -1282,6 +1300,8 @@ into a single traverser. That new traverser has a `Traverser.bulk()` that is the
 bulks. On the other hand, the `Count` represents the sum of all `Traverser.bulk()` results and thus, expresses the
 number of "represented" (not enumerated) traversers. `Traversers` will always be less than or equal to `Count`.
 
+For traversal compilation information, please see <<explain-step,`explain()`>>-step.
+
 [[range-step]]
 Range Step
 ~~~~~~~~~~
@@ -1368,12 +1388,11 @@ image::repeat-step.png[width=500]
 g.V(1).repeat(out()).times(2).emit().path().by('name')
 ----
 
-The first time through the `repeat()`, the vertices lop, vadas, and josh are seen. Given that `loops==0`, the
-traverser repeats. However, because the emit-predicate is declared true, those vertices are emitted. At step 2
-(`loops==1`), the vertices traversed are ripple and lop (Josh's created projects, as lop and vadas have no out edges)
-and are also emitted. Now `loops==1` so the traverser repeats. As ripple and lop have no out edges there are no
-vertices to traverse. Given that `loops==2`, the until-predicate fails. Therefore, the traverser has seen the
-vertices: lop, vadas, josh, ripple, and lop.
+The first time through the `repeat()`, the vertices lop, vadas, and josh are seen. Given that `loops==1`, the
+traverser repeats. However, because the emit-predicate is declared true, those vertices are emitted. The next time through
+ `repeat()`, the vertices traversed are ripple and lop (Josh's created projects, as lop and vadas have no out edges).
+  Given that `loops==2`, the until-predicate fails and ripple and lop are emitted.
+Therefore, the traverser has seen the vertices: lop, vadas, josh, ripple, and lop.
 
 Finally, note that both `emit()` and `until()` can take a traversal and in such, situations, the predicate is
 determined by `traversal.hasNext()`. A few examples are provided below.
@@ -2104,6 +2123,8 @@ traversal as it deems fit. This is useful in multiple situations:
  * There is a more efficient way to express the traversal at the graph system/language/driver level (*provider optimization*).
  * There are are some final adjustments required before executing the traversal (*finalization*).
  * There are certain traversals that are not legal for the application or traversal engine (*verification*).
+
+NOTE: The <<explain-step,`explain()`>>-step shows the user how each registered strategy mutates the traversal.
 
 A simple `OptimizationStrategy` is the `IdentityRemovalStrategy`.
 

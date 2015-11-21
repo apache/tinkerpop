@@ -34,15 +34,18 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.apache.tinkerpop.shaded.jackson.databind.node.NullNode;
+import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  * These tests focus on message serialization and not "result" serialization as test specific to results (e.g.
@@ -58,7 +61,7 @@ public class GraphSONMessageSerializerV1d0Test {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     @Test
-    public void serializeToJsonNullResultReturnsNull() throws Exception {
+    public void shouldSerializeToJsonNullResultReturnsNull() throws Exception {
         final ResponseMessage message = ResponseMessage.build(msg).create();
         final String results = SERIALIZER.serializeResponseAsString(message);
         final JsonNode json = mapper.readTree(results);
@@ -68,7 +71,7 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeToJsonIterable() throws Exception {
+    public void shouldSerializeToJsonIterable() throws Exception {
         final ArrayList<FunObject> funList = new ArrayList<>();
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
@@ -87,7 +90,7 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeToJsonIterator() throws Exception {
+    public void shouldSerializeToJsonIterator() throws Exception {
         final ArrayList<FunObject> funList = new ArrayList<>();
         funList.add(new FunObject("x"));
         funList.add(new FunObject("y"));
@@ -106,7 +109,7 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeToJsonIteratorNullElement() throws Exception {
+    public void shouldSerializeToJsonIteratorNullElement() throws Exception {
 
         final ArrayList<FunObject> funList = new ArrayList<>();
         funList.add(new FunObject("x"));
@@ -128,7 +131,7 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeToJsonMap() throws Exception {
+    public void shouldSerializeToJsonMap() throws Exception {
         final Map<String, Object> map = new HashMap<>();
         final Map<String, String> innerMap = new HashMap<>();
         innerMap.put("a", "b");
@@ -154,7 +157,36 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeEdge() throws Exception {
+    public void shouldShouldSerializeMapEntries() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final Vertex v1 = graph.addVertex();
+        final Date d = new Date();
+
+        final Map<Object, Object> map = new HashMap<>();
+        map.put("x", 1);
+        map.put(v1, 100);
+        map.put(d, "test");
+
+        final String results = SERIALIZER.serializeResponseAsString(ResponseMessage.build(msg).result(IteratorUtils.asList(map)).create());
+        final JsonNode json = mapper.readTree(results);
+
+        assertNotNull(json);
+        assertEquals(msg.getRequestId().toString(), json.get(SerTokens.TOKEN_REQUEST).asText());
+        final JsonNode jsonObject = json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA);
+        jsonObject.elements().forEachRemaining(e -> {
+            if (e.has("x"))
+                assertEquals(1, e.get("x").asInt());
+            else if (e.has(v1.id().toString()))
+                assertEquals(100, e.get(v1.id().toString()).asInt());
+            else if (e.has(StdDateFormat.instance.format(d)))
+                assertEquals("test", e.get(StdDateFormat.instance.format(d)).asText());
+            else
+                fail("Map entries contains a key that is not part of what was serialized");
+        });
+    }
+
+    @Test
+    public void shouldSerializeEdge() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v1 = g.addVertex();
         final Vertex v2 = g.addVertex();
@@ -188,7 +220,7 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeEdgeProperty() throws Exception {
+    public void shouldSerializeEdgeProperty() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v1 = g.addVertex();
         final Vertex v2 = g.addVertex();
@@ -214,7 +246,7 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeToJsonIteratorWithEmbeddedMap() throws Exception {
+    public void shouldSerializeToJsonIteratorWithEmbeddedMap() throws Exception {
         final Graph g = TinkerGraph.open();
         final Vertex v = g.addVertex();
         final Map<String, Object> map = new HashMap<>();
@@ -264,7 +296,7 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test
-    public void serializeToJsonMapWithElementForKey() throws Exception {
+    public void shouldSerializeToJsonMapWithElementForKey() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
@@ -285,7 +317,7 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test
-    public void deserializeRequestNicelyWithNoArgs() throws Exception {
+    public void shouldDeserializeRequestNicelyWithNoArgs() throws Exception {
         final UUID request = UUID.fromString("011CFEE9-F640-4844-AC93-034448AC0E80");
         final RequestMessage m = SERIALIZER.deserializeRequest(String.format("{\"requestId\":\"%s\",\"op\":\"eval\"}", request));
         assertEquals(request, m.getRequestId());
@@ -295,7 +327,7 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test
-    public void deserializeRequestNicelyWithArgs() throws Exception {
+    public void shouldDeserializeRequestNicelyWithArgs() throws Exception {
         final UUID request = UUID.fromString("011CFEE9-F640-4844-AC93-034448AC0E80");
         final RequestMessage m = SERIALIZER.deserializeRequest(String.format("{\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}", request));
         assertEquals(request, m.getRequestId());
@@ -305,12 +337,12 @@ public class GraphSONMessageSerializerV1d0Test {
     }
 
     @Test(expected = SerializationException.class)
-    public void deserializeRequestParseMessage() throws Exception {
+    public void shouldDeserializeRequestParseMessage() throws Exception {
         SERIALIZER.deserializeRequest("{\"requestId\":\"%s\",\"op\":\"eval\",\"args\":{\"x\":\"y\"}}");
     }
 
     @Test
-    public void serializeFullResponseMessage() throws Exception {
+    public void shouldSerializeFullResponseMessage() throws Exception {
         final UUID id = UUID.randomUUID();
 
         final Map<String, Object> metaData = new HashMap<>();

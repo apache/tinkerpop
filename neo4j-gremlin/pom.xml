@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
+        <version>3.1.1-SNAPSHOT</version>
     </parent>
     <artifactId>neo4j-gremlin</artifactId>
     <name>Apache TinkerPop :: Neo4j Gremlin</name>

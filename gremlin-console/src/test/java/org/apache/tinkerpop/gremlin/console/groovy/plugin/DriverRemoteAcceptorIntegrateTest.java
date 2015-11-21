@@ -105,6 +105,14 @@ public class DriverRemoteAcceptorIntegrateTest extends AbstractGremlinServerInte
     }
 
     @Test
+    public void shouldConnectAndReturnVerticesWithAnAlias() throws Exception {
+        assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Connected - "));
+        acceptor.configure(Arrays.asList("alias", "x", "g"));
+        assertThat(IteratorUtils.list(((Iterator<String>) acceptor.submit(Arrays.asList("x.addVertex('name','stephen');x.addVertex('name','marko');x.traversal().V()")))), hasSize(2));
+        assertThat(((List<Result>) groovysh.getInterp().getContext().getProperty(DriverRemoteAcceptor.RESULT)).stream().map(Result::getString).collect(Collectors.toList()), hasSize(2));
+    }
+
+    @Test
     public void shouldConnectAndSubmitForNull() throws Exception {
         assertThat(acceptor.connect(Arrays.asList(TestHelper.generateTempFileFromResource(this.getClass(), "remote.yaml", ".tmp").getAbsolutePath())).toString(), startsWith("Connected - "));
         assertThat(IteratorUtils.list(((Iterator<String>) acceptor.submit(Arrays.asList("g.traversal().V().drop().iterate();null")))), contains("null"));

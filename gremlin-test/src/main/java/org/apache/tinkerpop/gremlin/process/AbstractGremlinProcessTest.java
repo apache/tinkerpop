@@ -83,7 +83,7 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
 
         for (T t : results) {
             if (t instanceof Map) {
-                assertTrue("Checking map result existence: " + t, expectedResults.stream().filter(e -> e instanceof Map).filter(e -> checkMap((Map) e, (Map) t)).findAny().isPresent());
+                assertTrue("Checking map result existence: " + t, expectedResults.stream().filter(e -> e instanceof Map).filter(e -> internalCheckMap((Map) e, (Map) t)).findAny().isPresent());
             } else {
                 assertTrue("Checking result existence: " + t, expectedResults.contains(t));
             }
@@ -107,7 +107,17 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         checkResults(list, traversal);
     }
 
-    public static <A, B> boolean checkMap(final Map<A, B> expectedMap, final Map<A, B> actualMap) {
+    public static <A, B> void checkMap(final Map<A, B> expectedMap, final Map<A, B> actualMap) {
+        final List<Map.Entry<A, B>> actualList = actualMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
+        final List<Map.Entry<A, B>> expectedList = expectedMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
+        assertEquals(expectedList.size(), actualList.size());
+        for (int i = 0; i < actualList.size(); i++) {
+            assertEquals(expectedList.get(i).getKey(), actualList.get(i).getKey());
+            assertEquals(expectedList.get(i).getValue(), actualList.get(i).getValue());
+        }
+    }
+
+    private static <A, B> boolean internalCheckMap(final Map<A, B> expectedMap, final Map<A, B> actualMap) {
         final List<Map.Entry<A, B>> actualList = actualMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
         final List<Map.Entry<A, B>> expectedList = expectedMap.entrySet().stream().sorted((a, b) -> a.getKey().toString().compareTo(b.getKey().toString())).collect(Collectors.toList());
 

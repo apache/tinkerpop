@@ -26,29 +26,41 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteException;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.tinkerpop.gremlin.structure.util.ElementHelper;
 import org.codehaus.groovy.tools.shell.Groovysh;
 
 import javax.security.sasl.SaslException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
 /**
+ * A {@link RemoteAcceptor} that takes input from the console and sends it to Gremlin Server over the standard
+ * Java driver.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class DriverRemoteAcceptor implements RemoteAcceptor {
     private Cluster currentCluster;
-    private Client currentClient;
+    private Client.ClusteredClient currentClient;
     private int timeout = 180000;
+    private Map<String,String> aliases = new HashMap<>();
 
+    private static final String TOKEN_RESET = "reset";
+    private static final String TOKEN_SHOW = "show";
+    private static final String TOKEN_MAX = "max";
     private static final String TOKEN_TIMEOUT = "timeout";
-    private static final List<String> POSSIBLE_TOKENS = Arrays.asList(TOKEN_TIMEOUT);
+    private static final String TOKEN_ALIAS = "alias";
+    private static final List<String> POSSIBLE_TOKENS = Arrays.asList(TOKEN_TIMEOUT, TOKEN_ALIAS);
 
     private final Groovysh shell;
 
@@ -84,13 +96,30 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             final String errorMessage = "The timeout option expects a positive integer representing milliseconds or 'max' as an argument";
             if (arguments.size() != 1) throw new RemoteException(errorMessage);
             try {
-                final int to = arguments.get(0).equals("max") ? Integer.MAX_VALUE : Integer.parseInt(arguments.get(0));
+                final int to = arguments.get(0).equals(TOKEN_MAX) ? Integer.MAX_VALUE : Integer.parseInt(arguments.get(0));
                 if (to <= 0) throw new RemoteException(errorMessage);
                 this.timeout = to;
                 return "Set remote timeout to " + to + "ms";
             } catch (Exception ignored) {
                 throw new RemoteException(errorMessage);
             }
+        } else if (option.equals(TOKEN_ALIAS)) {
+            if (arguments.size() == 1 && arguments.get(0).equals(TOKEN_RESET)) {
+                aliases.clear();
+                return "Aliases cleared";
+            }
+
+            if (arguments.size() == 1 && arguments.get(0).equals(TOKEN_SHOW)) {
+                return aliases;
+            }
+
+            if (arguments.size() % 2 != 0)
+                throw new RemoteException("Arguments to alias must be 'reset' to clear any existing alias settings or key/value alias/binding pairs");
+
+            final Map<String,Object> aliasMap = ElementHelper.asMap(arguments.toArray());
+            aliases.clear();
+            aliasMap.forEach((k,v) -> aliases.put(k, v.toString()));
+            return aliases;
         }
 
         return this.toString();
@@ -133,7 +162,8 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     private List<Result> send(final String gremlin) throws SaslException {
         try {
-            return this.currentClient.submit(gremlin).all().get(this.timeout, TimeUnit.MILLISECONDS);
+            return this.currentClient.submitAsync(gremlin, aliases, Collections.emptyMap()).get()
+                    .all().get(this.timeout, TimeUnit.MILLISECONDS);
         } catch(TimeoutException ignored) {
             throw new IllegalStateException("Request timed out while processing - increase the timeout with the :remote command");
         } catch (Exception e) {

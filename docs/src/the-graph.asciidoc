@@ -225,6 +225,9 @@ this method:
 * `ROLLBACK` - automatically rollback an open transaction
 * `MANUAL` - throw an exception if a transaction is open, forcing the user to explicitly close the transaction
 
+IMPORTANT: As transactions are `ThreadLocal` in nature, so are the transaction configurations for `onReadWrite` and
+`onClose`.
+
 Once there is an understanding for how transactions are configured, most of the rest of the `Transaction` interface
 is self-explanatory. Note that <<neo4j-gremlin,Neo4j-Gremlin>> is used for the examples to follow as TinkerGraph does
 not support transactions.

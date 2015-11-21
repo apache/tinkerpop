@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -36,7 +37,20 @@ import java.util.function.Consumer;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractThreadLocalTransaction extends AbstractTransaction {
-
+    protected final ThreadLocal<Consumer<Transaction>> readWriteConsumerInternal =
+        new ThreadLocal<Consumer<Transaction>>() {
+            @Override protected Consumer<Transaction> initialValue() {
+                return READ_WRITE_BEHAVIOR.AUTO;
+            }
+        };
+    
+    protected final ThreadLocal<Consumer<Transaction>> closeConsumerInternal =
+        new ThreadLocal<Consumer<Transaction>>() {
+            @Override protected Consumer<Transaction> initialValue() {
+                return CLOSE_BEHAVIOR.ROLLBACK;
+            }
+        };
+    
     protected final ThreadLocal<List<Consumer<Transaction.Status>>> transactionListeners = new ThreadLocal<List<Consumer<Transaction.Status>>>() {
         @Override
         protected List<Consumer<Transaction.Status>> initialValue() {
@@ -71,5 +85,29 @@ public abstract class AbstractThreadLocalTransaction extends AbstractTransaction
     @Override
     public void clearTransactionListeners() {
         transactionListeners.get().clear();
+    }
+    
+    @Override
+    protected void doReadWrite() {
+        readWriteConsumerInternal.get().accept(this);
+    }
+    
+    @Override
+    protected void doClose() {
+        closeConsumerInternal.get().accept(this);
+        closeConsumerInternal.remove();
+        readWriteConsumerInternal.remove();
+    }
+    
+    @Override
+    public Transaction onReadWrite(final Consumer<Transaction> consumer) {
+        readWriteConsumerInternal.set(Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull));
+        return this;
+    }
+    
+    @Override
+    public Transaction onClose(final Consumer<Transaction> consumer) {
+        closeConsumerInternal.set(Optional.ofNullable(consumer).orElseThrow(Transaction.Exceptions::onReadWriteBehaviorCannotBeNull));
+        return this;
     }
 }

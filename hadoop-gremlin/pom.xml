@@ -21,7 +21,7 @@ limitations under the License.
     <parent>
         <groupId>org.apache.tinkerpop</groupId>
         <artifactId>tinkerpop</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
+        <version>3.1.1-SNAPSHOT</version>
     </parent>
     <artifactId>hadoop-gremlin</artifactId>
     <name>Apache TinkerPop :: Hadoop Gremlin</name>
@@ -157,9 +157,18 @@ limitations under the License.
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
+                <version>2.5</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:2.7.1
+                            </Gremlin-Plugin-Dependencies>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
                 <executions>
                     <execution>
+                        <id>test-jar-it-up</id>
                         <goals>
                             <goal>test-jar</goal>
                         </goals>
@@ -211,19 +220,6 @@ limitations under the License.
                 </executions>
                 <configuration>
                     <invokeDynamic>true</invokeDynamic>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.5</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Gremlin-Plugin-Dependencies>org.apache.hadoop:hadoop-client:2.7.1
-                            </Gremlin-Plugin-Dependencies>
-                        </manifestEntries>
-                    </archive>
                 </configuration>
             </plugin>
             <plugin>

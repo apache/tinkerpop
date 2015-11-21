@@ -77,8 +77,8 @@ public final class Cluster {
      * error will not be raised at this point.  Connections get initialized in the {@link Client} when a request is
      * submitted or can be directly initialized via {@link Client#init()}.
      */
-    public Client connect() {
-        return new Client.ClusteredClient(this);
+    public <T extends Client> T connect() {
+        return (T) new Client.ClusteredClient(this);
     }
 
     /**
@@ -94,10 +94,10 @@ public final class Cluster {
      *
      * @param sessionId user supplied id for the session which should be unique (a UUID is ideal).
      */
-    public Client connect(final String sessionId) {
+    public <T extends Client> T connect(final String sessionId) {
         if (null == sessionId || sessionId.isEmpty())
             throw new IllegalArgumentException("sessionId cannot be null or empty");
-        return new Client.SessionedClient(this, sessionId);
+        return (T) new Client.SessionedClient(this, sessionId);
     }
 
     @Override
@@ -616,6 +616,9 @@ public final class Cluster {
                 factory.shutdown();
                 closeIt.complete(null);
             });
+
+            // Prevent the executor from accepting new tasks while still allowing enqueued tasks to complete
+            executor.shutdown();
 
             return closeIt;
         }

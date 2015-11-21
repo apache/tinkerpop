@@ -77,5 +77,10 @@ public abstract class GroovyGroupCountTest {
                     __.repeat(__.in).times(2).groupCount('m').by('name')).cap('m')
             """, g)
         }
+
+        @Override
+        public Traversal<Vertex, Map<Long, Long>> get_g_V_groupCount_byXbothE_countX() {
+            TraversalScriptHelper.compute("g.V.groupCount.by(bothE().count)", g)
+        }
     }
 }

@@ -28,6 +28,11 @@ feedback.  Once a release point has been identified, the following phases repres
 * Submit the official release for Incubator vote.
 * Release and promote.
 
+NOTE: It might be helpful to use this document as generated from the currently release as opposed to one generate
+from a previous version or from recent `SNAPSHOT`. When using one generated for release, all the "versions" in the
+commands end up being set to the version that is being released, making cut and paste of those commands less labor
+intensive and error prone.
+
 Pre-flight Check
 ----------------
 
@@ -42,9 +47,13 @@ and communicating with other members of the community.
 under release is protected. Tweaks to documentation and other odds and ends related to release are still allowed
 during this period.
 . At some point during the week:
+.. Run the full integration test suite: `mvn clean install -DskipIntegrationTests=false -DincludeNeo4j`
 .. Deploy a final SNAPSHOT to the snapshot repository.
-.. Review LICENSE and NOTICE files to make sure that no changes are needed.
+.. Review LICENSE and NOTICE files to make sure that no <<dependencies,changes are needed>>.
 .. Review javadoc filters on the "Core API" docs to be sure nothing needs to change.
+.. Review JIRA tickets in the release and ensure that:
+... All tickets categorized by having a "Component" assigned.
+... All tickets are either of type "Bug" or "Enhancement".
 . When all documentation changes are in place, use `bin/publish-docs.sh` to deploy a final `SNAPSHOT` representation
 of the docs and thus validate that there are no issues with the documentation generation process. Request review
 of the published documentation on the dev mailing list.
@@ -75,15 +84,19 @@ PMC Vote
 
 A positive vote for a particular release from the TinkerPop PMC is required to move to the following phase.
 
-. `mvn clean install`
-.. `mvn verify -DskipIntegrationTests=false -DincludeNeo4j`
-.. `mvn verify -DskipPerformanceTests=false`
-. Perform manual tests:
-.. Execute `:remote connect conf/remote.yaml` and send some requests to a running Gremlin Server instance.
-.. Execute `:?` to display the help in the Console.
+. By this point, the testing performed during the code freeze should have validated the release.  If however there
+are additional tests to perform that the release manager feels are relevant, they should be performed now. In other
+words, there is no need to rebuild the `SNAPSHOT` yet another time unless there are circumstances that would call its
+validity into question.
 . Update `CHANGELOG.asciidoc`:
 .. Update the release date
-.. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`
+.. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
+... Use an "advanced" search to filter out JIRA issues already released on other versions. For example: `fixVersion
+= 3.1.0-incubating AND fixVersion not in (3.0.2-incubating, 3.0.1-incubating`.
+... Consider use of an "Excel" export to organize, sort and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`
+... Be sure to include a link to other versions in the `CHANGELOG.asciidoc` that were previously released while the
+current release was under development as this new release will have those changes included within it. Please see
+3.1.0-incubating for an example.
 .. Organize "breaking" changes to be clearly marked (use JIRA and the "breaking" label to identify those)
 . Update "upgrade documentation":
 .. Update the release date.
@@ -91,11 +104,11 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 . `mvn versions:set -DnewVersion=x.y.z -DgenerateBackupPoms=false` to update project files to reference the non-SNAPSHOT version
 . `git diff` and review the updated files (expect all `pom.xml` files and this README)
 . `git commit -a -m "TinkerPop x.y.z release"` and `git push`
-. `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
 . `mvn clean install -Dmaven.test.skip=true` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
-. `bin/publish-docs.sh <username>`
-. `mvn install -Papache-release -Djavadoc -DcreateChecksum=true -Dmaven.test.skip=true`
-. `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true`- deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus]. Review (artifacts versions, file sizes, anything that might be out of place - request another committer to review as well) but do NOT close/release the staging repository at this time.
+. `bin/process-docs.sh` and validate the generated documentation locally
+. `bin/publish-docs.sh <username>` - Note that this step requires no additional processing as the previous step.
+handled document generation and this step now merely needs to upload what was generated.
+. `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true` - deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus]. Review (artifacts versions, file sizes, anything that might be out of place - request another committer to review as well) but do NOT close/release the staging repository at this time.
 . Review generated artifacts to be sure they have both javadocs and asciidocs present
 . Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
 .. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/ dev` and `mkdir dev/x.y.z`
@@ -106,10 +119,10 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 .. pass:[<code>ls * | xargs -n1 -I {} echo "mv apache-{} {}" | sed -e 's/distribution/bin/' -e 's/source-release/src/' -e s'/^\(.*\) \(.*\) \(.*\)$/\1 \3 \2/' | /bin/bash</code>]
 .. `cd ..; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
 . Execute `bin/validate-distribution.sh` and any other relevant testing.
+. `git tag -a -m "TinkerPop x.y.z release" x.y.z` and `git push --tags`
 . Perform JIRA administration tasks:
 .. "Release" the current version and set the "release date"
 .. If there is to be a follow on release in the current line of code, create that new version specifying the "start date"
-.. Migrate the "Affected Version" of all unresolved issues to the next lowest common denominator version - if version 3.0.1 released then all 3.0.0 issues should move forward to 3.0.1 as they now "affect" that latest release
 . Submit for `[VOTE]` at `dev@tinkerpop.incubator.apache.org` (see email template below)
 . *Wait for vote acceptance* (72 hours)
 
@@ -144,11 +157,11 @@ The release artifacts can be found at this location:
 	https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/x.y.z/
 
 The source distribution is provided by:
-	apache-tinkerpop-x.y.z-source-release.zip
+	apache-tinkerpop-x.y.z-src.zip
 
 Two binary distributions are provided for user convenience:
-	apache-gremlin-console-x.y.z-distribution.zip
-	apache-gremlin-server-x.y.z-distribution.zip
+	apache-gremlin-console-x.y.z-bin.zip
+	apache-gremlin-server-x.y.z-bin.zip
 
 The online docs can be found here:
 	http://tinkerpop.incubator.apache.org/docs/x.y.z/ (user docs)

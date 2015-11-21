@@ -34,9 +34,11 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +59,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     public MessageSerializer serializer = new GraphSONMessageSerializerGremlinV1d0();
 
     @Test
-    public void serializeIterable() throws Exception {
+    public void shouldSerializeIterable() throws Exception {
         final ArrayList<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(100);
@@ -72,7 +74,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeIterableWithNull() throws Exception {
+    public void shouldSerializeIterableWithNull() throws Exception {
         final ArrayList<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(null);
@@ -89,7 +91,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeMap() throws Exception {
+    public void shouldSerializeMap() throws Exception {
         final Map<String, Object> map = new HashMap<>();
         final Map<String, String> innerMap = new HashMap<>();
         innerMap.put("a", "b");
@@ -112,7 +114,35 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeEdge() throws Exception {
+    public void shouldSerializeMapEntries() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final Vertex v1 = graph.addVertex();
+        final Date d = new Date();
+
+        final Map<Object, Object> map = new HashMap<>();
+        map.put("x", 1);
+        map.put(v1, 100);
+        map.put(d, "test");
+
+        final ResponseMessage response = convert(IteratorUtils.asList(map.entrySet()));
+        assertCommon(response);
+
+        final List<Map<String, Object>> deserializedEntries = (List<Map<String, Object>>) response.getResult().getData();
+        assertEquals(3, deserializedEntries.size());
+        deserializedEntries.forEach(e -> {
+            if (e.containsKey("x"))
+                assertEquals(1, e.get("x"));
+            else if (e.containsKey(v1.id().toString()))
+                assertEquals(100, e.get(v1.id().toString()));
+            else if (e.containsKey(StdDateFormat.instance.format(d)))
+                assertEquals("test", e.get(StdDateFormat.instance.format(d)));
+            else
+                fail("Map entries contains a key that is not part of what was serialized");
+        });
+    }
+
+    @Test
+    public void shouldSerializeEdge() throws Exception {
         final Graph graph = TinkerGraph.open();
         final Vertex v1 = graph.addVertex();
         final Vertex v2 = graph.addVertex();
@@ -143,7 +173,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeEdgeProperty() throws Exception {
+    public void shouldSerializeEdgeProperty() throws Exception {
         final Graph graph = TinkerGraph.open();
         final Vertex v1 = graph.addVertex();
         final Vertex v2 = graph.addVertex();
@@ -160,7 +190,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeVertexWithEmbeddedMap() throws Exception {
+    public void shouldSerializeVertexWithEmbeddedMap() throws Exception {
         final Graph graph = TinkerGraph.open();
         final Vertex v = graph.addVertex();
         final Map<String, Object> map = new HashMap<>();
@@ -204,7 +234,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
     }
 
     @Test
-    public void serializeToJsonMapWithElementForKey() throws Exception {
+    public void shouldSerializeToJsonMapWithElementForKey() throws Exception {
         final TinkerGraph graph = TinkerFactory.createClassic();
         final GraphTraversalSource g = graph.traversal();
         final Map<Vertex, Integer> map = new HashMap<>();
@@ -223,7 +253,7 @@ public class GraphSONMessageSerializerGremlinV1d0Test {
 
 
     @Test
-    public void serializeFullResponseMessage() throws Exception {
+    public void shouldSerializeFullResponseMessage() throws Exception {
         final UUID id = UUID.randomUUID();
 
         final Map<String, Object> metaData = new HashMap<>();

@@ -27,6 +27,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGraphSONSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
 
+import java.util.Map;
+
 /**
  * The set of serializers that handle the core graph interfaces.  These serializers support normalization which
  * ensures that generated GraphSON will be compatible with line-based versioning tools. This setting comes with
@@ -60,6 +62,7 @@ abstract class GraphSONModule extends SimpleModule {
             addSerializer(TraversalMetrics.class, new GraphSONSerializers.TraversalMetricsJacksonSerializer());
             addSerializer(Path.class, new GraphSONSerializers.PathJacksonSerializer());
             addSerializer(StarGraphGraphSONSerializer.DirectionalStarGraph.class, new StarGraphGraphSONSerializer(normalize));
+            addSerializer(Map.Entry.class, new GraphSONSerializers.MapEntryJacksonSerializer());
         }
 
         public static Builder build() {

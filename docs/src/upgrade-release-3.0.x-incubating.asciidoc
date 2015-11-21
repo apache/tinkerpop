@@ -27,23 +27,46 @@ TinkerPop 3.0.2
 
 *Release Date: October 19, 2015*
 
-Important Changes
-~~~~~~~~~~~~~~~~~
-
-* TinkerGraph can now be configured to support persistence, where TinkerGraph will try to load a graph from a specified
-location and calls to `close()` will save the graph data to that location.
-* There were a number of fixes to `gremlin-driver` that prevent protocol desynchronization when talking to Gremlin
-Server.
-* The Gremlin Server sub-protocol introduces a new "close" operation to explicitly close sessions.
-* `BulkLoaderVertexProgram` does now support arbitrary inputs (besides the `HadoopGraph`, which was already supported in
-version 3.0.1, `BulkLoaderVertexProgram` can now also read from any TP3 enabled graph, like `TinkerGraph` or `Neo4jGraph`).
-
 Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.0.2-incubating/CHANGELOG.asciidoc#tinkerpop-302-release-date-october-19-2015[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
-Aside from learning about new features, users should not expect to find any changes in this release that will cause compile errors or other problems during upgrade.
+BulkLoaderVertexProgram (BLVP)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`BulkLoaderVertexProgram` now supports arbitrary inputs (i addition to `HadoopGraph`, which was already supported in
+version 3.0.1-incubating). It can now also read from any TP3 enabled graph, like `TinkerGraph`
+or `Neo4jGraph`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-814[TINKERPOP3-319],
+link:http://tinkerpop.incubator.apache.org/docs/3.0.2-incubating/#bulkloadervertexprogram[Reference Documentation - BLVP]
+
+TinkerGraph
+^^^^^^^^^^^
+
+TinkerGraph can now be configured to support persistence, where TinkerGraph will try to load a graph from a specified
+location and calls to `close()` will save the graph data to that location.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-828[TINKERPOP3-828],
+link:http://tinkerpop.incubator.apache.org/docs/3.0.2-incubating/#_configuration[Reference Documentation - TinkerGraph]
+
+Gremlin Driver and Server
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There were a number of fixes to `gremlin-driver` that prevent protocol desynchronization when talking to Gremlin
+Server.
+
+On the Gremlin Server side, Websocket sub-protocol introduces a new "close" operation to explicitly close sessions.
+Prior to this change, sessions were closed in a more passive fashion (i.e. session timeout).  There were also so
+bug fixes around the protocol as it pertained to third-party drivers (e.g. python) using JSON for authentication.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-814[TINKERPOP3-814],
+link:https://issues.apache.org/jira/browse/TINKERPOP3-816[TINKERPOP3-816],
+link:https://issues.apache.org/jira/browse/TINKERPOP3-817[TINKERPOP3-817],
+link:https://issues.apache.org/jira/browse/TINKERPOP3-855[TINKERPOP3-855],
+link:https://issues.apache.org/jira/browse/TINKERPOP3-870[TINKERPOP3-870],
+link:https://issues.apache.org/jira/browse/TINKERPOP3-877[TINKERPOP3-877]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,28 +82,42 @@ session-based requests).  Prior to this change, there was no way to explicitly c
 closed by the server after timeout of activity.  This new "op" gives drivers the ability to close the session
 explicitly and as needed.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP3-849[TINKERPOP3-849] and the
-link:http://tinkerpop.incubator.apache.org/docs/3.0.2-incubating/#_opprocessors_arguments[documentation] for more information.
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-849[TINKERPOP3-849],
+link:http://tinkerpop.incubator.apache.org/docs/3.0.2-incubating/#_opprocessors_arguments[Reference Documentation - OpProcessor]
 
 TinkerPop 3.0.1
 ---------------
 
 *Release Date: September 2, 2015*
 
-Important Changes
-~~~~~~~~~~~~~~~~~
-
-* Gremlin Server now supports a link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL-based] (Simple Authentication and Security Layer) authentication model and a default `SimpleAuthenticator` which implements the `PLAIN` SASL mechanism (i.e. plain text) to authenticate requests.  This gives Gremlin Server some basic security capabilities, especially when combined with its built-in SSL feature.
-* Gremlin Server now allows for a `Map` of values that can be returned from initialization scripts.  That `Map` will be used to set global bindings for the server. See this link:https://github.com/apache/incubator-tinkerpop/blob/3.0.1-incubating/gremlin-server/scripts/generate-modern.groovy[sample script] for an example.
-* The Neo4j plugin should now install properly on Windows operating systems.
-* For those who are interested in writing documentation for TinkerPop, there is now a `--dryRun` option that can be supplied to the `bin/process-docs.sh` command.  This command is useful in that it does not pre-process the documentation and execute the code samples within.  That step is time-intensive and therefore the `--dryRun` option can save a lot of time when editing the documentation, especially if there are only text or formatting changes to test.
-
 Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.0.1-incubating/CHANGELOG.asciidoc#tinkerpop-301-release-date-september-2-2015[changelog] for a complete list of all the modifications that are part of this release.
 
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
-Aside from learning about new features, users should not expect to find any changes in this release that will cause compile errors or other problems during upgrade.
+Gremlin Server
+^^^^^^^^^^^^^^
+
+Gremlin Server now supports a link:https://en.wikipedia.org/wiki/Simple_Authentication_and_Security_Layer[SASL-based] 
+(Simple Authentication and Security Layer) authentication model and a default `SimpleAuthenticator` which implements 
+the `PLAIN` SASL mechanism (i.e. plain text) to authenticate requests.  This gives Gremlin Server some basic security 
+capabilities, especially when combined with its built-in SSL feature.
+
+There have also been changes in how global variable bindings in Gremlin Server are established via initialization
+scripts.  The initialization scripts now allow for a `Map` of values that can be returned from those scripts.  
+That `Map` will be used to set global bindings for the server. See this 
+link:https://github.com/apache/incubator-tinkerpop/blob/3.0.1-incubating/gremlin-server/scripts/generate-modern.groovy[sample script] 
+for an example.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-576[TINKERPOP3-576] 
+
+Neo4j
+^^^^^
+
+Problems related to using `:install` to get the Neo4j plugin operating in Gremlin Console on Windows have been 
+resolved.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-804[TINKERPOP3-804]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -102,7 +139,7 @@ public interface MyGraph extends Graph{
 
 `MyGraphFactory` must contain the static `open` method that is normally expected by `GraphFactory`.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP3-778[TINKERPOP3-778] for more information.
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-778[TINKERPOP3-778]
 
 GraphProvider.Descriptor Annotation
 +++++++++++++++++++++++++++++++++++
@@ -120,14 +157,14 @@ public final class HadoopGiraphGraphProvider extends HadoopGraphProvider {
 }
 ----
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP3-690[TINKERPOP3-690] for more information.
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-690[TINKERPOP3-690] for more information.
 
 Semantics of Transaction.close()
 ++++++++++++++++++++++++++++++++
 
 There were some adjustments to the test suite with respect to how `Transaction.close()` was being validated.  For most providers, this will generally mean checking `OptOut` annotations for test renaming problems.  The error that occurs when running the test suite should make it apparent that a test name is incorrect in an `OptOut` if there are issues there.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP3-764[TINKERPOP3-764] for more information.
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-764[TINKERPOP3-764] for more information.
 
 Graph Driver Providers
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -140,4 +177,4 @@ authentication turned on and authentication is not required, so existing drivers
 additional change.  Drivers should however consider implementing this feature as it is likely that many users will
 want the security capabilities that it provides.
 
-Please read more about how to implement authentication link:http://tinkerpop.incubator.apache.org/docs/3.0.1-incubating/#_authentication[here].
+See: link:http://tinkerpop.incubator.apache.org/docs/3.0.1-incubating/#_authentication[Reference Documentation - Gremlin Server Authentication]

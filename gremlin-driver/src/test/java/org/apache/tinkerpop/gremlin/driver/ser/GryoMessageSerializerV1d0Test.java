@@ -37,13 +37,16 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.apache.tinkerpop.shaded.kryo.KryoException;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -161,6 +164,34 @@ public class GryoMessageSerializerV1d0Test {
         final Map<String, String> deserializedInnerMap = (Map<String, String>) deserializedMap.get("z");
         assertEquals(1, deserializedInnerMap.size());
         assertEquals("b", deserializedInnerMap.get("a"));
+    }
+
+    @Test
+    public void shouldSerializeMapEntry() throws Exception {
+        final Graph graph = TinkerGraph.open();
+        final Vertex v1 = graph.addVertex();
+        final Date d = new Date();
+
+        final Map<Object, Object> map = new HashMap<>();
+        map.put("x", 1);
+        map.put(v1, 100);
+        map.put(d, "test");
+
+        final ResponseMessage response = convertBinary(IteratorUtils.asList(map.entrySet()));
+        assertCommon(response);
+
+        final List<Map.Entry<Object, Object>> deserializedEntries = (List<Map.Entry<Object, Object>>) response.getResult().getData();
+        assertEquals(3, deserializedEntries.size());
+        deserializedEntries.forEach(e -> {
+            if (e.getKey().equals("x"))
+                assertEquals(1, e.getValue());
+            else if (e.getKey().equals(v1))
+                assertEquals(100, e.getValue());
+            else if (e.getKey().equals(d))
+                assertEquals("test", e.getValue());
+            else
+                fail("Map entries contains a key that is not part of what was serialized");
+        });
     }
 
     @Test
