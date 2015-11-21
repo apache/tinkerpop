@@ -53,9 +53,9 @@ public final class IoCore {
         return GryoIo.build();
     }
 
-    public static Io.Builder createIoBuilder(String graphFormat) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        Class<Io.Builder> ioBuilderClass = (Class<Io.Builder>) Class.forName(graphFormat);
-        Io.Builder ioBuilder = ioBuilderClass.newInstance();
+    public static Io.Builder createIoBuilder(final String graphFormat) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+        final Class<Io.Builder> ioBuilderClass = (Class<Io.Builder>) Class.forName(graphFormat);
+        final Io.Builder ioBuilder = ioBuilderClass.newInstance();
         return ioBuilder;
     }
 }

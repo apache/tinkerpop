@@ -29,6 +29,7 @@ TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 * Added `explain()`-step which yields a `TraversalExplanation` with a pretty `toString()` detailing the compilation process.
 * Fixed a traversal strategy ordering bug in `AdjacentToIncidentStrategy` and `IncidentToAdjacentStrategy`.
 * Made a number of changes to improve traversal startup and execution performance.
+* Added support for 'gremlin.tinkergraph.graphLocation' to accept a fully qualified class name that implements Io.Builder interface
 
 [[release-3.1.0-incubating]]
 TinkerPop 3.1.0 (Release Date: November 16, 2015)
