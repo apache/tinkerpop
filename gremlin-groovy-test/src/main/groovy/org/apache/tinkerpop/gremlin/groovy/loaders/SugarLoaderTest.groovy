@@ -78,11 +78,11 @@ class SugarLoaderTest extends AbstractGremlinTest {
         assertEquals(6, g.V.count.next())
         assertEquals(6, g.V.out.count.next())
         assertEquals(6, g.V.out.name.count.next())
-        assertEquals(2, g.V(1).out.out.name.count.next());
-        g.V(1).next().name = 'okram'
-        assertEquals('okram', g.V(1).next().name);
-        g.V(1).next()['name'] = 'marko a. rodriguez'
-        assertEquals(["okram", "marko a. rodriguez"] as Set, g.V(1).values('name').toSet());
+        assertEquals(2, g.V(graphProvider.convertId(1, Vertex.class)).out.out.name.count.next());
+        g.V(graphProvider.convertId(1, Vertex.class)).next().name = 'okram'
+        assertEquals('okram', g.V(graphProvider.convertId(1, Vertex.class)).next().name);
+        g.V(graphProvider.convertId(1, Vertex.class)).next()['name'] = 'marko a. rodriguez'
+        assertEquals(["okram", "marko a. rodriguez"] as Set, g.V(graphProvider.convertId(1, Vertex.class)).values('name').toSet());
         assertEquals(29, g.V.age.is(eq(29)).next())
     }
 

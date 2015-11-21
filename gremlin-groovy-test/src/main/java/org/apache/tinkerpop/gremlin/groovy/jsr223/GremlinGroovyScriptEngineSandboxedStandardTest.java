@@ -65,13 +65,15 @@ public class GremlinGroovyScriptEngineSandboxedStandardTest extends AbstractGrem
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine()) {
             final Bindings bindings = engine.createBindings();
             bindings.put("g", g);
-            assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()", bindings));
+            bindings.put("marko", convertToVertexId("marko"));
+            assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(marko).next()", bindings));
         }
 
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(notSandboxed)) {
             final Bindings bindings = engine.createBindings();
             bindings.put("g", g);
-            engine.eval("g.V(" + convertToVertexId("marko") + ").next()", bindings);
+            bindings.put("marko", convertToVertexId("marko"));
+            engine.eval("g.V(marko).next()", bindings);
             fail("Type checking should have forced an error as 'g' is not defined");
         } catch (Exception ex) {
             assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
@@ -81,8 +83,9 @@ public class GremlinGroovyScriptEngineSandboxedStandardTest extends AbstractGrem
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(sandboxed)) {
             final Bindings bindings = engine.createBindings();
             bindings.put("g", g);
-            assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()", bindings));
-            assertEquals(g.V(convertToVertexId("marko")).out("created").count().next(), engine.eval("g.V(" + convertToVertexId("marko") + ").out(\"created\").count().next()", bindings));
+            bindings.put("marko", convertToVertexId("marko"));
+            assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(marko).next()", bindings));
+            assertEquals(g.V(convertToVertexId("marko")).out("created").count().next(), engine.eval("g.V(marko).out(\"created\").count().next()", bindings));
         }
     }
 
@@ -92,13 +95,15 @@ public class GremlinGroovyScriptEngineSandboxedStandardTest extends AbstractGrem
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine()) {
             final Bindings bindings = engine.createBindings();
             bindings.put("graph", graph);
-            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(" + convertToVertexId("marko") + ").next()", bindings));
+            bindings.put("marko", convertToVertexId("marko"));
+            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(marko).next()", bindings));
         }
 
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(notSandboxed)) {
             final Bindings bindings = engine.createBindings();
             bindings.put("graph", graph);
-            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(" + convertToVertexId("marko") + ").next()", bindings));
+            bindings.put("marko", convertToVertexId("marko"));
+            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(marko).next()", bindings));
             fail("Type checking should have forced an error as 'graph' is not defined");
         } catch (Exception ex) {
             assertEquals(MultipleCompilationErrorsException.class, ex.getCause().getClass());
@@ -119,7 +124,8 @@ public class GremlinGroovyScriptEngineSandboxedStandardTest extends AbstractGrem
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(sandboxed)) {
             final Bindings bindings = engine.createBindings();
             bindings.put("graph", graph);
-            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(" + convertToVertexId("marko") + ").next()", bindings));
+            bindings.put("marko", convertToVertexId("marko"));
+            assertEquals(graph.vertices(convertToVertexId("marko")).next(), engine.eval("graph.vertices(marko).next()", bindings));
         }
 
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(sandboxed)) {
