@@ -20,10 +20,15 @@
 
 pushd "$(dirname $0)/../.." > /dev/null
 
-if [ -f "target/docs/htmlsingle/index.html" ]; then
-  awk -f "docs/postprocessor/processor.awk" target/docs/htmlsingle/index.html \
-    | perl -0777 -pe 's/<span class="comment">\/\*\n \*\/<\/span>//igs'       \
-    > /tmp/index.html && mv /tmp/index.html target/docs/htmlsingle/
+TP_VERSION=$(cat pom.xml | grep -A1 '<artifactId>tinkerpop</artifactId>' | grep -o 'version>[^<]*' | grep -o '>.*' | cut -d '>' -f2 | head -n1)
+
+if [ -d "target/docs" ]; then
+  find target/docs -name index.html | while read file ; do
+    awk -f "docs/postprocessor/processor.awk" "${file}"                   \
+      | perl -0777 -pe 's/<span class="comment">\/\*\n \*\/<\/span>//igs' \
+      | sed "s/x\.y\.z/${TP_VERSION}/g"                                   \
+      > "${file}.tmp" && mv "${file}.tmp" "${file}"
+  done
 fi
 
 popd > /dev/null

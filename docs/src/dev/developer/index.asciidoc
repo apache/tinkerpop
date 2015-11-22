@@ -18,22 +18,16 @@ image::apache-tinkerpop-logo.png[width=500]
 
 :toc-position: left
 
-TinkerPop Upgrade Information
-=============================
+Developer Documentation
+=======================
 
-This document helps users of TinkerPop to understand the changes that come with each software release.  It outlines
-new features, how to resolve breaking changes and other information specific to a release.  This document is useful
-to end-users who are building applications on TinkerPop, but it is equally useful to TinkerPop providers, who
-build libraries and other systems on the the core APIs and protocols that TinkerPop exposes.
+This document contains information for TinkerPop developers, contributors, and community members. It focuses on
+technical information and other internal processes related to the project.
 
-These providers include:
+include::contributing.asciidoc[]
 
-* Graph System Provider
-** Graph Database Provider
-** Graph Processor Provider
-* Graph Driver Provider
-* Graph Language Provider
+include::release.asciidoc[]
 
-include::upgrade-release-3.1.x-incubating.asciidoc[]
+include::administration.asciidoc[]
 
-include::upgrade-release-3.0.x-incubating.asciidoc[]
+include::meetings.asciidoc[]

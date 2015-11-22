@@ -584,10 +584,19 @@ limitations under the License.
             </activation>
 
             <properties>
+                <!-- the source asciidocs are copied from /docs to asciidoc.source.dir by bin/process-docs.sh
+                     where they can the scripts embedded in the text are then executed and their results shoved
+                     back into the doc -->
                 <asciidoc.source.dir>${project.basedir}/target/postprocess-asciidoc</asciidoc.source.dir>
+
+                <!-- once code processing is over, the documents are basically ready for the formatter and are
+                     copied by way of the maven-resources-plugin to asciidoc.input.dir where they will be processed
+                     by the asciidoctor plugin -->
                 <asciidoc.input.dir>${project.basedir}/target/doc-source</asciidoc.input.dir>
-                <asciidoctor.style.dir>${asciidoc.input.dir}/stylesheets</asciidoctor.style.dir>
+
+                <!-- the output directory for the asciidoctor plugin - finalized documents can be found here -->
                 <htmlsingle.output.dir>${project.basedir}/target/docs/htmlsingle</htmlsingle.output.dir>
+                <asciidoctor.style.dir>${asciidoc.input.dir}/stylesheets</asciidoctor.style.dir>
             </properties>
 
             <build>
@@ -610,6 +619,7 @@ limitations under the License.
                         <artifactId>maven-resources-plugin</artifactId>
                         <inherited>false</inherited>
                         <executions>
+                            <!-- copies docs already handled by the preprocessor to their staging area for asciidoc formatting -->
                             <execution>
                                 <id>copy-docs-to-work-area</id>
                                 <phase>generate-resources</phase>
@@ -626,6 +636,7 @@ limitations under the License.
                                     </resources>
                                 </configuration>
                             </execution>
+                            <!-- copies images/resources to staging area for asciidoc formatting -->
                             <execution>
                                 <id>copy-static-assets-to-htmlsingle</id>
                                 <phase>process-resources</phase>
@@ -647,59 +658,29 @@ limitations under the License.
                             </execution>
                         </executions>
                     </plugin>
-                    <!-- replaces x.y.z in asciidoc with the tinkerpop version from the pom.  using an attribute
-                         in the asciidoctor-maven-plugin doesn't work properly in all cases for some reasons,
-                         specifically in the code examples -->
-                    <plugin>
-                        <groupId>com.google.code.maven-replacer-plugin</groupId>
-                        <artifactId>replacer</artifactId>
-                        <version>1.5.3</version>
-                        <inherited>false</inherited>
-                        <executions>
-                            <execution>
-                                <phase>generate-resources</phase>
-                                <goals>
-                                    <goal>replace</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <includes>
-                                <include>${asciidoc.input.dir}/*.asciidoc</include>
-                            </includes>
-                            <replacements>
-                                <replacement>
-                                    <token>x\.y\.z</token>
-                                    <value>${project.version}</value>
-                                </replacement>
-                            </replacements>
-                        </configuration>
-                    </plugin>
                     <plugin>
                         <groupId>org.asciidoctor</groupId>
                         <artifactId>asciidoctor-maven-plugin</artifactId>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
-                                <id>asciidoc-to-docbook</id>
+                                <id>reference-book</id>
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/reference</sourceDirectory>
                                     <sourceDocumentName>index.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
+                                    <outputDirectory>${htmlsingle.output.dir}/reference</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>book</doctype>
                                     <attributes>
-                                        <imagesdir>images</imagesdir>
+                                        <imagesdir>../images</imagesdir>
                                         <encoding>UTF-8</encoding>
                                         <toc>true</toc>
                                         <toclevels>3</toclevels>
                                         <toc-position>left</toc-position>
-                                        <!--<iconsdir>images/icons</iconsdir>-->
-                                        <!-- AsciiDoctor CSS3-based theme configuration -->
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
@@ -708,25 +689,23 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>asciidoc-to-upgrade-book</id>
+                                <id>upgrade-book</id>
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
-                                    <sourceDocumentName>upgrade.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/upgrade</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/upgrade</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>book</doctype>
                                     <attributes>
-                                        <imagesdir>images</imagesdir>
+                                        <imagesdir>../images</imagesdir>
                                         <encoding>UTF-8</encoding>
                                         <toc>true</toc>
                                         <toclevels>3</toclevels>
                                         <toc-position>left</toc-position>
-                                        <!--<iconsdir>images/icons</iconsdir>-->
-                                        <!-- AsciiDoctor CSS3-based theme configuration -->
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
@@ -735,25 +714,23 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>asciidoc-to-developer-book</id>
+                                <id>developer-book</id>
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
-                                    <sourceDocumentName>developer.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/dev/developer</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/dev/developer</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>book</doctype>
                                     <attributes>
-                                        <imagesdir>images</imagesdir>
+                                        <imagesdir>../../images</imagesdir>
                                         <encoding>UTF-8</encoding>
                                         <toc>true</toc>
                                         <toclevels>3</toclevels>
                                         <toc-position>left</toc-position>
-                                        <!--<iconsdir>images/icons</iconsdir>-->
-                                        <!-- AsciiDoctor CSS3-based theme configuration -->
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>
@@ -762,22 +739,20 @@ limitations under the License.
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>asciidoc-to-tutorials-book</id>
+                                <id>tutorial-getting-started</id>
                                 <phase>generate-resources</phase>
                                 <goals>
                                     <goal>process-asciidoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourceDirectory>${asciidoc.input.dir}</sourceDirectory>
-                                    <sourceDocumentName>tutorials-getting-started.asciidoc</sourceDocumentName>
-                                    <outputDirectory>${htmlsingle.output.dir}</outputDirectory>
+                                    <sourceDirectory>${asciidoc.input.dir}/tutorials/getting-started</sourceDirectory>
+                                    <sourceDocumentName>index.asciidoc</sourceDocumentName>
+                                    <outputDirectory>${htmlsingle.output.dir}/tutorials/getting-started</outputDirectory>
                                     <backend>html5</backend>
                                     <doctype>article</doctype>
                                     <attributes>
-                                        <imagesdir>images</imagesdir>
+                                        <imagesdir>../../images</imagesdir>
                                         <encoding>UTF-8</encoding>
-                                        <!--<iconsdir>images/icons</iconsdir>-->
-                                        <!-- AsciiDoctor CSS3-based theme configuration -->
                                         <stylesdir>${asciidoctor.style.dir}</stylesdir>
                                         <stylesheet>tinkerpop.css</stylesheet>
                                         <source-highlighter>coderay</source-highlighter>

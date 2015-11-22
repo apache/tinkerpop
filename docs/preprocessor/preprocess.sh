@@ -36,11 +36,6 @@ do
   fi
 done
 
-nc -z localhost 2181 || (
-  echo "ZooKeeper is not running, be sure to start it before processing the docs."
-  exit 1
-)
-
 if [ -e /tmp/neo4j ]; then
   echo "The directory '/tmp/neo4j' is required by the pre-processor, be sure to delete it before processing the docs."
   exit 1
@@ -121,16 +116,27 @@ echo
 echo "============================"
 echo "+   Processing AsciiDocs   +"
 echo "============================"
-find "${TP_HOME}/docs/src/" -name "*.asciidoc" |
-     xargs -n1 basename |
-     xargs -n1 -I {} echo "echo -ne {}' '; (grep -n {} ${TP_HOME}/docs/src/index.asciidoc || echo 0) | cut -d ':' -f1" | /bin/bash | sort -nk2 | cut -d ' ' -f1 |
-     xargs -n1 -I {} echo "${TP_HOME}/docs/src/{}" |
-     xargs -n1 ${TP_HOME}/docs/preprocessor/preprocess-file.sh "${CONSOLE_HOME}"
 
-ps=(${PIPESTATUS[@]})
-for i in {0..7}; do
-  ec=${ps[i]}
-  [ ${ec} -eq 0 ] || break
+ec=0
+process_subdirs=1
+find "${TP_HOME}/docs/src/" -name index.asciidoc | xargs -n1 dirname | while read subdir ; do
+  if [ ${process_subdirs} -eq 1 ]; then
+    find "${subdir}" -name "*.asciidoc" |
+         xargs -n1 basename |
+         xargs -n1 -I {} echo "echo -ne {}' '; (grep -n {} ${subdir}/index.asciidoc || echo 0) | cut -d ':' -f1" | /bin/bash | sort -nk2 | cut -d ' ' -f1 |
+         xargs -n1 -I {} echo "${subdir}/{}" |
+         xargs -n1 ${TP_HOME}/docs/preprocessor/preprocess-file.sh "${CONSOLE_HOME}"
+
+    ps=(${PIPESTATUS[@]})
+    for i in {0..7}; do
+      ec=${ps[i]}
+      [ ${ec} -eq 0 ] || break
+    done
+
+    if [ ${ec} -ne 0 ]; then
+      process_subdirs=0
+    fi
+  fi
 done
 
 tput smam
