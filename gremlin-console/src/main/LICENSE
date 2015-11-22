@@ -202,41 +202,6 @@
    limitations under the License.
 
 ========================================================================
-Apache 2.0 Licenses
-========================================================================
-
-The Apache TinkerPop project bundles the following components under the Apache 2.0 License:
-
-     Commons Codec (commons-codec:commons-codec - http://commons.apache.org/codec/)
-     Apache Commons Configuration (commons-configuration:commons-configuration - http://commons.apache.org/configuration/)
-     Commons Lang (commons-lang:commons-lang - http://commons.apache.org/lang/)
-     Apache Commons Lang (org.apache.commons:commons-lang3 - http://commons.apache.org/proper/commons-lang/)
-     Commons Logging (commons-logging:commons-logging - http://commons.apache.org/logging)
-     GBench (org.gperfutils:gbench - https://github.com/gperfutils/gbench)
-     GProf (org.gperfutils:gprof - https://github.com/gperfutils/gprof)
-     Groovy (org.codehaus.groovy:groovy - http://www.groovy-lang.org/)
-     Groovy Console (org.codehaus.groovy:groovy-console - http://www.groovy-lang.org/)
-     Groovysh (org.codehaus.groovy:groovy-groovysh - http://www.groovy-lang.org/)
-     Groovy JSON (org.codehaus.groovy:groovy-json - http://www.groovy-lang.org/)
-     Groovy JSR-223 (org.codehaus.groovy:groovy-jsr223 - http://www.groovy-lang.org/)
-     Groovy SQL (org.codehaus.groovy:groovy-sql - http://www.groovy-lang.org/)
-     Groovy Swing (org.codehaus.groovy:groovy-swing - http://www.groovy-lang.org/)
-     Groovy Templates (org.codehaus.groovy:groovy-templates - http://www.groovy-lang.org/)
-     Groovy XML (org.codehaus.groovy:groovy-xml - http://www.groovy-lang.org/)
-     HPPC Collections (com.carrotsearch:hppc - http://labs.carrotsearch.com/hppc.html/hppc)
-     HttpClient (org.apache.httpcomponents:httpclient - http://hc.apache.org/httpcomponents-client)
-     HttpCore (org.apache.httpcomponents:httpcore - http://hc.apache.org/httpcomponents-core-ga)
-     Apache Ivy (org.apache.ivy:ivy - http://ant.apache.org/ivy/)
-     Jackson-annotations (com.fasterxml.jackson.core:jackson-annotations - http://wiki.fasterxml.com/JacksonHome) - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.annotation
-     Jackson-core (com.fasterxml.jackson.core:jackson-core - http://wiki.fasterxml.com/JacksonHome) - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.core
-     jackson-databind (com.fasterxml.jackson.core:jackson-databind - http://wiki.fasterxml.com/JacksonHome) - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.databind
-     javatuples (org.javatuples:javatuples - http://www.javatuples.org)
-     Apache Log4j (log4j:log4j - http://logging.apache.org/log4j/1.2/)
-     Netty/All-in-One (io.netty:netty-all - http://netty.io/netty-all/)
-     Objenesis (org.objenesis:objenesis - http://objenesis.org/) - shaded in gremlin-shaded to org.apache.tinkerpop.shaded.objenesis
-     SnakeYAML (org.yaml:snakeyaml - http://www.snakeyaml.org)
-
-========================================================================
 BSD-style Licenses
 ========================================================================
 
