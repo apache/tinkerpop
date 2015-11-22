@@ -229,12 +229,3 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-========================================================================
-Apache 2 Licenses
-========================================================================
-
-The Apache TinkerPop project bundles the following components under the Apache 2 License:
-
-    DelegatingXMLStreamWriter.java (https://github.com/Activiti/Activiti)
-    IndentingXMLStreamWriter.java (https://github.com/Activiti/Activiti)
