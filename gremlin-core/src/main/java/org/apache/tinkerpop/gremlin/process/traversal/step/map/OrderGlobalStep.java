@@ -95,7 +95,7 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> localChildTraversal) {
-        throw new UnsupportedOperationException("Use OrderGlobalStep.addComparator(" + TraversalComparator.class.getSimpleName() + ") to add a local child traversal:" + this);
+        this.addComparator(new TraversalComparator<>((Traversal.Admin) localChildTraversal, Order.incr));
     }
 
     @Override
@@ -103,16 +103,10 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
         final OrderGlobalStep<S> clone = (OrderGlobalStep<S>) super.clone();
         clone.comparators = new ArrayList<>();
         for (final Comparator<S> comparator : this.comparators) {
-            if (comparator instanceof TraversalComparator) {
-                final TraversalComparator<S, ?> clonedTraversalComparator = ((TraversalComparator<S, ?>) comparator).clone();
-                clone.integrateChild(clonedTraversalComparator.getTraversal());
-                clone.comparators.add(clonedTraversalComparator);
-            } else
-                clone.comparators.add(comparator);
+            clone.addComparator(comparator instanceof TraversalComparator ? ((TraversalComparator) comparator).clone() : comparator);
         }
         return clone;
     }
-
 
     /////
 

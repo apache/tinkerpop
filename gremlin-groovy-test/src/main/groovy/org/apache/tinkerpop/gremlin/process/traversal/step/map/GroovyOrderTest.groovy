@@ -96,5 +96,15 @@ public abstract class GroovyOrderTest {
         public Traversal<Vertex, Map<String, Object>> get_g_V_asXvX_mapXbothE_weight_foldX_sumXlocalX_asXsX_selectXv_sX_order_byXselectXsX_decrX() {
             TraversalScriptHelper.compute("g.V.as('v').map(__.bothE.weight.fold).sum(local).as('s').select('v', 's').order.by(select('s'),decr)", g);
         }
+
+        @Override
+        public Traversal<Vertex, Vertex> get_g_V_hasLabelXpersonX_order_byXageX() {
+            TraversalScriptHelper.compute("g.V.hasLabel('person').order.by('age')", g);
+        }
+
+        @Override
+        public Traversal<Vertex, List<Vertex>> get_g_V_hasLabelXpersonX_fold_orderXlocalX_byXageX() {
+            TraversalScriptHelper.compute("g.V.hasLabel('person').fold.order(local).by('age')", g)
+        }
     }
 }
