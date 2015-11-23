@@ -32,7 +32,11 @@ import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;

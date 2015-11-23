@@ -135,6 +135,13 @@ g.V(1).out('knows').has('age', gt(30)).values('name')    <7>
 (similar to `inE().inV()` and `in` for incoming edges).
 <7> Get the names of the people vertex "1" knows who are over the age of 30.
 
+IMPORTANT: A `Traversal` is essentially an `Iterator` so if you have code like `x = g.V()`, the `x` does not contain
+the results of the `g.V()` query.  Rather, that statement assigns an `Iterator` value to `x`. To get your results,
+you would then need to iterate through `x`. This understanding is *important* because in the context of the console
+typing `g.V()` instantly returns a value. The console does some magic for you by noticing that `g.V()` returns
+an `Iterator` and then automatically iterates the results. In short, when writing Gremlin outside of the console
+always remember that you must iterate your `Traversal` manually in some way for it to do anything.
+
 In this first five minutes with Gremlin, you've gotten the Gremlin Console installed, instantiated a `Graph` and
 `TraversalSource`, wrote some traversals and hopefully learned something about TinkerPop in general. You've only
 scratched the surface of what there is to know, but those accomplishments will help enable your understanding of the
