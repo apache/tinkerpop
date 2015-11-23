@@ -365,6 +365,7 @@ license then it should be added in the pattern already defined.
 
 To determine if changes are required to the NOTICE, first check if the bundled jar has a NOTICE file in it.
 
+* If the bundled file does not have a NOTICE then no changes to TinkerPop's NOTICE are required.
 * If the NOTICE of the file being bundled is NOT Apache licensed then there is no change to TinkerPop's NOTICE.
 * If the NOTICE of the file being bundled is Apache licensed then include the copyright notification in TinkerPop's
 NOTICE.
