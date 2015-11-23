@@ -88,6 +88,7 @@ A positive vote for a particular release from the TinkerPop PMC is required to m
 are additional tests to perform that the release manager feels are relevant, they should be performed now. In other
 words, there is no need to rebuild the `SNAPSHOT` yet another time unless there are circumstances that would call its
 validity into question.
+. Update the links in the `README.asciidoc` to point at the latest version.
 . Update `CHANGELOG.asciidoc`:
 .. Update the release date
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
@@ -123,6 +124,14 @@ handled document generation and this step now merely needs to upload what was ge
 . Perform JIRA administration tasks:
 .. "Release" the current version and set the "release date"
 .. If there is to be a follow on release in the current line of code, create that new version specifying the "start date"
+. Prepare Git administration tasks (apply the following steps as needed per release branch):
+.. Make the appropriate branching changes as required by the release and bump the version to `SNAPSHOT` with
+`mvn versions:set -DnewVersion=xx.yy.zz-SNAPSHOT -DgenerateBackupPoms=false`.
+.. `mvn clean install -Dmaven.test.skip=true` - need to build first so that the right version of the console is used with `bin/publish-docs.sh`
+.. `mvn deploy -DskipTests` - deploy the new `SNAPSHOT`
+.. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally
+.. `bin/publish-docs.sh <username>` to publish the `SNAPSHOT` docs which enables the README to work properly.
+.. Update the links in the `README.asciidoc` to point at the `SNAPSHOT` version.
 . Submit for `[VOTE]` at `dev@tinkerpop.incubator.apache.org` (see email template below)
 . *Wait for vote acceptance* (72 hours)
 
