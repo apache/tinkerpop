@@ -592,7 +592,7 @@ post strategy application. The final traversal is the resultant execution plan.
 
 [gremlin-groovy,modern]
 ----
-g.V().outE().identity().inV().count().is(gt(5)).explain()
+g.V().hasLabel('person').outE().identity().inV().count().is(gt(5)).explain()
 ----
 
 For traversal profiling information, please see <<profile-step,`profile()`>>-step.
