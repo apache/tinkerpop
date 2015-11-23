@@ -123,6 +123,12 @@ It would also be helpful to join the public link:https://s.apache.org/tinkerpop[
 discussion.  This helps contributors to communicate in a more real-time way.  Anyone can join as a guest, but for
 regular contributors it may be best to request that an Apache HipChat account be created.
 
+Occasionally, online meetings via video conference are held.  These meetings are schedule via the dev mailing list
+about a week before they are to occur to find a day and time that is available for those interested in attending.
+On the day of the meeting, the meeting organizer will create a Google Hangout (or similar video conferencing link) to
+post to the TinkerPop room in HipChat.  At that point, all who are interested can attend.  Meeting minutes should be
+taken and added to the <<meetings,Meetings>> section of this document using the pattern already established.
+
 Release Notes
 ~~~~~~~~~~~~~
 
