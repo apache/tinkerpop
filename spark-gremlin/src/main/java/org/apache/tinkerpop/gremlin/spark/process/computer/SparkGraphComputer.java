@@ -54,6 +54,8 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
@@ -112,6 +114,29 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 throw new IllegalStateException(e.getMessage(), e);
             }
         }
+
+        /* Create an executor with a custom ThreadFactory.  This has two purposes:
+         *
+         * 1. Allow the completable future to call setContextClassLoader.  This is required for
+         *    Hadoop's UserGroupInformation to function, but it is disabled (throws
+         *    SecurityException) on ForkJoinPool.commonPool when
+         *    System.getSecurityManager() != null.
+         *
+         * 2. Propagate the calling thread's context classloader into the completable future.
+         *    ForkJoinPool.commonPool does not necessarily use the same classloader as this
+         *    calling thread, which leads to surprises.
+         *
+         * It also propagates the calling thread's ThreadGroup to the completable future's thread.
+         */
+        final Thread callingThread = Thread.currentThread();
+        final ClassLoader classLoader = callingThread.getContextClassLoader();
+        final ThreadGroup threadGroup = callingThread.getThreadGroup();
+        final String threadName = callingThread.getName();
+        Executor submissionEecutor = Executors.newSingleThreadExecutor(runnable -> {
+            Thread t = new Thread(threadGroup, runnable, threadName + "-TP-Spark");
+            t.setContextClassLoader(classLoader);
+            return t;
+        });
 
         // create the completable future
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
@@ -224,7 +249,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 if (sparkContext != null && !apacheConfiguration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
                     sparkContext.stop();
             }
-        });
+        }, submissionEecutor);
     }
 
     /////////////////
