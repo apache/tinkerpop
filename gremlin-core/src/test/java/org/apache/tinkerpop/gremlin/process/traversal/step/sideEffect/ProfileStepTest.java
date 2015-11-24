@@ -32,6 +32,6 @@ public class ProfileStepTest extends StepTest {
 
     @Override
     protected List<Traversal> getTraversals() {
-        return Collections.singletonList(__.profile());
+        return Collections.singletonList(__.identity().profile());
     }
 }

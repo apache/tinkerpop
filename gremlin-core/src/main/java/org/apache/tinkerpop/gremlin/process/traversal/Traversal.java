@@ -23,6 +23,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.StandardTraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyStep;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
@@ -169,6 +170,15 @@ public interface Traversal<S, E> extends Iterator<E>, Serializable, Cloneable {
         } catch (final NoSuchElementException ignored) {
         }
         return (Traversal<A, B>) this;
+    }
+
+    /**
+     * Profile the traversal.
+     *
+     * @return the updated traversal with respective {@link ProfileStep}.
+     */
+    public default Traversal<S, E> profile() {
+        return this.asAdmin().addStep(new ProfileStep<>(this.asAdmin()));
     }
 
     /**

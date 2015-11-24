@@ -31,7 +31,7 @@ import java.util.Set;
  */
 public class GraphTraversalTest {
 
-    private static Set<String> NO_GRAPH = new HashSet<>(Arrays.asList("asAdmin", "by", "option", "iterate", "to", "from"));
+    private static Set<String> NO_GRAPH = new HashSet<>(Arrays.asList("asAdmin", "by", "option", "iterate", "to", "from", "profile"));
     private static Set<String> NO_ANONYMOUS = new HashSet<>(Arrays.asList("start", "__"));
 
     @Test

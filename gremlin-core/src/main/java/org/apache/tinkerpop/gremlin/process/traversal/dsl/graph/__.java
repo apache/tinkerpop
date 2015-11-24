@@ -827,10 +827,6 @@ public class __ {
         return __.<A>start().as(label, labels);
     }
 
-    public static <A> GraphTraversal<A, A> profile() {
-        return __.<A>start().profile();
-    }
-
     public static <A> GraphTraversal<A, A> barrier() {
         return __.<A>start().barrier();
     }
