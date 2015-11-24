@@ -260,6 +260,7 @@ limitations under the License.
                 <configuration>
                     <excludeSubProjects>false</excludeSubProjects>
                     <excludes>
+                        <exclude>.travis.yml</exclude>
                         <exclude>.repository/**</exclude>
                         <exclude>docs/static/**</exclude>
                         <exclude>**/target/**</exclude>
