@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* If no comparator is provided to `order()`, `Order.incr` is assumed (previously, an exception occurred).
 * Fixed various Gremlin-Groovy tests that assumed `toString()`-able ids.
 * Split TinkerPop documentation into different directories.
 * Added `explain()`-step which yields a `TraversalExplanation` with a pretty `toString()` detailing the compilation process.
