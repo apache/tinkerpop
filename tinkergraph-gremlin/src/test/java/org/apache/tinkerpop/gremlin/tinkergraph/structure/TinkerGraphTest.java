@@ -23,19 +23,25 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
+import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -381,5 +387,66 @@ public class TinkerGraphTest {
         final TinkerGraph reloadedGraph = TinkerGraph.open(conf);
         IoTest.assertModernGraph(reloadedGraph, true, false);
         reloadedGraph.close();
+    }
+
+    @Test
+    public void shouldPersistToAnyGraphFormat() {
+        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToAnyGraphFormat.dat";
+        final File f = new File(graphLocation);
+        if (f.exists() && f.isFile()) f.delete();
+
+        final Configuration conf = new BaseConfiguration();
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_FORMAT, TestIoBuilder.class.getName());
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, graphLocation);
+        final TinkerGraph graph = TinkerGraph.open(conf);
+        TinkerFactory.generateModern(graph);
+
+        //Test write graph
+        graph.close();
+        assertEquals(TestIoBuilder.calledRegistry, 1);
+        assertEquals(TestIoBuilder.calledGraph, 1);
+        assertEquals(TestIoBuilder.calledCreate, 1);
+
+        try (BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(f))){
+            os.write("dummy string".getBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //Test read graph
+        final TinkerGraph readGraph = TinkerGraph.open(conf);
+        assertEquals(TestIoBuilder.calledRegistry, 1);
+        assertEquals(TestIoBuilder.calledGraph, 1);
+        assertEquals(TestIoBuilder.calledCreate, 1);
+    }
+
+    public static class TestIoBuilder implements Io.Builder{
+
+        static int calledRegistry, calledGraph, calledCreate;
+
+        public TestIoBuilder(){
+            //Looks awkward to reset static vars inside a constructor, but makes sense from testing perspective
+            calledRegistry=0;
+            calledGraph=0;
+            calledCreate=0;
+        }
+
+        @Override
+        public Io.Builder<? extends Io> registry(IoRegistry registry) {
+            calledRegistry++;
+            return this;
+        }
+
+        @Override
+        public Io.Builder<? extends Io> graph(Graph graph) {
+            calledGraph++;
+            return this;
+        }
+
+        @Override
+        public Io create() {
+            calledCreate++;
+            return mock(Io.class);
+        }
     }
 }

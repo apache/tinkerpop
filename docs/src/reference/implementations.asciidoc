@@ -630,7 +630,9 @@ TinkerGraph has several settings that can be provided on creation via `Configura
 value is specified here, the the `gremlin.tinkergraph.graphFormat` should also be specified.  If this value is not
 included (default), then the graph will stay in-memory and not be loaded/persisted to disk.
 |gremlin.tinkergraph.graphFormat |The format to use to serialize the graph which may be one of the following:
-`graphml`, `graphson`, or `gryo`. If a value is specified here, the the `gremlin.tinkergraph.graphLocation` should
+`graphml`, `graphson`, `gryo`, or a fully qualified class name that implements Io.Builder interface (which allows for
+external third party graph reader/writer formats to be used for persistence).
+If a value is specified here, then the `gremlin.tinkergraph.graphLocation` should
 also be specified.  If this value is not included (default), then the graph will stay in-memory and not be
 loaded/persisted to disk.
 |=========================================================

@@ -282,9 +282,11 @@ public final class TinkerGraph implements Graph {
                     io(IoCore.graphson()).readGraph(graphLocation);
                 } else if (graphFormat.equals("gryo")) {
                     io(IoCore.gryo()).readGraph(graphLocation);
+                } else {
+                    io(IoCore.createIoBuilder(graphFormat)).readGraph(graphLocation);
                 }
-            } catch (IOException ioe) {
-                throw new RuntimeException(String.format("Could not load graph at %s with %s", graphLocation, graphFormat));
+            } catch (Exception ex) {
+                throw new RuntimeException(String.format("Could not load graph at %s with %s", graphLocation, graphFormat), ex);
             }
         }
     }
@@ -307,11 +309,15 @@ public final class TinkerGraph implements Graph {
                 io(IoCore.graphson()).writeGraph(graphLocation);
             } else if (graphFormat.equals("gryo")) {
                 io(IoCore.gryo()).writeGraph(graphLocation);
+            } else {
+                io(IoCore.createIoBuilder(graphFormat)).writeGraph(graphLocation);
             }
-        } catch (IOException ioe) {
-            throw new RuntimeException(String.format("Could not save graph at %s with %s", graphLocation, graphFormat));
+        } catch (Exception ex) {
+            throw new RuntimeException(String.format("Could not save graph at %s with %s", graphLocation, graphFormat), ex);
         }
     }
+
+
 
     private <T extends Element> Iterator<T> createElementIterator(final Class<T> clazz, final Map<Object, T> elements,
                                                                   final IdManager idManager,
