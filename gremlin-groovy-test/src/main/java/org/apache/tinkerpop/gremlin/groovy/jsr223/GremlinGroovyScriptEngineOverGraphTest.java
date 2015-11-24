@@ -36,6 +36,7 @@ import javax.script.Bindings;
 import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -61,11 +62,12 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
     public void shouldDoSomeGremlin() throws Exception {
         final ScriptEngine engine = new GremlinGroovyScriptEngine();
         final List list = new ArrayList();
-        engine.put("g", g);
-        engine.put("marko", convertToVertexId("marko"));
-        engine.put("temp", list);
+        final Bindings bindings = engine.createBindings();
+        bindings.put("g", g);
+        bindings.put("marko", convertToVertexId("marko"));
+        bindings.put("temp", list);
         assertEquals(list.size(), 0);
-        engine.eval("g.V(marko).out().fill(temp)");
+        engine.eval("g.V(marko).out().fill(temp)",bindings);
         assertEquals(list.size(), 3);
     }
 

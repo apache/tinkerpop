@@ -100,14 +100,14 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
     /**
      * Determines if a test requires TinkerGraph persistence to be configured with graph location and format.
      */
-    private static boolean requiresPersistence(final Class<?> test, final String testMethodName) {
+    protected static boolean requiresPersistence(final Class<?> test, final String testMethodName) {
         return test == GraphTest.class && testMethodName.equals("shouldPersistDataOnClose");
     }
 
     /**
      * Determines if a test requires a different cardinality as the default or not.
      */
-    private static boolean requiresListCardinalityAsDefault(final LoadGraphWith.GraphData loadGraphWith,
+    protected static boolean requiresListCardinalityAsDefault(final LoadGraphWith.GraphData loadGraphWith,
                                                             final Class<?> test, final String testMethodName) {
         return loadGraphWith == LoadGraphWith.GraphData.CREW
                 || (test == StarGraphTest.class && testMethodName.equals("shouldAttachWithCreateMethod"))
@@ -117,7 +117,7 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
     /**
      * Some tests require special configuration for TinkerGraph to properly configure the id manager.
      */
-    private TinkerGraph.DefaultIdManager selectIdMakerFromTest(final Class<?> test, final String testMethodName) {
+    protected TinkerGraph.DefaultIdManager selectIdMakerFromTest(final Class<?> test, final String testMethodName) {
         if (test.equals(GraphTest.class)) {
             final Set<String> testsThatNeedLongIdManager = new HashSet<String>(){{
                 add("shouldIterateVerticesWithNumericIdSupportUsingDoubleRepresentation");
@@ -180,7 +180,7 @@ public class TinkerGraphProvider extends AbstractGraphProvider {
      * Test that load with specific graph data can be configured with a specific id manager as the data type to
      * be used in the test for that graph is known.
      */
-    private TinkerGraph.DefaultIdManager selectIdMakerFromGraphData(final LoadGraphWith.GraphData loadGraphWith) {
+    protected TinkerGraph.DefaultIdManager selectIdMakerFromGraphData(final LoadGraphWith.GraphData loadGraphWith) {
         if (null == loadGraphWith) return TinkerGraph.DefaultIdManager.ANY;
         if (loadGraphWith.equals(LoadGraphWith.GraphData.CLASSIC))
             return TinkerGraph.DefaultIdManager.INTEGER;
