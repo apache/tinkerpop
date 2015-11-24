@@ -18,6 +18,7 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
@@ -41,7 +42,7 @@ import java.util.stream.Collectors;
  */
 public final class OrderLocalStep<S, M> extends MapStep<S, S> implements ComparatorHolder<M>, TraversalParent {
 
-    private final List<Comparator<M>> comparators = new ArrayList<>();
+    private List<Comparator<M>> comparators = new ArrayList<>();
     private Comparator<M> chainedComparator = null;
 
     public OrderLocalStep(final Traversal.Admin traversal) {
@@ -62,6 +63,8 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Compara
     @Override
     public void addComparator(final Comparator<M> comparator) {
         this.comparators.add(comparator);
+        if (comparator instanceof TraversalComparator)
+            this.integrateChild(((TraversalComparator) comparator).getTraversal());
         this.chainedComparator = this.comparators.stream().reduce((a, b) -> a.thenComparing(b)).get();
     }
 
@@ -99,7 +102,17 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Compara
 
     @Override
     public void addLocalChild(final Traversal.Admin<?, ?> localChildTraversal) {
-        throw new UnsupportedOperationException("Use OrderLocalStep.addComparator(" + TraversalComparator.class.getSimpleName() + ") to add a local child traversal:" + this);
+        this.addComparator(new TraversalComparator<>((Traversal.Admin) localChildTraversal, Order.incr));
+    }
+
+    @Override
+    public OrderLocalStep<S,M> clone() {
+        final OrderLocalStep<S,M> clone = (OrderLocalStep<S,M>) super.clone();
+        clone.comparators = new ArrayList<>();
+        for(final Comparator<M> comparator : this.comparators) {
+            clone.addComparator(comparator instanceof TraversalComparator ? ((TraversalComparator) comparator).clone() : comparator);
+        }
+        return clone;
     }
 
     /////////////
