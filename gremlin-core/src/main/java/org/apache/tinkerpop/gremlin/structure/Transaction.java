@@ -41,7 +41,7 @@ import java.util.function.Function;
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @author TinkerPop Community (http://tinkerpop.com)
+ * @author TinkerPop Community (http://tinkerpop.apache.org)
  */
 public interface Transaction extends AutoCloseable {
 

@@ -29,7 +29,7 @@ limitations under the License.
     <packaging>pom</packaging>
     <name>Apache TinkerPop</name>
     <description>A Graph Computing Framework</description>
-    <url>http://tinkerpop.incubator.apache.org/</url>
+    <url>http://tinkerpop.apache.org/</url>
     <mailingLists>
         <mailingList>
             <name>Users</name>
@@ -39,9 +39,9 @@ limitations under the License.
         </mailingList>
         <mailingList>
             <name>Developers</name>
-            <subscribe>dev-subscribe@tinkerpop.incubator.apache.org</subscribe>
-            <unsubscribe>dev-unsubscribe@tinkerpop.incubator.apache.org</unsubscribe>
-            <archive>dev-digest-subscribe@tinkerpop.incubator.apache.org</archive>
+            <subscribe>dev-subscribe@tinkerpop.apache.org</subscribe>
+            <unsubscribe>dev-unsubscribe@tinkerpop.apache.org</unsubscribe>
+            <archive>dev-digest-subscribe@tinkerpop.apache.org</archive>
         </mailingList>
     </mailingLists>
     <inceptionYear>2013</inceptionYear>

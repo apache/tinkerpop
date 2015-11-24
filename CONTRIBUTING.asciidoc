@@ -23,4 +23,4 @@ you agree to license the material under the project's open source license and
 warrant that you have the legal authority to do so.
 
 Please see the "Developer Documentation" for more information on
-link:http://tinkerpop.incubator.apache.org/docs/3.1.0-SNAPSHOT/developer.html#_contributing[contributing] to TinkerPop.
+link:http://tinkerpop.apache.org/docs/3.1.0-SNAPSHOT/developer.html#_contributing[contributing] to TinkerPop.

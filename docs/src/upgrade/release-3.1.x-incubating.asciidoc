@@ -75,7 +75,7 @@ The notion of "rebindings" has been deprecated in favor of the term "aliases".  
 term than rebindings which should make it easier for newcomers to understand what they are for.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP3-913[TINKERPOP3-913],
-link:http://tinkerpop.incubator.apache.org/docs/3.1.0-incubating/#_aliases[Reference Documentation - Aliases]
+link:http://tinkerpop.apache.org/docs/3.1.0-incubating/#_aliases[Reference Documentation - Aliases]
 
 Configurable Driver Channelizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -170,7 +170,7 @@ gremlin> :remote config visualTraversal graph vg
 which creates a special `TraversalSource` from `graph` called `vg`.  The traversals created from `vg` can be used
 to `:submit` to Gephi.
 
-See: link:http://tinkerpop.incubator.apache.org/docs/3.1.0-SNAPSHOT/#gephi-plugin[Reference Documentation - Gephi]
+See: link:http://tinkerpop.apache.org/docs/3.1.0-SNAPSHOT/#gephi-plugin[Reference Documentation - Gephi]
 
 Alterations to GraphTraversal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
