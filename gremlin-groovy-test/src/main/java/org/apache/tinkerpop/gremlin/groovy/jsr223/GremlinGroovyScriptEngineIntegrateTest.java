@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import javax.script.Bindings;
@@ -51,7 +52,7 @@ public class GremlinGroovyScriptEngineIntegrateTest extends AbstractGremlinTest 
             for (int ix = 0; ix < 50001; ix++) {
                 final Bindings bindings = engine.createBindings();
                 bindings.put("g", g);
-                bindings.put("xxx", (ix % 4) + 1);
+                bindings.put("xxx", graphProvider.convertId((ix % 4) + 1, Vertex.class));
                 engine.eval(gremlins[ix % 4], bindings);
 
                 if (ix > 0 && ix % 5000 == 0) {

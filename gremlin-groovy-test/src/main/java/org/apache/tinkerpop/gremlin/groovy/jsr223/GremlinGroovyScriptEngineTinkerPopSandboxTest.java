@@ -56,8 +56,9 @@ public class GremlinGroovyScriptEngineTinkerPopSandboxTest extends AbstractGreml
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
             final Bindings bindings = engine.createBindings();
             bindings.put("g", g);
-            assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(" + convertToVertexId("marko") + ").next()", bindings));
-            assertEquals(g.V(convertToVertexId("marko")).out("created").count().next(), engine.eval("g.V(" + convertToVertexId("marko") + ").out(\"created\").count().next()", bindings));
+            bindings.put("marko", convertToVertexId("marko"));
+            assertEquals(g.V(convertToVertexId("marko")).next(), engine.eval("g.V(marko).next()", bindings));
+            assertEquals(g.V(convertToVertexId("marko")).out("created").count().next(), engine.eval("g.V(marko).out(\"created\").count().next()", bindings));
         }
     }
 
