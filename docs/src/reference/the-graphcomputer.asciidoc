@@ -125,7 +125,7 @@ contains original and computed vertex properties. This reduces the amount of dat
 that MapReduce is used for post-processing computed results. All edge-based computing should be accomplished in the
 `VertexProgram`.
 
-image::mapreduce.png[width=650]
+image:mapreduce.png[width=650]
 
 The `MapReduce` extension to GraphComputer is made explicit when examining the
 <<peerpressurevertexprogram,`PeerPressureVertexProgram`>> and corresponding `ClusterPopulationMapReduce`.
@@ -304,7 +304,6 @@ g = result.graph().traversal(standard())
 g.V().valueMap('name',PageRankVertexProgram.PAGE_RANK)
 ----
 
-
 [[peerpressurevertexprogram]]
 PeerPressureVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -324,10 +323,12 @@ same cluster. The algorithm proceeds in the following manner.
 BulkLoaderVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The `BulkLoaderVertexProgram` provides a generalized way for loading graphs of any size (preferably large sized graphs)
-into a persistent `Graph`. The input can be any existing `Graph` database supporting TinkerPop3 or any of the Hadoop
-GraphInputFormats (e.g. `GraphSONInputFormat`, `GryoInputFormat` or `ScriptInputFormat`). The following example
-demonstrates how to load data from one TinkerGraph to another:
+image:batch-graph.png[width=220,float=left] The `BulkLoaderVertexProgram` provides a generalized way for loading
+graphs of any size into a persistent `Graph`. It is especially useful for large graphs (i.e. hundreds of millions
+or billions of edges) as it can take advantage of the parallel processing offered by `GraphComputer` instances. The
+input can be any existing `Graph` database supporting TinkerPop3 or any of the Hadoop GraphInputFormats (e.g.
+`GraphSONInputFormat`, `GryoInputFormat` or `ScriptInputFormat`). The following example demonstrates how to load data
+from one TinkerGraph to another:
 
 [gremlin-groovy]
 ----
