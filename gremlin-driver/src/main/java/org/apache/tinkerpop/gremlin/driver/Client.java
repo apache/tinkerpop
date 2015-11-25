@@ -291,7 +291,7 @@ public abstract class Client {
             Optional.ofNullable(parameters).ifPresent(params -> request.addArg(Tokens.ARGS_BINDINGS, parameters));
 
             if (aliases != null && !aliases.isEmpty())
-                request.addArg(Tokens.ARGS_REBINDINGS, aliases);
+                request.addArg(Tokens.ARGS_ALIASES, aliases);
 
             return submitAsync(buildMessage(request));
         }
