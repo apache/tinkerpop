@@ -310,7 +310,7 @@ public abstract class Client {
          */
         @Override
         public Client alias(String graphOrTraversalSource) {
-            return new ReboundClusteredClient(this, graphOrTraversalSource);
+            return new AliasClusteredClient(this, graphOrTraversalSource);
         }
 
         /**
@@ -329,7 +329,7 @@ public abstract class Client {
          * the created {@code Client}.
          */
         public Client alias(final Map<String,String> aliases) {
-            return new ReboundClusteredClient(this, aliases);
+            return new AliasClusteredClient(this, aliases);
         }
 
         /**
@@ -386,21 +386,38 @@ public abstract class Client {
      * Uses a {@link org.apache.tinkerpop.gremlin.driver.Client.ClusteredClient} that rebinds requests to a
      * specified {@link Graph} or {@link TraversalSource} instances on the server-side.
      */
-    public final static class ReboundClusteredClient extends Client {
+    public final static class AliasClusteredClient extends ReboundClusteredClient {
+        public AliasClusteredClient(ClusteredClient clusteredClient, String graphOrTraversalSource) {
+            super(clusteredClient, graphOrTraversalSource);
+        }
+
+        public AliasClusteredClient(ClusteredClient clusteredClient, Map<String, String> rebindings) {
+            super(clusteredClient, rebindings);
+        }
+    }
+
+    /**
+     * Uses a {@link org.apache.tinkerpop.gremlin.driver.Client.ClusteredClient} that rebinds requests to a
+     * specified {@link Graph} or {@link TraversalSource} instances on the server-side.
+     *
+     * @deprecated As of release 3.1.1-incubating, replaced by {@link AliasClusteredClient}.
+     */
+    @Deprecated
+    public static class ReboundClusteredClient extends Client {
         private final ClusteredClient clusteredClient;
-        private final Map<String,String> rebindings = new HashMap<>();
+        private final Map<String,String> aliases = new HashMap<>();
         final CompletableFuture<Void> close = new CompletableFuture<>();
 
         ReboundClusteredClient(final ClusteredClient clusteredClient, final String graphOrTraversalSource) {
             super(clusteredClient.cluster);
             this.clusteredClient = clusteredClient;
-            rebindings.put("g", graphOrTraversalSource);
+            aliases.put("g", graphOrTraversalSource);
         }
 
         ReboundClusteredClient(final ClusteredClient clusteredClient, final Map<String,String> rebindings) {
             super(clusteredClient.cluster);
             this.clusteredClient = clusteredClient;
-            this.rebindings.putAll(rebindings);
+            this.aliases.putAll(rebindings);
         }
 
         @Override
@@ -416,8 +433,8 @@ public abstract class Client {
         @Override
         public RequestMessage buildMessage(final RequestMessage.Builder builder) {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
-            if (!rebindings.isEmpty())
-                builder.addArg(Tokens.ARGS_ALIASES, rebindings);
+            if (!aliases.isEmpty())
+                builder.addArg(Tokens.ARGS_ALIASES, aliases);
 
             return builder.create();
         }
@@ -462,7 +479,7 @@ public abstract class Client {
         @Override
         public Client alias(String graphOrTraversalSource) {
             if (close.isDone()) throw new IllegalStateException("Client is closed");
-            return new ReboundClusteredClient(clusteredClient, graphOrTraversalSource);
+            return new AliasClusteredClient(clusteredClient, graphOrTraversalSource);
         }
     }
 
