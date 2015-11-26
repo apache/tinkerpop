@@ -511,7 +511,7 @@ public abstract class Client {
         @Deprecated
         @Override
         public Client rebind(final String graphOrTraversalSourceName){
-            throw new UnsupportedOperationException("Sessioned client do no support aliasing");
+            throw new UnsupportedOperationException("Sessioned client does not support aliasing");
         }
 
         /**
@@ -521,7 +521,7 @@ public abstract class Client {
          */
         @Override
         public Client alias(String graphOrTraversalSource) {
-            throw new UnsupportedOperationException("Sessioned client do no support aliasing");
+            throw new UnsupportedOperationException("Sessioned client does not support aliasing");
         }
 
         /**
