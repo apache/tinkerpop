@@ -36,21 +36,10 @@ import javax.script.Bindings;
 import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-import javax.script.SimpleBindings;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
@@ -195,6 +184,9 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
                             assertNotNull(result);
                     } catch (ScriptException e) {
                         assertFalse(true);
+                    } finally {
+                        if (graph.features().graph().supportsTransactions())
+                            g.tx().rollback();
                     }
                     latch.countDown();
                 }
@@ -230,6 +222,9 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
                     } catch (ScriptException e) {
                         //System.out.println(e);
                         assertFalse(true);
+                    } finally {
+                        if (graph.features().graph().supportsTransactions())
+                            g.tx().rollback();
                     }
                     latch.countDown();
                 }
