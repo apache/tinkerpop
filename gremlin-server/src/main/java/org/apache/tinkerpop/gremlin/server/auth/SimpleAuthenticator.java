@@ -48,7 +48,16 @@ public class SimpleAuthenticator implements Authenticator {
     private static final byte NUL = 0;
     private CredentialGraph credentialStore;
 
+    /**
+     * @deprecated As of release 3.1.1-incubating, if using TinkerGraph, simply rely on it's "persistence" features.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-981">TINKERPOP3-981</a>
+     */
+    @Deprecated
     public static final String CONFIG_CREDENTIALS_LOCATION = "credentialsDbLocation";
+
+    /**
+     * The location of the configuration file that contains the credentials database.
+     */
     public static final String CONFIG_CREDENTIALS_DB = "credentialsDb";
 
     @Override
@@ -74,19 +83,20 @@ public class SimpleAuthenticator implements Authenticator {
         final Graph graph = GraphFactory.open((String) config.get(CONFIG_CREDENTIALS_DB));
 
         if (graph instanceof TinkerGraph) {
-            if (!config.containsKey(CONFIG_CREDENTIALS_LOCATION)) {
-                throw new IllegalStateException(String.format(
-                        "Credentials configuration for TinkerGraph missing the %s key that points to a gryo file containing credentials data", CONFIG_CREDENTIALS_LOCATION));
-            }
-
+            // have to create the indices because they are not stored in gryo
             final TinkerGraph tinkerGraph = (TinkerGraph) graph;
             tinkerGraph.createIndex(PROPERTY_USERNAME, Vertex.class);
 
-            final String location = (String) config.get(CONFIG_CREDENTIALS_LOCATION);
-            try {
-                tinkerGraph.io(IoCore.gryo()).readGraph(location);
-            } catch (IOException e) {
-                logger.warn("Could not read credentials graph from {} - authentication is enabled, but with an empty user database", location);
+            // we deprecated credentialsLocation, but we still need to support it.  if it is present as a key, we can
+            // load the data as we always did.
+            if (config.containsKey(CONFIG_CREDENTIALS_LOCATION)) {
+                logger.warn("Using {} configuration option which is deprecated - prefer including the location of the credentials graph data in the TinkerGraph config file.");
+                final String location = (String) config.get(CONFIG_CREDENTIALS_LOCATION);
+                try {
+                    tinkerGraph.io(IoCore.gryo()).readGraph(location);
+                } catch (IOException e) {
+                    logger.warn("Could not read credentials graph from {} - authentication is enabled, but with an empty user database", location);
+                }
             }
         }
 

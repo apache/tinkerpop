@@ -759,28 +759,13 @@ graph database, which must be provided to it as part of the configuration.
 authentication: {
   className: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
   config: {
-    credentialsDb: conf/credential-graph.properties}}
+    credentialsDb: conf/tinkergraph-credentials.properties}}
 
 Quick Start
 +++++++++++
 
 A quick way to get started with the `SimpleAuthenticator` is to use TinkerGraph for the "credentials graph" and the
-"sample" credential graph that is packaged with the server.  Recall that TinkerGraph is an in-memory graph and
-therefore always starts as "empty" when opened by `GraphFactory`.  To allow TinkerGraph to be used in this "getting
-started" capacity, Gremlin Server allows for a TinkerGraph-only configuration option called `credentialsDbLocation`.
-The following snippet comes from the `conf/gremlin-server-secure.yaml` file packaged with the server:
-
-[source,yaml]
-authentication: {
-  className: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
-  config: {
-    credentialsDb: conf/tinkergraph-empty.properties,
-    credentialsDbLocation: data/credentials.kryo}}
-
-This added configuration tells Gremlin Server to look for a gryo file at that location containing the data for the
-graph which it loads via standard `io` methods.  The limitation is that this read is only performed at the
-initialization of the server so therefore credentials remain static for the life of the server.  In this case,
-`data/credentials.kryo` contains a single user named "stephen" with the imaginative password of "password".
+"sample" credential graph that is packaged with the server.
 
 [source,text]
 ----
