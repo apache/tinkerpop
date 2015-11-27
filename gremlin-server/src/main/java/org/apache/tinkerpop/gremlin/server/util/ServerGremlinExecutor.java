@@ -66,7 +66,7 @@ public class ServerGremlinExecutor<T extends ScheduledExecutorService> {
     }
 
     /**
-     * Create a new object from {@link Settings} where thread pools are internally created. Note that if the
+     * Create a new object from {@link Settings} where thread pools are externally assigned. Note that if the
      * {@code scheduleExecutorServiceClass} is set to {@code null} it will be created via
      * {@link Executors#newScheduledThreadPool(int, ThreadFactory)}.  If either of the {@link ExecutorService}
      * instances are supplied, the {@link Settings#gremlinPool} value will be ignored for the pool size.
