@@ -41,12 +41,12 @@ public abstract class GroovyOrderTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXname_incrX_name() {
-            TraversalScriptHelper.compute("g.V.order.by('name', Order.incr).name", g)
+            TraversalScriptHelper.compute("g.V.order.by('name', incr).name", g)
         }
 
         @Override
         public Traversal<Vertex, String> get_g_V_order_byXnameX_name() {
-            TraversalScriptHelper.compute("g.V.order.by('name', Order.incr).name", g)
+            TraversalScriptHelper.compute("g.V.order.by('name', incr).name", g)
         }
 
         @Override
@@ -65,7 +65,7 @@ public abstract class GroovyOrderTest {
         }
 
         @Override
-        public Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalueDecrX_byXkeyIncrX(
+        public Traversal<Vertex, Map<Integer, Integer>> get_g_VX1X_hasXlabel_personX_mapXmapXint_ageXX_orderXlocalX_byXvalues_decrX_byXkeys_incrX(
                 final Object v1Id) {
             TraversalScriptHelper.compute("""g.V(v1Id).map {
                 final Map map = [:];
@@ -74,7 +74,7 @@ public abstract class GroovyOrderTest {
                 map[3] = it.age * 3;
                 map[4] = it.age;
                 return map;
-            }.order(local).by(valueDecr).by(keyIncr)""", g, "v1Id", v1Id);
+            }.order(local).by(values,decr).by(keys,incr)""", g, "v1Id", v1Id);
         }
 
         @Override
