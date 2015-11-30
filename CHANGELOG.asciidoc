@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Deprecate `credentialsDbLocation` from `SimpleAuthenticator` in Gremlin Server.
 * `TinkerGraph` has "native" serialization in GraphSON, which enables it to be a return value from Gremlin Server.
 * Improved the ability to embed Gremlin Server by providing a way to get the `ServerGremlinExecutor` and improve reusability of `AbstractEvalOpProcessor` and related classes.
 * `ProfileStep` is now available off of `Traversal` via `profile()`. To be consistent with `Traversal.explain()`.
