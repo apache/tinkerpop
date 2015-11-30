@@ -26,9 +26,15 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
+import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
+import org.apache.tinkerpop.gremlin.structure.io.GraphWriter;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoTest;
+import org.apache.tinkerpop.gremlin.structure.io.Mapper;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -288,6 +294,34 @@ public class TinkerGraphTest {
             }
         }
     }
+
+    @Test
+    public void shouldSerializeTinkerGraphToGraphSON() throws Exception {
+        final TinkerGraph graph = TinkerFactory.createModern();
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            graph.io(IoCore.graphson()).writer().create().writeObject(out, graph);
+            try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
+                final TinkerGraph target = graph.io(IoCore.graphson()).reader().create().readObject(inputStream, TinkerGraph.class);
+                IoTest.assertModernGraph(target, true, false);
+            }
+        }
+    }
+
+    @Test
+    public void shouldSerializeTinkerGraphToGraphSONWithTypes() throws Exception {
+        final TinkerGraph graph = TinkerFactory.createModern();
+        final Mapper<ObjectMapper> mapper = graph.io(IoCore.graphson()).mapper().embedTypes(true).create();
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            final GraphWriter writer = GraphSONWriter.build().mapper(mapper).create();
+            writer.writeObject(out, graph);
+            try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
+                final GraphReader reader = GraphSONReader.build().mapper(mapper).create();
+                final TinkerGraph target = reader.readObject(inputStream, TinkerGraph.class);
+                IoTest.assertModernGraph(target, true, false);
+            }
+        }
+    }
+
     @Test(expected = IllegalStateException.class)
     public void shouldRequireGraphLocationIfFormatIsSet() {
         final Configuration conf = new BaseConfiguration();

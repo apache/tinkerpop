@@ -37,6 +37,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -419,6 +420,29 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
             final String json = EntityUtils.toString(response.getEntity());
             final JsonNode node = mapper.readTree(json);
             assertEquals(6, node.get("result").get("data").size());
+        }
+    }
+
+    @Test
+    public void should200OnPOSTWithGremlinJsonEndcodedBodyWithTinkerGraphResult() throws Exception {
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory.createModern()\"}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode resultJson = mapper.readTree(json);
+            final JsonNode data = resultJson.get("result").get("data");
+            assertEquals(1, data.size());
+
+            final List<JsonNode> vertices = data.get(0).findValues(GraphSONTokens.VERTICES);
+            final List<JsonNode> edges = data.get(0).findValues(GraphSONTokens.EDGES);
+
+            assertEquals(6, vertices.get(0).size());
+            assertEquals(6, edges.get(0).size());
         }
     }
 
