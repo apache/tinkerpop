@@ -110,7 +110,7 @@ current release was under development as this new release will have those change
 . `bin/publish-docs.sh <username>` - Note that this step requires no additional processing as the previous step.
 handled document generation and this step now merely needs to upload what was generated.
 . `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true` - deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus]. Review (artifacts versions, file sizes, anything that might be out of place - request another committer to review as well) but do NOT close/release the staging repository at this time.
-. Review generated artifacts to be sure they have both javadocs and asciidocs present
+. Review generated artifacts to be sure they have both javadocs and asciidocs present then "close" the repo - if the repo is left open it will be automatically dropped after five days and closing the repo will allow it to stay available for a full ninety days which is more than enough time to complete a vote.
 . Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
 .. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/ dev` and `mkdir dev/x.y.z`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/x.y.z/gremlin-console-x.y.z-distribution.zip* dev/x.y.z`
