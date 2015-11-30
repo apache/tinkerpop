@@ -26,6 +26,7 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart
 import com.carrotsearch.junitbenchmarks.annotation.LabelType
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest
 import org.apache.tinkerpop.gremlin.LoadGraphWith
+import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -110,27 +111,27 @@ class SugarLoaderPerformanceTest extends AbstractGremlinTest {
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     @Test
     public void java_g_VX1X_name() throws Exception {
-        g.V(1).values("name").iterate()
+        g.V(graphProvider.convertId(1, Vertex.class)).values("name").iterate()
     }
 
     @BenchmarkOptions(benchmarkRounds = SugarLoaderPerformanceTest.DEFAULT_BENCHMARK_ROUNDS, warmupRounds = SugarLoaderPerformanceTest.DEFAULT_WARMUP_ROUNDS, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     @Test
     public void groovy_g_VX1X_name() throws Exception {
-        g.V(1).name.iterate()
+        g.V(graphProvider.convertId(1, Vertex.class)).name.iterate()
     }
 
     @BenchmarkOptions(benchmarkRounds = SugarLoaderPerformanceTest.DEFAULT_BENCHMARK_ROUNDS, warmupRounds = SugarLoaderPerformanceTest.DEFAULT_WARMUP_ROUNDS, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     @Test
     public void java_g_VX1X_outE() throws Exception {
-        g.V(1).outE().iterate()
+        g.V(graphProvider.convertId(1, Vertex.class)).outE().iterate()
     }
 
     @BenchmarkOptions(benchmarkRounds = SugarLoaderPerformanceTest.DEFAULT_BENCHMARK_ROUNDS, warmupRounds = SugarLoaderPerformanceTest.DEFAULT_WARMUP_ROUNDS, concurrency = BenchmarkOptions.CONCURRENCY_SEQUENTIAL)
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     @Test
     public void groovy_g_VX1X_outE() throws Exception {
-        g.V(1).outE.iterate()
+        g.V(graphProvider.convertId(1, Vertex.class)).outE.iterate()
     }
 }
