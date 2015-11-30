@@ -22,6 +22,43 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 
 *A 187 On The Undercover Gremlinz*
 
+TinkerPop 3.1.1
+---------------
+
+*Release Date: NOT YET RELEASED*
+
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Deprecated credentialsDbLocation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `credentialsDbLocation` setting was a TinkerGraph only configuration option to the `SimpleAuthenticator` for
+Gremlin Server.  It provided the file system location to a "credentials graph" that TinkerGraph would read from a
+Gryo file at that spot.  This setting was only required because TinkerGraph did not support file persistence at the
+time that `SimpleAuthenticator` was created.
+
+As of 3.1.0-incubating, TinkerGraph received a limited persistence feature that allowed the "credentials graph"
+location to be specified in the TinkerGraph properties file via `gremlin.tinkergraph.graphLocation` and as such the
+need for `credentialsDbLocation` was eliminated.
+
+This deprecation is not a breaking change, however users should be encouraged to convert their configurations to use
+the `gremlin.tinkergraph.graphLocation` as soon as possible, as the deprecated setting will be removed in a future
+release.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-981[TINKERPOP3-981],
+link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#_security[Reference Documentation - Gremlin Server Security]
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
+
+
+
 TinkerPop 3.1.0
 ---------------
 
