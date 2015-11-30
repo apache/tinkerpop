@@ -51,13 +51,57 @@ release.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP3-981[TINKERPOP3-981],
 link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#_security[Reference Documentation - Gremlin Server Security]
 
+TinkerGraph Supports Any IO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TinkerGraph's 'gremlin.tinkergraph.graphLocation' configuration setting can now take a fully qualified class name
+of a `Io.Builder` implementation, which means that custom IO implementations can be used to read and write
+TinkerGraph instances.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-886[TINKERPOP3-886]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
 changes there may prove important for the provider's implementation.
 
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
 
+Data Types in Tests
++++++++++++++++++++
+
+There were a number of fixes related to usage of appropriate types in the test suite. There were cases where tests
+were mixing types, such that a single property key might have two different values.  This mixed typing caused problems
+for some graphs and wasn't really something TinkerPop was looking to explicitly enforce as a rule of implementing the
+interfaces.
+
+While the changes should not have been breaking, providers should be aware that improved consistencies in the tests
+may present opportunities for test failures.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-984[TINKERPOP3-984],
+link:https://issues.apache.org/jira/browse/TINKERPOP3-990[TINKERPOP3-990],
+link:https://issues.apache.org/jira/browse/TINKERPOP3-1000[TINKERPOP3-1000]
+
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Feature Consistency
++++++++++++++++++++
+
+There were a number of corrections made around the consistency of `Features` and how they were applied in tests.
+Corrections fell into two groups of changes:
+
+. Bugs in the how `Features` were applied to certain tests.
+. Refactoring around the realization that `VertexFeatures.supportsMetaProperties()` is really just a duplicate of
+features already exposed as `VertexPropertyFeatures.supportsAddProperty()` and
+`VertexPropertyFeatures.supportsRemoveProperty()`.  `VertexFeatures.supportsMetaProperties()` has been deprecated.
+
+These changes related to "Feature Consistency" open up a number of previously non-executing tests for graphs that did
+not support meta-properties, so providers should be wary of potential test failure on previously non-executing tests.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-985[TINKERPOP3-985]
 
 TinkerPop 3.1.0
 ---------------
