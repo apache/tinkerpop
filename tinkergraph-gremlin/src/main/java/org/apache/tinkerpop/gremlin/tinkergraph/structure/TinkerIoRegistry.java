@@ -233,8 +233,8 @@ public final class TinkerIoRegistry extends AbstractIoRegistry {
                 edges = (List<Map<String, Object>>) deserializationContext.readValue(jsonParser, ArrayList.class);
             } else {
                 final Map<String, Object> graphData = deserializationContext.readValue(jsonParser, HashMap.class);
-                vertices = (List<Map<String,Object>>) graphData.get("vertices");
-                edges = (List<Map<String,Object>>) graphData.get("edges");
+                vertices = (List<Map<String,Object>>) graphData.get(GraphSONTokens.VERTICES);
+                edges = (List<Map<String,Object>>) graphData.get(GraphSONTokens.EDGES);
             }
 
             for (Map<String, Object> vertexData : vertices) {
