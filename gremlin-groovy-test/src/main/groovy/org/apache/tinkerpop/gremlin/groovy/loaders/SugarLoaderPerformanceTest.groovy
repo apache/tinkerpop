@@ -26,7 +26,6 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart
 import com.carrotsearch.junitbenchmarks.annotation.LabelType
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest
 import org.apache.tinkerpop.gremlin.LoadGraphWith
-import org.apache.tinkerpop.gremlin.structure.Vertex
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
