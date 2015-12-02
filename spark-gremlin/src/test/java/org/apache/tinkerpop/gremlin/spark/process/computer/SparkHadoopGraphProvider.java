@@ -20,12 +20,19 @@ package org.apache.tinkerpop.gremlin.spark.process.computer;
 
 import org.apache.tinkerpop.gremlin.GraphProvider;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.spark.structure.io.ClassicInputRDD;
+import org.apache.tinkerpop.gremlin.spark.structure.io.GratefulInputRDD;
+import org.apache.tinkerpop.gremlin.spark.structure.io.InputRDDFormat;
+import org.apache.tinkerpop.gremlin.spark.structure.io.ModernInputRDD;
+import org.apache.tinkerpop.gremlin.spark.structure.io.TheCrewInputRDD;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Map;
+import java.util.Random;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,13 +40,41 @@ import java.util.Map;
 @GraphProvider.Descriptor(computer = SparkGraphComputer.class)
 public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
 
+    private static final Random RANDOM = new Random();
+
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
-        config.put("mapreduce.job.reduces", 4);
+        if (null != loadGraphWith) {
+            if (loadGraphWith.equals(LoadGraphWith.GraphData.MODERN)) {
+                if (RANDOM.nextBoolean()) {
+                    config.remove(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
+                    config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, ModernInputRDD.class.getCanonicalName());
+                    config.put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
+                }
+            } else if (loadGraphWith.equals(LoadGraphWith.GraphData.CREW)) {
+                if (RANDOM.nextBoolean()) {
+                    config.remove(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
+                    config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, TheCrewInputRDD.class.getCanonicalName());
+                    config.put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
+                }
+            } else if (loadGraphWith.equals(LoadGraphWith.GraphData.CLASSIC)) {
+                if (RANDOM.nextBoolean()) {
+                    config.remove(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
+                    config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, ClassicInputRDD.class.getCanonicalName());
+                    config.put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
+                }
+            } else if (loadGraphWith.equals(LoadGraphWith.GraphData.GRATEFUL)) {
+                if (RANDOM.nextBoolean()) {
+                    config.remove(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
+                    config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, GratefulInputRDD.class.getCanonicalName());
+                    config.put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
+                }
+            }
+        }
         /// spark configuration
         config.put("spark.master", "local[4]");
-        // put("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+        //config.put("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
         config.put("spark.serializer", "org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer");
         config.put("spark.kryo.registrationRequired", true);
         return config;
@@ -49,5 +84,4 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
     public GraphTraversalSource traversal(final Graph graph) {
         return GraphTraversalSource.build().engine(ComputerTraversalEngine.build().computer(SparkGraphComputer.class)).create(graph);
     }
-
 }

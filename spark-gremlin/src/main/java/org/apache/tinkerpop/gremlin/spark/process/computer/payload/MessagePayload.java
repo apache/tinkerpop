@@ -23,7 +23,10 @@ package org.apache.tinkerpop.gremlin.spark.process.computer.payload;
  */
 public final class MessagePayload<M> implements Payload {
 
-    private final M message;
+    private M message;
+
+    private MessagePayload() {
+    }
 
     public MessagePayload(final M message) {
         this.message = message;

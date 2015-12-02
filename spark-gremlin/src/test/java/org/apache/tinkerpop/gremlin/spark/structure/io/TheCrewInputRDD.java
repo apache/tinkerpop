@@ -16,35 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.spark.process.computer.payload;
 
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
+package org.apache.tinkerpop.gremlin.spark.structure.io;
+
+import org.apache.commons.configuration.Configuration;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import scala.Tuple2;
-
-import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ViewOutgoingPayload<M> implements Payload {
+public final class TheCrewInputRDD implements InputRDD {
 
-    private List<DetachedVertexProperty<Object>> view;
-    private List<Tuple2<Object, M>> outgoingMessages;
-
-    private ViewOutgoingPayload() {
-
-    }
-
-    public ViewOutgoingPayload(final List<DetachedVertexProperty<Object>> view, final List<Tuple2<Object, M>> outgoingMessages) {
-        this.view = view;
-        this.outgoingMessages = outgoingMessages;
-    }
-
-    public ViewPayload getView() {
-        return new ViewPayload(this.view);
-    }
-
-    public List<Tuple2<Object, M>> getOutgoingMessages() {
-        return this.outgoingMessages;
+    @Override
+    public JavaPairRDD<Object, VertexWritable> readGraphRDD(final Configuration configuration, final JavaSparkContext sparkContext) {
+        return sparkContext.parallelize(IteratorUtils.list(IteratorUtils.map(TinkerFactory.createTheCrew().vertices(), VertexWritable::new))).mapToPair(vertex -> new Tuple2<>(vertex.get().id(), vertex));
     }
 }
