@@ -17,23 +17,23 @@
  * under the License.
  */
 
-package org.apache.tinkerpop.gremlin.spark.structure.io;
+package org.apache.tinkerpop.gremlin.spark.process.computer;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import scala.Tuple2;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ClassicInputRDD implements InputRDD {
+public final class SparkContextHelper {
 
-    @Override
-    public JavaPairRDD<Object, VertexWritable> readGraphRDD(final Configuration configuration, final JavaSparkContext sparkContext) {
-        return sparkContext.parallelize(IteratorUtils.list(IteratorUtils.map(TinkerFactory.createClassic().vertices(), VertexWritable::new))).mapToPair(vertex -> new Tuple2<>(vertex.get().id(), vertex));
+    private SparkContextHelper() {
+
+    }
+
+    public static void tryToCloseContext(final JavaSparkContext context, final Configuration configuration) {
+        if (context != null && !configuration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
+            context.close();
     }
 }

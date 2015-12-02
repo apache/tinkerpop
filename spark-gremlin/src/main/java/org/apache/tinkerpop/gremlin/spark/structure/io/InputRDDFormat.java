@@ -31,6 +31,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
+import org.apache.tinkerpop.gremlin.spark.process.computer.SparkContextHelper;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -70,8 +71,8 @@ public final class InputRDDFormat extends InputFormat<NullWritable, VertexWritab
             final SparkConf sparkConfiguration = new SparkConf();
             sparkConfiguration.setAppName(UUID.randomUUID().toString());
             hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
-            InputRDD inputRDD = (InputRDD) Class.forName(sparkConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD)).newInstance();
-            JavaSparkContext javaSparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
+            final InputRDD inputRDD = (InputRDD) Class.forName(sparkConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD)).newInstance();
+            final JavaSparkContext javaSparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
             final Iterator<Tuple2<Object, VertexWritable>> iterator = inputRDD.readGraphRDD(ConfUtil.makeApacheConfiguration(taskAttemptContext.getConfiguration()), javaSparkContext).toLocalIterator();
             return new RecordReader<NullWritable, VertexWritable>() {
                 @Override
@@ -101,8 +102,7 @@ public final class InputRDDFormat extends InputFormat<NullWritable, VertexWritab
 
                 @Override
                 public void close() throws IOException {
-                    if (!hadoopConfiguration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
-                        javaSparkContext.close();
+                    SparkContextHelper.tryToCloseContext(javaSparkContext, ConfUtil.makeApacheConfiguration(hadoopConfiguration));
                 }
             };
         } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException e) {
