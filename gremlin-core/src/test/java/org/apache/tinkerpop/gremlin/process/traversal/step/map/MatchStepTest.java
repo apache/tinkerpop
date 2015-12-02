@@ -365,23 +365,28 @@ public class MatchStepTest extends StepTest {
         traverser.addLabels(Collections.singleton("a"));
         assertEquals(firstPattern, countMatchAlgorithm.apply(traverser));
         traverser = traverser.split(1, EmptyStep.instance());
-        traverser.addLabels(new HashSet<>(Arrays.asList("b", firstPattern.getStartStep().getId())));
+        traverser.getTags().add(firstPattern.getStartStep().getId());
+        traverser.addLabels(Collections.singleton("b"));
         //
         assertEquals(secondPattern, countMatchAlgorithm.apply(traverser));
         traverser = traverser.split(1, EmptyStep.instance());
-        traverser.addLabels(new HashSet<>(Arrays.asList("c", secondPattern.getStartStep().getId())));
+        traverser.getTags().add(secondPattern.getStartStep().getId());
+        traverser.addLabels(Collections.singleton("c"));
         //
         assertEquals(fifthPattern, countMatchAlgorithm.apply(traverser));
         traverser = traverser.split(1, EmptyStep.instance());
-        traverser.addLabels(new HashSet<>(Arrays.asList("f", fifthPattern.getStartStep().getId())));
+        traverser.getTags().add(fifthPattern.getStartStep().getId());
+        traverser.addLabels(Collections.singleton("f"));
         //
         assertEquals(forthPattern, countMatchAlgorithm.apply(traverser));
         traverser = traverser.split(1, EmptyStep.instance());
-        traverser.addLabels(new HashSet<>(Arrays.asList("e", forthPattern.getStartStep().getId())));
+        traverser.getTags().add(forthPattern.getStartStep().getId());
+        traverser.addLabels(Collections.singleton("e"));
         //
         assertEquals(thirdPattern, countMatchAlgorithm.apply(traverser));
         traverser = traverser.split(1, EmptyStep.instance());
-        traverser.addLabels(new HashSet<>(Arrays.asList("d", thirdPattern.getStartStep().getId())));
+        traverser.getTags().add(thirdPattern.getStartStep().getId());
+        traverser.addLabels(Collections.singleton("d"));
     }
 
     @Test
