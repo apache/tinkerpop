@@ -151,6 +151,7 @@ Release & Promote
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/x.y.z`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/x.y.z`
 . `cd release; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
+. If there is are releases present in SVN that represents lines of code that are no longer under development, then remove those releases. In other words, if `3.1.0-incubating` is present and `3.1.1-incubating` is released then remove `3.1.0-incubating`.  However, if `3.0.2-incubating` is present and that line of code is still under potential development, it may stay.
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`

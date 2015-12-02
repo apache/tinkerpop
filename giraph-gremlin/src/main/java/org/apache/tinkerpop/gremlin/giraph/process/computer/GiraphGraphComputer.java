@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.giraph.structure.io.GiraphVertexInputFormat;
 import org.apache.tinkerpop.gremlin.giraph.structure.io.GiraphVertexOutputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.ComputerSubmissionHelper;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.MapReduceHelper;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.InputOutputHelper;
@@ -57,6 +58,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
@@ -112,8 +114,13 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
 
     @Override
     public Future<ComputerResult> submit() {
-        final long startTime = System.currentTimeMillis();
         super.validateStatePriorToExecution();
+
+        return ComputerSubmissionHelper.runWithBackgroundThread(this::submitWithExecutor, "GiraphSubmitter");
+    }
+
+    private Future<ComputerResult> submitWithExecutor(Executor exec) {
+        final long startTime = System.currentTimeMillis();
         final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(this.giraphConfiguration);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             try {
@@ -128,7 +135,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
 
             this.memory.setRuntime(System.currentTimeMillis() - startTime);
             return new DefaultComputerResult(InputOutputHelper.getOutputGraph(apacheConfiguration, this.resultGraph, this.persist), this.memory.asImmutable());
-        });
+        }, exec);
     }
 
     @Override

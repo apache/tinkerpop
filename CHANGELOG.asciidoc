@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed the `Future` model for `GiraphGraphComputer` and `SparkGraphComputer` so that class loaders are preserved.
+* Added support for arbitrary vertex ID types in `BulkLoaderVertexProgram`.
 * Deprecate `credentialsDbLocation` from `SimpleAuthenticator` in Gremlin Server.
 * `TinkerGraph` has "native" serialization in GraphSON, which enables it to be a return value from Gremlin Server.
 * Improved the ability to embed Gremlin Server by providing a way to get the `ServerGremlinExecutor` and improve reusability of `AbstractEvalOpProcessor` and related classes.
