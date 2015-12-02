@@ -24,11 +24,9 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
-import org.apache.tinkerpop.gremlin.spark.structure.io.ClassicInputRDD;
-import org.apache.tinkerpop.gremlin.spark.structure.io.GratefulInputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputRDDFormat;
-import org.apache.tinkerpop.gremlin.spark.structure.io.ModernInputRDD;
-import org.apache.tinkerpop.gremlin.spark.structure.io.TheCrewInputRDD;
+import org.apache.tinkerpop.gremlin.spark.structure.io.ToyGraphInputRDD;
+import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Map;
@@ -46,36 +44,16 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
         if (null != loadGraphWith) {
-            if (loadGraphWith.equals(LoadGraphWith.GraphData.MODERN)) {
-                if (RANDOM.nextBoolean()) {
-                    config.remove(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
-                    config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, ModernInputRDD.class.getCanonicalName());
-                    config.put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
-                }
-            } else if (loadGraphWith.equals(LoadGraphWith.GraphData.CREW)) {
-                if (RANDOM.nextBoolean()) {
-                    config.remove(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
-                    config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, TheCrewInputRDD.class.getCanonicalName());
-                    config.put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
-                }
-            } else if (loadGraphWith.equals(LoadGraphWith.GraphData.CLASSIC)) {
-                if (RANDOM.nextBoolean()) {
-                    config.remove(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
-                    config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, ClassicInputRDD.class.getCanonicalName());
-                    config.put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
-                }
-            } else if (loadGraphWith.equals(LoadGraphWith.GraphData.GRATEFUL)) {
-                if (RANDOM.nextBoolean()) {
-                    config.remove(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
-                    config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, GratefulInputRDD.class.getCanonicalName());
-                    config.put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
-                }
+            if (RANDOM.nextBoolean()) {
+                config.remove(Constants.GREMLIN_HADOOP_INPUT_LOCATION);
+                config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, ToyGraphInputRDD.class.getCanonicalName());
+                config.put(ToyGraphInputRDD.GREMLIN_SPARK_TOY_GRAPH, loadGraphWith.toString());
+                config.put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
             }
         }
         /// spark configuration
         config.put("spark.master", "local[4]");
-        //config.put("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
-        config.put("spark.serializer", "org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer");
+        config.put("spark.serializer", GryoSerializer.class.getCanonicalName());
         config.put("spark.kryo.registrationRequired", true);
         return config;
     }
