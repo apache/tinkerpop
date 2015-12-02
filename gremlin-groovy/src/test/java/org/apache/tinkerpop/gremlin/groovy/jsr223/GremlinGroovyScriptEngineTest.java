@@ -29,12 +29,17 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -203,51 +208,56 @@ public class GremlinGroovyScriptEngineTest {
     @Test
     public void shouldReloadClassLoaderWhileDoingEvalInSeparateThread() throws Exception {
         final AtomicBoolean fail = new AtomicBoolean(false);
+        final AtomicInteger counter = new AtomicInteger(0);
         final CountDownLatch latch = new CountDownLatch(1);
-        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine();
-        final Thread t = new Thread(() -> {
-            try {
-                final Object o = scriptEngine.eval("Color.BLACK");
-                System.out.println("Should not print: " + o);
-                fail.set(true);
-            } catch (ScriptException se) {
-                // should get here as Color.BLACK is not imported yet.
-                System.out.println("Failed to execute Color.BLACK as expected.");
-            }
+        final AtomicReference<Color> color = new AtomicReference<>(Color.RED);
 
+        final GremlinGroovyScriptEngine scriptEngine = new GremlinGroovyScriptEngine();
+
+        try {
+            scriptEngine.eval("Color.BLACK");
+            fail("Should fail as class is not yet imported");
+        } catch (ScriptException se) {
+            // should get here as Color.BLACK is not imported yet.
+            System.out.println("Failed to execute Color.BLACK as expected.");
+        }
+
+        final Thread evalThread = new Thread(() -> {
             try {
-                int counter = 0;
+                // execute scripts until the other thread releases this latch (i.e. after import)
                 while (latch.getCount() == 1) {
                     scriptEngine.eval("1+1");
-                    counter++;
+                    counter.incrementAndGet();
                 }
 
-                System.out.println(counter + " executions.");
-
-                scriptEngine.eval("Color.BLACK");
-                System.out.println("Color.BLACK now evaluates");
+                color.set((Color) scriptEngine.eval("Color.BLACK"));
             } catch (Exception se) {
-                se.printStackTrace();
                 fail.set(true);
             }
         }, "test-reload-classloader-1");
 
-        t.start();
+        evalThread.start();
 
-        // let the first thead execute a bit.
+        // let the first thread execute a bit.
         Thread.sleep(1000);
 
-        new Thread(() -> {
+        final Thread importThread = new Thread(() -> {
             System.out.println("Importing java.awt.Color...");
             final Set<String> imports = new HashSet<String>() {{
                 add("import java.awt.Color");
             }};
             scriptEngine.addImports(imports);
             latch.countDown();
-        }, "test-reload-classloader-2").start();
+        }, "test-reload-classloader-2");
 
-        t.join();
+        importThread.start();
 
+        // block until both threads are done
+        importThread.join();
+        evalThread.join();
+
+        assertEquals(Color.BLACK, color.get());
+        assertThat(counter.get(), greaterThan(0));
         assertFalse(fail.get());
     }
 
