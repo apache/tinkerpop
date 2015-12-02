@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * A {@link PluginAcceptor} implementation for bare {@code ScriptEngine} implementations allowing plugins to
+ * interact with them on initialization.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ScriptEnginePluginAcceptor implements PluginAcceptor {
@@ -38,19 +41,27 @@ public class ScriptEnginePluginAcceptor implements PluginAcceptor {
         this.scriptEngine = scriptEngine;
     }
 
+    /**
+     * Adds global bindings to the {@code ScriptEngine} that will be applied to every evaluated script.
+     */
     @Override
     public void addBinding(final String key, final Object val) {
-        scriptEngine.getContext().setAttribute(key, val, ScriptContext.GLOBAL_SCOPE);
-    }
-
-    @Override
-    public Map<String, Object> getBindings() {
-        return scriptEngine.getBindings(ScriptContext.GLOBAL_SCOPE);
+        // added to the engine scope because the plugin will be applied to each scriptengine independently anyway
+        scriptEngine.getContext().setAttribute(key, val, ScriptContext.ENGINE_SCOPE);
     }
 
     /**
-     * If the ScriptEngine implements the DependencyManager interface it will try to import the specified
-     * import statements.
+     * Gets the global bindings that will be applied to every evaluated script.
+     */
+    @Override
+    public Map<String, Object> getBindings() {
+        // as these "global" bindings were added to engine scope they should be pulled from the same place
+        return scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
+    }
+
+    /**
+     * If the {@code ScriptEngine} implements the {@link DependencyManager} interface it will try to import the
+     * specified import statements.
      */
     @Override
     public void addImports(final Set<String> importStatements) {
@@ -59,14 +70,17 @@ public class ScriptEnginePluginAcceptor implements PluginAcceptor {
     }
 
     /**
-     * Evaluate a script in the ScriptEngine.  Typically eval() should be called after imports as ScriptEngine
-     * resets may occur during import.
+     * Evaluate a script in the {@code ScriptEngine}.  Typically {@code eval()} should be called after imports as
+     * {@code ScriptEngine} resets may occur during import.
      */
     @Override
     public Object eval(final String script) throws ScriptException {
         return this.scriptEngine.eval(script);
     }
 
+    /**
+     * Defines the environment settings for the {@link GremlinPlugin}.
+     */
     @Override
     public Map<String, Object> environment() {
         final Map<String, Object> env = new HashMap<>();

@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.groovy.jsr223;
 
 import groovy.lang.Closure;
+import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
@@ -29,6 +30,7 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -98,7 +100,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldLoadImportsViaDependencyManagerInterface() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) NoImportCustomizerProvider.INSTANCE);
         try {
             engine.eval("Vertex.class.getName()");
             fail("Should have thrown an exception because no imports were supplied");
@@ -112,7 +114,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldLoadImportsViaDependencyManagerInterfaceAdditively() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) NoImportCustomizerProvider.INSTANCE);
         try {
             engine.eval("Vertex.class.getName()");
             fail("Should have thrown an exception because no imports were supplied");
@@ -144,7 +146,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldLoadImportsViaDependencyManagerFromDependencyGatheredByUse() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) NoImportCustomizerProvider.INSTANCE);
         try {
             engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
             fail("Should have thrown an exception because no imports were supplied");
@@ -159,7 +161,7 @@ public class GremlinGroovyScriptEngineTest {
 
     @Test
     public void shouldAllowsUseToBeExecutedAfterImport() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) NoImportCustomizerProvider.INSTANCE);
         try {
             engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)");
             fail("Should have thrown an exception because no imports were supplied");
@@ -170,6 +172,31 @@ public class GremlinGroovyScriptEngineTest {
         engine.use("org.apache.commons", "commons-math3", "3.2");
         engine.addImports(new HashSet<>(Arrays.asList("import org.apache.commons.math3.util.FastMath")));
         assertEquals(1235, engine.eval("org.apache.commons.math3.util.FastMath.abs(-1235)"));
+    }
+
+    @Test
+    public void shouldAllowsMultipleImports() throws Exception {
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) NoImportCustomizerProvider.INSTANCE);
+        try {
+            engine.eval("Color.RED");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
+
+        try {
+            engine.eval("SystemColor.ACTIVE_CAPTION");
+            fail("Should have thrown an exception because no imports were supplied");
+        } catch (Exception se) {
+            assertTrue(se instanceof ScriptException);
+        }
+
+        engine.addImports(new HashSet<>(Arrays.asList("import java.awt.Color")));
+        assertEquals(Color.RED, engine.eval("Color.RED"));
+
+        engine.addImports(new HashSet<>(Arrays.asList("import java.awt.SystemColor")));
+        assertEquals(Color.RED, engine.eval("Color.RED"));
+        assertEquals(SystemColor.ACTIVE_CAPTION, engine.eval("SystemColor.ACTIVE_CAPTION"));
     }
 
     @Test

@@ -286,7 +286,7 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         // use the EmptyImportCustomizer because it doesn't come with static initializers containing
         // existing imports.
         importCustomizerProvider = new EmptyImportCustomizerProvider(importCustomizerProvider, imports, staticImports);
-        reset();
+        internalReset();
     }
 
     /**
@@ -315,6 +315,19 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
      */
     @Override
     public void reset() {
+        internalReset();
+
+        loadedPlugins.clear();
+
+        getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
+    }
+
+    /**
+     * Resets the {@code ScriptEngine} but does not clear the loaded plugins or bindings.  Typically called by
+     * {@link DependencyManager} methods that need to just force the classloader to be recreated and script caches
+     * cleared.
+     */
+    private void internalReset() {
         createClassLoader();
 
         // must clear the local cache here because the the classloader has been reset.  therefore, classes previously
@@ -322,12 +335,8 @@ public class GremlinGroovyScriptEngine extends GroovyScriptEngineImpl implements
         classMap.clear();
         globalClosures.clear();
 
-        loadedPlugins.clear();
-
         final Set<Artifact> toReuse = new HashSet<>(artifactsToUse);
         toReuse.forEach(this::use);
-
-        getContext().getBindings(ScriptContext.ENGINE_SCOPE).clear();
     }
 
     /**
