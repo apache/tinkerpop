@@ -31,11 +31,11 @@ import java.util.List;
 public final class ViewIncomingPayload<M> implements Payload {
 
     private List<DetachedVertexProperty<Object>> view = null;
-    private final List<M> incomingMessages;
+    private List<M> incomingMessages;
 
 
-    public ViewIncomingPayload() {
-        this.incomingMessages = null;
+    private ViewIncomingPayload() {
+
     }
 
     public ViewIncomingPayload(final MessageCombiner<M> messageCombiner) {

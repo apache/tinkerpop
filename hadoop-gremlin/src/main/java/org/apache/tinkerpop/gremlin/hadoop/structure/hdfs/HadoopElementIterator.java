@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.hadoop.structure.hdfs;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -56,7 +58,9 @@ public abstract class HadoopElementIterator<E extends Element> implements Iterat
             final InputFormat<NullWritable, VertexWritable> inputFormat = this.graph.configuration().getGraphInputFormat().getConstructor().newInstance();
             if (inputFormat instanceof FileInputFormat) {
                 if (!this.graph.configuration().containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION))
-                    return; // there is not input location and thus, no data (empty graph)
+                    return; // there is no input location and thus, no data (empty graph)
+                if (!FileSystem.get(configuration).exists(new Path(this.graph.configuration().getInputLocation())))
+                    return; // there is no data at the input location (empty graph)
                 configuration.set(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, this.graph.configuration().getInputLocation());
             }
             final List<InputSplit> splits = inputFormat.getSplits(new JobContextImpl(configuration, new JobID(UUID.randomUUID().toString(), 1)));
