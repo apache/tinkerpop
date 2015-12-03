@@ -16,35 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.spark.process.computer.payload;
+package org.apache.tinkerpop.gremlin.hadoop.structure;
 
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
-import scala.Tuple2;
-
-import java.util.List;
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
+import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ViewOutgoingPayload<M> implements Payload {
-
-    private List<DetachedVertexProperty<Object>> view;
-    private List<Tuple2<Object, M>> outgoingMessages;
-
-    private ViewOutgoingPayload() {
-
-    }
-
-    public ViewOutgoingPayload(final List<DetachedVertexProperty<Object>> view, final List<Tuple2<Object, M>> outgoingMessages) {
-        this.view = view;
-        this.outgoingMessages = outgoingMessages;
-    }
-
-    public ViewPayload getView() {
-        return new ViewPayload(this.view);
-    }
-
-    public List<Tuple2<Object, M>> getOutgoingMessages() {
-        return this.outgoingMessages;
-    }
+@RunWith(StructureStandardSuite.class)
+@GraphProviderClass(provider = HadoopGraphProvider.class, graph = HadoopGraph.class)
+public class HadoopGraphStructureStandardTest {
 }
+
+

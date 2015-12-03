@@ -16,35 +16,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.spark.process.computer.payload;
 
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
-import scala.Tuple2;
+package org.apache.tinkerpop.gremlin.spark.structure.io.gryo;
 
+import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.Serializer;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
+import scala.collection.JavaConversions;
+import scala.collection.mutable.WrappedArray;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ViewOutgoingPayload<M> implements Payload {
+public final class WrappedArraySerializer<T> extends Serializer<WrappedArray<T>> {
 
-    private List<DetachedVertexProperty<Object>> view;
-    private List<Tuple2<Object, M>> outgoingMessages;
-
-    private ViewOutgoingPayload() {
-
+    @Override
+    public void write(final Kryo kryo, final Output output, final WrappedArray<T> iterable) {
+        kryo.writeClassAndObject(output,new ArrayList<>(JavaConversions.asJavaList(iterable)));
     }
 
-    public ViewOutgoingPayload(final List<DetachedVertexProperty<Object>> view, final List<Tuple2<Object, M>> outgoingMessages) {
-        this.view = view;
-        this.outgoingMessages = outgoingMessages;
-    }
-
-    public ViewPayload getView() {
-        return new ViewPayload(this.view);
-    }
-
-    public List<Tuple2<Object, M>> getOutgoingMessages() {
-        return this.outgoingMessages;
+    @Override
+    public WrappedArray<T> read(final Kryo kryo, final Input input, final Class<WrappedArray<T>> aClass) {
+        return new WrappedArray.ofRef<>((T[]) ((List<T>) kryo.readClassAndObject(input)).toArray());
     }
 }

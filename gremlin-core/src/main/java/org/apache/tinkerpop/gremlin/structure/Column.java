@@ -19,19 +19,50 @@
 
 package org.apache.tinkerpop.gremlin.structure;
 
+import org.apache.tinkerpop.gremlin.process.traversal.Path;
+
+import java.util.Map;
+import java.util.function.Function;
+
 /**
- * Column references a particular type of column in a complex data structure such as a {@link java.util.Map} or a {@link org.apache.tinkerpop.gremlin.process.traversal.Path}.
+ * Column references a particular type of column in a complex data structure such as a {@link java.util.Map}, a {@link java.util.Map.Entry}, or a {@link org.apache.tinkerpop.gremlin.process.traversal.Path}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public enum Column {
+public enum Column implements Function<Object, Object> {
 
     /**
      * The keys associated with the data structure.
      */
-    keys,
+    keys {
+        @Override
+        public Object apply(final Object object) {
+            if (object instanceof Map)
+                return ((Map) object).keySet();
+            else if (object instanceof Map.Entry)
+                return ((Map.Entry) object).getKey();
+            else if (object instanceof Path)
+                return ((Path) object).labels();
+            else
+                throw new IllegalArgumentException("The provided object does not have accessible keys: " + object.getClass());
+        }
+    },
     /**
      * The values associated with the data structure.
      */
-    values
+    values {
+        @Override
+        public Object apply(final Object object) {
+            if (object instanceof Map)
+                return ((Map) object).values();
+            else if (object instanceof Map.Entry)
+                return ((Map.Entry) object).getValue();
+            else if (object instanceof Path)
+                return ((Path) object).objects();
+            else
+                throw new IllegalArgumentException("The provided object does not have accessible keys: " + object.getClass());
+        }
+    }
+
+
 }

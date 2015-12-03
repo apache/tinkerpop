@@ -52,7 +52,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
 
-    final static String TINKERGRAPH_LOCATION = "/tmp/tinkertest.kryo";
+    final static String TINKERGRAPH_LOCATION = "target/test-output/tinkertest.kryo";
 
     private BulkLoader getBulkLoader(final BulkLoaderVertexProgram blvp) throws Exception {
         final Field field = BulkLoaderVertexProgram.class.getDeclaredField("bulkLoader");

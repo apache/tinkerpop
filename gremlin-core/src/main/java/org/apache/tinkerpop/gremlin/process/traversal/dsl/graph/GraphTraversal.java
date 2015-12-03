@@ -99,7 +99,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.map.PropertyValueStep
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.RangeLocalStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SackStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SampleLocalStep;
-import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectColumnStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectOneStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SelectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.map.SumGlobalStep;
@@ -128,6 +127,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TraversalS
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.TreeSideEffectStep;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementFunctionComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.ElementValueComparator;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.FunctionComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.HasContainer;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.Tree;
@@ -472,11 +472,11 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <E2> GraphTraversal<S, Collection<E2>> select(final Column column) {
-        return this.asAdmin().addStep(new SelectColumnStep<>(this.asAdmin(), column));
+        return this.map(new FunctionTraverser<>((Function) column));
     }
 
     /**
-     * @deprecated As of release 3.1.0, replaced by {@link #select(SelectColumnStep.Column)}
+     * @deprecated As of release 3.1.0, replaced by {@link GraphTraversal#select(Column)}
      */
     @Deprecated
     public default <E2> GraphTraversal<S, E2> mapValues() {
@@ -484,7 +484,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * @deprecated As of release 3.1.0, replaced by {@link #select(SelectColumnStep.Column)}
+     * @deprecated As of release 3.1.0, replaced by {@link GraphTraversal#select(Column)}
      */
     @Deprecated
     public default <E2> GraphTraversal<S, E2> mapKeys() {
@@ -1164,7 +1164,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
 
-    ////
+    //// PROJECTION BY-MODULATORS
 
     public default GraphTraversal<S, E> by(final Traversal<?, ?> byTraversal) {
         ((TraversalParent) this.asAdmin().getEndStep()).addLocalChild(byTraversal.asAdmin());
@@ -1187,7 +1187,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.by(new ElementValueTraversal<>(elementPropertyKey));
     }
 
-    ////
+    //// COMPARATOR BY-MODULATORS
 
     public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
         ((ComparatorHolder<E>) this.asAdmin().getEndStep()).addComparator(comparator);
@@ -1198,9 +1198,15 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.by((Comparator) order);
     }
 
+    public default <V> GraphTraversal<S, E> by(final Column column, final Comparator<V> objectComparator) {
+        return this.by(new FunctionComparator(column, objectComparator));
+    }
+
     public default <V> GraphTraversal<S, E> by(final Function<Element, V> elementFunctionProjection,
                                                final Comparator<V> elementFunctionValueComparator) {
-        return this.by((Comparator) new ElementFunctionComparator<>(elementFunctionProjection, elementFunctionValueComparator));
+        return ((Function) elementFunctionProjection) instanceof Column ?
+                this.by((Column) ((Function) elementFunctionProjection), elementFunctionValueComparator) :
+                this.by((Comparator) new ElementFunctionComparator<>(elementFunctionProjection, elementFunctionValueComparator));
     }
 
     public default <V> GraphTraversal<S, E> by(final String elementPropertyProjection,

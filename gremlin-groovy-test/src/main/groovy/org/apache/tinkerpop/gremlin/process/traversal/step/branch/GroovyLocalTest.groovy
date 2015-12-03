@@ -32,7 +32,7 @@ public abstract class GroovyLocalTest {
 
         @Override
         public Traversal<Vertex, String> get_g_V_localXpropertiesXlocationX_order_byXvalueX_limitX2XX_value() {
-            TraversalScriptHelper.compute("g.V.local(__.properties('location').order.by(T.value,Order.incr).limit(2)).value", g);
+            TraversalScriptHelper.compute("g.V.local(__.properties('location').order.by(value,incr).limit(2)).value", g);
         }
 
         @Override

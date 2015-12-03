@@ -47,7 +47,12 @@ public enum Order implements Comparator<Object> {
         public Order reversed() {
             return incr;
         }
-    }, keyIncr {
+    },
+    /*
+     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#keys};
+       @Deprecated
+    */
+    keyIncr {
         @Override
         public int compare(final Object first, final Object second) {
             return Comparator.<Comparable>naturalOrder().compare(((Map.Entry<Comparable, ?>) first).getKey(), ((Map.Entry<Comparable, ?>) second).getKey());
@@ -57,7 +62,12 @@ public enum Order implements Comparator<Object> {
         public Order reversed() {
             return keyDecr;
         }
-    }, valueIncr {
+    },
+    /*
+     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#values};
+     *
+    @Deprecated */
+    valueIncr {
         @Override
         public int compare(final Object first, final Object second) {
             return Comparator.<Comparable>naturalOrder().compare(((Map.Entry<?, Comparable>) first).getValue(), ((Map.Entry<?, Comparable>) second).getValue());
@@ -67,7 +77,12 @@ public enum Order implements Comparator<Object> {
         public Order reversed() {
             return valueDecr;
         }
-    }, keyDecr {
+    },
+    /*
+     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#keys};
+     *
+    @Deprecated */
+    keyDecr {
         @Override
         public int compare(final Object first, final Object second) {
             return Comparator.<Comparable>reverseOrder().compare(((Map.Entry<Comparable, ?>) first).getKey(), ((Map.Entry<Comparable, ?>) second).getKey());
@@ -77,7 +92,12 @@ public enum Order implements Comparator<Object> {
         public Order reversed() {
             return keyIncr;
         }
-    }, valueDecr {
+    },
+    /*
+     * @deprecated Use {@link org.apache.tinkerpop.gremlin.structure.Column#values};
+     *
+    @Deprecated */
+    valueDecr {
         @Override
         public int compare(final Object first, final Object second) {
             return Comparator.<Comparable>reverseOrder().compare(((Map.Entry<?, Comparable>) first).getValue(), ((Map.Entry<?, Comparable>) second).getValue());

@@ -20,13 +20,14 @@ package org.apache.tinkerpop.gremlin.tinkergraph.structure;
 
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
+import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -39,6 +40,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.*;
@@ -53,7 +55,8 @@ public class TinkerGraphPlayTest {
     public void testPlay8() throws Exception {
         Graph graph = TinkerFactory.createModern();
         GraphTraversalSource g = graph.traversal(); //GraphTraversalSource.computer());
-        System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
+        //System.out.println(g.V().outE("knows").identity().inV().count().is(P.eq(5)).explain());
+        System.out.println(g.V().both().both().groupCount().order(Scope.local).by(Column.values, Order.incr).toList());
 
     }
 

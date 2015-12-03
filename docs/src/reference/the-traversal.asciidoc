@@ -1197,8 +1197,23 @@ g.V().hasLabel('person').order().by(shuffle)
 g.V().hasLabel('person').order().by(shuffle)
 ----
 
-IMPORTANT: `order(local)` orders the current, local object (not the objects in the traversal stream). This works for
+It is possible to use `order(local)` to order the current local object and not the entire traversal stream. This works for
 `Collection`- and `Map`-type objects. For any other object, the object is returned unchanged.
+
+[gremlin-groovy,modern]
+----
+g.V().values('age').fold().order(local).by(decr) <1>
+g.V().values('age').order(local).by(decr) <2>
+g.V().groupCount().by(inE().count()).order(local).by(values, decr) <3>
+g.V().groupCount().by(inE().count()).order(local).by(keys, incr) <4>
+----
+
+<1> The ages are gathered into a list and then that list is sorted in decreasing order.
+<2> The ages are not gathered and thus `order(local)` is "ordering" single integers and thus, does nothing.
+<3> The `groupCount()` map is ordered by its values in decreasing order.
+<4> The `groupCount()` map is ordered by its keys in increasing order.
+
+NOTE: The `values` and `keys` enums are from `Column` which is used to select "columns" from a `Map`, `Map.Entry`, or `Path`.
 
 [[path-step]]
 Path Step
@@ -1573,11 +1588,11 @@ ranking.
 graph.io(graphml()).readGraph('data/grateful-dead.xml')
 g = graph.traversal()
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
-      order(local).by(valueDecr).limit(local, 5)
+      order(local).by(values,decr).limit(local, 5)
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
-      order(local).by(valueDecr).limit(local, 5).select(keys)
+      order(local).by(values,decr).limit(local, 5).select(keys)
 g.V().hasLabel('song').out('followedBy').groupCount().by('name').
-      order(local).by(valueDecr).limit(local, 5).select(keys).unfold()
+      order(local).by(values,decr).limit(local, 5).select(keys).unfold()
 ----
 
 Similarly, for extracting the values from a path or map.
@@ -1589,7 +1604,7 @@ g = graph.traversal()
 g.V().hasLabel('song').out('sungBy').groupCount().by('name') <1>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values) <2>
 g.V().hasLabel('song').out('sungBy').groupCount().by('name').select(values).unfold().
-      groupCount().order(local).by(valueDecr).limit(local, 5) <3>
+      groupCount().order(local).by(values,decr).limit(local, 5) <3>
 ----
 
 <1> Which artist sung how many songs?
@@ -1779,10 +1794,10 @@ that can be used to time execution of a body of code.
 
 [gremlin-groovy,modern]
 ----
-g.V().repeat(both().groupCount('m')).times(16).cap('m').order(local).by(valueDecr).next()
-clock(1) {g.V().repeat(both().groupCount('m')).times(16).cap('m').order(local).by(valueDecr).next()}
-g.V().repeat(timeLimit(2).both().groupCount('m')).times(16).cap('m').order(local).by(valueDecr).next()
-clock(1) {g.V().repeat(timeLimit(2).both().groupCount('m')).times(16).cap('m').order(local).by(valueDecr).next()}
+g.V().repeat(both().groupCount('m')).times(16).cap('m').order(local).by(values,decr).next()
+clock(1) {g.V().repeat(both().groupCount('m')).times(16).cap('m').order(local).by(values,decr).next()}
+g.V().repeat(timeLimit(2).both().groupCount('m')).times(16).cap('m').order(local).by(values,decr).next()
+clock(1) {g.V().repeat(timeLimit(2).both().groupCount('m')).times(16).cap('m').order(local).by(values,decr).next()}
 ----
 
 In essence, the relative order is respected, even through the number of traversers at each vertex is not. The primary

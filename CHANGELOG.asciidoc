@@ -26,6 +26,12 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* `Column` now implements `Function` and now `by(valueDecr)` can  be replaced with `by(values,decr)` and thus, projection and order are now separated.
+* Added `InputRDDFormat` which wraps an `InputRDD` to make it accessible to Hadoop and not just Spark.
+* Added `AbstractSparkTest` which handles closing `SparkContext` instances between tests now that we support persisted contexts.
+* Fixed a serialization bug in `GryoSerializer` that made it difficult for graph providers to yield `InputRDDs` for `SparkGraphComputer`.
+* `SparkGraphComputer` is now tested against Gryo, GraphSON, and `InputRDD` data sources.
+* `HadoopElementIterator` (for Hadoop-Gremlin OLTP) now works for any `InputFormat`, not just `FileInputFormats`.
 * Added `Traverser.Admin.getTags()` which are used to mark branches in a traversal (useful in `match()` and related future steps).
 * Fixed the `Future` model for `GiraphGraphComputer` and `SparkGraphComputer` so that class loaders are preserved.
 * Added support for arbitrary vertex ID types in `BulkLoaderVertexProgram`.
