@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -36,7 +37,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class InputRDDTest {
+public class InputRDDTest  extends AbstractSparkTest {
 
     @Test
     public void shouldReadFromArbitraryRDD() {

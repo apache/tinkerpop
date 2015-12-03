@@ -34,6 +34,7 @@ import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVe
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkHadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
@@ -50,10 +51,9 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PersistedInputOutputRDDTest {
+public class PersistedInputOutputRDDTest extends AbstractSparkTest {
 
     @Test
-
     public void shouldNotPersistRDDAcrossJobs() throws Exception {
         final String rddName = "target/test-output/" + UUID.randomUUID();
         final Configuration configuration = new BaseConfiguration();
