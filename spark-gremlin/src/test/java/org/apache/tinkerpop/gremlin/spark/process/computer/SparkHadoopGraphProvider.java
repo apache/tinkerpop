@@ -48,10 +48,8 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
         config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);  // this makes the test suite go really fast
         if (null != loadGraphWith &&
                 !test.equals(BulkLoaderVertexProgramTest.class) &&
-                !test.equals(PageRankVertexProgramTest.class) &&
                 RANDOM.nextBoolean()) {
             config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, ToyGraphInputRDD.class.getCanonicalName());
-            config.put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
         }
         /// spark configuration
         config.put("spark.master", "local[4]");
