@@ -10,5 +10,3 @@ addons:
       - oracle-java8-installer
 script: 
   - "mvn clean install"
-  - "bin/process-docs.sh --dryRun"
-  - "mvn process-resources -Djavadoc"

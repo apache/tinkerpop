@@ -272,5 +272,14 @@ public interface Traverser<T> extends Serializable, Comparable<Traverser<T>>, Cl
          * @return the traversal sideEffects of the traverser
          */
         public TraversalSideEffects getSideEffects();
+
+        /**
+         * Get the tags associated with the traverser.
+         * Tags are used to categorize historic behavior of a traverser.
+         * The returned set is mutable.
+         *
+         * @return the set of tags associated with the traverser.
+         */
+        public Set<String> getTags();
     }
 }

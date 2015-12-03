@@ -478,7 +478,7 @@ public class GremlinExecutorTest {
     public void shouldContinueToEvalScriptsEvenWithTimedInterrupt() throws Exception {
         final Map<String,List<Object>> compilerCustomizerConfig = new HashMap<>();
         final List<Object> args = new ArrayList<>();
-        args.add(50);
+        args.add(250);
         compilerCustomizerConfig.put(TimedInterruptCustomizerProvider.class.getName(), args);
 
         final Map<String, Object> config = new HashMap<>();
@@ -494,14 +494,14 @@ public class GremlinExecutorTest {
 
         for (int ix = 0; ix < 5; ix++) {
             try {
-                // this script takes 10 ms longer than the interruptionTimeout
-                gremlinExecutor.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 100) {}").get();
+                // this script takes significantly longer than the interruptionTimeout
+                gremlinExecutor.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 10000) {}").get();
                 fail("This should have timed out");
             } catch (Exception se) {
                 assertEquals(TimeoutException.class, se.getCause().getClass());
             }
 
-            // this script takes 10 ms less than the interruptionTimeout
+            // this script takes significantly less than the interruptionTimeout
             assertEquals("test", gremlinExecutor.eval("s = System.currentTimeMillis();\nwhile((System.currentTimeMillis() - s) < 20) {};'test'").get());
         }
 
