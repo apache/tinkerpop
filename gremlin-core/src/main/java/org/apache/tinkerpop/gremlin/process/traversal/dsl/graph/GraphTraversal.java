@@ -1164,7 +1164,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
 
-    ////
+    //// PROJECTION BY-MODULATORS
 
     public default GraphTraversal<S, E> by(final Traversal<?, ?> byTraversal) {
         ((TraversalParent) this.asAdmin().getEndStep()).addLocalChild(byTraversal.asAdmin());
@@ -1187,7 +1187,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
         return this.by(new ElementValueTraversal<>(elementPropertyKey));
     }
 
-    ////
+    //// COMPARATOR BY-MODULATORS
 
     public default GraphTraversal<S, E> by(final Comparator<E> comparator) {
         ((ComparatorHolder<E>) this.asAdmin().getEndStep()).addComparator(comparator);
@@ -1204,7 +1204,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default <V> GraphTraversal<S, E> by(final Function<Element, V> elementFunctionProjection,
                                                final Comparator<V> elementFunctionValueComparator) {
-        return this.by((Comparator) new ElementFunctionComparator<>(elementFunctionProjection, elementFunctionValueComparator));
+        return ((Function) elementFunctionProjection) instanceof Column ?
+                this.by((Column) ((Function) elementFunctionProjection), elementFunctionValueComparator) :
+                this.by((Comparator) new ElementFunctionComparator<>(elementFunctionProjection, elementFunctionValueComparator));
     }
 
     public default <V> GraphTraversal<S, E> by(final String elementPropertyProjection,
