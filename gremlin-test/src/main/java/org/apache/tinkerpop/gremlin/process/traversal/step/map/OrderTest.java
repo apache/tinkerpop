@@ -364,7 +364,7 @@ public abstract class OrderTest extends AbstractGremlinProcessTest {
                 map.put(3, (int) v.get().value("age") * 3);
                 map.put(4, (int) v.get().value("age"));
                 return map;
-            }).order(Scope.local).by(Column.values, Order.decr).by(Column.keys,Order.incr);
+            }).order(Scope.local).by(Column.values, Order.decr).by(Column.keys, Order.incr);
         }
 
         @Override
