@@ -48,7 +48,7 @@ committed.  You will probably find that you spend more time here.
 Of course, you can decline and instead remain as a contributor, participating as you do now.
 
 A. This personal invitation is a chance for you to accept or decline in private.  Either way, please let us know in
-reply to the private@tinkerpop.incubator.apache.org address only.
+reply to the private@tinkerpop.apache.org address only.
 
 B. If you are accepting, the next step is to register an iCLA with the Apache Software Foundation:
     1. Details of the iCLA and the forms are found through this link: http://www.apache.org/licenses/#clas.

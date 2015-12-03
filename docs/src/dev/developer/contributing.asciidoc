@@ -26,7 +26,7 @@ Getting Started
 
 New contributors can start development with TinkerPop by first link:https://help.github.com/articles/fork-a-repo/[forking
 then cloning] the Apache TinkerPop link:https://github.com/apache/incubator-tinkerpop[GitHub repository]. Generally
-speaking it is best to tie any work done to an issue in link:https://issues.apache.org/jira/browse/TINKERPOP3[JIRA].
+speaking it is best to tie any work done to an issue in link:https://issues.apache.org/jira/browse/TINKERPOP[JIRA].
 Either scan through JIRA for an existing open issue to work on or create a new one.
 
 NOTE: For those who are trying to find a place to start to contribute, consider looking at unresolved issues that
@@ -177,7 +177,7 @@ tags, as they produce permanent clutter.
 Issue Tracker Conventions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TinkerPop uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TINKERPOP3[issue tracker].  JIRA is a
+TinkerPop uses Apache JIRA as its link:https://issues.apache.org/jira/browse/TINKERPOP[issue tracker].  JIRA is a
 very robust piece of software with many options and configurations.  To simplify usage and ensure consistency across
 issues, the following conventions should be adhered to:
 
@@ -222,7 +222,7 @@ public APIs that might be utilized by users or implemented by vendors:
 ** `@deprecated As of release x.y.z, replaced by {@link SomeOtherClass#someNewMethod()}` - if the method is not
 replaced then the comment can simply read "not replaced".  Additional comments that provide more context are
 encouraged.
-** `@see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-XXX">TINKERPOP3-XXX</a>` - supply a link to the
+** `@see <a href="https://issues.apache.org/jira/browse/TINKERPOP-XXX">TINKERPOP-XXX</a>` - supply a link to the
 JIRA issue for reference.
 * All deprecation should typically be tied to a JIRA issue with a "breaking" label - the issue itself does not need to
 specifically or solely be about "deprecation" but it should be documented very clearly in the comments what was

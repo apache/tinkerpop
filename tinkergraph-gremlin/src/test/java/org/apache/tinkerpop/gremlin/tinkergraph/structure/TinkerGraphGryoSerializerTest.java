@@ -38,10 +38,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistry.TinkerGraphSerializer}
+ * Unit tests for {@link TinkerIoRegistry.TinkerGraphGryoSerializer}
  */
 @RunWith(MockitoJUnitRunner.class)
-public class TinkerGraphSerializerTest {
+public class TinkerGraphGryoSerializerTest {
 
     @Mock
     private Kryo kryo;
@@ -53,7 +53,7 @@ public class TinkerGraphSerializerTest {
     private Input input;
 
     private TinkerGraph graph = TinkerGraph.open();
-    private TinkerIoRegistry.TinkerGraphSerializer serializer = new TinkerIoRegistry.TinkerGraphSerializer();
+    private TinkerIoRegistry.TinkerGraphGryoSerializer serializer = new TinkerIoRegistry.TinkerGraphGryoSerializer();
 
     @Before
     public void setUp() throws Exception {

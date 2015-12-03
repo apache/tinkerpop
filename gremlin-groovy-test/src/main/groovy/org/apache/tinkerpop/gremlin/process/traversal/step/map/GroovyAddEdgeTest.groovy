@@ -38,7 +38,7 @@ public abstract class GroovyAddEdgeTest {
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X(
                 final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').addE('createdBy').to('a').property('weight', 2)", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').addE('createdBy').to('a').property('weight', 2.0d)", g, "v1Id", v1Id)
         }
 
         @Override
@@ -64,7 +64,7 @@ public abstract class GroovyAddEdgeTest {
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(
                 final Object v1Id) {
-            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').addOutE('createdBy', 'a', 'weight', 2)", g, "v1Id", v1Id)
+            TraversalScriptHelper.compute("g.V(v1Id).as('a').out('created').addOutE('createdBy', 'a', 'weight', 2.0d)", g, "v1Id", v1Id)
         }
 
         @Override

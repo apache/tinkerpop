@@ -173,7 +173,7 @@ public final class MultiMetaNeo4jTrait implements Neo4jTrait {
                 return property;
             }
         } catch (final IllegalArgumentException iae) {
-            throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
+            throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value, iae);
         }
     }
 

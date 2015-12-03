@@ -243,7 +243,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
                     idPairs.put(idPair.getValue(0), idPair.getValue(1));
                 }
                 // get the vertex with given the dummy id property
-                final Long outVId = sourceVertex.value(bulkLoader.getVertexIdProperty());
+                final Object outVId = sourceVertex.value(bulkLoader.getVertexIdProperty());
                 final Vertex outV = bulkLoader.getVertexById(outVId, graph, g);
                 // for all the incoming edges of the vertex, get the incoming adjacent vertex and write the edge and its properties
                 sourceVertex.edges(Direction.OUT).forEachRemaining(edge -> {
@@ -254,7 +254,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
                 });
             }
         } else if (memory.getIteration() == 2) {
-            final Long vertexId = sourceVertex.value(bulkLoader.getVertexIdProperty());
+            final Object vertexId = sourceVertex.value(bulkLoader.getVertexIdProperty());
             bulkLoader.getVertexById(vertexId, graph, g)
                     .property(bulkLoader.getVertexIdProperty()).remove();
             this.commit(false);

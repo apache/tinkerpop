@@ -121,7 +121,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            assertEquals(2, edge.<Integer>value("weight").intValue());
+            assertEquals(2.0d, edge.<Double>value("weight").doubleValue(),0.00001d);
             assertEquals(1, IteratorUtils.count(edge.properties()));
             count++;
 
@@ -142,7 +142,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
         while (traversal.hasNext()) {
             final Edge edge = traversal.next();
             assertEquals("createdBy", edge.label());
-            assertEquals(2, edge.<Integer>value("weight").intValue());
+            assertEquals(2.0d, edge.<Double>value("weight").doubleValue(),0.00001d);
             assertEquals(1, IteratorUtils.count(edge.properties()));
             count++;
 
@@ -311,7 +311,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addEXcreatedByX_toXaX_propertyXweight_2X(final Object v1Id) {
-            return g.V(v1Id).as("a").out("created").addE("createdBy").to("a").property("weight", 2);
+            return g.V(v1Id).as("a").out("created").addE("createdBy").to("a").property("weight", 2.0d);
         }
 
         @Override
@@ -338,7 +338,7 @@ public abstract class AddEdgeTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Edge> get_g_VX1X_asXaX_outXcreatedX_addOutEXcreatedBy_a_weight_2X(final Object v1Id) {
-            return g.V(v1Id).as("a").out("created").addOutE("createdBy", "a", "weight", 2);
+            return g.V(v1Id).as("a").out("created").addOutE("createdBy", "a", "weight", 2.0d);
         }
 
         @Override

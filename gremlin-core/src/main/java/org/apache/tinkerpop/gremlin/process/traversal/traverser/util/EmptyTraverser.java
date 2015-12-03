@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.EmptyPath;
 import org.apache.tinkerpop.gremlin.structure.util.Attachable;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -141,6 +142,11 @@ public final class EmptyTraverser<T> implements Traverser<T>, Traverser.Admin<T>
     @Override
     public TraversalSideEffects getSideEffects() {
         return null;
+    }
+
+    @Override
+    public Set<String> getTags() {
+        return Collections.emptySet();
     }
 
     @Override

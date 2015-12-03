@@ -33,6 +33,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.launcher.SparkLauncher;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
+import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.ComputerSubmissionHelper;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
@@ -54,6 +55,7 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
@@ -97,6 +99,11 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
     @Override
     public Future<ComputerResult> submit() {
         this.validateStatePriorToExecution();
+
+        return ComputerSubmissionHelper.runWithBackgroundThread(this::submitWithExecutor, "SparkSubmitter");
+    }
+
+    private Future<ComputerResult> submitWithExecutor(Executor exec) {
         // apache and hadoop configurations that are used throughout the graph computer computation
         final org.apache.commons.configuration.Configuration apacheConfiguration = new HadoopConfiguration(this.sparkConfiguration);
         apacheConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.equals(GraphComputer.Persist.EDGES));
@@ -224,7 +231,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 if (sparkContext != null && !apacheConfiguration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
                     sparkContext.stop();
             }
-        });
+        }, exec);
     }
 
     /////////////////

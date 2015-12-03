@@ -110,7 +110,7 @@ current release was under development as this new release will have those change
 . `bin/publish-docs.sh <username>` - Note that this step requires no additional processing as the previous step.
 handled document generation and this step now merely needs to upload what was generated.
 . `mvn deploy -Papache-release -DcreateChecksum=true -Dmaven.test.skip=true` - deploy signed artifacts with checksums to link:https://repository.apache.org/[Apache Nexus]. Review (artifacts versions, file sizes, anything that might be out of place - request another committer to review as well) but do NOT close/release the staging repository at this time.
-. Review generated artifacts to be sure they have both javadocs and asciidocs present
+. Review generated artifacts to be sure they have both javadocs and asciidocs present then "close" the repo - if the repo is left open it will be automatically dropped after five days and closing the repo will allow it to stay available for a full ninety days which is more than enough time to complete a vote.
 . Upload artifacts to `https://dist.apache.org/repos/dist/dev/incubator/tinkerpop` for `[VOTE]` review.
 .. `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop/ dev` and `mkdir dev/x.y.z`
 .. `cp ~/.m2/repository/org/apache/tinkerpop/gremlin-console/x.y.z/gremlin-console-x.y.z-distribution.zip* dev/x.y.z`
@@ -132,7 +132,7 @@ handled document generation and this step now merely needs to upload what was ge
 .. `bin/process-docs.sh` and validate the generated `SNAPSHOT` documentation locally
 .. `bin/publish-docs.sh <username>` to publish the `SNAPSHOT` docs which enables the README to work properly.
 .. Update the links in the `README.asciidoc` to point at the `SNAPSHOT` version.
-. Submit for `[VOTE]` at `dev@tinkerpop.incubator.apache.org` (see email template below)
+. Submit for `[VOTE]` at `dev@tinkerpop.apache.org` (see email template below)
 . *Wait for vote acceptance* (72 hours)
 
 Incubator Vote
@@ -141,7 +141,7 @@ Incubator Vote
 A positive vote for a particular release from the Apache Incubator is required to move to the following phase.
 
 . Submit for `[VOTE]` at `general@incubator.apache.org` (see email template below)
-.. Include the vote tally: "Apache TinkerPop (http://tinkerpop.incubator.apache.org/) would like to release TinkerPop x.y.z. We had a dev@ VOTE which resulted in a tally of +1 (3), 0 (0), and -1 (0). We now present our artifacts for vote by Incubator."
+.. Include the vote tally: "Apache TinkerPop (http://tinkerpop.apache.org/) would like to release TinkerPop x.y.z. We had a dev@ VOTE which resulted in a tally of +1 (3), 0 (0), and -1 (0). We now present our artifacts for vote by Incubator."
 . *Wait for vote acceptance* (72 hours)
 
 Release & Promote
@@ -151,6 +151,7 @@ Release & Promote
 . `svn co --depth empty https://dist.apache.org/repos/dist/dev/incubator/tinkerpop dev; svn up dev/x.y.z`
 . `svn co --depth empty https://dist.apache.org/repos/dist/release/incubator/tinkerpop release; mkdir release/x.y.z`
 . `cd release; svn add x.y.z/; svn ci -m "TinkerPop x.y.z release"`
+. If there is are releases present in SVN that represents lines of code that are no longer under development, then remove those releases. In other words, if `3.1.0-incubating` is present and `3.1.1-incubating` is released then remove `3.1.0-incubating`.  However, if `3.0.2-incubating` is present and that line of code is still under potential development, it may stay.
 . Update homepage with references to latest distribution and to other internal links elsewhere on the page.
 . Wait for Apache Central to sync the jars and src (link:http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/[http://repo1.maven.org/maven2/org/apache/tinkerpop/tinkerpop/]).
 . Announce release on `dev@`/`gremlin-users@` mailing lists and tweet from `@apachetinkerpop`
@@ -173,10 +174,10 @@ Two binary distributions are provided for user convenience:
 	apache-gremlin-server-x.y.z-bin.zip
 
 The online docs can be found here:
-	http://tinkerpop.incubator.apache.org/docs/x.y.z/ (user docs)
-	http://tinkerpop.incubator.apache.org/docs/x.y.z/upgrade.html (upgrade docs)
-	http://tinkerpop.incubator.apache.org/javadocs/x.y.z/core/ (core javadoc)
-	http://tinkerpop.incubator.apache.org/javadocs/x.y.z/full/ (full javadoc)
+	http://tinkerpop.apache.org/docs/x.y.z/ (user docs)
+	http://tinkerpop.apache.org/docs/x.y.z/upgrade.html (upgrade docs)
+	http://tinkerpop.apache.org/javadocs/x.y.z/core/ (core javadoc)
+	http://tinkerpop.apache.org/javadocs/x.y.z/full/ (full javadoc)
 
 The tag in Apache Git can be found here:
 	https://git-wip-us.apache.org/repos/asf?p=incubator-tinkerpop.git;...

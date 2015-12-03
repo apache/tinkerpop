@@ -22,6 +22,87 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 
 *A 187 On The Undercover Gremlinz*
 
+TinkerPop 3.1.1
+---------------
+
+*Release Date: NOT YET RELEASED*
+
+Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.1-incubating/CHANGELOG.asciidoc#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX[changelog] for a complete list of all the modifications that are part of this release.
+
+Upgrading for Users
+~~~~~~~~~~~~~~~~~~~
+
+Deprecated credentialsDbLocation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `credentialsDbLocation` setting was a TinkerGraph only configuration option to the `SimpleAuthenticator` for
+Gremlin Server.  It provided the file system location to a "credentials graph" that TinkerGraph would read from a
+Gryo file at that spot.  This setting was only required because TinkerGraph did not support file persistence at the
+time that `SimpleAuthenticator` was created.
+
+As of 3.1.0-incubating, TinkerGraph received a limited persistence feature that allowed the "credentials graph"
+location to be specified in the TinkerGraph properties file via `gremlin.tinkergraph.graphLocation` and as such the
+need for `credentialsDbLocation` was eliminated.
+
+This deprecation is not a breaking change, however users should be encouraged to convert their configurations to use
+the `gremlin.tinkergraph.graphLocation` as soon as possible, as the deprecated setting will be removed in a future
+release.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-981[TINKERPOP3-981],
+link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#_security[Reference Documentation - Gremlin Server Security]
+
+TinkerGraph Supports Any IO
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TinkerGraph's 'gremlin.tinkergraph.graphLocation' configuration setting can now take a fully qualified class name
+of a `Io.Builder` implementation, which means that custom IO implementations can be used to read and write
+TinkerGraph instances.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-886[TINKERPOP3-886]
+
+Upgrading for Providers
+~~~~~~~~~~~~~~~~~~~~~~~
+
+IMPORTANT: It is recommended that providers also review all the upgrade instructions specified for users. Many of the
+changes there may prove important for the provider's implementation.
+
+Graph System Providers
+^^^^^^^^^^^^^^^^^^^^^^
+
+Data Types in Tests
++++++++++++++++++++
+
+There were a number of fixes related to usage of appropriate types in the test suite. There were cases where tests
+were mixing types, such that a single property key might have two different values.  This mixed typing caused problems
+for some graphs and wasn't really something TinkerPop was looking to explicitly enforce as a rule of implementing the
+interfaces.
+
+While the changes should not have been breaking, providers should be aware that improved consistencies in the tests
+may present opportunities for test failures.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-984[TINKERPOP3-984],
+link:https://issues.apache.org/jira/browse/TINKERPOP3-990[TINKERPOP3-990],
+link:https://issues.apache.org/jira/browse/TINKERPOP3-1000[TINKERPOP3-1000]
+
+Graph Database Providers
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Feature Consistency
++++++++++++++++++++
+
+There were a number of corrections made around the consistency of `Features` and how they were applied in tests.
+Corrections fell into two groups of changes:
+
+. Bugs in the how `Features` were applied to certain tests.
+. Refactoring around the realization that `VertexFeatures.supportsMetaProperties()` is really just a duplicate of
+features already exposed as `VertexPropertyFeatures.supportsAddProperty()` and
+`VertexPropertyFeatures.supportsRemoveProperty()`.  `VertexFeatures.supportsMetaProperties()` has been deprecated.
+
+These changes related to "Feature Consistency" open up a number of previously non-executing tests for graphs that did
+not support meta-properties, so providers should be wary of potential test failure on previously non-executing tests.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-985[TINKERPOP3-985]
+
 TinkerPop 3.1.0
 ---------------
 
@@ -75,7 +156,7 @@ The notion of "rebindings" has been deprecated in favor of the term "aliases".  
 term than rebindings which should make it easier for newcomers to understand what they are for.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP3-913[TINKERPOP3-913],
-link:http://tinkerpop.incubator.apache.org/docs/3.1.0-incubating/#_aliases[Reference Documentation - Aliases]
+link:http://tinkerpop.apache.org/docs/3.1.0-incubating/#_aliases[Reference Documentation - Aliases]
 
 Configurable Driver Channelizer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -170,7 +251,7 @@ gremlin> :remote config visualTraversal graph vg
 which creates a special `TraversalSource` from `graph` called `vg`.  The traversals created from `vg` can be used
 to `:submit` to Gephi.
 
-See: link:http://tinkerpop.incubator.apache.org/docs/3.1.0-SNAPSHOT/#gephi-plugin[Reference Documentation - Gephi]
+See: link:http://tinkerpop.apache.org/docs/3.1.0-SNAPSHOT/#gephi-plugin[Reference Documentation - Gephi]
 
 Alterations to GraphTraversal
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -29,8 +29,8 @@ scriptEngines: {
   gremlin-groovy: {
     imports: []}}
 serializers:
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0 }  # application/vnd.gremlin-v1.0+json
-  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0 }         # application/json
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerGremlinV1d0, config: { useMapperFromGraph: graph }}  # application/vnd.gremlin-v1.0+json
+  - { className: org.apache.tinkerpop.gremlin.driver.ser.GraphSONMessageSerializerV1d0, config: { useMapperFromGraph: graph }}         # application/json
 metrics: {
   slf4jReporter: {enabled: true, interval: 180000}}
 threadPoolBoss: 1

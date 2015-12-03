@@ -105,7 +105,7 @@ public final class NoMultiNoMetaNeo4jTrait implements Neo4jTrait {
             vertex.getBaseVertex().setProperty(key, value);
             return new Neo4jVertexProperty<>(vertex, key, value);
         } catch (final IllegalArgumentException iae) {
-            throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value);
+            throw Property.Exceptions.dataTypeOfPropertyValueNotSupported(value, iae);
         }
     }
 

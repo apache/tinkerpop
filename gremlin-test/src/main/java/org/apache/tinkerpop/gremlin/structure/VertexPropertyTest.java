@@ -23,22 +23,22 @@ import org.apache.tinkerpop.gremlin.ExceptionCoverage;
 import org.apache.tinkerpop.gremlin.FeatureRequirement;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import static org.hamcrest.Matchers.hasItem;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -446,7 +446,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
             });
 
             for (int i = 0; i < 100; i++) {
-                marko.property(VertexProperty.Cardinality.list, "name", i);
+                marko.property(VertexProperty.Cardinality.list, "name", "Remove-" + String.valueOf(i));
             }
             tryCommit(graph, graph -> {
                 assertVertexEdgeCounts(1, 0);
@@ -455,7 +455,7 @@ public class VertexPropertyTest extends AbstractGremlinTest {
                 assertEquals(0, IteratorUtils.count(marko.properties("blah")));
             });
 
-            g.V().properties("name").has(T.value, P.test((a, b) -> ((Class) b).isAssignableFrom(a.getClass()), Integer.class)).forEachRemaining(Property::remove);
+            g.V().properties("name").has(T.value, P.test((a, b) -> ((String) a).startsWith((String) b), "Remove-")).forEachRemaining(Property::remove);
             tryCommit(graph, graph -> {
                 assertVertexEdgeCounts(1, 0);
                 assertEquals(2, IteratorUtils.count(marko.properties("name")));

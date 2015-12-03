@@ -252,8 +252,8 @@ public final class GraphSONReader implements GraphReader {
     private Stream<String> readVertexStrings(final InputStream inputStream) throws IOException {
         if (unwrapAdjacencyList) {
             final JsonNode root = mapper.readTree(inputStream);
-            final JsonNode vertices = root.get("vertices");
-            if (!vertices.getNodeType().equals(JsonNodeType.ARRAY)) throw new IOException("The 'vertices' key must be an array");
+            final JsonNode vertices = root.get(GraphSONTokens.VERTICES);
+            if (!vertices.getNodeType().equals(JsonNodeType.ARRAY)) throw new IOException(String.format("The '%s' key must be an array", GraphSONTokens.VERTICES));
             return IteratorUtils.stream(vertices.elements()).map(Object::toString);
         } else {
             final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));

@@ -718,7 +718,7 @@ The following table describes the various configuration options that Gremlin Ser
 |scriptEngines.<name>.staticImports |A comma separated list of "static" imports to make available to the `ScriptEngine`. |_none_
 |scriptEngines.<name>.scripts |A comma separated list of script files to execute on `ScriptEngine` initialization. `Graph` and `TraversalSource` instance references produced from scripts will be stored globally in Gremlin Server, therefore it is possible to use initialization scripts to add Traversal Strategies or create entirely new `Graph` instances all together. Instantiating a `LifeCycleHook` in a script provides a way to execute scripts when Gremlin Server starts and stops.|_none_
 |scriptEngines.<name>.config |A `Map` of configuration settings for the `ScriptEngine`.  These settings are dependent on the `ScriptEngine` implementation being used. |_none_
-|scriptEvaluationTimeout |The amount of time in milliseconds before a script evaluation times out. The notion of "script evaluation" refers to the time it takes for the `ScriptEngine` to do its work and *not* any additional time it takes for the result of the evaluation to be iterated and serialized. |30000
+|scriptEvaluationTimeout |The amount of time in milliseconds before a script evaluation times out. The notion of "script evaluation" refers to the time it takes for the `ScriptEngine` to do its work and *not* any additional time it takes for the result of the evaluation to be iterated and serialized. This feature can be turned off by setting the value to `0`. |30000
 |serializers |A `List` of `Map` settings, where each `Map` represents a `MessageSerializer` implementation to use along with its configuration. |_none_
 |serializers[X].className |The full class name of the `MessageSerializer` implementation. |_none_
 |serializers[X].config |A `Map` containing `MessageSerializer` specific configurations. |_none_
@@ -759,28 +759,13 @@ graph database, which must be provided to it as part of the configuration.
 authentication: {
   className: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
   config: {
-    credentialsDb: conf/credential-graph.properties}}
+    credentialsDb: conf/tinkergraph-credentials.properties}}
 
 Quick Start
 +++++++++++
 
 A quick way to get started with the `SimpleAuthenticator` is to use TinkerGraph for the "credentials graph" and the
-"sample" credential graph that is packaged with the server.  Recall that TinkerGraph is an in-memory graph and
-therefore always starts as "empty" when opened by `GraphFactory`.  To allow TinkerGraph to be used in this "getting
-started" capacity, Gremlin Server allows for a TinkerGraph-only configuration option called `credentialsDbLocation`.
-The following snippet comes from the `conf/gremlin-server-secure.yaml` file packaged with the server:
-
-[source,yaml]
-authentication: {
-  className: org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator,
-  config: {
-    credentialsDb: conf/tinkergraph-empty.properties,
-    credentialsDbLocation: data/credentials.kryo}}
-
-This added configuration tells Gremlin Server to look for a gryo file at that location containing the data for the
-graph which it loads via standard `io` methods.  The limitation is that this read is only performed at the
-initialization of the server so therefore credentials remain static for the life of the server.  In this case,
-`data/credentials.kryo` contains a single user named "stephen" with the imaginative password of "password".
+"sample" credential graph that is packaged with the server.
 
 [source,text]
 ----

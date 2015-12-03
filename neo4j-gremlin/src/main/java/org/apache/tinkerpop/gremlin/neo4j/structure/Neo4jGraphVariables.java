@@ -66,7 +66,7 @@ public final class Neo4jGraphVariables implements Graph.Variables {
         try {
             this.baseGraph.setProperty(key, value);
         } catch (final IllegalArgumentException e) {
-            throw Graph.Variables.Exceptions.dataTypeOfVariableValueNotSupported(value);
+            throw Graph.Variables.Exceptions.dataTypeOfVariableValueNotSupported(value, e);
         }
     }
 

@@ -100,7 +100,7 @@ public final class GraphSONWriter implements GraphWriter {
     public void writeVertices(final OutputStream outputStream, final Iterator<Vertex> vertexIterator, final Direction direction) throws IOException {
         final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            if (wrapAdjacencyList) writer.write("{\"vertices\":[");
+            if (wrapAdjacencyList) writer.write("{\"" + GraphSONTokens.VERTICES + "\":[");
             while (vertexIterator.hasNext()) {
                 writeVertex(baos, vertexIterator.next(), direction);
                 writer.write(new String(baos.toByteArray()));

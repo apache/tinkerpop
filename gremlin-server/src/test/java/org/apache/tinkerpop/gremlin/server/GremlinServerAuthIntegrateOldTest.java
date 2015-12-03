@@ -22,6 +22,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.driver.Client;
 import org.apache.tinkerpop.gremlin.driver.Cluster;
 import org.apache.tinkerpop.gremlin.driver.exception.ResponseException;
+import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
 import org.apache.tinkerpop.gremlin.server.auth.SimpleAuthenticator;
 import org.ietf.jgss.GSSException;
 import org.junit.Test;
@@ -31,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.tinkerpop.gremlin.driver.ser.Serializers;
-
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -40,8 +39,11 @@ import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.1.1-incubating, replaced by {@link GremlinServerAuthIntegrateTest}
+ * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-981">TINKERPOP3-981</a>
  */
-public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegrationTest {
+@Deprecated
+public class GremlinServerAuthIntegrateOldTest extends AbstractGremlinServerIntegrationTest {
 
     /**
      * Configure specific Gremlin Server settings for specific tests.
@@ -53,7 +55,8 @@ public class GremlinServerAuthIntegrateTest extends AbstractGremlinServerIntegra
 
         // use a credentials graph with one user in it: stephen/password
         final Map<String,Object> authConfig = new HashMap<>();
-        authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-credentials.properties");
+        authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_DB, "conf/tinkergraph-empty.properties");
+        authConfig.put(SimpleAuthenticator.CONFIG_CREDENTIALS_LOCATION, "data/credentials.kryo");
 
         authSettings.config = authConfig;
         settings.authentication = authSettings;

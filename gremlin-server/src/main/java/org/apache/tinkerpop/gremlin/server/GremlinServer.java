@@ -86,7 +86,6 @@ public class GremlinServer {
             logger.warn("cannot use epoll in non-linux env, falling back to NIO");
         }
 
-
         Runtime.getRuntime().addShutdownHook(new Thread(() -> this.stop().join(), SERVER_THREAD_PREFIX + "shutdown"));
 
         final ThreadFactory threadFactoryBoss = ThreadFactoryUtil.create("boss-%d");
@@ -114,7 +113,11 @@ public class GremlinServer {
      * pre-constructed objects used by the server as well as the {@link Settings} object itself.  This constructor
      * is useful when Gremlin Server is being used in an embedded style and there is a need to share thread pools
      * with the hosting application.
+     *
+     * @deprecated As of release 3.1.1-incubating, not replaced.
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-912">TINKERPOP3-912</a>
      */
+    @Deprecated
     public GremlinServer(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
         this.serverGremlinExecutor = serverGremlinExecutor;
         this.settings = serverGremlinExecutor.getSettings();
@@ -308,6 +311,10 @@ public class GremlinServer {
         }, SERVER_THREAD_PREFIX + "stop").start();
 
         return serverStopped;
+    }
+
+    public ServerGremlinExecutor<EventLoopGroup> getServerGremlinExecutor() {
+        return serverGremlinExecutor;
     }
 
     public static void main(final String[] args) throws Exception {
