@@ -228,8 +228,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);
                 return new DefaultComputerResult(InputOutputHelper.getOutputGraph(apacheConfiguration, this.resultGraph, this.persist), finalMemory.asImmutable());
             } finally {
-                if (sparkContext != null && !apacheConfiguration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
-                    sparkContext.stop();
+                SparkContextHelper.tryToCloseContext(sparkContext, apacheConfiguration);
             }
         }, exec);
     }
@@ -268,14 +267,14 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
          * Execution rather than applying the entire configuration.
          */
         final String[] validPropertyNames = {
-            "spark.job.description",
-            "spark.jobGroup.id",
-            "spark.job.interruptOnCancel",
-            "spark.scheduler.pool"
+                "spark.job.description",
+                "spark.jobGroup.id",
+                "spark.job.interruptOnCancel",
+                "spark.scheduler.pool"
         };
 
-        for (String propertyName: validPropertyNames){
-            if (sparkConfiguration.contains(propertyName)){
+        for (String propertyName : validPropertyNames) {
+            if (sparkConfiguration.contains(propertyName)) {
                 String propertyValue = sparkConfiguration.get(propertyName);
                 this.logger.info("Setting Thread Local SparkContext Property - "
                         + propertyName + " : " + propertyValue);

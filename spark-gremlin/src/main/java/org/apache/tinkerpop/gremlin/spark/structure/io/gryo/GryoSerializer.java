@@ -41,6 +41,8 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoPool;
 import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.apache.tinkerpop.shaded.kryo.serializers.JavaSerializer;
 import scala.Tuple2;
+import scala.Tuple3;
+import scala.collection.mutable.WrappedArray;
 import scala.runtime.BoxedUnit;
 
 import java.util.Collections;
@@ -79,11 +81,15 @@ public final class GryoSerializer extends Serializer {
                     try {
                         builder.addCustom(SerializableWritable.class, new JavaSerializer())
                                 .addCustom(Tuple2.class, new JavaSerializer())
+                                .addCustom(Tuple2[].class, new JavaSerializer())
+                                .addCustom(Tuple3.class, new JavaSerializer())
+                                .addCustom(Tuple3[].class, new JavaSerializer())
                                 .addCustom(CompressedMapStatus.class, new JavaSerializer())
                                 .addCustom(HttpBroadcast.class, new JavaSerializer())
                                 .addCustom(PythonBroadcast.class, new JavaSerializer())
                                 .addCustom(BoxedUnit.class, new JavaSerializer())
                                 .addCustom(Class.forName("scala.reflect.ClassTag$$anon$1"), new JavaSerializer())
+                                .addCustom(WrappedArray.ofRef.class, new WrappedArraySerializer())
                                 .addCustom(MessagePayload.class)
                                 .addCustom(ViewIncomingPayload.class)
                                 .addCustom(ViewOutgoingPayload.class)

@@ -39,10 +39,6 @@ public final class HadoopEdgeIterator extends HadoopElementIterator<Edge> {
 
     private Iterator<Edge> edgeIterator = Collections.emptyIterator();
 
-    public HadoopEdgeIterator(final HadoopGraph graph, final InputFormat<NullWritable, VertexWritable> inputFormat, final Path path) throws IOException, InterruptedException {
-        super(graph, inputFormat, path);
-    }
-
     public HadoopEdgeIterator(final HadoopGraph graph) throws IOException {
         super(graph);
     }

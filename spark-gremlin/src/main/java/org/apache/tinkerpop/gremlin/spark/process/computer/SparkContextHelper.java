@@ -16,35 +16,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.spark.process.computer.payload;
 
-import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertexProperty;
-import scala.Tuple2;
+package org.apache.tinkerpop.gremlin.spark.process.computer;
 
-import java.util.List;
+import org.apache.commons.configuration.Configuration;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class ViewOutgoingPayload<M> implements Payload {
+public final class SparkContextHelper {
 
-    private List<DetachedVertexProperty<Object>> view;
-    private List<Tuple2<Object, M>> outgoingMessages;
-
-    private ViewOutgoingPayload() {
+    private SparkContextHelper() {
 
     }
 
-    public ViewOutgoingPayload(final List<DetachedVertexProperty<Object>> view, final List<Tuple2<Object, M>> outgoingMessages) {
-        this.view = view;
-        this.outgoingMessages = outgoingMessages;
-    }
-
-    public ViewPayload getView() {
-        return new ViewPayload(this.view);
-    }
-
-    public List<Tuple2<Object, M>> getOutgoingMessages() {
-        return this.outgoingMessages;
+    public static void tryToCloseContext(final JavaSparkContext context, final Configuration configuration) {
+        if (context != null && !configuration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
+            context.close();
     }
 }

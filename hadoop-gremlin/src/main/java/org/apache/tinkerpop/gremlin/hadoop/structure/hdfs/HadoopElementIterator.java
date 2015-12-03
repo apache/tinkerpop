@@ -23,9 +23,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.hadoop.mapreduce.InputSplit;
+import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -36,35 +39,33 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
+import java.util.UUID;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class HadoopElementIterator<E extends Element> implements Iterator<E> {
 
-    // TODO: Generalize so it works for more than just FileFormats.
-
     protected final HadoopGraph graph;
     protected final Queue<RecordReader<NullWritable, VertexWritable>> readers = new LinkedList<>();
-
-    public HadoopElementIterator(final HadoopGraph graph, final InputFormat<NullWritable, VertexWritable> inputFormat, final Path path) throws IOException, InterruptedException {
-        this.graph = graph;
-        final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
-        for (final Path path2 : HDFSTools.getAllFilePaths(FileSystem.get(configuration), path, HiddenFileFilter.instance())) {
-            this.readers.add(inputFormat.createRecordReader(new FileSplit(path2, 0, Long.MAX_VALUE, new String[]{}), new TaskAttemptContextImpl(configuration, new TaskAttemptID())));
-        }
-    }
 
     public HadoopElementIterator(final HadoopGraph graph) throws IOException {
         try {
             this.graph = graph;
-            if (this.graph.configuration().containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION)) {
-                final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
-                final InputFormat<NullWritable, VertexWritable> inputFormat = this.graph.configuration().getGraphInputFormat().getConstructor().newInstance();
-                for (final Path path : HDFSTools.getAllFilePaths(FileSystem.get(configuration), new Path(graph.configuration().getInputLocation()), HiddenFileFilter.instance())) {
-                    this.readers.add(inputFormat.createRecordReader(new FileSplit(path, 0, Long.MAX_VALUE, new String[]{}), new TaskAttemptContextImpl(configuration, new TaskAttemptID())));
-                }
+            final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
+            final InputFormat<NullWritable, VertexWritable> inputFormat = this.graph.configuration().getGraphInputFormat().getConstructor().newInstance();
+            if (inputFormat instanceof FileInputFormat) {
+                if (!this.graph.configuration().containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION))
+                    return; // there is no input location and thus, no data (empty graph)
+                if (!FileSystem.get(configuration).exists(new Path(this.graph.configuration().getInputLocation())))
+                    return; // there is no data at the input location (empty graph)
+                configuration.set(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, this.graph.configuration().getInputLocation());
+            }
+            final List<InputSplit> splits = inputFormat.getSplits(new JobContextImpl(configuration, new JobID(UUID.randomUUID().toString(), 1)));
+            for (final InputSplit split : splits) {
+                this.readers.add(inputFormat.createRecordReader(split, new TaskAttemptContextImpl(configuration, new TaskAttemptID())));
             }
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
