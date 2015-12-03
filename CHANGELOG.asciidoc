@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `InputRDDFormat` which wraps an `InputRDD` to make it accessible to Hadoop and not just Spark.
 * Added `AbstractSparkTest` which handles closing `SparkContext` instances between tests now that we support persisted contexts.
 * Fixed a serialization bug in `GryoSerializer` that made it difficult for graph providers to yield `InputRDDs` for `SparkGraphComputer`.
 * `SparkGraphComputer` is now tested against Gryo, GraphSON, and `InputRDD` data sources.
