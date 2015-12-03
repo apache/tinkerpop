@@ -77,7 +77,7 @@ public abstract class ComputerAwareStep<S, E> extends AbstractStep<S, E> impleme
             final Traverser.Admin<S> start = this.starts.next();
             if (this.traverserStepIdAndLabelsSetByChild) {
                 start.setStepId(((ComputerAwareStep<?, ?>) this.getTraversal().getParent()).getNextStep().getId());
-                start.addLabels(((ComputerAwareStep<?, ?>) this.getTraversal().getParent()).getLabels());
+                start.path().extend(((ComputerAwareStep<?, ?>) this.getTraversal().getParent()).getLabels());
             }
             return start;
         }

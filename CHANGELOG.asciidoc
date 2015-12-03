@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `Traverser.Admin.getTags()` which are used to mark branches in a traversal (useful in `match()` and related future steps).
 * Fixed the `Future` model for `GiraphGraphComputer` and `SparkGraphComputer` so that class loaders are preserved.
 * Added support for arbitrary vertex ID types in `BulkLoaderVertexProgram`.
 * Deprecate `credentialsDbLocation` from `SimpleAuthenticator` in Gremlin Server.
