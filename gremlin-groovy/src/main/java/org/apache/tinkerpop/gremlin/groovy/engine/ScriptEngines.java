@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -93,7 +94,11 @@ public class ScriptEngines implements AutoCloseable {
             throw new IllegalArgumentException(String.format("Language [%s] not supported", language));
 
         awaitControlOp();
-        return scriptEngines.get(language).eval(script, bindings);
+
+        final ScriptEngine engine = scriptEngines.get(language);
+        final Bindings all = mergeBindings(bindings, engine);
+
+        return engine.eval(script, all);
     }
 
     /**
@@ -105,7 +110,11 @@ public class ScriptEngines implements AutoCloseable {
             throw new IllegalArgumentException("Language [%s] not supported");
 
         awaitControlOp();
-        return scriptEngines.get(language).eval(reader, bindings);
+
+        final ScriptEngine engine = scriptEngines.get(language);
+        final Bindings all = mergeBindings(bindings, engine);
+
+        return engine.eval(reader, all);
     }
 
     /**
@@ -389,4 +398,15 @@ public class ScriptEngines implements AutoCloseable {
         }
     }
 
+    /**
+     * Takes the bindings from a request for eval and merges them with the {@code ENGINE_SCOPE} bindings.
+     */
+    private static Bindings mergeBindings(final Bindings bindings, final ScriptEngine engine) {
+        // plugins place "globals" here - see ScriptEnginePluginAcceptor
+        final Bindings all = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+
+        // merge the globals with the incoming bindings where local bindings "win"
+        all.putAll(bindings);
+        return all;
+    }
 }

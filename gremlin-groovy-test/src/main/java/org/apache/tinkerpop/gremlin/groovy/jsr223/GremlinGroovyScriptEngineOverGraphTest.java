@@ -23,6 +23,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.FeatureRequirementSet;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -72,7 +73,7 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldLoadImports() throws Exception {
-        final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine(NoImportCustomizerProvider.INSTANCE);
+        final ScriptEngine engineNoImports = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) NoImportCustomizerProvider.INSTANCE);
         try {
             engineNoImports.eval("Vertex.class.getName()");
             fail("Should have thrown an exception because no imports were supplied");
@@ -80,7 +81,7 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
             assertTrue(se instanceof ScriptException);
         }
 
-        final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider());
+        final ScriptEngine engineWithImports = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
         engineWithImports.put("g", g);
         assertEquals(Vertex.class.getName(), engineWithImports.eval("Vertex.class.getName()"));
         assertEquals(2l, engineWithImports.eval("g.V().has('age',gt(30)).count().next()"));
@@ -93,7 +94,7 @@ public class GremlinGroovyScriptEngineOverGraphTest extends AbstractGremlinTest 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldLoadStandardImportsAndThenAddToThem() throws Exception {
-        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(new DefaultImportCustomizerProvider());
+        final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine((CompilerCustomizerProvider) new DefaultImportCustomizerProvider());
         engine.put("g", g);
         assertEquals(Vertex.class.getName(), engine.eval("Vertex.class.getName()"));
         assertEquals(2l, engine.eval("g.V().has('age',gt(30)).count().next()"));

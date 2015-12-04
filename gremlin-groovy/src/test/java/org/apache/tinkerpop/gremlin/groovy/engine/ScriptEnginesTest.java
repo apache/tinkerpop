@@ -18,21 +18,120 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.engine;
 
+import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
+import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
+import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import org.junit.Test;
 
+import javax.script.Bindings;
 import javax.script.SimpleBindings;
+import java.awt.*;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ScriptEnginesTest {
+    @Test
+    public void shouldMergeBindingsFromLocalAndGlobal() throws Exception {
+        final ScriptEngines engines = new ScriptEngines(se -> {});
+        engines.reload("gremlin-groovy", Collections.<String>emptySet(),
+                Collections.<String>emptySet(), Collections.emptyMap());
+
+        engines.loadPlugins(Arrays.asList(new GremlinPlugin() {
+            @Override
+            public String getName() {
+                return "mock";
+            }
+
+            @Override
+            public void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
+                pluginAcceptor.addBinding("y", "here");
+            }
+        }));
+
+        final Bindings localBindings = new SimpleBindings();
+        localBindings.put("x", "there");
+
+        assertEquals("herethere", engines.eval("y+x", localBindings, "gremlin-groovy"));
+    }
+
+    @Test
+    public void shouldMergeBindingsFromLocalAndGlobalWithMultiplePlugins() throws Exception {
+        final ScriptEngines engines = new ScriptEngines(se -> {});
+        engines.reload("gremlin-groovy", Collections.<String>emptySet(),
+                Collections.<String>emptySet(), Collections.emptyMap());
+
+        engines.loadPlugins(Arrays.asList(new GremlinPlugin() {
+            @Override
+            public String getName() {
+                return "mock1";
+            }
+
+            @Override
+            public void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
+                pluginAcceptor.addBinding("y", "here");
+            }
+        }));
+
+        final Bindings localBindings = new SimpleBindings();
+        localBindings.put("x", "there");
+
+        assertEquals("herethere", engines.eval("y+x", localBindings, "gremlin-groovy"));
+
+        engines.loadPlugins(Arrays.asList(new GremlinPlugin() {
+            @Override
+            public String getName() {
+                return "mock2";
+            }
+
+            @Override
+            public void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
+                pluginAcceptor.addBinding("z", "where");
+                pluginAcceptor.addImports(new HashSet<>(Arrays.asList("import java.awt.Color")));
+            }
+        }));
+
+        assertEquals("heretherewhere", engines.eval("y+x+z", localBindings, "gremlin-groovy"));
+        assertEquals(Color.RED, engines.eval("Color.RED", localBindings, "gremlin-groovy"));
+
+    }
+
+    @Test
+    public void shouldMergeBindingsWhereLocalOverridesGlobal() throws Exception {
+        final ScriptEngines engines = new ScriptEngines(se -> {});
+        engines.reload("gremlin-groovy", Collections.<String>emptySet(),
+                Collections.<String>emptySet(), Collections.emptyMap());
+
+        engines.loadPlugins(Arrays.asList(new GremlinPlugin() {
+            @Override
+            public String getName() {
+                return "mock";
+            }
+
+            @Override
+            public void pluginTo(final PluginAcceptor pluginAcceptor) throws IllegalEnvironmentException, PluginInitializationException {
+                pluginAcceptor.addBinding("y", "here");
+            }
+        }));
+
+        // the "y" below should override the global variable setting.
+        final Bindings localBindings = new SimpleBindings();
+        localBindings.put("y", "there");
+        localBindings.put("z", "where");
+
+        assertEquals("therewhere", engines.eval("y+z", localBindings, "gremlin-groovy"));
+    }
+
     @Test
     public void shouldFailUntilImportExecutes() throws Exception {
         final ScriptEngines engines = new ScriptEngines(se -> {});
