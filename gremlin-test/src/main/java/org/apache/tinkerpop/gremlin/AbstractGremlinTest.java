@@ -191,6 +191,12 @@ public abstract class AbstractGremlinTest {
             graph.tx().commit();
     }
 
+    /**
+     * This method does not appear to be used in TinkerPop core.  It was used at one time by Neo4j tests, but wasn't
+     * really a great pattern and was eventually removed.
+     *
+     * @deprecated as of 3.1.1-incubating, and is not replaced
+     */
     public void tryRandomCommit(final Graph graph) {
         if (graph.features().graph().supportsTransactions() && new Random().nextBoolean())
             graph.tx().commit();

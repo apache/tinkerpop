@@ -44,9 +44,12 @@ import java.util.UUID;
 import static org.junit.Assert.*;
 
 /**
+ * This is an test that is mean to be used in the context of the {@link HadoopPluginSuite} and shouldn't be
+ * executed on its own.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopGremlinPluginTest extends AbstractGremlinTest {
+public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
 
     @Before
     public void setupTest() {

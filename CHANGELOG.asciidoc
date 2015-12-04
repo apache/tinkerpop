@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Improved logging control during builds with Maven.
 * `Column` now implements `Function` and now `by(valueDecr)` can  be replaced with `by(values,decr)` and thus, projection and order are now separated.
 * Added `InputRDDFormat` which wraps an `InputRDD` to make it accessible to Hadoop and not just Spark.
 * Added `AbstractSparkTest` which handles closing `SparkContext` instances between tests now that we support persisted contexts.
