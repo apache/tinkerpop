@@ -16,20 +16,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.structure.StructureStandardSuite;
-import org.junit.runner.RunWith;
+package org.apache.tinkerpop.gremlin.spark;
+
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(StructureStandardSuite.class)
-@GraphProviderClass(provider = HadoopGraphProvider.class, graph = HadoopGraph.class)
-public class HadoopGraphStructureStandardTest {
+public abstract class AbstractSparkTest {
+
+    @After
+    @Before
+    public void setupTest() {
+        SparkConf sparkConfiguration = new SparkConf();
+        sparkConfiguration.setAppName(this.getClass().getCanonicalName() + "-setupTest");
+        sparkConfiguration.set("spark.master", "local[4]");
+        JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
+        sparkContext.close();
+        System.out.println("SparkContext has been closed for " + this.getClass().getCanonicalName() + "-setupTest");
+    }
 }
-
-

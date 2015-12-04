@@ -28,10 +28,14 @@ import java.util.List;
  */
 public final class ViewOutgoingPayload<M> implements Payload {
 
-    private final List<DetachedVertexProperty<Object>> view;
-    private final List<Tuple2<Object,M>> outgoingMessages;
+    private List<DetachedVertexProperty<Object>> view;
+    private List<Tuple2<Object, M>> outgoingMessages;
 
-    public ViewOutgoingPayload(final List<DetachedVertexProperty<Object>> view, final List<Tuple2<Object,M>> outgoingMessages) {
+    private ViewOutgoingPayload() {
+
+    }
+
+    public ViewOutgoingPayload(final List<DetachedVertexProperty<Object>> view, final List<Tuple2<Object, M>> outgoingMessages) {
         this.view = view;
         this.outgoingMessages = outgoingMessages;
     }
@@ -40,7 +44,7 @@ public final class ViewOutgoingPayload<M> implements Payload {
         return new ViewPayload(this.view);
     }
 
-    public List<Tuple2<Object,M>> getOutgoingMessages() {
+    public List<Tuple2<Object, M>> getOutgoingMessages() {
         return this.outgoingMessages;
     }
 }

@@ -102,6 +102,12 @@ limitations under the License.
     <build>
         <directory>${basedir}/target</directory>
         <finalName>${project.artifactId}-${project.version}</finalName>
+        <testResources>
+            <testResource>
+                <directory>${basedir}/src/test/resources
+                </directory>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

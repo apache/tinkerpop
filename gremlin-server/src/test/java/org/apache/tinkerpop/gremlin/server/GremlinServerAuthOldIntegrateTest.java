@@ -43,7 +43,7 @@ import static org.junit.Assert.fail;
  * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-981">TINKERPOP3-981</a>
  */
 @Deprecated
-public class GremlinServerAuthIntegrateOldTest extends AbstractGremlinServerIntegrationTest {
+public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerIntegrationTest {
 
     /**
      * Configure specific Gremlin Server settings for specific tests.

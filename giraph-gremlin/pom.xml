@@ -203,6 +203,10 @@ limitations under the License.
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
             <plugin>
@@ -238,20 +242,6 @@ limitations under the License.
                             </Gremlin-Plugin-Dependencies>
                         </manifestEntries>
                     </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <!-- log4j.configuration>log4j-core.properties</log4j.configuration> -->
-                    <!--<argLine>-Xmx2048M</argLine>-->
-                    <excludes>
-                        <exclude>**/*IntegrateTest.java</exclude>
-                        <exclude>**/*PerformanceTest.java</exclude>
-                        <!-- this is technically a member of the integration test suite -->
-                        <exclude>**/HadoopGremlinPluginTest.java</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

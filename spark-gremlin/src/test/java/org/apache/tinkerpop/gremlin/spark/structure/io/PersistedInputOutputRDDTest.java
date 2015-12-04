@@ -24,7 +24,6 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.serializer.KryoSerializer;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
@@ -35,8 +34,10 @@ import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVe
 import org.apache.tinkerpop.gremlin.process.computer.traversal.TraversalVertexProgram;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEngine;
+import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkHadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
@@ -50,15 +51,14 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class PersistedInputOutputRDDTest {
+public class PersistedInputOutputRDDTest extends AbstractSparkTest {
 
     @Test
-
     public void shouldNotPersistRDDAcrossJobs() throws Exception {
         final String rddName = "target/test-output/" + UUID.randomUUID();
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
-        configuration.setProperty("spark.serializer", KryoSerializer.class.getCanonicalName());
+        configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
         configuration.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
@@ -87,7 +87,7 @@ public class PersistedInputOutputRDDTest {
         final String rddName = "target/test-output/" + UUID.randomUUID();
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
-        configuration.setProperty("spark.serializer", KryoSerializer.class.getCanonicalName());
+        configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
         configuration.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
@@ -129,7 +129,7 @@ public class PersistedInputOutputRDDTest {
         final String rddName = "target/test-output/" + UUID.randomUUID().toString();
         final Configuration readConfiguration = new BaseConfiguration();
         readConfiguration.setProperty("spark.master", "local[4]");
-        readConfiguration.setProperty("spark.serializer", KryoSerializer.class.getCanonicalName());
+        readConfiguration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
         readConfiguration.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
@@ -176,7 +176,7 @@ public class PersistedInputOutputRDDTest {
         final String rddName = "target/test-output/" + UUID.randomUUID().toString();
         final Configuration readConfiguration = new BaseConfiguration();
         readConfiguration.setProperty("spark.master", "local[4]");
-        readConfiguration.setProperty("spark.serializer", KryoSerializer.class.getCanonicalName());
+        readConfiguration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
         readConfiguration.setProperty(Graph.GRAPH, HadoopGraph.class.getName());
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));

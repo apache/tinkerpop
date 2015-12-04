@@ -36,10 +36,6 @@ public final class HadoopVertexIterator extends HadoopElementIterator<Vertex> {
 
     private HadoopVertex nextVertex = null;
 
-    public HadoopVertexIterator(final HadoopGraph graph, final InputFormat<NullWritable, VertexWritable> inputFormat, final Path path) throws IOException, InterruptedException {
-        super(graph, inputFormat, path);
-    }
-
     public HadoopVertexIterator(final HadoopGraph graph) throws IOException {
         super(graph);
     }
