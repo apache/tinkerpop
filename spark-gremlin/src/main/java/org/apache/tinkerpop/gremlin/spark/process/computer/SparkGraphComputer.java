@@ -191,6 +191,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                             hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null) != null) &&
                             !this.persist.equals(GraphComputer.Persist.NOTHING)) {
                         try {
+                            PersistedInputRDD.removePersistedRDD(sparkContext, hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)); // delete existing persisted output rdd
                             hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class)
                                     .newInstance()
                                     .writeGraphRDD(apacheConfiguration, graphRDD);
@@ -228,8 +229,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // unpersist the graphRDD if it will no longer be used
                 if (!PersistedOutputRDD.class.equals(hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null)) || this.persist.equals(GraphComputer.Persist.NOTHING)) {
                     graphRDD.unpersist();
-                    PersistedInputRDD.removePersistedRDD(sparkContext,hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
-                    // PersistedInputRDD.removePersistedRDD(sparkContext,hadoopConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION));  // DO WE WANT CHAINS TO DIE OR SAVE LIKE A FILE SYSTEM?
+                    PersistedInputRDD.removePersistedRDD(sparkContext, hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)); // delete persisted output rdd if it exists
                 }
                 // update runtime and return the newly computed graph
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);

@@ -73,7 +73,7 @@ public final class PersistedInputRDD implements InputRDD {
                 matchingRDDs.add(tuple2._1());
         }
         for (final Object rddId : matchingRDDs) {
-            JavaSparkContext.toSparkContext(sparkContext).persistentRdds().remove(rddId);
+            JavaSparkContext.toSparkContext(sparkContext).persistentRdds().remove(rddId).get().unpersist(false);
         }
     }
 }

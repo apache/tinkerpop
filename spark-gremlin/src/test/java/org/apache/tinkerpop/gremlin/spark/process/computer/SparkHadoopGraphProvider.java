@@ -47,6 +47,7 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
         if (null != loadGraphWith &&
                 !test.equals(BulkLoaderVertexProgramTest.class) &&
                 RANDOM.nextBoolean()) {
+            // config.put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputRDDFormat.class.getCanonicalName());
             config.put(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, ToyGraphInputRDD.class.getCanonicalName());
         }
         /// spark configuration
