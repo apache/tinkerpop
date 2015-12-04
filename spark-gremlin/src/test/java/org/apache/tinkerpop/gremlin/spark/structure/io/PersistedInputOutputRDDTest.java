@@ -157,7 +157,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         SparkConf sparkConfiguration = new SparkConf();
         sparkConfiguration.setAppName("testBulkLoaderVertexProgramChain");
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
-        assertFalse(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        assertTrue(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
         ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
@@ -200,7 +200,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         SparkConf sparkConfiguration = new SparkConf();
         sparkConfiguration.setAppName("testBulkLoaderVertexProgramChain");
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
-        assertFalse(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        assertTrue(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
         ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();

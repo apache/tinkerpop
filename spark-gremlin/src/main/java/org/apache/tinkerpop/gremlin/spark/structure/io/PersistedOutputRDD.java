@@ -35,6 +35,7 @@ public final class PersistedOutputRDD implements OutputRDD {
 
     @Override
     public void writeGraphRDD(final Configuration configuration, final JavaPairRDD<Object, VertexWritable> graphRDD) {
+        graphRDD.setName(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "graphRDD")).cache();
         if (!configuration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
             LOGGER.warn("The SparkContext should be persisted in order for the RDD to persist across jobs. To do so, set " + Constants.GREMLIN_SPARK_PERSIST_CONTEXT + " to true");
     }

@@ -29,6 +29,8 @@ import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import scala.Tuple2;
 import scala.collection.Iterator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -56,5 +58,22 @@ public final class PersistedInputRDD implements InputRDD {
                 return Optional.of(tuple2._2());
         }
         return Optional.empty();
+    }
+
+    public static void removePersistedRDD(final JavaSparkContext sparkContext, final String rddName) {
+        if (null == rddName)
+            return;
+        final List<Object> matchingRDDs = new ArrayList<>();
+        final Iterator<Tuple2<Object, RDD<?>>> iterator = JavaSparkContext.toSparkContext(sparkContext).
+                getPersistentRDDs().
+                toList().iterator();
+        while (iterator.hasNext()) {
+            final Tuple2<Object, RDD<?>> tuple2 = iterator.next();
+            if (tuple2._2().toString().contains(rddName))
+                matchingRDDs.add(tuple2._1());
+        }
+        for (final Object rddId : matchingRDDs) {
+            JavaSparkContext.toSparkContext(sparkContext).persistentRdds().remove(rddId);
+        }
     }
 }
