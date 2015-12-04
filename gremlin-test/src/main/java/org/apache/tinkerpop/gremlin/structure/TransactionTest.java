@@ -83,6 +83,9 @@ public class TransactionTest extends AbstractGremlinTest {
             fail("An exception should be thrown when close behavior is manual and the graph is close with an open transaction");
         } catch (Exception ex) {
             validateException(Transaction.Exceptions.openTransactionsOnClose(), ex);
+        } finally {
+            // rollback manually to keep the test clean
+            g.tx().rollback();
         }
     }
 
