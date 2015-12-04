@@ -104,8 +104,14 @@ public class GremlinServer {
         }else {
             workerGroup = new NioEventLoopGroup(settings.threadPoolWorker, threadFactoryWorker);
         }
+
         serverGremlinExecutor = new ServerGremlinExecutor<>(settings, null, workerGroup, EventLoopGroup.class);
         gremlinExecutorService = serverGremlinExecutor.getGremlinExecutorService();
+
+        // force an early load of the OpLoader (even if not used by a Channelizer).  this is an expensive operation
+        // as it uses ServiceLoader and if left uninitialized puts a burden on the first client request that passes
+        // through an OpProcessor
+        OpLoader.getProcessors();
     }
 
     /**

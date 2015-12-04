@@ -320,6 +320,9 @@ $ bin/gremlin-server.sh conf/gremlin-server-modern.yaml
 [INFO] GremlinExecutor - Initialized gremlin-groovy ScriptEngine with scripts/generate-modern.groovy
 [INFO] ServerGremlinExecutor - Initialized GremlinExecutor and configured ScriptEngines.
 [INFO] ServerGremlinExecutor - A GraphTraversalSource is now bound to [g] with graphtraversalsource[tinkergraph[vertices:0 edges:0], standard]
+[INFO] OpLoader - Adding the standard OpProcessor.
+[INFO] OpLoader - Adding the control OpProcessor.
+[INFO] OpLoader - Adding the session OpProcessor.
 [INFO] GremlinServer - Executing start up LifeCycleHook
 [INFO] Logger$info - Loading 'modern' graph data.
 [INFO] AbstractChannelizer - Configured application/vnd.gremlin-v1.0+gryo with org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV1d0
