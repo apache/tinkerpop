@@ -133,6 +133,9 @@ public abstract class AbstractGremlinTest {
     public void tearDown() throws Exception {
         if (null != graphProvider) {
             graphProvider.clear(graph, config);
+            if(graphProvider instanceof GraphManager.ManagedGraphProvider)
+                ((GraphManager.ManagedGraphProvider)graphProvider).tryCloseGraphs();
+
             g = null;
             config = null;
             graphProvider = null;
