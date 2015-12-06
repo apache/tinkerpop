@@ -232,16 +232,6 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             // effect so if the client is "slow" it may simply timeout.
             if (aggregate.size() < resultIterationBatchSize) aggregate.add(itty.next());
 
-            // if there's no more items in the iterator then we've aggregated everything and are thus ready to
-            // commit stuff if transaction management is on.  exceptions should bubble up and be handle in the normal
-            // manner of things.  a final SUCCESS message will not have been sent (below) and we ship back an error.
-            // if transaction management is not enabled, then returning SUCCESS below is OK as this is a different
-            // usage context.  without transaction management enabled, the user is responsible for maintaining
-            // the transaction and will want a SUCCESS to know their eval and iteration was ok.  they would then
-            // potentially have a failure on commit on the next request.
-            if (!itty.hasNext() && manageTransactions)
-                context.getGraphManager().commitAll();
-
             // send back a page of results if batch size is met or if it's the end of the results being iterated.
             // also check writeability of the channel to prevent OOME for slow clients.
             if (ctx.channel().isWritable()) {
@@ -274,6 +264,15 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
             stopWatch.unsplit();
         }
+
+        // if there's no more items in the iterator then we've aggregated everything and are thus ready to
+        // commit stuff if transaction management is on.  exceptions should bubble up and be handle in the normal
+        // manner of things.  a final SUCCESS message will not have been sent (below) and we ship back an error.
+        // if transaction management is not enabled, then returning SUCCESS below is OK as this is a different
+        // usage context.  without transaction management enabled, the user is responsible for maintaining
+        // the transaction and will want a SUCCESS to know their eval and iteration was ok.  they would then
+        // potentially have a failure on commit on the next request.
+        if (manageTransactions) context.getGraphManager().commitAll();
 
         stopWatch.stop();
     }
