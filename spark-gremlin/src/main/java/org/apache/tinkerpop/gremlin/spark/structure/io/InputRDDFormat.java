@@ -31,7 +31,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
-import org.apache.tinkerpop.gremlin.spark.process.computer.SparkContextHelper;
+import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -73,6 +73,7 @@ public final class InputRDDFormat extends InputFormat<NullWritable, VertexWritab
             hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
             final InputRDD inputRDD = (InputRDD) Class.forName(sparkConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD)).newInstance();
             final JavaSparkContext javaSparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
+            Spark.create(javaSparkContext.sc());
             final Iterator<Tuple2<Object, VertexWritable>> iterator = inputRDD.readGraphRDD(ConfUtil.makeApacheConfiguration(taskAttemptContext.getConfiguration()), javaSparkContext).toLocalIterator();
             return new RecordReader<NullWritable, VertexWritable>() {
                 @Override
@@ -102,7 +103,7 @@ public final class InputRDDFormat extends InputFormat<NullWritable, VertexWritab
 
                 @Override
                 public void close() throws IOException {
-                    SparkContextHelper.tryToCloseContext(javaSparkContext, ConfUtil.makeApacheConfiguration(hadoopConfiguration));
+                    Spark.tryAndClose(ConfUtil.makeApacheConfiguration(hadoopConfiguration));
                 }
             };
         } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException e) {

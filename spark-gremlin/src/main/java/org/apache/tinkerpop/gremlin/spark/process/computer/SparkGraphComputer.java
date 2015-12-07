@@ -235,7 +235,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);
                 return new DefaultComputerResult(InputOutputHelper.getOutputGraph(apacheConfiguration, this.resultGraph, this.persist), finalMemory.asImmutable());
             } finally {
-                SparkContextHelper.tryToCloseContext(sparkContext, apacheConfiguration);
+                Spark.tryAndClose(apacheConfiguration);
             }
         }, exec);
     }
