@@ -18,10 +18,15 @@
  */
 package org.apache.tinkerpop.gremlin.server.handler;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.Attribute;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Base64;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
@@ -61,7 +66,7 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
             final Attribute<RequestMessage> request = ctx.attr(StateKey.REQUEST_MESSAGE);
             if (negotiator.get() == null) {
                 // First time through so save the request and send an AUTHENTICATE challenge with no data
-                negotiator.set(authenticator.newSaslNegotiator());
+                negotiator.set(authenticator.newSaslNegotiator(getRemoteInetAddress(ctx)));
                 request.set(requestMessage);
                 final ResponseMessage authenticate = ResponseMessage.build(requestMessage)
                         .code(ResponseStatusCode.AUTHENTICATE).create();
@@ -120,5 +125,20 @@ public class SaslAuthenticationHandler extends ChannelInboundHandlerAdapter {
                     this.getClass().getSimpleName(), msg.getClass());
             ctx.close();
         }
+    }
+
+    private InetAddress getRemoteInetAddress(ChannelHandlerContext ctx)
+    {
+        Channel channel = ctx.channel();
+
+        if (null == channel)
+            return null;
+
+        SocketAddress genericSocketAddr = channel.remoteAddress();
+
+        if (null == genericSocketAddr || !(genericSocketAddr instanceof InetSocketAddress))
+            return null;
+
+        return ((InetSocketAddress)genericSocketAddr).getAddress();
     }
 }
