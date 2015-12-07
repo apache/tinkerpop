@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.spark.process.computer;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -33,7 +34,10 @@ public final class SparkContextHelper {
     }
 
     public static void tryToCloseContext(final JavaSparkContext context, final Configuration configuration) {
-        if (context != null && !configuration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false))
+        if (context != null && !configuration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false)) {
             context.close();
+            if (null != Spark.getContext())
+                Spark.close();
+        }
     }
 }

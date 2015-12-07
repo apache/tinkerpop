@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.engine.ComputerTraversalEn
 import org.apache.tinkerpop.gremlin.spark.AbstractSparkTest;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkHadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
@@ -44,7 +45,6 @@ import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.UUID;
 
 import static org.junit.Assert.*;
@@ -80,7 +80,8 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         sparkConfiguration.setAppName("shouldNotPersistRDDAcrossJobs");
         ConfUtil.makeHadoopConfiguration(configuration).forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
-        assertFalse(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        Spark.create(sparkContext.sc());
+        assertFalse(Spark.hasRDD(rddName));
     }
 
     @Test
@@ -109,7 +110,8 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         sparkConfiguration.setAppName("shouldPersistRDDAcrossJobs");
         ConfUtil.makeHadoopConfiguration(configuration).forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
-        assertTrue(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        Spark.create(sparkContext.sc());
+        assertTrue(Spark.hasRDD(rddName));
         ///////
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);
@@ -158,7 +160,8 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         SparkConf sparkConfiguration = new SparkConf();
         sparkConfiguration.setAppName("testBulkLoaderVertexProgramChain");
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
-        assertTrue(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        Spark.create(sparkContext.sc());
+        assertTrue(Spark.hasRDD(rddName));
         ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
@@ -199,7 +202,8 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         SparkConf sparkConfiguration = new SparkConf();
         sparkConfiguration.setAppName("testBulkLoaderVertexProgramChain");
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
-        assertTrue(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        Spark.create(sparkContext.sc());
+        assertTrue(Spark.hasRDD(rddName));
         ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
@@ -235,7 +239,8 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         SparkConf sparkConfiguration = new SparkConf();
         sparkConfiguration.setAppName("testComplexChain");
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
-        assertTrue(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        Spark.create(sparkContext.sc());
+        assertTrue(Spark.hasRDD(rddName));
         ////
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);
@@ -250,7 +255,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
         assertEquals(6l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
-        assertTrue(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        assertTrue(Spark.hasRDD(rddName));
         ////
         graph = GraphFactory.open(configuration);
         graph = graph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.VERTEX_PROPERTIES).program(PageRankVertexProgram.build().iterations(2).create(graph)).submit().get().graph();
@@ -260,17 +265,17 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
         assertEquals(6l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
-        assertTrue(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        assertTrue(Spark.hasRDD(rddName));
         ////
         graph = GraphFactory.open(configuration);
         graph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.NOTHING).program(PageRankVertexProgram.build().iterations(2).create(graph)).submit().get().graph();
-        assertFalse(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        assertFalse(Spark.hasRDD(rddName));
         g = graph.traversal();
         assertEquals(0l, g.V().count().next().longValue());
         assertEquals(0l, g.E().count().next().longValue());
         assertEquals(0l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
         assertEquals(0l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
-        assertFalse(PersistedInputRDD.getPersistedRDD(sparkContext, rddName).isPresent());
+        assertFalse(Spark.hasRDD(rddName));
     }
 }
