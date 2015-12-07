@@ -51,6 +51,8 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.InputOutputHelper;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.OutputFormatRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
+import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedInputRDD;
+import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 
 import java.io.File;
 import java.io.IOException;
@@ -146,12 +148,11 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // add the project jars to the cluster
                 this.loadJars(sparkContext, hadoopConfiguration);
                 // create a message-passing friendly rdd from the input rdd
-                final JavaPairRDD<Object, VertexWritable> graphRDD;
+                JavaPairRDD<Object, VertexWritable> graphRDD;
                 try {
                     graphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
                             .newInstance()
                             .readGraphRDD(apacheConfiguration, sparkContext)
-                            .setName(sparkConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "graphRDD"))
                             .cache();
                 } catch (final InstantiationException | IllegalAccessException e) {
                     throw new IllegalStateException(e.getMessage(), e);
@@ -184,10 +185,13 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         }
                     }
                     // write the graph rdd using the output rdd
+                    final String[] elementComputeKeys = this.vertexProgram == null ? new String[0] : this.vertexProgram.getElementComputeKeys().toArray(new String[this.vertexProgram.getElementComputeKeys().size()]);
+                    graphRDD = SparkExecutor.prepareFinalGraphRDD(graphRDD, viewIncomingRDD, elementComputeKeys);
                     if ((hadoopConfiguration.get(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, null) != null ||
                             hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null) != null) &&
                             !this.persist.equals(GraphComputer.Persist.NOTHING)) {
                         try {
+                            PersistedInputRDD.removePersistedRDD(sparkContext, hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)); // delete existing persisted output rdd
                             hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class)
                                     .newInstance()
                                     .writeGraphRDD(apacheConfiguration, graphRDD);
@@ -203,8 +207,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // process the map reducers //
                 //////////////////////////////
                 if (!this.mapReducers.isEmpty()) {
-                    final String[] elementComputeKeys = this.vertexProgram == null ? new String[0] : this.vertexProgram.getElementComputeKeys().toArray(new String[this.vertexProgram.getElementComputeKeys().size()]);
-                    final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = SparkExecutor.prepareGraphRDDForMapReduce(graphRDD, viewIncomingRDD, elementComputeKeys).setName("mapReduceGraphRDD").cache();
+                    final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = graphRDD.mapValues(vertexWritable -> {
+                        vertexWritable.get().dropEdges();
+                        return vertexWritable;
+                    }).setName("mapReduceGraphRDD").cache();  // drop all the edges of the graph as they are not used in mapReduce processing
                     for (final MapReduce mapReduce : this.mapReducers) {
                         // execute the map reduce job
                         final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
@@ -221,8 +227,9 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 }
 
                 // unpersist the graphRDD if it will no longer be used
-                if (hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null) == null || this.persist.equals(GraphComputer.Persist.NOTHING)) {
+                if (!PersistedOutputRDD.class.equals(hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null)) || this.persist.equals(GraphComputer.Persist.NOTHING)) {
                     graphRDD.unpersist();
+                    PersistedInputRDD.removePersistedRDD(sparkContext, hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)); // delete persisted output rdd if it exists
                 }
                 // update runtime and return the newly computed graph
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);

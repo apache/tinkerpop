@@ -138,26 +138,21 @@ public final class SparkExecutor {
         return newViewIncomingRDD;
     }
 
+    public static <M> JavaPairRDD<Object, VertexWritable> prepareFinalGraphRDD(final JavaPairRDD<Object, VertexWritable> graphRDD, final JavaPairRDD<Object, ViewIncomingPayload<M>> viewIncomingRDD, final String[] elementComputeKeys) {
+        // attach the final computed view to the cached graph
+        return graphRDD.leftOuterJoin(viewIncomingRDD)
+                .mapValues(tuple -> {
+                    final StarGraph.StarVertex vertex = tuple._1().get();
+                    vertex.dropVertexProperties(elementComputeKeys);
+                    final List<DetachedVertexProperty<Object>> view = tuple._2().isPresent() ? tuple._2().get().getView() : Collections.emptyList();
+                    view.forEach(property -> property.attach(Attachable.Method.create(vertex)));
+                    return tuple._1();
+                });
+    }
+
     /////////////////
     // MAP REDUCE //
     ////////////////
-
-    public static <M> JavaPairRDD<Object, VertexWritable> prepareGraphRDDForMapReduce(final JavaPairRDD<Object, VertexWritable> graphRDD, final JavaPairRDD<Object, ViewIncomingPayload<M>> viewIncomingRDD, final String[] elementComputeKeys) {
-        return (null == viewIncomingRDD) ?   // there was no vertex program
-                graphRDD.mapValues(vertexWritable -> {
-                    vertexWritable.get().dropEdges();
-                    return vertexWritable;
-                }) :
-                graphRDD.leftOuterJoin(viewIncomingRDD)
-                        .mapValues(tuple -> {
-                            final StarGraph.StarVertex vertex = tuple._1().get();
-                            vertex.dropEdges();
-                            vertex.dropVertexProperties(elementComputeKeys);
-                            final List<DetachedVertexProperty<Object>> view = tuple._2().isPresent() ? tuple._2().get().getView() : Collections.emptyList();
-                            view.forEach(property -> property.attach(Attachable.Method.create(vertex)));
-                            return tuple._1();
-                        });
-    }
 
     public static <K, V> JavaPairRDD<K, V> executeMap(final JavaPairRDD<Object, VertexWritable> graphRDD, final MapReduce<K, V, ?, ?, ?> mapReduce, final Configuration apacheConfiguration) {
         JavaPairRDD<K, V> mapRDD = graphRDD.mapPartitionsToPair(partitionIterator -> {

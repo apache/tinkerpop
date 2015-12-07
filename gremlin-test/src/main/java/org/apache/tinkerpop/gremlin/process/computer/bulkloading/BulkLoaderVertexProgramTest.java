@@ -94,7 +94,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
                 .writeGraph(getWriteGraphConfiguration()).create(graph);
         final BulkLoader loader = getBulkLoader(blvp);
         assertFalse(loader.useUserSuppliedIds());
-        graph.compute(g.getGraphComputer().get().getClass()).workers(1).program(blvp).submit().get();
+        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
         assertGraphEquality(graph, getWriteGraph(), v -> v.value(loader.getVertexIdProperty()));
     }
 
@@ -106,7 +106,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
                 .writeGraph(getWriteGraphConfiguration()).create(graph);
         final BulkLoader loader = getBulkLoader(blvp);
         assertTrue(loader.useUserSuppliedIds());
-        graph.compute(g.getGraphComputer().get().getClass()).workers(1).program(blvp).submit().get();
+        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
         assertGraphEquality(graph, getWriteGraph());
     }
 
@@ -116,8 +116,8 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
         final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
                 .userSuppliedIds(true)
                 .writeGraph(getWriteGraphConfiguration()).create(graph);
-        graph.compute(g.getGraphComputer().get().getClass()).workers(1).program(blvp).submit().get(); // initial
-        graph.compute(g.getGraphComputer().get().getClass()).workers(1).program(blvp).submit().get(); // incremental
+        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get(); // initial
+        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get(); // incremental
         assertGraphEquality(graph, getWriteGraph());
     }
 
@@ -129,7 +129,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
         final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
                 .userSuppliedIds(true)
                 .writeGraph(getWriteGraphConfiguration()).create(graph);
-        graph.compute(g.getGraphComputer().get().getClass()).workers(1).program(blvp).submit().get();
+        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
         assertGraphEquality(graph, getWriteGraph());
     }
 

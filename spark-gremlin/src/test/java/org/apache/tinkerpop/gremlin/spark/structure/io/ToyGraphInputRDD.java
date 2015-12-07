@@ -68,6 +68,6 @@ public final class ToyGraphInputRDD implements InputRDD {
         } else
             throw new IllegalArgumentException("No legal toy graph was provided to load: " + configuration.getProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
 
-        return sparkContext.parallelize(vertices).mapToPair(vertex -> new Tuple2<>(vertex.get().id(), vertex)).reduceByKey((a, b) -> a); // if this is not done, then the graph is partitioned and you can have duplicate vertices;
+        return sparkContext.parallelize(vertices).mapToPair(vertex -> new Tuple2<>(vertex.get().id(), vertex));
     }
 }
