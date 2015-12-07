@@ -23,15 +23,9 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.rdd.RDD;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
-import scala.Tuple2;
-import scala.collection.Iterator;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -40,15 +34,14 @@ public final class PersistedInputRDD implements InputRDD {
 
     @Override
     public JavaPairRDD<Object, VertexWritable> readGraphRDD(final Configuration configuration, final JavaSparkContext sparkContext) {
+        Spark.create(sparkContext.sc());
         final String inputRDDName = configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION, null);
         if (null == inputRDDName)
             throw new IllegalArgumentException(PersistedInputRDD.class.getSimpleName() + " requires " + Constants.GREMLIN_HADOOP_INPUT_LOCATION + " in order to retrieve the named graphRDD from the SparkContext");
-        if (!PersistedInputRDD.getPersistedRDD(sparkContext, inputRDDName).isPresent())
-            throw new IllegalArgumentException("The provided graphRDD name is not in the persisted RDDs of the SparkContext: " + inputRDDName);
-        return JavaPairRDD.fromJavaRDD((JavaRDD) PersistedInputRDD.getPersistedRDD(sparkContext, inputRDDName).get().toJavaRDD());
+        return JavaPairRDD.fromJavaRDD((JavaRDD) Spark.getRDD(inputRDDName).toJavaRDD());
     }
 
-    public static Optional<RDD<?>> getPersistedRDD(final JavaSparkContext sparkContext, final String rddName) {
+    /*public static Optional<RDD<?>> getPersistedRDD(final JavaSparkContext sparkContext, final String rddName) {
         final Iterator<Tuple2<Object, RDD<?>>> iterator = JavaSparkContext.toSparkContext(sparkContext).
                 getPersistentRDDs().
                 toList().iterator();
@@ -75,5 +68,5 @@ public final class PersistedInputRDD implements InputRDD {
         for (final Object rddId : matchingRDDs) {
             JavaSparkContext.toSparkContext(sparkContext).persistentRdds().remove(rddId).get().unpersist(false);
         }
-    }
+    }*/
 }
