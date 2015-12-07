@@ -26,6 +26,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
+import javax.net.ssl.TrustManager;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -122,9 +123,17 @@ public final class Cluster {
         final Builder builder = new Builder(settings.hosts.get(0))
                 .port(settings.port)
                 .enableSsl(settings.connectionPool.enableSsl)
+                .trustCertificateChainFile(settings.connectionPool.trustCertChainFile)
                 .nioPoolSize(settings.nioPoolSize)
                 .workerPoolSize(settings.workerPoolSize)
+                .reconnectInterval(settings.connectionPool.reconnectInterval)
+                .reconnectIntialDelay(settings.connectionPool.reconnectInitialDelay)
+                .resultIterationBatchSize(settings.connectionPool.resultIterationBatchSize)
+                .channelizer(settings.connectionPool.channelizer)
+                .maxContentLength(settings.connectionPool.maxContentLength)
+                .maxWaitForConnection(settings.connectionPool.maxWaitForConnection)
                 .maxInProcessPerConnection(settings.connectionPool.maxInProcessPerConnection)
+                .minInProcessPerConnection(settings.connectionPool.minInProcessPerConnection)
                 .maxSimultaneousUsagePerConnection(settings.connectionPool.maxSimultaneousUsagePerConnection)
                 .minSimultaneousUsagePerConnection(settings.connectionPool.minSimultaneousUsagePerConnection)
                 .maxConnectionPoolSize(settings.connectionPool.maxSize)
@@ -132,6 +141,9 @@ public final class Cluster {
 
         if (settings.username != null && settings.password != null)
             builder.credentials(settings.username, settings.password);
+
+        if (settings.jaasEntry != null)
+            builder.jaasEntry(settings.jaasEntry);
 
         // the first address was added above in the constructor, so skip it if there are more
         if (addresses.size() > 1)
@@ -249,6 +261,7 @@ public final class Cluster {
         private int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         private String channelizer = Channelizer.WebSocketChannelizer.class.getName();
         private boolean enableSsl = false;
+        private String trustCertChainFile = null;
         private LoadBalancingStrategy loadBalancingStrategy = new LoadBalancingStrategy.RoundRobin();
         private AuthProperties authProps = new AuthProperties();
 
@@ -312,6 +325,16 @@ public final class Cluster {
          */
         public Builder enableSsl(final boolean enable) {
             this.enableSsl = enable;
+            return this;
+        }
+
+        /**
+         * File location for a SSL Certificate Chain to use when SSL is enabled. If this value is not provided and
+         * SSL is enabled, the {@link TrustManager} will be established with a self-signed certificate which is NOT
+         * suitable for production purposes.
+         */
+        public Builder trustCertificateChainFile(final String certificateChainFile) {
+            this.trustCertChainFile = certificateChainFile;
             return this;
         }
 
@@ -528,6 +551,7 @@ public final class Cluster {
             connectionPoolSettings.reconnectInterval = this.reconnectInterval;
             connectionPoolSettings.resultIterationBatchSize = this.resultIterationBatchSize;
             connectionPoolSettings.enableSsl = this.enableSsl;
+            connectionPoolSettings.trustCertChainFile = this.trustCertChainFile;
             connectionPoolSettings.channelizer = this.channelizer;
             return new Cluster(getContactPoints(), serializer, this.nioPoolSize, this.workerPoolSize,
                     connectionPoolSettings, loadBalancingStrategy, authProps);
