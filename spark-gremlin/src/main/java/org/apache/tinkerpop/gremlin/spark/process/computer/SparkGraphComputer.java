@@ -192,7 +192,6 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                             hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null) != null) &&
                             !this.persist.equals(GraphComputer.Persist.NOTHING)) {
                         try {
-                            Spark.removeRDD(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)); // delete existing persisted output rdd
                             hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class)
                                     .newInstance()
                                     .writeGraphRDD(apacheConfiguration, graphRDD);
@@ -211,7 +210,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = graphRDD.mapValues(vertexWritable -> {
                         vertexWritable.get().dropEdges();
                         return vertexWritable;
-                    }).setName("mapReduceGraphRDD").cache();  // drop all the edges of the graph as they are not used in mapReduce processing
+                    }).cache();  // drop all the edges of the graph as they are not used in mapReduce processing
                     for (final MapReduce mapReduce : this.mapReducers) {
                         // execute the map reduce job
                         final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);

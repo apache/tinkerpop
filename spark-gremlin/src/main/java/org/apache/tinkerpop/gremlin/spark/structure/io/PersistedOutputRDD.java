@@ -38,6 +38,7 @@ public final class PersistedOutputRDD implements OutputRDD {
     public void writeGraphRDD(final Configuration configuration, final JavaPairRDD<Object, VertexWritable> graphRDD) {
         if (!configuration.containsKey(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))
             throw new IllegalArgumentException("There is no provided " + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + " to write the persisted RDD to");
+        Spark.removeRDD(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));  // this might be bad cause it unpersists the job RDD
         if (!configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true))
             graphRDD.mapValues(vertex -> {
                 vertex.get().dropEdges();

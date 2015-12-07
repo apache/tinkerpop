@@ -35,9 +35,8 @@ public final class SparkContextHelper {
 
     public static void tryToCloseContext(final JavaSparkContext context, final Configuration configuration) {
         if (context != null && !configuration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false)) {
-            context.close();
-            if (null != Spark.getContext())
-                Spark.close();
+            Spark.create(context.sc());
+            Spark.close();
         }
     }
 }

@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.spark;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.tinkerpop.gremlin.spark.structure.Spark;
 import org.junit.After;
 import org.junit.Before;
 
@@ -38,6 +39,8 @@ public abstract class AbstractSparkTest {
         sparkConfiguration.set("spark.master", "local[4]");
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
         sparkContext.close();
+        Spark.create(sparkContext.sc());
+        Spark.close();
         System.out.println("SparkContext has been closed for " + this.getClass().getCanonicalName() + "-setupTest");
     }
 }
