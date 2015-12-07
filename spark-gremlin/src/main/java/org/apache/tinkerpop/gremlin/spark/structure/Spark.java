@@ -27,9 +27,12 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import scala.collection.JavaConversions;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -58,11 +61,15 @@ public class Spark {
     }
 
     public static void refresh() {
+        final Set<String> keepNames = new HashSet<>();
         for (final RDD<?> rdd : JavaConversions.asJavaIterable(CONTEXT.persistentRdds().values())) {
             if (null != rdd.name()) {
+                keepNames.add(rdd.name());
                 NAME_TO_RDD.put(rdd.name(), rdd);
             }
         }
+        // remove all stale names in the NAME_TO_RDD map
+        NAME_TO_RDD.keySet().stream().filter(key -> !keepNames.contains(key)).collect(Collectors.toList()).forEach(NAME_TO_RDD::remove);
     }
 
     public static RDD<?> getRDD(final String name) {

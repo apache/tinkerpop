@@ -83,6 +83,8 @@ public final class ViewIncomingPayload<M> implements Payload {
     }
 
     public void mergePayload(final Payload payload, final MessageCombiner<M> messageCombiner) {
+        if (null == payload)
+            return;
         if (payload instanceof ViewPayload)
             this.view = ((ViewPayload) payload).getView();
         else if (payload instanceof MessagePayload)
