@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.spark.process.computer.groovy;
+package org.apache.tinkerpop.gremlin.spark.process.computer.groovy.plugin;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.hadoop.groovy.plugin.HadoopPluginSuite;

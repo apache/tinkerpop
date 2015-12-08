@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.spark.groovy.plugin
 
 import org.apache.spark.rdd.RDD
 import org.apache.tinkerpop.gremlin.spark.structure.Spark
+import scala.collection.JavaConversions
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -39,14 +40,18 @@ class SparkLoader {
 
         Spark.metaClass.static.rm = { final String rddName ->
             for (final RDD<?> rdd : Spark.getRDDs()) {
-                if (rdd.name().matches(rddName))
+                if (rdd.name().matches(rddName.replace(".", "\\.").replace("*", ".*")))
                     Spark.removeRDD(rdd.name());
             }
         }
 
+        Spark.metaClass.static.head = { final String rddName ->
+            return Spark.head(rddName, Integer.MAX_VALUE);
+        }
+
         Spark.metaClass.static.head = { final String rddName, final int totalLines ->
             final List<Object> data = new ArrayList<>();
-            final Iterator<?> itty = Spark.getRDD(rddName).toLocalIterator();
+            final Iterator<?> itty = JavaConversions.asJavaIterator(Spark.getRDD(rddName).toLocalIterator());
             for (int i = 0; i < totalLines; i++) {
                 if (itty.hasNext())
                     data.add(itty.next());
@@ -54,6 +59,10 @@ class SparkLoader {
                     break;
             }
             return data;
+        }
+
+        Spark.metaClass.static.describe = { final String rddName ->
+            return Spark.getRDD(rddName).toDebugString();
         }
     }
 }
