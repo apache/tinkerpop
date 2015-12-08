@@ -75,7 +75,7 @@ public class SparkGremlinPluginTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
-        configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);  // because the spark context is NOT persisted, neither is the RDD
+        configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         Graph graph = GraphFactory.open(configuration);
 
         Spark.create("local[4]");

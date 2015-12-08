@@ -1203,19 +1203,19 @@ constructs directly. There is a `gremlin.spark.graphInputRDD` configuration that
 InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, use
 `gremlin.spark.graphOutputRDD` and the respective `OutputRDD`.
 
-Using Persisted Contexts
-++++++++++++++++++++++++
+Using Persisted Context
++++++++++++++++++++++++
 
 It is possible to persist the graph RDD between jobs within the `SparkContext` (e.g. SparkServer) by leveraging `PersistedOutputRDD`.
 Note that `gremlin.spark.persistContext` should be set to `true` or else the persisted RDD will be destroyed when the `SparkContext` closes.
 The persisted RDD is named by the `gremlin.hadoop.outputLocation` configuration.
 Similarly, `PersistedInputRDD` is used with respective  `gremlin.hadoop.inputLocation` to retrieve the persisted RDD from the `SparkContext`.
 
-There is a `spark` static object that can be leveraged must like `hdfs` to manage persisted RDDs.
+There is a static `spark` object that can be used to manage persisted RDDs much like `hdfs` is used to manage HDFS files (see <<interacting-with-hdfs, Interacting with HDFS>>).
 
 [gremlin-groovy]
 ----
-spark.create('local[4]')
+spark.create('local[4]') // the SparkContext location (master)
 graph = GraphFactory.open('conf/hadoop/hadoop-gryo.properties')
 graph.configuration().setProperty('gremlin.spark.persistContext',true)
 graph.configuration().setProperty('gremlin.spark.graphOutputRDD','org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD')
@@ -1570,6 +1570,7 @@ def stringify(vertex) {
     return [v, outE].join('\t')
 }
 
+[[interacting-with-hdfs]]
 Interacting with HDFS
 ~~~~~~~~~~~~~~~~~~~~~
 
