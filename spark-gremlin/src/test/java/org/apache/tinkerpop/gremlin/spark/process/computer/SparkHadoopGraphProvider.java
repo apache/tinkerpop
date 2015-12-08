@@ -43,7 +43,7 @@ public final class SparkHadoopGraphProvider extends HadoopGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
-        // config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);  // this makes the test suite go really fast
+        config.put(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);  // this makes the test suite go really fast
         if (null != loadGraphWith &&
                 !test.equals(BulkLoaderVertexProgramTest.class) &&
                 RANDOM.nextBoolean()) {
