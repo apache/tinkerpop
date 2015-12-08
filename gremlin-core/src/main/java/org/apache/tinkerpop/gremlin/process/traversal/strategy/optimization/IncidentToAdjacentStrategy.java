@@ -33,6 +33,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,10 +63,7 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
         implements TraversalStrategy.OptimizationStrategy {
 
     private static final IncidentToAdjacentStrategy INSTANCE = new IncidentToAdjacentStrategy();
-    private static final Set<Class> InvalidatingStepClasses = new HashSet<Class>() {{
-        add(PathStep.class);
-        add(LambdaHolder.class);
-    }};
+    private static final Set<Class> INVALIDATING_STEP_CLASSES = new HashSet<>(Arrays.asList(PathStep.class, LambdaHolder.class));
 
     private IncidentToAdjacentStrategy() {
     }
@@ -73,7 +71,7 @@ public final class IncidentToAdjacentStrategy extends AbstractTraversalStrategy<
     @Override
     public void apply(Traversal.Admin<?, ?> traversal) {
         final Traversal.Admin root = TraversalHelper.getRootTraversal(traversal);
-        if (TraversalHelper.hasStepOfAssignableClassRecursively(InvalidatingStepClasses, root))
+        if (TraversalHelper.hasStepOfAssignableClassRecursively(INVALIDATING_STEP_CLASSES, root))
             return;
         final Collection<Pair<VertexStep, Step>> stepsToReplace = new ArrayList<>();
         Step prev = null;
