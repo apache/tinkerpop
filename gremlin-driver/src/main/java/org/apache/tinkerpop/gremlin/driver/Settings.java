@@ -47,9 +47,11 @@ final class Settings {
 
     public int workerPoolSize = Runtime.getRuntime().availableProcessors() * 2;
 
-    public String username;
+    public String username = null;
 
-    public String password;
+    public String password = null;
+
+    public String jaasEntry = null;
 
     /**
      * Read configuration from a file into a new {@link Settings} object.
@@ -84,8 +86,19 @@ final class Settings {
         public int reconnectInitialDelay = Connection.RECONNECT_INITIAL_DELAY;
         public int resultIterationBatchSize = Connection.RESULT_ITERATION_BATCH_SIZE;
         public String channelizer = Channelizer.WebSocketChannelizer.class.getName();
+
+        /**
+         * @deprecated as of 3.1.1-incubating, and not replaced as this property was never implemented internally
+         * as the way to establish sessions
+         */
+        @Deprecated
         public String sessionId = null;
 
+        /**
+         * @deprecated as of 3.1.1-incubating, and not replaced as this property was never implemented internally
+         * as the way to establish sessions
+         */
+        @Deprecated
         public Optional<String> optionalSessionId() {
             return Optional.ofNullable(sessionId);
         }

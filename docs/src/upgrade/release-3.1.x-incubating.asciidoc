@@ -60,6 +60,20 @@ TinkerGraph instances.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP3-886[TINKERPOP3-886]
 
+Authenticator Method Deprecation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For users who have a custom `Authenticator` implementation for Gremlin Server, there will be a new method present:
+
+[source,java]
+public default SaslNegotiator newSaslNegotiator(final InetAddress remoteAddress)
+
+Implementation of this method is now preferred over the old method with the same name that has no arguments. The old
+method has been deprecated.  This is a non-breaking change as the new method has a default implementation that simply
+calls the old deprecated method.  In this way, existing `Authenticator` implementations will still work.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP3-995[TINKERPOP3-995]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 

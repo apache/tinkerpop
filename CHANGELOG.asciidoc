@@ -27,6 +27,7 @@ TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Improved logging control during builds with Maven.
+* Fixed settings that weren't being passed to the the Gremlin Driver `Cluster` through configuration file.
 * `Column` now implements `Function` and now `by(valueDecr)` can  be replaced with `by(values,decr)` and thus, projection and order are now separated.
 * `Column` now implements `Function`. The modulator `by(valueDecr)` can be replaced by `by(values,decr)` and thus, projection and order are separated.
 * Added `InputRDDFormat` which wraps an `InputRDD` to make it accessible to Hadoop and not just Spark.
@@ -37,9 +38,10 @@ TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 * Added `Traverser.Admin.getTags()` which are used to mark branches in a traversal (useful in `match()` and related future steps).
 * Fixed the `Future` model for `GiraphGraphComputer` and `SparkGraphComputer` so that class loaders are preserved.
 * Added support for arbitrary vertex ID types in `BulkLoaderVertexProgram`.
-* Deprecate `credentialsDbLocation` from `SimpleAuthenticator` in Gremlin Server.
+* Deprecated `credentialsDbLocation` from `SimpleAuthenticator` in Gremlin Server.
 * `TinkerGraph` has "native" serialization in GraphSON, which enables it to be a return value from Gremlin Server.
 * Improved the ability to embed Gremlin Server by providing a way to get the `ServerGremlinExecutor` and improve reusability of `AbstractEvalOpProcessor` and related classes.
+* Added `Authenticator.newSaslNegotiator(InetAddress)` and deprecated the zero-arg version of that method.
 * `ProfileStep` is now available off of `Traversal` via `profile()`. To be consistent with `Traversal.explain()`.
 * If no comparator is provided to `order()`, `Order.incr` is assumed (previously, an exception occurred).
 * Fixed various Gremlin-Groovy tests that assumed `toString()`-able ids.
