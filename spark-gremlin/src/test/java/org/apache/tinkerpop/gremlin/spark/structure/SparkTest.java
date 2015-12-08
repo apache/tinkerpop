@@ -69,16 +69,6 @@ public class SparkTest extends AbstractSparkTest {
             graph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.VERTEX_PROPERTIES).program(PageRankVertexProgram.build().iterations(1).create(graph)).submit().get();
             assertNotNull(Spark.getRDD(prefix + i));
             assertEquals(i + 1, Spark.getRDDs().size());
-
-            System.out.println(Spark.getRDD(prefix + i).getStorageLevel().description());
-            System.out.println(Spark.getRDD(prefix + i).getCreationSite());
-            System.out.println(Spark.getRDD(prefix + i).id());
-            System.out.println(Spark.getRDD(prefix + i).toDebugString());
-            System.out.println(Spark.getRDD(prefix + i).logName());
-            if(true) {
-                throw new IllegalArgumentException("HAA");
-            }
-
         }
 
         for (int i = 9; i >= 0; i--) {
