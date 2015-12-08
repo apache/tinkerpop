@@ -67,6 +67,8 @@ public class Spark {
     }
 
     public static void refresh() {
+        if (null == CONTEXT)
+            throw new IllegalStateException("The Spark context has not been created.");
         final Set<String> keepNames = new HashSet<>();
         for (final RDD<?> rdd : JavaConversions.asJavaIterable(CONTEXT.persistentRdds().values())) {
             if (null != rdd.name()) {
