@@ -1203,8 +1203,8 @@ constructs directly. There is a `gremlin.spark.graphInputRDD` configuration that
 InputRDD>`. An `InputRDD` provides a read method that takes a `SparkContext` and returns a graphRDD. Likewise, use
 `gremlin.spark.graphOutputRDD` and the respective `OutputRDD`.
 
-Using Persisted Context
-+++++++++++++++++++++++
+Using a Persisted Context
++++++++++++++++++++++++++
 
 It is possible to persist the graph RDD between jobs within the `SparkContext` (e.g. SparkServer) by leveraging `PersistedOutputRDD`.
 Note that `gremlin.spark.persistContext` should be set to `true` or else the persisted RDD will be destroyed when the `SparkContext` closes.
