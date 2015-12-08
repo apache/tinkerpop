@@ -141,9 +141,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             // create the spark configuration from the graph computer configuration
             hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
             // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
-            JavaSparkContext sparkContext = null;
             try {
-                sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
+                final JavaSparkContext sparkContext =  new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
                 Spark.create(sparkContext.sc()); // this is the context RDD holder that prevents GC
                 updateLocalConfiguration(sparkContext, sparkConfiguration);
                 // add the project jars to the cluster
