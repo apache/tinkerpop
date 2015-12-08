@@ -103,7 +103,7 @@ public final class InputRDDFormat extends InputFormat<NullWritable, VertexWritab
 
                 @Override
                 public void close() throws IOException {
-                    Spark.tryAndClose(ConfUtil.makeApacheConfiguration(hadoopConfiguration));
+
                 }
             };
         } catch (final ClassNotFoundException | InstantiationException | IllegalAccessException e) {

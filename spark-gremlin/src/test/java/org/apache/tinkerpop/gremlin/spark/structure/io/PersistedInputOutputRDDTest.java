@@ -56,6 +56,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
 
     @Test
     public void shouldNotPersistRDDAcrossJobs() throws Exception {
+        Spark.create("local[4]");
         final String rddName = "target/test-output/" + UUID.randomUUID();
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
@@ -76,7 +77,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                                 "gremlin-groovy",
                                 "g.V()").create(graph)).submit().get();
         ////////
-        Spark.create(configuration);
+        Spark.create("local[4]");
         assertFalse(Spark.hasRDD(rddName));
         Spark.close();
     }
@@ -103,7 +104,6 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                                 "gremlin-groovy",
                                 "g.V()").create(graph)).submit().get();
         ////////
-        Spark.create(configuration);
         assertTrue(Spark.hasRDD(rddName));
         ///////
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
@@ -123,6 +123,8 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
 
     @Test
     public void testBulkLoaderVertexProgramChain() throws Exception {
+        Spark.create("local[4]");
+
         final String rddName = "target/test-output/" + UUID.randomUUID().toString();
         final Configuration readConfiguration = new BaseConfiguration();
         readConfiguration.setProperty("spark.master", "local[4]");
@@ -151,7 +153,6 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                 .program(BulkLoaderVertexProgram.build().userSuppliedIds(true).writeGraph(writeConfiguration).create(bulkLoaderGraph))
                 .submit().get();
         ////
-        Spark.create(readConfiguration);
         assertTrue(Spark.hasRDD(rddName));
         ////
         final Graph graph = TinkerGraph.open();
@@ -168,6 +169,8 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
 
     @Test
     public void testBulkLoaderVertexProgramChainWithInputOutputHelperMapping() throws Exception {
+        Spark.create("local[4]");
+
         final String rddName = "target/test-output/" + UUID.randomUUID().toString();
         final Configuration readConfiguration = new BaseConfiguration();
         readConfiguration.setProperty("spark.master", "local[4]");
@@ -209,6 +212,8 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
 
     @Test
     public void testComplexChain() throws Exception {
+        Spark.create("local[4]");
+
         final String rddName = "target/test-output/graphRDD";
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
@@ -220,7 +225,6 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
-        Spark.create(configuration);
         Graph graph = GraphFactory.open(configuration);
         graph = graph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.EDGES).program(PageRankVertexProgram.build().iterations(2).create(graph)).submit().get().graph();
         GraphTraversalSource g = graph.traversal();

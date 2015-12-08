@@ -23,7 +23,6 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.rdd.RDD;
-import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import scala.collection.JavaConversions;
 
 import java.util.ArrayList;
@@ -48,7 +47,14 @@ public class Spark {
     public static void create(final Configuration configuration) {
         final SparkConf sparkConf = new SparkConf();
         configuration.getKeys().forEachRemaining(key -> sparkConf.set(key, configuration.getProperty(key).toString()));
-        sparkConf.setAppName("Spark RDD Utility");
+        sparkConf.setAppName("Spark-Gremlin Persisted Context Application");
+        CONTEXT = SparkContext.getOrCreate(sparkConf);
+    }
+
+    public static void create(final String master) {
+        final SparkConf sparkConf = new SparkConf();
+        sparkConf.setAppName("Spark-Gremlin Persisted Context Application");
+        sparkConf.setMaster(master);
         CONTEXT = SparkContext.getOrCreate(sparkConf);
     }
 
@@ -102,11 +108,5 @@ public class Spark {
         if (null != CONTEXT)
             CONTEXT.stop();
         NAME_TO_RDD.clear();
-    }
-
-    public static void tryAndClose(final Configuration configuration) {
-        if (CONTEXT != null && !configuration.getBoolean(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false)) {
-            Spark.close();
-        }
     }
 }
