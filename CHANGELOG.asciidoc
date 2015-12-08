@@ -26,9 +26,10 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a long standing issue around having to use `reduceByKey()` on input data to Spark. It is no longer required.
+* Added `Spark` static object to allow "file system" control of persisted RDDs in Spark.
 * Improved logging control during builds with Maven.
 * Fixed settings that weren't being passed to the the Gremlin Driver `Cluster` through configuration file.
-* `Column` now implements `Function` and now `by(valueDecr)` can  be replaced with `by(values,decr)` and thus, projection and order are now separated.
 * `Column` now implements `Function`. The modulator `by(valueDecr)` can be replaced by `by(values,decr)` and thus, projection and order are separated.
 * Added `InputRDDFormat` which wraps an `InputRDD` to make it accessible to Hadoop and not just Spark.
 * Added `AbstractSparkTest` which handles closing `SparkContext` instances between tests now that we support persisted contexts.
