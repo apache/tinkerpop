@@ -22,9 +22,11 @@ package org.apache.tinkerpop.gremlin.spark.structure.io;
 import org.apache.commons.configuration.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import scala.Tuple2;
@@ -42,5 +44,16 @@ public final class InputFormatRDD implements InputRDD {
                 NullWritable.class,
                 VertexWritable.class)
                 .mapToPair(tuple -> new Tuple2<>(tuple._2().get().id(), new VertexWritable(tuple._2().get())));
+    }
+
+    @Override
+    public <K, V> JavaPairRDD<K, V> readMemoryRDD(final Configuration configuration, final String memoryKey, final JavaSparkContext sparkContext) {
+        final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(configuration);
+        // use FileInput location
+        return sparkContext.newAPIHadoopRDD(hadoopConfiguration,
+                SequenceFileInputFormat.class,
+                ObjectWritable.class,
+                ObjectWritable.class)
+                .mapToPair(tuple -> new Tuple2<>((K) ((Tuple2<ObjectWritable,ObjectWritable>)tuple)._1().get(), (V) ((Tuple2<ObjectWritable,ObjectWritable>)tuple)._2().get()));
     }
 }

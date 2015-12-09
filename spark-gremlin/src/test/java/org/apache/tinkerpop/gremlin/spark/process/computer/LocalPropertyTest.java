@@ -51,7 +51,7 @@ public class LocalPropertyTest extends AbstractSparkTest {
     @Test
     public void shouldSetThreadLocalProperties() throws Exception {
         final String testName = "ThreadLocalProperties";
-        final String rddName = "target/test-output/" + UUID.randomUUID();
+        final String rddLocation = "target/test-output/" + UUID.randomUUID();
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
         configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
@@ -59,7 +59,7 @@ public class LocalPropertyTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddLocation);
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         configuration.setProperty("spark.jobGroup.id", "22");
@@ -78,10 +78,10 @@ public class LocalPropertyTest extends AbstractSparkTest {
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
         JavaSparkStatusTracker statusTracker = sparkContext.statusTracker();
         assertTrue(statusTracker.getJobIdsForGroup("22").length >= 1);
-        assertTrue(Spark.hasRDD(rddName));
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddLocation)));
         ///////
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null);
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);

@@ -224,7 +224,14 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                         // reduce
                         final JavaPairRDD reduceRDD = (mapReduce.doStage(MapReduce.Stage.REDUCE)) ? SparkExecutor.executeReduce(mapRDD, mapReduce, newApacheConfiguration) : null;
                         // write the map reduce output back to disk (memory)
-                        SparkExecutor.saveMapReduceRDD(null == reduceRDD ? mapRDD : reduceRDD, mapReduce, finalMemory, hadoopConfiguration);
+                        try {
+                            mapReduce.addResultToMemory(finalMemory,
+                                    hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, OutputFormatRDD.class, OutputRDD.class)
+                                            .newInstance()
+                                            .writeMemoryRDD(apacheConfiguration, mapReduce.getMemoryKey(), null == reduceRDD ? mapRDD : reduceRDD));
+                        } catch (final InstantiationException | IllegalAccessException e) {
+                            throw new IllegalStateException(e.getMessage(), e);
+                        }
                     }
                     mapReduceGraphRDD.unpersist();
                 }
@@ -232,7 +239,6 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // unpersist the graphRDD if it will no longer be used
                 if (!PersistedOutputRDD.class.equals(hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null)) || this.persist.equals(GraphComputer.Persist.NOTHING)) {
                     graphRDD.unpersist();
-                    Spark.removeRDD(hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)); // delete persisted output rdd if it exists
                 }
                 // update runtime and return the newly computed graph
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);

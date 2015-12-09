@@ -34,10 +34,19 @@ public final class PersistedInputRDD implements InputRDD {
 
     @Override
     public JavaPairRDD<Object, VertexWritable> readGraphRDD(final Configuration configuration, final JavaSparkContext sparkContext) {
-        final String inputRDDName = configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION, null);
-        if (null == inputRDDName)
-            throw new IllegalArgumentException(PersistedInputRDD.class.getSimpleName() + " requires " + Constants.GREMLIN_HADOOP_INPUT_LOCATION + " in order to retrieve the named graphRDD from the SparkContext");
+        if (!configuration.containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION))
+            throw new IllegalArgumentException("There is no provided " + Constants.GREMLIN_HADOOP_INPUT_LOCATION + " to read the persisted RDD from");
+        final String graphRDDName = Constants.getGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
         Spark.create(sparkContext.sc());
-        return JavaPairRDD.fromJavaRDD((JavaRDD) Spark.getRDD(inputRDDName).toJavaRDD());
+        return JavaPairRDD.fromJavaRDD((JavaRDD) Spark.getRDD(graphRDDName).toJavaRDD());
+    }
+
+    @Override
+    public <K, V> JavaPairRDD<K, V> readMemoryRDD(final Configuration configuration, final String memoryKey, final JavaSparkContext sparkContext) {
+        if (!configuration.containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION))
+            throw new IllegalArgumentException("There is no provided " + Constants.GREMLIN_HADOOP_INPUT_LOCATION + " to read the persisted RDD from");
+        final String sideEffectRDDName = Constants.getMemoryLocation(configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), memoryKey);
+        Spark.create(sparkContext.sc());
+        return JavaPairRDD.fromJavaRDD((JavaRDD) Spark.getRDD(sideEffectRDDName).toJavaRDD());
     }
 }

@@ -57,7 +57,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
     @Test
     public void shouldNotPersistRDDAcrossJobs() throws Exception {
         Spark.create("local[4]");
-        final String rddName = "target/test-output/" + UUID.randomUUID();
+        final String rddLocation = "target/test-output/" + UUID.randomUUID();
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
         configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
@@ -66,7 +66,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
-        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);  // because the spark context is NOT persisted, neither is the RDD
         Graph graph = GraphFactory.open(configuration);
         graph.compute(SparkGraphComputer.class)
@@ -78,13 +78,13 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                                 "g.V()").create(graph)).submit().get();
         ////////
         Spark.create("local[4]");
-        assertFalse(Spark.hasRDD(rddName));
+        assertFalse(Spark.hasRDD(Constants.getGraphLocation(rddLocation)));
         Spark.close();
     }
 
     @Test
     public void shouldPersistRDDAcrossJobs() throws Exception {
-        final String rddName = "target/test-output/" + UUID.randomUUID();
+        final String rddLocation = "target/test-output/" + UUID.randomUUID();
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
         configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
@@ -92,7 +92,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddLocation);
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         Graph graph = GraphFactory.open(configuration);
@@ -104,10 +104,10 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                                 "gremlin-groovy",
                                 "g.V()").create(graph)).submit().get();
         ////////
-        assertTrue(Spark.hasRDD(rddName));
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddLocation)));
         ///////
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null);
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
         graph = GraphFactory.open(configuration);
@@ -125,7 +125,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
     public void testBulkLoaderVertexProgramChain() throws Exception {
         Spark.create("local[4]");
 
-        final String rddName = "target/test-output/" + UUID.randomUUID().toString();
+        final String rddLocation = "target/test-output/" + UUID.randomUUID().toString();
         final Configuration readConfiguration = new BaseConfiguration();
         readConfiguration.setProperty("spark.master", "local[4]");
         readConfiguration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
@@ -133,7 +133,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
         readConfiguration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
+        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddLocation);
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         readConfiguration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         Graph pageRankGraph = GraphFactory.open(readConfiguration);
@@ -147,13 +147,13 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                 .persist(GraphComputer.Persist.NOTHING)
                 .workers(1)
                 .configure(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName())
-                .configure(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName)
+                .configure(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddLocation)
                 .configure(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null)
                 .configure(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null)
                 .program(BulkLoaderVertexProgram.build().userSuppliedIds(true).writeGraph(writeConfiguration).create(bulkLoaderGraph))
                 .submit().get();
         ////
-        assertTrue(Spark.hasRDD(rddName));
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddLocation)));
         ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
@@ -171,7 +171,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
     public void testBulkLoaderVertexProgramChainWithInputOutputHelperMapping() throws Exception {
         Spark.create("local[4]");
 
-        final String rddName = "target/test-output/" + UUID.randomUUID().toString();
+        final String rddLocation = "target/test-output/" + UUID.randomUUID().toString();
         final Configuration readConfiguration = new BaseConfiguration();
         readConfiguration.setProperty("spark.master", "local[4]");
         readConfiguration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
@@ -179,7 +179,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
         readConfiguration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
-        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
+        readConfiguration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddLocation);
         readConfiguration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         readConfiguration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         Graph pageRankGraph = GraphFactory.open(readConfiguration);
@@ -196,7 +196,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                 .submit().get();
         ////
         Spark.create(readConfiguration);
-        assertTrue(Spark.hasRDD(rddName));
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddLocation)));
         ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
@@ -214,7 +214,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
     public void testComplexChain() throws Exception {
         Spark.create("local[4]");
 
-        final String rddName = "target/test-output/graphRDD";
+        final String rddLocation = "target/test-output/graphRDD";
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
         configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
@@ -222,7 +222,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddLocation);
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         Graph graph = GraphFactory.open(configuration);
@@ -233,12 +233,12 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
         assertEquals(6l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
-        assertTrue(Spark.hasRDD(rddName));
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddLocation)));
         ////
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddLocation);
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddLocation);
         ////
         graph = GraphFactory.open(configuration);
         graph = graph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.EDGES).program(PageRankVertexProgram.build().iterations(2).create(graph)).submit().get().graph();
@@ -248,7 +248,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
         assertEquals(6l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
-        assertTrue(Spark.hasRDD(rddName));
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddLocation)));
         ////
         graph = GraphFactory.open(configuration);
         graph = graph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.VERTEX_PROPERTIES).program(PageRankVertexProgram.build().iterations(2).create(graph)).submit().get().graph();
@@ -258,18 +258,18 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         assertEquals(6l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
         assertEquals(6l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
-        assertTrue(Spark.hasRDD(rddName));
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddLocation)));
         ////
         graph = GraphFactory.open(configuration);
         graph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.NOTHING).program(PageRankVertexProgram.build().iterations(2).create(graph)).submit().get().graph();
-        assertFalse(Spark.hasRDD(rddName));
+        assertFalse(Spark.hasRDD(rddLocation));
         g = graph.traversal();
         assertEquals(0l, g.V().count().next().longValue());
         assertEquals(0l, g.E().count().next().longValue());
         assertEquals(0l, g.V().values(PageRankVertexProgram.PAGE_RANK).count().next().longValue());
         assertEquals(0l, g.V().values(PageRankVertexProgram.EDGE_COUNT).count().next().longValue());
         ////
-        assertFalse(Spark.hasRDD(rddName));
+        assertFalse(Spark.hasRDD(Constants.getGraphLocation(rddLocation)));
         Spark.close();
     }
 }
