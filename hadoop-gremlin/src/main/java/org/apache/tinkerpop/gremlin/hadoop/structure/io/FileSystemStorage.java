@@ -161,7 +161,7 @@ public final class FileSystemStorage implements Storage {
     }
 
     @Override
-    public Iterator<Vertex> headGraph(final String location, final int totalLines, final Class parserClass) {
+    public Iterator<Vertex> head(final String location, final Class parserClass, final int totalLines) {
         final org.apache.commons.configuration.Configuration configuration = new BaseConfiguration();
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, Constants.getSearchGraphLocation(location, this).get());
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, parserClass.getCanonicalName());
@@ -176,7 +176,7 @@ public final class FileSystemStorage implements Storage {
     }
 
     @Override
-    public <K, V> Iterator<KeyValue<K, V>> headMemory(final String location, final String memoryKey, final int totalLines, final Class parserClass) {
+    public <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class parserClass, final int totalLines) {
         if (!parserClass.equals(SequenceFileInputFormat.class))
             throw new IllegalArgumentException("Only " + SequenceFileInputFormat.class.getCanonicalName() + " memories are supported");
         final Configuration configuration = new Configuration();

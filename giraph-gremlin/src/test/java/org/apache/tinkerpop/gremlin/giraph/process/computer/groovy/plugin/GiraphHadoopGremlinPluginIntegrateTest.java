@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.giraph.process.computer.groovy;
+package org.apache.tinkerpop.gremlin.giraph.process.computer.groovy.plugin;
 
 import org.apache.tinkerpop.gremlin.GraphProviderClass;
 import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphHadoopGraphProvider;

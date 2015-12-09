@@ -137,7 +137,7 @@ public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
         AbstractGremlinProcessTest.checkResults(Arrays.asList("ripple", "lop"), traversal);
         assertTrue((Boolean) this.console.eval("hdfs.exists('target/test-output/m')"));
         assertTrue((Boolean) this.console.eval("hdfs.exists('target/test-output/" + TraverserMapReduce.TRAVERSERS + "')"));
-        final List<KeyValue<Integer, Collection<String>>> mList = IteratorUtils.asList(this.console.eval("hdfs.headMemory('target/test-output','m',SequenceFileInputFormat)"));
+        final List<KeyValue<Integer, Collection<String>>> mList = IteratorUtils.asList(this.console.eval("hdfs.head('target/test-output','m',SequenceFileInputFormat)"));
         assertEquals(4, mList.size());
         mList.forEach(keyValue -> {
             if (keyValue.getKey().equals(29))
@@ -151,7 +151,7 @@ public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
             else
                 throw new IllegalStateException("The provided key/value is unknown: " + keyValue);
         });
-        final List<KeyValue<MapReduce.NullObject, Traverser<String>>> traversersList = IteratorUtils.asList(this.console.eval("hdfs.headMemory('target/test-output/'," + "'" + TraverserMapReduce.TRAVERSERS + "',SequenceFileInputFormat)"));
+        final List<KeyValue<MapReduce.NullObject, Traverser<String>>> traversersList = IteratorUtils.asList(this.console.eval("hdfs.head('target/test-output/'," + "'" + TraverserMapReduce.TRAVERSERS + "',SequenceFileInputFormat)"));
         assertEquals(2, traversersList.size());
         traversersList.forEach(keyValue -> {
             assertEquals(MapReduce.NullObject.instance(), keyValue.getKey());

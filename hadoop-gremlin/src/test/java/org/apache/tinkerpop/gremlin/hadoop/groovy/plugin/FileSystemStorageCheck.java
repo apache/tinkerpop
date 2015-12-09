@@ -57,7 +57,7 @@ public class FileSystemStorageCheck extends AbstractGremlinTest {
         // TEST MEMORY PERSISTENCE
         assertEquals(2, (int) result.memory().get("clusterCount"));
         assertTrue(storage.exists(Constants.getMemoryLocation(graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), "clusterCount")));
-        assertEquals(1, IteratorUtils.count(storage.headMemory(graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), "clusterCount", SequenceFileInputFormat.class)));
-        assertEquals(2, storage.headMemory(graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), "clusterCount", SequenceFileInputFormat.class).next().getValue());
+        assertEquals(1, IteratorUtils.count(storage.head(graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), "clusterCount", SequenceFileInputFormat.class)));
+        assertEquals(2, storage.head(graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), "clusterCount", SequenceFileInputFormat.class).next().getValue());
     }
 }

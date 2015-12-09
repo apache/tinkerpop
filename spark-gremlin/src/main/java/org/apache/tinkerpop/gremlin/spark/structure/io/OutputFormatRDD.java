@@ -49,7 +49,7 @@ public final class OutputFormatRDD implements OutputRDD {
         if (null != outputLocation) {
             // map back to a <nullwritable,vertexwritable> stream for output
             graphRDD.mapToPair(tuple -> new Tuple2<>(NullWritable.get(), tuple._2()))
-                    .saveAsNewAPIHadoopFile(outputLocation + "/" + Constants.HIDDEN_G,
+                    .saveAsNewAPIHadoopFile(Constants.getGraphLocation(outputLocation),
                             NullWritable.class,
                             VertexWritable.class,
                             (Class<OutputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, OutputFormat.class), hadoopConfiguration);
@@ -62,12 +62,12 @@ public final class OutputFormatRDD implements OutputRDD {
         final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         if (null != outputLocation) {
             // map back to a Hadoop stream for output
-            memoryRDD.mapToPair(keyValue -> new Tuple2<>(new ObjectWritable<>(keyValue._1()), new ObjectWritable<>(keyValue._2()))).saveAsNewAPIHadoopFile(outputLocation + "/" + memoryKey,
+            memoryRDD.mapToPair(keyValue -> new Tuple2<>(new ObjectWritable<>(keyValue._1()), new ObjectWritable<>(keyValue._2()))).saveAsNewAPIHadoopFile(Constants.getMemoryLocation(outputLocation, memoryKey),
                     ObjectWritable.class,
                     ObjectWritable.class,
                     SequenceFileOutputFormat.class, hadoopConfiguration);
             try {
-                return (Iterator) new ObjectWritableIterator(hadoopConfiguration, new Path(outputLocation + "/" + memoryKey));
+                return (Iterator) new ObjectWritableIterator(hadoopConfiguration, new Path(Constants.getMemoryLocation(outputLocation, memoryKey)));
             } catch (final IOException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }

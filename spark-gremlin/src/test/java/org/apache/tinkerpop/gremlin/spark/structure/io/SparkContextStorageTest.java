@@ -59,7 +59,7 @@ public class SparkContextStorageTest extends AbstractSparkTest {
         assertEquals(2, storage.ls().size());
         // TEST GRAPH PERSISTENCE
         assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
-        assertEquals(6, IteratorUtils.count(storage.headGraph(outputLocation, PersistedInputRDD.class)));
+        assertEquals(6, IteratorUtils.count(storage.head(outputLocation, PersistedInputRDD.class)));
         assertEquals(6, result.graph().traversal().V().count().next().longValue());
         assertEquals(0, result.graph().traversal().E().count().next().longValue());
         assertEquals(6, result.graph().traversal().V().values("name").count().next().longValue());
@@ -68,7 +68,7 @@ public class SparkContextStorageTest extends AbstractSparkTest {
         // TEST MEMORY PERSISTENCE
         assertEquals(2, (int) result.memory().get("clusterCount"));
         assertTrue(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
-        assertEquals(2, storage.headMemory(outputLocation, "clusterCount", PersistedInputRDD.class).next().getValue());
+        assertEquals(2, storage.head(outputLocation, "clusterCount", PersistedInputRDD.class).next().getValue());
     }
 
 }

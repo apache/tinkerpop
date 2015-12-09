@@ -26,6 +26,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorage;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
@@ -39,6 +40,7 @@ public final class InputFormatRDD implements InputRDD {
     @Override
     public JavaPairRDD<Object, VertexWritable> readGraphRDD(final Configuration configuration, final JavaSparkContext sparkContext) {
         final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(configuration);
+        hadoopConfiguration.set(configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), Constants.getSearchGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), FileSystemStorage.open(hadoopConfiguration)).get());
         return sparkContext.newAPIHadoopRDD(hadoopConfiguration,
                 (Class<InputFormat<NullWritable, VertexWritable>>) hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, InputFormat.class),
                 NullWritable.class,
@@ -49,11 +51,11 @@ public final class InputFormatRDD implements InputRDD {
     @Override
     public <K, V> JavaPairRDD<K, V> readMemoryRDD(final Configuration configuration, final String memoryKey, final JavaSparkContext sparkContext) {
         final org.apache.hadoop.conf.Configuration hadoopConfiguration = ConfUtil.makeHadoopConfiguration(configuration);
-        // use FileInput location
+        hadoopConfiguration.set(configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), Constants.getMemoryLocation(configuration.getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), memoryKey));
         return sparkContext.newAPIHadoopRDD(hadoopConfiguration,
                 SequenceFileInputFormat.class,
                 ObjectWritable.class,
                 ObjectWritable.class)
-                .mapToPair(tuple -> new Tuple2<>((K) ((Tuple2<ObjectWritable,ObjectWritable>)tuple)._1().get(), (V) ((Tuple2<ObjectWritable,ObjectWritable>)tuple)._2().get()));
+                .mapToPair(tuple -> new Tuple2<>((K) ((Tuple2<ObjectWritable, ObjectWritable>) tuple)._1().get(), (V) ((Tuple2<ObjectWritable, ObjectWritable>) tuple)._2().get()));
     }
 }

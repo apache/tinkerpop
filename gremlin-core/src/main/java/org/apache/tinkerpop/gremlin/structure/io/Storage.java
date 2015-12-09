@@ -50,15 +50,15 @@ public interface Storage {
         return this.head(location, Integer.MAX_VALUE);
     }
 
-    public Iterator<Vertex> headGraph(final String location, final int totalLines, final Class parserClass);
+    public Iterator<Vertex> head(final String location, final Class parserClass, final int totalLines);
 
-    public default Iterator<Vertex> headGraph(final String location, final Class parserClass) {
-        return this.headGraph(location, Integer.MAX_VALUE, parserClass);
+    public default Iterator<Vertex> head(final String location, final Class parserClass) {
+        return this.head(location, parserClass, Integer.MAX_VALUE);
     }
 
-    public <K, V> Iterator<KeyValue<K, V>> headMemory(final String location, final String memoryKey, final int totalLines, final Class parserClass);
+    public <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class parserClass, final int totalLines);
 
-    public default <K, V> Iterator<KeyValue<K, V>> headMemory(final String location, final String memoryKey, final Class parserClass) {
-        return this.headMemory(location, memoryKey, Integer.MAX_VALUE, parserClass);
+    public default <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class parserClass) {
+        return this.head(location, memoryKey, parserClass, Integer.MAX_VALUE);
     }
 }

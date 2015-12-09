@@ -85,12 +85,12 @@ public final class SparkContextStorage implements Storage {
 
     @Override
     public boolean mkdir(final String location) {
-        throw new UnsupportedOperationException("This operation does not make sense for a persited SparkContext");
+        throw new UnsupportedOperationException("This operation does not make sense for a persisted SparkContext");
     }
 
     @Override
     public boolean cp(final String fromLocation, final String toLocation) {
-        Spark.getRDD(fromLocation).setName(toLocation).cache();
+        Spark.getRDD(fromLocation).setName(toLocation).cache().count();
         Spark.removeRDD(fromLocation);
         return true;
     }
@@ -111,7 +111,7 @@ public final class SparkContextStorage implements Storage {
     @Override
     public boolean rmr(final String location) {
         final List<String> rdds = new ArrayList<>();
-        final String wildCardLocation = location.replace(".", "\\.").replace("*", ".*");
+        final String wildCardLocation = (location.endsWith("*") ? location : location + "*").replace(".", "\\.").replace("*", ".*");
         for (final RDD<?> rdd : Spark.getRDDs()) {
             if (rdd.name().matches(wildCardLocation))
                 rdds.add(rdd.name());
@@ -121,9 +121,9 @@ public final class SparkContextStorage implements Storage {
     }
 
     @Override
-    public Iterator<Vertex> headGraph(final String location, int totalLines, final Class parserClass) {
+    public Iterator<Vertex> head(final String location, final Class parserClass, final int totalLines) {
         final Configuration configuration = new BaseConfiguration();
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, Constants.getSearchGraphLocation(location, this).get());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, location);
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, parserClass.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, parserClass.getCanonicalName());
         try {
@@ -135,13 +135,13 @@ public final class SparkContextStorage implements Storage {
         } catch (final Exception e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
-        throw new IllegalArgumentException("The provided parserClass must be an " + InputFormat.class.getCanonicalName() + " or a " + InputRDD.class.getCanonicalName() + ": " + parserClass.getCanonicalName());
+        throw new IllegalArgumentException("The provided parserClass must be an " + InputFormat.class.getCanonicalName() + " or an " + InputRDD.class.getCanonicalName() + ": " + parserClass.getCanonicalName());
     }
 
     @Override
-    public <K, V> Iterator<KeyValue<K, V>> headMemory(final String location, final String memoryKey, int totalLines, Class parserClass) {
+    public <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class parserClass, final int totalLines) {
         final Configuration configuration = new BaseConfiguration();
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, Constants.getMemoryLocation(location, memoryKey));
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, location);
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, parserClass.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, parserClass.getCanonicalName());
         try {
@@ -153,7 +153,7 @@ public final class SparkContextStorage implements Storage {
         } catch (final Exception e) {
             throw new IllegalArgumentException(e.getMessage(), e);
         }
-        throw new IllegalArgumentException("The provided parserClass must be an " + InputFormat.class.getCanonicalName() + " or a " + InputRDD.class.getCanonicalName() + ": " + parserClass.getCanonicalName());
+        throw new IllegalArgumentException("The provided parserClass must be an " + InputFormat.class.getCanonicalName() + " or an " + InputRDD.class.getCanonicalName() + ": " + parserClass.getCanonicalName());
     }
 
     @Override

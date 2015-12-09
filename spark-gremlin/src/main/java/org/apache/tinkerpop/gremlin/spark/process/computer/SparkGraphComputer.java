@@ -53,6 +53,7 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.InputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.OutputFormatRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
+import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
 
 import java.io.File;
 import java.io.IOException;
@@ -239,10 +240,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 // unpersist the graphRDD if it will no longer be used
                 if (!PersistedOutputRDD.class.equals(hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null)) || this.persist.equals(GraphComputer.Persist.NOTHING)) {
                     graphRDD.unpersist();
-                    if (apacheConfiguration.containsKey(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)) {
-                        Spark.removeRDD(apacheConfiguration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
-                        Spark.removeRDD(Constants.getGraphLocation(apacheConfiguration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)));
-                    }
+                    if (apacheConfiguration.containsKey(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))
+                        SparkContextStorage.open().rmr(apacheConfiguration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
                 }
                 // update runtime and return the newly computed graph
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);
