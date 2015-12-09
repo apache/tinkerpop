@@ -106,6 +106,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
+            case "shouldRequireAliasedGraphVariablesInStrictTransactionMode":
+                settings.strictTransactionManagement = true;
+                break;
+            case "shouldAliasGraphVariablesInStrictTransactionMode":
+                settings.strictTransactionManagement = true;
+                deleteDirectory(new File("/tmp/neo4j"));
+                settings.graphs.put("graph", "conf/neo4j-empty.properties");
+                break;
         }
 
         return settings;
@@ -791,6 +799,53 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         for (int ix = 0; ix < results.size(); ix++) {
             assertEquals(1000 + ix, results.get(ix).intValue());
         }
+    }
+
+    @Test
+    public void shouldRequireAliasedGraphVariablesInStrictTransactionMode() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("1+1").all().get().get(0).getVertex();
+            fail("Should have tossed an exception because strict mode is on and no aliasing was performed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ResponseException.class));
+            final ResponseException re = (ResponseException) root;
+            assertEquals(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, re.getResponseStatusCode());
+        }
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldAliasGraphVariablesInStrictTransactionMode() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("g.addVertex('name','stephen');").all().get().get(0).getVertex();
+            fail("Should have tossed an exception because \"g\" does not have the addVertex method under default config");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ResponseException.class));
+            final ResponseException re = (ResponseException) root;
+            assertEquals(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, re.getResponseStatusCode());
+        }
+
+        // keep the testing here until "rebind" is completely removed
+        final Client reboundLegacy = cluster.connect().rebind("graph");
+        final Vertex vLegacy = reboundLegacy.submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
+        assertEquals("stephen", vLegacy.value("name"));
+
+        final Client rebound = cluster.connect().alias("graph");
+        final Vertex v = rebound.submit("g.addVertex('name','jason')").all().get().get(0).getVertex();
+        assertEquals("jason", v.value("name"));
+
+        cluster.close();
     }
 
     @Test

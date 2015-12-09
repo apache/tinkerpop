@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
@@ -64,6 +65,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +84,12 @@ import static io.netty.handler.codec.http.HttpHeaders.is100ContinueExpected;
 import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
-import static io.netty.handler.codec.http.HttpResponseStatus.*;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONTINUE;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -120,14 +127,18 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
     private final GremlinExecutor gremlinExecutor;
     private final GraphManager graphManager;
-    final Pattern pattern = Pattern.compile("(.*);q=(.*)");
+    private final Settings settings;
+
+    private static final Pattern pattern = Pattern.compile("(.*);q=(.*)");
 
     public HttpGremlinEndpointHandler(final Map<String, MessageSerializer> serializers,
                                       final GremlinExecutor gremlinExecutor,
-                                      final GraphManager graphManager) {
+                                      final GraphManager graphManager,
+                                      final Settings settings) {
         this.serializers = serializers;
         this.gremlinExecutor = gremlinExecutor;
         this.graphManager = graphManager;
+        this.settings = settings;
     }
 
     @Override
@@ -226,12 +237,15 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
                             final ResponseMessage responseMessage = ResponseMessage.build(UUID.randomUUID())
                                     .code(ResponseStatusCode.SUCCESS)
                                     .result(IteratorUtils.asList(o)).create();
+
+                            // http server is sessionless and must handle commit on transactions. the commit occurs
+                            // before serialization to be consistent with how things work for websocket based
+                            // communication.  this means that failed serialization does not mean that you won't get
+                            // a commit to the database
+                            attemptCommit(requestArguments.getValue3(), graphManager, settings.strictTransactionManagement);
+
                             try {
-                                Object wrappedBuffer = Unpooled.wrappedBuffer(
-                                        serializer.getValue1().serializeResponseAsString(responseMessage).getBytes(UTF8));
-                                // http server is sessionless and must handle commit on transactions
-                                this.graphManager.commitAll();
-                                return wrappedBuffer;
+                                return Unpooled.wrappedBuffer(serializer.getValue1().serializeResponseAsString(responseMessage).getBytes(UTF8));
                             } catch (Exception ex) {
                                 logger.warn(String.format("Error during serialization for %s", responseMessage), ex);
                                 throw ex;
@@ -434,5 +448,12 @@ public class HttpGremlinEndpointHandler extends ChannelInboundHandlerAdapter {
 
         // Close the connection as soon as the error message is sent.
         ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
+    }
+
+    private static void attemptCommit(final Map<String, String> aliases, final GraphManager graphManager, final boolean strict) {
+        if (strict)
+            graphManager.commit(new HashSet<>(aliases.values()));
+        else
+            graphManager.commitAll();
     }
 }

@@ -46,7 +46,15 @@ the `Graph`, will fail to do so unless it is self-iterated.  In other words, ins
 `g.V().sideEffect{it.get().property('color','green')}` one would send:
 `g.V().sideEffect{it.get().property('color','green')}.toList()`
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-1035[TINKERPOP-1035],
+In addition, Gremlin Server now has a new setting called `strictTransactionManagement`, which forces the user to pass
+`aliases` for all requests. The aliases are then used to determine which graphs will have their transactions closed
+for that request. The alternative is to continue with default operations where the transactions of all configured
+graphs will be closed. It is likely that `strictTransactionManagement` (which is `false` by default so as to be
+backward compatible with previous versions) will become the future standard mode of operation for Gremlin Server as
+it provides a more efficient method for transaction management.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-930[TINKERPOP-930],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1035[TINKERPOP-1035],
 link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#considering-transactions[Reference Documentation - Considering Transactions]
 
 Deprecated credentialsDbLocation
