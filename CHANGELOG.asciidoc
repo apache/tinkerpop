@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Fixed a `SparkGraphComputer` sorting bug in MapReduce that occurred when there was more than one partition.
 * Fixed a `NullPointerException` bug in `PeerPressureVertexProgram` that occurred when an adjacency traversal was not provided.
 * Fixed a long standing "view merge" issue requiring `reduceByKey()` on input data to Spark. It is no longer required.
 * Added `Spark` static object to allow "file system" control of persisted RDDs in Spark.
