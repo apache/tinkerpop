@@ -88,6 +88,13 @@ and no longer required.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1023[TINKERPOP-1023],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1027[TINKERPOP-1027]
 
+Logging
+^^^^^^^
+
+Logging to Gremlin Server and Gremlin Console can now be consistently controlled by the `log4j-server.properties`
+and `log4j-console.properties` which are in the respective `conf/` directories of the packaged distributions.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-859[TINKERPOP-859]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
