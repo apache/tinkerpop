@@ -142,7 +142,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             hadoopConfiguration.forEach(entry -> sparkConfiguration.set(entry.getKey(), entry.getValue()));
             // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
             try {
-                final JavaSparkContext sparkContext =  new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
+                final JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
                 Spark.create(sparkContext.sc()); // this is the context RDD holder that prevents GC
                 updateLocalConfiguration(sparkContext, sparkConfiguration);
                 // add the project jars to the cluster
@@ -152,8 +152,10 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 try {
                     graphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
                             .newInstance()
-                            .readGraphRDD(apacheConfiguration, sparkContext)
-                            .cache();
+                            .readGraphRDD(apacheConfiguration, sparkContext);
+                    if (graphRDD.partitions().size() > this.workers) // ensures that the graphRDD does not have more partitions than workers
+                        graphRDD = graphRDD.coalesce(this.workers);
+                    graphRDD = graphRDD.cache();
                 } catch (final InstantiationException | IllegalAccessException e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }
