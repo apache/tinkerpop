@@ -67,6 +67,7 @@ import java.util.stream.Stream;
 public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
 
     private final org.apache.commons.configuration.Configuration sparkConfiguration;
+    private boolean workersSet = false;
 
     public SparkGraphComputer(final HadoopGraph hadoopGraph) {
         super(hadoopGraph);
@@ -80,6 +81,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
         if (this.sparkConfiguration.getString(SparkLauncher.SPARK_MASTER).startsWith("local")) {
             this.sparkConfiguration.setProperty(SparkLauncher.SPARK_MASTER, "local[" + this.workers + "]");
         }
+        this.workersSet = true;
         return this;
     }
 
@@ -153,7 +155,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     graphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
                             .newInstance()
                             .readGraphRDD(apacheConfiguration, sparkContext);
-                    if (graphRDD.partitions().size() > this.workers) // ensures that the graphRDD does not have more partitions than workers
+                    if (this.workersSet && graphRDD.partitions().size() > this.workers) // ensures that the graphRDD does not have more partitions than workers
                         graphRDD = graphRDD.coalesce(this.workers);
                     graphRDD = graphRDD.cache();
                 } catch (final InstantiationException | IllegalAccessException e) {
