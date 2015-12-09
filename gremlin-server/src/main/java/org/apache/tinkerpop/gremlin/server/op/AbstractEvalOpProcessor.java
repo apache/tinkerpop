@@ -18,26 +18,40 @@
  */
 package org.apache.tinkerpop.gremlin.server.op;
 
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import io.netty.channel.ChannelFuture;
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.server.handler.StateKey;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
+import org.apache.tinkerpop.gremlin.structure.io.Mapper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang.time.StopWatch;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.io.ByteBufferOutputStream;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -60,6 +74,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 public abstract class AbstractEvalOpProcessor implements OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(AbstractEvalOpProcessor.class);
     public static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
+    static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     /**
      * This may or may not be the full set of invalid binding keys.  It is dependent on the static imports made to
@@ -213,35 +228,60 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             ctx.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.NO_CONTENT)
                     .create());
+            return;
         }
 
         // timer for the total serialization time
         final StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
+        // if we manage the transactions then we need to commit stuff now that eval is complete.
+        Iterator toIterate = itty;
+        if (manageTransactions) {
+            // If the eval returned a Traversal then it gets special treatment
+            if (itty instanceof GraphTraversal) {
+                final GraphTraversal traversal = (GraphTraversal) itty;
+
+                // if it has Mutating steps then it needs to be iterated to produce the mutations in the transaction.
+                // after it is iterated then we can commit.  of course, this comes at the expense of being able
+                // to stream results back to the client as the result has to be realized into memory.
+                //
+                // labmdas are a loophole here.  for now, users will need to self iterate if they need lambdas :/
+                final boolean hasMutating = traversal.asAdmin().getSteps().stream().anyMatch(s -> s instanceof Mutating);
+                if (hasMutating) toIterate = IteratorUtils.list(itty).iterator();
+            }
+
+            // in any case, the commit should occur because at this point a GraphTraversal has been iterated OR
+            // the script has been executed. failures will bubble up before we start to iterate results which makes
+            // sense as we wouldn't want to waste time sending back results when the transaction is going to end up
+            // failing
+            context.getGraphManager().commitAll();
+        }
+
         // the batch size can be overridden by the request
         final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE)
                 .orElse(settings.resultIterationBatchSize);
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
-        while (itty.hasNext()) {
+        while (toIterate.hasNext()) {
             if (Thread.interrupted()) throw new InterruptedException();
 
             // have to check the aggregate size because it is possible that the channel is not writeable (below)
             // so iterating next() if the message is not written and flushed would bump the aggregate size beyond
             // the expected resultIterationBatchSize.  Total serialization time for the response remains in
             // effect so if the client is "slow" it may simply timeout.
-            if (aggregate.size() < resultIterationBatchSize) aggregate.add(itty.next());
+            if (aggregate.size() < resultIterationBatchSize) aggregate.add(toIterate.next());
 
             // send back a page of results if batch size is met or if it's the end of the results being iterated.
             // also check writeability of the channel to prevent OOME for slow clients.
             if (ctx.channel().isWritable()) {
-                if  (aggregate.size() == resultIterationBatchSize || !itty.hasNext()) {
-                    final ResponseStatusCode code = itty.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
+                if (aggregate.size() == resultIterationBatchSize || !toIterate.hasNext()) {
+                    final ResponseStatusCode code = toIterate.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
                     ctx.writeAndFlush(ResponseMessage.build(msg)
-                            .code(code)
-                            .result(aggregate).create());
+                                .code(code)
+                                .result(aggregate).create());
 
-                    aggregate = new ArrayList<>(resultIterationBatchSize);
+                    // only need to reset the aggregation list if there's more stuff to write
+                    if (toIterate.hasNext()) aggregate = new ArrayList<>(resultIterationBatchSize);
                 }
             } else {
                 // don't keep triggering this warning over and over again for the same request
@@ -264,15 +304,6 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
             stopWatch.unsplit();
         }
-
-        // if there's no more items in the iterator then we've aggregated everything and are thus ready to
-        // commit stuff if transaction management is on.  exceptions should bubble up and be handle in the normal
-        // manner of things.  a final SUCCESS message will not have been sent (below) and we ship back an error.
-        // if transaction management is not enabled, then returning SUCCESS below is OK as this is a different
-        // usage context.  without transaction management enabled, the user is responsible for maintaining
-        // the transaction and will want a SUCCESS to know their eval and iteration was ok.  they would then
-        // potentially have a failure on commit on the next request.
-        if (manageTransactions) context.getGraphManager().commitAll();
 
         stopWatch.stop();
     }
