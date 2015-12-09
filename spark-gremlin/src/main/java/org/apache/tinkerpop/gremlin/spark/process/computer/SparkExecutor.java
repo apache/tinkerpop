@@ -168,7 +168,7 @@ public final class SparkExecutor {
             });
         });
         if (mapReduce.getMapKeySort().isPresent())
-            mapRDD = mapRDD.sortByKey(mapReduce.getMapKeySort().get());
+            mapRDD = mapRDD.sortByKey(mapReduce.getMapKeySort().get(), true, 1);
         return mapRDD;
     }
 
@@ -188,7 +188,7 @@ public final class SparkExecutor {
             });
         });
         if (mapReduce.getReduceKeySort().isPresent())
-            reduceRDD = reduceRDD.sortByKey(mapReduce.getReduceKeySort().get());
+            reduceRDD = reduceRDD.sortByKey(mapReduce.getReduceKeySort().get(), true, 1);
         return reduceRDD;
     }
 
