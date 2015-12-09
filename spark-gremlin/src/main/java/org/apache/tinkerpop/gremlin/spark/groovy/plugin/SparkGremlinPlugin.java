@@ -27,6 +27,7 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
+import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -43,6 +44,7 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
         add("import org.apache.log4j.*");
         add(IMPORT_SPACE + SparkGraphComputer.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + Spark.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + SparkContextStorage.class.getPackage().getName() + DOT_STAR);
     }};
 
     @Override
@@ -56,8 +58,7 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
         try {
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", SparkGraphComputer.class.getName()));
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.ERROR)", MetricsSystem.class.getName()));
-            pluginAcceptor.eval("spark = Spark");
-            pluginAcceptor.eval(SparkLoader.class.getCanonicalName() + ".load()");
+            pluginAcceptor.eval("spark = SparkContextStorage.open()");
         } catch (final Exception e) {
             throw new PluginInitializationException(e.getMessage(), e);
         }

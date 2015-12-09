@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.hadoop.process.computer.mapreduce.MapReduceG
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopConfiguration;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorage;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.graphson.GraphSONInputFormat;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
@@ -86,10 +87,10 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", MapReduceGraphComputer.class.getName()));
             ///
             pluginAcceptor.eval(String.format("Logger.getLogger(%s).setLevel(Level.INFO)", HadoopGraph.class.getName()));
-            pluginAcceptor.eval(HadoopLoader.class.getCanonicalName() + ".load()");
+            //pluginAcceptor.eval(HadoopLoader.class.getCanonicalName() + ".load()");
 
-            pluginAcceptor.addBinding("hdfs", FileSystem.get(new Configuration()));
-            pluginAcceptor.addBinding("local", FileSystem.getLocal(new Configuration()));
+            pluginAcceptor.addBinding("hdfs", new FileSystemStorage(FileSystem.get(new Configuration())));
+            pluginAcceptor.addBinding("local", new FileSystemStorage(FileSystem.getLocal(new Configuration())));
             if (null == System.getenv(Constants.HADOOP_GREMLIN_LIBS))
                 HadoopGraph.LOGGER.warn("Be sure to set the environmental variable: " + Constants.HADOOP_GREMLIN_LIBS);
             else

@@ -34,9 +34,11 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Iterator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -97,9 +99,9 @@ public class SparkGremlinPluginTest extends AbstractSparkTest {
         assertEquals(1, ((List<String>) this.console.eval("spark.ls()")).size());
         assertTrue(((List<String>) this.console.eval("spark.ls()")).contains("target/test-output/graph-1/~g [Memory Deserialized 1x Replicated]"));
 
-        assertEquals(6, ((List<Object>) this.console.eval("spark.head('target/test-output/graph-1/~g')")).size());
+        assertEquals(6, IteratorUtils.count(((Iterator<Object>) this.console.eval("spark.head('target/test-output/graph-1/~g')"))));
 
-        this.console.eval("spark.rm('target/test-output/graph-*')");
+        this.console.eval("spark.rmr('target/test-output/graph-*')");
         assertEquals(0, ((List<String>) this.console.eval("spark.ls()")).size());
 
         //////
@@ -116,9 +118,9 @@ public class SparkGremlinPluginTest extends AbstractSparkTest {
         this.console.eval("graph.compute(SparkGraphComputer).program(PageRankVertexProgram.build().iterations(1).create()).submit().get()");
 
         assertEquals(3, ((List<String>) this.console.eval("spark.ls()")).size());
-        this.console.eval("spark.rm('target/test-output/graph-*')");
+        this.console.eval("spark.rmr('target/test-output/graph-*')");
         assertEquals(1, ((List<String>) this.console.eval("spark.ls()")).size());
-        this.console.eval("spark.rm('*')");
+        this.console.eval("spark.rmr('*')");
         assertEquals(0, ((List<String>) this.console.eval("spark.ls()")).size());
 
         //

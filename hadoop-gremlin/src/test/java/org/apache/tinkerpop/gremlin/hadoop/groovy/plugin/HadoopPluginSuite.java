@@ -29,6 +29,6 @@ import org.junit.runners.model.RunnerBuilder;
  */
 public class HadoopPluginSuite extends AbstractGremlinSuite {
     public HadoopPluginSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, new Class<?>[]{HadoopGremlinPluginCheck.class}, new Class<?>[]{HadoopGremlinPluginCheck.class}, true, TraversalEngine.Type.COMPUTER);
+        super(klass, builder, new Class<?>[]{HadoopGremlinPluginCheck.class, GraphMemoryHDFSCheck.class}, new Class<?>[]{HadoopGremlinPluginCheck.class, GraphMemoryHDFSCheck.class}, true, TraversalEngine.Type.COMPUTER);
     }
 }
