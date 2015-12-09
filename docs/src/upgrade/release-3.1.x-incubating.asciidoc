@@ -74,6 +74,21 @@ calls the old deprecated method.  In this way, existing `Authenticator` implemen
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP3-995[TINKERPOP3-995]
 
+Spark Persistence Updates
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Spark RDD persistence is now much safer with a "job server" system that ensures that persisted RDDs are not garbage
+collected by Spark. With this, the user is provider a `spark` object that enables them to manage persisted RDDs
+much like the `hdfs` object is used for managing files in HDFS.
+
+Finally, `InputRDD` instance no longer need a `reduceByKey()` postfix as view merges happen prior to writing the
+`graphRDD`. Note that a `reduceByKey()` postfix will not cause problems if continued, it is simply inefficient
+and no longer required.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1023[TINKERPOP-1023],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1027[TINKERPOP-1027]
+
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
