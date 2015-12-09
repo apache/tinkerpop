@@ -38,7 +38,6 @@ public final class GiraphGremlinPlugin extends AbstractGremlinPlugin {
     protected static String NAME = "tinkerpop.giraph";
 
     protected static final Set<String> IMPORTS = new HashSet<String>() {{
-        add("import org.apache.log4j.*");
         add(IMPORT_SPACE + GiraphGraphComputer.class.getPackage().getName() + DOT_STAR);
     }};
 
