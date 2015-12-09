@@ -32,6 +32,23 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.1-inc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Gremlin Server Transaction Management
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+There were some changes to how Gremlin Server manages transactions on sessionless requests to make the process more
+consistent across different graph databases. Commits now occur after evaluation and prior to result iteration, which
+ensures an earlier failure (i.e. prior to results getting to the client indicating a false success) and better
+handling of a result that is a `GraphTraversal` that mutates the `Graph`.
+
+This change likely does not require any changes to the code of users, but does introduce some items to be aware of
+when issuing scripts. Most specifically, using lambdas in a request that returns a `GraphTraversal`, designed to modify
+the `Graph`, will fail to do so unless it is self-iterated.  In other words, instead of sending:
+`g.V().sideEffect{it.get().property('color','green')}` one would send:
+`g.V().sideEffect{it.get().property('color','green')}.toList()`
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1035[TINKERPOP-1035],
+link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#considering-transactions[Reference Documentation - Considering Transactions]
+
 Deprecated credentialsDbLocation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -88,6 +105,13 @@ and no longer required.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1023[TINKERPOP-1023],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1027[TINKERPOP-1027]
 
+Logging
+^^^^^^^
+
+Logging to Gremlin Server and Gremlin Console can now be consistently controlled by the `log4j-server.properties`
+and `log4j-console.properties` which are in the respective `conf/` directories of the packaged distributions.
+
+See: https://issues.apache.org/jira/browse/TINKERPOP-859[TINKERPOP-859]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~

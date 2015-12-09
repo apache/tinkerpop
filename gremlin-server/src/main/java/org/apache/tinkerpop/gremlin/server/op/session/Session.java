@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.server.op.session;
 
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalSource;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.Settings;
