@@ -27,6 +27,7 @@ TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a `NullPointerException` bug in `PeerPressureVertexProgram` that occurred when an adjacency traversal was not provided.
+* Improved Transaction Management consistency in Gremlin Server.
 * Fixed a long standing issue around having to use `reduceByKey()` on input data to Spark. It is no longer required.
 * Added `Spark` static object to allow "file system" control of persisted RDDs in Spark.
 * Improved logging control during builds with Maven.
