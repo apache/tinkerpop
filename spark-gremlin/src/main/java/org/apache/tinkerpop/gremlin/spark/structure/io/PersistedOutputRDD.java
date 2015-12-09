@@ -46,6 +46,7 @@ public final class PersistedOutputRDD implements OutputRDD {
             throw new IllegalArgumentException("There is no provided " + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + " to write the persisted RDD to");
         final String graphRDDName = Constants.getGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
         Spark.removeRDD(graphRDDName);  // this might be bad cause it unpersists the job RDD
+        Constants.getSearchGraphLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), SparkContextStorage.open(configuration)).ifPresent(Spark::removeRDD);  // this might be bad cause it unpersists the job RDD
         if (!configuration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true))
             graphRDD.mapValues(vertex -> {
                 vertex.get().dropEdges();
@@ -62,7 +63,7 @@ public final class PersistedOutputRDD implements OutputRDD {
             LOGGER.warn("The SparkContext should be persisted in order for the RDD to persist across jobs. To do so, set " + Constants.GREMLIN_SPARK_PERSIST_CONTEXT + " to true");
         if (!configuration.containsKey(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))
             throw new IllegalArgumentException("There is no provided " + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + " to write the persisted RDD to");
-        final String sideEffectRDDName = Constants.getMemoryLocation(configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), memoryKey);
+        final String sideEffectRDDName = configuration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + memoryKey;
         Spark.removeRDD(sideEffectRDDName);
         memoryRDD.setName(sideEffectRDDName).cache();
         return IteratorUtils.map(memoryRDD.toLocalIterator(), tuple -> new KeyValue<>(tuple._1(), tuple._2()));

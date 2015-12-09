@@ -42,7 +42,6 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
     protected static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT_SPACE + SparkGraphComputer.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + Spark.class.getPackage().getName() + DOT_STAR);
-        add(IMPORT_SPACE + SparkContextStorage.class.getPackage().getName() + DOT_STAR);
     }};
 
     @Override
@@ -54,7 +53,7 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
     public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws PluginInitializationException, IllegalEnvironmentException {
         pluginAcceptor.addImports(IMPORTS);
         try {
-            pluginAcceptor.eval("spark = SparkContextStorage.open()");
+            pluginAcceptor.addBinding("spark", SparkContextStorage.open());
         } catch (final Exception e) {
             throw new PluginInitializationException(e.getMessage(), e);
         }

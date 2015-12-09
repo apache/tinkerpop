@@ -32,7 +32,6 @@ import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
-import scala.Tuple2;
 
 import java.util.UUID;
 
@@ -42,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class GraphMemorySparkTest extends AbstractSparkTest {
+public class SparkContextStorageTest extends AbstractSparkTest {
 
     @Test
     public void shouldPersistGraphAndMemory() throws Exception {
@@ -60,7 +59,7 @@ public class GraphMemorySparkTest extends AbstractSparkTest {
         assertEquals(2, storage.ls().size());
         // TEST GRAPH PERSISTENCE
         assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
-        assertEquals(6, IteratorUtils.count(storage.head(Constants.getGraphLocation(outputLocation), Tuple2.class)));
+        assertEquals(6, IteratorUtils.count(storage.headGraph(outputLocation, PersistedInputRDD.class)));
         assertEquals(6, result.graph().traversal().V().count().next().longValue());
         assertEquals(0, result.graph().traversal().E().count().next().longValue());
         assertEquals(6, result.graph().traversal().V().values("name").count().next().longValue());
@@ -69,7 +68,7 @@ public class GraphMemorySparkTest extends AbstractSparkTest {
         // TEST MEMORY PERSISTENCE
         assertEquals(2, (int) result.memory().get("clusterCount"));
         assertTrue(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
-        assertEquals(2, storage.head(Constants.getMemoryLocation(outputLocation, "clusterCount"), Tuple2.class).next()._2());
+        assertEquals(2, storage.headMemory(outputLocation, "clusterCount", PersistedInputRDD.class).next().getValue());
     }
 
 }

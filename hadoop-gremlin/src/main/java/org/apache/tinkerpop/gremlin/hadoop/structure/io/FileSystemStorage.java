@@ -19,6 +19,7 @@
 
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -26,16 +27,20 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.io.Writable;
-import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
-import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HiddenFileFilter;
-import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.TextIterator;
+import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.Constants;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,11 +53,29 @@ public final class FileSystemStorage implements Storage {
 
     private static final String SPACE = " ";
     private static final String D_SPACE = "(D) ";
+    private static final String FORWARD_SLASH = "/";
+    private static final String FORWARD_ASTERISK = "/*";
 
     private final FileSystem fs;
 
-    public FileSystemStorage(final FileSystem fileSystem) {
+    private FileSystemStorage(final FileSystem fileSystem) {
         this.fs = fileSystem;
+    }
+
+    public static FileSystemStorage open() {
+        return FileSystemStorage.open(new Configuration());
+    }
+
+    public static FileSystemStorage open(final Configuration configuration) {
+        try {
+            return new FileSystemStorage(FileSystem.get(configuration));
+        } catch (final IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    public static FileSystemStorage open(final FileSystem fileSystem) {
+        return new FileSystemStorage(fileSystem);
     }
 
     private static String fileStatusString(final FileStatus status) {
@@ -113,7 +136,7 @@ public final class FileSystemStorage implements Storage {
     @Override
     public boolean rm(final String location) {
         try {
-            return HDFSTools.globDelete(this.fs, location, false);
+            return FileSystemStorage.globDelete(this.fs, location, false);
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -122,33 +145,51 @@ public final class FileSystemStorage implements Storage {
     @Override
     public boolean rmr(final String location) {
         try {
-            return HDFSTools.globDelete(this.fs, location, true);
+            return FileSystemStorage.globDelete(this.fs, location, true);
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
     @Override
-    public <V> Iterator<V> head(final String location, final int totalLines, final Class<V> objectClass) {
-        return headMaker(this.fs, location, totalLines, (Class<? extends Writable>) objectClass);
+    public Iterator<String> head(final String location, final int totalLines) {
+        try {
+            return IteratorUtils.limit((Iterator) new TextIterator(fs.getConf(), new Path(location)), totalLines);
+        } catch (final IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Iterator<Vertex> headGraph(final String location, final int totalLines, final Class parserClass) {
+        final org.apache.commons.configuration.Configuration configuration = new BaseConfiguration();
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, Constants.getSearchGraphLocation(location, this).get());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, parserClass.getCanonicalName());
+        try {
+            if (InputFormat.class.isAssignableFrom(parserClass))
+                return IteratorUtils.limit(new HadoopVertexIterator(HadoopGraph.open(configuration)), totalLines);
+        } catch (final IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+        throw new IllegalArgumentException("The provided parser class must be an " + InputFormat.class.getCanonicalName() + ": " + parserClass.getCanonicalName());
+
+    }
+
+    @Override
+    public <K, V> Iterator<KeyValue<K, V>> headMemory(final String location, final String memoryKey, final int totalLines, final Class parserClass) {
+        if (!parserClass.equals(SequenceFileInputFormat.class))
+            throw new IllegalArgumentException("Only " + SequenceFileInputFormat.class.getCanonicalName() + " memories are supported");
+        final Configuration configuration = new Configuration();
+        try {
+            return IteratorUtils.limit((Iterator) new ObjectWritableIterator(configuration, new Path(Constants.getMemoryLocation(location, memoryKey))), totalLines);
+        } catch (final IOException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     @Override
     public String toString() {
         return StringFactory.storageString(this.fs.toString());
-    }
-
-    private static Iterator headMaker(final FileSystem fs, final String path, final int totalLines, final Class<? extends Writable> writableClass) {
-        try {
-            if (writableClass.equals(ObjectWritable.class))
-                return IteratorUtils.limit(new ObjectWritableIterator(fs.getConf(), new Path(path)), totalLines);
-            else if (writableClass.equals(VertexWritable.class))
-                return IteratorUtils.limit(new VertexWritableIterator(fs.getConf(), new Path(path)), totalLines);
-            else
-                return IteratorUtils.limit(new TextIterator(fs.getConf(), new Path(path)), totalLines);
-        } catch (final IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
     }
 
     /////////
@@ -173,7 +214,7 @@ public final class FileSystemStorage implements Storage {
         try {
             final FileSystem local = FileSystem.getLocal(new Configuration());
             final FSDataOutputStream outA = local.create(new Path(toLocation));
-            for (final Path path : HDFSTools.getAllFilePaths(fs, new Path(fromLocation), HiddenFileFilter.instance())) {
+            for (final Path path : FileSystemStorage.getAllFilePaths(fs, new Path(fromLocation), HiddenFileFilter.instance())) {
                 final FSDataInputStream inA = fs.open(path);
                 IOUtils.copyBytes(inA, outA, 8192);
                 inA.close();
@@ -182,5 +223,32 @@ public final class FileSystemStorage implements Storage {
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
+    }
+
+    ////////////
+
+    private static boolean globDelete(final FileSystem fs, final String path, final boolean recursive) throws IOException {
+        boolean deleted = false;
+        for (final Path p : FileUtil.stat2Paths(fs.globStatus(new Path(path)))) {
+            fs.delete(p, recursive);
+            deleted = true;
+        }
+        return deleted;
+    }
+
+    private static List<Path> getAllFilePaths(final FileSystem fs, Path path, final PathFilter filter) throws IOException {
+        if (null == path) path = fs.getHomeDirectory();
+        if (path.toString().equals(FORWARD_SLASH)) path = new Path("");
+
+        final List<Path> paths = new ArrayList<Path>();
+        if (fs.isFile(path))
+            paths.add(path);
+        else {
+            for (final FileStatus status : fs.globStatus(new Path(path + FORWARD_ASTERISK), filter)) {
+                final Path next = status.getPath();
+                paths.addAll(getAllFilePaths(fs, next, filter));
+            }
+        }
+        return paths;
     }
 }

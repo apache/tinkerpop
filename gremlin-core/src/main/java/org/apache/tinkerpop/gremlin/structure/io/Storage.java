@@ -19,6 +19,9 @@
 
 package org.apache.tinkerpop.gremlin.structure.io;
 
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -41,42 +44,21 @@ public interface Storage {
 
     public boolean rmr(final String location);
 
-    public <V> Iterator<V> head(final String location, final int totalLines, final Class<V> objectClass);
+    public Iterator<String> head(final String location, final int totalLines);
 
-    public default Iterator<Object> head(final String location) {
-        return this.head(location, Object.class);
+    public default Iterator<String> head(final String location) {
+        return this.head(location, Integer.MAX_VALUE);
     }
 
-    public default Iterator<Object> head(final String location, final int totalLines) {
-        return this.head(location, totalLines, Object.class);
+    public Iterator<Vertex> headGraph(final String location, final int totalLines, final Class parserClass);
+
+    public default Iterator<Vertex> headGraph(final String location, final Class parserClass) {
+        return this.headGraph(location, Integer.MAX_VALUE, parserClass);
     }
 
-    public default <V> Iterator<V> head(final String location, final Class<V> objectClass) {
-        return this.head(location, Integer.MAX_VALUE, objectClass);
+    public <K, V> Iterator<KeyValue<K, V>> headMemory(final String location, final String memoryKey, final int totalLines, final Class parserClass);
+
+    public default <K, V> Iterator<KeyValue<K, V>> headMemory(final String location, final String memoryKey, final Class parserClass) {
+        return this.headMemory(location, memoryKey, Integer.MAX_VALUE, parserClass);
     }
-
-  /*
-
-        FileSystem.metaClass.copyToLocal = { final String from, final String to ->
-            return ((FileSystem) delegate).copyToLocalFile(new Path(from), new Path(to));
-        }
-
-        FileSystem.metaClass.copyFromLocal = { final String from, final String to ->
-            return ((FileSystem) delegate).copyFromLocalFile(new Path(from), new Path(to));
-        }
-
-        FileSystem.metaClass.mergeToLocal = { final String from, final String to ->
-            final FileSystem fs = (FileSystem) delegate;
-            final FileSystem local = FileSystem.getLocal(new Configuration());
-            final FSDataOutputStream outA = local.create(new Path(to));
-
-            HDFSTools.getAllFilePaths(fs, new Path(from), HiddenFileFilter.instance()).each {
-                final FSDataInputStream inA = fs.open(it);
-                IOUtils.copyBytes(inA, outA, 8192);
-                inA.close();
-            }
-            outA.close();
-        }
-
-     */
 }

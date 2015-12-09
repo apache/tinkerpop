@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.hdfs;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.hadoop.conf.Configuration;
@@ -60,7 +60,7 @@ public final class TextIterator implements Iterator<String> {
                         this.available = true;
                         return true;
                     } else
-                        this.readers.remove();
+                        this.readers.remove().close();
                 }
             }
         } catch (final IOException e) {
@@ -81,7 +81,7 @@ public final class TextIterator implements Iterator<String> {
                     if ((this.line = this.readers.peek().readLine()) != null) {
                         return this.line;
                     } else
-                        this.readers.remove();
+                        this.readers.remove().close();
                 }
             }
         } catch (final IOException e) {
