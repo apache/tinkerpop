@@ -2072,7 +2072,8 @@ barriers:
 some way (e.g. ordered) prior to the collection being "drained" one-by-one to the next step. Examples
 include: <<order-step,`order()`>>, <<sample-step,`sample()`>>, <<aggregate-step,`aggregate()`>>, <<barrier-step,`barrier()`>>.
 . `ReducingBarrierStep`: All of the traversers prior to the step are processed by a reduce function and once all the
-previous traversers are processed, a single "reduced value" traverser is emitted to the next step. Examples include:
+previous traversers are processed, a single "reduced value" traverser is emitted to the next step. Note that the path
+history leading up to a reducing barrier step is destroyed given its many-to-one nature. Examples include:
 <<fold-step,`fold()`>>, <<count-step,`count()`>>, <<sum-step,`sum()`>>, <<max-step,`max()`>>, <<min-step,`min()`>>.
 . `SupplyingBarrierStep`: All of the traversers prior to the step are iterated (no processing) and then some provided
 supplier yields a single traverser to continue to the next step. Examples include: <<cap-step,`cap()`>>.
