@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.process.computer.bulkloading;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
 import org.apache.tinkerpop.gremlin.process.IgnoreEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
@@ -52,7 +53,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
 
-    final static String TINKERGRAPH_LOCATION = "target/test-output/tinkertest.kryo";
+    final static String TINKERGRAPH_LOCATION = TestHelper.makeTestDataDirectory(BulkLoaderVertexProgramTest.class) + "tinkertest.kryo";
 
     private BulkLoader getBulkLoader(final BulkLoaderVertexProgram blvp) throws Exception {
         final Field field = BulkLoaderVertexProgram.class.getDeclaredField("bulkLoader");

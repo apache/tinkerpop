@@ -362,16 +362,17 @@ public class TinkerGraphTest {
         v.remove();
         v.value("name");
     }
+
     @Test(expected = IllegalStateException.class)
     public void shouldRequireGraphFormatIfLocationIsSet() {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, "/tmp");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataDirectory(TinkerGraphTest.class));
         TinkerGraph.open(conf);
     }
 
     @Test
     public void shouldPersistToGraphML() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGraphML.xml";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGraphML.xml";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -389,7 +390,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGraphSON() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGraphSON.json";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGraphSON.json";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -407,7 +408,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGryo() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGryo.kryo";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGryo.kryo";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -425,7 +426,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToAnyGraphFormat() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToAnyGraphFormat.dat";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToAnyGraphFormat.dat";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 

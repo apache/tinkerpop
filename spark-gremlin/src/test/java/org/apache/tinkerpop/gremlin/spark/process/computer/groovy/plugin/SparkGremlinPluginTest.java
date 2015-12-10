@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.spark.process.computer.groovy.plugin;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.groovy.util.TestableConsolePluginAcceptor;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
@@ -65,7 +66,8 @@ public class SparkGremlinPluginTest extends AbstractSparkTest {
 
     @Test
     public void shouldSupportBasicRDDOperations() throws Exception {
-        String rddName = "target/test-output/graph-1";
+        final String root = TestHelper.makeTestDataDirectory(SparkGremlinPluginTest.class, "shouldSupportBasicRDDOperations");
+        final String rddName1 = TestHelper.makeTestDataDirectory(SparkGremlinPluginTest.class, "shouldSupportBasicRDDOperations", "graph-1");
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
         configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
@@ -74,7 +76,7 @@ public class SparkGremlinPluginTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
-        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName1);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         Graph graph = GraphFactory.open(configuration);
 
@@ -85,38 +87,36 @@ public class SparkGremlinPluginTest extends AbstractSparkTest {
         this.console.addBinding("graph", graph);
         this.console.eval("graph.compute(SparkGraphComputer).program(PageRankVertexProgram.build().iterations(1).create()).submit().get()");
         assertEquals(1, ((List<String>) this.console.eval("spark.ls()")).size());
-        assertEquals(rddName + " [Memory Deserialized 1x Replicated]", ((List<String>) this.console.eval("spark.ls()")).get(0));
+        assertEquals(rddName1 + " [Memory Deserialized 1x Replicated]", ((List<String>) this.console.eval("spark.ls()")).get(0));
 
-        rddName = "target/test-output/graph-2";
-        this.console.eval("graph.configuration().setProperty('" + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + "','" + rddName + "')");
+        final String rddName2 = TestHelper.makeTestDataDirectory(SparkGremlinPluginTest.class, "shouldSupportBasicRDDOperations", "graph-2");
+        this.console.eval("graph.configuration().setProperty('" + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + "','" + rddName2 + "')");
         this.console.eval("graph.compute(SparkGraphComputer).program(PageRankVertexProgram.build().iterations(1).create()).submit().get()");
         assertEquals(2, ((List<String>) this.console.eval("spark.ls()")).size());
-        assertTrue(((List<String>) this.console.eval("spark.ls()")).contains(rddName + " [Memory Deserialized 1x Replicated]"));
+        assertTrue(((List<String>) this.console.eval("spark.ls()")).contains(rddName2 + " [Memory Deserialized 1x Replicated]"));
 
-        this.console.eval("spark.rm('target/test-output/graph-2')");
+        this.console.eval("spark.rm('" + rddName2 + "')");
         assertEquals(1, ((List<String>) this.console.eval("spark.ls()")).size());
-        assertTrue(((List<String>) this.console.eval("spark.ls()")).contains("target/test-output/graph-1 [Memory Deserialized 1x Replicated]"));
+        assertTrue(((List<String>) this.console.eval("spark.ls()")).contains(rddName1 + " [Memory Deserialized 1x Replicated]"));
 
-        assertEquals(6, ((List<Object>) this.console.eval("spark.head('target/test-output/graph-1')")).size());
+        assertEquals(6, ((List<Object>) this.console.eval("spark.head('" + rddName1 + "')")).size());
 
-        this.console.eval("spark.rm('target/test-output/graph-*')");
+        this.console.eval("spark.rm('"+ root + "graph-*')");
         assertEquals(0, ((List<String>) this.console.eval("spark.ls()")).size());
 
         //////
-        rddName = "target/test-output/graph-1";
-        this.console.eval("graph.configuration().setProperty('" + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + "','" + rddName + "')");
+        this.console.eval("graph.configuration().setProperty('" + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + "','" + rddName1 + "')");
         this.console.eval("graph.compute(SparkGraphComputer).program(PageRankVertexProgram.build().iterations(1).create()).submit().get()");
 
-        rddName = "target/test-output/graph-2";
-        this.console.eval("graph.configuration().setProperty('" + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + "','" + rddName + "')");
+        this.console.eval("graph.configuration().setProperty('" + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + "','" + rddName2 + "')");
         this.console.eval("graph.compute(SparkGraphComputer).program(PageRankVertexProgram.build().iterations(1).create()).submit().get()");
 
-        rddName = "target/test-output/x";
-        this.console.eval("graph.configuration().setProperty('" + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + "','" + rddName + "')");
+        final String rddName3 = TestHelper.makeTestDataDirectory(SparkGremlinPluginTest.class, "shouldSupportBasicRDDOperations", "x");
+        this.console.eval("graph.configuration().setProperty('" + Constants.GREMLIN_HADOOP_OUTPUT_LOCATION + "','" + rddName3 + "')");
         this.console.eval("graph.compute(SparkGraphComputer).program(PageRankVertexProgram.build().iterations(1).create()).submit().get()");
 
         assertEquals(3, ((List<String>) this.console.eval("spark.ls()")).size());
-        this.console.eval("spark.rm('target/test-output/graph-*')");
+        this.console.eval("spark.rm('"+ root + "graph-*')");
         assertEquals(1, ((List<String>) this.console.eval("spark.ls()")).size());
         this.console.eval("spark.rm('*')");
         assertEquals(0, ((List<String>) this.console.eval("spark.ls()")).size());
