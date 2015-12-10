@@ -306,8 +306,8 @@ public class IoTest {
                 throw new RuntimeException(ioe);
             }
 
-            assertEquals(source.traversal().V().count(), target.traversal().V().count());
-            assertEquals(source.traversal().E().count(), target.traversal().E().count());
+            assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
+            assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.vertices()));
         }
     }
 
