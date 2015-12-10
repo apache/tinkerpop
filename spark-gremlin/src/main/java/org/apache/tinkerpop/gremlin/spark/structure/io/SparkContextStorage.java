@@ -75,7 +75,7 @@ public final class SparkContextStorage implements Storage {
     @Override
     public List<String> ls(final String location) {
         final List<String> rdds = new ArrayList<>();
-        final String wildCardLocation = location.replace(".", "\\.").replace("*", ".*");
+        final String wildCardLocation = (location.endsWith("*") ? location : location + "*").replace(".", "\\.").replace("*", ".*");
         for (final RDD<?> rdd : Spark.getRDDs()) {
             if (rdd.name().matches(wildCardLocation))
                 rdds.add(rdd.name() + " [" + rdd.getStorageLevel().description() + "]");

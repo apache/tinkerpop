@@ -154,7 +154,7 @@ public final class FileSystemStorage implements Storage {
     @Override
     public Iterator<String> head(final String location, final int totalLines) {
         try {
-            return IteratorUtils.limit((Iterator) new TextIterator(fs.getConf(), new Path(location)), totalLines);
+            return IteratorUtils.limit((Iterator) new TextIterator(this.fs.getConf(), new Path(location)), totalLines);
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -228,6 +228,8 @@ public final class FileSystemStorage implements Storage {
     ////////////
 
     private static boolean globDelete(final FileSystem fs, final String path, final boolean recursive) throws IOException {
+        if (!fs.exists(new Path(path)))
+            return false;
         boolean deleted = false;
         for (final Path p : FileUtil.stat2Paths(fs.globStatus(new Path(path)))) {
             fs.delete(p, recursive);

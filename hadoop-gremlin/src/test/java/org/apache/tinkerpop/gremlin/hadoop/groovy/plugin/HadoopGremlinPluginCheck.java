@@ -135,30 +135,8 @@ public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
         this.remote.connect(Arrays.asList("graph", "g"));
         Traversal<Vertex, String> traversal = (Traversal<Vertex, String>) this.remote.submit(Arrays.asList("g.V().hasLabel('person').group('m').by('age').by('name').out('knows').out('created').values('name')"));
         AbstractGremlinProcessTest.checkResults(Arrays.asList("ripple", "lop"), traversal);
-        assertTrue((Boolean) this.console.eval("hdfs.exists('target/test-output/m')"));
-        assertTrue((Boolean) this.console.eval("hdfs.exists('target/test-output/" + TraverserMapReduce.TRAVERSERS + "')"));
-        final List<KeyValue<Integer, Collection<String>>> mList = IteratorUtils.asList(this.console.eval("hdfs.head('target/test-output','m',SequenceFileInputFormat)"));
-        assertEquals(4, mList.size());
-        mList.forEach(keyValue -> {
-            if (keyValue.getKey().equals(29))
-                assertTrue(keyValue.getValue().contains("marko"));
-            else if (keyValue.getKey().equals(35))
-                assertTrue(keyValue.getValue().contains("peter"));
-            else if (keyValue.getKey().equals(32))
-                assertTrue(keyValue.getValue().contains("josh"));
-            else if (keyValue.getKey().equals(27))
-                assertTrue(keyValue.getValue().contains("vadas"));
-            else
-                throw new IllegalStateException("The provided key/value is unknown: " + keyValue);
-        });
-        final List<KeyValue<MapReduce.NullObject, Traverser<String>>> traversersList = IteratorUtils.asList(this.console.eval("hdfs.head('target/test-output/'," + "'" + TraverserMapReduce.TRAVERSERS + "',SequenceFileInputFormat)"));
-        assertEquals(2, traversersList.size());
-        traversersList.forEach(keyValue -> {
-            assertEquals(MapReduce.NullObject.instance(), keyValue.getKey());
-            final String name = keyValue.getValue().get();
-            assertTrue(name.equals("ripple") || name.equals("lop"));
-        });
-        ////////////////
+        assertFalse((Boolean) this.console.eval("hdfs.exists('target/test-output/m')"));
+        assertFalse((Boolean) this.console.eval("hdfs.exists('target/test-output/" + TraverserMapReduce.TRAVERSERS + "')"));
     }
 
     @Test
