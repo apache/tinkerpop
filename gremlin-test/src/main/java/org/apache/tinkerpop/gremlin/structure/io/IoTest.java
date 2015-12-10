@@ -263,17 +263,15 @@ public class IoTest {
             v1.addEdge("CONTROL", v2);
             v1.addEdge("SELF-LOOP", v1);
 
-            final GraphMLWriter w = GraphMLWriter.build().create();
-            final File f = TestHelper.generateTempFile(this.getClass(), "test", ".txt");
-            try (final OutputStream out = new FileOutputStream(f)) {
-                w.writeGraph(out, graph);
-            }
-
             final Configuration targetConf = graphProvider.newGraphConfiguration("target", this.getClass(), name.getMethodName(), null);
             final Graph target = GraphFactory.open(targetConf);
-            final GraphMLReader r = GraphMLReader.build().create();
-            try (final InputStream in = new FileInputStream(f)) {
-                r.readGraph(in, target);
+            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                source.io(IoCore.graphml()).writer().create().writeGraph(os, source);
+                try (ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray())) {
+                    target.io(IoCore.graphml()).reader().create().readGraph(is, target);
+                }
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
             }
 
             assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
