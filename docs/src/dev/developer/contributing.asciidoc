@@ -236,8 +236,30 @@ call out this fact.
 The JIRA issues that track removal of deprecated methods should be periodically evaluated to determine if it is
 prudent to schedule them into a release.
 
+Developing Tests
+~~~~~~~~~~~~~~~~
+
+TinkerPop has a wide variety of test types that help validate its internal code as well as external provider code.
+There are "unit tests" and "integration tests". Unit tests execute on standard runs of `mvn clean install`.  These
+tests tend to run quickly and provide a reasonable level of coverage and confidence in the code base.  Integration
+tests are disabled by default and must be explicitly turned on with a special build property by adding
+`-DskipIntegrationTests=false` to the `mvn` execution.  Integration tests run slower and may require external
+components to be running when they are executed. They are "marked" as separate from unit tests by inclusion of the
+suffix "IntegrateTest".
+
+Here are some other points to consider when developing tests:
+
+* Avoid use of `println` in tests and prefer use of a SLF4j `Logger` instance so that outputs can be controlled in a
+standard way.
+* If it is necessary to create files on the filesystem, do not hardcode directories - instead, use the `TestHelper` to
+create directory structures.  `TestHelper` will properly create file system structure in the appropriate build
+directory thus allowing proper clean-up between test runs.
+* If writing tests in one of the test suites, like `gremlin-test`, it is important to remember that if a new `Graph`
+instance is constructed within the test manually, that it be closed on exit of that test.  Failing to do this cleanup
+can cause problems for some graph providers.
+
 Gremlin Language Test Cases
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When writing a test case for a Gremlin step, be sure to use the following conventions.
 
