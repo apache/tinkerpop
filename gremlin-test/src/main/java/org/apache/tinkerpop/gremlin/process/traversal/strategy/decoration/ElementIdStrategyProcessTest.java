@@ -28,6 +28,8 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,6 +41,7 @@ import static org.junit.Assert.assertNotNull;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
+    private static final Logger logger = LoggerFactory.getLogger(ElementIdStrategyProcessTest.class);
 
     @Test
     @FeatureRequirementSet(FeatureRequirementSet.Package.VERTICES_ONLY)
@@ -50,11 +53,11 @@ public class ElementIdStrategyProcessTest extends AbstractGremlinProcessTest {
 
         final Traversal t1 = graph.traversal().V(v);
         t1.asAdmin().applyStrategies();
-        System.out.println(t1);
+        logger.info(t1.toString());
 
         final Traversal t2 = sg.V(v);
         t2.asAdmin().applyStrategies();
-        System.out.println(t2);
+        logger.info(t2.toString());
 
         assertNotNull(UUID.fromString(sg.V(v).id().next().toString()));
     }

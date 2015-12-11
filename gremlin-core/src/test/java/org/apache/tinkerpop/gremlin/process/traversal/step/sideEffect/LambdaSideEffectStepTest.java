@@ -21,6 +21,8 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,12 +31,13 @@ import java.util.List;
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class LambdaSideEffectStepTest extends StepTest {
+    private static final Logger logger = LoggerFactory.getLogger(LambdaSideEffectStepTest.class);
 
     @Override
     protected List<Traversal> getTraversals() {
         return Arrays.asList(
-                __.sideEffect(t -> System.out.println(t.get())),
-                __.sideEffect(t -> System.err.println(t.get()))
+                __.sideEffect(t -> logger.info(t.get().toString())),
+                __.sideEffect(t -> logger.error(t.get().toString()))
         );
     }
 }

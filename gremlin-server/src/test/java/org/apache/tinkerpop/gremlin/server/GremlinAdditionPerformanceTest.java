@@ -33,6 +33,8 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Random;
 
@@ -47,6 +49,7 @@ import static org.junit.Assert.assertEquals;
 @BenchmarkMethodChart(filePrefix = "gremlin-addition")
 @BenchmarkHistoryChart(labelWith = LabelType.CUSTOM_KEY, maxRuns = 20, filePrefix = "hx-gremlin-addition")
 public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerformanceTest {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinAdditionPerformanceTest.class);
 
     public final static int DEFAULT_BENCHMARK_ROUNDS = 50;
     public final static int DEFAULT_WARMUP_ROUNDS = 5;
@@ -77,7 +80,7 @@ public class GremlinAdditionPerformanceTest extends AbstractGremlinServerPerform
     public void webSocketsGremlinConcurrentAlternateSerialization() throws Exception {
         final Serializers[] mimes = new Serializers[]{Serializers.GRAPHSON, Serializers.GRAPHSON_V1D0, Serializers.GRYO_V1D0};
         final Serializers mimeType = mimes[rand.nextInt(3)];
-        System.out.println(mimeType);
+        logger.info(mimeType.toString());
         final Cluster cluster = Cluster.build("localhost")
                 .serializer(mimeType)
                 .create();

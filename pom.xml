@@ -929,9 +929,6 @@ limitations under the License.
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>2.17</version>
                         <configuration>
-                            <systemPropertyVariables>
-                                <muteTestLogs>true</muteTestLogs>
-                            </systemPropertyVariables>
                             <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory}
                             </argLine>
                             <excludes>
