@@ -270,7 +270,9 @@ public interface GraphProvider {
 
     /**
      * Helper method for those build {@link GraphProvider} implementations that need a standard working directory
-     * for tests (e.g. graphs that persist data to disk).
+     * for tests (e.g. graphs that persist data to disk). Typically, there is no need to override the default
+     * behavior of this method and if it is overridden, it is usually best to continue to use the {@link TestHelper}
+     * to produce the working directory as it will create the path in the appropriate build directories.
      */
     public default String getWorkingDirectory() {
         return TestHelper.makeTestDataPath(this.getClass(), "graph-provider-data").getAbsolutePath();
