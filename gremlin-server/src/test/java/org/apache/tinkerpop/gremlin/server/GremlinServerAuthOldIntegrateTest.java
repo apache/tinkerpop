@@ -40,7 +40,7 @@ import static org.junit.Assert.fail;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  * @deprecated As of release 3.1.1-incubating, replaced by {@link GremlinServerAuthIntegrateTest}
- * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-981">TINKERPOP3-981</a>
+ * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-981">TINKERPOP-981</a>
  */
 @Deprecated
 public class GremlinServerAuthOldIntegrateTest extends AbstractGremlinServerIntegrationTest {

@@ -51,7 +51,7 @@ public class SimpleAuthenticator implements Authenticator {
 
     /**
      * @deprecated As of release 3.1.1-incubating, if using TinkerGraph, simply rely on it's "persistence" features.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-981">TINKERPOP3-981</a>
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-981">TINKERPOP-981</a>
      */
     @Deprecated
     public static final String CONFIG_CREDENTIALS_LOCATION = "credentialsDbLocation";
@@ -107,7 +107,7 @@ public class SimpleAuthenticator implements Authenticator {
 
     /**
      * @deprecated As of release 3.1.1-incubating, replaced by {@link #newSaslNegotiator(InetAddress)}.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-995">TINKERPOP3-995</a>
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-995">TINKERPOP-995</a>
      */
     @Override
     @Deprecated

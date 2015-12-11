@@ -65,7 +65,7 @@ This deprecation is not a breaking change, however users should be encouraged to
 the `gremlin.tinkergraph.graphLocation` as soon as possible, as the deprecated setting will be removed in a future
 release.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-981[TINKERPOP3-981],
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-981[TINKERPOP-981],
 link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#_security[Reference Documentation - Gremlin Server Security]
 
 TinkerGraph Supports Any IO
@@ -75,7 +75,7 @@ TinkerGraph's 'gremlin.tinkergraph.graphLocation' configuration setting can now 
 of a `Io.Builder` implementation, which means that custom IO implementations can be used to read and write
 TinkerGraph instances.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-886[TINKERPOP3-886]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-886[TINKERPOP-886]
 
 Authenticator Method Deprecation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -89,7 +89,7 @@ Implementation of this method is now preferred over the old method with the same
 method has been deprecated.  This is a non-breaking change as the new method has a default implementation that simply
 calls the old deprecated method.  In this way, existing `Authenticator` implementations will still work.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-995[TINKERPOP3-995]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-995[TINKERPOP-995]
 
 Spark Persistence Updates
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -133,9 +133,9 @@ interfaces.
 While the changes should not have been breaking, providers should be aware that improved consistencies in the tests
 may present opportunities for test failures.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-984[TINKERPOP3-984],
-link:https://issues.apache.org/jira/browse/TINKERPOP3-990[TINKERPOP3-990],
-link:https://issues.apache.org/jira/browse/TINKERPOP3-1000[TINKERPOP3-1000]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-984[TINKERPOP-984],
+link:https://issues.apache.org/jira/browse/TINKERPOP-990[TINKERPOP-990],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1000[TINKERPOP-1000]
 
 Graph Database Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -154,7 +154,7 @@ features already exposed as `VertexPropertyFeatures.supportsAddProperty()` and
 These changes related to "Feature Consistency" open up a number of previously non-executing tests for graphs that did
 not support meta-properties, so providers should be wary of potential test failure on previously non-executing tests.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-985[TINKERPOP3-985]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-985[TINKERPOP-985]
 
 TinkerPop 3.1.0
 ---------------
@@ -183,7 +183,7 @@ Jackson package naming.  They will have to shifted as follows:
 * `com.esotericsoftware.minlog` becomes `org.apache.tinkerpop.shaded.minlog`
 * `com.fasterxml.jackson` becomes `org.apache.tinkerpop.shaded.jackson`
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-835[TINKERPOP3-835]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-835[TINKERPOP-835]
 
 PartitionStrategy and VertexProperty
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -191,7 +191,7 @@ PartitionStrategy and VertexProperty
 `PartitionStrategy` now supports partitioning within `VertexProperty`.  The `Graph` needs to be able to support
 meta-properties for this feature to work.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-333[TINKERPOP3-333]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-333[TINKERPOP-333]
 
 Gremlin Server and Epoll
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -200,7 +200,7 @@ Gremlin Server provides a configuration option to turn on support for Netty
 link:http://netty.io/wiki/native-transports.html[native transport] on Linux, which has been shown to help improve
 performance.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-901[TINKERPOP3-901]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-901[TINKERPOP-901]
 
 Rebindings Deprecated
 ^^^^^^^^^^^^^^^^^^^^^
@@ -208,7 +208,7 @@ Rebindings Deprecated
 The notion of "rebindings" has been deprecated in favor of the term "aliases".  Alias is a better and more intuitive
 term than rebindings which should make it easier for newcomers to understand what they are for.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-913[TINKERPOP3-913],
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-913[TINKERPOP-913],
 link:http://tinkerpop.apache.org/docs/3.1.0-incubating/#_aliases[Reference Documentation - Aliases]
 
 Configurable Driver Channelizer
@@ -217,7 +217,7 @@ Configurable Driver Channelizer
 The Gremlin Driver now allows the `Channerlizer` to be supplied as a configuration, which means that custom
 implementations may be supplied.
 
-See: https://issues.apache.org/jira/browse/TINKERPOP3-680[TINKERPOP3-680]
+See: https://issues.apache.org/jira/browse/TINKERPOP-680[TINKERPOP-680]
 
 GraphSON and Strict Option
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -226,7 +226,7 @@ The `GraphMLReader` now has a `strict` option on the `Builder` so that if a data
 way, GraphMLReader will simply skip that problem value. In that way, it is a bit more forgiving than before especially
 with empty data.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-756[TINKERPOP3-756]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-756[TINKERPOP-756]
 
 Transaction.close() Default Behavior
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -235,7 +235,7 @@ The default behavior of `Transaction.close()` is to rollback the transaction.  T
 where the default behavior was commit.  Using rollback as the default should be thought of as a like a safer approach
 to closing where a user must now explicitly call `commit()` to persist their mutations.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP3-805[TINKERPOP3-805] for more information.
+See link:https://issues.apache.org/jira/browse/TINKERPOP-805[TINKERPOP-805] for more information.
 
 ThreadLocal Transaction Settings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -245,7 +245,7 @@ behavior than the default is desired). For gremlin-server users that may be chan
 If the settings are changed for a sessionless request they will now only apply to that one request. If the settings are
 changed for an in-session request they will now only apply to all future requests made in the scope of that session.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP3-885[TINKERPOP3-885]
+See link:https://issues.apache.org/jira/browse/TINKERPOP-885[TINKERPOP-885]
 
 Hadoop-Gremlin
 ^^^^^^^^^^^^^^
@@ -255,7 +255,7 @@ Hadoop-Gremlin
 * The directory where application jars are stored in HDFS is now `hadoop-gremlin-x.y.z-libs`.
 ** This versioning is important so that cross-version TinkerPop use does not cause jar conflicts.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP3-616
+See link:https://issues.apache.org/jira/browse/TINKERPOP-616
 
 Spark-Gremlin
 ^^^^^^^^^^^^^
@@ -263,8 +263,8 @@ Spark-Gremlin
 * Providers that wish to reuse a graphRDD can leverage the new `PersistedInputRDD` and `PersistedOutputRDD`.
 ** This allows the graphRDD to avoid serialization into HDFS for reuse. Be sure to enabled persisted `SparkContext` (see documentation).
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP3-868,
-link:https://issues.apache.org/jira/browse/TINKERPOP3-925
+See link:https://issues.apache.org/jira/browse/TINKERPOP-868,
+link:https://issues.apache.org/jira/browse/TINKERPOP-925
 
 TinkerGraph Serialization
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -272,7 +272,7 @@ TinkerGraph Serialization
 TinkerGraph is serializable over Gryo, which means that it can shipped over the wire from Gremlin Server.  This
 feature can be useful when working with remote subgraphs.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-728[TINKERPOP3-728]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-728[TINKERPOP-728]
 
 Deprecation in TinkerGraph
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -280,7 +280,7 @@ Deprecation in TinkerGraph
 The `public static String` configurations have been renamed. The old `public static` variables have been deprecated.
 If the deprecated variables were being used, then convert to the replacements as soon as possible.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-926[TINKERPOP3-926]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-926[TINKERPOP-926]
 
 Deprecation in Gremlin-Groovy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -289,8 +289,8 @@ The closure wrappers classes `GFunction`, `GSupplier`, `GConsumer` have been dep
 specified using `as Function` and thus, these wrappers are not needed. Also, the `GremlinExecutor.promoteBindings()`
 method which was previously deprecated has been removed.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-879[TINKERPOP3-879],
-link:https://issues.apache.org/jira/browse/TINKERPOP3-897[TINKERPOP3-897]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-879[TINKERPOP-879],
+link:https://issues.apache.org/jira/browse/TINKERPOP-897[TINKERPOP-897]
 
 Gephi Traversal Visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -344,7 +344,7 @@ would allow "g" on the server to be referred to as "x".
 [source,text]
 :> x.E().label().groupCount()
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-914[TINKERPOP3-914]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-914[TINKERPOP-914]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -365,7 +365,7 @@ GraphStep Alterations
 * `GraphStep` is no longer in `sideEffect`-package, but now in `map`-package as traversals support mid-traversal `V()`.
 * Traversals now support mid-traversal `V()`-steps. Graph system providers should ensure that a mid-traversal `V()` can leverage any suitable index.
 
-See link:https://issues.apache.org/jira/browse/TINKERPOP3-762
+See link:https://issues.apache.org/jira/browse/TINKERPOP-762
 
 Decomposition of AbstractTransaction
 ++++++++++++++++++++++++++++++++++++
@@ -382,8 +382,8 @@ are supplied in `AbstractThreadLocalTransaction` and `AbstractThreadedTransactio
 * `doReadWrite` that should execute the read-write consumer.
 * `doClose` that should execute the close consumer.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-765[TINKERPOP3-765],
-link:https://issues.apache.org/jira/browse/TINKERPOP3-885[TINKERPOP3-885]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-765[TINKERPOP-765],
+link:https://issues.apache.org/jira/browse/TINKERPOP-885[TINKERPOP-885]
 
 Transaction.close() Default Behavior
 ++++++++++++++++++++++++++++++++++++
@@ -396,7 +396,7 @@ previously asserted the opposite (i.e. commit on close).  These tests have been 
 
 If these tests were referenced in an `OptOut`, then their names should be updated.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-805[TINKERPOP3-805]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-805[TINKERPOP-805]
 
 Graph Traversal Updates
 +++++++++++++++++++++++
@@ -414,7 +414,7 @@ Element Removal
 `Element.Exceptions.elementAlreadyRemoved` has been deprecated and test enforcement for consistency have been removed.
  Providers are free to deal with deleted elements as they see fit.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-297[TINKERPOP3-297]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-297[TINKERPOP-297]
 
 VendorOptimizationStrategy Rename
 +++++++++++++++++++++++++++++++++
@@ -422,7 +422,7 @@ VendorOptimizationStrategy Rename
 The `VendorOptimizationStrategy` has been renamed to `ProviderOptimizationStrategy`.  This renaming is consistent
 with revised terminology for what were formerly referred to as "vendors".
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-876[TINKERPOP3-876]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-876[TINKERPOP-876]
 
 GraphComputer Updates
 +++++++++++++++++++++
@@ -443,7 +443,7 @@ supported it is recommended that the upgrade to "aliases" be made as soon as pos
 the future.  Gremlin Server will not accept both parameters at the same time - a request must contain either one
 parameter or the other if either is supplied.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-913[TINKERPOP3-913]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-913[TINKERPOP-913]
 
 ThreadLocal Transaction Settings
 ++++++++++++++++++++++++++++++++
@@ -453,4 +453,4 @@ longer apply to all future requests. If the settings are changed for a sessionle
 that one request. If the settings are changed from an in-session request they will only apply to all future requests
 made in the scope of that session.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-885[TINKERPOP3-885]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-885[TINKERPOP-885]

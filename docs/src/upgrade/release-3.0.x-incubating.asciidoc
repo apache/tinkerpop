@@ -39,7 +39,7 @@ BulkLoaderVertexProgram (BLVP)
 version 3.0.1-incubating). It can now also read from any TP3 enabled graph, like `TinkerGraph`
 or `Neo4jGraph`.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-814[TINKERPOP3-319],
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-814[TINKERPOP-319],
 link:http://tinkerpop.apache.org/docs/3.0.2-incubating/#bulkloadervertexprogram[Reference Documentation - BLVP]
 
 TinkerGraph
@@ -48,7 +48,7 @@ TinkerGraph
 TinkerGraph can now be configured to support persistence, where TinkerGraph will try to load a graph from a specified
 location and calls to `close()` will save the graph data to that location.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-828[TINKERPOP3-828],
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-828[TINKERPOP-828],
 link:http://tinkerpop.apache.org/docs/3.0.2-incubating/#_configuration[Reference Documentation - TinkerGraph]
 
 Gremlin Driver and Server
@@ -61,12 +61,12 @@ On the Gremlin Server side, Websocket sub-protocol introduces a new "close" oper
 Prior to this change, sessions were closed in a more passive fashion (i.e. session timeout).  There were also so
 bug fixes around the protocol as it pertained to third-party drivers (e.g. python) using JSON for authentication.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-814[TINKERPOP3-814],
-link:https://issues.apache.org/jira/browse/TINKERPOP3-816[TINKERPOP3-816],
-link:https://issues.apache.org/jira/browse/TINKERPOP3-817[TINKERPOP3-817],
-link:https://issues.apache.org/jira/browse/TINKERPOP3-855[TINKERPOP3-855],
-link:https://issues.apache.org/jira/browse/TINKERPOP3-870[TINKERPOP3-870],
-link:https://issues.apache.org/jira/browse/TINKERPOP3-877[TINKERPOP3-877]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-814[TINKERPOP-814],
+link:https://issues.apache.org/jira/browse/TINKERPOP-816[TINKERPOP-816],
+link:https://issues.apache.org/jira/browse/TINKERPOP-817[TINKERPOP-817],
+link:https://issues.apache.org/jira/browse/TINKERPOP-855[TINKERPOP-855],
+link:https://issues.apache.org/jira/browse/TINKERPOP-870[TINKERPOP-870],
+link:https://issues.apache.org/jira/browse/TINKERPOP-877[TINKERPOP-877]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,7 +82,7 @@ session-based requests).  Prior to this change, there was no way to explicitly c
 closed by the server after timeout of activity.  This new "op" gives drivers the ability to close the session
 explicitly and as needed.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-849[TINKERPOP3-849],
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-849[TINKERPOP-849],
 link:http://tinkerpop.apache.org/docs/3.0.2-incubating/#_opprocessors_arguments[Reference Documentation - OpProcessor]
 
 TinkerPop 3.0.1
@@ -109,7 +109,7 @@ That `Map` will be used to set global bindings for the server. See this
 link:https://github.com/apache/incubator-tinkerpop/blob/3.0.1-incubating/gremlin-server/scripts/generate-modern.groovy[sample script] 
 for an example.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-576[TINKERPOP3-576] 
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-576[TINKERPOP-576]
 
 Neo4j
 ^^^^^
@@ -117,7 +117,7 @@ Neo4j
 Problems related to using `:install` to get the Neo4j plugin operating in Gremlin Console on Windows have been 
 resolved.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-804[TINKERPOP3-804]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-804[TINKERPOP-804]
 
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -139,7 +139,7 @@ public interface MyGraph extends Graph{
 
 `MyGraphFactory` must contain the static `open` method that is normally expected by `GraphFactory`.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-778[TINKERPOP3-778]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-778[TINKERPOP-778]
 
 GraphProvider.Descriptor Annotation
 +++++++++++++++++++++++++++++++++++
@@ -157,14 +157,14 @@ public final class HadoopGiraphGraphProvider extends HadoopGraphProvider {
 }
 ----
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-690[TINKERPOP3-690] for more information.
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-690[TINKERPOP-690] for more information.
 
 Semantics of Transaction.close()
 ++++++++++++++++++++++++++++++++
 
 There were some adjustments to the test suite with respect to how `Transaction.close()` was being validated.  For most providers, this will generally mean checking `OptOut` annotations for test renaming problems.  The error that occurs when running the test suite should make it apparent that a test name is incorrect in an `OptOut` if there are issues there.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP3-764[TINKERPOP3-764] for more information.
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-764[TINKERPOP-764] for more information.
 
 Graph Driver Providers
 ^^^^^^^^^^^^^^^^^^^^^^
