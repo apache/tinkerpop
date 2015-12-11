@@ -269,6 +269,14 @@ public interface GraphProvider {
     public Set<Class> getImplementations();
 
     /**
+     * Helper method for those build {@link GraphProvider} implementations that need a standard working directory
+     * for tests (e.g. graphs that persist data to disk).
+     */
+    public default String getWorkingDirectory() {
+        return TestHelper.makeTestDataPath(this.getClass(), "graph-provider-data").getAbsolutePath();
+    }
+
+    /**
      * An annotation to be applied to a {@code GraphProvider} implementation that provides additional information
      * about its intentions. The {@code Descriptor} is required by those {@code GraphProvider} implementations
      * that will be assigned to test suites that use {@link TraversalEngine.Type#COMPUTER}.

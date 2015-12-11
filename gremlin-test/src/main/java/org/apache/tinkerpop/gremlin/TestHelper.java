@@ -71,6 +71,11 @@ public final class TestHelper {
         return f;
     }
 
+    public static String convertToRelative(final Class clazz, final File f) {
+        final File root = TestHelper.getRootOfBuildDirectory(clazz).getParentFile().getAbsoluteFile();
+        return root.toURI().relativize(f.getAbsoluteFile().toURI()).toString();
+    }
+
     /**
      * Internally calls {@link #makeTestDataPath(Class, String...)} but returns the path as a string with the system
      * separator appended to the end.
