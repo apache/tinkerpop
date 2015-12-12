@@ -93,7 +93,7 @@ public final class GryoReader implements GraphReader {
                 graphToWriteTo.tx().commit();
             return v;
         }, null, null));
-        cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.OUT).forEachRemaining(e -> {
+        cache.entrySet().forEach(kv -> kv.getKey().edges(Direction.IN).forEachRemaining(e -> {
             // can't use a standard Attachable attach method here because we have to use the cache for those
             // graphs that don't support userSuppliedIds on edges. note that outVertex/inVertex methods return
             // StarAdjacentVertex whose equality should match StarVertex.
