@@ -275,7 +275,7 @@ public class IoTest {
             }
 
             assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
-            assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.vertices()));
+            assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.edges()));
         }
     }
 
@@ -305,7 +305,7 @@ public class IoTest {
             }
 
             assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
-            assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.vertices()));
+            assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.edges()));
         }
     }
 
@@ -450,8 +450,11 @@ public class IoTest {
                 throw new RuntimeException(ioe);
             }
 
+            System.out.println("\n\n\n\nSource: \n" + source.vertices() + "\n" + source.edges());
+            System.out.println("\n\n\n\nTarget: \n" + target.vertices() + "\n" + target.edges());
+
             assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
-            assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.vertices()));
+            assertEquals(IteratorUtils.count(source.edges()), IteratorUtils.count(target.edges()));
         }
     }
 
