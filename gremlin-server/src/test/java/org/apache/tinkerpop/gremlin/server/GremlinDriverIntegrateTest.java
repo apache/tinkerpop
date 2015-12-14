@@ -174,6 +174,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(inner.getMessage(), startsWith("Encountered unregistered class ID:"));
         }
 
+        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+        // from time to time, especially in the console if you're just exploring.
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+
         cluster.close();
     }
 
@@ -456,6 +460,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertTrue(inner instanceof ResponseException);
             assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
         }
+
+        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+        // from time to time, especially in the console if you're just exploring.
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
 
         cluster.close();
     }
