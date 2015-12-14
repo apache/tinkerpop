@@ -46,7 +46,7 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
+public class NativeNeo4jCypherCheck extends AbstractNeo4jGremlinTest {
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)

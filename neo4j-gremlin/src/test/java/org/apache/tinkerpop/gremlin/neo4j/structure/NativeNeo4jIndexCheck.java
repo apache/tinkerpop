@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class NativeNeo4jIndexTest extends AbstractNeo4jGremlinTest {
+public class NativeNeo4jIndexCheck extends AbstractNeo4jGremlinTest {
 
     @Test
     public void shouldHaveFasterRuntimeWithLabelKeyValueIndex() throws Exception {
