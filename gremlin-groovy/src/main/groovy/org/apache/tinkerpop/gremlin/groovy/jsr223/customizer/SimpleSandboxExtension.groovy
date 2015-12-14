@@ -18,23 +18,35 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer
 
+import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine
+import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
-
-import java.util.function.BiPredicate
+import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport
 
 /**
  * Blacklists the {@code System} class to ensure that one can't call {@code System.exit()}.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class SimpleSandboxExtension extends SandboxExtension {
-    SimpleSandboxExtension() {
-        gIsAlwaysGraphTraversalSource = false
-        graphIsAlwaysGraphInstance = false
+class SimpleSandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDSL {
+    @Override
+    Object run() {
+        unresolvedVariable { var ->
+            // use the types of the bound variables.
+            final Map<String,ClassNode> varTypes = (Map<String,ClassNode>) GremlinGroovyScriptEngine.COMPILE_OPTIONS.get()
+                    .get(GremlinGroovyScriptEngine.COMPILE_OPTIONS_VAR_TYPES)
+            if (varTypes.containsKey(var.name))  {
+                storeType(var, varTypes.get(var.name))
+                handled = true
+                return
+            }
+        }
 
-        methodFilter = (BiPredicate<String, MethodNode>) { descriptor, method ->
-            // declaring class is null when it refers to a script eval (it seems)
-            return null == method.declaringClass || method.declaringClass.name != 'java.lang.System'
+        onMethodSelection { expr, MethodNode methodNode ->
+            def descriptor = toMethodDescriptor(methodNode)
+            if (null == descriptor.declaringClass || descriptor.declaringClass.name != 'java.lang.System')
+                addStaticTypeError("Not authorized to call this method: $descriptor", expr)
         }
     }
+
 }

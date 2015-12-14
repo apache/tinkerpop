@@ -941,6 +941,10 @@ this documentation.  Consult the latest link:http://docs.groovy-lang.org/latest/
 for information on the differences. It is important to understand the impact that these configuration will have on
 submitted scripts before enabling this feature.
 
+NOTE: The import of classes to the script engine is handled by the `ImportCustomizerProvider`.  As the concept of
+"imports" is a first-class citizen (i.e. has its own configuration options), it is not recommended that the
+`ImportCustomizerProvider` be used as a configuration option to `compilerCustomizerProviders`.
+
 This configuration uses the `SimpleSandboxExtension`, which blacklists calls to methods on the `System` class,
 thereby preventing someone from remotely killing the server:
 
@@ -956,18 +960,70 @@ Script8.groovy: 1: [Static type checking] - Not authorized to call this method: 
 ----
 
 The `SimpleSandboxExtension` is by no means a "complete" implementation protecting against all manner of nefarious
-scripts, but it does provide an example for how such a capability might be implemented.  A full implementation would
-likely represent domain specific white-listing of methods (and possibly variables) available for execution in the
-script engine.
+scripts, but it does provide an example for how such a capability might be implemented.  A more complete implementation
+is offered in the `FileSandboxExtension` which uses a configuration file to white list certain classes and methods.
+The configuration file is YAML-based and an example is presented as follows:
+
+[source,yaml]
+----
+autoTypeUnknown: true
+methodWhiteList:
+  - java\.lang\.Boolean
+  - java\.lang\.Byte
+  - java\.lang\.Character
+  - java\.lang\.Double
+  - java\.lang\.Enum
+  - java\.lang\.Float
+  - java\.lang\.Integer
+  - java\.lang\.Long
+  - java\.lang\.Math
+  - java\.lang\.Number
+  - java\.lang\.Object
+  - java\.lang\.Short
+  - java\.lang\.String
+  - java\.lang\.StringBuffer
+  - java\.lang\.Throwable
+  - java\.lang\.Void
+  - java\.util\..*
+  - org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods
+  - org\.codehaus\.groovy\.runtime\.StringGroovyMethods
+  - org\.apache\.tinkerpop\.gremlin\.structure\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.bulkloading\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.clustering\.peerpressure\.*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.ranking\.pagerank\.*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.traversal\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.dsl\.graph\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.engine\..*
+staticVariableTypes:
+  graph: org.apache.tinkerpop.gremlin.structure.Graph
+  g: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
+----
+
+There are three keys in this configuration file that control different aspects of the sandbox:
+
+. `autoTypeUnknown` - When set to `true`, unresolved variables are typed as `Object`.
+. `methodWhiteList` - A white list of classes and methods that follow a regex pattern which can then be matched against
+method descriptors to determine if they can be executed.  The method descriptor is the fully-qualified class name
+of the method, its name and parameters. For example, `Math.ceil` would have a descriptor of
+`java.lang.Math#ceil(double)`.
+. `staticVariableTypes` - A list of variables that will be used in the `ScriptEngine` for which the types are
+always known.  In the above example, the variable "graph" will always be bound to a `Graph` instance.
+
+At Gremlin Server startup, the `FileSandboxExtension` looks in the root of Gremlin Server installation directory for a
+file called `sandbox.yaml` and configures itself.  To use a file in a different location set the
+`gremlinServerSandbox` system property to the location of the file (e.g. `-DgremlinServerSandbox=conf/my-sandbox.yaml`).
+
+The `FileSandboxExtension` provides for a basic configurable security function in Gremlin Server. More complex
+sandboxing implementations can be developed by using this white listing model and extending from the
+`AbstractSandboxExtension`.
 
 A final thought on the topic of `CompilerCustomizerProvider` implementations is that they are not just for
 "security" (though they are demonstrated in that capacity here).  They can be used for a variety of features that
 can fine tune the Groovy compilation process.  Read more about compilation customization in the
 link:http://docs.groovy-lang.org/latest/html/documentation/#compilation-customizers[Groovy Documentation].
-
-NOTE: The import of classes to the script engine is handled by the `ImportCustomizerProvider`.  As the concept of
-"imports" is a first-class citizen (i.e. has its own configuration options), it is not recommended that the
-`ImportCustomizerProvider` be used as a configuration option to `compilerCustomizerProviders`.
 
 Serialization
 ^^^^^^^^^^^^^

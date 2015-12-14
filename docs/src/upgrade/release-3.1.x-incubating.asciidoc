@@ -121,6 +121,19 @@ and `log4j-console.properties` which are in the respective `conf/` directories o
 
 See: https://issues.apache.org/jira/browse/TINKERPOP-859[TINKERPOP-859]
 
+Gremlin Server Sandboxing
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A number of improvements were made to the sandboxing feature of Gremlin Server (more specifically the
+`GremlinGroovyScriptEngine`).  A new base class for sandboxing was introduce with the `AbstractSandboxExtension`,
+which makes it a bit easier to build white list style sandboxes. A usable implementation of this was also supplied
+with the `FileSandboxExtension`, which takes a configuration file containing a white list of accessible methods and
+variables that can be used in scripts. Note that the original `SandboxExtension` has been deprecated in favor of
+the `AbsstractSandboxExtension` or extending directly from Groovy's `TypeCheckingDSL`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-891[TINKERPOP-891],
+link:http://tinkerpop.apache.org/docs/3.1.0-incubating/#script-execution[Reference Documentation - Script Execution]
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 

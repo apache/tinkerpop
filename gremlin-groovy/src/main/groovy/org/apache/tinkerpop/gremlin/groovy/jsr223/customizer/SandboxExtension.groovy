@@ -45,7 +45,10 @@ import java.util.function.BiPredicate
  * sandbox extension a bit easier than starting from a base groovy type checking extension.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.1.1-incubating, replaced by {@link AbstractSandboxExtension}
+ * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-891">TINKERPOP-891</a>
  */
+@Deprecated
 class SandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeCheckingDSL {
 
     /**
