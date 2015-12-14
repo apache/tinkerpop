@@ -731,6 +731,7 @@ The following table describes the various configuration options that Gremlin Ser
 |ssl.keyFile |The `PKCS#8` private key file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
 |ssl.keyPassword |The password of the `keyFile` if it's not password-protected |_none_
 |ssl.trustCertChainFile |Trusted certificates for verifying the remote endpoint's certificate. The file should contain an X.509 certificate chain in PEM format. A system default will be used if this setting is not present. |_none_
+|strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
 |writeBufferHighWaterMark | If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable, accepting no additional writes until buffer is drained and the `writeBufferLowWaterMark` is met. |65536
@@ -1155,6 +1156,13 @@ be iterated in order for the mutations to take place or else the commit will hav
 Server attempts to detect these types of traversals and treat them specially. The unfortunate downside is that the
 result of this script must be realized in memory which means that they aren't being streamed back to the client.
 For small results this likely should not present an issue.
+
+Another aspect of Transaction Management that should be considered is the usage of the `strictTransactionManagement`
+setting.  It is `false` by default, but when set to `true`, it forces the user to pass `aliases` for all requests.
+The aliases are then used to determine which graphs will have their transactions closed for that request. Running
+Gremlin Server in this configuration should be more efficient when there are multiple graphs being hosted as
+Gremlin Server will only close transactions on the graphs specified by the `aliases`. Keeping this setting `false`,
+will simply have Gremlin Server close transactions on all graphs for every request.
 
 NOTE: It is possible to bypass the transaction management system around `GraphTraversal` by using a lambda. Gremlin
 Server is only looking for `Mutating` steps, so a script like: `g.V().sideEffect{it.get().property('color','green')}`

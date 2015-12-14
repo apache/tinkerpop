@@ -20,8 +20,6 @@ package org.apache.tinkerpop.gremlin.server.op;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
-import io.netty.channel.ChannelFuture;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
@@ -29,31 +27,24 @@ import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
-import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
-import org.apache.tinkerpop.gremlin.server.handler.StateKey;
+import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.OpProcessor;
 import org.apache.tinkerpop.gremlin.server.Settings;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
-import org.apache.tinkerpop.gremlin.structure.io.Mapper;
-import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.gremlin.util.function.ThrowingConsumer;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.commons.lang.time.StopWatch;
-import org.apache.tinkerpop.shaded.kryo.Kryo;
-import org.apache.tinkerpop.shaded.kryo.io.ByteBufferOutputStream;
-import org.apache.tinkerpop.shaded.kryo.io.Input;
-import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -224,7 +215,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         if (!itty.hasNext()) {
             // as there is nothing left to iterate if we are transaction managed then we should execute a
             // commit here before we send back a NO_CONTENT which implies success
-            if (manageTransactions) context.getGraphManager().commitAll();
+            if (manageTransactions) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
             ctx.writeAndFlush(ResponseMessage.build(msg)
                     .code(ResponseStatusCode.NO_CONTENT)
                     .create());
@@ -255,7 +246,7 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             // the script has been executed. failures will bubble up before we start to iterate results which makes
             // sense as we wouldn't want to waste time sending back results when the transaction is going to end up
             // failing
-            context.getGraphManager().commitAll();
+            attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
         }
 
         // the batch size can be overridden by the request
@@ -306,6 +297,19 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         }
 
         stopWatch.stop();
+    }
+
+    private static void attemptCommit(final RequestMessage msg, final GraphManager graphManager, final boolean strict) {
+        if (strict) {
+            // assumes that validations will already have been performed in extending classes - they are performed
+            // in StandardOpProcessor when getting bindings right now
+            final boolean hasRebindings = msg.getArgs().containsKey(Tokens.ARGS_REBINDINGS);
+            final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
+            final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
+            graphManager.commit(new HashSet<>(aliases.values()));
+        } else {
+            graphManager.commitAll();
+        }
     }
 
     @FunctionalInterface
