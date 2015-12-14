@@ -25,6 +25,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.JavaSparkStatusTracker;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
@@ -51,7 +52,7 @@ public class LocalPropertyTest extends AbstractSparkTest {
     @Test
     public void shouldSetThreadLocalProperties() throws Exception {
         final String testName = "ThreadLocalProperties";
-        final String rddName = "target/test-output/" + UUID.randomUUID();
+        final String rddName = TestHelper.makeTestDataDirectory(LocalPropertyTest.class) + UUID.randomUUID().toString();
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
         configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
