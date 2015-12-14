@@ -73,7 +73,7 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegrationTest {
-    private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinServerIntegrationTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(GremlinDriverIntegrateTest.class);
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */
