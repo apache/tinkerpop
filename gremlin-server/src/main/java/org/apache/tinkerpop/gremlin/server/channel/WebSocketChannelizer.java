@@ -24,7 +24,8 @@ import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinBinaryRequestDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinCloseRequestDecoder;
-import org.apache.tinkerpop.gremlin.server.handler.WsGremlinResponseEncoder;
+import org.apache.tinkerpop.gremlin.server.handler.GremlinResponseFrameEncoder;
+import org.apache.tinkerpop.gremlin.server.handler.WsGremlinResponseFrameEncoder;
 import org.apache.tinkerpop.gremlin.server.handler.WsGremlinTextRequestDecoder;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -46,9 +47,10 @@ import org.slf4j.LoggerFactory;
 public class WebSocketChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(WebSocketChannelizer.class);
 
-    private WsGremlinResponseEncoder wsGremlinResponseEncoder;
+    private GremlinResponseFrameEncoder gremlinResponseFrameEncoder;
     private WsGremlinTextRequestDecoder wsGremlinTextRequestDecoder;
     private WsGremlinBinaryRequestDecoder wsGremlinBinaryRequestDecoder;
+    private WsGremlinResponseFrameEncoder wsGremlinResponseFrameEncoder;
     private WsGremlinCloseRequestDecoder wsGremlinCloseRequestDecoder;
     private SaslAuthenticationHandler authenticationHandler;
 
@@ -56,10 +58,11 @@ public class WebSocketChannelizer extends AbstractChannelizer {
     public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
 
-        wsGremlinResponseEncoder = new WsGremlinResponseEncoder();
+        gremlinResponseFrameEncoder = new GremlinResponseFrameEncoder();
         wsGremlinTextRequestDecoder = new WsGremlinTextRequestDecoder(serializers);
         wsGremlinBinaryRequestDecoder = new WsGremlinBinaryRequestDecoder(serializers);
         wsGremlinCloseRequestDecoder = new WsGremlinCloseRequestDecoder(serializers);
+        wsGremlinResponseFrameEncoder = new WsGremlinResponseFrameEncoder();
 
         // configure authentication - null means don't bother to add authentication to the pipeline
         if (authenticator != null)
@@ -94,7 +97,8 @@ public class WebSocketChannelizer extends AbstractChannelizer {
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-aggregator-encoder", LogLevel.DEBUG));
 
-        pipeline.addLast("response-encoder", wsGremlinResponseEncoder);
+        pipeline.addLast("ws-frame-encoder", wsGremlinResponseFrameEncoder);
+        pipeline.addLast("response-frame-encoder", gremlinResponseFrameEncoder);
         pipeline.addLast("request-text-decoder", wsGremlinTextRequestDecoder);
         pipeline.addLast("request-binary-decoder", wsGremlinBinaryRequestDecoder);
         pipeline.addLast("request-close-decoder", wsGremlinCloseRequestDecoder);

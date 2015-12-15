@@ -21,12 +21,15 @@ package org.apache.tinkerpop.gremlin.server.channel;
 import io.netty.channel.EventLoopGroup;
 import org.apache.tinkerpop.gremlin.server.AbstractChannelizer;
 import org.apache.tinkerpop.gremlin.server.auth.AllowAllAuthenticator;
+import org.apache.tinkerpop.gremlin.server.handler.GremlinResponseFrameEncoder;
 import org.apache.tinkerpop.gremlin.server.handler.NioGremlinBinaryRequestDecoder;
 import org.apache.tinkerpop.gremlin.server.handler.NioGremlinResponseEncoder;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import org.apache.tinkerpop.gremlin.server.handler.NioGremlinResponseFrameEncoder;
 import org.apache.tinkerpop.gremlin.server.handler.SaslAuthenticationHandler;
+import org.apache.tinkerpop.gremlin.server.handler.WsGremlinResponseFrameEncoder;
 import org.apache.tinkerpop.gremlin.server.util.ServerGremlinExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +44,8 @@ public class NioChannelizer extends AbstractChannelizer {
     private static final Logger logger = LoggerFactory.getLogger(NioChannelizer.class);
 
     private SaslAuthenticationHandler authenticationHandler;
+    private GremlinResponseFrameEncoder gremlinResponseFrameEncoder;
+    private NioGremlinResponseFrameEncoder nioGremlinResponseFrameEncoder;
 
     @Override
     public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
@@ -50,6 +55,9 @@ public class NioChannelizer extends AbstractChannelizer {
         if (authenticator != null)
             authenticationHandler = authenticator.getClass() == AllowAllAuthenticator.class ?
                     null : new SaslAuthenticationHandler(authenticator);
+
+        gremlinResponseFrameEncoder = new GremlinResponseFrameEncoder();
+        nioGremlinResponseFrameEncoder = new NioGremlinResponseFrameEncoder();
     }
 
     @Override
@@ -57,7 +65,8 @@ public class NioChannelizer extends AbstractChannelizer {
         if (logger.isDebugEnabled())
             pipeline.addLast(new LoggingHandler("log-io", LogLevel.DEBUG));
 
-        pipeline.addLast("response-encoder", new NioGremlinResponseEncoder());
+        pipeline.addLast("nio-frame-encoder", nioGremlinResponseFrameEncoder);
+        pipeline.addLast("response-frame-encoder", gremlinResponseFrameEncoder);
         pipeline.addLast("request-binary-decoder", new NioGremlinBinaryRequestDecoder(serializers));
 
         if (logger.isDebugEnabled())

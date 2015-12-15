@@ -26,12 +26,9 @@ import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
 import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
-import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +37,15 @@ import java.util.List;
 import static com.codahale.metrics.MetricRegistry.name;
 
 /**
+ * Ensures that any {@link ResponseMessage} manages to get converted to a {@link Frame}. By converting to {@link Frame}
+ * downstream protocols can treat the generic {@link Frame} any way it wants (e.g. write it back as a byte array,
+ * websocket frame, etc).
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ChannelHandler.Sharable
-public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMessage> {
-    private static final Logger logger = LoggerFactory.getLogger(WsGremlinResponseEncoder.class);
+public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<ResponseMessage> {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinResponseFrameEncoder.class);
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     @Override
@@ -58,29 +59,29 @@ public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMe
                 errorMeter.mark();
 
             if (useBinary) {
-                final ByteBuf serialized;
+                final Frame serialized;
 
                 // if the request came in on a session then the serialization must occur in that same thread.
                 if (null == session)
-                    serialized = serializer.serializeResponseAsBinary(o, ctx.alloc());
+                    serialized = new Frame(serializer.serializeResponseAsBinary(o, ctx.alloc()));
                 else
-                    serialized = session.getExecutor().submit(() -> serializer.serializeResponseAsBinary(o, ctx.alloc())).get();
+                    serialized = new Frame(session.getExecutor().submit(() -> serializer.serializeResponseAsBinary(o, ctx.alloc())).get());
 
-                objects.add(new BinaryWebSocketFrame(serialized));
+                objects.add(serialized);
             } else {
                 // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
                 // instance on the channel.
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
 
-                final String serialized;
+                final Frame serialized;
 
                 // if the request came in on a session then the serialization must occur in that same thread.
                 if (null == session)
-                    serialized = textSerializer.serializeResponseAsString(o);
+                    serialized = new Frame(textSerializer.serializeResponseAsString(o));
                 else
-                    serialized = session.getExecutor().submit(() -> textSerializer.serializeResponseAsString(o)).get();
+                    serialized = new Frame(session.getExecutor().submit(() -> textSerializer.serializeResponseAsString(o)).get());
 
-                objects.add(new TextWebSocketFrame(true, 0, serialized));
+                objects.add(serialized);
             }
         } catch (Exception ex) {
             errorMeter.mark();
@@ -91,10 +92,10 @@ public class WsGremlinResponseEncoder extends MessageToMessageEncoder<ResponseMe
                     .statusMessage(errorMessage)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
-                objects.add(new BinaryWebSocketFrame(serializer.serializeResponseAsBinary(error, ctx.alloc())));
+                objects.add(serializer.serializeResponseAsBinary(error, ctx.alloc()));
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                objects.add(new TextWebSocketFrame(textSerializer.serializeResponseAsString(error)));
+                objects.add(textSerializer.serializeResponseAsString(error));
             }
         }
     }
