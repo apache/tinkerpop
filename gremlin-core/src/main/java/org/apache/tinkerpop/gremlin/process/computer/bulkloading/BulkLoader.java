@@ -117,7 +117,7 @@ public interface BulkLoader {
      * @return The vertex with the given ID.
      */
     public default Vertex getVertexById(final Object id, final Graph graph, final GraphTraversalSource g) {
-        return graph.vertices(id).next();
+        return g.V().hasId(id).next();
     }
 
     /**

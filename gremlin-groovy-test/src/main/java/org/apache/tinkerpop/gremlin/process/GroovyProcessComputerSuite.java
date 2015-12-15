@@ -104,7 +104,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
      * as needed to enforce tests upon implementations.
      */
     private static final Class<?>[] allTests = new Class<?>[]{
-
+/*
             //branch
             GroovyBranchTest.Traversals.class,
             GroovyChooseTest.Traversals.class,
@@ -170,7 +170,7 @@ public class GroovyProcessComputerSuite extends ProcessComputerSuite {
 
             // algorithms
             PageRankVertexProgramTest.class,
-            PeerPressureVertexProgramTest.class,
+            PeerPressureVertexProgramTest.class,*/
             BulkLoaderVertexProgramTest.class,
     };
 
