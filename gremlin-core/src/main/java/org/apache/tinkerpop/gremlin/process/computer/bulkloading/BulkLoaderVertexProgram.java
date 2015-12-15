@@ -89,7 +89,6 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         final Configuration config = configuration.subset(BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX);
         if (config.containsKey("class")) {
             final String className = config.getString("class");
-            config.clearProperty("class");
             try {
                 final Class<?> bulkLoaderClass = Class.forName(className);
                 loader = (BulkLoader) bulkLoaderClass.getConstructor().newInstance();
