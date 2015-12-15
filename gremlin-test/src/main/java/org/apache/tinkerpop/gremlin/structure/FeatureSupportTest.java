@@ -33,6 +33,8 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.UUID;
@@ -55,6 +57,7 @@ import static org.junit.Assume.assumeThat;
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 public class FeatureSupportTest {
     private static final String INVALID_FEATURE_SPECIFICATION = "Features for %s specify that %s is false, but the feature appears to be implemented.  Reconsider this setting or throw the standard Exception.";
+    private static final Logger logger = LoggerFactory.getLogger(FeatureSupportTest.class);
 
     public static class FeatureToStringTest extends AbstractGremlinTest {
         /**
@@ -83,8 +86,8 @@ public class FeatureSupportTest {
          */
         @Test
         public void shouldPrintTheFeatureList() {
-            System.out.println(String.format("Printing Features of %s for reference: ", g.getClass().getSimpleName()));
-            System.out.println(graph.features());
+            logger.info(String.format("Printing Features of %s for reference: ", g.getClass().getSimpleName()));
+            logger.info(graph.features().toString());
             assertTrue(true);
         }
 

@@ -22,6 +22,8 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
@@ -33,6 +35,7 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinGroovyScriptEngineIntegrateTest extends AbstractGremlinTest {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinGroovyScriptEngineIntegrateTest.class);
 
     @Test
     @LoadGraphWith(MODERN)
@@ -47,7 +50,7 @@ public class GremlinGroovyScriptEngineIntegrateTest extends AbstractGremlinTest 
         };
 
         long parameterizedStartTime = System.currentTimeMillis();
-        System.out.println("Try to blow the heap with parameterized Gremlin.");
+        logger.info("Try to blow the heap with parameterized Gremlin.");
         try {
             for (int ix = 0; ix < 50001; ix++) {
                 final Bindings bindings = engine.createBindings();
@@ -56,7 +59,7 @@ public class GremlinGroovyScriptEngineIntegrateTest extends AbstractGremlinTest 
                 engine.eval(gremlins[ix % 4], bindings);
 
                 if (ix > 0 && ix % 5000 == 0) {
-                    System.out.println(String.format("%s scripts processed in %s (ms) - rate %s (ms/q).", ix, System.currentTimeMillis() - parameterizedStartTime, Double.valueOf(System.currentTimeMillis() - parameterizedStartTime) / Double.valueOf(ix)));
+                    logger.info(String.format("%s scripts processed in %s (ms) - rate %s (ms/q).", ix, System.currentTimeMillis() - parameterizedStartTime, Double.valueOf(System.currentTimeMillis() - parameterizedStartTime) / Double.valueOf(ix)));
                 }
             }
         } catch (OutOfMemoryError oome) {
@@ -68,13 +71,13 @@ public class GremlinGroovyScriptEngineIntegrateTest extends AbstractGremlinTest 
     public void shouldNotBlowTheHeapUnparameterized() throws ScriptException {
         final GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine();
         long notParameterizedStartTime = System.currentTimeMillis();
-        System.out.println("Try to blow the heap with non-parameterized Gremlin.");
+        logger.info("Try to blow the heap with non-parameterized Gremlin.");
         try {
             for (int ix = 0; ix < 15001; ix++) {
                 final Bindings bindings = engine.createBindings();
                 engine.eval(String.format("1+%s", ix), bindings);
                 if (ix > 0 && ix % 5000 == 0) {
-                    System.out.println(String.format("%s scripts processed in %s (ms) - rate %s (ms/q).", ix, System.currentTimeMillis() - notParameterizedStartTime, Double.valueOf(System.currentTimeMillis() - notParameterizedStartTime) / Double.valueOf(ix)));
+                    logger.info(String.format("%s scripts processed in %s (ms) - rate %s (ms/q).", ix, System.currentTimeMillis() - notParameterizedStartTime, Double.valueOf(System.currentTimeMillis() - notParameterizedStartTime) / Double.valueOf(ix)));
                 }
             }
         } catch (OutOfMemoryError oome) {

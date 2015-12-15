@@ -38,6 +38,8 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URL;
@@ -54,6 +56,7 @@ import static org.junit.Assert.assertTrue;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class RecordReaderWriterTest {
+    private static final Logger logger = LoggerFactory.getLogger(RecordReaderWriterTest.class);
 
     protected abstract String getInputFilename();
 
@@ -65,7 +68,7 @@ public abstract class RecordReaderWriterTest {
     public void shouldSplitFileAndWriteProperSplits() throws Exception {
         for (int numberOfSplits = 1; numberOfSplits < 10; numberOfSplits++) {
             final File testFile = new File(HadoopGraphProvider.PATHS.get(getInputFilename()));
-            System.out.println("Testing: " + testFile + " (splits " + numberOfSplits + ")");
+            logger.info("Testing: {}", testFile + " (splits {}", numberOfSplits + ")");
             final List<FileSplit> splits = generateFileSplits(testFile, numberOfSplits);
             final Class<? extends InputFormat<NullWritable, VertexWritable>> inputFormatClass = getInputFormat();
             final Class<? extends OutputFormat<NullWritable, VertexWritable>> outputFormatClass = getOutputFormat();
@@ -109,7 +112,7 @@ public abstract class RecordReaderWriterTest {
 
         boolean foundKeyValue = false;
         for (final FileSplit split : fileSplits) {
-            System.out.println("\treading file split " + split.getPath().getName() + " (" + split.getStart() + "..." + (split.getStart() + split.getLength()) + " bytes)");
+            logger.info("\treading file split {}", split.getPath().getName() + " ({}", split.getStart() + "..." + (split.getStart() + split.getLength()), "{} {} bytes)");
             final RecordReader reader = inputFormat.createRecordReader(split, job);
 
             float lastProgress = -1f;

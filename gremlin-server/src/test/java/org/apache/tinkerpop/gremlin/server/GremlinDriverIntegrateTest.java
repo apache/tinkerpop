@@ -38,6 +38,8 @@ import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -71,7 +73,7 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegrationTest {
-
+    private static final Logger logger = LoggerFactory.getLogger(GremlinDriverIntegrateTest.class);
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */
@@ -196,12 +198,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertFalse(futureFive.isDone());
         assertEquals("zero", futureZero.get().get(0).getString());
 
-        System.out.println("Eval of 'zero' complete: " + TimeUtil.millisSince(start));
+        logger.info("Eval of 'zero' complete: " + TimeUtil.millisSince(start));
 
         assertFalse(futureFive.isDone());
         assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
 
-        System.out.println("Eval of 'five' complete: " + TimeUtil.millisSince(start));
+        logger.info("Eval of 'five' complete: " + TimeUtil.millisSince(start));
     }
 
     @Test
