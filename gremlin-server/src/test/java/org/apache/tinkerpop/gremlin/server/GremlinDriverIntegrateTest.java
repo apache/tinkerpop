@@ -58,6 +58,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -174,6 +175,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable inner = ExceptionUtils.getRootCause(ex);
             assertTrue(inner instanceof RuntimeException);
             assertThat(inner.getMessage(), startsWith("Encountered unregistered class ID:"));
+        }
+
+        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+        // from time to time, especially in the console if you're just exploring.
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldFailWithScriptExecutionException() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("1/0");
+
+        try {
+            results.all().join();
+            fail("Should have thrown exception over bad serialization");
+        } catch (Exception ex) {
+            final Throwable inner = ExceptionUtils.getRootCause(ex);
+            assertTrue(inner instanceof ResponseException);
+            assertThat(inner.getMessage(), endsWith("Division by zero"));
         }
 
         // should not die completely just because we had a bad serialization error.  that kind of stuff happens
