@@ -100,7 +100,7 @@ public final class GraphManager {
     public void rollbackAll() {
         graphs.entrySet().forEach(e -> {
             final Graph graph = e.getValue();
-            if (graph.features().graph().supportsTransactions())
+            if (graph.features().graph().supportsTransactions() && graph.tx().isOpen())
                 graph.tx().rollback();
         });
     }
@@ -118,7 +118,7 @@ public final class GraphManager {
     public void commitAll() {
         graphs.entrySet().forEach(e -> {
             final Graph graph = e.getValue();
-            if (graph.features().graph().supportsTransactions())
+            if (graph.features().graph().supportsTransactions() && graph.tx().isOpen())
                 graph.tx().commit();
         });
     }
@@ -148,7 +148,7 @@ public final class GraphManager {
         });
 
         graphsToCloseTxOn.forEach(graph -> {
-            if (graph.features().graph().supportsTransactions()) {
+            if (graph.features().graph().supportsTransactions() && graph.tx().isOpen()) {
                 if (tx == Transaction.Status.COMMIT)
                     graph.tx().commit();
                 else
