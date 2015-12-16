@@ -25,6 +25,8 @@ import io.netty.handler.codec.MessageToByteEncoder;
 import io.netty.util.CharsetUtil;
 
 /**
+ * Encodes {@code ByteBuf} and {@code String} values to bytes to be written over NIO.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 @ChannelHandler.Sharable
