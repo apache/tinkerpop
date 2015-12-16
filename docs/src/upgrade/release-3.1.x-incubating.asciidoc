@@ -35,18 +35,7 @@ Upgrading for Users
 Gremlin Server Transaction Management
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There were some changes to how Gremlin Server manages transactions on sessionless requests to make the process more
-consistent across different graph databases. Commits now occur after evaluation and prior to result iteration, which
-ensures an earlier failure (i.e. prior to results getting to the client indicating a false success) and better
-handling of a result that is a `GraphTraversal` that mutates the `Graph`.
-
-This change likely does not require any changes to the code of users, but does introduce some items to be aware of
-when issuing scripts. Most specifically, using lambdas in a request that returns a `GraphTraversal`, designed to modify
-the `Graph`, will fail to do so unless it is self-iterated.  In other words, instead of sending:
-`g.V().sideEffect{it.get().property('color','green')}` one would send:
-`g.V().sideEffect{it.get().property('color','green')}.toList()`
-
-In addition, Gremlin Server now has a new setting called `strictTransactionManagement`, which forces the user to pass
+Gremlin Server now has a setting called `strictTransactionManagement`, which forces the user to pass
 `aliases` for all requests. The aliases are then used to determine which graphs will have their transactions closed
 for that request. The alternative is to continue with default operations where the transactions of all configured
 graphs will be closed. It is likely that `strictTransactionManagement` (which is `false` by default so as to be
@@ -54,7 +43,6 @@ backward compatible with previous versions) will become the future standard mode
 it provides a more efficient method for transaction management.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-930[TINKERPOP-930],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1035[TINKERPOP-1035],
 link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#considering-transactions[Reference Documentation - Considering Transactions]
 
 Deprecated credentialsDbLocation
