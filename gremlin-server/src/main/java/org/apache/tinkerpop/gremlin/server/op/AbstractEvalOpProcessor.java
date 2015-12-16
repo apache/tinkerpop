@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
 import org.apache.tinkerpop.gremlin.server.handler.Frame;
+import org.apache.tinkerpop.gremlin.server.handler.GremlinResponseFrameEncoder;
 import org.apache.tinkerpop.gremlin.server.handler.StateKey;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
@@ -67,6 +68,15 @@ import static com.codahale.metrics.MetricRegistry.name;
 public abstract class AbstractEvalOpProcessor implements OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(AbstractEvalOpProcessor.class);
     public static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
+
+    /**
+     * Captures the "error" count as a reportable metric for Gremlin Server.
+     *
+     * @deprecated As of release 3.1.1-incubating, not replaced. Direct usage is discouraged with sub-classes as
+     * error counts are captured more globally for error messages written down the pipeline to
+     * {@link GremlinResponseFrameEncoder}.
+     */
+    @Deprecated
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     /**
@@ -320,7 +330,6 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                         .result(aggregate).create())));
             }
         } catch (Exception ex) {
-            errorMeter.mark();
             logger.warn("The result [{}] in the request {} could not be serialized and returned.", aggregate, msg.getRequestId(), ex);
             final String errorMessage = String.format("Error during serialization: %s",
                     ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());

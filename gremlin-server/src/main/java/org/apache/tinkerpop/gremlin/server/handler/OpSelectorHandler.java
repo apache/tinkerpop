@@ -50,6 +50,15 @@ import static com.codahale.metrics.MetricRegistry.name;
 @ChannelHandler.Sharable
 public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
     private static final Logger logger = LoggerFactory.getLogger(OpSelectorHandler.class);
+
+    /**
+     * Captures the "error" count as a reportable metric for Gremlin Server.
+     *
+     * @deprecated As of release 3.1.1-incubating, not replaced. Direct usage is discouraged with sub-classes as
+     * error counts are captured more globally for error messages written down the pipeline to
+     * {@link GremlinResponseFrameEncoder}.
+     */
+    @Deprecated
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     private final Settings settings;
@@ -84,7 +93,6 @@ public class OpSelectorHandler extends MessageToMessageDecoder<RequestMessage> {
                 throw new OpProcessorException(errorMessage, ResponseMessage.build(msg).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(errorMessage).create());
             }
         } catch (OpProcessorException ope) {
-            errorMeter.mark();
             logger.warn(ope.getMessage(), ope);
             ctx.writeAndFlush(ope.getResponseMessage());
         }
