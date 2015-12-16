@@ -105,7 +105,7 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
             if (hasRebindings && hasAliases) {
                 final String error = "Prefer use of the 'aliases' parameter over 'rebindings' and do not use both";
                 throw new OpProcessorException(error, ResponseMessage.build(msg)
-                        .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(error).create());
+                        .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(error).create());
             }
 
             final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
@@ -139,7 +139,7 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
                         final String error = String.format("Could not alias [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
                                 aliasKv.getKey(), aliasKv.getValue(), aliasKv.getValue());
                         throw new OpProcessorException(error, ResponseMessage.build(msg)
-                                .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(error).create());
+                                .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(error).create());
                     }
                 }
             } else {
@@ -147,7 +147,7 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
                 if (context.getSettings().strictTransactionManagement) {
                     final String error = "Gremlin Server is configured with strictTransactionManagement as 'true' - the 'aliases' arguments must be provided";
                     throw new OpProcessorException(error, ResponseMessage.build(msg)
-                            .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(error).create());
+                            .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(error).create());
                 }
             }
 

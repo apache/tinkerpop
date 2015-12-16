@@ -573,6 +573,24 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
+    public void shouldReturnNiceMessageFromOpSelector() {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            final Map m = new HashMap<>();
+            m.put(null, "a null key will force a throw of OpProcessorException in message validation");
+            client.submit("1+1", m).all().get();
+            fail("Should throw an exception.");
+        } catch (Exception re) {
+            final Throwable root = ExceptionUtils.getRootCause(re);
+            assertEquals("The [eval] message is using one or more invalid binding keys - they must be of type String and cannot be null", root.getMessage());
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
     public void shouldExecuteScriptInSession() throws Exception {
         final Cluster cluster = Cluster.build().create();
         final Client client = cluster.connect(name.getMethodName());
