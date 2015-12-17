@@ -19,20 +19,21 @@
 package org.apache.tinkerpop.gremlin.process.computer.bulkloading;
 
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
-import java.util.Iterator;
-
 /**
+ * {@link org.apache.tinkerpop.gremlin.process.computer.bulkloading.OneTimeBulkLoader} is a
+ * {@link org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoader} implementation that should be used
+ * for initial bulk loads. In contrast to {@link org.apache.tinkerpop.gremlin.process.computer.bulkloading.IncrementalBulkLoader}
+ * it doesn't store temporary identifiers in the write graph nor does it attempt to find existing elements, instead it
+ * only clones each element from the source graph.
+ *
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class OneTimeBulkLoader implements BulkLoader {
@@ -40,7 +41,7 @@ public class OneTimeBulkLoader implements BulkLoader {
     private boolean userSuppliedIds = false;
 
     /**
-     * {@inheritDoc}
+     * Creates a clone of the given vertex in the given graph.
      */
     @Override
     public Vertex getOrCreateVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
@@ -49,7 +50,7 @@ public class OneTimeBulkLoader implements BulkLoader {
     }
 
     /**
-     * {@inheritDoc}
+     * Creates a clone of the given edge between the given in- and out-vertices.
      */
     @Override
     public Edge getOrCreateEdge(final Edge edge, final Vertex outVertex, final Vertex inVertex, final Graph graph, final GraphTraversalSource g) {
@@ -57,7 +58,7 @@ public class OneTimeBulkLoader implements BulkLoader {
     }
 
     /**
-     * {@inheritDoc}
+     * Creates a clone of the given property for the given vertex.
      */
     @Override
     public VertexProperty getOrCreateVertexProperty(final VertexProperty<?> property, final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
@@ -81,7 +82,7 @@ public class OneTimeBulkLoader implements BulkLoader {
     }
 
     /**
-     * {@inheritDoc}
+     * Always returns false.
      */
     @Override
     public boolean keepOriginalIds() {
@@ -89,7 +90,7 @@ public class OneTimeBulkLoader implements BulkLoader {
     }
 
     /**
-     * {@inheritDoc}
+     * Always returns null.
      */
     @Override
     public String getVertexIdProperty() {
