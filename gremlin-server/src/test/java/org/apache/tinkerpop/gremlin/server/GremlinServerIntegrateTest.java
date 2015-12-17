@@ -338,6 +338,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(ExceptionUtils.getRootCause(re).getMessage().startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
+
+            // validate that we can still send messages to the server
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -353,6 +356,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getMessage().endsWith("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
+
+            // validate that we can still send messages to the server
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -402,6 +408,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getCause().getMessage().startsWith("Error during serialization: Direct self-reference leading to cycle (through reference chain:"));
+
+            // validate that we can still send messages to the server
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -417,6 +426,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getCause().getMessage().startsWith("Error during serialization: Class is not registered: java.awt.Color"));
+
+            // validate that we can still send messages to the server
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -490,6 +502,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Exception cause = (Exception) ex.getCause().getCause();
             assertTrue(cause instanceof ResponseException);
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
+
+            // validate that we can still send messages to the server
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -542,32 +557,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             Thread.sleep(1000);
 
             assertEquals(1, messages.get());
-        }
-    }
-
-    // todo: get this test to pass - count connection and block incoming requests.
-    @Test
-    @org.junit.Ignore
-    public void shouldBlockWhenMaxConnectionsExceeded() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        try {
-            final CompletableFuture<ResultSet> result = client.submitAsync("Thread.sleep(500);'test'");
-            try {
-                // this request should get blocked by the server
-                client.submitAsync("'test-blocked'").join().one();
-                fail("Request should fail because max connections are exceeded");
-            } catch (Exception ex) {
-                assertTrue(true);
-                ex.printStackTrace();
-            }
-
-            assertEquals("test", result.get().one().getString());
-        } catch (Exception re) {
-            fail("Should not have an exception here");
-        } finally {
-            cluster.close();
         }
     }
     
@@ -686,5 +675,4 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertTrue(pass.get());
         }
     }
-    
 }
