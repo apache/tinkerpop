@@ -338,7 +338,7 @@ writeGraphConf.setProperty("gremlin.tinkergraph.graphFormat", "gryo")
 writeGraphConf.setProperty("gremlin.tinkergraph.graphLocation", "/tmp/tinkergraph.kryo")
 modern = TinkerFactory.createModern()
 blvp = BulkLoaderVertexProgram.build().
-           keepOriginalIds(false).
+           bulkLoader(OneTimeBulkLoader).
            writeGraph(writeGraphConf).create(modern)
 modern.compute().workers(1).program(blvp).submit().get()
 graph = GraphFactory.open(writeGraphConf)
