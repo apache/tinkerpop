@@ -366,7 +366,7 @@ It's recommended to tune this property for the target graph and not use the defa
 
 NOTE: `BulkLoaderVertexProgram` uses the `IncrementalBulkLoader` by default. The other option is the `OneTimeBulkLoader`,
 which doesn't store any temporary IDs in the `writeGraph` and thus should only be used for initial bulk loads. Both
-implementations should cover the mahority of use-cases, but have a limitation though: They don't support multi-valued
+implementations should cover the majority of use-cases, but have a limitation though: They don't support multi-valued
 properties. `OneTimeBulkLoader` and `IncrementalBulkLoader` will handle every property as a single-valued property. A
 custom `BulkLoader` implementation has to be used if the default behavior is not sufficient.
 
