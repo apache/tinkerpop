@@ -46,15 +46,13 @@ public class IncrementalBulkLoader implements BulkLoader {
     @Override
     public Vertex getOrCreateVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
         final Iterator<Vertex> iterator = useUserSuppliedIds()
-                ? graph.vertices(vertex.id())
-                : g.V().has(vertex.label(), getVertexIdProperty(), vertex.id());
+                ? g.V().hasId(vertex.id())
+                : g.V().has(vertex.label(), getVertexIdProperty(), vertex.id().toString());
         return iterator.hasNext()
                 ? iterator.next()
                 : useUserSuppliedIds()
                 ? g.addV(vertex.label()).property(T.id, vertex.id()).next()
-                : g.addV(vertex.label()).property(getVertexIdProperty(), vertex.id()).next();
-        //? graph.addVertex(T.id, vertex.id(), T.label, vertex.label())
-        //: graph.addVertex(T.label, vertex.label(), getVertexIdProperty(), vertex.id());
+                : g.addV(vertex.label()).property(getVertexIdProperty(), vertex.id().toString()).next();
     }
 
     /**

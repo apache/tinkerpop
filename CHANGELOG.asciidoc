@@ -27,6 +27,7 @@ TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Fixed a bug in `Graph.OptOut` when trying to opt-out of certain test cases with the `method` property set to "*".
+* Added another `BulkLoader` implementation (`OneTimeBulkLoader`) that doesn't store temporary properties in the target graph.
 * Fixed a `SparkGraphComputer` sorting bug in MapReduce that occurred when there was more than one partition.
 * Added `strictTransactionManagement` to the Gremlin Server settings to indicate that the `aliases` parameter must be passed on requests and that transaction management will be scoped to the graphs provided in that argument.
 * Fixed a `NullPointerException` bug in `PeerPressureVertexProgram` that occurred when an adjacency traversal was not provided.
