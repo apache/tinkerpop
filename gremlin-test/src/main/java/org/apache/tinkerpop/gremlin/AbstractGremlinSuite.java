@@ -282,15 +282,14 @@ public abstract class AbstractGremlinSuite extends Suite {
 
         @Override
         public boolean shouldRun(final Description description) {
-            // first check if all tests from a class should be ignored.
-            if (!entireTestCaseToIgnore.isEmpty() && entireTestCaseToIgnore.stream().map(optOut -> {
-                try {
-                    return Class.forName(optOut.test());
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }).anyMatch(claxx -> claxx.isAssignableFrom(description.getTestClass()))) {
-                return false;
+            // first check if all tests from a class should be ignored - where "OptOut.method" is set to "*". the
+            // description appears to be null in some cases of parameterized tests, but if the entire test case
+            // was ignored it would have been caught earlier and these parameterized tests wouldn't be considered
+            // for a call to shouldRun
+            if (description.getTestClass() != null) {
+                final boolean ignoreWholeTestCase = entireTestCaseToIgnore.stream().map(this::transformToClass)
+                        .anyMatch(claxx -> claxx.isAssignableFrom(description.getTestClass()));
+                if (ignoreWholeTestCase) return false;
             }
 
             if (description.isTest()) {
@@ -345,6 +344,14 @@ public abstract class AbstractGremlinSuite extends Suite {
                     return Object.class;
                 }
             }).filter(c -> !c.equals(Object.class)).anyMatch(c -> c == graphProviderDescriptor.get().computer());
+        }
+
+        private Class<?> transformToClass(final Graph.OptOut optOut) {
+            try {
+                return Class.forName(optOut.test());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 }
