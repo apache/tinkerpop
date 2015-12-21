@@ -28,6 +28,7 @@ limitations under the License.
 
     <properties>
         <osgi.export>${project.groupId}.gremlin.*;version=${project.version}</osgi.export>
+        <osgi.embed>javatuples,hppc,jcabi-manifests</osgi.embed>
     </properties>
     <dependencies>
         <dependency>

@@ -151,6 +151,7 @@ limitations under the License.
         <!--
         Configuration properties for the OSGi maven-bundle-plugin
         -->
+        <osgi.embed></osgi.embed>
         <osgi.export>${project.groupId}.*;version=${project.version}</osgi.export>
     </properties>
     <build>
@@ -432,6 +433,7 @@ limitations under the License.
                             <_nouses>true</_nouses>
 
                             <Export-Package>${osgi.export}</Export-Package>
+                            <Embed-Dependency>${osgi.embed}</Embed-Dependency>
                         </instructions>
                     </configuration>
                 </plugin>
