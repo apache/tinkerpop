@@ -40,7 +40,6 @@ import org.junit.Test;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Iterator;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
@@ -155,29 +154,17 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
     @Test
     @LoadGraphWith(MODERN)
     public void shouldUseOneTimeBulkLoaderWithUserSuppliedIds() throws Exception {
-        for (int iteration = 1; iteration <= 2; iteration++) {
-            final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
-                    .bulkLoader(OneTimeBulkLoader.class)
-                    .userSuppliedIds(true)
-                    .writeGraph(getWriteGraphConfiguration()).create(graph);
-            final BulkLoader loader = getBulkLoader(blvp);
-            assertTrue(loader instanceof OneTimeBulkLoader);
-            try {
-                graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
-                assertEquals(1, iteration);
-                final Graph result = getWriteGraph();
-                assertEquals(6, IteratorUtils.count(result.vertices()));
-                assertEquals(6, IteratorUtils.count(result.edges()));
-                result.close();
-            } catch (ExecutionException e) {
-                assertEquals(2, iteration);
-                Throwable cause = e.getCause();
-                while (cause.getCause() != null) {
-                    cause = cause.getCause();
-                }
-                assertTrue(cause.getMessage().startsWith("Vertex with id already exists"));
-            }
-        }
+        final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
+                .bulkLoader(OneTimeBulkLoader.class)
+                .userSuppliedIds(true)
+                .writeGraph(getWriteGraphConfiguration()).create(graph);
+        final BulkLoader loader = getBulkLoader(blvp);
+        assertTrue(loader instanceof OneTimeBulkLoader);
+        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
+        final Graph result = getWriteGraph();
+        assertEquals(6, IteratorUtils.count(result.vertices()));
+        assertEquals(6, IteratorUtils.count(result.edges()));
+        result.close();
     }
 
     private static void assertGraphEquality(final Graph source, final Graph target) {
