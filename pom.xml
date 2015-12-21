@@ -147,6 +147,11 @@ limitations under the License.
         <log4j-silent.properties>file:target/test-classes/log4j-silent.properties</log4j-silent.properties>
 
         <muteTestLogs>false</muteTestLogs>
+
+        <!--
+        Configuration properties for the OSGi maven-bundle-plugin
+        -->
+        <osgi.export>${project.groupId}.*;version=${project.version}</osgi.export>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -421,6 +426,14 @@ limitations under the License.
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
                     <version>3.0.0</version>
+                    <configuration>
+                        <instructions>
+                            <!-- stops the "uses" clauses being added to "Export-Package" manifest entry -->
+                            <_nouses>true</_nouses>
+
+                            <Export-Package>${osgi.export}</Export-Package>
+                        </instructions>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
