@@ -296,6 +296,11 @@ limitations under the License.
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -411,6 +416,11 @@ limitations under the License.
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${javadoc-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.felix</groupId>
+                    <artifactId>maven-bundle-plugin</artifactId>
+                    <version>3.0.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
