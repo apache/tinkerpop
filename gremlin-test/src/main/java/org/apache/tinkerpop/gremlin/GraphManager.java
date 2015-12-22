@@ -45,6 +45,9 @@ public class GraphManager {
         return old;
     }
 
+    /**
+     * Gets the {@link GraphProvider} from the current test suite and wraps it in a {@link ManagedGraphProvider}.
+     */
     public static GraphProvider getGraphProvider() {
         return new ManagedGraphProvider(graphProvider);
     }
@@ -59,6 +62,11 @@ public class GraphManager {
         return traversalEngineType;
     }
 
+    /**
+     * This class provides a way to intercepts calls to {@link Graph} implementation's {@link GraphProvider} instances.
+     * When {@link #openTestGraph(Configuration)} is called the created object is stored in a list and when tests are
+     * complete the {@link #tryCloseGraphs()} is called. When this is called, an attempt is made to close all open graphs.
+     */
     public static class ManagedGraphProvider implements GraphProvider {
         private final GraphProvider innerGraphProvider;
         private final List<Graph> openGraphs = new ArrayList<>();
