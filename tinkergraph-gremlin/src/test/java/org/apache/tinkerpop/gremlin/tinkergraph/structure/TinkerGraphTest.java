@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedOutputStream;
@@ -130,7 +129,6 @@ public class TinkerGraphTest {
         g.createIndex("", Edge.class);
     }
 
-    @Ignore
     @Test
     public void shouldUpdateVertexIndicesInNewGraph() {
         final TinkerGraph g = TinkerGraph.open();
@@ -150,7 +148,6 @@ public class TinkerGraphTest {
         }, 35)).has("name", "stephen").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldRemoveAVertexFromAnIndex() {
         final TinkerGraph g = TinkerGraph.open();
@@ -177,7 +174,6 @@ public class TinkerGraphTest {
         }, 35)).has("name", "stephen").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldUpdateVertexIndicesInExistingGraph() {
         final TinkerGraph g = TinkerGraph.open();
@@ -205,7 +201,6 @@ public class TinkerGraphTest {
         }, 35)).has("name", "stephen").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldUpdateEdgeIndicesInNewGraph() {
         final TinkerGraph g = TinkerGraph.open();
@@ -226,7 +221,6 @@ public class TinkerGraphTest {
         }, 0.5)).has("oid", "1").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldRemoveEdgeFromAnIndex() {
         final TinkerGraph g = TinkerGraph.open();
@@ -254,7 +248,6 @@ public class TinkerGraphTest {
         }, 0.5)).has("oid", "1").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldUpdateEdgeIndicesInExistingGraph() {
         final TinkerGraph g = TinkerGraph.open();
