@@ -276,6 +276,11 @@ $ bin/gremlin.sh -e gremlin.groovy vadas
 v[2]
 ----
 
+NOTE: The `ScriptExecutor` is for Gremlin Groovy scripts only.  It is not possible to include Console plugin commands
+such as `:remote` or `:>` when using `-e` in these scripts. That does not mean that it is impossible to script such
+commands, it just means that they need to be scripted manually.  For example, instead of trying to use the `:remote`
+command, manually construct a <<connecting-via-java,Gremlin Driver>> `Client` and submit scripts from there.
+
 [[gremlin-server]]
 Gremlin Server
 --------------
@@ -468,6 +473,7 @@ for purposes of execution within the context of a script.  Therefore, it becomes
 :> x.E().label().groupCount()
 ----
 
+[[connecting-via-java]]
 Connecting via Java
 ~~~~~~~~~~~~~~~~~~~
 
