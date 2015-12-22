@@ -153,6 +153,7 @@ limitations under the License.
         -->
         <osgi.embed></osgi.embed>
         <osgi.export>${project.groupId}.*;version=${project.version}</osgi.export>
+        <osgi.import>!javax.*,!sun.*,*</osgi.import>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -426,14 +427,15 @@ limitations under the License.
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.0.1</version>
                     <configuration>
                         <instructions>
                             <!-- stops the "uses" clauses being added to "Export-Package" manifest entry -->
                             <_nouses>true</_nouses>
-
+                            <Import-Package>${osgi.import}</Import-Package>
                             <Export-Package>${osgi.export}</Export-Package>
                             <Embed-Dependency>${osgi.embed}</Embed-Dependency>
+                            <Embed-Transitive>true</Embed-Transitive>
                         </instructions>
                     </configuration>
                 </plugin>
