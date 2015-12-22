@@ -25,6 +25,7 @@ import org.apache.tinkerpop.gremlin.groovy.CompilerCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.FileSandboxExtension;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.hamcrest.MatcherAssert;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -60,6 +62,8 @@ public class GremlinGroovyScriptEngineFileSandboxTest extends AbstractGremlinTes
         final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(FileSandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
             assertEquals(123, engine.eval("java.lang.Math.abs(-123)"));
+            assertThat(engine.eval("new Boolean(true)"), is(true));
+            assertThat(engine.eval("new Boolean(true).toString()"), is("true"));
         }
     }
 
@@ -72,9 +76,12 @@ public class GremlinGroovyScriptEngineFileSandboxTest extends AbstractGremlinTes
     }
 
     @Test
-    public void shouldPreventMaliciousStuffWithSystem() throws Exception {
+    public void shouldPreventMaliciousStuffWithSystemButAllowSomeMethodsOnSystem() throws Exception {
         final CompilerCustomizerProvider standardSandbox = new CompileStaticCustomizerProvider(FileSandboxExtension.class.getName());
         try (GremlinGroovyScriptEngine engine = new GremlinGroovyScriptEngine(standardSandbox)) {
+            assertThat((long) engine.eval("System.currentTimeMillis()"), greaterThan(0l));
+            assertThat((long) engine.eval("System.nanoTime()"), greaterThan(0l));
+
             engine.eval("System.exit(0)");
             fail("Should have a compile error because class/method is not white listed");
         } catch (Exception ex) {

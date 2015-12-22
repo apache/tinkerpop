@@ -77,7 +77,7 @@ abstract class AbstractSandboxExtension extends GroovyTypeCheckingExtensionSuppo
         // evaluate methods to be sure they are on the whitelist
         onMethodSelection { expr, MethodNode methodNode ->
             def descriptor = SandboxHelper.toMethodDescriptor(methodNode)
-            if (!methodWhiteList.any { descriptor =~ it })
+            if (!methodWhiteList.any { descriptor ==~ it })
                 addStaticTypeError("Not authorized to call this method: $descriptor", expr)
         }
 

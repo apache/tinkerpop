@@ -59,7 +59,7 @@ class PropertyExpressionEvaluator extends ClassCodeVisitorSupport {
                 owner = typeCheckingVisitor.inferComponentType(owner, ClassHelper.int_TYPE)
 
             def descriptor = "${SandboxHelper.prettyPrint(owner)}#${expression.propertyAsString}"
-            if (!methodWhiteList.any { descriptor =~ it })
+            if (!methodWhiteList.any { descriptor ==~ it })
                 dsl.addStaticTypeError("Not authorized to call this method: $descriptor", expression)
         }
     }
