@@ -86,6 +86,11 @@ public class GraphManager {
         }
 
         @Override
+        public String getWorkingDirectory() {
+            return innerGraphProvider.getWorkingDirectory();
+        }
+
+        @Override
         public GraphTraversalSource traversal(final Graph graph) {
             return innerGraphProvider.traversal(graph);
         }
