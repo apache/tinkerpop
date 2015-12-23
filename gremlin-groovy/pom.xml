@@ -25,6 +25,10 @@ limitations under the License.
     </parent>
     <artifactId>gremlin-groovy</artifactId>
     <name>Apache TinkerPop :: Gremlin Groovy</name>
+    <packaging>bundle</packaging>
+    <properties>
+        <osgi.export>${project.groupId}.gremlin.groovy.*</osgi.export>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>
@@ -68,7 +72,7 @@ limitations under the License.
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
-            <version>0.3m</version>
+            <version>${jbcrypt.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>

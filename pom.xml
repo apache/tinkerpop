@@ -106,6 +106,7 @@ limitations under the License.
     </contributors>
     <modules>
         <module>gremlin-shaded</module>
+        <module>gremlin-osgi-deps</module>
         <module>gremlin-core</module>
         <module>gremlin-test</module>
         <module>gremlin-groovy</module>
@@ -152,8 +153,13 @@ limitations under the License.
         Configuration properties for the OSGi maven-bundle-plugin
         -->
         <osgi.embed></osgi.embed>
-        <osgi.export>${project.groupId}.*;version=${project.version}</osgi.export>
+        <osgi.export>${project.groupId}.*</osgi.export>
+        <osgi.export.embed></osgi.export.embed>
         <osgi.import>!javax.*,!sun.*,*</osgi.import>
+        <snakeyaml.version>1.15</snakeyaml.version>
+        <hppc.version>0.7.1</hppc.version>
+        <jcabi-manifests.version>1.1</jcabi-manifests.version>
+        <jbcrypt.version>0.3m</jbcrypt.version>
     </properties>
     <build>
         <directory>${basedir}/target</directory>
@@ -436,6 +442,7 @@ limitations under the License.
                             <Export-Package>${osgi.export}</Export-Package>
                             <Embed-Dependency>${osgi.embed}</Embed-Dependency>
                             <Embed-Transitive>true</Embed-Transitive>
+                            <_exportcontents>${osgi.export.embed}</_exportcontents>
                         </instructions>
                     </configuration>
                 </plugin>

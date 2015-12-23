@@ -25,10 +25,8 @@ limitations under the License.
     <artifactId>gremlin-core</artifactId>
     <name>Apache TinkerPop :: Gremlin Core</name>
     <packaging>bundle</packaging>
-
     <properties>
-        <osgi.export>${project.groupId}.gremlin.*;version=${project.version}</osgi.export>
-        <osgi.embed>*;groupId=${project.groupId}|org.javatuples|com.carrotsearch|com.jcabi</osgi.embed>
+        <osgi.export>${project.groupId}.gremlin.*</osgi.export>
     </properties>
     <dependencies>
         <dependency>
@@ -43,7 +41,7 @@ limitations under the License.
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.15</version>
+            <version>${snakeyaml.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -54,12 +52,12 @@ limitations under the License.
         <dependency>
             <groupId>com.carrotsearch</groupId>
             <artifactId>hppc</artifactId>
-            <version>0.7.1</version>
+            <version>${hppc.version}</version>
         </dependency>
         <dependency>
             <groupId>com.jcabi</groupId>
             <artifactId>jcabi-manifests</artifactId>
-            <version>1.1</version>
+            <version>${jcabi-manifests.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
