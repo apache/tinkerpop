@@ -389,7 +389,7 @@ have to be configured manually by the user to do the serialization.
 
 It is up to the implementations of the `GraphReader` and `GraphWriter` interfaces to choose the methods they
 implement and the manner in which they work together.  The only characteristic enforced and expected is that the write
-methods should produce output that is compatible with the corresponding read method.  For example, he output of
+methods should produce output that is compatible with the corresponding read method.  For example, the output of
 `writeVertices` should be readable as input to `readVertices` and the output of `writeProperty` should be readable as
 input to `readProperty`.
 
