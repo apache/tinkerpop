@@ -155,7 +155,8 @@ limitations under the License.
         <osgi.embed></osgi.embed>
         <osgi.export>${project.groupId}.*</osgi.export>
         <osgi.export.embed></osgi.export.embed>
-        <osgi.import>!javax.*,!sun.*,*</osgi.import>
+        <osgi.import>!javax.*,!sun.*,!${osgi.export},*</osgi.import>
+
         <snakeyaml.version>1.15</snakeyaml.version>
         <hppc.version>0.7.1</hppc.version>
         <jcabi-manifests.version>1.1</jcabi-manifests.version>
