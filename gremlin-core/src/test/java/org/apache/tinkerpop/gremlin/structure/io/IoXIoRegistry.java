@@ -56,12 +56,6 @@ public class IoXIoRegistry {
         }
     }
 
-    public static class SerializerToVertexBased extends AbstractIoRegistry {
-        public SerializerToVertexBased() {
-            register(GryoIo.class, IoX.class, new IoXToVertexSerializer());
-        }
-    }
-
     /**
      * Converts an {@link IoX} to a {@link DetachedVertex}.
      */

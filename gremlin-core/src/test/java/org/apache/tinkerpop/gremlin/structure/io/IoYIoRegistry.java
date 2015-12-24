@@ -51,12 +51,6 @@ public class IoYIoRegistry {
         }
     }
 
-    public static class SerializerToMapBased extends AbstractIoRegistry {
-        public SerializerToMapBased() {
-            register(GryoIo.class, IoY.class, new IoYToHashMapSerializer());
-        }
-    }
-
     /**
      * Converts an {@link IoX} to a {@link HashMap}.
      */

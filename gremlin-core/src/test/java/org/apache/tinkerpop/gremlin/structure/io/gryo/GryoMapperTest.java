@@ -19,7 +19,6 @@
 package org.apache.tinkerpop.gremlin.structure.io.gryo;
 
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoX;
 import org.apache.tinkerpop.gremlin.structure.io.IoXIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.IoY;
@@ -86,9 +85,8 @@ public class GryoMapperTest {
 
     @Test
     public void shouldSerializeWithCustomClassResolverToDetachedVertex() throws Exception {
-        final IoRegistry ioRegistry = new IoXIoRegistry.SerializerToVertexBased();
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().addRegistry(ioRegistry).classResolver(classResolver).create();
+        final GryoMapper mapper = GryoMapper.build().classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final OutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -108,9 +106,8 @@ public class GryoMapperTest {
 
     @Test
     public void shouldSerializeWithCustomClassResolverToHashMap() throws Exception {
-        final IoRegistry ioRegistry = new IoXIoRegistry.SerializerToVertexBased();
         final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
-        final GryoMapper mapper = GryoMapper.build().addRegistry(ioRegistry).classResolver(classResolver).create();
+        final GryoMapper mapper = GryoMapper.build().classResolver(classResolver).create();
         final Kryo kryo = mapper.createMapper();
         try (final OutputStream stream = new ByteArrayOutputStream()) {
             final Output out = new Output(stream);
@@ -124,40 +121,6 @@ public class GryoMapperTest {
                 final Input input = new Input(inputStream);
                 final Map readY = (HashMap) kryoWithoutKnowledgeOfIox.readClassAndObject(input);
                 assertEquals("100-200", readY.get("y"));
-            }
-        }
-    }
-
-    /**
-     * Creates new {@link CustomClassResolver} when requested.
-     */
-    public static class CustomClassResolverSupplier implements Supplier<ClassResolver> {
-        @Override
-        public ClassResolver get() {
-            return new CustomClassResolver();
-        }
-    }
-
-    /**
-     * A custom {@code ClassResolver} that alters the {@code Registration} returned to Kryo when an {@link IoX} class
-     * is requested, coercing it to a totally different class (a {@link DetachedVertex}).  This coercion demonstrates
-     * how a TinkerPop provider might take a custom internal class and serialize it into something core to
-     * TinkerPop which then removes the requirement for providers to expose serializers on the client side for user
-     * consumption.
-     */
-    public static class CustomClassResolver extends GryoClassResolver {
-        private IoXIoRegistry.IoXToVertexSerializer ioXToVertexSerializer = new IoXIoRegistry.IoXToVertexSerializer();
-        private IoYIoRegistry.IoYToHashMapSerializer ioYToHashMapSerializer = new IoYIoRegistry.IoYToHashMapSerializer();
-
-        public Registration getRegistration(final Class clazz) {
-            if (IoX.class.isAssignableFrom(clazz)) {
-                final Registration registration = super.getRegistration(DetachedVertex.class);
-                return new Registration(registration.getType(), ioXToVertexSerializer, registration.getId());
-            } else if (IoY.class.isAssignableFrom(clazz)) {
-                final Registration registration = super.getRegistration(HashMap.class);
-                return new Registration(registration.getType(), ioYToHashMapSerializer, registration.getId());
-            } else {
-                return super.getRegistration(clazz);
             }
         }
     }
@@ -233,6 +196,40 @@ public class GryoMapperTest {
                 final IoY readY = (IoY) kryoReader.readClassAndObject(input);
                 assertNotEquals(y, readY);
                 assertNotEquals(x, readY);
+            }
+        }
+    }
+
+    /**
+     * Creates new {@link CustomClassResolver} when requested.
+     */
+    public static class CustomClassResolverSupplier implements Supplier<ClassResolver> {
+        @Override
+        public ClassResolver get() {
+            return new CustomClassResolver();
+        }
+    }
+
+    /**
+     * A custom {@code ClassResolver} that alters the {@code Registration} returned to Kryo when an {@link IoX} class
+     * is requested, coercing it to a totally different class (a {@link DetachedVertex}).  This coercion demonstrates
+     * how a TinkerPop provider might take a custom internal class and serialize it into something core to
+     * TinkerPop which then removes the requirement for providers to expose serializers on the client side for user
+     * consumption.
+     */
+    public static class CustomClassResolver extends GryoClassResolver {
+        private IoXIoRegistry.IoXToVertexSerializer ioXToVertexSerializer = new IoXIoRegistry.IoXToVertexSerializer();
+        private IoYIoRegistry.IoYToHashMapSerializer ioYToHashMapSerializer = new IoYIoRegistry.IoYToHashMapSerializer();
+
+        public Registration getRegistration(final Class clazz) {
+            if (IoX.class.isAssignableFrom(clazz)) {
+                final Registration registration = super.getRegistration(DetachedVertex.class);
+                return new Registration(registration.getType(), ioXToVertexSerializer, registration.getId());
+            } else if (IoY.class.isAssignableFrom(clazz)) {
+                final Registration registration = super.getRegistration(HashMap.class);
+                return new Registration(registration.getType(), ioYToHashMapSerializer, registration.getId());
+            } else {
+                return super.getRegistration(clazz);
             }
         }
     }
