@@ -52,7 +52,7 @@ import static org.apache.tinkerpop.shaded.kryo.util.Util.getWrapperClass;
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class GryoClassResolver implements ClassResolver {
+public class GryoClassResolver implements ClassResolver {
     static public final byte NAME = -1;
 
     protected Kryo kryo;
