@@ -29,6 +29,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
+import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
 import org.apache.tinkerpop.shaded.kryo.io.Input;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -63,11 +65,12 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
     private static final String MIME_TYPE = SerTokens.MIME_GRYO_V1D0;
     private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRYO_V1D0 + "-stringd";
 
-    private static final String TOKEN_IO_REGISTRIES = "ioRegistries";
-    private static final String TOKEN_CUSTOM = "custom";
-    private static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
-    private static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
-    private static final String TOKEN_BUFFER_SIZE = "bufferSize";
+    public static final String TOKEN_IO_REGISTRIES = "ioRegistries";
+    public static final String TOKEN_CUSTOM = "custom";
+    public static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
+    public static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
+    public static final String TOKEN_BUFFER_SIZE = "bufferSize";
+    public static final String TOKEN_CLASS_RESOLVER_SUPPLIER = "classResolverSupplier";
 
     private boolean serializeToString = false;
     private int bufferSize = 4096;
@@ -82,7 +85,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
 
     /**
      * Creates an instance with a provided mapper configured {@link GryoMapper} instance. Note that this instance
-     * will be overriden by {@link #configure} is called.
+     * will be overridden by {@link #configure} is called.
      */
     public GryoMessageSerializerV1d0(final GryoMapper kryo) {
         this.gryoMapper = kryo;
@@ -112,6 +115,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
         }
 
         addIoRegistries(config, builder);
+        addClassResolverSupplier(config, builder);
         addCustomClasses(config, builder);
 
         this.serializeToString = Boolean.parseBoolean(config.getOrDefault(TOKEN_SERIALIZE_RESULT_TO_STRING, "false").toString());
@@ -140,6 +144,24 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                 throw new IllegalStateException(ex);
             }
         });
+    }
+
+    private void addClassResolverSupplier(final Map<String, Object> config, final GryoMapper.Builder builder) {
+        final String className = (String) config.getOrDefault(TOKEN_CLASS_RESOLVER_SUPPLIER, null);
+        if (className != null && !className.isEmpty()) {
+            try {
+                final Class<?> clazz = Class.forName(className);
+                try {
+                    final Method instanceMethod = clazz.getDeclaredMethod("getInstance");
+                    builder.classResolver((Supplier<ClassResolver>) instanceMethod.invoke(null));
+                } catch (Exception methodex) {
+                    // tried getInstance() and that failed so try newInstance() no-arg constructor
+                    builder.classResolver((Supplier<ClassResolver>) clazz.newInstance());
+                }
+            } catch (Exception ex) {
+                throw new IllegalStateException(ex);
+            }
+        }
     }
 
     private void addCustomClasses(final Map<String, Object> config, final GryoMapper.Builder builder) {
