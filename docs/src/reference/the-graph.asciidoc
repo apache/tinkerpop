@@ -405,8 +405,8 @@ applications outside of TinkerPop, GraphML may be the best choice to do that. Co
 * Produce a subgraph and export it to GraphML to be consumed by and visualized in link:https://gephi.org/[Gephi].
 * Migrate the data of an entire graph to a different graph database not supported by TinkerPop.
 
-As GraphML is a specification for the serialization of an entire graph and not the individual elements of a graph.
-Methods that support input and output of single vertices, edges, etc. are not supported.
+As GraphML is a specification for the serialization of an entire graph and not the individual elements of a graph,
+methods that support input and output of single vertices, edges, etc. are not supported.
 
 CAUTION: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have
 support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
