@@ -366,8 +366,11 @@ single time. In this case, the startup hook loads the "modern" graph into the em
 it for use.  The second key/value pair assigned to the `Map`, named "g", defines a `TraversalSource` from the `Graph`
 bound to the "graph" variable in the YAML configuration file.  This variable `g`, as well as any other variable
 assigned to the `Map`, will be made available as variables for future remote script executions.  In more general
-terms, any key/value pairs assigned to a `Map` returned from the init script will become variables that are global
-to all requests. In addition, any functions that are defined will be cached for future use.
+terms, any key/value pairs assigned to a `Map` returned from the initialization script will become variables that
+are global to all requests. In addition, any functions that are defined will be cached for future use.
+
+WARNING: Transactions on graphs in initialization scripts are not closed automatically after the script finishes
+executing.  It is up to the script to properly commit or rollback transactions in the script itself.
 
 With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
 
