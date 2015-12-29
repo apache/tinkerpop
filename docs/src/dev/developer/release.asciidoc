@@ -93,7 +93,7 @@ validity into question.
 .. Update the release date
 .. Generate the JIRA release notes report for the current version and append them to the `CHANGELOG.asciidoc`.
 ... Use an "advanced" search to filter out JIRA issues already released on other versions. For example: `fixVersion
-= 3.1.0-incubating AND fixVersion not in (3.0.2-incubating, 3.0.1-incubating`.
+= 3.1.0-incubating AND fixVersion not in (3.0.2-incubating, 3.0.1-incubating)`.
 ... Consider use of an "Excel" export to organize, sort and prepare the JIRA tickets to be pasted to `CHANGELOG.asciidoc`
 ... Be sure to include a link to other versions in the `CHANGELOG.asciidoc` that were previously released while the
 current release was under development as this new release will have those changes included within it. Please see

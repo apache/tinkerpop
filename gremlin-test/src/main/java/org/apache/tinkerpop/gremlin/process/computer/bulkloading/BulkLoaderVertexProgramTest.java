@@ -134,12 +134,44 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
         assertGraphEquality(graph, getWriteGraph());
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldUseOneTimeBulkLoader() throws Exception {
+        for (int iteration = 1; iteration <= 2; iteration++) {
+            final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
+                    .bulkLoader(OneTimeBulkLoader.class)
+                    .writeGraph(getWriteGraphConfiguration()).create(graph);
+            final BulkLoader loader = getBulkLoader(blvp);
+            assertTrue(loader instanceof OneTimeBulkLoader);
+            graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
+            final Graph result = getWriteGraph();
+            assertEquals(6 * iteration, IteratorUtils.count(result.vertices()));
+            assertEquals(6 * iteration, IteratorUtils.count(result.edges()));
+            result.close();
+        }
+    }
+
+    @Test
+    @LoadGraphWith(MODERN)
+    public void shouldUseOneTimeBulkLoaderWithUserSuppliedIds() throws Exception {
+        final BulkLoaderVertexProgram blvp = BulkLoaderVertexProgram.build()
+                .bulkLoader(OneTimeBulkLoader.class)
+                .userSuppliedIds(true)
+                .writeGraph(getWriteGraphConfiguration()).create(graph);
+        final BulkLoader loader = getBulkLoader(blvp);
+        assertTrue(loader instanceof OneTimeBulkLoader);
+        graph.compute(graphComputerClass.get()).workers(1).program(blvp).submit().get();
+        final Graph result = getWriteGraph();
+        assertEquals(6, IteratorUtils.count(result.vertices()));
+        assertEquals(6, IteratorUtils.count(result.edges()));
+        result.close();
+    }
+
     private static void assertGraphEquality(final Graph source, final Graph target) {
         assertGraphEquality(source, target, Element::id);
     }
 
     private static void assertGraphEquality(final Graph source, final Graph target, final Function<Vertex, Object> idAccessor) {
-        final GraphTraversalSource sg = source.traversal();
         final GraphTraversalSource tg = target.traversal();
         assertEquals(IteratorUtils.count(source.vertices()), IteratorUtils.count(target.vertices()));
         assertEquals(IteratorUtils.count(target.edges()), IteratorUtils.count(target.edges()));
@@ -148,7 +180,7 @@ public class BulkLoaderVertexProgramTest extends AbstractGremlinProcessTest {
             final Iterator<Vertex> vertexIterator = target.vertices();
             while (vertexIterator.hasNext()) {
                 final Vertex v = vertexIterator.next();
-                if (idAccessor.apply(v).equals(originalVertex.id())) {
+                if (idAccessor.apply(v).toString().equals(originalVertex.id().toString())) {
                     tmpVertex = v;
                     break;
                 }

@@ -110,6 +110,8 @@ install the link:http://plugins.jetbrains.com/plugin/7442?pr=idea[GMavenPlus Int
 For Committers
 --------------
 
+image::business-gremlin.png[width=400]
+
 The guidelines that follow apply to those with commit access to the main repository:
 
 Communication

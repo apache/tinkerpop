@@ -276,6 +276,11 @@ $ bin/gremlin.sh -e gremlin.groovy vadas
 v[2]
 ----
 
+NOTE: The `ScriptExecutor` is for Gremlin Groovy scripts only.  It is not possible to include Console plugin commands
+such as `:remote` or `:>` when using `-e` in these scripts. That does not mean that it is impossible to script such
+commands, it just means that they need to be scripted manually.  For example, instead of trying to use the `:remote`
+command, manually construct a <<connecting-via-java,Gremlin Driver>> `Client` and submit scripts from there.
+
 [[gremlin-server]]
 Gremlin Server
 --------------
@@ -361,8 +366,11 @@ single time. In this case, the startup hook loads the "modern" graph into the em
 it for use.  The second key/value pair assigned to the `Map`, named "g", defines a `TraversalSource` from the `Graph`
 bound to the "graph" variable in the YAML configuration file.  This variable `g`, as well as any other variable
 assigned to the `Map`, will be made available as variables for future remote script executions.  In more general
-terms, any key/value pairs assigned to a `Map` returned from the init script will become variables that are global
-to all requests. In addition, any functions that are defined will be cached for future use.
+terms, any key/value pairs assigned to a `Map` returned from the initialization script will become variables that
+are global to all requests. In addition, any functions that are defined will be cached for future use.
+
+WARNING: Transactions on graphs in initialization scripts are not closed automatically after the script finishes
+executing.  It is up to the script to properly commit or rollback transactions in the script itself.
 
 With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
 
@@ -468,6 +476,7 @@ for purposes of execution within the context of a script.  Therefore, it becomes
 :> x.E().label().groupCount()
 ----
 
+[[connecting-via-java]]
 Connecting via Java
 ~~~~~~~~~~~~~~~~~~~
 
@@ -968,25 +977,29 @@ The configuration file is YAML-based and an example is presented as follows:
 ----
 autoTypeUnknown: true
 methodWhiteList:
-  - java\.lang\.Boolean
-  - java\.lang\.Byte
-  - java\.lang\.Character
-  - java\.lang\.Double
-  - java\.lang\.Enum
-  - java\.lang\.Float
-  - java\.lang\.Integer
-  - java\.lang\.Long
-  - java\.lang\.Math
-  - java\.lang\.Number
-  - java\.lang\.Object
-  - java\.lang\.Short
-  - java\.lang\.String
-  - java\.lang\.StringBuffer
-  - java\.lang\.Throwable
-  - java\.lang\.Void
+  - java\.lang\.Boolean.*
+  - java\.lang\.Byte.*
+  - java\.lang\.Character.*
+  - java\.lang\.Double.*
+  - java\.lang\.Enum.*
+  - java\.lang\.Float.*
+  - java\.lang\.Integer.*
+  - java\.lang\.Long.*
+  - java\.lang\.Math.*
+  - java\.lang\.Number.*
+  - java\.lang\.Object.*
+  - java\.lang\.Short.*
+  - java\.lang\.String.*
+  - java\.lang\.StringBuffer.*
+  - java\.lang\.System#currentTimeMillis\(\)
+  - java\.lang\.System#nanoTime\(\)
+  - java\.lang\.Throwable.*
+  - java\.lang\.Void.*
   - java\.util\..*
-  - org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods
-  - org\.codehaus\.groovy\.runtime\.StringGroovyMethods
+  - org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods.*
+  - org\.codehaus\.groovy\.runtime\.InvokerHelper#runScript\(java\.lang\.Class,java\.lang\.String\[\]\)
+  - org\.codehaus\.groovy\.runtime\.StringGroovyMethods.*
+  - groovy\.lang\.Script#<init>\(groovy.lang.Binding\)
   - org\.apache\.tinkerpop\.gremlin\.structure\..*
   - org\.apache\.tinkerpop\.gremlin\.process\..*
   - org\.apache\.tinkerpop\.gremlin\.process\.computer\..*
@@ -997,6 +1010,7 @@ methodWhiteList:
   - org\.apache\.tinkerpop\.gremlin\.process\.traversal\..*
   - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.dsl\.graph\..*
   - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.engine\..*
+  - org\.apache\.tinkerpop\.gremlin\.server\.util\.LifeCycleHook.*
 staticVariableTypes:
   graph: org.apache.tinkerpop.gremlin.structure.Graph
   g: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
@@ -1104,6 +1118,7 @@ Tuning
 
 image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
 
+* Gremlin Server defaults to a very modest maximum heap size.  Consider increasing this value for non-trivial uses.  Maximum heap size (`-Xmx`) is defined with the `JAVA_OPTIONS` setting in `gremlin-server.sh`.
 * When configuring the size of `threadPoolWorker` start with the default of `1` and increment by one as needed to a maximum of `2*number of cores`.
 * The "right" size of the `gremlinPool` setting is somewhat dependent on the type of scripts that will be processed
 by Gremlin Server.  As requests arrive to Gremlin Server they are decoded and queued to be processed by threads in

@@ -58,6 +58,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -174,6 +175,29 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             final Throwable inner = ExceptionUtils.getRootCause(ex);
             assertTrue(inner instanceof RuntimeException);
             assertThat(inner.getMessage(), startsWith("Encountered unregistered class ID:"));
+        }
+
+        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+        // from time to time, especially in the console if you're just exploring.
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldFailWithScriptExecutionException() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("1/0");
+
+        try {
+            results.all().join();
+            fail("Should have thrown exception over bad serialization");
+        } catch (Exception ex) {
+            final Throwable inner = ExceptionUtils.getRootCause(ex);
+            assertTrue(inner instanceof ResponseException);
+            assertThat(inner.getMessage(), endsWith("Division by zero"));
         }
 
         // should not die completely just because we had a bad serialization error.  that kind of stuff happens
@@ -567,6 +591,24 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception re) {
             final Throwable root = ExceptionUtils.getRootCause(re);
             assertTrue(root.getMessage().equals("Max frame length of 1 has been exceeded."));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldReturnNiceMessageFromOpSelector() {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            final Map m = new HashMap<>();
+            m.put(null, "a null key will force a throw of OpProcessorException in message validation");
+            client.submit("1+1", m).all().get();
+            fail("Should throw an exception.");
+        } catch (Exception re) {
+            final Throwable root = ExceptionUtils.getRootCause(re);
+            assertEquals("The [eval] message is using one or more invalid binding keys - they must be of type String and cannot be null", root.getMessage());
         } finally {
             cluster.close();
         }

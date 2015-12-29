@@ -32,7 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph
 class TinkerPopSandboxExtension extends AbstractSandboxExtension {
 
     private static final List<String> methodWhiteList = ["java\\.util\\..*",
-                                                         "org\\.codehaus\\.groovy\\.runtime\\.DefaultGroovyMethods",
+                                                         "org\\.codehaus\\.groovy\\.runtime\\.DefaultGroovyMethods.*",
                                                          "org\\.apache\\.tinkerpop\\.gremlin\\.structure\\..*",
                                                          "org\\.apache\\.tinkerpop\\.gremlin\\.process\\..*",
                                                          "org\\.apache\\.tinkerpop\\.gremlin\\.process\\.traversal\\.dsl\\.graph\\..*"]

@@ -102,11 +102,7 @@ public interface BulkLoader {
      * @param g      A standard traversal source for the given graph.
      * @return The matched vertex.
      */
-    public default Vertex getVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
-        return useUserSuppliedIds()
-                ? getVertexById(vertex.id(), graph, g)
-                : g.V().has(getVertexIdProperty(), vertex.id()).next();
-    }
+    public Vertex getVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g);
 
     /**
      * Gets a vertex by its ID from the given graph.
@@ -117,7 +113,7 @@ public interface BulkLoader {
      * @return The vertex with the given ID.
      */
     public default Vertex getVertexById(final Object id, final Graph graph, final GraphTraversalSource g) {
-        return graph.vertices(id).next();
+        return g.V().hasId(id).next();
     }
 
     /**
