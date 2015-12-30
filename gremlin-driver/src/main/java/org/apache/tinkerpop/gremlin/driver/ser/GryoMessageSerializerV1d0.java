@@ -21,12 +21,10 @@ package org.apache.tinkerpop.gremlin.driver.ser;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.util.ReferenceCountUtil;
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.io.IoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
@@ -38,7 +36,6 @@ import org.apache.tinkerpop.shaded.kryo.io.Output;
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +48,7 @@ import java.util.stream.Collectors;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public final class GryoMessageSerializerV1d0 implements MessageSerializer {
+public final class GryoMessageSerializerV1d0 extends AbstractMessageSerializer {
     private GryoMapper gryoMapper;
     private ThreadLocal<Kryo> kryoThreadLocal = new ThreadLocal<Kryo>() {
         @Override
@@ -65,7 +62,6 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
     private static final String MIME_TYPE = SerTokens.MIME_GRYO_V1D0;
     private static final String MIME_TYPE_STRINGD = SerTokens.MIME_GRYO_V1D0 + "-stringd";
 
-    public static final String TOKEN_IO_REGISTRIES = "ioRegistries";
     public static final String TOKEN_CUSTOM = "custom";
     public static final String TOKEN_SERIALIZE_RESULT_TO_STRING = "serializeResultToString";
     public static final String TOKEN_USE_MAPPER_FROM_GRAPH = "useMapperFromGraph";
@@ -124,28 +120,6 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
         this.gryoMapper = builder.create();
     }
 
-    private void addIoRegistries(final Map<String, Object> config, final GryoMapper.Builder builder) {
-        final List<String> classNameList = getClassNamesFromConfig(TOKEN_IO_REGISTRIES, config);
-
-        classNameList.stream().forEach(className -> {
-            try {
-                final Class<?> clazz = Class.forName(className);
-                try {
-                    final Method instanceMethod = clazz.getDeclaredMethod("getInstance");
-                    if (IoRegistry.class.isAssignableFrom(instanceMethod.getReturnType()))
-                        builder.addRegistry((IoRegistry) instanceMethod.invoke(null));
-                    else
-                        throw new Exception();
-                } catch (Exception methodex) {
-                    // tried getInstance() and that failed so try newInstance() no-arg constructor
-                    builder.addRegistry((IoRegistry) clazz.newInstance());
-                }
-            } catch (Exception ex) {
-                throw new IllegalStateException(ex);
-            }
-        });
-    }
-
     private void addClassResolverSupplier(final Map<String, Object> config, final GryoMapper.Builder builder) {
         final String className = (String) config.getOrDefault(TOKEN_CLASS_RESOLVER_SUPPLIER, null);
         if (className != null && !className.isEmpty()) {
@@ -165,7 +139,7 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
     }
 
     private void addCustomClasses(final Map<String, Object> config, final GryoMapper.Builder builder) {
-        final List<String> classNameList = getClassNamesFromConfig(TOKEN_CUSTOM, config);
+        final List<String> classNameList = getListStringFromConfig(TOKEN_CUSTOM, config);
 
         classNameList.stream().forEach(serializerDefinition -> {
             String className;
@@ -195,17 +169,6 @@ public final class GryoMessageSerializerV1d0 implements MessageSerializer {
                 throw new IllegalStateException("Class could not be found", ex);
             }
         });
-    }
-
-    private List<String> getClassNamesFromConfig(final String token, final Map<String, Object> config) {
-        final List<String> classNameList;
-        try {
-            classNameList = (List<String>) config.getOrDefault(token, new ArrayList<String>());
-        } catch (Exception ex) {
-            throw new IllegalStateException(String.format("Invalid configuration value of [%s] for [%s] setting on %s serialization configuration",
-                    config.getOrDefault(token, ""), token, this.getClass().getName()), ex);
-        }
-        return classNameList;
     }
 
     @Override

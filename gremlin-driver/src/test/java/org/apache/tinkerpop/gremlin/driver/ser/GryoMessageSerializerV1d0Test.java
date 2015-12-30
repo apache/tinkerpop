@@ -29,7 +29,9 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolver;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -39,11 +41,17 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.kryo.ClassResolver;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.KryoException;
 import org.apache.tinkerpop.shaded.kryo.Registration;
+import org.apache.tinkerpop.shaded.kryo.Serializer;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.Test;
 
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +87,23 @@ public class GryoMessageSerializerV1d0Test {
 
     public GryoMessageSerializerV1d0Test() {
         textSerializer.configure(config, null);
+    }
+
+    @Test
+    public void shouldConfigureIoRegistry() throws Exception {
+        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        final Map<String, Object> config = new HashMap<String, Object>() {{
+            put(GryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
+        }};
+
+        serializer.configure(config, null);
+
+        final ResponseMessage toSerialize = ResponseMessage.build(requestId).result(Color.RED).create();
+        final ByteBuf bb = serializer.serializeResponseAsBinary(toSerialize, allocator);
+        final ResponseMessage deserialized = serializer.deserializeResponse(bb);
+
+        assertCommon(deserialized);
+        assertEquals(Color.RED, deserialized.getResult().getData());
     }
 
     @Test
@@ -554,6 +579,24 @@ public class GryoMessageSerializerV1d0Test {
         @Override
         public Registration getRegistration(Class clazz) {
             throw new RuntimeException("Registration is not allowed with this ClassResolver - it is not a good implementation");
+        }
+    }
+
+    public static class ColorIoRegistry extends AbstractIoRegistry {
+        public ColorIoRegistry() {
+            register(GryoIo.class, Color.class, new ColorSerializer());
+        }
+    }
+
+    public static class ColorSerializer extends Serializer<Color> {
+        @Override
+        public void write(final Kryo kryo, final Output output, final Color color) {
+            output.write(color.equals(Color.RED) ? 1 : 0);
+        }
+
+        @Override
+        public Color read(final Kryo kryo, final Input input, final Class<Color> aClass) {
+            return input.read() == 1 ? Color.RED : Color.BLACK;
         }
     }
 }

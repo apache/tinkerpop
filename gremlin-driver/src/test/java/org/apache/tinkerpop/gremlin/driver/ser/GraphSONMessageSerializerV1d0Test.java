@@ -27,22 +27,39 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONIo;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONTokens;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.apache.tinkerpop.shaded.jackson.core.JsonGenerationException;
+import org.apache.tinkerpop.shaded.jackson.core.JsonGenerator;
+import org.apache.tinkerpop.shaded.jackson.core.JsonParser;
+import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
+import org.apache.tinkerpop.shaded.jackson.databind.DeserializationContext;
 import org.apache.tinkerpop.shaded.jackson.databind.JsonNode;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import org.apache.tinkerpop.shaded.jackson.databind.SerializerProvider;
+import org.apache.tinkerpop.shaded.jackson.databind.deser.std.StdDeserializer;
+import org.apache.tinkerpop.shaded.jackson.databind.jsontype.TypeSerializer;
+import org.apache.tinkerpop.shaded.jackson.databind.module.SimpleModule;
 import org.apache.tinkerpop.shaded.jackson.databind.node.NullNode;
+import org.apache.tinkerpop.shaded.jackson.databind.ser.std.StdSerializer;
 import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
 import org.junit.Test;
 
+import java.awt.*;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -59,6 +76,23 @@ public class GraphSONMessageSerializerV1d0Test {
     private static final RequestMessage msg = RequestMessage.build("op")
             .overrideRequestId(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595")).create();
     private static final ObjectMapper mapper = new ObjectMapper();
+
+    @Test
+    public void shouldConfigureIoRegistry() throws Exception {
+        final GraphSONMessageSerializerV1d0 serializer = new GraphSONMessageSerializerV1d0();
+        final Map<String, Object> config = new HashMap<String, Object>() {{
+            put(GryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
+        }};
+
+        serializer.configure(config, null);
+
+        final ResponseMessage toSerialize = ResponseMessage.build(UUID.fromString("2D62161B-9544-4F39-AF44-62EC49F9A595"))
+                .result(Color.RED).create();
+        final String results = serializer.serializeResponseAsString(toSerialize);
+        final JsonNode json = mapper.readTree(results);
+        assertNotNull(json);
+        assertThat(json.get(SerTokens.TOKEN_RESULT).get(SerTokens.TOKEN_DATA).booleanValue(), is(true));
+    }
 
     @Test
     public void shouldSerializeToJsonNullResultReturnsNull() throws Exception {
@@ -383,6 +417,32 @@ public class GraphSONMessageSerializerV1d0Test {
 
         public String toString() {
             return this.val;
+        }
+    }
+
+    public static class ColorIoRegistry extends AbstractIoRegistry {
+        public ColorIoRegistry() {
+            register(GraphSONIo.class, null, new ColorSimpleModule());
+        }
+    }
+
+    public static class ColorSimpleModule extends SimpleModule {
+        public ColorSimpleModule() {
+            super("color-fun");
+            addSerializer(Color.class, new ColorSerializer());
+
+        }
+    }
+
+    public static class ColorSerializer extends StdSerializer<Color> {
+        public ColorSerializer() {
+            super(Color.class);
+        }
+
+        @Override
+        public void serialize(final Color color, final JsonGenerator jsonGenerator,
+                              final SerializerProvider serializerProvider) throws IOException, JsonGenerationException {
+            jsonGenerator.writeBoolean(color.equals(Color.RED));
         }
     }
 }
