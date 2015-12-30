@@ -63,17 +63,18 @@ pairs. Moreover, while an `Edge` can only have one property of key "name" (for e
 "name" properties. With the inclusion of vertex properties, two features are introduced which ultimately advance the
 graph modelers toolkit:
 
-. Multiple properties (*multi-properties*): a vertex property key can have multiple values (i.e. a vertex can have
-multiple "name" properties).
+. Multiple properties (*multi-properties*): a vertex property key can have multiple values.  For example, a vertex can have
+multiple "name" properties.
 . Properties on properties (*meta-properties*): a vertex property can have properties (i.e. a vertex property can
 have key/value data associated with it).
 
-A collection of use cases are itemized below:
+Possible use cases for meta-properties:
 
 . *Permissions*: Vertex properties can have key/value ACL-type permission information associated with them.
 . *Auditing*: When a vertex property is manipulated, it can have key/value information attached to it saying who the
 creator, deletor, etc. are.
-. *Provenance*: The "name" of a vertex can be declared by multiple users.
+. *Provenance*: The "name" of a vertex can be declared by multiple users.  For example, there may be multiple spellings
+of a name from different sources.
 
 A running example using vertex properties is provided below to demonstrate and explain the API.
 
@@ -180,15 +181,15 @@ important to note that the `Transaction` object does not represent a "transactio
 methods for working with transactions (e.g. committing, rolling back, etc).
 
 Most `Graph` implementations that `supportsTransactions` will implement an "automatic" `ThreadLocal` transaction,
-which means that when a read or write occurs after the `Graph` is instantiated a transaction is automatically
+which means that when a read or write occurs after the `Graph` is instantiated, a transaction is automatically
 started within that thread.  There is no need to manually call a method to "create" or "start" a transaction.  Simply
 modify the graph as required and call `graph.tx().commit()` to apply changes or `graph.tx().rollback()` to undo them.
 When the next read or write action occurs against the graph, a new transaction will be started within that current
 thread of execution.
 
 When using transactions in this fashion, especially in web application (e.g. REST server), it is important to ensure
-that transaction do not leak from one request to the next.  In other words, unless a client is somehow bound via
-session to process every request on the same server thread, ever request must be committed or rolled back at the end
+that transactions do not leak from one request to the next.  In other words, unless a client is somehow bound via
+session to process every request on the same server thread, every request must be committed or rolled back at the end
 of the request.  By ensuring that the request encapsulates a transaction, it ensures that a future request processed
 on a server thread is starting in a fresh transactional state and will not have access to the remains of one from an
 earlier request. A good strategy is to rollback a transaction at the start of a request, so that if it so happens that
@@ -275,9 +276,9 @@ or other read operations executed in the context of that open transaction.
 <7> Explicitly open a transaction.
 <8> Adding a vertex now succeeds as the transaction was manually opened.
 
-NOTE: It may be important to consult the documentation of the `Graph` implementation when it comes to the specifics of
-how transactions will behave.  TinkerPop allows some latitude in this area and implementations may not have the exact
-same behaviors and link:https://en.wikipedia.org/wiki/ACID[ACID] guarantees.
+NOTE: It may be important to consult the documentation of the `Graph` implementation you are using when it comes to the
+specifics of how transactions will behave.  TinkerPop allows some latitude in this area and implementations may not have
+the exact same behaviors and link:https://en.wikipedia.org/wiki/ACID[ACID] guarantees.
 
 Retries
 ~~~~~~~
@@ -387,10 +388,10 @@ for the serialization process, it is always best to utilize the methods on the `
 have to be configured manually by the user to do the serialization.
 
 It is up to the implementations of the `GraphReader` and `GraphWriter` interfaces to choose the methods they
-implement and the manner in which they work together.  The only semantics enforced and expected is that the write
-methods should produce output that is compatible with the corresponding read method (e.g. the output of
+implement and the manner in which they work together.  The only characteristic enforced and expected is that the write
+methods should produce output that is compatible with the corresponding read method.  For example, the output of
 `writeVertices` should be readable as input to `readVertices` and the output of `writeProperty` should be readable as
-input to `readProperty`).
+input to `readProperty`.
 
 GraphML Reader/Writer
 ~~~~~~~~~~~~~~~~~~~~~
@@ -410,11 +411,12 @@ methods that support input and output of single vertices, edges, etc. are not su
 CAUTION: GraphML is a "lossy" format in that it only supports primitive values for properties and does not have
 support for `Graph` variables.  It will use `toString` to serialize property values outside of those primitives.
 
-CAUTION: GraphML, as a specification, allows for `<edge>` and `<node>` elements to appear in any order.  The
-`GraphMLReader` will support that, however, that capability comes with a limitation. TinkerPop does not allow the
-vertex label to be changed after the vertex has been created.  Therefore, if an `<edge>` element comes before the
-`<node>` the label on the vertex will be ignored.  It is thus better to order `<node>` elements in the GraphML to
-appear before all `<edge>` elements if vertex labels are important to the graph.
+CAUTION: GraphML as a specification allows for `<edge>` and `<node>` elements to appear in any order.  Most software
+that writes GraphML (including as TinkerPop's `GraphMLWriter`) write `<node>` elements before `<edge>` elements.  However it
+is important to note that `GraphMLReader` will read this data in order and order can matter.  This is because TinkerPop
+does not allow the vertex label to be changed after the vertex has been created.  Therefore, if an `<edge>` element
+comes before the `<node>`, the label on the vertex will be ignored.  It is thus better to order `<node>` elements in the
+GraphML to appear before all `<edge>` elements if vertex labels are important to the graph.
 
 The following code shows how to write a `Graph` instance to file called `tinkerpop-modern.xml` and then how to read
 that file back into a different instance:
@@ -769,5 +771,5 @@ leverage _qualified namespaces_ particular to their domain (e.g. `mydomain.myver
 IMPORTANT: TinkerPop uses `tinkerpop.` and `gremlin.` as the prefixes for provided strategies, vertex programs, map
 reduce implementations, and plugins.
 
-The only truly protected namespace is the _hidden namespace_ provided to graph systems. From there, its up to
+The only truly protected namespace is the _hidden namespace_ provided to graph systems. From there, it's up to
 engineers to respect the namespacing conventions presented.

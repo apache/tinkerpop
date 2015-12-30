@@ -67,7 +67,7 @@ link:http://en.wikipedia.org/wiki/Graph_traversal[traversal].
  ** `MapReduce`: a computations that analyzes all vertices in the graph in parallel and yields a single reduced result.
 
 IMPORTANT: TinkerPop3 is licensed under the popular link:http://www.apache.org/licenses/LICENSE-2.0.html[Apache2]
-free software license. However, note that the underlying graph engine used with TinkerPop3 may have a difference
+free software license. However, note that the underlying graph engine used with TinkerPop3 may have a different
 license. Thus, be sure to respect the license caveats of the graph system product.
 
 image:tinkerpop-enabled.png[width=135,float=left] When a graph system implements the TinkerPop3 structure and process
@@ -92,7 +92,7 @@ between its vertices, edges, and properties. A vertex has incident edges. A vert
 they share an incident edge. A property is attached to an element and an element has a set of properties. A property
 is a key/value pair, where the key is always a character `String`. The graph structure API of TinkerPop3 provides the
 methods necessary to create such a structure. The TinkerPop graph previously diagrammed can be created with the
-following Java8 code. Note that this graph is available as an in-memory TinkerGraph using
+following Java 8 code. Note that this graph is available as an in-memory TinkerGraph using
 `TinkerFactory.createClassic()`.
 
 [source,java]
@@ -122,20 +122,20 @@ with the provided key/value pair properties appended to it.
 CAUTION: Many graph systems do not allow the user to specify an element ID and in such cases, an exception is thrown.
 
 NOTE: In TinkerPop3, vertices are allowed a single immutable string label (similar to an edge label). This
-functionality did not exist in TinkerPop2. Likewise, element id's are immutable as they were in TinkerPop2.
+functionality did not exist in TinkerPop2. Element ids are still immutable in TinkerPop3 as they were in TinkerPop2.
 
 Mutating the Graph
 ~~~~~~~~~~~~~~~~~~
 
-Below is a sequence of basic graph mutation operations represented in Java8. One of the major differences between
+Below is a sequence of basic graph mutation operations represented in Java 8. One of the major differences between
 TinkerPop2 and TinkerPop3 is that in TinkerPop3, the Java convention of using setters and getters has been abandoned
 in favor of a syntax that is more aligned with the syntax of Gremlin-Groovy in TinkerPop2. Given that Gremlin-Java8
-and Gremlin-Groovy are nearly identical due to the inclusion of Java8 lambdas, a big efforts was made to ensure that
+and Gremlin-Groovy are nearly identical due to the inclusion of Java 8 lambdas, a big effort was made to ensure that
 both languages are as similar as possible.
 
 CAUTION: In the code examples presented throughout this documentation, either Gremlin-Java8 or Gremlin-Groovy is used.
-It is possible to determine which derivative of Gremlin is being used by "mousing over" on the code block and see
-either "JAVA" or "GROOVY" pop up in the top right corner of the code block.
+It is possible to determine which derivative of Gremlin is being used by mousing over the code block.  The word "JAVA"
+or "GROOVY" will appear in the top right corner of the code block.
 
 image:basic-mutation.png[width=240,float=right]
 [source,java]
@@ -207,7 +207,7 @@ gremlin> gremlin.addEdge('dependsOn',blueprints)
 gremlin> blueprints.property('created',2010)
 ==>vp[created->2010]
 gremlin> blueprints.property('created').remove()
-==>null
+==>null <1>
 gremlin> gremlin.addEdge('encapsulates',blueprints)
 ==>e[7][0-encapsulates->3]
 gremlin> blueprints.remove()
@@ -215,6 +215,9 @@ gremlin> blueprints.remove()
 gremlin> gremlin.remove()
 ==>null
 ----
+
+<1> A `==>null` output is usually from a `void` method call and simply indicates that there was no problem with the
+invocation. If there were a problem, an error would be output or an exception would be thrown.
 
 IMPORTANT: TinkerGraph is not a transactional graph. For more information on transaction handling (for those graph
 systems that support them) see the section dedicated to <<transactions,transactions>>.
@@ -338,7 +341,7 @@ may alter the flow).
 On Gremlin Language Variants
 ----------------------------
 
-Gremlin is written in Java8. There are various language variants of Gremlin such as Gremlin-Groovy (packaged with
+Gremlin is written in Java 8. There are various language variants of Gremlin such as Gremlin-Groovy (packaged with
 TinkerPop3), link:https://github.com/mpollmeier/gremlin-scala[Gremlin-Scala], Gremlin-JavaScript, Gremlin-Clojure
 (known as link:https://github.com/clojurewerkz/ogre[Ogre]), etc. It is best to think of Gremlin as a style of graph
 traversing that is not bound to a particular programming language per se. Within a programming language familiar to
@@ -346,7 +349,7 @@ the developer, there is a Gremlin variant that they can use that leverages the i
 a programming language providing a Gremlin implementation must support
 link:http://en.wikipedia.org/wiki/Method_chaining[function chaining] (with
 link:http://en.wikipedia.org/wiki/Anonymous_function[lambdas/anonymous functions] being a "nice to have" if the
-variants wishes to offer arbitrary computations beyond the provided Gremlin steps).
+variant wishes to offer arbitrary computations beyond the provided Gremlin steps).
 
 Throughout the documentation, the examples provided are primarily written in Gremlin-Groovy. The reason for this is
 the <<gremlin-console,Gremlin Console>> whereby an interactive programming environment exists that does not require
