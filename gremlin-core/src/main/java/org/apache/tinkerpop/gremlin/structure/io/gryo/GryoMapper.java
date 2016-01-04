@@ -57,6 +57,7 @@ import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertex;
 import org.apache.tinkerpop.gremlin.structure.util.reference.ReferenceVertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraphGryoSerializer;
+import org.apache.tinkerpop.shaded.kryo.ClassResolver;
 import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.KryoSerializable;
 import org.apache.tinkerpop.shaded.kryo.Serializer;
@@ -90,6 +91,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -125,18 +127,20 @@ public final class GryoMapper implements Mapper<Kryo> {
     public static final byte[] GIO = "gio".getBytes();
     public static final byte[] HEADER = Arrays.copyOf(GIO, 16);
     private final List<Triplet<Class, Function<Kryo, Serializer>, Integer>> serializationList;
-    private boolean registrationRequired;
-    private boolean referenceTracking;
+    private final boolean registrationRequired;
+    private final boolean referenceTracking;
+    private final Supplier<ClassResolver> classResolver;
 
     private GryoMapper(final Builder builder) {
         this.serializationList = builder.serializationList;
         this.registrationRequired = builder.registrationRequired;
         this.referenceTracking = builder.referenceTracking;
+        this.classResolver = builder.classResolver;
     }
 
     @Override
     public Kryo createMapper() {
-        final Kryo kryo = new Kryo(new GryoClassResolver(), new MapReferenceResolver(), new DefaultStreamFactory());
+        final Kryo kryo = new Kryo(classResolver.get(), new MapReferenceResolver(), new DefaultStreamFactory());
         kryo.addDefaultSerializer(Map.Entry.class, new EntrySerializer());
         kryo.setRegistrationRequired(registrationRequired);
         kryo.setReferences(referenceTracking);
@@ -289,6 +293,7 @@ public final class GryoMapper implements Mapper<Kryo> {
 
         private boolean registrationRequired = true;
         private boolean referenceTracking = true;
+        private Supplier<ClassResolver> classResolver = GryoClassResolver::new;
 
         private Builder() {
         }
@@ -300,6 +305,20 @@ public final class GryoMapper implements Mapper<Kryo> {
         public Builder addRegistry(final IoRegistry registry) {
             if (null == registry) throw new IllegalArgumentException("The registry cannot be null");
             this.registries.add(registry);
+            return this;
+        }
+
+        /**
+         * Provides a custom Kryo {@code ClassResolver} to be supplied to a {@code Kryo} instance.  If this value is
+         * not supplied then it will default to the {@link GryoClassResolver}. To ensure compatibility with Gryo it
+         * is highly recommended that objects passed to this method extend that class.
+         * <p/>
+         * If the {@code ClassResolver} implementation share state, then the {@link Supplier} should typically create
+         * new instances when requested, as the {@link Supplier} will be called for each {@link Kryo} instance created.
+         */
+        public Builder classResolver(final Supplier<ClassResolver> classResolverSupplier) {
+            if (null == classResolverSupplier) throw new IllegalArgumentException("The classResolverSupplier cannot be null");
+            this.classResolver = classResolverSupplier;
             return this;
         }
 

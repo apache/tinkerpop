@@ -161,6 +161,21 @@ link:https://issues.apache.org/jira/browse/TINKERPOP-1000[TINKERPOP-1000]
 Graph Database Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+Custom ClassResolver
+++++++++++++++++++++
+
+For providers who have built custom serializers in Gryo, there is a new feature open that can be considered.  A
+`GryoMapper` can now take a custom Kryo `ClassResolver`, which means that custom types can be coerced to other types
+during serialization (e.g. a custom identifier could be serialized as a `HashMap`).  The advantage to taking this
+approach is that users will not need to have the provider's serializers on the client side.  They will only need to
+exist on the server (presuming that the a type is coerced to a type available on the client, of course).  The downside
+is that serialization is then no longer a two way street. For example, a custom `ClassResolver` that coerced a
+custom identifier to `HashMap` would let the client work with the identifier as a `HashMap`, but the client would then
+have to send that identifier back to the server as a `HashMap` where it would be recognized as a `HashMap` (not an
+identifier).
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1064[TINKERPOP-1064]
+
 Feature Consistency
 +++++++++++++++++++
 

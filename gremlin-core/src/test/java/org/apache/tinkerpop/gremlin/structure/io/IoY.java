@@ -49,4 +49,9 @@ public class IoY {
     public int hashCode() {
         return y.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return y + "-" + z;
+    }
 }
