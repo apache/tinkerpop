@@ -282,19 +282,21 @@ class Console {
     }
 
     private void initializeShellWithScript(final String initScriptFile) {
-        String line = ""
         try {
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(initScriptFile), Charset.forName("UTF-8")))
-            while ((line = reader.readLine()) != null) {
-                groovy.execute(line)
+            final File file = new File(initScriptFile)
+            file.eachLine { line ->
+                try {
+                    groovy.execute(line)
+                } catch (Exception ex) {
+                    io.err.println("Bad line in Gremlin initialization file at [$line] - ${ex.message}")
+                    System.exit(1)
+                }
             }
-            reader.close()
         } catch (FileNotFoundException ignored) {
-            io.err.println(String.format("Gremlin initialization file not found at [%s].", initScriptFile))
+            io.err.println("Gremlin initialization file not found at [$initScriptFile].")
             System.exit(1)
-        } catch (IOException ignored) {
-            io.err.println(String.format("Bad line in Gremlin initialization file at [%s].", line))
+        } catch (Exception ex) {
+            io.err.println("Error starting Gremlin with initialization script at [$initScriptFile] - ${ex.message}")
             System.exit(1)
         }
     }

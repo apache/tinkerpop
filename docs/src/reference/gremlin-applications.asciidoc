@@ -276,6 +276,11 @@ $ bin/gremlin.sh -e gremlin.groovy vadas
 v[2]
 ----
 
+NOTE: The `ScriptExecutor` is for Gremlin Groovy scripts only.  It is not possible to include Console plugin commands
+such as `:remote` or `:>` when using `-e` in these scripts. That does not mean that it is impossible to script such
+commands, it just means that they need to be scripted manually.  For example, instead of trying to use the `:remote`
+command, manually construct a <<connecting-via-java,Gremlin Driver>> `Client` and submit scripts from there.
+
 [[gremlin-server]]
 Gremlin Server
 --------------
@@ -361,8 +366,11 @@ single time. In this case, the startup hook loads the "modern" graph into the em
 it for use.  The second key/value pair assigned to the `Map`, named "g", defines a `TraversalSource` from the `Graph`
 bound to the "graph" variable in the YAML configuration file.  This variable `g`, as well as any other variable
 assigned to the `Map`, will be made available as variables for future remote script executions.  In more general
-terms, any key/value pairs assigned to a `Map` returned from the init script will become variables that are global
-to all requests. In addition, any functions that are defined will be cached for future use.
+terms, any key/value pairs assigned to a `Map` returned from the initialization script will become variables that
+are global to all requests. In addition, any functions that are defined will be cached for future use.
+
+WARNING: Transactions on graphs in initialization scripts are not closed automatically after the script finishes
+executing.  It is up to the script to properly commit or rollback transactions in the script itself.
 
 With Gremlin Server running it is now possible to issue some scripts to it for processing.  Start Gremlin Console as follows:
 
@@ -468,6 +476,7 @@ for purposes of execution within the context of a script.  Therefore, it becomes
 :> x.E().label().groupCount()
 ----
 
+[[connecting-via-java]]
 Connecting via Java
 ~~~~~~~~~~~~~~~~~~~
 
@@ -731,6 +740,7 @@ The following table describes the various configuration options that Gremlin Ser
 |ssl.keyFile |The `PKCS#8` private key file in PEM format. If this value is not present and `ssl.enabled` is `true` a self-signed certificate will be used (not suitable for production). |_none_
 |ssl.keyPassword |The password of the `keyFile` if it's not password-protected |_none_
 |ssl.trustCertChainFile |Trusted certificates for verifying the remote endpoint's certificate. The file should contain an X.509 certificate chain in PEM format. A system default will be used if this setting is not present. |_none_
+|strictTransactionManagement |Set to `true` to require `aliases` to be submitted on every requests, where the `aliases` become the scope of transaction management. |false
 |threadPoolBoss |The number of threads available to Gremlin Server for accepting connections. Should always be set to `1`. |1
 |threadPoolWorker |The number of threads available to Gremlin Server for processing non-blocking reads and writes. |1
 |writeBufferHighWaterMark | If the number of bytes in the network send buffer exceeds this value then the channel is no longer writeable, accepting no additional writes until buffer is drained and the `writeBufferLowWaterMark` is met. |65536
@@ -940,6 +950,10 @@ this documentation.  Consult the latest link:http://docs.groovy-lang.org/latest/
 for information on the differences. It is important to understand the impact that these configuration will have on
 submitted scripts before enabling this feature.
 
+NOTE: The import of classes to the script engine is handled by the `ImportCustomizerProvider`.  As the concept of
+"imports" is a first-class citizen (i.e. has its own configuration options), it is not recommended that the
+`ImportCustomizerProvider` be used as a configuration option to `compilerCustomizerProviders`.
+
 This configuration uses the `SimpleSandboxExtension`, which blacklists calls to methods on the `System` class,
 thereby preventing someone from remotely killing the server:
 
@@ -955,18 +969,75 @@ Script8.groovy: 1: [Static type checking] - Not authorized to call this method: 
 ----
 
 The `SimpleSandboxExtension` is by no means a "complete" implementation protecting against all manner of nefarious
-scripts, but it does provide an example for how such a capability might be implemented.  A full implementation would
-likely represent domain specific white-listing of methods (and possibly variables) available for execution in the
-script engine.
+scripts, but it does provide an example for how such a capability might be implemented.  A more complete implementation
+is offered in the `FileSandboxExtension` which uses a configuration file to white list certain classes and methods.
+The configuration file is YAML-based and an example is presented as follows:
+
+[source,yaml]
+----
+autoTypeUnknown: true
+methodWhiteList:
+  - java\.lang\.Boolean.*
+  - java\.lang\.Byte.*
+  - java\.lang\.Character.*
+  - java\.lang\.Double.*
+  - java\.lang\.Enum.*
+  - java\.lang\.Float.*
+  - java\.lang\.Integer.*
+  - java\.lang\.Long.*
+  - java\.lang\.Math.*
+  - java\.lang\.Number.*
+  - java\.lang\.Object.*
+  - java\.lang\.Short.*
+  - java\.lang\.String.*
+  - java\.lang\.StringBuffer.*
+  - java\.lang\.System#currentTimeMillis\(\)
+  - java\.lang\.System#nanoTime\(\)
+  - java\.lang\.Throwable.*
+  - java\.lang\.Void.*
+  - java\.util\..*
+  - org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods.*
+  - org\.codehaus\.groovy\.runtime\.InvokerHelper#runScript\(java\.lang\.Class,java\.lang\.String\[\]\)
+  - org\.codehaus\.groovy\.runtime\.StringGroovyMethods.*
+  - groovy\.lang\.Script#<init>\(groovy.lang.Binding\)
+  - org\.apache\.tinkerpop\.gremlin\.structure\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.bulkloading\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.clustering\.peerpressure\.*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.ranking\.pagerank\.*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.traversal\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.dsl\.graph\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.engine\..*
+  - org\.apache\.tinkerpop\.gremlin\.server\.util\.LifeCycleHook.*
+staticVariableTypes:
+  graph: org.apache.tinkerpop.gremlin.structure.Graph
+  g: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
+----
+
+There are three keys in this configuration file that control different aspects of the sandbox:
+
+. `autoTypeUnknown` - When set to `true`, unresolved variables are typed as `Object`.
+. `methodWhiteList` - A white list of classes and methods that follow a regex pattern which can then be matched against
+method descriptors to determine if they can be executed.  The method descriptor is the fully-qualified class name
+of the method, its name and parameters. For example, `Math.ceil` would have a descriptor of
+`java.lang.Math#ceil(double)`.
+. `staticVariableTypes` - A list of variables that will be used in the `ScriptEngine` for which the types are
+always known.  In the above example, the variable "graph" will always be bound to a `Graph` instance.
+
+At Gremlin Server startup, the `FileSandboxExtension` looks in the root of Gremlin Server installation directory for a
+file called `sandbox.yaml` and configures itself.  To use a file in a different location set the
+`gremlinServerSandbox` system property to the location of the file (e.g. `-DgremlinServerSandbox=conf/my-sandbox.yaml`).
+
+The `FileSandboxExtension` provides for a basic configurable security function in Gremlin Server. More complex
+sandboxing implementations can be developed by using this white listing model and extending from the
+`AbstractSandboxExtension`.
 
 A final thought on the topic of `CompilerCustomizerProvider` implementations is that they are not just for
 "security" (though they are demonstrated in that capacity here).  They can be used for a variety of features that
 can fine tune the Groovy compilation process.  Read more about compilation customization in the
 link:http://docs.groovy-lang.org/latest/html/documentation/#compilation-customizers[Groovy Documentation].
-
-NOTE: The import of classes to the script engine is handled by the `ImportCustomizerProvider`.  As the concept of
-"imports" is a first-class citizen (i.e. has its own configuration options), it is not recommended that the
-`ImportCustomizerProvider` be used as a configuration option to `compilerCustomizerProviders`.
 
 Serialization
 ^^^^^^^^^^^^^
@@ -1026,16 +1097,22 @@ It has the MIME type of `application/vnd.gremlin-v1.0+gryo` and the following co
 |=========================================================
 |Key |Description |Default
 |bufferSize |The maximum size of the Kryo buffer for use on a single object being serialized.  Increasing this value will correct `KryoException` errors that complain of "Buffer too small". |_4096_
+|classResolverSupplier |The fully qualified classname of a custom `Supplier<ClassResolver>` which will be used when constructing `Kryo` instances. There is no direct default for this setting, but without a setting the `GryoClassResolver` is used. |_none_
+|custom |A list of classes with custom kryo `Serializer` implementations related to them in the form of `<class>;<serializer-class>`. |_none_
+|ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer. |_none_
 |serializeResultToString |When set to `true`, results are serialized by first calling `toString()` on each object in the result list resulting in an extended MIME Type of `application/vnd.gremlin-v1.0+gryo-stringd`.  When set to `false` Kryo-based serialization is applied. |_false_
 |useMapperFromGraph |Specifies the name of the `Graph` (from the `graphs` `Map` in the configuration file) from which to plugin any custom serializers that are tied to it. |_none_
-|ioRegistries |A list of `IoRegistry` implementations to be applied to the serializer.
-|custom |A list of classes with custom kryo `Serializer` implementations related to them in the form of `<class>;<serializer-class>`. |_none_
 |=========================================================
 
 As described above, there are multiple ways in which to register serializers for Kryo-based serialization.  These
 configurations can be used in conjunction with one another where there is a specific ordering to how the configurations
 are applied.  The `userMapperFromGraph` setting is applied first, followed by any `ioRegistries` and finalized by the
 `custom` setting.
+
+Those configuring or implementing a `Supplier<ClassResolver>` should consider this an "advanced" option and typically
+important to use cases where server types need to be coerced to client types (i.e. a type is available on the server
+but not on the client).  Implementations should typically instantiate `ClassResolver` implementations that are
+extensions of the `GryoClassResolver` as this class is important to most serialization tasks in TinkerPop.
 
 Best Practices
 ~~~~~~~~~~~~~~
@@ -1047,6 +1124,7 @@ Tuning
 
 image:gremlin-handdrawn.png[width=120,float=right] Tuning Gremlin Server for a particular environment may require some simple trial-and-error, but the following represent some basic guidelines that might be useful:
 
+* Gremlin Server defaults to a very modest maximum heap size.  Consider increasing this value for non-trivial uses.  Maximum heap size (`-Xmx`) is defined with the `JAVA_OPTIONS` setting in `gremlin-server.sh`.
 * When configuring the size of `threadPoolWorker` start with the default of `1` and increment by one as needed to a maximum of `2*number of cores`.
 * The "right" size of the `gremlinPool` setting is somewhat dependent on the type of scripts that will be processed
 by Gremlin Server.  As requests arrive to Gremlin Server they are decoded and queued to be processed by threads in
@@ -1155,6 +1233,13 @@ be iterated in order for the mutations to take place or else the commit will hav
 Server attempts to detect these types of traversals and treat them specially. The unfortunate downside is that the
 result of this script must be realized in memory which means that they aren't being streamed back to the client.
 For small results this likely should not present an issue.
+
+Another aspect of Transaction Management that should be considered is the usage of the `strictTransactionManagement`
+setting.  It is `false` by default, but when set to `true`, it forces the user to pass `aliases` for all requests.
+The aliases are then used to determine which graphs will have their transactions closed for that request. Running
+Gremlin Server in this configuration should be more efficient when there are multiple graphs being hosted as
+Gremlin Server will only close transactions on the graphs specified by the `aliases`. Keeping this setting `false`,
+will simply have Gremlin Server close transactions on all graphs for every request.
 
 NOTE: It is possible to bypass the transaction management system around `GraphTraversal` by using a lambda. Gremlin
 Server is only looking for `Mutating` steps, so a script like: `g.V().sideEffect{it.get().property('color','green')}`

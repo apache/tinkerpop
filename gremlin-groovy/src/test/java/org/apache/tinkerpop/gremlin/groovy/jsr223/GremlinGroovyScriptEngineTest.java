@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.groovy.NoImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -52,6 +54,7 @@ import static org.junit.Assert.fail;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinGroovyScriptEngineTest {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinGroovyScriptEngineTest.class);
 
     @Test
     public void shouldCompileScriptWithoutRequiringVariableBindings() throws Exception {
@@ -245,7 +248,7 @@ public class GremlinGroovyScriptEngineTest {
             fail("Should fail as class is not yet imported");
         } catch (ScriptException se) {
             // should get here as Color.BLACK is not imported yet.
-            System.out.println("Failed to execute Color.BLACK as expected.");
+            logger.info("Failed to execute Color.BLACK as expected.");
         }
 
         final Thread evalThread = new Thread(() -> {
@@ -268,7 +271,7 @@ public class GremlinGroovyScriptEngineTest {
         Thread.sleep(1000);
 
         final Thread importThread = new Thread(() -> {
-            System.out.println("Importing java.awt.Color...");
+            logger.info("Importing java.awt.Color...");
             final Set<String> imports = new HashSet<String>() {{
                 add("import java.awt.Color");
             }};

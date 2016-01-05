@@ -1,0 +1,58 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# This is an example configuration for the FileSandboxExtension.
+
+autoTypeUnknown: true
+methodWhiteList:
+  - java\.lang\.Boolean.*
+  - java\.lang\.Byte.*
+  - java\.lang\.Character.*
+  - java\.lang\.Double.*
+  - java\.lang\.Enum.*
+  - java\.lang\.Float.*
+  - java\.lang\.Integer.*
+  - java\.lang\.Long.*
+  - java\.lang\.Math.*
+  - java\.lang\.Number.*
+  - java\.lang\.Object.*
+  - java\.lang\.Short.*
+  - java\.lang\.String.*
+  - java\.lang\.StringBuffer.*
+  - java\.lang\.System#currentTimeMillis\(\)
+  - java\.lang\.System#nanoTime\(\)
+  - java\.lang\.Throwable.*
+  - java\.lang\.Void.*
+  - java\.util\..*
+  - org\.codehaus\.groovy\.runtime\.DefaultGroovyMethods.*
+  - org\.codehaus\.groovy\.runtime\.InvokerHelper#runScript\(java\.lang\.Class,java\.lang\.String\[\]\)
+  - org\.codehaus\.groovy\.runtime\.StringGroovyMethods.*
+  - groovy\.lang\.Script#<init>\(groovy.lang.Binding\)
+  - org\.apache\.tinkerpop\.gremlin\.structure\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.bulkloading\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.clustering\.peerpressure\.*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.ranking\.pagerank\.*
+  - org\.apache\.tinkerpop\.gremlin\.process\.computer\.traversal\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.dsl\.graph\..*
+  - org\.apache\.tinkerpop\.gremlin\.process\.traversal\.engine\..*
+  - org\.apache\.tinkerpop\.gremlin\.server\.util\.LifeCycleHook.*
+staticVariableTypes:
+  graph: org.apache.tinkerpop.gremlin.structure.Graph
+  g: org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource

@@ -123,7 +123,7 @@ public abstract class MapTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    /** TINKERPOP3-782 */
+    /** TINKERPOP-782 */
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_mapXselectXaXX() {

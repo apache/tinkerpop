@@ -34,6 +34,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -57,6 +59,7 @@ import static org.junit.Assume.assumeThat;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinTest {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinTest.class);
     protected Graph graph;
     protected GraphTraversalSource g;
     protected Optional<Class<? extends GraphComputer>> graphComputerClass;
@@ -130,6 +133,15 @@ public abstract class AbstractGremlinTest {
     public void tearDown() throws Exception {
         if (null != graphProvider) {
             graphProvider.clear(graph, config);
+
+            // All GraphProvider objects should be an instance of ManagedGraphProvider, as this is handled by GraphManager
+            // which wraps injected GraphProviders with a ManagedGraphProvider instance. If this doesn't happen, there
+            // is no way to trace open graphs.
+            if(graphProvider instanceof GraphManager.ManagedGraphProvider)
+                ((GraphManager.ManagedGraphProvider)graphProvider).tryCloseGraphs();
+            else
+                logger.warn("The {} is not of type ManagedGraphProvider and therefore graph instances may leak between test cases.", graphProvider.getClass());
+
             g = null;
             config = null;
             graphProvider = null;
@@ -235,12 +247,10 @@ public abstract class AbstractGremlinTest {
     }
 
     public void printTraversalForm(final Traversal traversal) {
-        final boolean muted = Boolean.parseBoolean(System.getProperty("muteTestLogs", "false"));
-
-        if (!muted) System.out.println(String.format("Testing: %s", name.getMethodName()));
-        if (!muted) System.out.println("   pre-strategy:" + traversal);
+        logger.info(String.format("Testing: %s", name.getMethodName()));
+        logger.info("   pre-strategy:" + traversal);
         traversal.hasNext();
-        if (!muted) System.out.println("  post-strategy:" + traversal);
+        logger.info("  post-strategy:" + traversal);
         verifyUniqueStepIds(traversal.asAdmin());
     }
 

@@ -35,7 +35,6 @@ import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedOutputStream;
@@ -130,7 +129,6 @@ public class TinkerGraphTest {
         g.createIndex("", Edge.class);
     }
 
-    @Ignore
     @Test
     public void shouldUpdateVertexIndicesInNewGraph() {
         final TinkerGraph g = TinkerGraph.open();
@@ -150,7 +148,6 @@ public class TinkerGraphTest {
         }, 35)).has("name", "stephen").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldRemoveAVertexFromAnIndex() {
         final TinkerGraph g = TinkerGraph.open();
@@ -177,7 +174,6 @@ public class TinkerGraphTest {
         }, 35)).has("name", "stephen").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldUpdateVertexIndicesInExistingGraph() {
         final TinkerGraph g = TinkerGraph.open();
@@ -205,7 +201,6 @@ public class TinkerGraphTest {
         }, 35)).has("name", "stephen").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldUpdateEdgeIndicesInNewGraph() {
         final TinkerGraph g = TinkerGraph.open();
@@ -226,7 +221,6 @@ public class TinkerGraphTest {
         }, 0.5)).has("oid", "1").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldRemoveEdgeFromAnIndex() {
         final TinkerGraph g = TinkerGraph.open();
@@ -254,7 +248,6 @@ public class TinkerGraphTest {
         }, 0.5)).has("oid", "1").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldUpdateEdgeIndicesInExistingGraph() {
         final TinkerGraph g = TinkerGraph.open();
@@ -362,16 +355,17 @@ public class TinkerGraphTest {
         v.remove();
         v.value("name");
     }
+
     @Test(expected = IllegalStateException.class)
     public void shouldRequireGraphFormatIfLocationIsSet() {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, "/tmp");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataDirectory(TinkerGraphTest.class));
         TinkerGraph.open(conf);
     }
 
     @Test
     public void shouldPersistToGraphML() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGraphML.xml";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGraphML.xml";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -389,7 +383,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGraphSON() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGraphSON.json";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGraphSON.json";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -407,7 +401,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGryo() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGryo.kryo";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGryo.kryo";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -425,7 +419,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToAnyGraphFormat() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToAnyGraphFormat.dat";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToAnyGraphFormat.dat";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 

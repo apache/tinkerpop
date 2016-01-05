@@ -21,27 +21,27 @@ package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.groovy.util.TestableConsolePluginAcceptor;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.HadoopGraphProvider;
 import org.apache.tinkerpop.gremlin.process.AbstractGremlinProcessTest;
-import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
-import org.apache.tinkerpop.gremlin.process.computer.MapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.traversal.step.sideEffect.mapreduce.TraverserMapReduce;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This is an test that is mean to be used in the context of the {@link HadoopPluginSuite} and shouldn't be
@@ -99,6 +99,9 @@ public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldSupportHDFSMethods() throws Exception {
+        final String hadoopGraphProviderDataDir = graphProvider.getWorkingDirectory() + File.separator;
+        final File testDir = TestHelper.makeTestDataPath(HadoopGremlinPluginCheck.class, "shouldSupportHDFSMethods");
+        final String prefix = TestHelper.convertToRelative(HadoopGremlinPluginCheck.class, testDir);
         ////////////////
         List<String> ls = (List<String>) this.console.eval("hdfs.ls()");
         for (final String line : ls) {
@@ -111,38 +114,60 @@ public class HadoopGremlinPluginCheck extends AbstractGremlinTest {
             assertEquals(" ", line.substring(9, 10));
         }
         ////////////////
-        this.console.eval("hdfs.copyFromLocal('" + HadoopGraphProvider.PATHS.get("tinkerpop-classic.txt") + "', 'target/tinkerpop-classic.txt')");
-        assertTrue((Boolean) this.console.eval("hdfs.exists('target/tinkerpop-classic.txt')"));
+        this.console.eval("hdfs.copyFromLocal('" + HadoopGraphProvider.PATHS.get("tinkerpop-classic.txt") + "', '" + prefix + "tinkerpop-classic.txt')");
+        assertTrue((Boolean) this.console.eval("hdfs.exists('" + prefix + "tinkerpop-classic.txt')"));
         ////////////////
-        List<String> head = IteratorUtils.asList(this.console.eval("hdfs.head('target/tinkerpop-classic.txt')"));
+        List<String> head = IteratorUtils.asList(this.console.eval("hdfs.head('" + prefix + "tinkerpop-classic.txt')"));
         assertEquals(6, head.size());
         for (final String line : head) {
             assertEquals(":", line.substring(1, 2));
             assertTrue(Integer.valueOf(line.substring(0, 1)) <= 6);
         }
-        head = IteratorUtils.asList(this.console.eval("hdfs.head('target/tinkerpop-classic.txt',3)"));
+        head = IteratorUtils.asList(this.console.eval("hdfs.head('" + prefix + "tinkerpop-classic.txt',3)"));
         assertEquals(3, head.size());
         for (final String line : head) {
             assertEquals(":", line.substring(1, 2));
             assertTrue(Integer.valueOf(line.substring(0, 1)) <= 3);
         }
         ////////////////
-        this.console.eval("hdfs.rm('target/tinkerpop-classic.txt')");
-        assertFalse((Boolean) this.console.eval("hdfs.exists('target/tinkerpop-classic.txt')"));
+        this.console.eval("hdfs.rm('" + prefix + "tinkerpop-classic.txt')");
+        assertFalse((Boolean) this.console.eval("hdfs.exists('" + prefix + "tinkerpop-classic.txt')"));
         ////////////////
         this.console.addBinding("graph", this.graph);
         this.console.addBinding("g", this.g);
         this.remote.connect(Arrays.asList("graph", "g"));
         Traversal<Vertex, String> traversal = (Traversal<Vertex, String>) this.remote.submit(Arrays.asList("g.V().hasLabel('person').group('m').by('age').by('name').out('knows').out('created').values('name')"));
         AbstractGremlinProcessTest.checkResults(Arrays.asList("ripple", "lop"), traversal);
-        assertFalse((Boolean) this.console.eval("hdfs.exists('target/test-output/m')"));
-        assertFalse((Boolean) this.console.eval("hdfs.exists('target/test-output/" + TraverserMapReduce.TRAVERSERS + "')"));
+//        assertFalse((Boolean) this.console.eval("hdfs.exists('" + hadoopGraphProviderDataDir + "m')"));
+//        assertFalse((Boolean) this.console.eval("hdfs.exists('" + hadoopGraphProviderDataDir + TraverserMapReduce.TRAVERSERS + "')"));
+        /*final List<KeyValue<Integer, Collection<String>>> mList = IteratorUtils.asList(this.console.eval("hdfs.head('" + hadoopGraphProviderDataDir + "m',ObjectWritable)"));
+        assertEquals(4, mList.size());
+        mList.forEach(keyValue -> {
+            if (keyValue.getKey().equals(29))
+                assertTrue(keyValue.getValue().contains("marko"));
+            else if (keyValue.getKey().equals(35))
+                assertTrue(keyValue.getValue().contains("peter"));
+            else if (keyValue.getKey().equals(32))
+                assertTrue(keyValue.getValue().contains("josh"));
+            else if (keyValue.getKey().equals(27))
+                assertTrue(keyValue.getValue().contains("vadas"));
+            else
+                throw new IllegalStateException("The provided key/value is unknown: " + keyValue);
+        });
+        final List<KeyValue<MapReduce.NullObject, Traverser<String>>> traversersList = IteratorUtils.asList(this.console.eval("hdfs.head('" + hadoopGraphProviderDataDir + TraverserMapReduce.TRAVERSERS + "',ObjectWritable)"));
+        assertEquals(2, traversersList.size());
+        traversersList.forEach(keyValue -> {
+            assertEquals(MapReduce.NullObject.instance(), keyValue.getKey());
+            final String name = keyValue.getValue().get();
+            assertTrue(name.equals("ripple") || name.equals("lop"));
+        });*/
+        ////////////////
     }
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldGracefullyHandleBadGremlinHadoopLibs() throws Exception {
-        System.setProperty(Constants.HADOOP_GREMLIN_LIBS, "test/" + UUID.randomUUID());
+        System.setProperty(Constants.HADOOP_GREMLIN_LIBS, TestHelper.makeTestDataDirectory(HadoopGremlinPluginCheck.class, "shouldGracefullyHandleBadGremlinHadoopLibs"));
         this.graph.configuration().setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, true);
         this.console.addBinding("graph", this.graph);
         this.console.addBinding("g", this.g);

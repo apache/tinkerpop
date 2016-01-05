@@ -38,6 +38,8 @@ import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -56,6 +58,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -71,7 +74,7 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegrationTest {
-
+    private static final Logger logger = LoggerFactory.getLogger(GremlinDriverIntegrateTest.class);
     /**
      * Configure specific Gremlin Server settings for specific tests.
      */
@@ -103,6 +106,14 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             case "shouldExecuteSessionlessScriptOnTransactionalGraph":
             case "shouldExecuteScriptInSessionOnTransactionalWithManualTransactionsGraph":
             case "shouldExecuteInSessionAndSessionlessWithoutOpeningTransaction":
+                deleteDirectory(new File("/tmp/neo4j"));
+                settings.graphs.put("graph", "conf/neo4j-empty.properties");
+                break;
+            case "shouldRequireAliasedGraphVariablesInStrictTransactionMode":
+                settings.strictTransactionManagement = true;
+                break;
+            case "shouldAliasGraphVariablesInStrictTransactionMode":
+                settings.strictTransactionManagement = true;
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
@@ -166,6 +177,33 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertThat(inner.getMessage(), startsWith("Encountered unregistered class ID:"));
         }
 
+        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+        // from time to time, especially in the console if you're just exploring.
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldFailWithScriptExecutionException() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        final ResultSet results = client.submit("1/0");
+
+        try {
+            results.all().join();
+            fail("Should have thrown exception over bad serialization");
+        } catch (Exception ex) {
+            final Throwable inner = ExceptionUtils.getRootCause(ex);
+            assertTrue(inner instanceof ResponseException);
+            assertThat(inner.getMessage(), endsWith("Division by zero"));
+        }
+
+        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+        // from time to time, especially in the console if you're just exploring.
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+
         cluster.close();
     }
 
@@ -184,12 +222,12 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertFalse(futureFive.isDone());
         assertEquals("zero", futureZero.get().get(0).getString());
 
-        System.out.println("Eval of 'zero' complete: " + TimeUtil.millisSince(start));
+        logger.info("Eval of 'zero' complete: " + TimeUtil.millisSince(start));
 
         assertFalse(futureFive.isDone());
         assertEquals("five", futureFive.get(10, TimeUnit.SECONDS).get(0).getString());
 
-        System.out.println("Eval of 'five' complete: " + TimeUtil.millisSince(start));
+        logger.info("Eval of 'five' complete: " + TimeUtil.millisSince(start));
     }
 
     @Test
@@ -449,6 +487,10 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
             assertEquals(ResponseStatusCode.SERVER_ERROR_SERIALIZATION, ((ResponseException) inner).getResponseStatusCode());
         }
 
+        // should not die completely just because we had a bad serialization error.  that kind of stuff happens
+        // from time to time, especially in the console if you're just exploring.
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+
         cluster.close();
     }
 
@@ -549,6 +591,24 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         } catch (Exception re) {
             final Throwable root = ExceptionUtils.getRootCause(re);
             assertTrue(root.getMessage().equals("Max frame length of 1 has been exceeded."));
+        } finally {
+            cluster.close();
+        }
+    }
+
+    @Test
+    public void shouldReturnNiceMessageFromOpSelector() {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            final Map m = new HashMap<>();
+            m.put(null, "a null key will force a throw of OpProcessorException in message validation");
+            client.submit("1+1", m).all().get();
+            fail("Should throw an exception.");
+        } catch (Exception re) {
+            final Throwable root = ExceptionUtils.getRootCause(re);
+            assertEquals("The [eval] message is using one or more invalid binding keys - they must be of type String and cannot be null", root.getMessage());
         } finally {
             cluster.close();
         }
@@ -791,6 +851,53 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         for (int ix = 0; ix < results.size(); ix++) {
             assertEquals(1000 + ix, results.get(ix).intValue());
         }
+    }
+
+    @Test
+    public void shouldRequireAliasedGraphVariablesInStrictTransactionMode() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("1+1").all().get().get(0).getVertex();
+            fail("Should have tossed an exception because strict mode is on and no aliasing was performed");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ResponseException.class));
+            final ResponseException re = (ResponseException) root;
+            assertEquals(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, re.getResponseStatusCode());
+        }
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldAliasGraphVariablesInStrictTransactionMode() throws Exception {
+        assumeNeo4jIsPresent();
+
+        final Cluster cluster = Cluster.build().create();
+        final Client client = cluster.connect();
+
+        try {
+            client.submit("g.addVertex('name','stephen');").all().get().get(0).getVertex();
+            fail("Should have tossed an exception because \"g\" does not have the addVertex method under default config");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(ResponseException.class));
+            final ResponseException re = (ResponseException) root;
+            assertEquals(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS, re.getResponseStatusCode());
+        }
+
+        // keep the testing here until "rebind" is completely removed
+        final Client reboundLegacy = cluster.connect().rebind("graph");
+        final Vertex vLegacy = reboundLegacy.submit("g.addVertex('name','stephen')").all().get().get(0).getVertex();
+        assertEquals("stephen", vLegacy.value("name"));
+
+        final Client rebound = cluster.connect().alias("graph");
+        final Vertex v = rebound.submit("g.addVertex('name','jason')").all().get().get(0).getVertex();
+        assertEquals("jason", v.value("name"));
+
+        cluster.close();
     }
 
     @Test

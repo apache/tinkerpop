@@ -89,7 +89,6 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
         final Configuration config = configuration.subset(BULK_LOADER_VERTEX_PROGRAM_CFG_PREFIX);
         if (config.containsKey("class")) {
             final String className = config.getString("class");
-            config.clearProperty("class");
             try {
                 final Class<?> bulkLoaderClass = Class.forName(className);
                 loader = (BulkLoader) bulkLoaderClass.getConstructor().newInstance();
@@ -153,7 +152,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
             ConfigurationUtils.copy(config, configuration);
         }
         intermediateBatchSize = configuration.getLong(INTERMEDIATE_BATCH_SIZE_CFG_KEY, 0L);
-        elementComputeKeys.add(configuration.getString(BULK_LOADER_VERTEX_ID_CFG_KEY, DEFAULT_BULK_LOADER_VERTEX_ID));
+        elementComputeKeys.add(DEFAULT_BULK_LOADER_VERTEX_ID);
         bulkLoader = createBulkLoader();
     }
 
@@ -218,7 +217,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
             this.commit(false);
             if (!bulkLoader.useUserSuppliedIds()) {
                 // create an id pair and send it to all the vertex's incoming adjacent vertices
-                sourceVertex.property(bulkLoader.getVertexIdProperty(), targetVertex.id());
+                sourceVertex.property(DEFAULT_BULK_LOADER_VERTEX_ID, targetVertex.id());
                 messenger.sendMessage(messageScope, Pair.with(sourceVertex.id(), targetVertex.id()));
             }
         } else if (memory.getIteration() == 1) {
@@ -243,7 +242,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
                     idPairs.put(idPair.getValue(0), idPair.getValue(1));
                 }
                 // get the vertex with given the dummy id property
-                final Object outVId = sourceVertex.value(bulkLoader.getVertexIdProperty());
+                final Object outVId = sourceVertex.value(DEFAULT_BULK_LOADER_VERTEX_ID);
                 final Vertex outV = bulkLoader.getVertexById(outVId, graph, g);
                 // for all the incoming edges of the vertex, get the incoming adjacent vertex and write the edge and its properties
                 sourceVertex.edges(Direction.OUT).forEachRemaining(edge -> {
@@ -254,7 +253,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
                 });
             }
         } else if (memory.getIteration() == 2) {
-            final Object vertexId = sourceVertex.value(bulkLoader.getVertexIdProperty());
+            final Object vertexId = sourceVertex.value(DEFAULT_BULK_LOADER_VERTEX_ID);
             bulkLoader.getVertexById(vertexId, graph, g)
                     .property(bulkLoader.getVertexIdProperty()).remove();
             this.commit(false);
@@ -265,7 +264,7 @@ public class BulkLoaderVertexProgram implements VertexProgram<Tuple> {
     public boolean terminate(final Memory memory) {
         switch (memory.getIteration()) {
             case 1:
-                return bulkLoader.keepOriginalIds();
+                return bulkLoader.keepOriginalIds() || bulkLoader.getVertexIdProperty() == null;
             case 2:
                 return true;
         }

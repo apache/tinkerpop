@@ -71,10 +71,10 @@ if [ "${TYPE}" = "SOURCE" ]; then
 fi
 
 echo -n "* downloading ${COMPONENT} (${ZIP_FILENAME})... "
-curl -Ls ${URL} -o ${ZIP_FILENAME}
+curl -Lsf ${URL} -o ${ZIP_FILENAME} || { echo "Failed to download ${COMPONENT}" ; exit 1; }
 for ext in "asc" "md5" "sha1"
 do
-  curl -Ls ${URL}.${ext} -o ${ZIP_FILENAME}.${ext} || (echo "Failed to download ${COMPONENT} (${ext})" ; exit 1)
+  curl -Lsf ${URL}.${ext} -o ${ZIP_FILENAME}.${ext} || { echo "Failed to download ${COMPONENT} (${ext})" ; exit 1 ; }
 done
 echo "OK"
 

@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoReader;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +39,7 @@ import java.util.Map;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGraphProvider implements GraphProvider {
-
+    private static final Logger logger = LoggerFactory.getLogger(AbstractGraphProvider.class);
     /**
      * Provides a basic configuration for a particular {@link org.apache.tinkerpop.gremlin.structure.Graph} instance and used
      * the {@code graphName} to ensure that the instance is unique.  It is up to the Gremlin implementation
@@ -108,15 +110,7 @@ public abstract class AbstractGraphProvider implements GraphProvider {
         // cleared between tests runs and this exception will make it clear if it is not. this code used to
         // throw an exception but that fails windows builds in some cases unecessarily - hopefully the print
         // to screen is enough to hint failures due to the old directory still being in place.
-        if (directory.exists()) System.err.println("unable to delete directory " + directory.getAbsolutePath());
-    }
-
-    /**
-     * Helper method for those build {@link GraphProvider} implementations that need a standard working directory
-     * for tests (e.g. graphs that persist data to disk).
-     */
-    protected String getWorkingDirectory() {
-        return TestHelper.makeTestDataPath(this.getClass(), "graph-provider-data").getAbsolutePath();
+        if (directory.exists()) logger.error("unable to delete directory " + directory.getAbsolutePath());
     }
 
     protected void readIntoGraph(final Graph g, final String path) throws IOException {

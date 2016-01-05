@@ -19,9 +19,9 @@
 package org.apache.tinkerpop.gremlin.neo4j;
 
 import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
-import org.apache.tinkerpop.gremlin.neo4j.process.NativeNeo4jCypherTest;
-import org.apache.tinkerpop.gremlin.neo4j.structure.NativeNeo4jIndexTest;
-import org.apache.tinkerpop.gremlin.neo4j.structure.NativeNeo4jStructureTest;
+import org.apache.tinkerpop.gremlin.neo4j.process.NativeNeo4jCypherCheck;
+import org.apache.tinkerpop.gremlin.neo4j.structure.NativeNeo4jIndexCheck;
+import org.apache.tinkerpop.gremlin.neo4j.structure.NativeNeo4jStructureCheck;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
@@ -34,13 +34,13 @@ public class NativeNeo4jSuite extends AbstractGremlinSuite {
     public NativeNeo4jSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
         super(klass, builder,
                 new Class<?>[]{
-                        NativeNeo4jStructureTest.class,
-                        NativeNeo4jIndexTest.class,
-                        NativeNeo4jCypherTest.class,
+                        NativeNeo4jStructureCheck.class,
+                        NativeNeo4jIndexCheck.class,
+                        NativeNeo4jCypherCheck.class,
                 }, new Class<?>[]{
-                        NativeNeo4jStructureTest.class,
-                        NativeNeo4jIndexTest.class,
-                        NativeNeo4jCypherTest.class
+                        NativeNeo4jStructureCheck.class,
+                        NativeNeo4jIndexCheck.class,
+                        NativeNeo4jCypherCheck.class
                 },
                 false,
                 TraversalEngine.Type.STANDARD);

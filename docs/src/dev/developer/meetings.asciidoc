@@ -57,45 +57,45 @@ The following tickets were assigned to `3.1.1-incubating`:
 [width="100%",cols="2,5,2",options="header"]
 |=========================================================
 |ID |Description |Type
-|TINKERPOP3-379 |MessageScope.Local.setStaticMessage(M msg) |Improvement
-|TINKERPOP3-659 |GraphConfiguration Class |Improvement
-|TINKERPOP3-736 |Automatic Traversal rewriting |Improvement
-|TINKERPOP3-763 |IsStep broken when profiling is enabled. |Bug
-|TINKERPOP3-818 |Consider a P.instanceOf() |Improvement
-|TINKERPOP3-824 |Do we need runtime BigDecimal in more places? |Improvement
-|TINKERPOP3-842 |MapReduceHelper should sort respective of the number of reduce tasks |Improvement
-|TINKERPOP3-859 |Provide a more general way to set log levels in plugins |Improvement
-|TINKERPOP3-860 |Bindings applied to the PluginAcceptor should appear to Gremlin Server |Improvement
-|TINKERPOP3-882 |Develop a less error prone way for rewriting strategies |Improvement
-|TINKERPOP3-886 |Allow any GraphReader/Writer to be persistence engine for TinkerGraph |Improvement
-|TINKERPOP3-891 |Re-examine Sandboxing Abstractions |Improvement
-|TINKERPOP3-893 |Validate dependency grabs that have TinkerPop dependencies |Improvement
-|TINKERPOP3-912 |Improve the ability to embed Gremlin Server with Channelizer injection |Improvement
-|TINKERPOP3-920 |Test case needed for ensuring same cardinality for key. |Improvement
-|TINKERPOP3-927 |bin/publish-docs.sh should only upload diffs. |Improvement
-|TINKERPOP3-930 |Tie Alias to Transaction Manager in Gremlin Server |Improvement
-|TINKERPOP3-932 |Add ability to cancel script execution associated with a Gremlin Server Session |Improvement
-|TINKERPOP3-937 |Move the implementations sections of the primary documentation to "provider tutorials." |Improvement
-|TINKERPOP3-938 |Add a "clear SNAPSHOT jars" section to the process-docs.sh. |Improvement
-|TINKERPOP3-939 |Neo4jGraph should support HighAvailability (Neo4jHA). |Improvement
-|TINKERPOP3-941 |Improve error message for wrong order().by() arguments |Improvement
-|TINKERPOP3-943 |Warn if Gremlin Server is running prior to generating docs |Improvement
-|TINKERPOP3-951 |Barrier steps provide unexpected results in Gremlin OLAP |Bug
-|TINKERPOP3-954 |Consistent test directory usage |Improvement
-|TINKERPOP3-956 |Connection errors tend to force a complete close of the channel |Improvement
-|TINKERPOP3-958 |Improve usability of .profile() step. |Improvement
-|TINKERPOP3-964 |Test XXXGraphComputer on a Hadoop2 cluster (non-pseudocluster). |Improvement
-|TINKERPOP3-967 |Support nested-repeat() structures |Improvement
-|TINKERPOP3-973 |BLVP shouldn't clear configuration properties |Bug
-|TINKERPOP3-976 |Fail earlier if invalid version is supplied in validate-distribution.sh |Bug
-|TINKERPOP3-978 |Native TinkerGraph Serializers for GraphSON |Improvement
-|TINKERPOP3-979 |ComputerVerificationStrategy not picking up Order local traversal |Bug
-|TINKERPOP3-980 |Add a service script or daemon mode in the distribution |Improvement
-|TINKERPOP3-981 |Deprecate support for credentialsDbLocation in Gremlin Server Config |Improvement
-|TINKERPOP3-983 |Provide a way to track open Graph instances in tests |Improvement
-|TINKERPOP3-984 |Use GraphProvider for id conversion in Groovy Environment test suite |Improvement
-|TINKERPOP3-986 |Manage binary LICENSE/NOTICE files with bin/checkLicenseNotice.sh |Improvement
-TINKERPOP3-988 |SparkGraphComputer.submit shouldn't use ForkJoinPool.commonPool |Improvement
+|TINKERPOP-379 |MessageScope.Local.setStaticMessage(M msg) |Improvement
+|TINKERPOP-659 |GraphConfiguration Class |Improvement
+|TINKERPOP-736 |Automatic Traversal rewriting |Improvement
+|TINKERPOP-763 |IsStep broken when profiling is enabled. |Bug
+|TINKERPOP-818 |Consider a P.instanceOf() |Improvement
+|TINKERPOP-824 |Do we need runtime BigDecimal in more places? |Improvement
+|TINKERPOP-842 |MapReduceHelper should sort respective of the number of reduce tasks |Improvement
+|TINKERPOP-859 |Provide a more general way to set log levels in plugins |Improvement
+|TINKERPOP-860 |Bindings applied to the PluginAcceptor should appear to Gremlin Server |Improvement
+|TINKERPOP-882 |Develop a less error prone way for rewriting strategies |Improvement
+|TINKERPOP-886 |Allow any GraphReader/Writer to be persistence engine for TinkerGraph |Improvement
+|TINKERPOP-891 |Re-examine Sandboxing Abstractions |Improvement
+|TINKERPOP-893 |Validate dependency grabs that have TinkerPop dependencies |Improvement
+|TINKERPOP-912 |Improve the ability to embed Gremlin Server with Channelizer injection |Improvement
+|TINKERPOP-920 |Test case needed for ensuring same cardinality for key. |Improvement
+|TINKERPOP-927 |bin/publish-docs.sh should only upload diffs. |Improvement
+|TINKERPOP-930 |Tie Alias to Transaction Manager in Gremlin Server |Improvement
+|TINKERPOP-932 |Add ability to cancel script execution associated with a Gremlin Server Session |Improvement
+|TINKERPOP-937 |Move the implementations sections of the primary documentation to "provider tutorials." |Improvement
+|TINKERPOP-938 |Add a "clear SNAPSHOT jars" section to the process-docs.sh. |Improvement
+|TINKERPOP-939 |Neo4jGraph should support HighAvailability (Neo4jHA). |Improvement
+|TINKERPOP-941 |Improve error message for wrong order().by() arguments |Improvement
+|TINKERPOP-943 |Warn if Gremlin Server is running prior to generating docs |Improvement
+|TINKERPOP-951 |Barrier steps provide unexpected results in Gremlin OLAP |Bug
+|TINKERPOP-954 |Consistent test directory usage |Improvement
+|TINKERPOP-956 |Connection errors tend to force a complete close of the channel |Improvement
+|TINKERPOP-958 |Improve usability of .profile() step. |Improvement
+|TINKERPOP-964 |Test XXXGraphComputer on a Hadoop2 cluster (non-pseudocluster). |Improvement
+|TINKERPOP-967 |Support nested-repeat() structures |Improvement
+|TINKERPOP-973 |BLVP shouldn't clear configuration properties |Bug
+|TINKERPOP-976 |Fail earlier if invalid version is supplied in validate-distribution.sh |Bug
+|TINKERPOP-978 |Native TinkerGraph Serializers for GraphSON |Improvement
+|TINKERPOP-979 |ComputerVerificationStrategy not picking up Order local traversal |Bug
+|TINKERPOP-980 |Add a service script or daemon mode in the distribution |Improvement
+|TINKERPOP-981 |Deprecate support for credentialsDbLocation in Gremlin Server Config |Improvement
+|TINKERPOP-983 |Provide a way to track open Graph instances in tests |Improvement
+|TINKERPOP-984 |Use GraphProvider for id conversion in Groovy Environment test suite |Improvement
+|TINKERPOP-986 |Manage binary LICENSE/NOTICE files with bin/checkLicenseNotice.sh |Improvement
+|TINKERPOP-988 |SparkGraphComputer.submit shouldn't use ForkJoinPool.commonPool |Improvement
 |=========================================================
 
 The following items were identified for `3.2.0-incubating`:
@@ -103,42 +103,42 @@ The following items were identified for `3.2.0-incubating`:
 [width="100%",cols="2,5,2",options="header"]
 |=========================================================
 |ID |Description |Type
-|TINKERPOP3-331 |TraverserConverterStep (proposal) |Improvement
-|TINKERPOP3-620 |Commutative Step Marker interface |Improvement
-|TINKERPOP3-669 |Consider Required TraversalStrategies |Improvement
-|TINKERPOP3-691 |TP3 is too prescriptive in exception |Improvement
-|TINKERPOP3-740 |Serializer Handshake |Improvement
-|TINKERPOP3-743 |Support "barrier syntax" in step labels. |Improvement
-|TINKERPOP3-761 |Some basic mathematical functions / steps |Improvement
-|TINKERPOP3-786 |Patterns for DSL Development |Improvement
-|TINKERPOP3-789 |Choose then Enforce Semantics for Graph.close() |Improvement
-|TINKERPOP3-790 |Implement AutoCloseable on TraversalSource |Improvement
-|TINKERPOP3-800 |[Proposal] Domain/Range checking during traversal construction. |Improvement
-|TINKERPOP3-813 |[Proposal] Make the Gremlin Graph Traversal Machine and Instruction Set Explicit |Improvement
-|TINKERPOP3-819 |Mapping Cardinality Interface |Improvement
-|TINKERPOP3-831 |How should OLAP treat Collection<Element> objects? No contract is specified. |Bug
-|TINKERPOP3-844 |PropertyMapStep should reuse PropertiesStep |Improvement
-|TINKERPOP3-864 |Operator.mean would be nice. |Improvement
-|TINKERPOP3-871 |RuntimeStrategy as the general model for all such execution time rewrites/re-orders |Improvement
-|TINKERPOP3-872 |Remove GroupCountStep in favor of new Reduce-based GroupStep |Improvement
-|TINKERPOP3-873 |FoldStep should default to using BulkSet for efficiency. |Improvement
-|TINKERPOP3-878 |Refactor Gremlin Server integration tests to be Client parameterized |Improvement
-|TINKERPOP3-889 |Support for partitioned vertices in GraphComputer |Improvement
-|TINKERPOP3-890 |Remove the concept of branch/ package. |Improvement
-|TINKERPOP3-919 |Features needs to specify whether 2 vertex properties with same key/value is allowed. |Improvement
-|TINKERPOP3-940 |Convert LocalTraversals to MatchSteps in OLAP and Solve the StarGraph Problem |Improvement
-|TINKERPOP3-942 |Use EventStrategy to solve OLAP bulk mutation of OLTP. |Improvement
-|TINKERPOP3-944 |Consider deprecating or better enforcing Graph.Exceptions.elementNotFound |Improvement
-|TINKERPOP3-946 |Traversal respecting Thread.interrupt() |Improvement
-|TINKERPOP3-947 |Enforce semantics of threaded transactions as manual |Improvement
-|TINKERPOP3-960 |Add a Bulk class which is used by Traverser |Improvement
-|TINKERPOP3-962 |Provide "vertex query" selectivity when importing data in OLAP. |Improvement
-|TINKERPOP3-963 |SubgraphTraversalAnalyzer to determine what is really required from a traversal. |Improvement
-|TINKERPOP3-966 |Support reversible traversals in MatchStep (and respective MatchAlgorithms) |Improvement
-|TINKERPOP3-969 |respawn |Improvement
-|TINKERPOP3-971 |TraversalSource should be fluent like GraphComputer |Improvement
-|TINKERPOP3-974 |Saving headless traversals for reuse (clone Iterator Fun) |Improvement
-|TINKERPOP3-982 |valuesDecr, valuesIncr, keysDecr, and valuesDecr is lame. |Improvement
+|TINKERPOP-331 |TraverserConverterStep (proposal) |Improvement
+|TINKERPOP-620 |Commutative Step Marker interface |Improvement
+|TINKERPOP-669 |Consider Required TraversalStrategies |Improvement
+|TINKERPOP-691 |TP3 is too prescriptive in exception |Improvement
+|TINKERPOP-740 |Serializer Handshake |Improvement
+|TINKERPOP-743 |Support "barrier syntax" in step labels. |Improvement
+|TINKERPOP-761 |Some basic mathematical functions / steps |Improvement
+|TINKERPOP-786 |Patterns for DSL Development |Improvement
+|TINKERPOP-789 |Choose then Enforce Semantics for Graph.close() |Improvement
+|TINKERPOP-790 |Implement AutoCloseable on TraversalSource |Improvement
+|TINKERPOP-800 |[Proposal] Domain/Range checking during traversal construction. |Improvement
+|TINKERPOP-813 |[Proposal] Make the Gremlin Graph Traversal Machine and Instruction Set Explicit |Improvement
+|TINKERPOP-819 |Mapping Cardinality Interface |Improvement
+|TINKERPOP-831 |How should OLAP treat Collection<Element> objects? No contract is specified. |Bug
+|TINKERPOP-844 |PropertyMapStep should reuse PropertiesStep |Improvement
+|TINKERPOP-864 |Operator.mean would be nice. |Improvement
+|TINKERPOP-871 |RuntimeStrategy as the general model for all such execution time rewrites/re-orders |Improvement
+|TINKERPOP-872 |Remove GroupCountStep in favor of new Reduce-based GroupStep |Improvement
+|TINKERPOP-873 |FoldStep should default to using BulkSet for efficiency. |Improvement
+|TINKERPOP-878 |Refactor Gremlin Server integration tests to be Client parameterized |Improvement
+|TINKERPOP-889 |Support for partitioned vertices in GraphComputer |Improvement
+|TINKERPOP-890 |Remove the concept of branch/ package. |Improvement
+|TINKERPOP-919 |Features needs to specify whether 2 vertex properties with same key/value is allowed. |Improvement
+|TINKERPOP-940 |Convert LocalTraversals to MatchSteps in OLAP and Solve the StarGraph Problem |Improvement
+|TINKERPOP-942 |Use EventStrategy to solve OLAP bulk mutation of OLTP. |Improvement
+|TINKERPOP-944 |Consider deprecating or better enforcing Graph.Exceptions.elementNotFound |Improvement
+|TINKERPOP-946 |Traversal respecting Thread.interrupt() |Improvement
+|TINKERPOP-947 |Enforce semantics of threaded transactions as manual |Improvement
+|TINKERPOP-960 |Add a Bulk class which is used by Traverser |Improvement
+|TINKERPOP-962 |Provide "vertex query" selectivity when importing data in OLAP. |Improvement
+|TINKERPOP-963 |SubgraphTraversalAnalyzer to determine what is really required from a traversal. |Improvement
+|TINKERPOP-966 |Support reversible traversals in MatchStep (and respective MatchAlgorithms) |Improvement
+|TINKERPOP-969 |respawn |Improvement
+|TINKERPOP-971 |TraversalSource should be fluent like GraphComputer |Improvement
+|TINKERPOP-974 |Saving headless traversals for reuse (clone Iterator Fun) |Improvement
+|TINKERPOP-982 |valuesDecr, valuesIncr, keysDecr, and valuesDecr is lame. |Improvement
 |=========================================================
 
 The following issues were simply closed during review - the reasons for closing can be found in the comments of the
@@ -147,14 +147,14 @@ issues themselves:
 [width="100%",cols="2,5,2",options="header"]
 |=========================================================
 |ID |Description |Type
-|TINKERPOP3-375 |Better Methods for Managing ClassPath for Plugins |Improvement
-|TINKERPOP3-487 |User Supplied Ids and IO |Improvement
-|TINKERPOP3-509 |Subgraph support for VertexProgram |
-|TINKERPOP3-604 |DetachedEdge.attach(Vertex) is too slow. |Improvement
-|TINKERPOP3-795 |Provide Traverser.setPath() |Improvement
-|TINKERPOP3-862 |Add a TraversalSourceStrategy that provides "locked" values. |Improvement
-|TINKERPOP3-894 |Shorthand for install of TinkerPop dependencies |Improvement
-|TINKERPOP3-936 |Check feature requirements before opening graph during tests |Improvement
+|TINKERPOP-375 |Better Methods for Managing ClassPath for Plugins |Improvement
+|TINKERPOP-487 |User Supplied Ids and IO |Improvement
+|TINKERPOP-509 |Subgraph support for VertexProgram |
+|TINKERPOP-604 |DetachedEdge.attach(Vertex) is too slow. |Improvement
+|TINKERPOP-795 |Provide Traverser.setPath() |Improvement
+|TINKERPOP-862 |Add a TraversalSourceStrategy that provides "locked" values. |Improvement
+|TINKERPOP-894 |Shorthand for install of TinkerPop dependencies |Improvement
+|TINKERPOP-936 |Check feature requirements before opening graph during tests |Improvement
 |=========================================================
 
 October 29, 2015
@@ -187,18 +187,18 @@ roadmap:
 [width="100%",cols="2,5,5",options="header"]
 |=========================================================
 |ID |Description |Removal Reasoning
-|TINKERPOP3-891 |Re-examine Sandboxing Abstractions |Low priority and time limitations.
-|TINKERPOP3-890 |Remove the concept of branch/ package. |Awaiting step library definition in 3.2.0-incubating.
-|TINKERPOP3-873 |FoldStep should default to using BulkSet for efficiency. |Awaiting step library definition in 3.2.0-incubating.
-|TINKERPOP3-864 |Operator.mean would be nice. |Awaiting step library definition in 3.2.0-incubating.
-|TINKERPOP3-862 |Add a TraversalSourceStrategy that provides "locked" values. |Low priority and time limitations.
-|TINKERPOP3-854 |Remove PropertyMapStep in favor of multi-instruction construction. |Non-trivial given time limitations.
-|TINKERPOP3-789 |Choose then Enforce Semantics for Graph.close() |Non-trivial given time limitations.
-|TINKERPOP3-768 |MatchStep in OLAP should be smart about current vertex. |Non-trivial given time limitations.
-|TINKERPOP3-705 |Make use of a MemoryRDD instead of Accumulators in SparkGraphComputer? |Non-trivial given time limitations.
-|TINKERPOP3-659 |GraphConfiguration Class |Non-trivial given time limitations.
-|TINKERPOP3-623 |More output for OLAP jobs |Not clearly defined given time limitations.
-|TINKERPOP3-620 |Commutative Step Marker interface |Awaiting step library definition in 3.2.0-incubating
-|TINKERPOP3-550 |Gremlin IO needs to support both OLTP and OLAP naturally. |Not clearly defined given time limitations.
-|TINKERPOP3-479 |Consider Providing "getOrCreate" Functionality |Not clearly defined given time limitations.
+|TINKERPOP-891 |Re-examine Sandboxing Abstractions |Low priority and time limitations.
+|TINKERPOP-890 |Remove the concept of branch/ package. |Awaiting step library definition in 3.2.0-incubating.
+|TINKERPOP-873 |FoldStep should default to using BulkSet for efficiency. |Awaiting step library definition in 3.2.0-incubating.
+|TINKERPOP-864 |Operator.mean would be nice. |Awaiting step library definition in 3.2.0-incubating.
+|TINKERPOP-862 |Add a TraversalSourceStrategy that provides "locked" values. |Low priority and time limitations.
+|TINKERPOP-854 |Remove PropertyMapStep in favor of multi-instruction construction. |Non-trivial given time limitations.
+|TINKERPOP-789 |Choose then Enforce Semantics for Graph.close() |Non-trivial given time limitations.
+|TINKERPOP-768 |MatchStep in OLAP should be smart about current vertex. |Non-trivial given time limitations.
+|TINKERPOP-705 |Make use of a MemoryRDD instead of Accumulators in SparkGraphComputer? |Non-trivial given time limitations.
+|TINKERPOP-659 |GraphConfiguration Class |Non-trivial given time limitations.
+|TINKERPOP-623 |More output for OLAP jobs |Not clearly defined given time limitations.
+|TINKERPOP-620 |Commutative Step Marker interface |Awaiting step library definition in 3.2.0-incubating
+|TINKERPOP-550 |Gremlin IO needs to support both OLTP and OLAP naturally. |Not clearly defined given time limitations.
+|TINKERPOP-479 |Consider Providing "getOrCreate" Functionality |Not clearly defined given time limitations.
 |=========================================================

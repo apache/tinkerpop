@@ -106,7 +106,7 @@ public class HadoopGraphProvider extends AbstractGraphProvider {
             put(Graph.GRAPH, HadoopGraph.class.getName());
             put(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, graphSONInput ? GraphSONInputFormat.class.getCanonicalName() : GryoInputFormat.class.getCanonicalName());
             put(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
-            put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, "target/test-output");
+            put(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, getWorkingDirectory());
             put(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         }};
     }

@@ -104,7 +104,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Map<String, Object>> get_g_V_hasLabelXsoftwareX_asXnameX_asXlanguageX_asXcreatorsX_selectXname_language_creatorsX_byXnameX_byXlangX_byXinXcreatedX_name_fold_orderXlocalXX();
 
-    // TINKERPOP3-619: select should not throw
+    // TINKERPOP-619: select should not throw
 
     public abstract Traversal<Vertex, Object> get_g_V_selectXaX(final Pop pop);
 
@@ -488,7 +488,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
         assertFalse(traversal.hasNext());
     }
 
-    // TINKERPOP3-619: select should not throw
+    // TINKERPOP-619: select should not throw
 
     @Test
     @LoadGraphWith(MODERN)
@@ -746,7 +746,7 @@ public abstract class SelectTest extends AbstractGremlinProcessTest {
                     by(__.in("created").values("name").fold().order(local));
         }
 
-        // TINKERPOP3-619: select should not throw
+        // TINKERPOP-619: select should not throw
 
         @Override
         public Traversal<Vertex, Object> get_g_V_selectXaX(final Pop pop) {

@@ -121,7 +121,7 @@ public class GremlinServer {
      * with the hosting application.
      *
      * @deprecated As of release 3.1.1-incubating, not replaced.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-912">TINKERPOP3-912</a>
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-912">TINKERPOP-912</a>
      */
     @Deprecated
     public GremlinServer(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {

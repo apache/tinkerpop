@@ -36,11 +36,14 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.gryo.GryoSerializer;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.After;
 import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class AbstractSparkTest {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractSparkTest.class);
 
     @After
     @Before
@@ -52,7 +55,7 @@ public abstract class AbstractSparkTest {
         sparkContext.close();
         Spark.create(sparkContext.sc());
         Spark.close();
-        System.out.println("SparkContext has been closed for " + this.getClass().getCanonicalName() + "-setupTest");
+        logger.info("SparkContext has been closed for " + this.getClass().getCanonicalName() + "-setupTest");
     }
 
     protected Configuration getBaseConfiguration(final String inputLocation) {

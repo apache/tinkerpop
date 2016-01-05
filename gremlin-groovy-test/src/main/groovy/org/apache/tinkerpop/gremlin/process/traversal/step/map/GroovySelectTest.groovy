@@ -159,7 +159,7 @@ public abstract class GroovySelectTest {
                     by(__.in('created').values('name').fold().order(local))""", g)
         }
 
-        // TINKERPOP3-619: select should not throw
+        // TINKERPOP-619: select should not throw
 
         @Override
         public Traversal<Vertex, Object> get_g_V_selectXaX(final Pop pop) {

@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class NativeNeo4jStructureTest extends AbstractNeo4jGremlinTest {
+public class NativeNeo4jStructureCheck extends AbstractNeo4jGremlinTest {
 
     @Test
     public void shouldOpenWithOverriddenConfig() throws Exception {

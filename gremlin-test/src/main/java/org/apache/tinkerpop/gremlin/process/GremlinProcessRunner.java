@@ -26,6 +26,8 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.NotSerializableException;
 
@@ -33,7 +35,7 @@ import java.io.NotSerializableException;
  * @author Daniel Kuppitz (http://gremlin.guru)
  */
 public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
-
+    private static final Logger logger = LoggerFactory.getLogger(GremlinProcessRunner.class);
     public GremlinProcessRunner(Class<?> klass) throws InitializationError {
         super(klass);
     }
@@ -54,7 +56,7 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
             } catch (Throwable e) {
                 if (validateForGraphComputer(e)) {
                     eachNotifier.fireTestIgnored();
-                    System.err.println(e.getMessage());
+                    logger.error(e.getMessage());
                     ignored = true;
                 } else
                     eachNotifier.addFailure(e);

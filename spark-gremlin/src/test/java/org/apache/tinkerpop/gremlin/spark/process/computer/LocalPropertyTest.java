@@ -25,6 +25,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.JavaSparkStatusTracker;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
@@ -51,7 +52,7 @@ public class LocalPropertyTest extends AbstractSparkTest {
     @Test
     public void shouldSetThreadLocalProperties() throws Exception {
         final String testName = "ThreadLocalProperties";
-        final String rddLocation = "target/test-output/" + UUID.randomUUID();
+        final String rddName = TestHelper.makeTestDataDirectory(LocalPropertyTest.class) + UUID.randomUUID().toString();
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
         configuration.setProperty("spark.serializer", GryoSerializer.class.getCanonicalName());
@@ -59,7 +60,7 @@ public class LocalPropertyTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, PersistedOutputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddLocation);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
         configuration.setProperty(Constants.GREMLIN_HADOOP_JARS_IN_DISTRIBUTED_CACHE, false);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
         configuration.setProperty("spark.jobGroup.id", "22");
@@ -78,10 +79,10 @@ public class LocalPropertyTest extends AbstractSparkTest {
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
         JavaSparkStatusTracker statusTracker = sparkContext.statusTracker();
         assertTrue(statusTracker.getJobIdsForGroup("22").length >= 1);
-        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddLocation)));
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         ///////
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
-        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddLocation);
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null);
         configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, false);

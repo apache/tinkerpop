@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.spark.structure;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.rdd.RDD;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
@@ -37,6 +38,8 @@ import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.junit.Test;
 import scala.collection.JavaConversions;
 
+import java.io.File;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -49,7 +52,8 @@ public class SparkTest extends AbstractSparkTest {
 
     @Test
     public void testSparkRDDPersistence() throws Exception {
-        final String prefix = "target/test-output/graphRDD-";
+        final String root = TestHelper.makeTestDataDirectory(SparkTest.class, "testSparkRDDPersistence");
+        final String prefix = root + File.separator + "graphRDD-";
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
         Spark.create(configuration);

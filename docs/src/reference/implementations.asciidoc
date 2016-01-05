@@ -651,6 +651,11 @@ If the TinkerGraph is configured for persistence with `gremlin.tinkergraph.graph
 format when `Graph.close()` is called.  In addition, if these settings are present, TinkerGraph will attempt to
 load the graph from the specified location.
 
+IMPORTANT: If choosing `graphson` as the `gremlin.tinkergraph.graphFormat`, be sure to also establish the  various
+`IdManager` settings as well to ensure that identifiers are properly coerced to the appropriate types as GraphSON
+can lose the identifier's type during serialization (i.e. it will assume `Integer` when the default for TinkerGraph
+is `Long`, which could lead to load errors that result in a message like, "Vertex with id already exists").
+
 It is important to consider the data being imported to TinkerGraph with respect to `defaultVertexPropertyCardinality`
 setting.  For example, if a `.gryo` file is known to contain multi-property data, be sure to set the default
 cardinality to `list` or else the data will import as `single`.  Consider the following:

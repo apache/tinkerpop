@@ -42,7 +42,7 @@ public abstract class FlatMapTest extends AbstractGremlinProcessTest {
 
     public abstract Traversal<Vertex, Vertex> get_g_V_flatMapXselectXaXX();
 
-    /** TINKERPOP3-782 */
+    /** TINKERPOP-782 */
     @Test
     @LoadGraphWith(MODERN)
     public void g_V_flatMapXselectXaXX() {

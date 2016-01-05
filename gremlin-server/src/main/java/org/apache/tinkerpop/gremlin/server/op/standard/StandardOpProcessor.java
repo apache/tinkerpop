@@ -105,36 +105,49 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
             if (hasRebindings && hasAliases) {
                 final String error = "Prefer use of the 'aliases' parameter over 'rebindings' and do not use both";
                 throw new OpProcessorException(error, ResponseMessage.build(msg)
-                        .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(error).create());
+                        .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(error).create());
             }
 
             final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
 
             // alias any global bindings to a different variable.
             if (msg.getArgs().containsKey(rebindingOrAliasParameter)) {
-                final Map<String, String> rebinds = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
-                for (Map.Entry<String,String> kv : rebinds.entrySet()) {
+                final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
+                for (Map.Entry<String,String> aliasKv : aliases.entrySet()) {
                     boolean found = false;
+
+                    // first check if the alias refers to a Graph instance
                     final Map<String, Graph> graphs = context.getGraphManager().getGraphs();
-                    if (graphs.containsKey(kv.getValue())) {
-                        bindings.put(kv.getKey(), graphs.get(kv.getValue()));
+                    if (graphs.containsKey(aliasKv.getValue())) {
+                        bindings.put(aliasKv.getKey(), graphs.get(aliasKv.getValue()));
                         found = true;
                     }
 
+                    // if the alias wasn't found as a Graph then perhaps it is a TraversalSource - it needs to be
+                    // something
                     if (!found) {
                         final Map<String, TraversalSource> traversalSources = context.getGraphManager().getTraversalSources();
-                        if (traversalSources.containsKey(kv.getValue())) {
-                            bindings.put(kv.getKey(), traversalSources.get(kv.getValue()));
+                        if (traversalSources.containsKey(aliasKv.getValue())) {
+                            bindings.put(aliasKv.getKey(), traversalSources.get(aliasKv.getValue()));
                             found = true;
                         }
                     }
 
+                    // this validation is important to calls to GraphManager.commit() and rollback() as they both
+                    // expect that the aliases supplied are valid
                     if (!found) {
                         final String error = String.format("Could not alias [%s] to [%s] as [%s] not in the Graph or TraversalSource global bindings",
-                                kv.getKey(), kv.getValue(), kv.getValue());
+                                aliasKv.getKey(), aliasKv.getValue(), aliasKv.getValue());
                         throw new OpProcessorException(error, ResponseMessage.build(msg)
-                                .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(error).create());
+                                .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(error).create());
                     }
+                }
+            } else {
+                // there's no bindings so determine if that's ok with Gremlin Server
+                if (context.getSettings().strictTransactionManagement) {
+                    final String error = "Gremlin Server is configured with strictTransactionManagement as 'true' - the 'aliases' arguments must be provided";
+                    throw new OpProcessorException(error, ResponseMessage.build(msg)
+                            .code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(error).create());
                 }
             }
 

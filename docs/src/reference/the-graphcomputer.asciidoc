@@ -338,7 +338,7 @@ writeGraphConf.setProperty("gremlin.tinkergraph.graphFormat", "gryo")
 writeGraphConf.setProperty("gremlin.tinkergraph.graphLocation", "/tmp/tinkergraph.kryo")
 modern = TinkerFactory.createModern()
 blvp = BulkLoaderVertexProgram.build().
-           keepOriginalIds(false).
+           bulkLoader(OneTimeBulkLoader).
            writeGraph(writeGraphConf).create(modern)
 modern.compute().workers(1).program(blvp).submit().get()
 graph = GraphFactory.open(writeGraphConf)
@@ -364,10 +364,11 @@ It's recommended to tune this property for the target graph and not use the defa
 |`writeGraph(String)` | Sets the path to a `GraphFactory` compatible configuration file for the target graph. | _none_
 |========================================
 
-NOTE: `BulkLoaderVertexProgram` comes with a default `BulkLoader` implementation, namely `IncrementalBulkLoader`. It
-will work for the most use-cases, but has one limitation though: It doesn't support multi-valued properties.
-`IncrementalBulkLoader` will handle every property as a single-valued property. A custom `BulkLoader` implementation
-has to be used if the default behavior is not sufficient.
+NOTE: `BulkLoaderVertexProgram` uses the `IncrementalBulkLoader` by default. The other option is the `OneTimeBulkLoader`,
+which doesn't store any temporary IDs in the `writeGraph` and thus should only be used for initial bulk loads. Both
+implementations should cover the majority of use-cases, but have a limitation though: They don't support multi-valued
+properties. `OneTimeBulkLoader` and `IncrementalBulkLoader` will handle every property as a single-valued property. A
+custom `BulkLoader` implementation has to be used if the default behavior is not sufficient.
 
 NOTE: A custom `BulkLoader` implementation for incremental loading should use `GraphTraversal` methods to create/update
 elements (e.g. `g.addV()` instead of `graph.addVertex()`). This way the `BulkLoaderVertexProgram` is able to efficiently

@@ -161,6 +161,15 @@ public class Settings {
     public int writeBufferLowWaterMark = 1024 * 32;
 
     /**
+     * If set to {@code true} the {@code aliases} option is required on requests and Gremlin Server will use that
+     * information to control which {@link Graph} instances are transaction managed for that request.  If this
+     * setting is false (which is the default), specification of {@code aliases} is not required and Gremlin
+     * Server will simply apply a commit for all graphs.  This setting only applies to sessionless requests.
+     * With either setting the user is responsible for their own transaction management for in-session requests.
+     */
+    public boolean strictTransactionManagement = false;
+
+    /**
      * The full class name of the {@link Channelizer} to use in Gremlin Server.
      */
     public String channelizer = WebSocketChannelizer.class.getName();

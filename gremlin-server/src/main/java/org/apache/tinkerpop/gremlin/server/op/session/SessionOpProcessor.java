@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.Bindings;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -100,7 +99,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
             // this must be an in-session request
             if (!requestMessage.optionalArgs(Tokens.ARGS_SESSION).isPresent()) {
                 final String msg = String.format("A message with an [%s] op code requires a [%s] argument", Tokens.OPS_CLOSE, Tokens.ARGS_SESSION);
-                throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+                throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
             }
 
             return Optional.of(ctx -> {
@@ -108,7 +107,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
                 final Session sessionToClose = sessions.get(requestMessage.getArgs().get(Tokens.ARGS_SESSION).toString());
                 if (null == sessionToClose) {
                     final String msg = String.format("There was no session named %s to close", requestMessage.getArgs().get(Tokens.ARGS_SESSION).toString());
-                    throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+                    throw new OpProcessorException(msg, ResponseMessage.build(requestMessage).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
                 }
 
                 sessionToClose.kill();
@@ -129,7 +128,7 @@ public class SessionOpProcessor extends AbstractEvalOpProcessor {
 
         if (!message.optionalArgs(Tokens.ARGS_SESSION).isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument", Tokens.OPS_EVAL, Tokens.ARGS_SESSION);
-            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         return Optional.empty();

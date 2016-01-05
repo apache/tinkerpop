@@ -29,6 +29,8 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.RunnerBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -46,6 +48,7 @@ import java.util.stream.Stream;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinSuite extends Suite {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinSuite.class);
     /**
      * Indicates that this suite is for testing a gremlin flavor and is therefore not responsible for validating
      * the suite against what the {@link Graph} implementation opts-in for. This setting will let Gremlin flavor
@@ -117,7 +120,7 @@ public abstract class AbstractGremlinSuite extends Suite {
         final Graph.OptIn[] optIns = klass.getAnnotationsByType(Graph.OptIn.class);
         if (!Arrays.stream(optIns).anyMatch(optIn -> optIn.value().equals(this.getClass().getCanonicalName())))
             if (gremlinFlavorSuite)
-                System.err.println(String.format("The %s will run for this Graph as it is testing a Gremlin flavor but the Graph does not publicly acknowledged it yet with the @OptIn annotation.", this.getClass().getSimpleName()));
+                logger.error(String.format("The %s will run for this Graph as it is testing a Gremlin flavor but the Graph does not publicly acknowledged it yet with the @OptIn annotation.", this.getClass().getSimpleName()));
             else
                 throw new InitializationError(String.format("The %s will not run for this Graph until it is publicly acknowledged with the @OptIn annotation on the Graph instance itself", this.getClass().getSimpleName()));
     }
@@ -154,7 +157,7 @@ public abstract class AbstractGremlinSuite extends Suite {
                 .collect(Collectors.toList());
 
         if (notSupplied.size() > 0)
-            System.err.println(String.format("Review the testsToExecute given to the test suite as the following are missing: %s", notSupplied));
+            logger.error(String.format("Review the testsToExecute given to the test suite as the following are missing: %s", notSupplied));
 
         return testsToExecute;
     }
@@ -279,15 +282,14 @@ public abstract class AbstractGremlinSuite extends Suite {
 
         @Override
         public boolean shouldRun(final Description description) {
-            // first check if all tests from a class should be ignored.
-            if (!entireTestCaseToIgnore.isEmpty() && entireTestCaseToIgnore.stream().map(optOut -> {
-                try {
-                    return Class.forName(optOut.test());
-                } catch (Exception ex) {
-                    throw new RuntimeException(ex);
-                }
-            }).anyMatch(claxx -> claxx.isAssignableFrom(description.getTestClass()))) {
-                return false;
+            // first check if all tests from a class should be ignored - where "OptOut.method" is set to "*". the
+            // description appears to be null in some cases of parameterized tests, but if the entire test case
+            // was ignored it would have been caught earlier and these parameterized tests wouldn't be considered
+            // for a call to shouldRun
+            if (description.getTestClass() != null) {
+                final boolean ignoreWholeTestCase = entireTestCaseToIgnore.stream().map(this::transformToClass)
+                        .anyMatch(claxx -> claxx.isAssignableFrom(description.getTestClass()));
+                if (ignoreWholeTestCase) return false;
             }
 
             if (description.isTest()) {
@@ -342,6 +344,14 @@ public abstract class AbstractGremlinSuite extends Suite {
                     return Object.class;
                 }
             }).filter(c -> !c.equals(Object.class)).anyMatch(c -> c == graphProviderDescriptor.get().computer());
+        }
+
+        private Class<?> transformToClass(final Graph.OptOut optOut) {
+            try {
+                return Class.forName(optOut.test());
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 }
