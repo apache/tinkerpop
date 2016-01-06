@@ -24,7 +24,7 @@ while [[ $# -gt 0 ]]
 do
   key="$1"
   case $key in
-    -n|--no-clean)
+    -n|--noClean)
       NOCLEAN=1
       ;;
     -d|--dryRun)
