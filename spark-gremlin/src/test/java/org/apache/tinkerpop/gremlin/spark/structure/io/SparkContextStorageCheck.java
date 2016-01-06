@@ -23,8 +23,6 @@ import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.AbstractStorageCheck;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
-import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedInputRDD;
-import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,6 +64,6 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
         final Storage storage = SparkContextStorage.open("local[4]");
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         final String newOutputLocation = "new-location-for-copy";
-        super.checkCopyMethods(storage, outputLocation, newOutputLocation);
+        super.checkCopyMethods(storage, outputLocation, newOutputLocation, PersistedInputRDD.class, PersistedInputRDD.class);
     }
 }

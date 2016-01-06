@@ -106,7 +106,6 @@ public final class FileSystemStorage implements Storage {
         }
     }
 
-    @Override
     public boolean mkdir(final String location) {
         try {
             return this.fs.mkdirs(new Path(location));
@@ -116,9 +115,9 @@ public final class FileSystemStorage implements Storage {
     }
 
     @Override
-    public boolean cp(final String fromLocation, final String toLocation) {
+    public boolean cp(final String sourceLocation, final String targetLocation) {
         try {
-            return FileUtil.copy(this.fs, new Path(fromLocation), this.fs, new Path(toLocation), false, new Configuration());
+            return FileUtil.copy(this.fs, new Path(sourceLocation), this.fs, new Path(targetLocation), false, new Configuration());
         } catch (final IOException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -135,15 +134,6 @@ public final class FileSystemStorage implements Storage {
 
     @Override
     public boolean rm(final String location) {
-        try {
-            return FileSystemStorage.globDelete(this.fs, location, false);
-        } catch (final IOException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public boolean rmr(final String location) {
         try {
             return FileSystemStorage.globDelete(this.fs, location, true);
         } catch (final IOException e) {
@@ -177,7 +167,7 @@ public final class FileSystemStorage implements Storage {
 
     @Override
     public <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class parserClass, final int totalLines) {
-        if (!parserClass.equals(SequenceFileInputFormat.class) && !parserClass.equals(ObjectWritable.class)) // object writable support for backwards compatibility
+        if (!parserClass.equals(SequenceFileInputFormat.class))
             throw new IllegalArgumentException("Only " + SequenceFileInputFormat.class.getCanonicalName() + " memories are supported");
         final Configuration configuration = new Configuration();
         try {

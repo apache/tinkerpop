@@ -84,17 +84,12 @@ public final class SparkContextStorage implements Storage {
     }
 
     @Override
-    public boolean mkdir(final String location) {
-        throw new UnsupportedOperationException("This operation does not make sense for a persisted SparkContext");
-    }
-
-    @Override
-    public boolean cp(final String fromLocation, final String toLocation) {
-        final List<String> rdds = Spark.getRDDs().stream().filter(r -> r.name().startsWith(fromLocation)).map(RDD::name).collect(Collectors.toList());
+    public boolean cp(final String sourceLocation, final String targetLocation) {
+        final List<String> rdds = Spark.getRDDs().stream().filter(r -> r.name().startsWith(sourceLocation)).map(RDD::name).collect(Collectors.toList());
         if (rdds.size() == 0)
             return false;
         for (final String rdd : rdds) {
-            Spark.getRDD(rdd).toJavaRDD().filter(a -> false).setName(rdd.equals(fromLocation) ? toLocation : rdd.replace(fromLocation, toLocation)).cache().count();
+            Spark.getRDD(rdd).toJavaRDD().filter(a -> true).setName(rdd.equals(sourceLocation) ? targetLocation : rdd.replace(sourceLocation, targetLocation)).cache().count();
         }
         return true;
     }
@@ -106,14 +101,6 @@ public final class SparkContextStorage implements Storage {
 
     @Override
     public boolean rm(final String location) {
-        if (!Spark.hasRDD(location))
-            return false;
-        Spark.removeRDD(location);
-        return true;
-    }
-
-    @Override
-    public boolean rmr(final String location) {
         final List<String> rdds = new ArrayList<>();
         final String wildCardLocation = (location.endsWith("*") ? location : location + "*").replace(".", "\\.").replace("*", ".*");
         for (final RDD<?> rdd : Spark.getRDDs()) {

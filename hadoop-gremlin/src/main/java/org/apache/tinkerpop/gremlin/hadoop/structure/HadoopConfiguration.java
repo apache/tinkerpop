@@ -50,6 +50,11 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
         this.properties.put(key, value);
     }
 
+    @Override
+    protected void clearPropertyDirect(final String key) {
+        this.properties.remove(key);
+    }
+
     public HadoopConfiguration(final Configuration configuration) {
         this();
         this.copy(configuration);

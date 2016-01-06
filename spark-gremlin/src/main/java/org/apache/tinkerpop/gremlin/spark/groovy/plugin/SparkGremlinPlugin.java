@@ -42,6 +42,7 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
     protected static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT_SPACE + SparkGraphComputer.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + Spark.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + SparkContextStorage.class.getPackage().getName() + DOT_STAR);
     }};
 
     @Override

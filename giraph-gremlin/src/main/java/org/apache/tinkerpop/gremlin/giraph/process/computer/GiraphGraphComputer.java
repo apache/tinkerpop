@@ -117,7 +117,6 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     @Override
     public Future<ComputerResult> submit() {
         super.validateStatePriorToExecution();
-
         return ComputerSubmissionHelper.runWithBackgroundThread(this::submitWithExecutor, "GiraphSubmitter");
     }
 
@@ -142,7 +141,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
     @Override
     public int run(final String[] args) {
         final Storage storage = FileSystemStorage.open(this.giraphConfiguration);
-        storage.rmr(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
+        storage.rm(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
         this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, this.persist.equals(Persist.EDGES));
         try {
             // it is possible to run graph computer without a vertex program (and thus, only map reduce jobs if they exist)
@@ -190,12 +189,12 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                         if (iterator.hasNext()) {
                             this.memory.set(memoryKey, iterator.next().getValue());
                         }
-                        storage.rmr(Constants.getMemoryLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), memoryKey));
+                        storage.rm(Constants.getMemoryLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), memoryKey));
                     }
                 }
                 final Path path = new Path(Constants.getMemoryLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), Constants.HIDDEN_ITERATION));
                 this.memory.setIteration((Integer) new ObjectWritableIterator(this.giraphConfiguration, path).next().getValue());
-                storage.rmr(Constants.getMemoryLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), Constants.HIDDEN_ITERATION));
+                storage.rm(Constants.getMemoryLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), Constants.HIDDEN_ITERATION));
             }
             // do map reduce jobs
             this.giraphConfiguration.setBoolean(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT_HAS_EDGES, this.giraphConfiguration.getBoolean(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT_HAS_EDGES, true));
@@ -204,9 +203,9 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 MapReduceHelper.executeMapReduceJob(mapReduce, this.memory, this.giraphConfiguration);
             }
 
-            // if no persistence, delete the map reduce output
+            // if no persistence, delete the graph output
             if (this.persist.equals(Persist.NOTHING))
-                storage.rmr(Constants.getGraphLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)));
+                storage.rm(Constants.getGraphLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)));
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -244,7 +243,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                                 } catch (final Exception e) {
                                     throw new RuntimeException(e.getMessage(), e);
                                 }
-                            } catch (Exception e) {
+                            } catch (final Exception e) {
                                 throw new IllegalStateException(e.getMessage(), e);
                             }
                         });

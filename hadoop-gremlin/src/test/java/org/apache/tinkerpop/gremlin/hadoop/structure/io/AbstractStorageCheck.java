@@ -77,14 +77,14 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
         assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
         assertTrue(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
         assertEquals(2, storage.ls(outputLocation).size());
-        assertTrue(storage.rmr(Constants.getGraphLocation(outputLocation)));
+        assertTrue(storage.rm(Constants.getGraphLocation(outputLocation)));
         assertEquals(1, storage.ls(outputLocation).size());
-        assertTrue(storage.rmr(Constants.getMemoryLocation(outputLocation, "clusterCount")));
+        assertTrue(storage.rm(Constants.getMemoryLocation(outputLocation, "clusterCount")));
         assertEquals(0, storage.ls(outputLocation).size());
         assertFalse(storage.exists(Constants.getGraphLocation(outputLocation)));
         assertFalse(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
         if (storage.exists(outputLocation))
-            assertTrue(storage.rmr(outputLocation));
+            assertTrue(storage.rm(outputLocation));
         assertFalse(storage.exists(outputLocation));
 
         ////////////////
@@ -94,12 +94,12 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
         assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
         assertTrue(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
         assertEquals(2, storage.ls(outputLocation).size());
-        assertTrue(storage.rmr(outputLocation));
+        assertTrue(storage.rm(outputLocation));
         assertFalse(storage.exists(outputLocation));
         assertEquals(0, storage.ls(outputLocation).size());
     }
 
-    public void checkCopyMethods(final Storage storage, final String outputLocation, final String newOutputLocation) throws Exception {
+    public void checkCopyMethods(final Storage storage, final String outputLocation, final String newOutputLocation, final Class outputGraphParserClass, final Class outputMemoryParserClass) throws Exception {
         graph.compute(graphComputerClass.get()).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
         assertTrue(storage.exists(outputLocation));
         assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
@@ -113,5 +113,11 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
         assertTrue(storage.exists(newOutputLocation));
         assertTrue(storage.exists(Constants.getGraphLocation(newOutputLocation)));
         assertTrue(storage.exists(Constants.getMemoryLocation(newOutputLocation, "clusterCount")));
+
+        assertEquals(2, storage.ls(newOutputLocation).size());
+        assertEquals(6, IteratorUtils.count(storage.head(outputLocation, outputGraphParserClass)));
+        assertEquals(6, IteratorUtils.count(storage.head(newOutputLocation, outputGraphParserClass)));
+        assertEquals(1, IteratorUtils.count(storage.head(outputLocation, "clusterCount", outputMemoryParserClass)));
+        assertEquals(1, IteratorUtils.count(storage.head(newOutputLocation, "clusterCount", outputMemoryParserClass)));
     }
 }
