@@ -44,8 +44,10 @@ Before issuing your pull request, please be sure of the following:
 . If the change requires modification to the documentation, which can be found in `docs/src`, please be sure to try to
 generate the docs.  If the changes are minimal and do not include code examples, it might be sufficient to test
 generate the docs to validate formatting by just doing `bin/process-docs.sh --dryRun`.  If there are code examples,
-please be sure to have Zookeeper and Hadoop running when doing a `bin/process-docs.sh`.  The documentation is
-generated to `/target/docs/htmlsingle`.
+please be sure to have Zookeeper and Hadoop running when doing a `bin/process-docs.sh`.  If no code changes were made,
+one can also use the `--noClean` option. This will prevent the processor from cleaning up the local Grapes directory and
+the Hadoop Gremlin Libs directory in HDFS, resulting in a slightly faster execution time. The documentation is generated
+to `/target/docs/htmlsingle`.
 . If necessary, run the integration tests.  For example, if the changes affect serialization or Gremlin Server/Driver
 operations then running the integration tests assures in addition to unit tests will definitely be necessary. After
 a successful `mvn clean install`, do `mvn verify -DskipIntegrationTests=false -pl gremlin-server`.
