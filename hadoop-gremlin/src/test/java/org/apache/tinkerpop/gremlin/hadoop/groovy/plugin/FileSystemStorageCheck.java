@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.AbstractGremlinTest;
 import org.apache.tinkerpop.gremlin.LoadGraphWith;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorage;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterCountMapReduce;
@@ -43,11 +44,27 @@ public class FileSystemStorageCheck extends AbstractGremlinTest {
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
     public void shouldPersistGraphAndMemory() throws Exception {
-        final ComputerResult result = graph.compute(graphComputerClass.get()).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
-        /////
         final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
-        // TEST GRAPH PERSISTENCE
-        assertTrue(storage.exists(Constants.getGraphLocation(graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))));
+        final String inputLocation = Constants.getSearchGraphLocation(graph.configuration().getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), storage).get();
+        final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
+
+        // TEST INPUT GRAPH
+        assertTrue(storage.exists(inputLocation));
+        // assertFalse(storage.exists(outputLocation)); AbstractGremlinTest will create this automatically.
+        if (inputLocation.endsWith(".json")) { // gryo is not text readable
+            assertEquals(6, IteratorUtils.count(storage.head(inputLocation)));
+            for (int i = 0; i < 7; i++) {
+                assertEquals(i, IteratorUtils.count(storage.head(inputLocation, i)));
+            }
+            assertEquals(6, IteratorUtils.count(storage.head(inputLocation, 10)));
+        }
+
+        ////////////////////
+
+        final ComputerResult result = graph.compute(graphComputerClass.get()).program(PeerPressureVertexProgram.build().create(graph)).mapReduce(ClusterCountMapReduce.build().memoryKey("clusterCount").create()).submit().get();
+        // TEST OUTPUT GRAPH
+        assertTrue(storage.exists(outputLocation));
+        assertTrue(storage.exists(Constants.getGraphLocation(outputLocation)));
         assertEquals(6, result.graph().traversal().V().count().next().longValue());
         assertEquals(0, result.graph().traversal().E().count().next().longValue());
         assertEquals(6, result.graph().traversal().V().values("name").count().next().longValue());
@@ -56,8 +73,12 @@ public class FileSystemStorageCheck extends AbstractGremlinTest {
         /////
         // TEST MEMORY PERSISTENCE
         assertEquals(2, (int) result.memory().get("clusterCount"));
-        assertTrue(storage.exists(Constants.getMemoryLocation(graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), "clusterCount")));
-        assertEquals(1, IteratorUtils.count(storage.head(graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), "clusterCount", SequenceFileInputFormat.class)));
-        assertEquals(2, storage.head(graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), "clusterCount", SequenceFileInputFormat.class).next().getValue());
+        assertTrue(storage.exists(Constants.getMemoryLocation(outputLocation, "clusterCount")));
+        assertEquals(1, IteratorUtils.count(storage.head(outputLocation, "clusterCount", SequenceFileInputFormat.class)));
+        assertEquals(2, storage.head(outputLocation, "clusterCount", SequenceFileInputFormat.class).next().getValue());
+        //// backwards compatibility
+        assertEquals(1, IteratorUtils.count(storage.head(outputLocation, "clusterCount", ObjectWritable.class)));
+        assertEquals(2, storage.head(outputLocation, "clusterCount", ObjectWritable.class).next().getValue());
+
     }
 }
