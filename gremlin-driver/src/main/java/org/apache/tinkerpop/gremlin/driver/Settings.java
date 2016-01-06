@@ -53,6 +53,8 @@ final class Settings {
 
     public String jaasEntry = null;
 
+    public String protocol = null;
+
     /**
      * Read configuration from a file into a new {@link Settings} object.
      *

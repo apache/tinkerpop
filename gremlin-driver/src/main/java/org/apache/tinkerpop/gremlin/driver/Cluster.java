@@ -145,6 +145,9 @@ public final class Cluster {
         if (settings.jaasEntry != null)
             builder.jaasEntry(settings.jaasEntry);
 
+        if (settings.protocol != null)
+            builder.protocol(settings.protocol);
+
         // the first address was added above in the constructor, so skip it if there are more
         if (addresses.size() > 1)
             addresses.stream().skip(1).forEach(builder::addContactPoint);
