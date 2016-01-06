@@ -16,19 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.tinkerpop.gremlin.giraph;
 
-package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
-
-import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
-import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.RunnerBuilder;
+import org.apache.tinkerpop.gremlin.GraphProviderClass;
+import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphHadoopGraphProvider;
+import org.apache.tinkerpop.gremlin.hadoop.HadoopGremlinSuite;
+import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.junit.runner.RunWith;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class HadoopPluginSuite extends AbstractGremlinSuite {
-    public HadoopPluginSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
-        super(klass, builder, new Class<?>[]{FileSystemStorageCheck.class}, new Class<?>[]{FileSystemStorageCheck.class}, true, TraversalEngine.Type.COMPUTER);
-    }
+@RunWith(HadoopGremlinSuite.class)
+@GraphProviderClass(provider = GiraphHadoopGraphProvider.class, graph = HadoopGraph.class)
+public class GiraphHadoopGremlinIntegrateTest {
 }

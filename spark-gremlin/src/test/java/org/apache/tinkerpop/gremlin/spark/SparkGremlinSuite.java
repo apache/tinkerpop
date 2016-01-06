@@ -16,18 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.giraph.process.computer.groovy.plugin;
 
-import org.apache.tinkerpop.gremlin.GraphProviderClass;
-import org.apache.tinkerpop.gremlin.giraph.process.computer.GiraphHadoopGraphProvider;
-import org.apache.tinkerpop.gremlin.hadoop.groovy.plugin.HadoopPluginSuite;
-import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.junit.runner.RunWith;
+package org.apache.tinkerpop.gremlin.spark;
+
+import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorageCheck;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.RunnerBuilder;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-@RunWith(HadoopPluginSuite.class)
-@GraphProviderClass(provider = GiraphHadoopGraphProvider.class, graph = HadoopGraph.class)
-public class GiraphHadoopGremlinPluginIntegrateTest {
+public class SparkGremlinSuite extends AbstractGremlinSuite {
+    public SparkGremlinSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
+        super(klass, builder, new Class<?>[]{SparkContextStorageCheck.class}, new Class<?>[]{SparkContextStorageCheck.class}, true, TraversalEngine.Type.COMPUTER);
+    }
 }

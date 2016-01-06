@@ -52,6 +52,11 @@ public interface Storage {
 
     public Iterator<Vertex> head(final String location, final Class parserClass, final int totalLines);
 
+    @Deprecated
+    public default Iterator<Vertex> head(final String location, final int totalLines, final Class parserClass) {
+       return this.head(location,parserClass,totalLines);
+    }
+
     public default Iterator<Vertex> head(final String location, final Class parserClass) {
         return this.head(location, parserClass, Integer.MAX_VALUE);
     }

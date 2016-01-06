@@ -177,8 +177,8 @@ public final class FileSystemStorage implements Storage {
 
     @Override
     public <K, V> Iterator<KeyValue<K, V>> head(final String location, final String memoryKey, final Class parserClass, final int totalLines) {
-        if (!parserClass.equals(SequenceFileInputFormat.class) && !parserClass.equals(ObjectWritable.class))
-            throw new IllegalArgumentException("Only " + SequenceFileInputFormat.class.getCanonicalName() + " and " + ObjectWritable.class.getCanonicalName() + " memories are supported");
+        if (!parserClass.equals(SequenceFileInputFormat.class) && !parserClass.equals(ObjectWritable.class)) // object writable support for backwards compatibility
+            throw new IllegalArgumentException("Only " + SequenceFileInputFormat.class.getCanonicalName() + " memories are supported");
         final Configuration configuration = new Configuration();
         try {
             return IteratorUtils.limit((Iterator) new ObjectWritableIterator(configuration, new Path(Constants.getMemoryLocation(location, memoryKey))), totalLines);

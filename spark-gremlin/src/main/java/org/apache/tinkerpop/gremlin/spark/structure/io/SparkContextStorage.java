@@ -32,11 +32,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import scala.collection.JavaConversions;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -90,14 +90,18 @@ public final class SparkContextStorage implements Storage {
 
     @Override
     public boolean cp(final String fromLocation, final String toLocation) {
-        Spark.getRDD(fromLocation).setName(toLocation).cache().count();
-        Spark.removeRDD(fromLocation);
+        final List<String> rdds = Spark.getRDDs().stream().filter(r -> r.name().startsWith(fromLocation)).map(RDD::name).collect(Collectors.toList());
+        if (rdds.size() == 0)
+            return false;
+        for (final String rdd : rdds) {
+            Spark.getRDD(rdd).toJavaRDD().filter(a -> false).setName(rdd.equals(fromLocation) ? toLocation : rdd.replace(fromLocation, toLocation)).cache().count();
+        }
         return true;
     }
 
     @Override
     public boolean exists(final String location) {
-        return Spark.hasRDD(location);
+        return this.ls(location).size() > 0;
     }
 
     @Override
@@ -128,9 +132,9 @@ public final class SparkContextStorage implements Storage {
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, parserClass.getCanonicalName());
         try {
             if (InputRDD.class.isAssignableFrom(parserClass)) {
-                return IteratorUtils.limit(IteratorUtils.map(((InputRDD) parserClass.getConstructor().newInstance()).readGraphRDD(configuration, new JavaSparkContext(Spark.getContext())).toLocalIterator(), tuple -> tuple._2().get()), totalLines);
+                return IteratorUtils.map(((InputRDD) parserClass.getConstructor().newInstance()).readGraphRDD(configuration, new JavaSparkContext(Spark.getContext())).take(totalLines).iterator(), tuple -> tuple._2().get());
             } else if (InputFormat.class.isAssignableFrom(parserClass)) {
-                return IteratorUtils.limit(IteratorUtils.map(new InputFormatRDD().readGraphRDD(configuration, new JavaSparkContext(Spark.getContext())).toLocalIterator(), tuple -> tuple._2().get()), totalLines);
+                return IteratorUtils.map(new InputFormatRDD().readGraphRDD(configuration, new JavaSparkContext(Spark.getContext())).take(totalLines).iterator(), tuple -> tuple._2().get());
             }
         } catch (final Exception e) {
             throw new IllegalArgumentException(e.getMessage(), e);
@@ -146,9 +150,9 @@ public final class SparkContextStorage implements Storage {
         configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, parserClass.getCanonicalName());
         try {
             if (InputRDD.class.isAssignableFrom(parserClass)) {
-                return IteratorUtils.limit(IteratorUtils.map(((InputRDD) parserClass.getConstructor().newInstance()).readMemoryRDD(configuration, memoryKey, new JavaSparkContext(Spark.getContext())).toLocalIterator(), tuple -> new KeyValue(tuple._1(), tuple._2())), totalLines);
+                return IteratorUtils.map(((InputRDD) parserClass.getConstructor().newInstance()).readMemoryRDD(configuration, memoryKey, new JavaSparkContext(Spark.getContext())).take(totalLines).iterator(), tuple -> new KeyValue(tuple._1(), tuple._2()));
             } else if (InputFormat.class.isAssignableFrom(parserClass)) {
-                return IteratorUtils.limit(IteratorUtils.map(new InputFormatRDD().readMemoryRDD(configuration, memoryKey, new JavaSparkContext(Spark.getContext())).toLocalIterator(), tuple -> new KeyValue(tuple._1(), tuple._2())), totalLines);
+                return IteratorUtils.map(new InputFormatRDD().readMemoryRDD(configuration, memoryKey, new JavaSparkContext(Spark.getContext())).take(totalLines).iterator(), tuple -> new KeyValue(tuple._1(), tuple._2()));
             }
         } catch (final Exception e) {
             throw new IllegalArgumentException(e.getMessage(), e);
@@ -158,7 +162,7 @@ public final class SparkContextStorage implements Storage {
 
     @Override
     public Iterator<String> head(final String location, final int totalLines) {
-        return IteratorUtils.limit(IteratorUtils.map(JavaConversions.asJavaIterator(Spark.getRDD(location).toLocalIterator()), Object::toString), totalLines);
+        return IteratorUtils.map(Spark.getRDD(location).toJavaRDD().take(totalLines).iterator(), Object::toString);
     }
 
     // TODO: @Override

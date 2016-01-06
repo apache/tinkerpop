@@ -1591,7 +1591,7 @@ g = graph.traversal(computer(SparkGraphComputer))
 hdfs.ls()
 hdfs.ls('output')
 hdfs.ls('output/~reducing')
-hdfs.head('output/~reducing', ObjectWritable)
+hdfs.head('output/~reducing', SequenceFileInputFormat)
 ----
 
 A list of the HDFS methods available are itemized below. Note that these methods are also available for the 'local' variable:
@@ -1609,7 +1609,10 @@ A list of the HDFS methods available are itemized below. Note that these methods
 |hdfs.mergeToLocal(String from, String to)| Merge the files in path to the specified local path.
 |hdfs.head(String path)| Display the data in the path as text.
 |hdfs.head(String path, int lineCount)| Text display only the first `lineCount`-number of lines in the path.
-|hdfs.head(String path, int totalKeyValues, Class<Writable> writableClass)| Display the path interpreting the key values as respective writable.
+|hdfs.head(String path, int totalKeyValues, Class<InputFormat> inputFormatClass)| Parse and display the data using the InputFormat.
+|hdfs.head(String path, Class<InputFormat> inputFormatClass)| Parse and display the data using the InputFormat.
+|hdfs.head(String path, String memoryKey, Class<InputFormat> inputFormatClass, int totalKeyValues) | Parse and display memory data using the InputFormat.
+|hdfs.head(String path, String memoryKey, Class<InputFormat> inputFormatClass) | Parse and display memory data using the InputFormat.
 |=========================================================
 
 A Command Line Example

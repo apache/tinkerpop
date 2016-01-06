@@ -20,6 +20,7 @@ package org.apache.tinkerpop.gremlin.hadoop.groovy.plugin;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.tinkerpop.gremlin.groovy.plugin.AbstractGremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
@@ -64,6 +65,7 @@ public final class HadoopGremlinPlugin extends AbstractGremlinPlugin {
         add(IMPORT_SPACE + GryoInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + GraphSONInputFormat.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + ScriptInputFormat.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + SequenceFileInputFormat.class.getCanonicalName());
         ////
         add(IMPORT_SPACE + MapReduceGraphComputer.class.getPackage().getName() + DOT_STAR);
     }};
