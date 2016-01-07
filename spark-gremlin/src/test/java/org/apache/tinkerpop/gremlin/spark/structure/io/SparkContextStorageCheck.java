@@ -27,8 +27,6 @@ import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -46,7 +44,6 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
     public void shouldSupportHeadMethods() throws Exception {
         final Storage storage = SparkContextStorage.open("local[4]");
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
-        assertFalse(storage.exists(outputLocation));
         super.checkHeadMethods(storage, graph.configuration().getString(Constants.GREMLIN_HADOOP_INPUT_LOCATION), outputLocation, PersistedInputRDD.class, PersistedInputRDD.class);
     }
 
@@ -65,5 +62,13 @@ public class SparkContextStorageCheck extends AbstractStorageCheck {
         final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
         final String newOutputLocation = "new-location-for-copy";
         super.checkCopyMethods(storage, outputLocation, newOutputLocation, PersistedInputRDD.class, PersistedInputRDD.class);
+    }
+
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldNotHaveResidualDataInStorage() throws Exception {
+        final Storage storage = SparkContextStorage.open("local[4]");
+        final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
+        super.checkResidualDataInStorage(storage, outputLocation);
     }
 }

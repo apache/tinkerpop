@@ -120,7 +120,7 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
         return ComputerSubmissionHelper.runWithBackgroundThread(this::submitWithExecutor, "GiraphSubmitter");
     }
 
-    private Future<ComputerResult> submitWithExecutor(Executor exec) {
+    private Future<ComputerResult> submitWithExecutor(final Executor exec) {
         final long startTime = System.currentTimeMillis();
         final Configuration apacheConfiguration = ConfUtil.makeApacheConfiguration(this.giraphConfiguration);
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
@@ -203,9 +203,9 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
                 MapReduceHelper.executeMapReduceJob(mapReduce, this.memory, this.giraphConfiguration);
             }
 
-            // if no persistence, delete the graph output
+            // if no persistence, delete the graph and memory output
             if (this.persist.equals(Persist.NOTHING))
-                storage.rm(Constants.getGraphLocation(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION)));
+                storage.rm(this.giraphConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
         } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

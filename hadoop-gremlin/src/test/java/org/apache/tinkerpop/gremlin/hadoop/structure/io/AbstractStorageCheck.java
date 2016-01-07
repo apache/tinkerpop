@@ -24,8 +24,13 @@ import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.process.computer.ComputerResult;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.ClusterCountMapReduce;
 import org.apache.tinkerpop.gremlin.process.computer.clustering.peerpressure.PeerPressureVertexProgram;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -119,5 +124,22 @@ public abstract class AbstractStorageCheck extends AbstractGremlinTest {
         assertEquals(6, IteratorUtils.count(storage.head(newOutputLocation, outputGraphParserClass)));
         assertEquals(1, IteratorUtils.count(storage.head(outputLocation, "clusterCount", outputMemoryParserClass)));
         assertEquals(1, IteratorUtils.count(storage.head(newOutputLocation, "clusterCount", outputMemoryParserClass)));
+    }
+
+    public void checkResidualDataInStorage(final Storage storage, final String outputLocation) throws Exception {
+        final GraphTraversal<Vertex, Long> traversal = g.V().both("knows").groupCount("m").by("age").count();
+        assertEquals(4l, traversal.next().longValue());
+        assertFalse(storage.exists(outputLocation));
+        assertFalse(storage.exists(Constants.getMemoryLocation(outputLocation, "m")));
+        assertFalse(storage.exists(Constants.getMemoryLocation(outputLocation, Graph.Hidden.hide("reducing"))));
+        assertFalse(storage.exists(Constants.getGraphLocation(outputLocation)));
+        ///
+        assertEquals(3, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().size());
+        assertEquals(1, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().get(27).longValue());
+        assertEquals(2, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().get(29).longValue());
+        assertEquals(1, traversal.asAdmin().getSideEffects().<Map<Integer, Long>>get("m").get().get(32).longValue());
+        ///
+        assertEquals(4l, traversal.asAdmin().getSideEffects().<Long>get(Graph.Hidden.hide("reducing")).get().longValue());
+
     }
 }

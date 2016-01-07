@@ -70,6 +70,14 @@ public class FileSystemStorageCheck extends AbstractStorageCheck {
 
     }
 
+    @Test
+    @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
+    public void shouldNotHaveResidualDataInStorage() throws Exception {
+        final Storage storage = FileSystemStorage.open(ConfUtil.makeHadoopConfiguration(graph.configuration()));
+        final String outputLocation = graph.configuration().getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION);
+        super.checkResidualDataInStorage(storage, outputLocation);
+    }
+
     private static void deleteDirectory(final String location) throws IOException {
         // TestHelper creates the directory and we need it not to exist
         assertTrue(new File(location).isDirectory());
