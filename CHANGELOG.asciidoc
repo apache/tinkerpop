@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Bumped to Spark 1.5.2.
+* Bumped to Groovy 2.4.5.
 * Execute the `LifeCycle.beforeEval()` in the same thread that `eval()` is executed in for `GremlinExecutor`.
 * Improved error handling of Gremlin Console initialization scripts to better separate errors in initialization script I/O versus execution of the script itself.
 * Fixed a bug in `Graph.OptOut` when trying to opt-out of certain test cases with the `method` property set to "*".
