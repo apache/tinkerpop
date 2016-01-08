@@ -64,7 +64,7 @@ public class ClusterCountMapReduce extends StaticMapReduce<MapReduce.NullObject,
 
     @Override
     public boolean doStage(final Stage stage) {
-        return true;
+        return !stage.equals(Stage.COMBINE);
     }
 
     @Override
@@ -73,11 +73,6 @@ public class ClusterCountMapReduce extends StaticMapReduce<MapReduce.NullObject,
         if (cluster.isPresent()) {
             emitter.emit(NullObject.instance(), cluster.value());
         }
-    }
-
-    @Override
-    public void combine(final NullObject key, final Iterator<Serializable> values, final ReduceEmitter<NullObject, Integer> emitter) {
-        this.reduce(key, values, emitter);
     }
 
     @Override

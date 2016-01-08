@@ -16,16 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.hdfs;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopVertex;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.InputFormat;
 
 import java.io.IOException;
 
@@ -52,7 +48,7 @@ public final class HadoopVertexIterator extends HadoopElementIterator<Vertex> {
                     if (this.readers.peek().nextKeyValue())
                         return new HadoopVertex(this.readers.peek().getCurrentValue().get(), this.graph);
                     else
-                        this.readers.remove();
+                        this.readers.remove().close();
                 }
             }
             throw FastNoSuchElementException.instance();
@@ -71,7 +67,7 @@ public final class HadoopVertexIterator extends HadoopElementIterator<Vertex> {
                         this.nextVertex = new HadoopVertex(this.readers.peek().getCurrentValue().get(), this.graph);
                         return true;
                     } else
-                        this.readers.remove();
+                        this.readers.remove().close();
                 }
             }
         } catch (final Exception e) {

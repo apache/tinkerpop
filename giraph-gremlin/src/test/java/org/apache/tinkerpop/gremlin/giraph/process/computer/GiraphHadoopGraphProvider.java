@@ -39,13 +39,13 @@ public final class GiraphHadoopGraphProvider extends HadoopGraphProvider {
     @Override
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData loadGraphWith) {
         final Map<String, Object> config = super.getBaseConfiguration(graphName, test, testMethodName, loadGraphWith);
-        config.put("mapreduce.job.reduces", 4);
+        config.put("mapreduce.job.reduces", 2);
         /// giraph configuration
         config.put(GiraphConstants.LOCAL_TEST_MODE.getKey(), true); // local testing can only spawn one worker
         config.put(GiraphConstants.MIN_WORKERS, 1);
         config.put(GiraphConstants.MAX_WORKERS, 1);
         config.put(GiraphConstants.SPLIT_MASTER_WORKER.getKey(), false);
-        config.put(GiraphConstants.ZOOKEEPER_SERVER_PORT.getKey(), 2181);  // you must have a local zookeeper running on this port
+        config.put(GiraphConstants.ZOOKEEPER_IS_EXTERNAL.getKey(), false);
         config.put(GiraphConstants.NETTY_SERVER_USE_EXECUTION_HANDLER.getKey(), false); // this prevents so many integration tests running out of threads
         config.put(GiraphConstants.NETTY_CLIENT_USE_EXECUTION_HANDLER.getKey(), false); // this prevents so many integration tests running out of threads
         config.put(GiraphConstants.NETTY_USE_DIRECT_MEMORY.getKey(), true);
@@ -53,7 +53,7 @@ public final class GiraphHadoopGraphProvider extends HadoopGraphProvider {
         config.put(GiraphConstants.NUM_COMPUTE_THREADS.getKey(), 2);
         config.put(GiraphConstants.MAX_MASTER_SUPERSTEP_WAIT_MSECS.getKey(), TimeUnit.MINUTES.toMillis(60L));
         config.put(GiraphConstants.VERTEX_OUTPUT_FORMAT_THREAD_SAFE.getKey(), false);
-        config.put(GiraphConstants.NUM_OUTPUT_THREADS.getKey(), 2);
+        config.put(GiraphConstants.NUM_OUTPUT_THREADS.getKey(), 1);
         return config;
     }
 

@@ -786,14 +786,14 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldSortReduceOutput() throws Exception {
         final ComputerResult results = graph.compute(graphComputerClass.get()).mapReduce(new MapReduceB()).submit().get();
-        final List<Long> ids = results.memory().get("ids");
-        assertEquals(6, ids.size());
-        for (int i = 1; i < ids.size(); i++) {
-            assertTrue(ids.get(i) < ids.get(i - 1));
+        final List<Integer> nameLengths = results.memory().get("nameLengths");
+        assertEquals(6, nameLengths.size());
+        for (int i = 1; i < nameLengths.size(); i++) {
+            assertTrue(nameLengths.get(i) <= nameLengths.get(i - 1));
         }
     }
 
-    public static class MapReduceB extends StaticMapReduce<Long, Long, Long, Long, List<Long>> {
+    public static class MapReduceB extends StaticMapReduce<Integer, Integer, Integer, Integer, List<Integer>> {
 
         @Override
         public boolean doStage(final Stage stage) {
@@ -801,29 +801,29 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public void map(final Vertex vertex, final MapEmitter<Long, Long> emitter) {
-            emitter.emit(Long.valueOf(vertex.id().toString()), Long.valueOf(vertex.id().toString()));
+        public void map(final Vertex vertex, final MapEmitter<Integer, Integer> emitter) {
+            emitter.emit(vertex.<String>value("name").length(), vertex.<String>value("name").length());
         }
 
         @Override
-        public void reduce(Long key, Iterator<Long> values, ReduceEmitter<Long, Long> emitter) {
+        public void reduce(Integer key, Iterator<Integer> values, ReduceEmitter<Integer, Integer> emitter) {
             values.forEachRemaining(id -> emitter.emit(id, id));
         }
 
         @Override
-        public Optional<Comparator<Long>> getReduceKeySort() {
-            return Optional.of(Comparator.<Long>reverseOrder());
+        public Optional<Comparator<Integer>> getReduceKeySort() {
+            return Optional.of(Comparator.<Integer>reverseOrder());
         }
 
         @Override
         public String getMemoryKey() {
-            return "ids";
+            return "nameLengths";
         }
 
         @Override
-        public List<Long> generateFinalResult(final Iterator<KeyValue<Long, Long>> keyValues) {
-            final List<Long> list = new ArrayList<>();
-            keyValues.forEachRemaining(id -> list.add(id.getKey()));
+        public List<Integer> generateFinalResult(final Iterator<KeyValue<Integer, Integer>> keyValues) {
+            final List<Integer> list = new ArrayList<>();
+            keyValues.forEachRemaining(nameLength -> list.add(nameLength.getKey()));
             return list;
         }
     }
@@ -833,14 +833,14 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
     @LoadGraphWith(MODERN)
     public void shouldSortMapOutput() throws Exception {
         final ComputerResult results = graph.compute(graphComputerClass.get()).mapReduce(new MapReduceBB()).submit().get();
-        final List<Long> ids = results.memory().get("ids");
-        assertEquals(6, ids.size());
-        for (int i = 1; i < ids.size(); i++) {
-            assertTrue(ids.get(i) < ids.get(i - 1));
+        final List<Integer> nameLengths = results.memory().get("nameLengths");
+        assertEquals(6, nameLengths.size());
+        for (int i = 1; i < nameLengths.size(); i++) {
+            assertTrue(nameLengths.get(i) <= nameLengths.get(i - 1));
         }
     }
 
-    public static class MapReduceBB extends StaticMapReduce<Long, Long, Long, Long, List<Long>> {
+    public static class MapReduceBB extends StaticMapReduce<Integer, Integer, Integer, Integer, List<Integer>> {
 
         @Override
         public boolean doStage(final Stage stage) {
@@ -848,24 +848,24 @@ public class GraphComputerTest extends AbstractGremlinProcessTest {
         }
 
         @Override
-        public void map(final Vertex vertex, final MapEmitter<Long, Long> emitter) {
-            emitter.emit(Long.valueOf(vertex.id().toString()), Long.valueOf(vertex.id().toString()));
+        public void map(final Vertex vertex, final MapEmitter<Integer, Integer> emitter) {
+            emitter.emit(vertex.<String>value("name").length(), vertex.<String>value("name").length());
         }
 
         @Override
-        public Optional<Comparator<Long>> getMapKeySort() {
-            return Optional.of(Comparator.<Long>reverseOrder());
+        public Optional<Comparator<Integer>> getMapKeySort() {
+            return Optional.of(Comparator.<Integer>reverseOrder());
         }
 
         @Override
         public String getMemoryKey() {
-            return "ids";
+            return "nameLengths";
         }
 
         @Override
-        public List<Long> generateFinalResult(final Iterator<KeyValue<Long, Long>> keyValues) {
-            final List<Long> list = new ArrayList<>();
-            keyValues.forEachRemaining(id -> list.add(id.getKey()));
+        public List<Integer> generateFinalResult(final Iterator<KeyValue<Integer, Integer>> keyValues) {
+            final List<Integer> list = new ArrayList<>();
+            keyValues.forEachRemaining(nameLength -> list.add(nameLength.getKey()));
             return list;
         }
     }
