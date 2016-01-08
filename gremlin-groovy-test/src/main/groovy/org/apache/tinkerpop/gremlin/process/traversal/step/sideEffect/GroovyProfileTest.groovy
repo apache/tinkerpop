@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect
 
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalScriptHelper
 import org.apache.tinkerpop.gremlin.structure.Vertex
 
@@ -52,6 +53,11 @@ public abstract class GroovyProfileTest {
         @Override
         public Traversal<Vertex, Map<String, String>> get_g_V_matchXa_created_b__b_in_count_isXeqX1XXX_selectXa_bX_byXnameX_profile() {
             TraversalScriptHelper.compute("g.V.match(__.as('a').out('created').as('b'), __.as('b').in.count.is(eq(1))).select('a', 'b').by('name').profile", g)
+        }
+
+        @Override
+        Traversal<Vertex, TraversalMetrics> get_g_V_profile_capXmetricsX() {
+            g.V.profile.cap(TraversalMetrics.METRICS_KEY)
         }
     }
 }

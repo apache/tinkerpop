@@ -134,6 +134,12 @@ public final class ProfileStep<S> extends AbstractStep<S, S> implements MapReduc
         final List<Step> steps = traversal.getSteps();
         for (int ii = 0; ii + 1 < steps.size(); ii = ii + 2) {
             Step step = steps.get(ii);
+
+            if (!(steps.get(ii+1) instanceof ProfileStep)) {
+                // If the next step is not a ProfileStep then we are done initializing.
+                return;
+            }
+
             ProfileStep profileStep = (ProfileStep) steps.get(ii + 1);
 
             // Create metrics
