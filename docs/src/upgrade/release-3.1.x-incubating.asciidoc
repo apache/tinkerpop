@@ -53,6 +53,8 @@ Given that HDFS (and now Spark) interactions are possible via `Storage` and no l
 developers can use these `Storage` implementations in their Java code. In fact, `Storage` has greatly simplified
 complex file/RDD operations in both `GiraphGraphComputer` and `SparkGraphComputer`.
 
+Finally, note that the following low-level/internal classes have been removed: `HadoopLoader` and `HDFSTools`.
+
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-1033[TINKERPOP-1033],
 link:https://issues.apache.org/jira/browse/TINKERPOP-1023[TINKERPOP-1023]
 
