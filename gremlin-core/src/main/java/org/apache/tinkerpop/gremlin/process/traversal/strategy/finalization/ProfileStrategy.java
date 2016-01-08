@@ -23,8 +23,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.ProfileStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.sideEffect.SideEffectCapStep;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.AbstractTraversalStrategy;
 import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.util.TraversalMetrics;
 
 import java.util.List;
 
@@ -62,6 +64,14 @@ public final class ProfileStrategy extends AbstractTraversalStrategy<TraversalSt
         for (int ii = 0; ii < numSteps; ii++) {
             // Get the original step
             Step step = steps.get(ii * 2);
+
+            if (step instanceof SideEffectCapStep && ii == numSteps - 1) {
+                SideEffectCapStep sideEffectCapStep = (SideEffectCapStep) step;
+                if (sideEffectCapStep.getSideEffectKeys().size() == 1 && sideEffectCapStep.getSideEffectKeys().get(0).equals(TraversalMetrics.METRICS_KEY)) {
+                    // Do not profile the last step if it is used to cap off the TraversalMetrics.
+                    continue;
+                }
+            }
 
             // Create and inject ProfileStep
             ProfileStep profileStep = new ProfileStep(traversal);

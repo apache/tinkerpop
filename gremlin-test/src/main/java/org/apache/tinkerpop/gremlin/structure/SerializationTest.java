@@ -341,7 +341,7 @@ public class SerializationTest {
             assertTrue(m.containsKey(GraphSONTokens.METRICS));
 
             final List<Map<String, Object>> metrics = (List<Map<String, Object>>) m.get(GraphSONTokens.METRICS);
-            assertEquals(3, metrics.size());
+            assertEquals(2, metrics.size());
 
             final Map<String, Object> metrics0 = metrics.get(0);
             assertTrue(metrics0.containsKey(GraphSONTokens.ID));
