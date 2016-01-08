@@ -70,4 +70,11 @@ public final class ToyGraphInputRDD implements InputRDD {
 
         return sparkContext.parallelize(vertices).mapToPair(vertex -> new Tuple2<>(vertex.get().id(), vertex));
     }
+
+    @Override
+    public <K, V> JavaPairRDD<K, V> readMemoryRDD(Configuration configuration, String memoryKey, JavaSparkContext sparkContext) {
+        return null;
+    }
+
+
 }

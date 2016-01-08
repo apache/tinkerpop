@@ -67,20 +67,22 @@ public class SparkTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
 
         for (int i = 0; i < 10; i++) {
+            final String graphRDDName = Constants.getGraphLocation(prefix + i);
             assertEquals(i, Spark.getRDDs().size());
             configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, prefix + i);
             Graph graph = GraphFactory.open(configuration);
             graph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.VERTEX_PROPERTIES).program(PageRankVertexProgram.build().iterations(1).create(graph)).submit().get();
-            assertNotNull(Spark.getRDD(prefix + i));
+            assertNotNull(Spark.getRDD(graphRDDName));
             assertEquals(i + 1, Spark.getRDDs().size());
         }
 
         for (int i = 9; i >= 0; i--) {
+            final String graphRDDName = Constants.getGraphLocation(prefix + i);
             assertEquals(i + 1, getPersistedRDDSize());
             assertEquals(i + 1, Spark.getRDDs().size());
-            assertTrue(hasPersistedRDD(prefix + i));
-            Spark.removeRDD(prefix + i);
-            assertFalse(hasPersistedRDD(prefix + i));
+            assertTrue(hasPersistedRDD(graphRDDName));
+            Spark.removeRDD(graphRDDName);
+            assertFalse(hasPersistedRDD(graphRDDName));
         }
 
         assertEquals(0, getPersistedRDDSize());

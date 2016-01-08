@@ -19,11 +19,10 @@
 package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
-import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HDFSTools;
-import org.apache.tinkerpop.gremlin.hadoop.structure.hdfs.HiddenFileFilter;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 
@@ -43,9 +42,8 @@ public final class ObjectWritableIterator implements Iterator<KeyValue> {
     private final Queue<SequenceFile.Reader> readers = new LinkedList<>();
 
     public ObjectWritableIterator(final Configuration configuration, final Path path) throws IOException {
-        final FileSystem fs = FileSystem.get(configuration);
-        for (final Path path2 : HDFSTools.getAllFilePaths(fs, path, HiddenFileFilter.instance())) {
-            this.readers.add(new SequenceFile.Reader(configuration, SequenceFile.Reader.file(path2)));
+        for (final FileStatus status : FileSystem.get(configuration).listStatus(path, HiddenFileFilter.instance())) {
+            this.readers.add(new SequenceFile.Reader(configuration, SequenceFile.Reader.file(status.getPath())));
         }
     }
 
@@ -62,7 +60,7 @@ public final class ObjectWritableIterator implements Iterator<KeyValue> {
                         this.available = true;
                         return true;
                     } else
-                        this.readers.remove();
+                        this.readers.remove().close();
                 }
             }
         } catch (final IOException e) {
@@ -83,7 +81,7 @@ public final class ObjectWritableIterator implements Iterator<KeyValue> {
                     if (this.readers.peek().next(this.key, this.value)) {
                         return new KeyValue<>(this.key.get(), this.value.get());
                     } else
-                        this.readers.remove();
+                        this.readers.remove().close();
                 }
             }
         } catch (final IOException e) {

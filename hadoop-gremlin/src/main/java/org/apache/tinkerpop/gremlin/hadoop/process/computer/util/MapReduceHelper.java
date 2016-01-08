@@ -65,7 +65,7 @@ public final class MapReduceHelper {
         mapReduce.storeState(apacheConfiguration);
         ConfUtil.mergeApacheIntoHadoopConfiguration(apacheConfiguration, newConfiguration);
         if (!mapReduce.doStage(MapReduce.Stage.MAP)) {
-            final Path memoryPath = new Path(configuration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
+            final Path memoryPath = new Path(Constants.getMemoryLocation(configuration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), mapReduce.getMemoryKey()));
             mapReduce.addResultToMemory(memory, new ObjectWritableIterator(configuration, memoryPath));
         } else {
             final Optional<Comparator<?>> mapSort = mapReduce.getMapKeySort();
@@ -100,9 +100,9 @@ public final class MapReduceHelper {
             job.setOutputFormatClass(SequenceFileOutputFormat.class);
             // if there is no vertex program, then grab the graph from the input location
             final Path graphPath = vertexProgramExists ?
-                    new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + Constants.HIDDEN_G) :
+                    new Path(Constants.getGraphLocation(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))) :
                     new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_INPUT_LOCATION));
-            Path memoryPath = new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + (reduceSort.isPresent() ? mapReduce.getMemoryKey() + "-temp" : mapReduce.getMemoryKey()));
+            Path memoryPath = new Path(Constants.getMemoryLocation(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), (reduceSort.isPresent() ? mapReduce.getMemoryKey() + "-temp" : mapReduce.getMemoryKey())));
             if (FileSystem.get(newConfiguration).exists(memoryPath)) {
                 FileSystem.get(newConfiguration).delete(memoryPath, true);
             }
@@ -124,7 +124,7 @@ public final class MapReduceHelper {
                 reduceSortJob.setOutputFormatClass(SequenceFileOutputFormat.class);
                 reduceSortJob.setNumReduceTasks(1); // todo: is this necessary to ensure sorted order?
                 FileInputFormat.setInputPaths(reduceSortJob, memoryPath);
-                final Path sortedMemoryPath = new Path(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION) + "/" + mapReduce.getMemoryKey());
+                final Path sortedMemoryPath = new Path(Constants.getMemoryLocation(newConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION), mapReduce.getMemoryKey()));
                 FileOutputFormat.setOutputPath(reduceSortJob, sortedMemoryPath);
                 reduceSortJob.waitForCompletion(true);
                 FileSystem.get(newConfiguration).delete(memoryPath, true); // delete the temporary memory path

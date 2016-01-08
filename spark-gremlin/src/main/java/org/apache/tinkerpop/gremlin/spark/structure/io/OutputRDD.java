@@ -21,11 +21,32 @@ package org.apache.tinkerpop.gremlin.spark.structure.io;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
+
+import java.util.Iterator;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public interface OutputRDD {
 
+    /**
+     * Write the graphRDD to an output location. The {@link Configuration} maintains the specified location via {@link org.apache.tinkerpop.gremlin.hadoop.Constants#GREMLIN_HADOOP_OUTPUT_LOCATION}.
+     *
+     * @param configuration the configuration of the Spark job
+     * @param graphRDD      the graphRDD to output
+     */
     public void writeGraphRDD(final Configuration configuration, final JavaPairRDD<Object, VertexWritable> graphRDD);
+
+    /**
+     * Write the sideEffect memoryRDD to an output location. The {@link Configuration} maintains the specified location via {@link org.apache.tinkerpop.gremlin.hadoop.Constants#GREMLIN_HADOOP_OUTPUT_LOCATION}.
+     *
+     * @param configuration the configuration of the Spark job
+     * @param memoryKey     the memory key of the memoryRDD
+     * @param memoryRDD     the memoryRDD
+     * @param <K>           the key class of the RDD
+     * @param <V>           the value class of the RDD
+     * @return the {@link KeyValue} iterator to store in the final resultant {@link org.apache.tinkerpop.gremlin.process.computer.Memory}.
+     */
+    public <K, V> Iterator<KeyValue<K, V>> writeMemoryRDD(final Configuration configuration, final String memoryKey, final JavaPairRDD<K, V> memoryRDD);
 }

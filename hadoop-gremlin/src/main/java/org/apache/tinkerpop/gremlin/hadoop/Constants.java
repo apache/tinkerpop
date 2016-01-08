@@ -19,6 +19,9 @@
 package org.apache.tinkerpop.gremlin.hadoop;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
+
+import java.util.Optional;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -52,4 +55,21 @@ public final class Constants {
     public static final String GREMLIN_SPARK_GRAPH_INPUT_RDD = "gremlin.spark.graphInputRDD";
     public static final String GREMLIN_SPARK_GRAPH_OUTPUT_RDD = "gremlin.spark.graphOutputRDD";
     public static final String GREMLIN_SPARK_PERSIST_CONTEXT = "gremlin.spark.persistContext";
+
+    public static String getGraphLocation(final String location) {
+        return location.endsWith("/") ? location + Constants.HIDDEN_G : location + "/" + Constants.HIDDEN_G;
+    }
+
+    public static String getMemoryLocation(final String location, final String memoryKey) {
+        return location.endsWith("/") ? location + memoryKey : location + "/" + memoryKey;
+    }
+
+    public static Optional<String> getSearchGraphLocation(final String location, final Storage storage) {
+        if (storage.exists(getGraphLocation(location)))
+            return Optional.of(getGraphLocation(location));
+        else if (storage.exists(location))
+            return Optional.of(location);
+        else
+            return Optional.empty();
+    }
 }

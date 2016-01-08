@@ -79,7 +79,7 @@ public class LocalPropertyTest extends AbstractSparkTest {
         JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
         JavaSparkStatusTracker statusTracker = sparkContext.statusTracker();
         assertTrue(statusTracker.getJobIdsForGroup("22").length >= 1);
-        assertTrue(Spark.hasRDD(rddName));
+        assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
         ///////
         configuration.setProperty(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, PersistedInputRDD.class.getCanonicalName());
         configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, rddName);

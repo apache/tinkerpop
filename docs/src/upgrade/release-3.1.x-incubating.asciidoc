@@ -32,6 +32,32 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.1-inc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Storage I/O
+^^^^^^^^^^^
+
+The `gremlin-core` io-package now has a `Storage` interface. The methods that were available via `hdfs`
+(e.g. `rm()`, `ls()`, `head()`, etc.) are now part of `Storage`. Both HDFS and Spark implement `Storage` via
+`FileSystemStorage` and `SparkContextStorage`, respectively.  `SparkContextStorage` adds support for interacting with
+persisted RDDs in the Spark cache.
+
+This update changed a few of the file handling methods. As it stands, these changes only effect manual Gremlin Console
+usage as HDFS support was previously provided via Groovy meta-programing. Thus, these are not "code-based" breaking changes.
+
+* `hdfs.rmr()` no longer exists. `hdfs.rm()` is now recursive. Simply change all references to `rmr()` to `rm()` for identical behavior.
+* `hdfs.head(location,lines,writableClass)` no longer exists.
+** For graph locations, use `hdfs.head(location,writableClass,lines)`.
+** For memory locations, use `hdfs.head(location,memoryKey,writableClass,lines)`.
+* `hdfs.head(...,ObjectWritable)` no longer exists. Use `SequenceFileInputFormat` as an input format is the parsing class.
+
+Given that HDFS (and now Spark) interactions are possible via `Storage` and no longer via Groovy meta-programming,
+developers can use these `Storage` implementations in their Java code. In fact, `Storage` has greatly simplified
+complex file/RDD operations in both `GiraphGraphComputer` and `SparkGraphComputer`.
+
+Finally, note that the following low-level/internal classes have been removed: `HadoopLoader` and `HDFSTools`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1033[TINKERPOP-1033],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1023[TINKERPOP-1023]
+
 Gremlin Server Transaction Management
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
