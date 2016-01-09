@@ -262,7 +262,13 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE)
                 .orElse(settings.resultIterationBatchSize);
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
-        while (toIterate.hasNext()) {
+
+        // use an external control to manage the loop as opposed to just checking hasNext() in the while.  this
+        // prevent situations where auto transactions create a new transaction after calls to commit() withing
+        // the loop on calls to hasNext().
+        boolean hasMore = toIterate.hasNext();
+
+        while (hasMore) {
             if (Thread.interrupted()) throw new InterruptedException();
 
             // have to check the aggregate size because it is possible that the channel is not writeable (below)
@@ -291,7 +297,12 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                         // local errors will get rolledback below because the exceptions aren't thrown in those cases to be
                         // caught by the GremlinExecutor for global rollback logic. this only needs to be committed if
                         // there are no more items to iterate and serialization is complete
-                        if (manageTransactions && !toIterate.hasNext()) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
+                        if (manageTransactions) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
+
+                        // exit the result iteration loop as there are no more results left.  using this external control
+                        // because of the above commit.  some graphs may open a new transaction on the call to
+                        // hasNext()
+                        hasMore = false;
                     }
 
                     // the flush is called after the commit has potentially occurred.  in this way, if a commit was
