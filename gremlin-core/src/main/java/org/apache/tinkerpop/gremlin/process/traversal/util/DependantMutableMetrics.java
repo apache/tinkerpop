@@ -18,9 +18,11 @@
  */
 package org.apache.tinkerpop.gremlin.process.traversal.util;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * This Metrics class handles a metrics chain in which durations are "double counted" by upstream metrics. Durations are
- * corrected on-the-fly by subtracting upstream durations on every call to stop().
+ * corrected upon retrieval by subtracting upstream durations.
  *
  * @author Bob Briody (http://bobbriody.com)
  */
@@ -38,22 +40,24 @@ public class DependantMutableMetrics extends MutableMetrics {
         this.upStreamMetrics = upStreamMetrics;
     }
 
-    public void start() {
-        super.start();
-    }
-
-    public void stop() {
-        super.stop();
-        // root step will not have an upstream metrics
-        if (upStreamMetrics != null) {
-            // subtract time that is "double counted" by upstream metrics
-            super.durationNs -= upStreamMetrics.getAndResetIncrementalDur();
+    /**
+     * Returns the actual duration taken by this Metrics by subtracting the duration taken by the upstream Step, if one exists.
+     * @param unit
+     * @return
+     */
+    @Override
+    public long getDuration(final TimeUnit unit) {
+        if (upStreamMetrics == null){
+           return unit.convert(super.durationNs, unit);
+        } else {
+           // upStreamMetrics exists. Subtract that duration since it is time not spent in this step.
+           return unit.convert(super.durationNs - upStreamMetrics.durationNs, unit);
         }
     }
 
-    public long getAndResetIncrementalDur() {
-        long incrementalDur = super.durationNs - prevDur;
-        prevDur = super.durationNs;
-        return incrementalDur;
+    @Override
+    protected void copyMembers(final ImmutableMetrics clone) {
+        super.copyMembers(clone);
+        clone.durationNs = this.getDuration(TimeUnit.NANOSECONDS);
     }
 }
