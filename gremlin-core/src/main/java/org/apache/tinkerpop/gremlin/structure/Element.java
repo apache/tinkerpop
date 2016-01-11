@@ -147,7 +147,7 @@ public abstract interface Element {
 
         /**
          * @deprecated As of release 3.1.0, not replaced - this exception is no longer enforced by the test suite.
-         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-297">TINKERPOP3-297</a>
+         * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-297">TINKERPOP-297</a>
          */
         @Deprecated
         public static IllegalStateException elementAlreadyRemoved(final Class<? extends Element> clazz, final Object id) {

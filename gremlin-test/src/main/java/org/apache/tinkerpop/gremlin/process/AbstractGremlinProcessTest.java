@@ -24,6 +24,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.MapHelper;
 import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,6 +42,7 @@ import static org.junit.Assume.assumeTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractGremlinProcessTest.class);
 
     /**
      * Determines if a graph meets requirements for execution.  All gremlin process tests should check this
@@ -76,8 +79,8 @@ public abstract class AbstractGremlinProcessTest extends AbstractGremlinTest {
         final List<T> results = traversal.toList();
         assertFalse(traversal.hasNext());
         if(expectedResults.size() != results.size()) {
-            System.err.println("Expected results: " + expectedResults);
-            System.err.println("Actual results:   " + results);
+            logger.error("Expected results: " + expectedResults);
+            logger.error("Actual results:   " + results);
             assertEquals("Checking result size", expectedResults.size(), results.size());
         }
 

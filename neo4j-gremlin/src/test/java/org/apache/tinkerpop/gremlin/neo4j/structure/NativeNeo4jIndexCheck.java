@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -38,7 +40,8 @@ import static org.junit.Assert.*;
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public class NativeNeo4jIndexTest extends AbstractNeo4jGremlinTest {
+public class NativeNeo4jIndexCheck extends AbstractNeo4jGremlinTest {
+    private static final Logger logger = LoggerFactory.getLogger(NativeNeo4jIndexCheck.class);
 
     @Test
     public void shouldHaveFasterRuntimeWithLabelKeyValueIndex() throws Exception {
@@ -74,7 +77,7 @@ public class NativeNeo4jIndexTest extends AbstractNeo4jGremlinTest {
         assertTrue(this.getBaseGraph().hasSchemaIndex("something", "myId"));
         TimeUtil.clock(20, traversal);
         final double indexTime = TimeUtil.clock(20, traversal);
-        System.out.println("Query time (no-index vs. index): " + noIndexTime + " vs. " + indexTime);
+        logger.info("Query time (no-index vs. index): {}", noIndexTime + " vs. {}", indexTime);
         assertTrue((noIndexTime / 10) > indexTime); // should be at least 10x faster
     }
 
@@ -115,7 +118,7 @@ public class NativeNeo4jIndexTest extends AbstractNeo4jGremlinTest {
         assertTrue(this.getBaseGraph().hasSchemaIndex("something", "myId"));
         TimeUtil.clock(20, traversal);
         final double indexTime = TimeUtil.clock(20, traversal);
-        System.out.println("Query time (no-index vs. index): " + noIndexTime + " vs. " + indexTime);
+        logger.info("Query time (no-index vs. index): {}", noIndexTime + " vs. {}", indexTime);
         assertTrue((noIndexTime / 10) > indexTime); // should be at least 10x faster
     }
 

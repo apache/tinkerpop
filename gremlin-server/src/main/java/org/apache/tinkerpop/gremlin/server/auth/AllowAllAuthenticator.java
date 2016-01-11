@@ -44,7 +44,7 @@ public final class AllowAllAuthenticator implements Authenticator {
 
     /**
      * @deprecated As of release 3.1.1-incubating, replaced by {@link #newSaslNegotiator(InetAddress)}.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-995">TINKERPOP3-995</a>
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-995">TINKERPOP-995</a>
      */
     @Override
     @Deprecated

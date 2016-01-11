@@ -33,6 +33,8 @@ import org.apache.tinkerpop.gremlin.driver.simple.NioClient;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
@@ -56,6 +58,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
@@ -127,9 +130,36 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
+            case "shouldUseSimpleSandbox":
+                final Map<String,Object> scriptEngineConf = new HashMap<>();
+                final Map<String,Object> compilerCustomizerProviderConf = new HashMap<>();
+                final List<String> sandboxes = new ArrayList<>();
+                sandboxes.add(SimpleSandboxExtension.class.getName());
+                compilerCustomizerProviderConf.put(CompileStaticCustomizerProvider.class.getName(), sandboxes);
+                scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
+                settings.scriptEngines.get("gremlin-groovy").config = scriptEngineConf;
+                break;
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldUseSimpleSandbox() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+
+        try {
+            // this should return "nothing" - there should be no exception
+            client.submit("java.lang.System.exit(0)").all().get();
+            fail("The above should not have executed in any successful way as sandboxing is enabled");
+        } catch (Exception ex) {
+            assertThat(ex.getCause().getMessage(), containsString("[Static type checking] - Not authorized to call this method: java.lang.System#exit(int)"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test
@@ -248,10 +278,56 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
     }
 
     @Test
-    public void shouldReturnInvalidRequestArgsWhenInvalidBindingKeyIsUsed() throws Exception {
+    public void shouldReturnInvalidRequestArgsWhenInvalidReservedBindingKeyIsUsed() throws Exception {
         try (SimpleClient client = new WebSocketClient()) {
             final Map<String, Object> bindings = new HashMap<>();
             bindings.put(T.id.getAccessor(), "123");
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
+                    .addArg(Tokens.ARGS_BINDINGS, bindings).create();
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicBoolean pass = new AtomicBoolean(false);
+            client.submit(request, result -> {
+                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
+                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
+                    latch.countDown();
+                }
+            });
+
+            if (!latch.await(3000, TimeUnit.MILLISECONDS))
+                fail("Request should have returned error, but instead timed out");
+            assertTrue(pass.get());
+        }
+    }
+
+    @Test
+    public void shouldReturnInvalidRequestArgsWhenInvalidTypeBindingKeyIsUsed() throws Exception {
+        try (SimpleClient client = new WebSocketClient()) {
+            final Map<Object, Object> bindings = new HashMap<>();
+            bindings.put(1, "123");
+            final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
+                    .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
+                    .addArg(Tokens.ARGS_BINDINGS, bindings).create();
+            final CountDownLatch latch = new CountDownLatch(1);
+            final AtomicBoolean pass = new AtomicBoolean(false);
+            client.submit(request, result -> {
+                if (result.getStatus().getCode() != ResponseStatusCode.PARTIAL_CONTENT) {
+                    pass.set(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS == result.getStatus().getCode());
+                    latch.countDown();
+                }
+            });
+
+            if (!latch.await(3000, TimeUnit.MILLISECONDS))
+                fail("Request should have returned error, but instead timed out");
+            assertTrue(pass.get());
+        }
+    }
+
+    @Test
+    public void shouldReturnInvalidRequestArgsWhenInvalidNullBindingKeyIsUsed() throws Exception {
+        try (SimpleClient client = new WebSocketClient()) {
+            final Map<String, Object> bindings = new HashMap<>();
+            bindings.put(null, "123");
             final RequestMessage request = RequestMessage.build(Tokens.OPS_EVAL)
                     .addArg(Tokens.ARGS_GREMLIN, "[1,2,3,4,5,6,7,8,9,0]")
                     .addArg(Tokens.ARGS_BINDINGS, bindings).create();
@@ -338,6 +414,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(ExceptionUtils.getRootCause(re).getMessage().startsWith("Script evaluation exceeded the configured threshold of 200 ms for request"));
+
+            // validate that we can still send messages to the server
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -353,6 +432,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getMessage().endsWith("Serialization of the entire response exceeded the serializeResponseTimeout setting"));
+
+            // validate that we can still send messages to the server
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -402,6 +484,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getCause().getMessage().startsWith("Error during serialization: Direct self-reference leading to cycle (through reference chain:"));
+
+            // validate that we can still send messages to the server
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -417,6 +502,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             fail("Should throw an exception.");
         } catch (RuntimeException re) {
             assertTrue(re.getCause().getCause().getMessage().startsWith("Error during serialization: Class is not registered: java.awt.Color"));
+
+            // validate that we can still send messages to the server
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -490,6 +578,9 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             final Exception cause = (Exception) ex.getCause().getCause();
             assertTrue(cause instanceof ResponseException);
             assertEquals(ResponseStatusCode.SERVER_ERROR_SCRIPT_EVALUATION, ((ResponseException) cause).getResponseStatusCode());
+
+            // validate that we can still send messages to the server
+            assertEquals(2, client.submit("1+1").all().join().get(0).getInt());
         } finally {
             cluster.close();
         }
@@ -542,32 +633,6 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             Thread.sleep(1000);
 
             assertEquals(1, messages.get());
-        }
-    }
-
-    // todo: get this test to pass - count connection and block incoming requests.
-    @Test
-    @org.junit.Ignore
-    public void shouldBlockWhenMaxConnectionsExceeded() throws Exception {
-        final Cluster cluster = Cluster.open();
-        final Client client = cluster.connect();
-
-        try {
-            final CompletableFuture<ResultSet> result = client.submitAsync("Thread.sleep(500);'test'");
-            try {
-                // this request should get blocked by the server
-                client.submitAsync("'test-blocked'").join().one();
-                fail("Request should fail because max connections are exceeded");
-            } catch (Exception ex) {
-                assertTrue(true);
-                ex.printStackTrace();
-            }
-
-            assertEquals("test", result.get().one().getString());
-        } catch (Exception re) {
-            fail("Should not have an exception here");
-        } finally {
-            cluster.close();
         }
     }
     
@@ -686,5 +751,4 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
             assertTrue(pass.get());
         }
     }
-    
 }

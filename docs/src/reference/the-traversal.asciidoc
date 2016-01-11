@@ -1999,7 +1999,7 @@ WARNING: The anonymous traversal of `where()` processes the current object "loca
 of computing is the the vertex and its local "star graph," it is important that the anonymous traversal does not leave
 the confines of the vertex's star graph. In other words, it can not traverse to an adjacent vertex's properties or
 edges. Note that is only a temporary limitation that will be addressed in a future version of TinkerPop3 (see
-link:https://issues.apache.org/jira/browse/TINKERPOP3-693[JIRA#693]).
+link:https://issues.apache.org/jira/browse/TINKERPOP-693[TINKERPOP-693]).
 
 [[a-note-on-predicates]]
 A Note on Predicates

@@ -33,20 +33,62 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 /**
+ * Utility methods for test development.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public final class TestHelper {
 
+    private static final String SEP = File.separator;
+    public static final String TEST_DATA_RELATIVE_DIR = "test-case-data";
+
+    private TestHelper() {}
+
     /**
      * Creates a {@link File} reference that points to a directory relative to the supplied class in the
-     * {@code /target} directory.
+     * {@code /target} directory. Each {@code childPath} passed introduces a new sub-directory and all are placed
+     * below the {@link #TEST_DATA_RELATIVE_DIR}.  For example, calling this method with "a", "b", and "c" as the
+     * {@code childPath} arguments would yield a relative directory like: {@code test-case-data/clazz/a/b/c}. It is
+     * a good idea to use the test class for the {@code clazz} argument so that it's easy to find the data if
+     * necessary after test execution.
      */
-    public static File makeTestDataPath(final Class clazz, final String childPath) {
+    public static File makeTestDataPath(final Class clazz, final String... childPath) {
+        final File root = getRootOfBuildDirectory(clazz);
+        final List<String> cleanedPaths = Stream.of(childPath).map(TestHelper::cleanPathSegment).collect(Collectors.toList());
+
+        // use the class name in the directory structure
+        cleanedPaths.add(0, cleanPathSegment(clazz.getSimpleName()));
+
+        final File f = new File(root, TEST_DATA_RELATIVE_DIR + SEP + String.join(SEP, cleanedPaths));
+        if (!f.exists()) f.mkdirs();
+        return f;
+    }
+
+    public static String convertToRelative(final Class clazz, final File f) {
+        final File root = TestHelper.getRootOfBuildDirectory(clazz).getParentFile().getAbsoluteFile();
+        return root.toURI().relativize(f.getAbsoluteFile().toURI()).toString();
+    }
+
+    /**
+     * Internally calls {@link #makeTestDataPath(Class, String...)} but returns the path as a string with the system
+     * separator appended to the end.
+     */
+    public static String makeTestDataDirectory(final Class clazz, final String... childPath) {
+        return makeTestDataPath(clazz, childPath).getAbsolutePath() + SEP;
+    }
+
+    /**
+     * Gets and/or creates the root of the test data directory.  This  method is here as a convenience and should not
+     * be used to store test data.  Use {@link #makeTestDataPath(Class, String...)} instead.
+     */
+    public static File getRootOfBuildDirectory(final Class clazz) {
         // build.dir gets sets during runs of tests with maven via the surefire configuration in the pom.xml
         // if that is not set as an environment variable, then the path is computed based on the location of the
         // requested class.  the computed version at least as far as intellij is concerned comes drops it into
@@ -54,11 +96,12 @@ public final class TestHelper {
         // as it likes to find that path in the .m2 directory and other weird places......
         final String buildDirectory = System.getProperty("build.dir");
         final File root = null == buildDirectory ? new File(computePath(clazz)).getParentFile() : new File(buildDirectory);
-        return new File(root, cleanPathSegment(childPath));
+        if (!root.exists()) root.mkdirs();
+        return root;
     }
 
     private static String computePath(final Class clazz) {
-        final String clsUri = clazz.getName().replace('.', '/') + ".class";
+        final String clsUri = clazz.getName().replace('.', SEP.charAt(0)) + ".class";
         final URL url = clazz.getClassLoader().getResource(clsUri);
         final String clsPath = url.getPath();
         return clsPath.substring(0, clsPath.length() - clsUri.length());

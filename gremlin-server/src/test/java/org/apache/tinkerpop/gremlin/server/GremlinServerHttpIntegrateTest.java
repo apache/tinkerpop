@@ -70,6 +70,11 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
+            case "should200OnPOSTTransactionalGraphInStrictMode":
+                settings.strictTransactionManagement = true;
+                deleteDirectory(new File("/tmp/neo4j"));
+                settings.graphs.put("graph", "conf/neo4j-empty.properties");
+                break;
             case "should401OnGETWithNoAuthorizationHeader":
             case "should401OnPOSTWithNoAuthorizationHeader":
             case "should401OnGETWithBadAuthorizationHeader":
@@ -453,7 +458,38 @@ public class GremlinServerHttpIntegrateTest extends AbstractGremlinServerIntegra
                 assertEquals(1, node.get("result").get("data").get(0).intValue());
             }
         }
+    }
 
+    @Test
+    public void should200OnPOSTTransactionalGraphInStrictMode() throws Exception {
+        assumeNeo4jIsPresent();
+
+        // we can remove this first test when rebindings are completely removed
+        final CloseableHttpClient httpclientLegacy = HttpClients.createDefault();
+        final HttpPost httppostLegacy = new HttpPost("http://localhost:8182");
+        httppostLegacy.addHeader("Content-Type", "application/json");
+        httppostLegacy.setEntity(new StringEntity("{\"gremlin\":\"g1.addV()\",\"rebindings\":{\"g1\":\"g\"}}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclientLegacy.execute(httppostLegacy)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(1, node.get("result").get("data").size());
+        }
+
+        final CloseableHttpClient httpclient = HttpClients.createDefault();
+        final HttpPost httppost = new HttpPost("http://localhost:8182");
+        httppost.addHeader("Content-Type", "application/json");
+        httppost.setEntity(new StringEntity("{\"gremlin\":\"g1.addV()\",\"aliases\":{\"g1\":\"g\"}}", Consts.UTF_8));
+
+        try (final CloseableHttpResponse response = httpclient.execute(httppost)) {
+            assertEquals(200, response.getStatusLine().getStatusCode());
+            assertEquals("application/json", response.getEntity().getContentType().getValue());
+            final String json = EntityUtils.toString(response.getEntity());
+            final JsonNode node = mapper.readTree(json);
+            assertEquals(1, node.get("result").get("data").size());
+        }
     }
 
     @Test

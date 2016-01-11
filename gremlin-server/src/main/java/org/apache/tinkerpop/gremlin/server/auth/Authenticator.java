@@ -50,7 +50,7 @@ public interface Authenticator {
      * new instance must be used for each authentication attempt.)
      *
      * @deprecated As of release 3.1.1-incubating, replaced by {@link #newSaslNegotiator(InetAddress)}.
-     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP3-995">TINKERPOP3-995</a>
+     * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-995">TINKERPOP-995</a>
      */
     @Deprecated
     public SaslNegotiator newSaslNegotiator();

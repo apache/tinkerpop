@@ -22,6 +22,7 @@ package org.apache.tinkerpop.gremlin.spark.structure;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.rdd.RDD;
+import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
@@ -37,6 +38,8 @@ import org.apache.tinkerpop.gremlin.structure.util.GraphFactory;
 import org.junit.Test;
 import scala.collection.JavaConversions;
 
+import java.io.File;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -49,7 +52,8 @@ public class SparkTest extends AbstractSparkTest {
 
     @Test
     public void testSparkRDDPersistence() throws Exception {
-        final String prefix = "target/test-output/graphRDD-";
+        final String root = TestHelper.makeTestDataDirectory(SparkTest.class, "testSparkRDDPersistence");
+        final String prefix = root + File.separator + "graphRDD-";
         final Configuration configuration = new BaseConfiguration();
         configuration.setProperty("spark.master", "local[4]");
         Spark.create(configuration);
@@ -63,20 +67,22 @@ public class SparkTest extends AbstractSparkTest {
         configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
 
         for (int i = 0; i < 10; i++) {
+            final String graphRDDName = Constants.getGraphLocation(prefix + i);
             assertEquals(i, Spark.getRDDs().size());
             configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, prefix + i);
             Graph graph = GraphFactory.open(configuration);
             graph.compute(SparkGraphComputer.class).persist(GraphComputer.Persist.VERTEX_PROPERTIES).program(PageRankVertexProgram.build().iterations(1).create(graph)).submit().get();
-            assertNotNull(Spark.getRDD(prefix + i));
+            assertNotNull(Spark.getRDD(graphRDDName));
             assertEquals(i + 1, Spark.getRDDs().size());
         }
 
         for (int i = 9; i >= 0; i--) {
+            final String graphRDDName = Constants.getGraphLocation(prefix + i);
             assertEquals(i + 1, getPersistedRDDSize());
             assertEquals(i + 1, Spark.getRDDs().size());
-            assertTrue(hasPersistedRDD(prefix + i));
-            Spark.removeRDD(prefix + i);
-            assertFalse(hasPersistedRDD(prefix + i));
+            assertTrue(hasPersistedRDD(graphRDDName));
+            Spark.removeRDD(graphRDDName);
+            assertFalse(hasPersistedRDD(graphRDDName));
         }
 
         assertEquals(0, getPersistedRDDSize());

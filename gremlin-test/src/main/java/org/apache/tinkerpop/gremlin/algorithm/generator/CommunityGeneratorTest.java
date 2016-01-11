@@ -29,6 +29,8 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -43,6 +45,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(Enclosed.class)
 public class CommunityGeneratorTest {
+    private static final Logger logger = LoggerFactory.getLogger(CommunityGeneratorTest.class);
 
     @RunWith(Parameterized.class)
     public static class DifferentDistributionsTest extends AbstractGeneratorTest {
@@ -178,7 +181,7 @@ public class CommunityGeneratorTest {
                     tryCommit(graph);
                     afterLoadGraphWith(graph);
 
-                    System.out.println(String.format("Ran CommunityGeneratorTest with different CrossCommunityPercentage, expected %s but used %s", crossPcent, localCrossPcent));
+                    logger.info(String.format("Ran CommunityGeneratorTest with different CrossCommunityPercentage, expected %s but used %s", crossPcent, localCrossPcent));
 
                     if (generated) failures.incrementAndGet();
                 }

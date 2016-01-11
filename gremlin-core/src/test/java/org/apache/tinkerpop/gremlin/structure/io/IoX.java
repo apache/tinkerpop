@@ -47,4 +47,9 @@ public class IoX {
     public int hashCode() {
         return x.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return x;
+    }
 }

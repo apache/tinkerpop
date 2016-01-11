@@ -16,11 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.hdfs;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -32,11 +30,12 @@ import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.FileSystemStorage;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.util.ConfUtil;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,23 +50,25 @@ public abstract class HadoopElementIterator<E extends Element> implements Iterat
     protected final HadoopGraph graph;
     protected final Queue<RecordReader<NullWritable, VertexWritable>> readers = new LinkedList<>();
 
-    public HadoopElementIterator(final HadoopGraph graph) throws IOException {
+    public HadoopElementIterator(final HadoopGraph graph) {
         try {
             this.graph = graph;
             final Configuration configuration = ConfUtil.makeHadoopConfiguration(this.graph.configuration());
             final InputFormat<NullWritable, VertexWritable> inputFormat = this.graph.configuration().getGraphInputFormat().getConstructor().newInstance();
             if (inputFormat instanceof FileInputFormat) {
+                final Storage storage = FileSystemStorage.open(configuration);
+
                 if (!this.graph.configuration().containsKey(Constants.GREMLIN_HADOOP_INPUT_LOCATION))
                     return; // there is no input location and thus, no data (empty graph)
-                if (!FileSystem.get(configuration).exists(new Path(this.graph.configuration().getInputLocation())))
+                if (!Constants.getSearchGraphLocation(this.graph.configuration().getInputLocation(), storage).isPresent())
                     return; // there is no data at the input location (empty graph)
-                configuration.set(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, this.graph.configuration().getInputLocation());
+                configuration.set(Constants.MAPREDUCE_INPUT_FILEINPUTFORMAT_INPUTDIR, Constants.getSearchGraphLocation(this.graph.configuration().getInputLocation(), storage).get());
             }
             final List<InputSplit> splits = inputFormat.getSplits(new JobContextImpl(configuration, new JobID(UUID.randomUUID().toString(), 1)));
             for (final InputSplit split : splits) {
                 this.readers.add(inputFormat.createRecordReader(split, new TaskAttemptContextImpl(configuration, new TaskAttemptID())));
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }

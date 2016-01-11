@@ -125,7 +125,7 @@ limitations under the License.
         <url>https://git-wip-us.apache.org/repos/asf?p=incubator-tinkerpop.git</url>
     </scm>
     <properties>
-        <groovy.version>2.4.1</groovy.version>
+        <groovy.version>2.4.5</groovy.version>
         <junit.version>4.12</junit.version>
         <metrics.version>3.0.2</metrics.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -929,9 +929,6 @@ limitations under the License.
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>2.17</version>
                         <configuration>
-                            <systemPropertyVariables>
-                                <muteTestLogs>true</muteTestLogs>
-                            </systemPropertyVariables>
                             <argLine>-Dlog4j.configuration=${log4j-silent.properties} -Dbuild.dir=${project.build.directory}
                             </argLine>
                             <excludes>

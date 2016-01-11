@@ -29,6 +29,9 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.gremlin.structure.io.AbstractIoRegistry;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolver;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoIo;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedEdge;
 import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedVertex;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
@@ -37,17 +40,24 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.apache.tinkerpop.shaded.jackson.databind.util.StdDateFormat;
+import org.apache.tinkerpop.shaded.kryo.ClassResolver;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
 import org.apache.tinkerpop.shaded.kryo.KryoException;
+import org.apache.tinkerpop.shaded.kryo.Registration;
+import org.apache.tinkerpop.shaded.kryo.Serializer;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.Test;
 
+import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -64,7 +74,7 @@ import static org.junit.Assert.fail;
  */
 public class GryoMessageSerializerV1d0Test {
     private static final Map<String, Object> config = new HashMap<String, Object>() {{
-        put("serializeResultToString", true);
+        put(GryoMessageSerializerV1d0.TOKEN_SERIALIZE_RESULT_TO_STRING, true);
     }};
 
     private UUID requestId = UUID.fromString("6457272A-4018-4538-B9AE-08DD5DDC0AA1");
@@ -77,6 +87,57 @@ public class GryoMessageSerializerV1d0Test {
 
     public GryoMessageSerializerV1d0Test() {
         textSerializer.configure(config, null);
+    }
+
+    @Test
+    public void shouldConfigureIoRegistry() throws Exception {
+        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        final Map<String, Object> config = new HashMap<String, Object>() {{
+            put(GryoMessageSerializerV1d0.TOKEN_IO_REGISTRIES, Arrays.asList(ColorIoRegistry.class.getName()));
+        }};
+
+        serializer.configure(config, null);
+
+        final ResponseMessage toSerialize = ResponseMessage.build(requestId).result(Color.RED).create();
+        final ByteBuf bb = serializer.serializeResponseAsBinary(toSerialize, allocator);
+        final ResponseMessage deserialized = serializer.deserializeResponse(bb);
+
+        assertCommon(deserialized);
+        assertEquals(Color.RED, deserialized.getResult().getData());
+    }
+
+    @Test
+    public void shouldConfigureCustomClassResolver() {
+        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        final Map<String, Object> config = new HashMap<String, Object>() {{
+            put(GryoMessageSerializerV1d0.TOKEN_CLASS_RESOLVER_SUPPLIER, ErrorOnlyClassResolverSupplier.class.getName());
+        }};
+
+        serializer.configure(config, null);
+
+        try {
+            serializer.serializeResponseAsBinary(responseMessageBuilder.create(), allocator);
+            fail("Should fail because the ClassResolver used here always generates an error");
+        } catch (Exception ex) {
+            assertEquals("java.lang.RuntimeException: Registration is not allowed with this ClassResolver - it is not a good implementation", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void shouldConfigureCustomClassResolverFromInstance() {
+        final MessageSerializer serializer = new GryoMessageSerializerV1d0();
+        final Map<String, Object> config = new HashMap<String, Object>() {{
+            put(GryoMessageSerializerV1d0.TOKEN_CLASS_RESOLVER_SUPPLIER, ErrorOnlyClassResolverSupplierAsInstance.class.getName());
+        }};
+
+        serializer.configure(config, null);
+
+        try {
+            serializer.serializeResponseAsBinary(responseMessageBuilder.create(), allocator);
+            fail("Should fail because the ClassResolver used here always generates an error");
+        } catch (Exception ex) {
+            assertEquals("java.lang.RuntimeException: Registration is not allowed with this ClassResolver - it is not a good implementation", ex.getMessage());
+        }
     }
 
     @Test
@@ -489,5 +550,53 @@ public class GryoMessageSerializerV1d0Test {
     private ResponseMessage convertText(final Object toSerialize) throws SerializationException {
         final ByteBuf bb = textSerializer.serializeResponseAsBinary(responseMessageBuilder.result(toSerialize).create(), allocator);
         return textSerializer.deserializeResponse(bb);
+    }
+
+    public static class ErrorOnlyClassResolverSupplierAsInstance implements Supplier<ClassResolver> {
+
+        private static final ErrorOnlyClassResolverSupplierAsInstance instance = new ErrorOnlyClassResolverSupplierAsInstance();
+
+        private ErrorOnlyClassResolverSupplierAsInstance() {}
+
+        public static ErrorOnlyClassResolverSupplierAsInstance getInstance() {
+            return instance;
+        }
+
+        @Override
+        public ClassResolver get() {
+            return new ErrorOnlyClassResolver();
+        }
+    }
+
+    public static class ErrorOnlyClassResolverSupplier implements Supplier<ClassResolver> {
+        @Override
+        public ClassResolver get() {
+            return new ErrorOnlyClassResolver();
+        }
+    }
+
+    public static class ErrorOnlyClassResolver extends GryoClassResolver {
+        @Override
+        public Registration getRegistration(Class clazz) {
+            throw new RuntimeException("Registration is not allowed with this ClassResolver - it is not a good implementation");
+        }
+    }
+
+    public static class ColorIoRegistry extends AbstractIoRegistry {
+        public ColorIoRegistry() {
+            register(GryoIo.class, Color.class, new ColorSerializer());
+        }
+    }
+
+    public static class ColorSerializer extends Serializer<Color> {
+        @Override
+        public void write(final Kryo kryo, final Output output, final Color color) {
+            output.write(color.equals(Color.RED) ? 1 : 0);
+        }
+
+        @Override
+        public Color read(final Kryo kryo, final Input input, final Class<Color> aClass) {
+            return input.read() == 1 ? Color.RED : Color.BLACK;
+        }
     }
 }

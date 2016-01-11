@@ -247,11 +247,12 @@ public class GremlinExecutor implements AutoCloseable {
         final Bindings bindings = new SimpleBindings();
         bindings.putAll(globalBindings);
         bindings.putAll(boundVars);
-        lifeCycle.getBeforeEval().orElse(beforeEval).accept(bindings);
 
         final CompletableFuture<Object> evaluationFuture = new CompletableFuture<>();
         final FutureTask<Void> f = new FutureTask<>(() -> {
             try {
+                lifeCycle.getBeforeEval().orElse(beforeEval).accept(bindings);
+
                 logger.debug("Evaluating script - {} - in thread [{}]", script, Thread.currentThread().getName());
 
                 final Object o = scriptEngines.eval(script, bindings, lang);

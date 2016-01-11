@@ -77,10 +77,10 @@ public class ControlOpProcessor implements OpProcessor {
                 break;
             case Tokens.OPS_INVALID:
                 final String msgInvalid = String.format("Message could not be parsed.  Check the format of the request. [%s]", message);
-                throw new OpProcessorException(msgInvalid, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).result(msgInvalid).create());
+                throw new OpProcessorException(msgInvalid, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).statusMessage(msgInvalid).create());
             default:
                 final String msgDefault = String.format("Message with op code [%s] is not recognized.", message.getOp());
-                throw new OpProcessorException(msgDefault, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).result(msgDefault).create());
+                throw new OpProcessorException(msgDefault, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_MALFORMED_REQUEST).statusMessage(msgDefault).create());
         }
 
         controlOpMeter.mark();
@@ -96,14 +96,14 @@ public class ControlOpProcessor implements OpProcessor {
         final Optional<List> l = message.optionalArgs(Tokens.ARGS_IMPORTS);
         if (!l.isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.", Tokens.OPS_IMPORT, Tokens.ARGS_IMPORTS);
-            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         if (l.orElse(new ArrayList()).size() == 0) {
             final String msg = String.format(
                     "A message with an [%s] op code requires that the [%s] argument has at least one import string specified.",
                     Tokens.OPS_IMPORT, Tokens.ARGS_IMPORTS);
-            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         return Optional.empty();
@@ -114,13 +114,13 @@ public class ControlOpProcessor implements OpProcessor {
         if (!infoType.isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.",
                     Tokens.OPS_SHOW, Tokens.ARGS_INFO_TYPE);
-            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         if (!Tokens.INFO_TYPES.contains(infoType.get())) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument with one of the following values [%s].",
                     Tokens.OPS_SHOW, Tokens.ARGS_INFO_TYPE, Tokens.INFO_TYPES);
-            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
 
@@ -133,7 +133,7 @@ public class ControlOpProcessor implements OpProcessor {
         if (!l.isPresent()) {
             final String msg = String.format("A message with an [%s] op code requires a [%s] argument.",
                     Tokens.OPS_USE, Tokens.ARGS_COORDINATES);
-            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         final List coordinates = l.orElse(new ArrayList());
@@ -141,14 +141,14 @@ public class ControlOpProcessor implements OpProcessor {
             final String msg = String.format(
                     "A message with an [%s] op code requires that the [%s] argument has at least one set of valid maven coordinates specified.",
                     Tokens.OPS_USE, Tokens.ARGS_COORDINATES);
-            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         if (!coordinates.stream().allMatch(ControlOpProcessor::validateCoordinates)) {
             final String msg = String.format(
                     "A message with an [%s] op code requires that all [%s] specified are valid maven coordinates with a group, artifact, and version.",
                     Tokens.OPS_USE, Tokens.ARGS_COORDINATES);
-            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).result(msg).create());
+            throw new OpProcessorException(msg, ResponseMessage.build(message).code(ResponseStatusCode.REQUEST_ERROR_INVALID_REQUEST_ARGUMENTS).statusMessage(msg).create());
         }
 
         return Optional.empty();

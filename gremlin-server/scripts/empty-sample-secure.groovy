@@ -34,7 +34,9 @@ def addItUp(int x, int y) { x + y }
 def globals = [:]
 
 // defines a sample LifeCycleHook that prints some output to the Gremlin Server console.
-// note that the name of the key in the "global" map is unimportant.
+// note that the name of the key in the "global" map is unimportant. As this script,
+// runs as part of a sandbox configuration, type-checking is enabled and thus the
+// LifeCycleHook type needs to be defined for the "ctx" variable.
 globals << [hook : [
   onStartUp: { LifeCycleHook.Context ctx ->
     ctx.logger.info("Executed once at startup of Gremlin Server.")

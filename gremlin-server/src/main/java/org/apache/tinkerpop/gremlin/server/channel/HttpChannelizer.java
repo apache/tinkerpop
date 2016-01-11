@@ -47,7 +47,7 @@ public class HttpChannelizer extends AbstractChannelizer {
     @Override
     public void init(final ServerGremlinExecutor<EventLoopGroup> serverGremlinExecutor) {
         super.init(serverGremlinExecutor);
-        httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager);
+        httpGremlinEndpointHandler = new HttpGremlinEndpointHandler(serializers, gremlinExecutor, graphManager, settings);
     }
 
     @Override

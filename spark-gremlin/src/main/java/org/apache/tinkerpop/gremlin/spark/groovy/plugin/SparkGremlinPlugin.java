@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.PluginInitializationException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.RemoteAcceptor;
 import org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer;
 import org.apache.tinkerpop.gremlin.spark.structure.Spark;
+import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -41,6 +42,7 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
     protected static final Set<String> IMPORTS = new HashSet<String>() {{
         add(IMPORT_SPACE + SparkGraphComputer.class.getPackage().getName() + DOT_STAR);
         add(IMPORT_SPACE + Spark.class.getPackage().getName() + DOT_STAR);
+        add(IMPORT_SPACE + SparkContextStorage.class.getPackage().getName() + DOT_STAR);
     }};
 
     @Override
@@ -52,8 +54,7 @@ public final class SparkGremlinPlugin extends AbstractGremlinPlugin {
     public void afterPluginTo(final PluginAcceptor pluginAcceptor) throws PluginInitializationException, IllegalEnvironmentException {
         pluginAcceptor.addImports(IMPORTS);
         try {
-            pluginAcceptor.eval("spark = Spark");
-            pluginAcceptor.eval(SparkLoader.class.getCanonicalName() + ".load()");
+            pluginAcceptor.addBinding("spark", SparkContextStorage.open());
         } catch (final Exception e) {
             throw new PluginInitializationException(e.getMessage(), e);
         }

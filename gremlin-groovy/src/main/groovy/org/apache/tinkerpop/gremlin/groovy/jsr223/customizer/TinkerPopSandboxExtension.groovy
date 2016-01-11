@@ -18,30 +18,38 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.jsr223.customizer
 
-import org.codehaus.groovy.ast.MethodNode
-
-import java.util.function.BiPredicate
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource
+import org.apache.tinkerpop.gremlin.structure.Graph
 
 /**
+ * This is an example class showing how one might use the {@link AbstractSandboxExtension}.  It uses a static method
+ * white list and variable type mappings. It also prevents assigning non-typed variables the type of {@code Object}.
+ * It is doubtful that this class would be useful for production applications and it simply serves as an example
+ * on which users can extend and learn from.
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-class TinkerPopSandboxExtension extends SandboxExtension {
+class TinkerPopSandboxExtension extends AbstractSandboxExtension {
 
-    TinkerPopSandboxExtension() {
-        gIsAlwaysGraphTraversalSource = false
-        graphIsAlwaysGraphInstance = false
+    private static final List<String> methodWhiteList = ["java\\.util\\..*",
+                                                         "org\\.codehaus\\.groovy\\.runtime\\.DefaultGroovyMethods.*",
+                                                         "org\\.apache\\.tinkerpop\\.gremlin\\.structure\\..*",
+                                                         "org\\.apache\\.tinkerpop\\.gremlin\\.process\\..*",
+                                                         "org\\.apache\\.tinkerpop\\.gremlin\\.process\\.traversal\\.dsl\\.graph\\..*"]
+    private static final Map<String, Class<?>> staticVariableTypes = [graph:Graph, g: GraphTraversalSource]
 
-        def gremlinRoot = "org\\.apache\\.tinkerpop\\.gremlin"
-        def gremlinRootStructure = "$gremlinRoot\\.structure"
-        def gremlinRootProcess = "$gremlinRoot\\.process"
-        def methodWhiteList = ["java\\.util\\..*",
-                               "org\\.codehaus\\.groovy\\.runtime\\.DefaultGroovyMethods",
-                               "$gremlinRootStructure\\..*",
-                               "$gremlinRootProcess\\..*",
-                               "$gremlinRootProcess\\.traversal\\.dsl\\.graph\\..*"]
+    @Override
+    List<String> getMethodWhiteList() {
+        return methodWhiteList
+    }
 
-        methodFilter = (BiPredicate<String, MethodNode>) { descriptor, method ->
-            methodWhiteList.any { descriptor =~ it }
-        }
+    @Override
+    Map<String, Class<?>> getStaticVariableTypes() {
+        return staticVariableTypes
+    }
+
+    @Override
+    boolean allowAutoTypeOfUnknown() {
+        return false
     }
 }

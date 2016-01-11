@@ -18,7 +18,6 @@
  */
 package org.apache.tinkerpop.gremlin.driver.ser;
 
-import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
@@ -51,7 +50,7 @@ import java.util.UUID;
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public abstract class AbstractGraphSONMessageSerializerV1d0 implements MessageSerializer {
+public abstract class AbstractGraphSONMessageSerializerV1d0 extends AbstractMessageSerializer {
     private static final Logger logger = LoggerFactory.getLogger(AbstractGraphSONMessageSerializerV1d0.class);
 
     protected ObjectMapper mapper;
@@ -96,6 +95,8 @@ public abstract class AbstractGraphSONMessageSerializerV1d0 implements MessageSe
             // distinct implementations each with their own custom classes.
             initialBuilder = GraphSONMapper.build();
         }
+
+        addIoRegistries(config, initialBuilder);
 
         mapper = configureBuilder(initialBuilder).create().createMapper();
     }

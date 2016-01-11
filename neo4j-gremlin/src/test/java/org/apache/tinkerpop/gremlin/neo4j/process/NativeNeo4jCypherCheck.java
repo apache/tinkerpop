@@ -29,6 +29,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,7 +48,8 @@ import static org.junit.Assert.*;
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
-public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
+public class NativeNeo4jCypherCheck extends AbstractNeo4jGremlinTest {
+    private static final Logger logger = LoggerFactory.getLogger(NativeNeo4jCypherCheck.class);
 
     @Test
     @LoadGraphWith(LoadGraphWith.GraphData.MODERN)
@@ -200,11 +203,11 @@ public class NativeNeo4jCypherTest extends AbstractNeo4jGremlinTest {
         );
         int counter = 0;
         for (final Supplier<GraphTraversal<?, ?>> traversal : traversals) {
-            System.out.println("pre-strategy:  " + traversal.get());
-            System.out.println("post-strategy: " + traversal.get().iterate());
-            System.out.println(TimeUtil.clockWithResult(25, () -> traversal.get().count().next()));
+            logger.info("pre-strategy:  {}", traversal.get());
+            logger.info("post-strategy: {}", traversal.get().iterate());
+            logger.info(TimeUtil.clockWithResult(25, () -> traversal.get().count().next()).toString());
             if (++counter % 2 == 0)
-                System.out.println("------------------");
+                logger.info("------------------");
         }
     }
 

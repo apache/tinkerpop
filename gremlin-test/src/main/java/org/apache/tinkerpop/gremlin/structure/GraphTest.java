@@ -874,7 +874,7 @@ public class GraphTest extends AbstractGremlinTest {
                 final Vertex a = vertices.get(random.nextInt(vertices.size()));
                 final Vertex b = vertices.get(random.nextInt(vertices.size()));
                 if (a != b) {
-                    edges.add(a.addEdge(GraphManager.getGraphProvider().convertLabel("a" + UUID.randomUUID()), b));
+                    edges.add(a.addEdge(graphProvider.convertLabel("a" + UUID.randomUUID()), b));
                     created = true;
                 }
             }
@@ -910,7 +910,7 @@ public class GraphTest extends AbstractGremlinTest {
         for (int i = 0; i < vertexCount; i = i + 2) {
             final Vertex a = vertices.get(i);
             final Vertex b = vertices.get(i + 1);
-            edges.add(a.addEdge(GraphManager.getGraphProvider().convertLabel("a" + UUID.randomUUID()), b));
+            edges.add(a.addEdge(graphProvider.convertLabel("a" + UUID.randomUUID()), b));
         }
 
         tryCommit(graph, assertVertexEdgeCounts(vertexCount, vertexCount / 2));
@@ -975,8 +975,6 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldEvaluateConnectivityPatterns() {
-        final GraphProvider graphProvider = GraphManager.getGraphProvider();
-
         final Vertex a;
         final Vertex b;
         final Vertex c;
@@ -1066,10 +1064,7 @@ public class GraphTest extends AbstractGremlinTest {
     @Test
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
-    public void shouldTraverseInOutFromVertexWithSingleEdgeLabelFilter() {
-        final GraphProvider graphProvider = GraphManager.getGraphProvider();
-
-        final Vertex a = graph.addVertex();
+    public void shouldTraverseInOutFromVertexWithSingleEdgeLabelFilter() {final Vertex a = graph.addVertex();
         final Vertex b = graph.addVertex();
         final Vertex c = graph.addVertex();
 
@@ -1117,7 +1112,6 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldTraverseInOutFromVertexWithMultipleEdgeLabelFilter() {
-        final GraphProvider graphProvider = GraphManager.getGraphProvider();
         final Vertex a = graph.addVertex();
         final Vertex b = graph.addVertex();
         final Vertex c = graph.addVertex();
@@ -1154,8 +1148,6 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     public void shouldTestTreeConnectivity() {
-        final GraphProvider graphProvider = GraphManager.getGraphProvider();
-
         int branchSize = 11;
         final Vertex start = graph.addVertex();
         for (int i = 0; i < branchSize; i++) {
@@ -1201,8 +1193,6 @@ public class GraphTest extends AbstractGremlinTest {
     @FeatureRequirementSet(FeatureRequirementSet.Package.SIMPLE)
     @FeatureRequirement(featureClass = Graph.Features.GraphFeatures.class, feature = Graph.Features.GraphFeatures.FEATURE_PERSISTENCE)
     public void shouldPersistDataOnClose() throws Exception {
-        final GraphProvider graphProvider = GraphManager.getGraphProvider();
-
         final Vertex v = graph.addVertex();
         final Vertex u = graph.addVertex();
         if (graph.features().vertex().properties().supportsStringValues()) {

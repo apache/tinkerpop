@@ -21,6 +21,7 @@ package org.apache.tinkerpop.gremlin.spark.structure.io;
 import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
@@ -46,5 +47,10 @@ public final class ExampleOutputRDD implements OutputRDD {
                 totalAge = totalAge + vertex.<Integer>value("age");
         }
         assertEquals(123, totalAge);
+    }
+
+    @Override
+    public <K, V> Iterator<KeyValue<K, V>> writeMemoryRDD(Configuration configuration, String memoryKey, JavaPairRDD<K, V> memoryRDD) {
+        return null;
     }
 }

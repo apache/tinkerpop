@@ -30,6 +30,8 @@ import org.apache.tinkerpop.gremlin.structure.util.detached.DetachedFactory;
 import org.apache.tinkerpop.gremlin.structure.util.star.StarGraph;
 import org.javatuples.Pair;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -44,6 +46,8 @@ import static org.junit.Assert.assertTrue;
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class IoIntegrateTest extends AbstractGremlinTest {
+    private static final Logger logger = LoggerFactory.getLogger(IoIntegrateTest.class);
+
     @Test
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
     @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_PROPERTY)
@@ -89,9 +93,9 @@ public class IoIntegrateTest extends AbstractGremlinTest {
         final int detachedVertexSize = outputStream.size();
         assertTrue(starGraphSize < detachedVertexSize);
 
-        System.out.println("Size of star graph:        " + starGraphSize);
-        System.out.println("Size of detached vertex:   " + detachedVertexSize);
-        System.out.println("Size reduction:            " + (float) detachedVertexSize / (float) starGraphSize);
+        logger.info("Size of star graph:        {}", starGraphSize);
+        logger.info("Size of detached vertex:   {}", detachedVertexSize);
+        logger.info("Size reduction:            {}", (float) detachedVertexSize / (float) starGraphSize);
     }
 
     private Pair<StarGraph, Integer> serializeDeserialize(final StarGraph starGraph) {

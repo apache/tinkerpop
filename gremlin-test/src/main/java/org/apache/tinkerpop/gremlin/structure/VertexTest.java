@@ -259,7 +259,7 @@ public class VertexTest {
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_USER_SUPPLIED_IDS)
         public void shouldHaveExceptionConsistencyWhenAssigningSameIdOnEdge() {
             final Vertex v = graph.addVertex();
-            final Object o = GraphManager.getGraphProvider().convertId("1", Edge.class);
+            final Object o = graphProvider.convertId("1", Edge.class);
             v.addEdge("self", v, T.id, o);
 
             try {
@@ -359,8 +359,8 @@ public class VertexTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldEvaluateVerticesEquivalentWithSuppliedIdsViaTraversal() {
-            final Vertex v = graph.addVertex(T.id, GraphManager.getGraphProvider().convertId("1", Vertex.class));
-            final Vertex u = graph.vertices(GraphManager.getGraphProvider().convertId("1", Vertex.class)).next();
+            final Vertex v = graph.addVertex(T.id, graphProvider.convertId("1", Vertex.class));
+            final Vertex u = graph.vertices(graphProvider.convertId("1", Vertex.class)).next();
             assertEquals(v, u);
         }
 
@@ -368,8 +368,8 @@ public class VertexTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldEvaluateVerticesEquivalentWithSuppliedIdsViaIterators() {
-            final Vertex v = graph.addVertex(T.id, GraphManager.getGraphProvider().convertId("1", Vertex.class));
-            final Vertex u = graph.vertices(GraphManager.getGraphProvider().convertId("1", Vertex.class)).next();
+            final Vertex v = graph.addVertex(T.id, graphProvider.convertId("1", Vertex.class));
+            final Vertex u = graph.vertices(graphProvider.convertId("1", Vertex.class)).next();
             assertEquals(v, u);
         }
 
@@ -392,8 +392,8 @@ public class VertexTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = VertexFeatures.class, feature = FEATURE_USER_SUPPLIED_IDS)
         public void shouldEvaluateEquivalentVertexHashCodeWithSuppliedIds() {
-            final Vertex v = graph.addVertex(T.id, GraphManager.getGraphProvider().convertId("1", Vertex.class));
-            final Vertex u = graph.vertices(GraphManager.getGraphProvider().convertId("1", Vertex.class)).next();
+            final Vertex v = graph.addVertex(T.id, graphProvider.convertId("1", Vertex.class));
+            final Vertex u = graph.vertices(graphProvider.convertId("1", Vertex.class)).next();
             assertEquals(v, u);
 
             final Set<Vertex> set = new HashSet<>();
@@ -401,8 +401,8 @@ public class VertexTest {
             set.add(v);
             set.add(u);
             set.add(u);
-            set.add(graph.vertices(GraphManager.getGraphProvider().convertId("1", Vertex.class)).next());
-            set.add(graph.vertices(GraphManager.getGraphProvider().convertId("1", Vertex.class)).next());
+            set.add(graph.vertices(graphProvider.convertId("1", Vertex.class)).next());
+            set.add(graph.vertices(graphProvider.convertId("1", Vertex.class)).next());
 
             assertEquals(1, set.size());
             assertEquals(v.hashCode(), u.hashCode());

@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Original spec: https://issues.apache.org/jira/browse/TINKERPOP3-670
+ * Original spec: https://issues.apache.org/jira/browse/TINKERPOP-670
  *
  * @author Matt Frantz (http://github.com/mhfrantz)
  */

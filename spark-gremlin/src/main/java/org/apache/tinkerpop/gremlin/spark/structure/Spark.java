@@ -34,6 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
+ * This is a static cache the prevents Spark from garbage collecting unreferenced RDDs.
+ *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public class Spark {

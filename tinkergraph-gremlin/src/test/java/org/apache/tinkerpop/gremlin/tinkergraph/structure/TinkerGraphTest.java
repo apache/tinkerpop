@@ -22,8 +22,10 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.Io;
 import org.apache.tinkerpop.gremlin.structure.io.GraphReader;
@@ -34,16 +36,34 @@ import org.apache.tinkerpop.gremlin.structure.io.IoTest;
 import org.apache.tinkerpop.gremlin.structure.io.Mapper;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONReader;
 import org.apache.tinkerpop.gremlin.structure.io.graphson.GraphSONWriter;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoClassResolver;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoMapper;
+import org.apache.tinkerpop.gremlin.structure.io.gryo.GryoWriter;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.junit.Ignore;
+import org.apache.tinkerpop.shaded.kryo.ClassResolver;
+import org.apache.tinkerpop.shaded.kryo.Kryo;
+import org.apache.tinkerpop.shaded.kryo.Registration;
+import org.apache.tinkerpop.shaded.kryo.Serializer;
+import org.apache.tinkerpop.shaded.kryo.io.Input;
+import org.apache.tinkerpop.shaded.kryo.io.Output;
 import org.junit.Test;
 
+import java.awt.Color;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -130,7 +150,6 @@ public class TinkerGraphTest {
         g.createIndex("", Edge.class);
     }
 
-    @Ignore
     @Test
     public void shouldUpdateVertexIndicesInNewGraph() {
         final TinkerGraph g = TinkerGraph.open();
@@ -150,7 +169,6 @@ public class TinkerGraphTest {
         }, 35)).has("name", "stephen").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldRemoveAVertexFromAnIndex() {
         final TinkerGraph g = TinkerGraph.open();
@@ -177,7 +195,6 @@ public class TinkerGraphTest {
         }, 35)).has("name", "stephen").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldUpdateVertexIndicesInExistingGraph() {
         final TinkerGraph g = TinkerGraph.open();
@@ -205,7 +222,6 @@ public class TinkerGraphTest {
         }, 35)).has("name", "stephen").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldUpdateEdgeIndicesInNewGraph() {
         final TinkerGraph g = TinkerGraph.open();
@@ -226,7 +242,6 @@ public class TinkerGraphTest {
         }, 0.5)).has("oid", "1").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldRemoveEdgeFromAnIndex() {
         final TinkerGraph g = TinkerGraph.open();
@@ -254,7 +269,6 @@ public class TinkerGraphTest {
         }, 0.5)).has("oid", "1").count().next());
     }
 
-    @Ignore
     @Test
     public void shouldUpdateEdgeIndicesInExistingGraph() {
         final TinkerGraph g = TinkerGraph.open();
@@ -288,7 +302,8 @@ public class TinkerGraphTest {
         final TinkerGraph graph = TinkerFactory.createModern();
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             graph.io(IoCore.gryo()).writer().create().writeObject(out, graph);
-            try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(out.toByteArray())) {
+            final byte[] b = out.toByteArray();
+            try (final ByteArrayInputStream inputStream = new ByteArrayInputStream(b)) {
                 final TinkerGraph target = graph.io(IoCore.gryo()).reader().create().readObject(inputStream, TinkerGraph.class);
                 IoTest.assertModernGraph(target, true, false);
             }
@@ -362,16 +377,17 @@ public class TinkerGraphTest {
         v.remove();
         v.value("name");
     }
+
     @Test(expected = IllegalStateException.class)
     public void shouldRequireGraphFormatIfLocationIsSet() {
         final Configuration conf = new BaseConfiguration();
-        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, "/tmp");
+        conf.setProperty(TinkerGraph.GREMLIN_TINKERGRAPH_GRAPH_LOCATION, TestHelper.makeTestDataDirectory(TinkerGraphTest.class));
         TinkerGraph.open(conf);
     }
 
     @Test
     public void shouldPersistToGraphML() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGraphML.xml";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGraphML.xml";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -389,7 +405,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGraphSON() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGraphSON.json";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGraphSON.json";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -407,7 +423,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToGryo() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToGryo.kryo";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToGryo.kryo";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -425,7 +441,7 @@ public class TinkerGraphTest {
 
     @Test
     public void shouldPersistToAnyGraphFormat() {
-        final String graphLocation = TestHelper.makeTestDataPath(TinkerGraphTest.class, "temp").getAbsolutePath() + "shouldPersistToAnyGraphFormat.dat";
+        final String graphLocation = TestHelper.makeTestDataDirectory(TinkerGraphTest.class) + "shouldPersistToAnyGraphFormat.dat";
         final File f = new File(graphLocation);
         if (f.exists() && f.isFile()) f.delete();
 
@@ -452,6 +468,111 @@ public class TinkerGraphTest {
         assertEquals(TestIoBuilder.calledRegistry, 1);
         assertEquals(TestIoBuilder.calledGraph, 1);
         assertEquals(TestIoBuilder.calledCreate, 1);
+    }
+
+    @Test
+    public void shouldSerializeWithColorClassResolverToTinkerGraph() throws Exception {
+        final Map<String,Color> colors = new HashMap<>();
+        colors.put("red", Color.RED);
+        colors.put("green", Color.GREEN);
+
+        final ArrayList<Color> colorList = new ArrayList<>(Arrays.asList(Color.RED, Color.GREEN));
+
+        final Supplier<ClassResolver> classResolver = new CustomClassResolverSupplier();
+        final GryoMapper mapper = GryoMapper.build().addRegistry(TinkerIoRegistry.getInstance()).classResolver(classResolver).create();
+        final Kryo kryo = mapper.createMapper();
+        try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+            final Output out = new Output(stream);
+
+            kryo.writeObject(out, colorList);
+            out.flush();
+            final byte[] b = stream.toByteArray();
+
+            try (final InputStream inputStream = new ByteArrayInputStream(b)) {
+                final Input input = new Input(inputStream);
+                final List m = kryo.readObject(input, ArrayList.class);
+                final TinkerGraph readX = (TinkerGraph) m.get(0);
+                assertEquals(104, IteratorUtils.count(readX.vertices()));
+                assertEquals(102, IteratorUtils.count(readX.edges()));
+            }
+        }
+    }
+
+    /**
+     * Coerces a {@code Color} to a {@link TinkerGraph} during serialization.  Demonstrates how custom serializers
+     * can be developed that can coerce one value to another during serialization.
+     */
+    public final static class ColorToTinkerGraphSerializer extends Serializer<Color> {
+        public ColorToTinkerGraphSerializer() {
+        }
+
+        @Override
+        public void write(final Kryo kryo, final Output output, final Color color) {
+            final TinkerGraph graph = TinkerGraph.open();
+            final Vertex v = graph.addVertex(T.id, 1, T.label, "color", "name", color.toString());
+            final Vertex vRed = graph.addVertex(T.id, 2, T.label, "primary", "name", "red");
+            final Vertex vGreen = graph.addVertex(T.id, 3, T.label, "primary", "name", "green");
+            final Vertex vBlue = graph.addVertex(T.id, 4, T.label, "primary", "name", "blue");
+
+            v.addEdge("hasComponent", vRed, "amount", color.getRed());
+            v.addEdge("hasComponent", vGreen, "amount", color.getGreen());
+            v.addEdge("hasComponent", vBlue, "amount", color.getBlue());
+
+            // make some junk so the graph is kinda big
+            generate(graph);
+
+            try (final ByteArrayOutputStream stream = new ByteArrayOutputStream()) {
+                GryoWriter.build().mapper(() -> kryo).create().writeGraph(stream, graph);
+                final byte[] bytes = stream.toByteArray();
+                output.writeInt(bytes.length);
+                output.write(bytes);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        @Override
+        public Color read(final Kryo kryo, final Input input, final Class<Color> colorClass) {
+            throw new UnsupportedOperationException("IoX writes to DetachedVertex and can't be read back in as IoX");
+        }
+
+        private static void generate(final Graph graph) {
+            final int size = 100;
+            final List<Object> ids = new ArrayList<>();
+            final Vertex v = graph.addVertex("sin", 0.0f, "cos", 1.0f, "ii", 0f);
+            ids.add(v.id());
+
+            final GraphTraversalSource g = graph.traversal();
+
+            final Random rand = new Random();
+            for (int ii = 1; ii < size; ii++) {
+                final Vertex t = graph.addVertex("ii", ii, "sin", Math.sin(ii / 5.0f), "cos", Math.cos(ii / 5.0f));
+                final Vertex u = g.V(ids.get(rand.nextInt(ids.size()))).next();
+                t.addEdge("linked", u);
+                ids.add(u.id());
+                ids.add(v.id());
+            }
+        }
+    }
+
+    public static class CustomClassResolverSupplier implements Supplier<ClassResolver> {
+        @Override
+        public ClassResolver get() {
+            return new CustomClassResolver();
+        }
+    }
+
+    public static class CustomClassResolver extends GryoClassResolver {
+        private ColorToTinkerGraphSerializer colorToGraphSerializer = new ColorToTinkerGraphSerializer();
+
+        public Registration getRegistration(final Class clazz) {
+            if (Color.class.isAssignableFrom(clazz)) {
+                final Registration registration = super.getRegistration(TinkerGraph.class);
+                return new Registration(registration.getType(), colorToGraphSerializer, registration.getId());
+            } else {
+                return super.getRegistration(clazz);
+            }
+        }
     }
 
     public static class TestIoBuilder implements Io.Builder{

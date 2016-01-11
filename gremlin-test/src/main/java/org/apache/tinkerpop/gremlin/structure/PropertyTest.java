@@ -472,13 +472,13 @@ public class PropertyTest {
         private Edge createEdgeForPropertyFeatureTests() {
             final Vertex vertexA = graph.addVertex();
             final Vertex vertexB = graph.addVertex();
-            return vertexA.addEdge(GraphManager.getGraphProvider().convertLabel("knows"), vertexB);
+            return vertexA.addEdge(graphProvider.convertLabel("knows"), vertexB);
         }
 
         private Edge createEdgeForPropertyFeatureTests(final String k, Object v) {
             final Vertex vertexA = graph.addVertex();
             final Vertex vertexB = graph.addVertex();
-            return vertexA.addEdge(GraphManager.getGraphProvider().convertLabel("knows"), vertexB, k, v);
+            return vertexA.addEdge(graphProvider.convertLabel("knows"), vertexB, k, v);
         }
     }
 }
