@@ -97,7 +97,7 @@ public final class ObjectWritable<T> implements WritableComparable<ObjectWritabl
 
     @Override
     public int compareTo(final ObjectWritable objectWritable) {
-        return this.t instanceof Comparable ? ((Comparable) this.t).compareTo(objectWritable.get()) : 0;
+        return this.t instanceof Comparable ? ((Comparable) this.t).compareTo(objectWritable.get()) : -1;
     }
 
     public boolean isEmpty() {
