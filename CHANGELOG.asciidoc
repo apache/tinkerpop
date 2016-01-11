@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `BulkDumperVertex` that allows to dump a whole graph in any of the supported IO formats (GraphSON, Gryo, Script).
 * It is possible to completely avoid using HDFS with Spark if `PersistedInputRDD` and `PersistedOutpuRDD` are leveraged.
 * `InputRDD` and `OutputRDD` can now process both graphs and memory (i.e. sideEffects).
 * Removed Groovy specific meta-programming overloads for handling Hadoop `FileSystem` (instead, its all accessible via `FileSystemStorage`).
