@@ -157,9 +157,10 @@ public class MutableMetrics extends ImmutableMetrics implements Cloneable {
         return clone;
     }
 
-    private void copyMembers(final ImmutableMetrics clone) {
+    protected void copyMembers(final ImmutableMetrics clone) {
         clone.id = this.id;
         clone.name = this.name;
+        // Note: This value is overwritten in the DependantMutableMetrics overridden copyMembers method.
         clone.durationNs = this.durationNs;
         for (Map.Entry<String, AtomicLong> c : this.counts.entrySet()) {
             clone.counts.put(c.getKey(), new AtomicLong(c.getValue().get()));
