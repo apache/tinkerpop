@@ -43,9 +43,10 @@ class SimpleSandboxExtension extends GroovyTypeCheckingExtensionSupport.TypeChec
         }
 
         onMethodSelection { expr, MethodNode methodNode ->
-            def descriptor = toMethodDescriptor(methodNode)
-            if (null == descriptor.declaringClass || descriptor.declaringClass.name != 'java.lang.System')
+            if (null == methodNode.declaringClass || methodNode.declaringClass.name == 'java.lang.System') {
+                def descriptor = SandboxHelper.toMethodDescriptor(methodNode)
                 addStaticTypeError("Not authorized to call this method: $descriptor", expr)
+            }
         }
     }
 
