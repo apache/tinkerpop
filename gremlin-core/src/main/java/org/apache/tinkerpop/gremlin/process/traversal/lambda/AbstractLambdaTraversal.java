@@ -99,7 +99,7 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public void setStrategies(final TraversalStrategies strategies) {
-        this.traversalStrategies = strategies;
+        this.traversalStrategies = strategies.clone();
     }
 
     @Override
