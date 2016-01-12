@@ -37,7 +37,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -120,7 +119,9 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
     @Override
     public Traversal.Admin<S, E> clone() {
         try {
-            return (AbstractLambdaTraversal<S, E>) super.clone();
+            final AbstractLambdaTraversal<S, E> clone = (AbstractLambdaTraversal<S, E>) super.clone();
+            clone.traversalStrategies = this.traversalStrategies.clone();
+            return clone;
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
