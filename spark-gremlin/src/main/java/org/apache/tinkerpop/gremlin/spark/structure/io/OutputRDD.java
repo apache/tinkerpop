@@ -23,6 +23,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.computer.KeyValue;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -40,6 +41,7 @@ public interface OutputRDD {
 
     /**
      * Write the sideEffect memoryRDD to an output location. The {@link Configuration} maintains the specified location via {@link org.apache.tinkerpop.gremlin.hadoop.Constants#GREMLIN_HADOOP_OUTPUT_LOCATION}.
+     * The default implementation returns an empty iterator.
      *
      * @param configuration the configuration of the Spark job
      * @param memoryKey     the memory key of the memoryRDD
@@ -48,5 +50,7 @@ public interface OutputRDD {
      * @param <V>           the value class of the RDD
      * @return the {@link KeyValue} iterator to store in the final resultant {@link org.apache.tinkerpop.gremlin.process.computer.Memory}.
      */
-    public <K, V> Iterator<KeyValue<K, V>> writeMemoryRDD(final Configuration configuration, final String memoryKey, final JavaPairRDD<K, V> memoryRDD);
+    public default <K, V> Iterator<KeyValue<K, V>> writeMemoryRDD(final Configuration configuration, final String memoryKey, final JavaPairRDD<K, V> memoryRDD) {
+        return Collections.emptyIterator();
+    }
 }

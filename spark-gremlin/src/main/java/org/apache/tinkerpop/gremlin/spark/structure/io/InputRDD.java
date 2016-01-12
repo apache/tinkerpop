@@ -22,6 +22,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import scala.Tuple2;
 
 /**
  * An InputRDD is used to read data from the underlying graph system and yield the respective adjacency list.
@@ -42,6 +43,7 @@ public interface InputRDD {
 
     /**
      * Read a memoryRDD from the storage location.
+     * The default implementation returns an empty RDD.
      *
      * @param configuration the configuration for the {@link org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer}
      * @param memoryKey     the memory key of the memoryRDD
@@ -50,5 +52,7 @@ public interface InputRDD {
      * @param <V>           the value class of the memoryRDD
      * @return the memoryRDD with respective key/value pairs.
      */
-    public <K, V> JavaPairRDD<K, V> readMemoryRDD(final Configuration configuration, final String memoryKey, final JavaSparkContext sparkContext);
+    public default <K, V> JavaPairRDD<K, V> readMemoryRDD(final Configuration configuration, final String memoryKey, final JavaSparkContext sparkContext) {
+        return sparkContext.<Tuple2<K, V>>emptyRDD().mapToPair(t -> t);
+    }
 }
