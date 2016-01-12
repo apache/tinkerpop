@@ -35,6 +35,7 @@ public class NoMultiNoMetaNeo4jGraphProvider extends AbstractNeo4jGraphProvider 
     public Map<String, Object> getBaseConfiguration(final String graphName, final Class<?> test, final String testMethodName, final LoadGraphWith.GraphData graphData) {
         final String directory = getWorkingDirectory() + File.separator
                 + TestHelper.cleanPathSegment(this.getClass().getSimpleName()) + File.separator
+                + TestHelper.cleanPathSegment(test.getSimpleName()) + File.separator
                 + TestHelper.cleanPathSegment(graphName) + File.separator
                 + cleanParameters(TestHelper.cleanPathSegment(testMethodName));
 
