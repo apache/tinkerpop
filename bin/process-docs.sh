@@ -20,7 +20,31 @@
 
 pushd "$(dirname $0)/.." > /dev/null
 
-if [ "$1" == "--dryRun" ]; then
+while [[ $# -gt 0 ]]
+do
+  key="$1"
+  case $key in
+    -n|--noClean)
+      NOCLEAN=1
+      ;;
+    -d|--dryRun)
+      DRYRUN=1
+      ;;
+    *)
+      # unknown option
+      ;;
+  esac
+  shift
+done
+
+if [ -z ${NOCLEAN} ]; then
+  rm -rf ~/.groovy/grapes/org.apache.tinkerpop/
+  if hash hadoop 2> /dev/null; then
+    hadoop fs -rm -r "hadoop-gremlin-*-libs" > /dev/null 2>&1
+  fi
+fi
+
+if [ ! -z ${DRYRUN} ]; then
 
   mkdir -p target/postprocess-asciidoc/tmp
   cp -R docs/{static,stylesheets} target/postprocess-asciidoc/
