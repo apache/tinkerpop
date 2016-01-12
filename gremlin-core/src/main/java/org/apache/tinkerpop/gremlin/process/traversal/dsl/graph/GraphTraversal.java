@@ -1176,7 +1176,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <V> GraphTraversal<S, E> by(final Function<V, Object> functionProjection) {
-        return this.by(__.map(new FunctionTraverser<>(functionProjection)));
+        return functionProjection instanceof T ?
+                this.by((T) functionProjection) :
+                this.by(__.map(new FunctionTraverser<>(functionProjection)));
     }
 
     public default GraphTraversal<S, E> by(final T tokenProjection) {
