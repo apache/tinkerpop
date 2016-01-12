@@ -19,74 +19,83 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import com.codahale.metrics.Meter;
-import io.netty.util.CharsetUtil;
 import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
+import org.apache.tinkerpop.gremlin.server.op.session.Session;
 import org.apache.tinkerpop.gremlin.server.util.MetricManager;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToByteEncoder;
+import io.netty.handler.codec.MessageToMessageEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
 /**
+ * Ensures that any {@link ResponseMessage} manages to get converted to a {@link Frame}. By converting to {@link Frame}
+ * downstream protocols can treat the generic {@link Frame} any way it wants (e.g. write it back as a byte array,
+ * websocket frame, etc).
+ *
  * @author Stephen Mallette (http://stephen.genoprime.com)
- * @deprecated As of release 3.1.1-incubating, replaced by {@link NioGremlinResponseFrameEncoder} and
- * {@link GremlinResponseFrameEncoder}
- * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-1035">TINKERPOP-1035</a>
  */
-@Deprecated
 @ChannelHandler.Sharable
-public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMessage> {
-    private static final Logger logger = LoggerFactory.getLogger(NioGremlinResponseEncoder.class);
+public class GremlinResponseFrameEncoder extends MessageToMessageEncoder<ResponseMessage> {
+    private static final Logger logger = LoggerFactory.getLogger(GremlinResponseFrameEncoder.class);
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     @Override
-    protected void encode(final ChannelHandlerContext ctx, final ResponseMessage responseMessage, final ByteBuf byteBuf) throws Exception {
+    protected void encode(final ChannelHandlerContext ctx, final ResponseMessage o, final List<Object> objects) throws Exception {
         final MessageSerializer serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
         final boolean useBinary = ctx.channel().attr(StateKey.USE_BINARY).get();
+        final Session session = ctx.channel().attr(StateKey.SESSION).get();
 
         try {
-            if (!responseMessage.getStatus().getCode().isSuccess())
+            if (!o.getStatus().getCode().isSuccess())
                 errorMeter.mark();
 
             if (useBinary) {
-                final ByteBuf bytes = serializer.serializeResponseAsBinary(responseMessage, ctx.alloc());
-                byteBuf.writeInt(bytes.capacity());
-                byteBuf.writeBytes(bytes);
-                bytes.release();
+                final Frame serialized;
+
+                // if the request came in on a session then the serialization must occur in that same thread.
+                if (null == session)
+                    serialized = new Frame(serializer.serializeResponseAsBinary(o, ctx.alloc()));
+                else
+                    serialized = new Frame(session.getExecutor().submit(() -> serializer.serializeResponseAsBinary(o, ctx.alloc())).get());
+
+                objects.add(serialized);
             } else {
                 // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
                 // instance on the channel.
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                final byte [] bytes = textSerializer.serializeResponseAsString(responseMessage).getBytes(CharsetUtil.UTF_8);
-                byteBuf.writeInt(bytes.length);
-                byteBuf.writeBytes(bytes);
+
+                final Frame serialized;
+
+                // if the request came in on a session then the serialization must occur in that same thread.
+                if (null == session)
+                    serialized = new Frame(textSerializer.serializeResponseAsString(o));
+                else
+                    serialized = new Frame(session.getExecutor().submit(() -> textSerializer.serializeResponseAsString(o)).get());
+
+                objects.add(serialized);
             }
         } catch (Exception ex) {
             errorMeter.mark();
-            logger.warn("The result [{}] in the request {} could not be serialized and returned.", responseMessage.getResult(), responseMessage.getRequestId(), ex);
+            logger.warn("The result [{}] in the request {} could not be serialized and returned.", o.getResult(), o.getRequestId(), ex);
             final String errorMessage = String.format("Error during serialization: %s",
                     ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
-            final ResponseMessage error = ResponseMessage.build(responseMessage.getRequestId())
+            final ResponseMessage error = ResponseMessage.build(o.getRequestId())
                     .statusMessage(errorMessage)
                     .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
             if (useBinary) {
-                final ByteBuf bytes = serializer.serializeResponseAsBinary(error, ctx.alloc());
-                byteBuf.writeInt(bytes.capacity());
-                byteBuf.writeBytes(bytes);
-                bytes.release();
+                objects.add(serializer.serializeResponseAsBinary(error, ctx.alloc()));
             } else {
                 final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
-                final byte [] bytes = textSerializer.serializeResponseAsString(error).getBytes(CharsetUtil.UTF_8);
-                byteBuf.writeInt(bytes.length);
-                byteBuf.writeBytes(bytes);
+                objects.add(textSerializer.serializeResponseAsString(error));
             }
         }
     }

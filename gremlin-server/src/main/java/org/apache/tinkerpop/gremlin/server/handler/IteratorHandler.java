@@ -47,7 +47,9 @@ import java.util.concurrent.TimeoutException;
  * are passed to it, they do not contain large result sets or iterates over objects that require network calls.
  *
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.1.1-incubating, not directly replaced.
  */
+@Deprecated
 @ChannelHandler.Sharable
 public class IteratorHandler extends ChannelOutboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(IteratorHandler.class);

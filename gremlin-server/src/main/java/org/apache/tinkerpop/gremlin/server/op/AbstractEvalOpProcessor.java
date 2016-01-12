@@ -20,14 +20,17 @@ package org.apache.tinkerpop.gremlin.server.op;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import org.apache.tinkerpop.gremlin.driver.MessageSerializer;
 import org.apache.tinkerpop.gremlin.driver.Tokens;
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
 import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
+import org.apache.tinkerpop.gremlin.driver.ser.MessageTextSerializer;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.step.Mutating;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
+import org.apache.tinkerpop.gremlin.server.handler.Frame;
+import org.apache.tinkerpop.gremlin.server.handler.GremlinResponseFrameEncoder;
+import org.apache.tinkerpop.gremlin.server.handler.StateKey;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GremlinServer;
@@ -67,6 +70,15 @@ import static com.codahale.metrics.MetricRegistry.name;
 public abstract class AbstractEvalOpProcessor implements OpProcessor {
     private static final Logger logger = LoggerFactory.getLogger(AbstractEvalOpProcessor.class);
     public static final Timer evalOpTimer = MetricManager.INSTANCE.getTimer(name(GremlinServer.class, "op", "eval"));
+
+    /**
+     * Captures the "error" count as a reportable metric for Gremlin Server.
+     *
+     * @deprecated As of release 3.1.1-incubating, not replaced. Direct usage is discouraged with sub-classes as
+     * error counts are captured more globally for error messages written down the pipeline to
+     * {@link GremlinResponseFrameEncoder}.
+     */
+    @Deprecated
     static final Meter errorMeter = MetricManager.INSTANCE.getMeter(name(GremlinServer.class, "errors"));
 
     /**
@@ -160,11 +172,12 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
      *                         {@link GremlinExecutor#eval} method.
      */
     protected void evalOpInternal(final Context context, final Supplier<GremlinExecutor> gremlinExecutorSupplier,
-                              final BindingSupplier bindingsSupplier) throws OpProcessorException {
+                                  final BindingSupplier bindingsSupplier) throws OpProcessorException {
         final Timer.Context timerContext = evalOpTimer.time();
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final GremlinExecutor gremlinExecutor = gremlinExecutorSupplier.get();
+        final Settings settings = context.getSettings();
 
         final Map<String, Object> args = msg.getArgs();
 
@@ -183,9 +196,11 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
                 final String errorMessage = String.format("Response iteration exceeded the configured threshold for request [%s] - %s", msg, ex.getMessage());
                 logger.warn(errorMessage);
                 ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR_TIMEOUT).statusMessage(errorMessage).create());
+                if (manageTransactions) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
             } catch (Exception ex) {
                 logger.warn(String.format("Exception processing a script on request [%s].", msg), ex);
                 ctx.writeAndFlush(ResponseMessage.build(msg).code(ResponseStatusCode.SERVER_ERROR).statusMessage(ex.getMessage()).create());
+                if (manageTransactions) attemptRollback(msg, context.getGraphManager(), settings.strictTransactionManagement);
             }
         });
 
@@ -221,6 +236,8 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         final ChannelHandlerContext ctx = context.getChannelHandlerContext();
         final RequestMessage msg = context.getRequestMessage();
         final Settings settings = context.getSettings();
+        final MessageSerializer serializer = ctx.channel().attr(StateKey.SERIALIZER).get();
+        final boolean useBinary = ctx.channel().attr(StateKey.USE_BINARY).get();
         boolean warnOnce = false;
 
         // we have an empty iterator - happens on stuff like: g.V().iterate()
@@ -240,32 +257,18 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
 
         // if we manage the transactions then we need to commit stuff now that eval is complete.
         Iterator toIterate = itty;
-        if (manageTransactions) {
-            // If the eval returned a Traversal then it gets special treatment
-            if (itty instanceof GraphTraversal) {
-                final GraphTraversal traversal = (GraphTraversal) itty;
-
-                // if it has Mutating steps then it needs to be iterated to produce the mutations in the transaction.
-                // after it is iterated then we can commit.  of course, this comes at the expense of being able
-                // to stream results back to the client as the result has to be realized into memory.
-                //
-                // labmdas are a loophole here.  for now, users will need to self iterate if they need lambdas :/
-                final boolean hasMutating = traversal.asAdmin().getSteps().stream().anyMatch(s -> s instanceof Mutating);
-                if (hasMutating) toIterate = IteratorUtils.list(itty).iterator();
-            }
-
-            // in any case, the commit should occur because at this point a GraphTraversal has been iterated OR
-            // the script has been executed. failures will bubble up before we start to iterate results which makes
-            // sense as we wouldn't want to waste time sending back results when the transaction is going to end up
-            // failing
-            attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
-        }
 
         // the batch size can be overridden by the request
         final int resultIterationBatchSize = (Integer) msg.optionalArgs(Tokens.ARGS_BATCH_SIZE)
                 .orElse(settings.resultIterationBatchSize);
         List<Object> aggregate = new ArrayList<>(resultIterationBatchSize);
-        while (toIterate.hasNext()) {
+
+        // use an external control to manage the loop as opposed to just checking hasNext() in the while.  this
+        // prevent situations where auto transactions create a new transaction after calls to commit() withing
+        // the loop on calls to hasNext().
+        boolean hasMore = toIterate.hasNext();
+
+        while (hasMore) {
             if (Thread.interrupted()) throw new InterruptedException();
 
             // have to check the aggregate size because it is possible that the channel is not writeable (below)
@@ -279,12 +282,32 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             if (ctx.channel().isWritable()) {
                 if (aggregate.size() == resultIterationBatchSize || !toIterate.hasNext()) {
                     final ResponseStatusCode code = toIterate.hasNext() ? ResponseStatusCode.PARTIAL_CONTENT : ResponseStatusCode.SUCCESS;
-                    ctx.writeAndFlush(ResponseMessage.build(msg)
-                                .code(code)
-                                .result(aggregate).create());
+
+                    // serialize here because in sessionless requests the serialization must occur in the same
+                    // thread as the eval.  as eval occurs in the GremlinExecutor there's no way to get back to the
+                    // thread that processed the eval of the script so, we have to push serialization down into that
+                    serializeResponseMessage(ctx, msg, serializer, useBinary, aggregate, code);
 
                     // only need to reset the aggregation list if there's more stuff to write
-                    if (toIterate.hasNext()) aggregate = new ArrayList<>(resultIterationBatchSize);
+                    if (toIterate.hasNext())
+                        aggregate = new ArrayList<>(resultIterationBatchSize);
+                    else {
+                        // iteration and serialization are both complete which means this finished successfully. note that
+                        // errors internal to script eval or timeout will rollback given GremlinServer's global configurations.
+                        // local errors will get rolledback below because the exceptions aren't thrown in those cases to be
+                        // caught by the GremlinExecutor for global rollback logic. this only needs to be committed if
+                        // there are no more items to iterate and serialization is complete
+                        if (manageTransactions) attemptCommit(msg, context.getGraphManager(), settings.strictTransactionManagement);
+
+                        // exit the result iteration loop as there are no more results left.  using this external control
+                        // because of the above commit.  some graphs may open a new transaction on the call to
+                        // hasNext()
+                        hasMore = false;
+                    }
+
+                    // the flush is called after the commit has potentially occurred.  in this way, if a commit was
+                    // required then it will be 100% complete before the client receives it.
+                    ctx.flush();
                 }
             } else {
                 // don't keep triggering this warning over and over again for the same request
@@ -311,6 +334,35 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
         stopWatch.stop();
     }
 
+    private static void serializeResponseMessage(final ChannelHandlerContext ctx, final RequestMessage msg,
+                                                 final MessageSerializer serializer, final boolean useBinary, List<Object> aggregate,
+                                                 final ResponseStatusCode code) {
+        try {
+            if (useBinary) {
+                ctx.write(new Frame(
+                        serializer.serializeResponseAsBinary(ResponseMessage.build(msg)
+                        .code(code)
+                        .result(aggregate).create(), ctx.alloc())));
+            } else {
+                // the expectation is that the GremlinTextRequestDecoder will have placed a MessageTextSerializer
+                // instance on the channel.
+                final MessageTextSerializer textSerializer = (MessageTextSerializer) serializer;
+                ctx.write(new Frame(
+                        textSerializer.serializeResponseAsString(ResponseMessage.build(msg)
+                        .code(code)
+                        .result(aggregate).create())));
+            }
+        } catch (Exception ex) {
+            logger.warn("The result [{}] in the request {} could not be serialized and returned.", aggregate, msg.getRequestId(), ex);
+            final String errorMessage = String.format("Error during serialization: %s",
+                    ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage());
+            final ResponseMessage error = ResponseMessage.build(msg.getRequestId())
+                    .statusMessage(errorMessage)
+                    .code(ResponseStatusCode.SERVER_ERROR_SERIALIZATION).create();
+            ctx.writeAndFlush(error);
+        }
+    }
+
     private static void attemptCommit(final RequestMessage msg, final GraphManager graphManager, final boolean strict) {
         if (strict) {
             // assumes that validations will already have been performed in extending classes - they are performed
@@ -321,6 +373,19 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
             graphManager.commit(new HashSet<>(aliases.values()));
         } else {
             graphManager.commitAll();
+        }
+    }
+
+    private static void attemptRollback(final RequestMessage msg, final GraphManager graphManager, final boolean strict) {
+        if (strict) {
+            // assumes that validations will already have been performed in extending classes - they are performed
+            // in StandardOpProcessor when getting bindings right now
+            final boolean hasRebindings = msg.getArgs().containsKey(Tokens.ARGS_REBINDINGS);
+            final String rebindingOrAliasParameter = hasRebindings ? Tokens.ARGS_REBINDINGS : Tokens.ARGS_ALIASES;
+            final Map<String, String> aliases = (Map<String, String>) msg.getArgs().get(rebindingOrAliasParameter);
+            graphManager.rollback(new HashSet<>(aliases.values()));
+        } else {
+            graphManager.rollbackAll();
         }
     }
 
