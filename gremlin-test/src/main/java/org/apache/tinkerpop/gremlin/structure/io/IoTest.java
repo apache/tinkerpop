@@ -256,8 +256,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldReadWriteSelfLoopingEdges() throws Exception {
-            final Configuration sourceConf = graphProvider.newGraphConfiguration("source", this.getClass(), name.getMethodName(), null);
-            final Graph source = GraphFactory.open(sourceConf);
+            final Graph source = graph;
             final Vertex v1 = source.addVertex();
             final Vertex v2 = source.addVertex();
             v1.addEdge("CONTROL", v2);
@@ -286,8 +285,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldReadWriteSelfLoopingEdges() {
-            final Configuration sourceConf = graphProvider.newGraphConfiguration("source", this.getClass(), name.getMethodName(), null);
-            final Graph source = GraphFactory.open(sourceConf);
+            final Graph source = graph;
             final Vertex v1 = source.addVertex();
             final Vertex v2 = source.addVertex();
             v1.addEdge("CONTROL", v2);
@@ -432,8 +430,7 @@ public class IoTest {
         @FeatureRequirement(featureClass = EdgePropertyFeatures.class, feature = FEATURE_STRING_VALUES)
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         public void shouldReadWriteSelfLoopingEdges() throws Exception {
-            final Configuration sourceConf = graphProvider.newGraphConfiguration("source", this.getClass(), name.getMethodName(), null);
-            final Graph source = GraphFactory.open(sourceConf);
+            final Graph source = graph;
             final Vertex v1 = source.addVertex();
             final Vertex v2 = source.addVertex();
             v1.addEdge("CONTROL", v2);
