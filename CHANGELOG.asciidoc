@@ -27,6 +27,7 @@ TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * The Spark persistence `StorageLevel` can now be set for both job graphs and `PersistedOutputRDD` data.
+* Added to the list of "invalid binding keys" allowed by Gremlin Server to cover the private fields of `T` which get exposed in the `ScriptEngine` on static imports.
 * Fixed a bug around duration calculations of `cap()`-step during profiling.
 * It is possible to completely avoid using HDFS with Spark if `PersistedInputRDD` and `PersistedOutpuRDD` are leveraged.
 * `InputRDD` and `OutputRDD` can now process both graphs and memory (i.e. sideEffects).

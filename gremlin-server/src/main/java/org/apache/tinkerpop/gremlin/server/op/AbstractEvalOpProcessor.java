@@ -90,10 +90,15 @@ public abstract class AbstractEvalOpProcessor implements OpProcessor {
      * This may or may not be the full set of invalid binding keys.  It is dependent on the static imports made to
      * Gremlin Server.  This should get rid of the worst offenders though and provide a good message back to the
      * calling client.
+     * <p/>
+     * Use of {@code toUpperCase()} on the accessor values of {@link T} solves an issue where the {@code ScriptEngine}
+     * ignores private scope on {@link T} and imports static fields.
      */
     private static final List<String> invalidBindingsKeys = Arrays.asList(
             T.id.getAccessor(), T.key.getAccessor(),
-            T.label.getAccessor(), T.value.getAccessor());
+            T.label.getAccessor(), T.value.getAccessor(),
+            T.id.getAccessor().toUpperCase(), T.key.getAccessor().toUpperCase(),
+            T.label.getAccessor().toUpperCase(), T.value.getAccessor().toUpperCase());
     private static final String invalidBindingKeysJoined = String.join(",", invalidBindingsKeys);
 
     protected final boolean manageTransactions;
