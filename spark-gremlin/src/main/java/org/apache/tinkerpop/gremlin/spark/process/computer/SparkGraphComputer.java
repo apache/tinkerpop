@@ -32,6 +32,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.launcher.SparkLauncher;
+import org.apache.spark.storage.StorageLevel;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.AbstractHadoopGraphComputer;
 import org.apache.tinkerpop.gremlin.hadoop.process.computer.util.ComputerSubmissionHelper;
@@ -160,7 +161,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                             .readGraphRDD(apacheConfiguration, sparkContext);
                     if (this.workersSet && graphRDD.partitions().size() > this.workers) // ensures that the graphRDD does not have more partitions than workers
                         graphRDD = graphRDD.coalesce(this.workers);
-                    graphRDD = graphRDD.cache();
+                    // persist the vertex program loaded graph as specified by configuration or else use default cache() which is MEMORY_ONLY
+                    graphRDD = graphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
                 } catch (final InstantiationException | IllegalAccessException e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }

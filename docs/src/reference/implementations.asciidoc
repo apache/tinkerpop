@@ -1200,7 +1200,9 @@ image::spark-algorithm.png[width=775]
 |Property |Description
 |gremlin.spark.graphInputRDD |A class for creating RDD's from underlying graph data, defaults to Hadoop `InputFormat`.
 |gremlin.spark.graphOutputRDD |A class for output RDD's, defaults to Hadoop `OutputFormat`.
+|gremlin.spark.graphStorageLevel |What `StorageLevel` to use for the cached graph during job execution (default `MEMORY_ONLY`).
 |gremlin.spark.persistContext |Whether to create a new `SparkContext` for every `SparkGraphComputer` or to reuse an existing one.
+|gremlin.spark.persistStorageLevel |What `StorageLevel` to use when persisted RDDs via `PersistedOutputRDD` (default `MEMORY_ONLY`).
 |========================================================
 
 If the provider/user wishes to not use Hadoop `InputFormats`, it is possible to leverage Spark's RDD

@@ -43,8 +43,7 @@ Before issuing your pull request, please be sure of the following:
 . `mvn clean install` works successfully.
 . If the change requires modification to the documentation, which can be found in `docs/src`, please be sure to try to
 generate the docs.  If the changes are minimal and do not include code examples, it might be sufficient to test
-generate the docs to validate formatting by just doing `bin/process-docs.sh --dryRun`.  If there are code examples,
-please be sure to have Zookeeper and Hadoop running when doing a `bin/process-docs.sh`.  The documentation is
+generate the docs to validate formatting by just doing `bin/process-docs.sh --dryRun`. The documentation is
 generated to `/target/docs/htmlsingle`.
 . If necessary, run the integration tests.  For example, if the changes affect serialization or Gremlin Server/Driver
 operations then running the integration tests assures in addition to unit tests will definitely be necessary. After
@@ -73,7 +72,7 @@ mvn -Dmaven.javadoc.skip=true --projects tinkergraph-gremlin test
 * Regenerate test data (only necessary given changes to IO classes): `mvn clean install -Dio` from `tinkergraph-gremlin` directory
 ** If there are changes to the Gryo format, it may be necessary to generate the Grateful Dead dataset from GraphSON (see `IoDataGenerationTest.shouldWriteGratefulDead`)
 * Check license headers are present: `mvn apache-rat:check`
-* Build AsciiDocs (Hadoop and ZooKeeper must be running): `bin/process-docs.sh`
+* Build AsciiDocs (Hadoop must be running): `bin/process-docs.sh`
 ** Build AsciiDocs (but don't evaluate code blocks): `bin/process-docs.sh --dryRun`
 ** Process a single AsciiDoc file: +pass:[docs/preprocessor/preprocess-file.sh `pwd`/gremlin-console/target/apache-gremlin-console-*-standalone `pwd`/docs/src/xyz.asciidoc]+
 * Build JavaDocs: `mvn process-resources -Djavadoc`

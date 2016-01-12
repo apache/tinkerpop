@@ -109,8 +109,9 @@ public class Spark {
     }
 
     public static void close() {
+        NAME_TO_RDD.clear();
         if (null != CONTEXT)
             CONTEXT.stop();
-        NAME_TO_RDD.clear();
+        CONTEXT = null;
     }
 }
