@@ -56,7 +56,7 @@ public class GremlinProcessRunner extends BlockJUnit4ClassRunner {
             } catch (Throwable e) {
                 if (validateForGraphComputer(e)) {
                     eachNotifier.fireTestIgnored();
-                    logger.error(e.getMessage());
+                    logger.info(e.getMessage());
                     ignored = true;
                 } else
                     eachNotifier.addFailure(e);
