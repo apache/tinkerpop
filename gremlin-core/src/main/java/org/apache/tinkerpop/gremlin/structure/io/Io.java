@@ -24,7 +24,7 @@ import java.io.IOException;
 
 /**
  * Ties together the core interfaces of an IO format: {@link GraphReader}, {@link GraphWriter} and {@link Mapper}.
- * The {@link Builder} of an {@code Io} instance is supplied to {@link Graph#io(Builder)} and the {@link Graph}
+ * The {@link Builder} of an {@code Io} instance is supplied to {@link Graph#io(Io.Builder)} and the {@link Graph}
  * implementation can then chose to supply an {@link IoRegistry} to it before returning it.  An {@link Io}
  * implementation should use that {@link IoRegistry} to lookup custom serializers to use and register them to the
  * internal {@link Mapper} (if the format has such capability).
@@ -81,7 +81,7 @@ public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.W
 
     /**
      * Helps to construct an {@link Io} implementation and should be implemented by every such implementation as
-     * that class will be passed to {@link Graph#io(Builder)} by the user.
+     * that class will be passed to {@link Graph#io(Io.Builder)} by the user.
      */
     public interface Builder<I extends Io> {
 
@@ -89,7 +89,7 @@ public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.W
          * Vendors use this method to supply an {@link IoRegistry} to the {@link Io} implementation.  End-users
          * should not use this method directly.  If a user wants to register custom serializers, then such things
          * can be done via calls to {@link Io#mapper()} after the {@link Io} is constructed via
-         * {@link Graph#io(Builder)}.
+         * {@link Graph#io(Io.Builder)}.
          */
         public Builder<? extends Io> registry(final IoRegistry registry);
 
@@ -100,7 +100,7 @@ public interface Io<R extends GraphReader.ReaderBuilder, W extends GraphWriter.W
         public Builder<? extends Io> graph(final Graph g);
 
         /**
-         * Vendors call this method in the {@link Graph#io(Builder)} method to construct the {@link Io} instance
+         * Vendors call this method in the {@link Graph#io(Io.Builder)} method to construct the {@link Io} instance
          * and return the value.  End-users will typically not call this method.
          */
         public I create();
