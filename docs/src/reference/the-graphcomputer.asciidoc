@@ -319,6 +319,15 @@ same cluster. The algorithm proceeds in the following manner.
   .. If there is a tie, then the cluster with the lowest `toString()` comparison is selected.
  . Steps 3 and 4 repeat until either a max number of iterations has occurred or no vertex has adjusted its cluster anymore.
 
+[[bulkdumpervertexprogram]]
+BulkDumperVertexProgram
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The `BulkDumperVertexProgram` can be used to export a whole graph in any of the provided Hadoop GraphOutputFormats (e.g.
+`GraphSONOutputFormat`, `GryoOutputFormat` or `ScriptOutputFormat`). The input can be any Hadoop GraphInputFormat
+(e.g. `GraphSONInputFormat`, `GryoInputFormat` or `ScriptInputFormat`). An <<bulkdumpervertexprogramusingspark,example>>
+is provided in the SparkGraphComputer section.
+
 [[bulkloadervertexprogram]]
 BulkLoaderVertexProgram
 ~~~~~~~~~~~~~~~~~~~~~~~
