@@ -497,12 +497,12 @@ steps like <<choose-step,`choose()`-step>> or <<coalesce-step,`coalesce()`-step>
 
 [gremlin-groovy,modern]
 ----
-g.V().choose(__.hasLabel('person'),
-    __.values('name'),
-    __.constant('inhuman')) <1>
+g.V().choose(hasLabel('person'),
+    values('name'),
+    constant('inhuman')) <1>
 g.V().coalesce(
-    __.hasLabel('person').values('name'),
-    __.constant('inhuman')) <2>
+    hasLabel('person').values('name'),
+    constant('inhuman')) <2>
 ----
 
 <1> Show the names of people, but show "inhuman" for other vertices.
