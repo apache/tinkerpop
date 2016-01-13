@@ -37,15 +37,14 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
 public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S, E> {
 
-    private TraversalStrategies traversalStrategies = EmptyTraversalStrategies.instance();
-    private TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
-    private transient Graph graph = null;
+    private static final Set<TraverserRequirement> REQUIREMENTS = Collections.singleton(TraverserRequirement.OBJECT);
 
     public List<Step> getSteps() {
         return Collections.emptyList();
@@ -68,7 +67,7 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public void applyStrategies() throws IllegalStateException {
-        this.traversalStrategies.applyStrategies(this);
+
     }
 
     @Override
@@ -98,30 +97,28 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public void setStrategies(final TraversalStrategies strategies) {
-        this.traversalStrategies = strategies.clone();
+
     }
 
     @Override
     public TraversalStrategies getStrategies() {
-        return this.traversalStrategies;
+        return EmptyTraversalStrategies.instance();
     }
 
     @Override
     public void setParent(final TraversalParent step) {
-        this.traversalParent = step;
+
     }
 
     @Override
     public TraversalParent getParent() {
-        return this.traversalParent;
+        return EmptyStep.instance();
     }
 
     @Override
     public Traversal.Admin<S, E> clone() {
         try {
-            final AbstractLambdaTraversal<S, E> clone = (AbstractLambdaTraversal<S, E>) super.clone();
-            clone.traversalStrategies = this.traversalStrategies.clone();
-            return clone;
+            return (AbstractLambdaTraversal<S, E>) super.clone();
         } catch (final CloneNotSupportedException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -153,12 +150,27 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public Optional<Graph> getGraph() {
-        return Optional.ofNullable(this.graph);
+        return Optional.empty();
     }
 
     @Override
     public void setGraph(final Graph graph) {
-        this.graph = graph;
+
+    }
+
+    @Override
+    public Set<TraverserRequirement> getTraverserRequirements() {
+        return REQUIREMENTS;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return this.getClass().equals(object.getClass()) && this.hashCode() == object.hashCode();
     }
 
 }

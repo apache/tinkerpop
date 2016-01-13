@@ -37,7 +37,7 @@ public final class EmptyStep<S, E> implements Step<S, E>, TraversalParent {
 
     private static final EmptyStep INSTANCE = new EmptyStep<>();
 
-    public static <S, E> Step<S, E> instance() {
+    public static <S, E> EmptyStep<S, E> instance() {
         return INSTANCE;
     }
 

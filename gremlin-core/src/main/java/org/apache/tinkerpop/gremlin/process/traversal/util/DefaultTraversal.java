@@ -39,7 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
@@ -54,7 +53,7 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     protected List<Step> steps = new ArrayList<>();
     // steps will be repeatedly retrieved from this traversal so wrap them once in an immutable list that can be reused
     protected List<Step> unmodifiableSteps = Collections.unmodifiableList(steps);
-    protected TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
+    protected TraversalParent traversalParent = EmptyStep.instance();
     protected TraversalSideEffects sideEffects = new DefaultTraversalSideEffects();
     protected TraversalStrategies strategies;
     protected TraversalEngine traversalEngine = StandardTraversalEngine.instance(); // necessary for strategies that need the engine in OLAP message passing (not so bueno)
@@ -295,6 +294,20 @@ public class DefaultTraversal<S, E> implements Traversal.Admin<S, E> {
     @Override
     public void setGraph(final Graph graph) {
         this.graph = graph;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        return other != null && other.getClass().equals(this.getClass()) && this.asAdmin().equals(((Traversal.Admin) other));
+    }
+
+    @Override
+    public int hashCode() {
+        int result = this.getClass().hashCode();
+        for (final Step step : this.asAdmin().getSteps()) {
+            result ^= step.hashCode();
+        }
+        return result;
     }
 
 }
