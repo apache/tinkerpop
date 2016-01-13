@@ -90,8 +90,8 @@ release.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-981[TINKERPOP-981],
 link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#_security[Reference Documentation - Gremlin Server Security]
 
-TinkerGraph Supports Any IO
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TinkerGraph Supports Any I/O
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 TinkerGraph's 'gremlin.tinkergraph.graphLocation' configuration setting can now take a fully qualified class name
 of a `Io.Builder` implementation, which means that custom IO implementations can be used to read and write
@@ -205,6 +205,22 @@ These changes related to "Feature Consistency" open up a number of previously no
 not support meta-properties, so providers should be wary of potential test failure on previously non-executing tests.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-985[TINKERPOP-985]
+
+Graph Processor Providers
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+InputRDD and OutputRDD Updates
+++++++++++++++++++++++++++++++
+
+There are two new methods on the Spark-Gremlin RDD interfaces.
+
+* `InputRDD.readMemoryRDD()`: get a `ComputerResult.memory()` from an RDD.
+* `OutputRDD.writeMemoryRDD()`: write a `ComputerResult.memory()` to an RDD.
+
+Note that both these methods have default implementations which simply work with empty RDDs. Most providers will never
+need to implement these methods as they are specific to file/RDD management for `GraphComputer`. The four classes that
+implement these methods are `PersistedOutputRDD`, `PersistedInputRDD`, `InputFormatRDD`, and `OutputFormatRDD`. For the
+interested provider, study the implementations therein to see the purpose of these two new methods.
 
 TinkerPop 3.1.0
 ---------------
