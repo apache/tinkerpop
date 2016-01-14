@@ -46,7 +46,7 @@ public abstract class GroovySackTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX0X_V_outE_sackXsum_weightX_inV_sack_sum() {
-            TraversalScriptHelper.compute("g.withSack(0.0f).V().outE.sack(sum, 'weight').inV.sack.sum()", g);
+            TraversalScriptHelper.compute("g.withSack(0.0f).V().outE.sack(sum, 'weight').inV.sack.sum()", g)
         }
 
         @Override
@@ -56,7 +56,7 @@ public abstract class GroovySackTest {
 
         @Override
         public Traversal<Vertex, Map> get_g_withSackXmap__map_cloneX_V_out_out_sackXmap_a_nameX_sack() {
-            TraversalScriptHelper.compute("g.withSack{[:]}{ it.clone() }.V.out().out().sack { m, v -> m['a'] = v.name; m }.sack()", g);
+            TraversalScriptHelper.compute("g.withSack{[:]}{ it.clone() }.V.out().out().sack { m, v -> m['a'] = v.name; m }.sack()", g)
         }
 
         @Override
@@ -67,7 +67,12 @@ public abstract class GroovySackTest {
 
         @Override
         public Traversal<Vertex, Integer> get_g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack() {
-            TraversalScriptHelper.compute("g.withBulk(false).withSack(1, sum).V.out.barrier.sack", g);
+            TraversalScriptHelper.compute("g.withBulk(false).withSack(1, sum).V.out.barrier.sack", g)
+        }
+
+        @Override
+        Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack() {
+            TraversalScriptHelper.compute("g.withSack(BigInteger.TEN.pow(1000), assign).V.local(out('knows').barrier(normSack)).in('knows').barrier.sack", g)
         }
     }
 }
