@@ -88,9 +88,9 @@ public class StandardOpProcessor extends AbstractEvalOpProcessor {
     /**
      * A useful method for those extending this class, where the means for binding construction can be supplied
      * to this class.  This function is used in {@link #evalOp(Context)} to create the final argument to
-     * {@link super#evalOpInternal(Context, Supplier, BindingSupplier)}. In this way an extending class can use
-     * the default {@link BindingSupplier} which carries a lot of re-usable functionality or provide a new one to
-     * override the existing approach.
+     * {@link AbstractEvalOpProcessor#evalOpInternal(Context, Supplier, org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor.BindingSupplier)}.
+     * In this way an extending class can use the default {@link org.apache.tinkerpop.gremlin.server.op.AbstractEvalOpProcessor.BindingSupplier}
+     * which carries a lot of re-usable functionality or provide a new one to override the existing approach.
      */
     protected Function<Context, BindingSupplier> getBindingMaker() {
         return context -> () -> {
