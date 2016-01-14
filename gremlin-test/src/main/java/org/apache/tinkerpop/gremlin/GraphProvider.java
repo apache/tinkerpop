@@ -281,7 +281,8 @@ public interface GraphProvider {
     /**
      * An annotation to be applied to a {@code GraphProvider} implementation that provides additional information
      * about its intentions. The {@code Descriptor} is required by those {@code GraphProvider} implementations
-     * that will be assigned to test suites that use {@link TraversalEngine.Type#COMPUTER}.
+     * that will be assigned to test suites that use
+     * {@link org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine.Type#COMPUTER}.
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
