@@ -41,9 +41,8 @@ public class DependantMutableMetrics extends MutableMetrics {
     }
 
     /**
-     * Returns the actual duration taken by this Metrics by subtracting the duration taken by the upstream Step, if one exists.
-     * @param unit
-     * @return
+     * Returns the actual duration taken by this Metrics by subtracting the duration taken by the upstream Step, if
+     * one exists.
      */
     @Override
     public long getDuration(final TimeUnit unit) {

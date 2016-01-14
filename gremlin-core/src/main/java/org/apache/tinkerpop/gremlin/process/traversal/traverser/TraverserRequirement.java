@@ -26,7 +26,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
  * A {@link TraverserRequirement} is a list of requirements that a {@link Traversal} requires of a {@link Traverser}.
  * The less requirements, the simpler the traverser can be (both in terms of space and time constraints).
  * Every {@link Step} provides its specific requirements via {@link Step#getRequirements()}.
- * Moreover, every {@link Traversal.Admin} can be provided requirements via {@link Traversal.Admin#addTraverserRequirement(TraverserRequirement)}.
+ * Moreover, every {@link org.apache.tinkerpop.gremlin.process.traversal.Traversal.Admin} can be provided requirements via
+ * {@link org.apache.tinkerpop.gremlin.process.traversal.Traversal.Admin#addTraverserRequirement(TraverserRequirement)}.
  *
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
