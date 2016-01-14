@@ -26,6 +26,8 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Reduced the complexity and execution time of all `AbstractLambdaTraversal` instances.
+* `DefaultTraversal` has a well defined `hashCode()` and `equals()`.
 * Integrated `NumberHelper` in `SackFunctions`.
 * The Spark persistence `StorageLevel` can now be set for both job graphs and `PersistedOutputRDD` data.
 * Added to the list of "invalid binding keys" allowed by Gremlin Server to cover the private fields of `T` which get exposed in the `ScriptEngine` on static imports.
