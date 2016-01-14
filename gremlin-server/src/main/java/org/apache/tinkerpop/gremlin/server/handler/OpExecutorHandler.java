@@ -19,6 +19,8 @@
 package org.apache.tinkerpop.gremlin.server.handler;
 
 import org.apache.tinkerpop.gremlin.driver.message.RequestMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseMessage;
+import org.apache.tinkerpop.gremlin.driver.message.ResponseStatusCode;
 import org.apache.tinkerpop.gremlin.groovy.engine.GremlinExecutor;
 import org.apache.tinkerpop.gremlin.server.Context;
 import org.apache.tinkerpop.gremlin.server.GraphManager;
@@ -69,6 +71,13 @@ public class OpExecutorHandler extends SimpleChannelInboundHandler<Pair<RequestM
             // themselves
             logger.warn(ope.getMessage(), ope);
             ctx.writeAndFlush(ope.getResponseMessage());
+        } catch (Exception ex) {
+            // It is possible that an unplanned exception might raise out of an OpProcessor execution. Build a general
+            // error to send back to the client
+            logger.warn(ex.getMessage(), ex);
+            ctx.writeAndFlush(ResponseMessage.build(msg)
+                    .code(ResponseStatusCode.SERVER_ERROR)
+                    .statusMessage(ex.getMessage()).create());
         } finally {
             ReferenceCountUtil.release(objects);
         }

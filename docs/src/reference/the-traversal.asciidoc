@@ -403,7 +403,7 @@ least one element.
 ----
 g.V(1).coalesce(outE('knows'), outE('created')).inV().path().by('name').by(label)
 g.V(1).coalesce(outE('created'), outE('knows')).inV().path().by('name').by(label)
-g.V(1).next().property('nickname', 'okram')
+g.V(1).property('nickname', 'okram')
 g.V().hasLabel('person').coalesce(values('nickname'), values('name'))
 ----
 
@@ -497,12 +497,12 @@ steps like <<choose-step,`choose()`-step>> or <<coalesce-step,`coalesce()`-step>
 
 [gremlin-groovy,modern]
 ----
-g.V().choose(__.hasLabel('person'),
-    __.values('name'),
-    __.constant('inhuman')) <1>
+g.V().choose(hasLabel('person'),
+    values('name'),
+    constant('inhuman')) <1>
 g.V().coalesce(
-    __.hasLabel('person').values('name'),
-    __.constant('inhuman')) <2>
+    hasLabel('person').values('name'),
+    constant('inhuman')) <2>
 ----
 
 <1> Show the names of people, but show "inhuman" for other vertices.

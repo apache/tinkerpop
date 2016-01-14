@@ -1120,7 +1120,7 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> emit() {
-        return this.emit(TrueTraversal.instance());
+        return this.emit(new TrueTraversal<>());
     }
 
     public default GraphTraversal<S, E> until(final Traversal<?, ?> untilTraversal) {

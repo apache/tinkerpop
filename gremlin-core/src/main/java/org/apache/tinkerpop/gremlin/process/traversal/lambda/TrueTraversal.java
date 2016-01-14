@@ -23,8 +23,6 @@ package org.apache.tinkerpop.gremlin.process.traversal.lambda;
  */
 public final class TrueTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
 
-    private static final TrueTraversal INSTANCE = new TrueTraversal<>();
-
     @Override
     public boolean hasNext() {
         return true;
@@ -36,14 +34,8 @@ public final class TrueTraversal<S, E> extends AbstractLambdaTraversal<S, E> {
     }
 
     @Override
-    @SuppressWarnings("CloneDoesntCallSuperClone")
-    public TrueTraversal<S, E> clone() {
-        return INSTANCE;
+    public int hashCode() {
+        return this.getClass().hashCode();
     }
-
-    public static <A, B> TrueTraversal<A, B> instance() {
-        return INSTANCE;
-    }
-
 
 }
