@@ -19,6 +19,7 @@
 package org.apache.tinkerpop.gremlin.osgi;
 
 import static org.junit.Assert.assertEquals;
+import static org.ops4j.pax.exam.CoreOptions.junitBundles;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import static org.ops4j.pax.exam.CoreOptions.options;
 
@@ -46,7 +47,37 @@ public class OsgiIntegrateTest
     public Option[] config() {
 
         return options(
-                mavenBundle("org.apache.tinkerpop", "gremlin-core", "3.1.1-SNAPSHOT")
+                junitBundles(),
+                // commons-lang.commons-lang:2.6 needed by commons-configuration
+                mavenBundle()
+                        .groupId("commons-lang")
+                        .artifactId("commons-lang")
+                        .version("2.6"),
+                // commons-configuration.commons-configuration:1.10 needed by gremlin-core
+                mavenBundle()
+                        .groupId("commons-configuration")
+                        .artifactId("commons-configuration")
+                        .version("1.10"),
+                // org.yaml.snakeyaml:1.15 needed by gremlin-core
+                mavenBundle()
+                        .groupId("org.yaml")
+                        .artifactId("snakeyaml")
+                        .version("1.15"),
+                // gremlin-osgi-deps needed until all dependencies are OSGIfied
+                mavenBundle()
+                        .groupId(System.getProperty("project.groupId"))
+                        .artifactId("gremlin-osgi-deps")
+                        .version(System.getProperty("project.version")),
+                // gremlin-shaded needed by gremlin-core
+                mavenBundle()
+                        .groupId(System.getProperty("project.groupId"))
+                        .artifactId("gremlin-shaded")
+                        .version(System.getProperty("project.version")),
+                // gremlin-core
+                mavenBundle()
+                        .groupId(System.getProperty("project.groupId"))
+                        .artifactId(System.getProperty("project.artifactId"))
+                        .version(System.getProperty("project.version"))
         );
     }
 

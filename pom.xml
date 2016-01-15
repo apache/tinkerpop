@@ -143,9 +143,8 @@ limitations under the License.
         <jbcrypt.version>0.3m</jbcrypt.version>
         <ops4j.paxexam.version>4.8.0</ops4j.paxexam.version>
         <ops4j.paxurl.version>1.6.0</ops4j.paxurl.version>
-        <javax.inject.version>1</javax.inject.version>
-        <osgi.version>6.0.0</osgi.version>
         <apache.felix.version>5.4.0</apache.felix.version>
+        <javax.inject.version>1</javax.inject.version>
 
         <!--
         This file will come from the root of each modules test/resources/ directories. log4j-silent.properties will
@@ -370,6 +369,11 @@ limitations under the License.
                                     -Dbuild.dir=${project.build.directory}
                                 </argLine>
                                 <summaryFile>target/failsafe-reports/failsafe-integration.xml</summaryFile>
+                                <systemPropertyVariables>
+                                    <project.groupId>${project.groupId}</project.groupId>
+                                    <project.artifactId>${project.artifactId}</project.artifactId>
+                                    <project.version>${project.version}</project.version>
+                                </systemPropertyVariables>
                             </configuration>
                         </execution>
                         <execution>
@@ -603,11 +607,6 @@ limitations under the License.
 
             <!-- dependencies used to test OSGI bundles -->
             <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
-                <version>${osgi.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>org.apache.felix.framework</artifactId>
                 <version>${apache.felix.version}</version>
@@ -647,33 +646,6 @@ limitations under the License.
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.ops4j.pax.url</groupId>
-                <artifactId>pax-url-aether</artifactId>
-                <version>${ops4j.paxurl.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.ops4j.base</groupId>
-                        <artifactId>ops4j-base-lang</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.plexus</groupId>
-                        <artifactId>plexus-container-default</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.apache.maven.wagon</groupId>
-                        <artifactId>wagon-provider-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.codehaus.plexus</groupId>
-                        <artifactId>plexus-utils</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>org.ops4j.pax.exam</groupId>
                 <artifactId>pax-exam-link-mvn</artifactId>
                 <version>${ops4j.paxexam.version}</version>
@@ -689,6 +661,7 @@ limitations under the License.
                 <artifactId>javax.inject</artifactId>
                 <version>${javax.inject.version}</version>
             </dependency>
+
         </dependencies>
     </dependencyManagement>
 
