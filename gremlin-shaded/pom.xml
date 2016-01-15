@@ -24,66 +24,8 @@ limitations under the License.
     </parent>
     <artifactId>gremlin-shaded</artifactId>
     <name>Apache TinkerPop :: Gremlin Shaded</name>
-    <packaging>bundle</packaging>
     <properties>
-        <!--
-        As this jar is shaded, the maven-bundle-plugin is not able to process exported and imported packages from generated classes.
-        So we must explicitely tell which packages are exported and imported by this bundle to the maven-bundle-plugin.
-        -->
-        <osgi.import>
-            org.w3c.dom,
-            org.w3c.dom.bootstrap,
-            org.w3c.dom.ls,
-            org.xml.sax
-        </osgi.import>
-        <osgi.export>
-            org.apache.tinkerpop.shaded.jackson.annotation,
-            org.apache.tinkerpop.shaded.jackson.core,
-            org.apache.tinkerpop.shaded.jackson.core.base,
-            org.apache.tinkerpop.shaded.jackson.core.format,
-            org.apache.tinkerpop.shaded.jackson.core.io,
-            org.apache.tinkerpop.shaded.jackson.core.json,
-            org.apache.tinkerpop.shaded.jackson.core.sym,
-            org.apache.tinkerpop.shaded.jackson.core.type,
-            org.apache.tinkerpop.shaded.jackson.core.util,
-            org.apache.tinkerpop.shaded.jackson.databind,
-            org.apache.tinkerpop.shaded.jackson.databind.annotation,
-            org.apache.tinkerpop.shaded.jackson.databind.cfg,
-            org.apache.tinkerpop.shaded.jackson.databind.deser,
-            org.apache.tinkerpop.shaded.jackson.databind.deser.impl,
-            org.apache.tinkerpop.shaded.jackson.databind.deser.std,
-            org.apache.tinkerpop.shaded.jackson.databind.exc,
-            org.apache.tinkerpop.shaded.jackson.databind.ext,
-            org.apache.tinkerpop.shaded.jackson.databind.introspect,
-            org.apache.tinkerpop.shaded.jackson.databind.jsonFormatVisitors,
-            org.apache.tinkerpop.shaded.jackson.databind.jsonschema,
-            org.apache.tinkerpop.shaded.jackson.databind.jsontype,
-            org.apache.tinkerpop.shaded.jackson.databind.jsontype.impl,
-            org.apache.tinkerpop.shaded.jackson.databind.module,
-            org.apache.tinkerpop.shaded.jackson.databind.node,
-            org.apache.tinkerpop.shaded.jackson.databind.ser,
-            org.apache.tinkerpop.shaded.jackson.databind.ser.impl,
-            org.apache.tinkerpop.shaded.jackson.databind.ser.std,
-            org.apache.tinkerpop.shaded.jackson.databind.type,
-            org.apache.tinkerpop.shaded.jackson.databind.util,
-            org.apache.tinkerpop.shaded.kryo,
-            org.apache.tinkerpop.shaded.kryo.factories,
-            org.apache.tinkerpop.shaded.kryo.io,
-            org.apache.tinkerpop.shaded.kryo.pool,
-            org.apache.tinkerpop.shaded.kryo.serializers,
-            org.apache.tinkerpop.shaded.kryo.shaded.org.objectweb.asm,
-            org.apache.tinkerpop.shaded.kryo.util,
-            org.apache.tinkerpop.shaded.minlog,
-            org.apache.tinkerpop.shaded.objenesis,
-            org.apache.tinkerpop.shaded.objenesis.instantiator,
-            org.apache.tinkerpop.shaded.objenesis.instantiator.android,
-            org.apache.tinkerpop.shaded.objenesis.instantiator.basic,
-            org.apache.tinkerpop.shaded.objenesis.instantiator.gcj,
-            org.apache.tinkerpop.shaded.objenesis.instantiator.jrockit,
-            org.apache.tinkerpop.shaded.objenesis.instantiator.perc,
-            org.apache.tinkerpop.shaded.objenesis.instantiator.sun,
-            org.apache.tinkerpop.shaded.objenesis.strategy
-        </osgi.export>
+        <osgi.export>${project.groupId}.shaded.*</osgi.export>
     </properties>
     <dependencies>
         <dependency>
@@ -165,6 +107,49 @@ limitations under the License.
                             <shadedArtifactAttached>false</shadedArtifactAttached>
                             <minimizeJar>false</minimizeJar>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+            Unpack the shaded jar so that the maven-bundle-plugin can analyze the packages to import and to export
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-shade-kryo</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+            The maven-bundle-plugin must be called after the maven-shaded-plugin to analyze the relocated packages.
+            It must also be called after the maven-dependency-plugin has unpacked the shaded jar.
+            -->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-shade-kryo</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
