@@ -57,6 +57,7 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.OutputFormatRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
+import org.apache.tinkerpop.gremlin.structure.io.Storage;
 
 import java.io.File;
 import java.io.IOException;
@@ -131,14 +132,18 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
         // create the completable future
         return CompletableFuture.<ComputerResult>supplyAsync(() -> {
             final long startTime = System.currentTimeMillis();
+            final Storage fileSystemStorage = FileSystemStorage.open(hadoopConfiguration);
+            final Storage sparkContextStorage = SparkContextStorage.open(apacheConfiguration);
+            final boolean outputToHDFS = FileOutputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, Object.class));
+            final boolean outputToSpark = PersistedOutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, Object.class));
             SparkMemory memory = null;
             // delete output location
             final String outputLocation = hadoopConfiguration.get(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, null);
-            try {
-                if (null != outputLocation && FileSystem.get(hadoopConfiguration).exists(new Path(outputLocation)))
-                    FileSystem.get(hadoopConfiguration).delete(new Path(outputLocation), true);
-            } catch (final IOException e) {
-                throw new IllegalStateException(e.getMessage(), e);
+            if (null != outputLocation) {
+                if (outputToHDFS && fileSystemStorage.exists(outputLocation))
+                    fileSystemStorage.rm(outputLocation);
+                if (outputToSpark && sparkContextStorage.exists(outputLocation))
+                    sparkContextStorage.rm(outputLocation);
             }
             // wire up a spark context
             final SparkConf sparkConfiguration = new SparkConf();
@@ -149,10 +154,9 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             // execute the vertex program and map reducers and if there is a failure, auto-close the spark context
             try {
                 final JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate(sparkConfiguration));
+                this.loadJars(sparkContext, hadoopConfiguration); // add the project jars to the cluster
                 Spark.create(sparkContext.sc()); // this is the context RDD holder that prevents GC
                 updateLocalConfiguration(sparkContext, sparkConfiguration);
-                // add the project jars to the cluster
-                this.loadJars(sparkContext, hadoopConfiguration);
                 // create a message-passing friendly rdd from the input rdd
                 JavaPairRDD<Object, VertexWritable> graphRDD;
                 try {
@@ -242,14 +246,15 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 }
 
                 // unpersist the graphRDD if it will no longer be used
-                if (!PersistedOutputRDD.class.equals(hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, null)) || this.persist.equals(GraphComputer.Persist.NOTHING)) {
+                if (!outputToSpark || this.persist.equals(GraphComputer.Persist.NOTHING))
                     graphRDD.unpersist();
-                    if (apacheConfiguration.containsKey(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION))
-                        SparkContextStorage.open().rm(apacheConfiguration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
-                }
                 // delete any file system output if persist nothing
-                if (FileOutputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, FileInputFormat.class)) && this.persist.equals(GraphComputer.Persist.NOTHING))
-                    FileSystemStorage.open(hadoopConfiguration).rm(apacheConfiguration.getString(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION));
+                if (null != outputLocation && this.persist.equals(GraphComputer.Persist.NOTHING)) {
+                    if (outputToHDFS)
+                        fileSystemStorage.rm(outputLocation);
+                    if (outputToSpark)
+                        sparkContextStorage.rm(outputLocation);
+                }
                 // update runtime and return the newly computed graph
                 finalMemory.setRuntime(System.currentTimeMillis() - startTime);
                 return new DefaultComputerResult(InputOutputHelper.getOutputGraph(apacheConfiguration, this.resultGraph, this.persist), finalMemory.asImmutable());
