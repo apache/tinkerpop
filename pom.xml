@@ -137,10 +137,8 @@ limitations under the License.
         <commons.configuration.version>1.10</commons.configuration.version>
         <java.tuples.version>1.2</java.tuples.version>
         <javadoc-plugin.version>2.10.1</javadoc-plugin.version>
-        <snakeyaml.version>1.15</snakeyaml.version>
         <hppc.version>0.7.1</hppc.version>
         <jcabi-manifests.version>1.1</jcabi-manifests.version>
-        <jbcrypt.version>0.3m</jbcrypt.version>
         <ops4j.paxexam.version>4.8.0</ops4j.paxexam.version>
         <ops4j.paxurl.version>1.6.0</ops4j.paxurl.version>
         <apache.felix.version>5.4.0</apache.felix.version>

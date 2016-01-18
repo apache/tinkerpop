@@ -72,7 +72,7 @@ limitations under the License.
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
-            <version>${jbcrypt.version}</version>
+            <version>0.3m</version>
         </dependency>
         <dependency>
             <groupId>org.apache.tinkerpop</groupId>

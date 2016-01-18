@@ -41,7 +41,7 @@ limitations under the License.
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>${snakeyaml.version}</version>
+            <version>1.15</version>
             <type>jar</type>
         </dependency>
         <dependency>
