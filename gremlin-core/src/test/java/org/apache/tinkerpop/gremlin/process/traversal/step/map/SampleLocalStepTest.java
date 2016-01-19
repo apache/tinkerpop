@@ -22,9 +22,15 @@ import org.apache.tinkerpop.gremlin.process.traversal.Scope;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
+import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -37,5 +43,20 @@ public class SampleLocalStepTest extends StepTest {
                 __.sample(Scope.local, 5),
                 __.sample(Scope.local, 10)
         );
+    }
+
+    @Test
+    public void shouldSelectSubsetsCorrectly() {
+        final List<Integer> list = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            list.add(i);
+        }
+        for(int i=0; i<100; i++) {
+            List<Integer> result;
+            result = __.inject(list).sample(Scope.local, i).next();
+            assertEquals(i, result.size());
+            assertEquals(i, new HashSet<>(result).size());
+            assertTrue(list.containsAll(result));
+        }
     }
 }

@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Optimized a very inefficient implementation of `SampleLocalStep`.
 * Reduced the complexity and execution time of all `AbstractLambdaTraversal` instances.
 * `DefaultTraversal` has a well defined `hashCode()` and `equals()`.
 * Added serializers to Gryo for `java.time` related classes.
