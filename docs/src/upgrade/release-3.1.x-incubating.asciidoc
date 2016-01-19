@@ -212,6 +212,7 @@ These changes related to "Feature Consistency" open up a number of previously no
 not support meta-properties, so providers should be wary of potential test failure on previously non-executing tests.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-985[TINKERPOP-985],
+link:https://issues.apache.org/jira/browse/TINKERPOP-997[TINKERPOP-997],
 link:https://issues.apache.org/jira/browse/TINKERPOP-998[TINKERPOP-998]
 
 Graph Processor Providers
