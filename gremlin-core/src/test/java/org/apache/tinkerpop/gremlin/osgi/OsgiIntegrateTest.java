@@ -63,11 +63,11 @@ public class OsgiIntegrateTest
                         .groupId("org.yaml")
                         .artifactId("snakeyaml")
                         .version("1.15"),
-                // gremlin-osgi-deps needed until all dependencies are OSGIfied
+                // com.github.gdelafosse:gremlin-osgi-deps needed until all dependencies are OSGIfied
                 mavenBundle()
-                        .groupId(System.getProperty("project.groupId"))
+                        .groupId("com.github.gdelafosse")
                         .artifactId("gremlin-osgi-deps")
-                        .version(System.getProperty("project.version")),
+                        .version("3.1.1-1"),
                 // gremlin-shaded needed by gremlin-core
                 mavenBundle()
                         .groupId(System.getProperty("project.groupId"))
