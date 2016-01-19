@@ -644,6 +644,33 @@ limitations under the License.
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.ops4j.pax.url</groupId>
+                <artifactId>pax-url-aether</artifactId>
+                <version>${ops4j.paxurl.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.ops4j.base</groupId>
+                        <artifactId>ops4j-base-lang</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.plexus</groupId>
+                        <artifactId>plexus-container-default</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.maven.wagon</groupId>
+                        <artifactId>wagon-provider-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.codehaus.plexus</groupId>
+                        <artifactId>plexus-utils</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
                 <groupId>org.ops4j.pax.exam</groupId>
                 <artifactId>pax-exam-link-mvn</artifactId>
                 <version>${ops4j.paxexam.version}</version>
