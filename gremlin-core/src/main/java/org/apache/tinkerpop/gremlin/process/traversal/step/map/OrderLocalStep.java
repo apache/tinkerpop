@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
+import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,7 +44,7 @@ import java.util.stream.Collectors;
 public final class OrderLocalStep<S, M> extends MapStep<S, S> implements ComparatorHolder<M>, TraversalParent {
 
     private List<Comparator<M>> comparators = new ArrayList<>();
-    private Comparator<M> chainedComparator = null;
+    private ChainedComparator<M> chainedComparator = null;
 
     public OrderLocalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -51,6 +52,8 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Compara
 
     @Override
     protected S map(final Traverser.Admin<S> traverser) {
+        if (null == this.chainedComparator)
+            this.chainedComparator = new ChainedComparator<>(this.getComparators());
         final S start = traverser.get();
         if (start instanceof Collection)
             return (S) OrderLocalStep.sortCollection((Collection) start, this.chainedComparator);
@@ -65,12 +68,11 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Compara
         this.comparators.add(comparator);
         if (comparator instanceof TraversalComparator)
             this.integrateChild(((TraversalComparator) comparator).getTraversal());
-        this.chainedComparator = this.comparators.stream().reduce((a, b) -> a.thenComparing(b)).get();
     }
 
     @Override
     public List<Comparator<M>> getComparators() {
-        return Collections.unmodifiableList(this.comparators);
+        return this.comparators.isEmpty() ? Collections.singletonList((Comparator) Order.incr) : Collections.unmodifiableList(this.comparators);
     }
 
     @Override
@@ -106,31 +108,36 @@ public final class OrderLocalStep<S, M> extends MapStep<S, S> implements Compara
     }
 
     @Override
-    public OrderLocalStep<S,M> clone() {
-        final OrderLocalStep<S,M> clone = (OrderLocalStep<S,M>) super.clone();
+    public OrderLocalStep<S, M> clone() {
+        final OrderLocalStep<S, M> clone = (OrderLocalStep<S, M>) super.clone();
         clone.comparators = new ArrayList<>();
-        for(final Comparator<M> comparator : this.comparators) {
+        for (final Comparator<M> comparator : this.comparators) {
             clone.addComparator(comparator instanceof TraversalComparator ? ((TraversalComparator) comparator).clone() : comparator);
         }
+        clone.chainedComparator = null;
         return clone;
     }
 
     /////////////
 
-    private static final <A> List<A> sortCollection(final Collection<A> collection, final Comparator<?> comparator) {
+    private static final <A> List<A> sortCollection(final Collection<A> collection, final ChainedComparator<?> comparator) {
         if (collection instanceof List) {
-            Collections.sort((List) collection, (Comparator) comparator);
+            if (comparator.isShuffle())
+                Collections.shuffle((List) collection);
+            else
+                Collections.sort((List) collection, (Comparator) comparator);
             return (List<A>) collection;
         } else {
-            final List<A> list = new ArrayList<>(collection);
-            Collections.sort(list, (Comparator) comparator);
-            return list;
+            return sortCollection(new ArrayList<>(collection), comparator);
         }
     }
 
-    private static final <K, V> Map<K, V> sortMap(final Map<K, V> map, final Comparator<?> comparator) {
+    private static final <K, V> Map<K, V> sortMap(final Map<K, V> map, final ChainedComparator<?> comparator) {
         final List<Map.Entry<K, V>> entries = new ArrayList<>(map.entrySet());
-        Collections.sort(entries, (Comparator) comparator);
+        if (comparator.isShuffle())
+            Collections.shuffle(entries);
+        else
+            Collections.sort(entries, (Comparator) comparator);
         final LinkedHashMap<K, V> sortedMap = new LinkedHashMap<>();
         entries.forEach(entry -> sortedMap.put(entry.getKey(), entry.getValue()));
         return sortedMap;

@@ -24,7 +24,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.StepTest;
 import org.junit.Ignore;
+import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,5 +53,21 @@ public class OrderLocalStepTest extends StepTest {
                 __.order(Scope.local).by("age", Order.incr).by(outE().count(), Order.incr),
                 __.order(Scope.local).by(outE().count(), Order.incr).by("age", Order.incr)
         );
+    }
+
+    @Test
+    public void shouldNotThrowContractException() {
+        for (int x = 0; x < 1000; x++) {
+            final List<Integer> list = new ArrayList<>();
+            for (int i = 0; i < 1000; i++) {
+                list.add(i);
+            }
+            __.inject(list).order(Scope.local).by(Order.shuffle).iterate();
+            __.inject(list).order(Scope.local).by().by(Order.shuffle).iterate();
+            __.inject(list).order(Scope.local).by(Order.shuffle).by().iterate();
+            __.inject(list).order(Scope.local).by(__.identity(), Order.shuffle).iterate();
+            __.inject(list).order(Scope.local).by().by(__.identity(), Order.shuffle).iterate();
+            __.inject(list).order(Scope.local).by(__.identity(), Order.shuffle).by().iterate();
+        }
     }
 }
