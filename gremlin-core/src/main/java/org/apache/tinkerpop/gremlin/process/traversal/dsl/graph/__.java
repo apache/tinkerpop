@@ -628,6 +628,13 @@ public class __ {
     }
 
     /**
+     * @see GraphTraversal#has(T, Traversal)
+     */
+    public static <A> GraphTraversal<A, A> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
+        return __.<A>start().has(accessor, propertyTraversal);
+    }
+
+    /**
      * @see GraphTraversal#has(String, Traversal)
      */
     public static <A> GraphTraversal<A, A> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {

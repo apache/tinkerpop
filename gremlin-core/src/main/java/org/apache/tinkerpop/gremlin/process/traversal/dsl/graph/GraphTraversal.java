@@ -812,7 +812,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final String propertyKey, final Object value) {
-        return this.has(propertyKey, value instanceof P ? (P) value : P.eq(value));
+        if (value instanceof P)
+            return this.has(propertyKey, (P) value);
+        else if (value instanceof Traversal)
+            return this.has(propertyKey, (Traversal) value);
+        else
+            return this.has(propertyKey, P.eq(value));
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
@@ -825,6 +830,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> has(final String label, final String propertyKey, final Object value) {
         return this.has(T.label, label).has(propertyKey, value);
+    }
+
+    public default GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
+        return this.has(accessor.getAccessor(), propertyTraversal);
     }
 
     public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
