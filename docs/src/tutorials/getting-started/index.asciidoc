@@ -285,6 +285,8 @@ statement above with:
 g.V().has('name','marko').out('created')
 ----
 
+image:modern-edge-1-to-3-4-gremlin.png[width=325]
+
 Finally, now that Gremlin has reached the "software that Marko created", he has access to the properties of the
 "software" vertex and you can therefore ask Gremlin to extract the value of the "name" property as follows:
 
