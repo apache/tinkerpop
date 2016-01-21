@@ -20,17 +20,16 @@ package org.apache.tinkerpop.gremlin.process.traversal.step.map;
 
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.ComparatorHolder;
 import org.apache.tinkerpop.gremlin.process.traversal.step.TraversalParent;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.CollectingBarrierStep;
+import org.apache.tinkerpop.gremlin.process.traversal.step.util.ComparatorTraverser;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.TraversalComparator;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.TraverserRequirement;
 import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSet;
 import org.apache.tinkerpop.gremlin.structure.util.StringFactory;
 import org.apache.tinkerpop.gremlin.util.function.ChainedComparator;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,6 +43,7 @@ import java.util.stream.Collectors;
 public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implements ComparatorHolder<S>, TraversalParent {
 
     private List<Comparator<S>> comparators = new ArrayList<>();
+    private ChainedComparator chainedComparator = null;
 
     public OrderGlobalStep(final Traversal.Admin traversal) {
         super(traversal);
@@ -51,7 +51,12 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
 
     @Override
     public void barrierConsumer(final TraverserSet<S> traverserSet) {
-        traverserSet.sort(this.comparators.isEmpty() ? new ComparatorTraverser(Order.incr) : new ChainedComparator(ComparatorTraverser.convertComparator((List) this.comparators)));
+        if (null == this.chainedComparator)
+            this.chainedComparator = new ChainedComparator<>(ComparatorTraverser.convertComparator((List) this.getComparators()));
+        if (this.chainedComparator.isShuffle())
+            traverserSet.shuffle();
+        else
+            traverserSet.sort(this.chainedComparator);
     }
 
     @Override
@@ -105,26 +110,11 @@ public final class OrderGlobalStep<S> extends CollectingBarrierStep<S> implement
         for (final Comparator<S> comparator : this.comparators) {
             clone.addComparator(comparator instanceof TraversalComparator ? ((TraversalComparator) comparator).clone() : comparator);
         }
+        clone.chainedComparator = null;
         return clone;
     }
 
     /////
 
-    private static class ComparatorTraverser<S> implements Comparator<Traverser<S>>, Serializable {
 
-        private final Comparator<S> comparator;
-
-        public ComparatorTraverser(final Comparator<S> comparator) {
-            this.comparator = comparator;
-        }
-
-        @Override
-        public int compare(final Traverser<S> traverserA, final Traverser<S> traverserB) {
-            return this.comparator.compare(traverserA.get(), traverserB.get());
-        }
-
-        public static <S> List<ComparatorTraverser<S>> convertComparator(final List<Comparator<S>> comparators) {
-            return comparators.stream().map(comparator -> new ComparatorTraverser<>(comparator)).collect(Collectors.toList());
-        }
-    }
 }
