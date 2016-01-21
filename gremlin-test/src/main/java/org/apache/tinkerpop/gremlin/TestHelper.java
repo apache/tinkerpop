@@ -20,7 +20,9 @@ package org.apache.tinkerpop.gremlin;
 
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.Comparators;
@@ -33,6 +35,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,7 +52,8 @@ public final class TestHelper {
     private static final String SEP = File.separator;
     public static final String TEST_DATA_RELATIVE_DIR = "test-case-data";
 
-    private TestHelper() {}
+    private TestHelper() {
+    }
 
     /**
      * Creates a {@link File} reference that points to a directory relative to the supplied class in the
@@ -250,5 +254,18 @@ public final class TestHelper {
             validatePropertyEquality((Property) original, (Property) other);
         else
             throw new IllegalArgumentException("The provided object must be a graph object: " + original.getClass().getCanonicalName());
+    }
+
+    public static void createRandomGraph(final Graph graph, final int numberOfVertices, final int maxNumberOfEdgesPerVertex) {
+        final Random random = new Random();
+        for (int i = 0; i < numberOfVertices; i++) {
+            graph.addVertex(T.id, i);
+        }
+        graph.vertices().forEachRemaining(vertex -> {
+            for (int i = 0; i < random.nextInt(maxNumberOfEdgesPerVertex); i++) {
+                final Vertex other = graph.vertices(random.nextInt(numberOfVertices)).next();
+                vertex.addEdge("link", other);
+            }
+        });
     }
 }

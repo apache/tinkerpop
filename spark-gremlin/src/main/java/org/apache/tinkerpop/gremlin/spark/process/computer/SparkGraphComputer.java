@@ -55,6 +55,7 @@ import org.apache.tinkerpop.gremlin.spark.structure.io.InputOutputHelper;
 import org.apache.tinkerpop.gremlin.spark.structure.io.InputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.OutputFormatRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.OutputRDD;
+import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedInputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.PersistedOutputRDD;
 import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorage;
 import org.apache.tinkerpop.gremlin.structure.io.Storage;
@@ -134,6 +135,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
             final long startTime = System.currentTimeMillis();
             final Storage fileSystemStorage = FileSystemStorage.open(hadoopConfiguration);
             final Storage sparkContextStorage = SparkContextStorage.open(apacheConfiguration);
+            // final boolean inputFromHDFS = FileInputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, Object.class));
+            final boolean inputFromSpark = PersistedInputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, Object.class));
             final boolean outputToHDFS = FileOutputFormat.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, Object.class));
             final boolean outputToSpark = PersistedOutputRDD.class.isAssignableFrom(hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_OUTPUT_RDD, Object.class));
             SparkMemory memory = null;
@@ -166,7 +169,8 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     if (this.workersSet && graphRDD.partitions().size() > this.workers) // ensures that the graphRDD does not have more partitions than workers
                         graphRDD = graphRDD.coalesce(this.workers);
                     // persist the vertex program loaded graph as specified by configuration or else use default cache() which is MEMORY_ONLY
-                    graphRDD = graphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
+                    if (!inputFromSpark)
+                        graphRDD = graphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
                 } catch (final InstantiationException | IllegalAccessException e) {
                     throw new IllegalStateException(e.getMessage(), e);
                 }
@@ -277,7 +281,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                 for (final String path : paths) {
                     final File file = new File(path);
                     if (file.exists())
-                        Stream.of(file.listFiles()).filter(f -> f.getName().contains(Constants.DOT_JAR)).forEach(f -> sparkContext.addJar(f.getAbsolutePath()));
+                        Stream.of(file.listFiles()).filter(f -> f.getName().endsWith(Constants.DOT_JAR)).forEach(f -> sparkContext.addJar(f.getAbsolutePath()));
                     else
                         this.logger.warn(path + " does not reference a valid directory -- proceeding regardless");
                 }

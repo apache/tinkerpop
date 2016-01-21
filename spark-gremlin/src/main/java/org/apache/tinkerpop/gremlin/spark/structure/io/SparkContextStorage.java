@@ -90,6 +90,7 @@ public final class SparkContextStorage implements Storage {
             return false;
         for (final String rdd : rdds) {
             Spark.getRDD(rdd).toJavaRDD().filter(a -> true).setName(rdd.equals(sourceLocation) ? targetLocation : rdd.replace(sourceLocation, targetLocation)).cache().count();
+            // TODO: this should use the original storage level
         }
         return true;
     }
