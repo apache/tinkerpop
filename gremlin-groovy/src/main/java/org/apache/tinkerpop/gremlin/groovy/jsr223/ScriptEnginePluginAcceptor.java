@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -46,8 +47,11 @@ public class ScriptEnginePluginAcceptor implements PluginAcceptor {
      */
     @Override
     public void addBinding(final String key, final Object val) {
-        // added to the engine scope because the plugin will be applied to each scriptengine independently anyway
-        scriptEngine.getContext().setAttribute(key, val, ScriptContext.ENGINE_SCOPE);
+        // The binding was originally added to the engine scope but that proved to be "bad" as it mixed with other
+        // bindings in that space.
+        if (null == scriptEngine.getContext().getBindings(ScriptContext.GLOBAL_SCOPE))
+            scriptEngine.getContext().setBindings(new SimpleBindings(), ScriptContext.GLOBAL_SCOPE);
+        scriptEngine.getContext().setAttribute(key, val, ScriptContext.GLOBAL_SCOPE);
     }
 
     /**
@@ -56,7 +60,7 @@ public class ScriptEnginePluginAcceptor implements PluginAcceptor {
     @Override
     public Map<String, Object> getBindings() {
         // as these "global" bindings were added to engine scope they should be pulled from the same place
-        return scriptEngine.getBindings(ScriptContext.ENGINE_SCOPE);
+        return scriptEngine.getBindings(ScriptContext.GLOBAL_SCOPE);
     }
 
     /**

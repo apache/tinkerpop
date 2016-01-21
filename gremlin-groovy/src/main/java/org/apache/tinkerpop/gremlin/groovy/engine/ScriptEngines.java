@@ -35,6 +35,7 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -403,9 +404,11 @@ public class ScriptEngines implements AutoCloseable {
      */
     private static Bindings mergeBindings(final Bindings bindings, final ScriptEngine engine) {
         // plugins place "globals" here - see ScriptEnginePluginAcceptor
-        final Bindings all = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+        final Bindings global = engine.getBindings(ScriptContext.GLOBAL_SCOPE);
+        if (null == global) return bindings;
 
         // merge the globals with the incoming bindings where local bindings "win"
+        final Bindings all = new SimpleBindings(global);
         all.putAll(bindings);
         return all;
     }

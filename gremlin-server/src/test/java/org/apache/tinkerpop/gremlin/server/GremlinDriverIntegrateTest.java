@@ -37,6 +37,7 @@ import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerFactory;
 import org.apache.tinkerpop.gremlin.util.TimeUtil;
 import groovy.json.JsonBuilder;
 import org.apache.tinkerpop.gremlin.util.function.FunctionUtils;
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -829,6 +830,50 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         assertEquals(101, results12.all().get().get(0).getInt());
         assertEquals(4, results22.all().get().get(0).getInt());
         assertEquals(30, results32.all().get().get(0).getInt());
+
+        cluster.close();
+    }
+
+    @Test
+    public void shouldNotHaveKnowledgeOfBindingsBetweenRequestsWhenSessionless() throws Exception {
+        final Cluster cluster = Cluster.build().create();
+        final Client client1 = cluster.connect();
+        final Client client2 = cluster.connect();
+        final Client client3 = cluster.connect();
+
+        final ResultSet results11 = client1.submit("x = 1");
+        final ResultSet results21 = client2.submit("x = 2");
+        final ResultSet results31 = client3.submit("x = 3");
+        assertEquals(1, results11.all().get().get(0).getInt());
+        assertEquals(2, results21.all().get().get(0).getInt());
+        assertEquals(3, results31.all().get().get(0).getInt());
+
+        try {
+            client1.submit("x").all().get();
+            fail("The variable 'x' should not be present on the new request.");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, IsInstanceOf.instanceOf(ResponseException.class));
+            assertThat(root.getMessage(), containsString("No such property: x for class"));
+        }
+
+        try {
+            client2.submit("x").all().get();
+            fail("The variable 'x' should not be present on the new request.");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, IsInstanceOf.instanceOf(ResponseException.class));
+            assertThat(root.getMessage(), containsString("No such property: x for class"));
+        }
+
+        try {
+            client3.submit("x").all().get();
+            fail("The variable 'x' should not be present on the new request.");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, IsInstanceOf.instanceOf(ResponseException.class));
+            assertThat(root.getMessage(), containsString("No such property: x for class"));
+        }
 
         cluster.close();
     }

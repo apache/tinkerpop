@@ -18,6 +18,8 @@
  */
 package org.apache.tinkerpop.gremlin.groovy.engine;
 
+import groovy.lang.MissingPropertyException;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.tinkerpop.gremlin.groovy.plugin.GremlinPlugin;
 import org.apache.tinkerpop.gremlin.groovy.plugin.IllegalEnvironmentException;
 import org.apache.tinkerpop.gremlin.groovy.plugin.PluginAcceptor;
@@ -34,13 +36,36 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
  */
 public class ScriptEnginesTest {
+    @Test
+    public void shouldNotPreserveInstantiatedVariablesBetweenEvals() throws Exception {
+        final ScriptEngines engines = new ScriptEngines(se -> {});
+        engines.reload("gremlin-groovy", Collections.<String>emptySet(),
+                Collections.<String>emptySet(), Collections.emptyMap());
+
+        final Bindings localBindingsFirstRequest = new SimpleBindings();
+        localBindingsFirstRequest.put("x", "there");
+        assertEquals("herethere", engines.eval("z = 'here' + x", localBindingsFirstRequest, "gremlin-groovy"));
+
+        try {
+            final Bindings localBindingsSecondRequest = new SimpleBindings();
+            engines.eval("z", localBindingsSecondRequest, "gremlin-groovy");
+            fail("Should not have knowledge of z");
+        } catch (Exception ex) {
+            final Throwable root = ExceptionUtils.getRootCause(ex);
+            assertThat(root, instanceOf(MissingPropertyException.class));
+        }
+    }
+
     @Test
     public void shouldMergeBindingsFromLocalAndGlobal() throws Exception {
         final ScriptEngines engines = new ScriptEngines(se -> {});
