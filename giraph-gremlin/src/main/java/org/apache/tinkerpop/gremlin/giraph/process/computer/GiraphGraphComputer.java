@@ -57,7 +57,6 @@ import org.apache.tinkerpop.gremlin.structure.io.Storage;
 import org.apache.tinkerpop.gremlin.util.Gremlin;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -271,14 +270,16 @@ public final class GiraphGraphComputer extends AbstractHadoopGraphComputer imple
             if (GiraphGraphComputer.this.giraphConfiguration.getLocalTestMode())
                 return Runtime.getRuntime().availableProcessors();
             else {
-                try {
+                return Integer.MAX_VALUE;
+                /*try {
                     final Cluster cluster = new Cluster(GiraphGraphComputer.this.giraphConfiguration);
                     int maxWorkers = (cluster.getClusterStatus().getMapSlotCapacity() - 1) * 16; // max 16 threads per machine hardcoded :|
                     cluster.close();
                     return maxWorkers;
+
                 } catch (final IOException | InterruptedException e) {
                     throw new IllegalStateException(e.getMessage(), e);
-                }
+                }*/
             }
         }
     }
