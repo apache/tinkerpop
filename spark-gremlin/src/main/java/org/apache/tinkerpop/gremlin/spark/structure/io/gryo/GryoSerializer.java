@@ -31,6 +31,7 @@ import org.apache.spark.scheduler.CompressedMapStatus;
 import org.apache.spark.serializer.Serializer;
 import org.apache.spark.serializer.SerializerInstance;
 import org.apache.spark.util.SerializableConfiguration;
+import org.apache.spark.util.collection.CompactBuffer;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.ObjectWritable;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.spark.process.computer.payload.MessagePayload;
@@ -84,6 +85,8 @@ public final class GryoSerializer extends Serializer {
                                 .addCustom(Tuple2[].class, new JavaSerializer())
                                 .addCustom(Tuple3.class, new JavaSerializer())
                                 .addCustom(Tuple3[].class, new JavaSerializer())
+                                .addCustom(CompactBuffer.class, new JavaSerializer())
+                                .addCustom(CompactBuffer[].class, new JavaSerializer())
                                 .addCustom(CompressedMapStatus.class, new JavaSerializer())
                                 .addCustom(HttpBroadcast.class, new JavaSerializer())
                                 .addCustom(PythonBroadcast.class, new JavaSerializer())
