@@ -264,6 +264,10 @@ limitations under the License.
                     <excludeSubProjects>false</excludeSubProjects>
                     <excludes>
                         <exclude>.travis.yml</exclude>
+                        <exclude>appveyor.yml</exclude>
+                        <exclude>**/.classpath</exclude>
+                        <exclude>**/.project</exclude>
+                        <exclude>**/.settings/**</exclude>
                         <exclude>.repository/**</exclude>
                         <exclude>docs/static/**</exclude>
                         <exclude>**/target/**</exclude>
