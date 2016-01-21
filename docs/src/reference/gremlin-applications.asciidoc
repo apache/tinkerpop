@@ -1214,25 +1214,8 @@ necessary for a given use case.
 Considering Transactions
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Gremlin Server does automated transaction handling for "sessionless" requests (i.e. no state between requests). It
-will automatically commit or rollback transactions depending on the success or failure of the script. When submitting
-requests it is important to recognize that transaction management procedures may differ slightly depending on what is
-returned from the script.
-
-* If the script returns anything other than a `GraphTraversal`, a commit will be called just before results are
-iterated back to the client.
-* If the result is a `GraphTraversal` that has no `Mutating` steps, a commit will be called just before results are
-iterated back to the client.
-* If the result is a `GraphTraversal` that has one or more `Mutating` steps (i.e. one that modifies the `Graph`),
-the `GraphTraversal` will be iterated, it's results pushed to a `List`, commit called, and the result in the `List`
-iterated back to the client.
-
-The last bullet point above begs additional explanation.  Assume that the script `g.addV('name','stephen')` was
-submitted to the server.  That script returns a `GraphTraversal` and has a `Mutating` step. The traversal needs to
-be iterated in order for the mutations to take place or else the commit will have no effect. That's why Gremlin
-Server attempts to detect these types of traversals and treat them specially. The unfortunate downside is that the
-result of this script must be realized in memory which means that they aren't being streamed back to the client.
-For small results this likely should not present an issue.
+Gremlin Server performs automated transaction handling for "sessionless" requests (i.e. no state between requests). It
+will automatically commit or rollback transactions depending on the success or failure of the request.
 
 Another aspect of Transaction Management that should be considered is the usage of the `strictTransactionManagement`
 setting.  It is `false` by default, but when set to `true`, it forces the user to pass `aliases` for all requests.
@@ -1240,11 +1223,6 @@ The aliases are then used to determine which graphs will have their transactions
 Gremlin Server in this configuration should be more efficient when there are multiple graphs being hosted as
 Gremlin Server will only close transactions on the graphs specified by the `aliases`. Keeping this setting `false`,
 will simply have Gremlin Server close transactions on all graphs for every request.
-
-NOTE: It is possible to bypass the transaction management system around `GraphTraversal` by using a lambda. Gremlin
-Server is only looking for `Mutating` steps, so a script like: `g.V().sideEffect{it.get().property('color','green')}`
-would not be iterated prior to commit and the mutations not realized.  If lambdas must be used then it is important
-to self-iterate by doing something like: `g.V().sideEffect{it.get().property('color','green')}.toList()`.
 
 Developing a Driver
 ~~~~~~~~~~~~~~~~~~~

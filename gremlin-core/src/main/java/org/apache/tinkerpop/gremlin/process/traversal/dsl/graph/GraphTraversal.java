@@ -137,6 +137,7 @@ import org.apache.tinkerpop.gremlin.structure.Column;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.PropertyType;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -188,7 +189,6 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
      * Map a traverser referencing an object of type <code>E</code> to an object of type <code>E2</code>.
      *
      * @param function the lambda expression that does the functional mapping
-     * @param <E2>the  mapping end type
      * @return the traversal with an appended {@link LambdaMapStep}.
      */
     public default <E2> GraphTraversal<S, E2> map(final Function<Traverser<E>, E2> function) {
@@ -812,7 +812,12 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default GraphTraversal<S, E> has(final String propertyKey, final Object value) {
-        return this.has(propertyKey, value instanceof P ? (P) value : P.eq(value));
+        if (value instanceof P)
+            return this.has(propertyKey, (P) value);
+        else if (value instanceof Traversal)
+            return this.has(propertyKey, (Traversal) value);
+        else
+            return this.has(propertyKey, P.eq(value));
     }
 
     public default GraphTraversal<S, E> has(final T accessor, final Object value) {
@@ -825,6 +830,10 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     public default GraphTraversal<S, E> has(final String label, final String propertyKey, final Object value) {
         return this.has(T.label, label).has(propertyKey, value);
+    }
+
+    public default GraphTraversal<S, E> has(final T accessor, final Traversal<?, ?> propertyTraversal) {
+        return this.has(accessor.getAccessor(), propertyTraversal);
     }
 
     public default GraphTraversal<S, E> has(final String propertyKey, final Traversal<?, ?> propertyTraversal) {
@@ -1023,17 +1032,17 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     /**
-     * Sets a {@link Property} value and related meta properties if supplied, if supported by the {@link org.apache.tinkerpop.gremlin.structure.Graph}
+     * Sets a {@link Property} value and related meta properties if supplied, if supported by the {@link Graph}
      * and if the {@link Element} is a {@link VertexProperty}.  This method is the long-hand version of
-     * {@link #property(Object, Object, Object...)} with the difference that the {@link VertexProperty.Cardinality}
-     * can be supplied.
+     * {@link #property(Object, Object, Object...)} with the difference that the
+     * {@link org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality} can be supplied.
      * <p/>
      * Generally speaking, this method will append an {@link AddPropertyStep} to the {@link Traversal} but when
      * possible, this method will attempt to fold key/value pairs into an {@link AddVertexStep}, {@link AddEdgeStep} or
      * {@link AddVertexStartStep}.  This potential optimization can only happen if cardinality is not supplied
      * and when meta-properties are not included.
      *
-     * @param cardinality the specified cardinality of the property where {@code null} will allow the {@link org.apache.tinkerpop.gremlin.structure.Graph}
+     * @param cardinality the specified cardinality of the property where {@code null} will allow the {@link Graph}
      *                    to use its default settings
      * @param key         the key for the property
      * @param value       the value for the property
@@ -1054,12 +1063,13 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
 
     /**
      * Sets the key and value of a {@link Property}. If the {@link Element} is a {@link VertexProperty} and the
-     * {@link org.apache.tinkerpop.gremlin.structure.Graph} supports it, meta properties can be set.  Use of this method assumes that the
-     * {@link VertexProperty.Cardinality} is defaulted to {@code null} which means that the default cardinality
-     * for the {@link org.apache.tinkerpop.gremlin.structure.Graph} will be used.
+     * {@link Graph} supports it, meta properties can be set.  Use of this method assumes that the
+     * {@link org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality} is defaulted to {@code null} which
+     * means that the default cardinality for the {@link Graph} will be used.
      * <p/>
-     * This method is effectively calls {@link #property(VertexProperty.Cardinality, Object, Object, Object...)} as
-     * {@code property(null, key, value, keyValues}.
+     * This method is effectively calls
+     * {@link #property(org.apache.tinkerpop.gremlin.structure.VertexProperty.Cardinality, Object, Object, Object...)}
+     * as {@code property(null, key, value, keyValues}.
      *
      * @param key       the key for the property
      * @param value     the value for the property
@@ -1176,7 +1186,9 @@ public interface GraphTraversal<S, E> extends Traversal<S, E> {
     }
 
     public default <V> GraphTraversal<S, E> by(final Function<V, Object> functionProjection) {
-        return this.by(__.map(new FunctionTraverser<>(functionProjection)));
+        return functionProjection instanceof T ?
+                this.by((T) functionProjection) :
+                this.by(__.map(new FunctionTraverser<>(functionProjection)));
     }
 
     public default GraphTraversal<S, E> by(final T tokenProjection) {

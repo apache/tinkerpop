@@ -555,7 +555,7 @@ public class FeatureSupportTest {
         @FeatureRequirement(featureClass = Graph.Features.VertexFeatures.class, feature = Graph.Features.VertexFeatures.FEATURE_ADD_VERTICES)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = Graph.Features.EdgeFeatures.FEATURE_ADD_EDGES)
         @FeatureRequirement(featureClass = Graph.Features.EdgeFeatures.class, feature = EdgeFeatures.FEATURE_ADD_PROPERTY, supported = false)
-        public void shouldSupportAddVertexPropertyIfItCanBeAdded() throws Exception {
+        public void shouldSupportAddEdgePropertyIfItCanBeAdded() throws Exception {
             try {
                 final Vertex v = graph.addVertex();
                 final Edge e = v.addEdge("test", v);

@@ -125,7 +125,7 @@ limitations under the License.
         <url>https://git-wip-us.apache.org/repos/asf?p=incubator-tinkerpop.git</url>
     </scm>
     <properties>
-        <groovy.version>2.4.1</groovy.version>
+        <groovy.version>2.4.5</groovy.version>
         <junit.version>4.12</junit.version>
         <metrics.version>3.0.2</metrics.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -211,6 +211,7 @@ limitations under the License.
                                 <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
                             </dependencySourceIncludes>
                             <overview>${basedir}/docs/javadoc/overview.html</overview>
+                            <quiet>true</quiet>
                         </configuration>
                     </execution>
                     <execution>
@@ -435,6 +436,7 @@ limitations under the License.
                                 <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
                             </dependencySourceIncludes>
                             <overview>${basedir}/docs/javadoc/overview.html</overview>
+                            <quiet>true</quiet>
                         </configuration>
                         <reports>
                             <report>javadoc</report>
@@ -449,6 +451,7 @@ limitations under the License.
                                 <dependencySourceInclude>org.apache.tinkerpop:*</dependencySourceInclude>
                             </dependencySourceIncludes>
                             <overview>${basedir}/docs/javadoc/overview.html</overview>
+                            <quiet>true</quiet>
                         </configuration>
                         <reports>
                             <report>aggregate</report>
@@ -807,7 +810,7 @@ limitations under the License.
                                     <overview>${basedir}/docs/javadoc/overview.html</overview>
                                     <quiet>true</quiet>
                                     <sourcepath>
-                                        hadoop-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:tinkergraph-gremlin/src/main/java
+                                        giraph-gremlin/src/main/java:gremlin-core/src/main/java:gremlin-driver/src/main/java:gremlin-groovy/src/main/java:gremlin-groovy-test/src/main/java:gremlin-server/src/main/java:gremlin-test/src/main/java:hadoop-gremlin/src/main/java:neo4j-gremlin/src/main/java:spark-gremlin/src/main/java:tinkergraph-gremlin/src/main/java
                                     </sourcepath>
                                 </configuration>
                             </execution>

@@ -32,21 +32,36 @@ Please see the link:https://github.com/apache/incubator-tinkerpop/blob/3.1.1-inc
 Upgrading for Users
 ~~~~~~~~~~~~~~~~~~~
 
+Storage I/O
+^^^^^^^^^^^
+
+The `gremlin-core` io-package now has a `Storage` interface. The methods that were available via `hdfs`
+(e.g. `rm()`, `ls()`, `head()`, etc.) are now part of `Storage`. Both HDFS and Spark implement `Storage` via
+`FileSystemStorage` and `SparkContextStorage`, respectively.  `SparkContextStorage` adds support for interacting with
+persisted RDDs in the Spark cache.
+
+This update changed a few of the file handling methods. As it stands, these changes only effect manual Gremlin Console
+usage as HDFS support was previously provided via Groovy meta-programing. Thus, these are not "code-based" breaking changes.
+
+* `hdfs.rmr()` no longer exists. `hdfs.rm()` is now recursive. Simply change all references to `rmr()` to `rm()` for identical behavior.
+* `hdfs.head(location,lines,writableClass)` no longer exists.
+** For graph locations, use `hdfs.head(location,writableClass,lines)`.
+** For memory locations, use `hdfs.head(location,memoryKey,writableClass,lines)`.
+* `hdfs.head(...,ObjectWritable)` no longer exists. Use `SequenceFileInputFormat` as an input format is the parsing class.
+
+Given that HDFS (and now Spark) interactions are possible via `Storage` and no longer via Groovy meta-programming,
+developers can use these `Storage` implementations in their Java code. In fact, `Storage` has greatly simplified
+complex file/RDD operations in both `GiraphGraphComputer` and `SparkGraphComputer`.
+
+Finally, note that the following low-level/internal classes have been removed: `HadoopLoader` and `HDFSTools`.
+
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-1033[TINKERPOP-1033],
+link:https://issues.apache.org/jira/browse/TINKERPOP-1023[TINKERPOP-1023]
+
 Gremlin Server Transaction Management
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There were some changes to how Gremlin Server manages transactions on sessionless requests to make the process more
-consistent across different graph databases. Commits now occur after evaluation and prior to result iteration, which
-ensures an earlier failure (i.e. prior to results getting to the client indicating a false success) and better
-handling of a result that is a `GraphTraversal` that mutates the `Graph`.
-
-This change likely does not require any changes to the code of users, but does introduce some items to be aware of
-when issuing scripts. Most specifically, using lambdas in a request that returns a `GraphTraversal`, designed to modify
-the `Graph`, will fail to do so unless it is self-iterated.  In other words, instead of sending:
-`g.V().sideEffect{it.get().property('color','green')}` one would send:
-`g.V().sideEffect{it.get().property('color','green')}.toList()`
-
-In addition, Gremlin Server now has a new setting called `strictTransactionManagement`, which forces the user to pass
+Gremlin Server now has a setting called `strictTransactionManagement`, which forces the user to pass
 `aliases` for all requests. The aliases are then used to determine which graphs will have their transactions closed
 for that request. The alternative is to continue with default operations where the transactions of all configured
 graphs will be closed. It is likely that `strictTransactionManagement` (which is `false` by default so as to be
@@ -54,7 +69,6 @@ backward compatible with previous versions) will become the future standard mode
 it provides a more efficient method for transaction management.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-930[TINKERPOP-930],
-link:https://issues.apache.org/jira/browse/TINKERPOP-1035[TINKERPOP-1035],
 link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#considering-transactions[Reference Documentation - Considering Transactions]
 
 Deprecated credentialsDbLocation
@@ -76,8 +90,8 @@ release.
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-981[TINKERPOP-981],
 link:http://tinkerpop.apache.org/docs/3.1.1-incubating/#_security[Reference Documentation - Gremlin Server Security]
 
-TinkerGraph Supports Any IO
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TinkerGraph Supports Any I/O
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 TinkerGraph's 'gremlin.tinkergraph.graphLocation' configuration setting can now take a fully qualified class name
 of a `Io.Builder` implementation, which means that custom IO implementations can be used to read and write
@@ -191,6 +205,22 @@ These changes related to "Feature Consistency" open up a number of previously no
 not support meta-properties, so providers should be wary of potential test failure on previously non-executing tests.
 
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-985[TINKERPOP-985]
+
+Graph Processor Providers
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+InputRDD and OutputRDD Updates
+++++++++++++++++++++++++++++++
+
+There are two new methods on the Spark-Gremlin RDD interfaces.
+
+* `InputRDD.readMemoryRDD()`: get a `ComputerResult.memory()` from an RDD.
+* `OutputRDD.writeMemoryRDD()`: write a `ComputerResult.memory()` to an RDD.
+
+Note that both these methods have default implementations which simply work with empty RDDs. Most providers will never
+need to implement these methods as they are specific to file/RDD management for `GraphComputer`. The four classes that
+implement these methods are `PersistedOutputRDD`, `PersistedInputRDD`, `InputFormatRDD`, and `OutputFormatRDD`. For the
+interested provider, study the implementations therein to see the purpose of these two new methods.
 
 TinkerPop 3.1.0
 ---------------

@@ -58,6 +58,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -462,11 +463,18 @@ public class GremlinDriverIntegrateTest extends AbstractGremlinServerIntegration
         final Cluster cluster = Cluster.open();
         final Client client = cluster.connect();
 
-        final ResultSet results = client.submit("'should-not-ever-get-back-coz-we-killed-the-server'");
+        final ResultSet results = client.submit("Thread.sleep(10000); 'should-not-ever-get-back-coz-we-killed-the-server'");
 
         stopServer();
 
-        assertEquals(0, results.getAvailableItemCount());
+        try {
+            results.getAvailableItemCount();
+            fail("Server was stopped before the request could execute");
+        } catch (Exception ex) {
+            final Throwable cause = ex.getCause();
+            assertThat(cause, instanceOf(ResponseException.class));
+            assertThat(cause.getMessage(), containsString("rejected from java.util.concurrent.ThreadPoolExecutor"));
+        }
 
         cluster.close();
     }

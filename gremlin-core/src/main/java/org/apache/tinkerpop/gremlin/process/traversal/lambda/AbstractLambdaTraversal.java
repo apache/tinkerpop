@@ -44,9 +44,7 @@ import java.util.Set;
  */
 public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S, E> {
 
-    private TraversalStrategies traversalStrategies = EmptyTraversalStrategies.instance();
-    private TraversalParent traversalParent = (TraversalParent) EmptyStep.instance();
-    private transient Graph graph = null;
+    private static final Set<TraverserRequirement> REQUIREMENTS = Collections.singleton(TraverserRequirement.OBJECT);
 
     public List<Step> getSteps() {
         return Collections.emptyList();
@@ -69,7 +67,7 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public void applyStrategies() throws IllegalStateException {
-        this.traversalStrategies.applyStrategies(this);
+
     }
 
     @Override
@@ -99,22 +97,22 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public void setStrategies(final TraversalStrategies strategies) {
-        this.traversalStrategies = strategies;
+
     }
 
     @Override
     public TraversalStrategies getStrategies() {
-        return this.traversalStrategies;
+        return EmptyTraversalStrategies.instance();
     }
 
     @Override
     public void setParent(final TraversalParent step) {
-        this.traversalParent = step;
+
     }
 
     @Override
     public TraversalParent getParent() {
-        return this.traversalParent;
+        return EmptyStep.instance();
     }
 
     @Override
@@ -152,12 +150,27 @@ public abstract class AbstractLambdaTraversal<S, E> implements Traversal.Admin<S
 
     @Override
     public Optional<Graph> getGraph() {
-        return Optional.ofNullable(this.graph);
+        return Optional.empty();
     }
 
     @Override
     public void setGraph(final Graph graph) {
-        this.graph = graph;
+
+    }
+
+    @Override
+    public Set<TraverserRequirement> getTraverserRequirements() {
+        return REQUIREMENTS;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object object) {
+        return this.getClass().equals(object.getClass()) && this.hashCode() == object.hashCode();
     }
 
 }

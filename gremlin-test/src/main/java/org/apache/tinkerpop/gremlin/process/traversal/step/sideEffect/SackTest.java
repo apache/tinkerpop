@@ -24,17 +24,19 @@ import org.apache.tinkerpop.gremlin.process.GremlinProcessRunner;
 import org.apache.tinkerpop.gremlin.process.traversal.Operator;
 import org.apache.tinkerpop.gremlin.process.traversal.SackFunctions;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.LoadGraphWith.GraphData.MODERN;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.out;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.outE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -63,6 +65,8 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
     public abstract Traversal<Vertex, Double> get_g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack(final Object v1Id);
 
     public abstract Traversal<Vertex, Integer> get_g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack();
+
+    public abstract Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack();
 
     @Test
     @LoadGraphWith(MODERN)
@@ -139,6 +143,19 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
         checkResults(Arrays.asList(1, 1, 1, 3), traversal); // josh, vadas, ripple, lop
     }
 
+    @Test
+    @LoadGraphWith(MODERN)
+    public void g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack() {
+        final Traversal<Vertex, BigDecimal> traversal = get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack();
+        printTraversalForm(traversal);
+        final BigDecimal half = BigDecimal.ONE.divide(BigDecimal.ONE.add(BigDecimal.ONE));
+        assertTrue(traversal.hasNext());
+        assertEquals(half, traversal.next());
+        assertTrue(traversal.hasNext());
+        assertEquals(half, traversal.next());
+        assertFalse(traversal.hasNext());
+    }
+
     public static class Traversals extends SackTest {
 
         @Override
@@ -176,12 +193,17 @@ public abstract class SackTest extends AbstractGremlinProcessTest {
 
         @Override
         public Traversal<Vertex, Double> get_g_withSackX1_sumX_VX1X_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack(final Object v1Id) {
-            return g.withSack(1.0d, Operator.sum).V(v1Id).local(__.out("knows").barrier(SackFunctions.Barrier.normSack)).in("knows").barrier().sack();
+            return g.withSack(1.0d, Operator.sum).V(v1Id).local(out("knows").barrier(SackFunctions.Barrier.normSack)).in("knows").barrier().sack();
         }
 
         @Override
         public Traversal<Vertex, Integer> get_g_withBulkXfalseX_withSackX1_sumX_V_out_barrier_sack() {
             return g.withBulk(false).withSack(1, Operator.sum).V().out().barrier().sack();
+        }
+
+        @Override
+        public Traversal<Vertex, BigDecimal> get_g_withSackXBigInteger_TEN_powX1000X_assignX_V_localXoutXknowsX_barrierXnormSackXX_inXknowsX_barrier_sack() {
+            return g.withSack(BigInteger.TEN.pow(1000), Operator.assign).V().local(out("knows").barrier(SackFunctions.Barrier.normSack)).in("knows").barrier().sack();
         }
     }
 }

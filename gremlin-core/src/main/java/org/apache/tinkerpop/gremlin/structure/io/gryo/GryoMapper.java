@@ -69,6 +69,20 @@ import org.javatuples.Triplet;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.MonthDay;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.Period;
+import java.time.Year;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -232,7 +246,7 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(EnumSet.class, null, 46));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashMap.class, null, 11));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HashMap.Entry.class, null, 16));
-            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HASH_MAP_NODE, null, 92));   // ***LAST ID**
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(HASH_MAP_NODE, null, 92));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(KryoSerializable.class, null, 36));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashMap.class, null, 47));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LinkedHashSet.class, null, 71));
@@ -282,6 +296,20 @@ public final class GryoMapper implements Mapper<Kryo> {
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(AtomicLong.class, null, 79));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(DependantMutableMetrics.class, null, 80));
             add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Pair.class, kryo -> new PairSerializer(), 88));
+
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Duration.class, kryo -> new JavaTimeSerializers.DurationSerializer(), 93));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Instant.class, kryo -> new JavaTimeSerializers.InstantSerializer(), 94));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LocalDate.class, kryo -> new JavaTimeSerializers.LocalDateSerializer(), 95));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LocalDateTime.class, kryo -> new JavaTimeSerializers.LocalDateTimeSerializer(), 96));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(LocalTime.class, kryo -> new JavaTimeSerializers.LocalTimeSerializer(), 97));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(MonthDay.class, kryo -> new JavaTimeSerializers.MonthDaySerializer(), 98));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(OffsetDateTime.class, kryo -> new JavaTimeSerializers.OffsetDateTimeSerializer(), 99));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(OffsetTime.class, kryo -> new JavaTimeSerializers.OffsetTimeSerializer(), 100));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Period.class, kryo -> new JavaTimeSerializers.PeriodSerializer(), 101));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(Year.class, kryo -> new JavaTimeSerializers.YearSerializer(), 102));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(YearMonth.class, kryo -> new JavaTimeSerializers.YearMonthSerializer(), 103));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ZonedDateTime.class, kryo -> new JavaTimeSerializers.ZonedDateTimeSerializer(), 104));
+            add(Triplet.<Class, Function<Kryo, Serializer>, Integer>with(ZoneOffset.class, kryo -> new JavaTimeSerializers.ZoneOffsetSerializer(), 105)); // ***LAST ID**
         }};
 
         private final List<IoRegistry> registries = new ArrayList<>();

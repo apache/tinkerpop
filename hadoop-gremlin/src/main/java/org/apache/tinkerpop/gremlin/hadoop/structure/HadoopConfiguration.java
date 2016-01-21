@@ -45,14 +45,19 @@ public final class HadoopConfiguration extends AbstractConfiguration implements 
         super.setDelimiterParsingDisabled(true);
     }
 
+    public HadoopConfiguration(final Configuration configuration) {
+        this();
+        this.copy(configuration);
+    }
+
     @Override
     protected void addPropertyDirect(final String key, final Object value) {
         this.properties.put(key, value);
     }
 
-    public HadoopConfiguration(final Configuration configuration) {
-        this();
-        this.copy(configuration);
+    @Override
+    protected void clearPropertyDirect(final String key) {
+        this.properties.remove(key);
     }
 
     @Override

@@ -16,17 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.hdfs;
+package org.apache.tinkerpop.gremlin.hadoop.structure.io;
 
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopEdge;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
-import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.InputFormat;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -54,11 +50,11 @@ public final class HadoopEdgeIterator extends HadoopElementIterator<Edge> {
                 if (this.readers.peek().nextKeyValue()) {
                     this.edgeIterator = this.readers.peek().getCurrentValue().get().edges(Direction.OUT);
                 } else {
-                    this.readers.remove();
+                    this.readers.remove().close();
                 }
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
@@ -73,11 +69,11 @@ public final class HadoopEdgeIterator extends HadoopElementIterator<Edge> {
                 if (this.readers.peek().nextKeyValue()) {
                     this.edgeIterator = this.readers.peek().getCurrentValue().get().edges(Direction.OUT);
                 } else {
-                    this.readers.remove();
+                    this.readers.remove().close();
                 }
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+        } catch (final Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
         }
     }
 }

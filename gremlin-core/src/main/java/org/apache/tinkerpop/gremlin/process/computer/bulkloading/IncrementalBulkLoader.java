@@ -107,7 +107,7 @@ public class IncrementalBulkLoader implements BulkLoader {
     public Vertex getVertex(final Vertex vertex, final Graph graph, final GraphTraversalSource g) {
         return useUserSuppliedIds()
                 ? getVertexById(vertex.id(), graph, g)
-                : g.V().has(vertex.label(), bulkLoaderVertexId, vertex.id()).next();
+                : g.V().has(vertex.label(), bulkLoaderVertexId, vertex.id().toString()).next();
     }
 
     /**

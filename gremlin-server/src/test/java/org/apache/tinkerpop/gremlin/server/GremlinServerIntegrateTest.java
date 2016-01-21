@@ -33,6 +33,8 @@ import org.apache.tinkerpop.gremlin.driver.simple.NioClient;
 import org.apache.tinkerpop.gremlin.driver.simple.SimpleClient;
 import org.apache.tinkerpop.gremlin.driver.simple.WebSocketClient;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.CompileStaticCustomizerProvider;
+import org.apache.tinkerpop.gremlin.groovy.jsr223.customizer.SimpleSandboxExtension;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.server.channel.NioChannelizer;
 import org.apache.tinkerpop.gremlin.server.op.session.SessionOpProcessor;
@@ -56,6 +58,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeThat;
@@ -127,9 +130,36 @@ public class GremlinServerIntegrateTest extends AbstractGremlinServerIntegration
                 deleteDirectory(new File("/tmp/neo4j"));
                 settings.graphs.put("graph", "conf/neo4j-empty.properties");
                 break;
+            case "shouldUseSimpleSandbox":
+                final Map<String,Object> scriptEngineConf = new HashMap<>();
+                final Map<String,Object> compilerCustomizerProviderConf = new HashMap<>();
+                final List<String> sandboxes = new ArrayList<>();
+                sandboxes.add(SimpleSandboxExtension.class.getName());
+                compilerCustomizerProviderConf.put(CompileStaticCustomizerProvider.class.getName(), sandboxes);
+                scriptEngineConf.put("compilerCustomizerProviders", compilerCustomizerProviderConf);
+                settings.scriptEngines.get("gremlin-groovy").config = scriptEngineConf;
+                break;
         }
 
         return settings;
+    }
+
+    @Test
+    public void shouldUseSimpleSandbox() throws Exception {
+        final Cluster cluster = Cluster.open();
+        final Client client = cluster.connect();
+
+        assertEquals(2, client.submit("1+1").all().get().get(0).getInt());
+
+        try {
+            // this should return "nothing" - there should be no exception
+            client.submit("java.lang.System.exit(0)").all().get();
+            fail("The above should not have executed in any successful way as sandboxing is enabled");
+        } catch (Exception ex) {
+            assertThat(ex.getCause().getMessage(), containsString("[Static type checking] - Not authorized to call this method: java.lang.System#exit(int)"));
+        } finally {
+            cluster.close();
+        }
     }
 
     @Test

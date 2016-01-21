@@ -22,6 +22,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.VertexWritable;
+import scala.Tuple2;
 
 /**
  * An InputRDD is used to read data from the underlying graph system and yield the respective adjacency list.
@@ -33,9 +34,25 @@ public interface InputRDD {
 
     /**
      * Read the graphRDD from the underlying graph system.
-     * @param configuration the configuration for the {@link org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer}.
-     * @param sparkContext the Spark context with the requisite methods for generating a {@link JavaPairRDD}.
+     *
+     * @param configuration the configuration for the {@link org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer}
+     * @param sparkContext  the Spark context with the requisite methods for generating a {@link JavaPairRDD}
      * @return an adjacency list representation of the underlying graph system.
      */
     public JavaPairRDD<Object, VertexWritable> readGraphRDD(final Configuration configuration, final JavaSparkContext sparkContext);
+
+    /**
+     * Read a memoryRDD from the storage location.
+     * The default implementation returns an empty RDD.
+     *
+     * @param configuration the configuration for the {@link org.apache.tinkerpop.gremlin.spark.process.computer.SparkGraphComputer}
+     * @param memoryKey     the memory key of the memoryRDD
+     * @param sparkContext  the Spark context with the requisite methods for generating a {@link JavaPairRDD}
+     * @param <K>           the key class of the memoryRDD
+     * @param <V>           the value class of the memoryRDD
+     * @return the memoryRDD with respective key/value pairs.
+     */
+    public default <K, V> JavaPairRDD<K, V> readMemoryRDD(final Configuration configuration, final String memoryKey, final JavaSparkContext sparkContext) {
+        return sparkContext.<Tuple2<K, V>>emptyRDD().mapToPair(t -> t);
+    }
 }

@@ -60,15 +60,15 @@ public abstract class AbstractTransaction implements Transaction {
 
     /**
      * Called within {@link #commit()} just after the internal call to {@link #doCommit()}. Implementations of this
-     * method should raise {@link Status#COMMIT} events to any listeners added via
-     * {@link #addTransactionListener(Consumer)}.
+     * method should raise {@link org.apache.tinkerpop.gremlin.structure.Transaction.Status#COMMIT} events to any
+     * listeners added via {@link #addTransactionListener(Consumer)}.
      */
     protected abstract void fireOnCommit();
 
     /**
      * Called within {@link #rollback()} just after the internal call to {@link #doRollback()} ()}. Implementations
-     * of this method should raise {@link Status#ROLLBACK} events to any listeners added via
-     * {@link #addTransactionListener(Consumer)}.
+     * of this method should raise {@link org.apache.tinkerpop.gremlin.structure.Transaction.Status#ROLLBACK} events
+     * to any listeners added via {@link #addTransactionListener(Consumer)}.
      */
     protected abstract void fireOnRollback();
     

@@ -16,29 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.tinkerpop.gremlin.hadoop.structure.hdfs;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
+package org.apache.tinkerpop.gremlin.spark;
+
+import org.apache.tinkerpop.gremlin.AbstractGremlinSuite;
+import org.apache.tinkerpop.gremlin.process.traversal.TraversalEngine;
+import org.apache.tinkerpop.gremlin.spark.structure.io.SparkContextStorageCheck;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.RunnerBuilder;
 
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
-public final class HiddenFileFilter implements PathFilter {
-
-    private static final HiddenFileFilter INSTANCE = new HiddenFileFilter();
-
-    private HiddenFileFilter() {
-
-    }
-
-    @Override
-    public boolean accept(final Path path) {
-        final String name = path.getName();
-        return !name.startsWith("_") && !name.startsWith(".");
-    }
-
-    public static HiddenFileFilter instance() {
-        return INSTANCE;
+public class SparkGremlinSuite extends AbstractGremlinSuite {
+    public SparkGremlinSuite(final Class<?> klass, final RunnerBuilder builder) throws InitializationError {
+        super(klass, builder, new Class<?>[]{SparkContextStorageCheck.class}, new Class<?>[]{SparkContextStorageCheck.class}, true, TraversalEngine.Type.COMPUTER);
     }
 }

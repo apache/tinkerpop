@@ -23,6 +23,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.traverser.util.TraverserSe
 
 import java.util.function.Consumer;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.add;
+import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.div;
+import static org.apache.tinkerpop.gremlin.process.traversal.NumberHelper.mul;
+
 /**
  * @author Marko A. Rodriguez (http://markorodriguez.com)
  */
@@ -36,12 +40,12 @@ public final class SackFunctions {
         normSack {
             @Override
             public void accept(final TraverserSet<Object> traverserSet) {
-                double total = 0.0d;
+                Number total = 0.0;
                 for (final Traverser.Admin<Object> traverser : traverserSet) {
-                    total = total + (((Number) traverser.sack()).doubleValue() * ((Number) traverser.bulk()).doubleValue());
+                    total = add(total, mul(traverser.sack(), traverser.bulk()));
                 }
                 for (final Traverser.Admin<Object> traverser : traverserSet) {
-                    traverser.sack((((Number) traverser.sack()).doubleValue() * ((Number) traverser.bulk()).doubleValue()) / total);
+                    traverser.sack(div(mul(traverser.sack(), traverser.bulk()), total));
                 }
             }
         }

@@ -52,7 +52,7 @@ public final class ElementHelper {
     }
 
     /**
-     * Determine whether the Element label can be legally set. This is typically used as a pre-condition check.
+     * Determine whether the {@link Element} label can be legally set. This is typically used as a pre-condition check.
      *
      * @param label the element label
      * @throws IllegalArgumentException whether the label is legal and if not, a clear reason exception is provided
@@ -70,7 +70,8 @@ public final class ElementHelper {
      * Determine whether an array of ids are either all elements or ids of elements. This is typically used as a pre-condition check.
      *
      * @param clazz the class of the element for which the ids will bind
-     * @param ids   the ids that must be either elements or id objects, else {@link Graph.Exceptions#idArgsMustBeEitherIdOrElement()} is thrown.
+     * @param ids   the ids that must be either elements or id objects, else
+     * {@link org.apache.tinkerpop.gremlin.structure.Graph.Exceptions#idArgsMustBeEitherIdOrElement()} is thrown.
      */
     public static void validateMixedElementIds(final Class<? extends Element> clazz, final Object... ids) throws IllegalArgumentException {
         if (ids.length > 1) {

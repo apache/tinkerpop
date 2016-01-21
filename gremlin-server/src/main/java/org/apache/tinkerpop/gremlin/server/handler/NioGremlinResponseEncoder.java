@@ -37,7 +37,11 @@ import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * @author Stephen Mallette (http://stephen.genoprime.com)
+ * @deprecated As of release 3.1.1-incubating, replaced by {@link NioGremlinResponseFrameEncoder} and
+ * {@link GremlinResponseFrameEncoder}
+ * @see <a href="https://issues.apache.org/jira/browse/TINKERPOP-1035">TINKERPOP-1035</a>
  */
+@Deprecated
 @ChannelHandler.Sharable
 public class NioGremlinResponseEncoder extends MessageToByteEncoder<ResponseMessage> {
     private static final Logger logger = LoggerFactory.getLogger(NioGremlinResponseEncoder.class);

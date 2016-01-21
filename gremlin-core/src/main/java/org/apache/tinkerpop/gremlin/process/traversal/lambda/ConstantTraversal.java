@@ -39,7 +39,6 @@ public final class ConstantTraversal<S, E> extends AbstractLambdaTraversal<S, E>
         return "(" + this.end.toString() + ")";
     }
 
-
     @Override
     public int hashCode() {
         return this.getClass().hashCode() ^ this.end.hashCode();

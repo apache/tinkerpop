@@ -145,7 +145,7 @@ public class EmptyTraversal<S, E> implements Traversal.Admin<S, E> {
 
     @Override
     public TraversalParent getParent() {
-        return (TraversalParent) EmptyStep.instance();
+        return EmptyStep.instance();
     }
 
     @Override
