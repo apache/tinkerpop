@@ -26,6 +26,7 @@ image::https://raw.githubusercontent.com/apache/incubator-tinkerpop/master/docs/
 TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Added `P.type()`, `P.notType()`, `Compare.type()` and `Compare.notType()`.
 * Fixed Java comparator contract issue around `Order.shuffle`.
 * Optimized a very inefficient implementation of `SampleLocalStep`.
 * Reduced the complexity and execution time of all `AbstractLambdaTraversal` instances.
