@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
@@ -51,15 +52,17 @@ import java.util.stream.Stream;
  */
 public class DriverRemoteAcceptor implements RemoteAcceptor {
     private Cluster currentCluster;
-    private Client.ClusteredClient currentClient;
+    private Client currentClient;
     private int timeout = 180000;
     private Map<String,String> aliases = new HashMap<>();
+    private Optional<String> session = Optional.empty();
 
     private static final String TOKEN_RESET = "reset";
     private static final String TOKEN_SHOW = "show";
     private static final String TOKEN_MAX = "max";
     private static final String TOKEN_TIMEOUT = "timeout";
     private static final String TOKEN_ALIAS = "alias";
+    private static final String TOKEN_SESSION = "session";
     private static final List<String> POSSIBLE_TOKENS = Arrays.asList(TOKEN_TIMEOUT, TOKEN_ALIAS);
 
     private final Groovysh shell;
@@ -70,13 +73,20 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public Object connect(final List<String> args) throws RemoteException {
-        if (args.size() != 1) throw new RemoteException("Expects the location of a configuration file as an argument");
+        if (args.size() < 1) throw new RemoteException("Expects the location of a configuration file as an argument");
 
         try {
             this.currentCluster = Cluster.open(args.get(0));
-            this.currentClient = this.currentCluster.connect();
+            final boolean useSession = args.size() >= 2 && args.get(1).equals(TOKEN_SESSION);
+            if (useSession) {
+                final String sessionName = args.size() == 3 ? args.get(2) : UUID.randomUUID().toString();
+                session = Optional.of(sessionName);
+                this.currentClient = this.currentCluster.connect(sessionName);
+            } else {
+                this.currentClient = this.currentCluster.connect();
+            }
             this.currentClient.init();
-            return String.format("Connected - " + this.currentCluster);
+            return String.format("Connected - %s", this.currentCluster) + getSessionStringSegment();
         } catch (final FileNotFoundException ignored) {
             throw new RemoteException("The 'connect' option must be accompanied by a valid configuration file");
         } catch (final Exception ex) {
@@ -178,7 +188,7 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
 
     @Override
     public String toString() {
-        return "Gremlin Server - [" + this.currentCluster + "]";
+        return "Gremlin Server - [" + this.currentCluster + "]" + getSessionStringSegment();
     }
 
     private Optional<ResponseException> findResponseException(final Throwable ex) {
@@ -189,5 +199,9 @@ public class DriverRemoteAcceptor implements RemoteAcceptor {
             return Optional.empty();
 
         return findResponseException(ex.getCause());
+    }
+
+    private String getSessionStringSegment() {
+        return session.isPresent() ? String.format("-[%s]", session.get()) : "";
     }
 }
