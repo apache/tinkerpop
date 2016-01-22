@@ -33,6 +33,7 @@ TinkerPop 3.1.1 (NOT OFFICIALLY RELEASED YET)
 * `DefaultTraversal` has a well defined `hashCode()` and `equals()`.
 * Added serializers to Gryo for `java.time` related classes.
 * Integrated `NumberHelper` in `SackFunctions`.
+* Deprecated `VertexPropertyFeatures.supportsAddProperty()` which effectively was a duplicate of `VertexFeatures.supportsMetaProperties`.
 * The Spark persistence `StorageLevel` can now be set for both job graphs and `PersistedOutputRDD` data.
 * Added to the list of "invalid binding keys" allowed by Gremlin Server to cover the private fields of `T` which get exposed in the `ScriptEngine` on static imports.
 * Added `BulkDumperVertexProgram` that allows to dump a whole graph in any of the supported IO formats (GraphSON, Gryo, Script).

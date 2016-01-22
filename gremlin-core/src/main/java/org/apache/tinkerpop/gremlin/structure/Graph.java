@@ -718,6 +718,11 @@ public interface Graph extends AutoCloseable, Host {
          * Features that are related to {@link Vertex} {@link Property} objects.
          */
         public interface VertexPropertyFeatures extends PropertyFeatures {
+            /**
+             * @deprecated As of release 3.1.1-incubating, replaced by
+             * {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures#FEATURE_META_PROPERTIES}
+             */
+            @Deprecated
             public static final String FEATURE_ADD_PROPERTY = "AddProperty";
             public static final String FEATURE_REMOVE_PROPERTY = "RemoveProperty";
             public static final String FEATURE_USER_SUPPLIED_IDS = "UserSuppliedIds";
@@ -729,7 +734,11 @@ public interface Graph extends AutoCloseable, Host {
 
             /**
              * Determines if a {@link VertexProperty} allows properties to be added.
+             *
+             * @deprecated As of release 3.1.1-incubating, replaced by
+             * {@link org.apache.tinkerpop.gremlin.structure.Graph.Features.VertexFeatures#supportsMetaProperties()}
              */
+            @Deprecated
             @FeatureDescriptor(name = FEATURE_ADD_PROPERTY)
             public default boolean supportsAddProperty() {
                 return true;

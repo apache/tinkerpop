@@ -148,6 +148,13 @@ the `AbsstractSandboxExtension` or extending directly from Groovy's `TypeCheckin
 See: link:https://issues.apache.org/jira/browse/TINKERPOP-891[TINKERPOP-891],
 link:http://tinkerpop.apache.org/docs/3.1.0-incubating/#script-execution[Reference Documentation - Script Execution]
 
+Deprecated supportsAddProperty()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It was realized that `VertexPropertyFeatures.supportsAddProperty()` was effectively a duplicate of
+`VertexFeatures.supportsMetaProperties()`.  As a result, `supportsAddProperty()` was deprecated in favor of the other.
+If using `supportsAddProperty()`, simply modify that code to instead utilize `supportsMetaProperties()`.
+
 Upgrading for Providers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -198,13 +205,15 @@ Corrections fell into two groups of changes:
 
 . Bugs in the how `Features` were applied to certain tests.
 . Refactoring around the realization that `VertexFeatures.supportsMetaProperties()` is really just a duplicate of
-features already exposed as `VertexPropertyFeatures.supportsAddProperty()` and
-`VertexPropertyFeatures.supportsRemoveProperty()`.  `VertexFeatures.supportsMetaProperties()` has been deprecated.
+features already exposed as `VertexPropertyFeatures.supportsAddProperty()`.
+`VertexPropertyFeatures.supportsAddProperty()` has been deprecated.
 
 These changes related to "Feature Consistency" open up a number of previously non-executing tests for graphs that did
 not support meta-properties, so providers should be wary of potential test failure on previously non-executing tests.
 
-See: link:https://issues.apache.org/jira/browse/TINKERPOP-985[TINKERPOP-985]
+See: link:https://issues.apache.org/jira/browse/TINKERPOP-985[TINKERPOP-985],
+link:https://issues.apache.org/jira/browse/TINKERPOP-997[TINKERPOP-997],
+link:https://issues.apache.org/jira/browse/TINKERPOP-998[TINKERPOP-998]
 
 Graph Processor Providers
 ^^^^^^^^^^^^^^^^^^^^^^^^^
