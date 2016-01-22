@@ -2024,7 +2024,7 @@ provided predicates are outlined in the table below and are used in various step
 | `within(objects...)` | Is the incoming object in the array of provided objects?
 | `without(objects...)` | Is the incoming object not in the array of the provided objects?
 | `type(class)` | Is the incoming object an instance or a subclass of the provided class?
-| `type(class)` | Is the incoming object neither an instance nor a subclass of the provided class?
+| `notType(class)` | Is the incoming object neither an instance nor a subclass of the provided class?
 |=========================================================
 
 [gremlin-groovy]
