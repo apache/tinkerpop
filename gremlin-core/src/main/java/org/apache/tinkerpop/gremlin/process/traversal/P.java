@@ -180,4 +180,12 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
     public static <V> P<V> not(final P<V> predicate) {
         return predicate.negate();
     }
+
+    public static <V> P<V> type(final Class<V> value) {
+        return new P(Compare.type, value);
+    }
+
+    public static <V> P<V> notType(final Class<V> value) {
+        return new P(Compare.notType, value);
+    }
 }

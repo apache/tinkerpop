@@ -29,7 +29,10 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.function.Predicate;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Daniel Kuppitz (http://gremlin.guru)
@@ -85,6 +88,26 @@ public class PTest {
                 {P.between("m", "n").or(P.eq("daniel")), "marko", true},
                 {P.between("m", "n").or(P.eq("daniel")), "daniel", true},
                 {P.between("m", "n").or(P.eq("daniel")), "stephen", false},
+                {P.type(Integer.class), 1, true},
+                {P.type(Integer.class), 1L, false},
+                {P.type(Long.class), 1, false},
+                {P.type(Long.class), 1L, true},
+                {P.type(Number.class), 1, true},
+                {P.type(Number.class), 1L, true},
+                {P.type(String.class), 1, false},
+                {P.type(String.class), 1L, false},
+                {P.type(Number.class), null, true},
+                {P.type(String.class), null, true},
+                {P.notType(Integer.class), 1, false},
+                {P.notType(Integer.class), 1L, true},
+                {P.notType(Long.class), 1, true},
+                {P.notType(Long.class), 1L, false},
+                {P.notType(Number.class), 1, false},
+                {P.notType(Number.class), 1L, false},
+                {P.notType(String.class), 1, true},
+                {P.notType(String.class), 1L, true},
+                {P.notType(Number.class), null, false},
+                {P.notType(String.class), null, false},
         }));
     }
 

@@ -87,20 +87,32 @@ public class CompareTest {
                 {Compare.lte, 100, 99, false},
                 {Compare.lte, 100, 101, true},
                 {Compare.lte, "z", "a", false},
-                {Compare.lte, "a", "z", true}
+                {Compare.lte, "a", "z", true},
+                {Compare.type, 1, Integer.class, true},
+                {Compare.type, 1, Long.class, false},
+                {Compare.type, 1, Number.class, true},
+                {Compare.type, 1, String.class, false},
+                {Compare.type, 1L, Integer.class, false},
+                {Compare.type, 1L, Long.class, true},
+                {Compare.type, 1L, Number.class, true},
+                {Compare.type, 1L, String.class, false},
+                {Compare.type, "1", Integer.class, false},
+                {Compare.type, "1", Long.class, false},
+                {Compare.type, "1", Number.class, false},
+                {Compare.type, "1", String.class, true},
         }));
         // Compare Numbers of mixed types.
         final List<Object> one = Arrays.asList(1, 1l, 1d, 1f, BigDecimal.ONE, BigInteger.ONE);
         for (Object i : one) {
             for (Object j : one) {
                 testCases.addAll(Arrays.asList(new Object[][]{
-                            {Compare.eq, i, j, true},
-                            {Compare.neq, i, j, false},
-                            {Compare.gt, i, j, false},
-                            {Compare.lt, i, j, false},
-                            {Compare.gte, i, j, true},
-                            {Compare.lte, i, j, true},
-                        }));
+                        {Compare.eq, i, j, true},
+                        {Compare.neq, i, j, false},
+                        {Compare.gt, i, j, false},
+                        {Compare.lt, i, j, false},
+                        {Compare.gte, i, j, true},
+                        {Compare.lte, i, j, true},
+                }));
             }
         }
         // Compare large numbers of different types that cannot convert to doubles losslessly.
@@ -108,28 +120,28 @@ public class CompareTest {
         final BigDecimal big1d = new BigDecimal("123456789012345678901234567890");
         final BigDecimal big2 = new BigDecimal(big1.add(BigInteger.ONE));
         testCases.addAll(Arrays.asList(new Object[][]{
-                    // big1 == big1d
-                    {Compare.eq, big1, big1d, true},
-                    {Compare.neq, big1, big1d, false},
-                    {Compare.gt, big1, big1d, false},
-                    {Compare.lt, big1, big1d, false},
-                    {Compare.gte, big1, big1d, true},
-                    {Compare.lte, big1, big1d, true},
-                    // big1 < big2
-                    {Compare.eq, big1, big2, false},
-                    {Compare.neq, big1, big2, true},
-                    {Compare.gt, big1, big2, false},
-                    {Compare.lt, big1, big2, true},
-                    {Compare.gte, big1, big2, false},
-                    {Compare.lte, big1, big2, true},
-                    // Reverse the operands for symmetric test coverage (big2 > big1)
-                    {Compare.eq, big2, big1, false},
-                    {Compare.neq, big2, big1, true},
-                    {Compare.gt, big2, big1, true},
-                    {Compare.lt, big2, big1, false},
-                    {Compare.gte, big2, big1, true},
-                    {Compare.lte, big2, big1, false},
-                }));
+                // big1 == big1d
+                {Compare.eq, big1, big1d, true},
+                {Compare.neq, big1, big1d, false},
+                {Compare.gt, big1, big1d, false},
+                {Compare.lt, big1, big1d, false},
+                {Compare.gte, big1, big1d, true},
+                {Compare.lte, big1, big1d, true},
+                // big1 < big2
+                {Compare.eq, big1, big2, false},
+                {Compare.neq, big1, big2, true},
+                {Compare.gt, big1, big2, false},
+                {Compare.lt, big1, big2, true},
+                {Compare.gte, big1, big2, false},
+                {Compare.lte, big1, big2, true},
+                // Reverse the operands for symmetric test coverage (big2 > big1)
+                {Compare.eq, big2, big1, false},
+                {Compare.neq, big2, big1, true},
+                {Compare.gt, big2, big1, true},
+                {Compare.lt, big2, big1, false},
+                {Compare.gte, big2, big1, true},
+                {Compare.lte, big2, big1, false},
+        }));
         return testCases;
     }
 
