@@ -142,7 +142,7 @@ limitations under the License.
                 <dependency>
                     <groupId>org.neo4j</groupId>
                     <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-                    <version>0.3-2.3.0</version>
+                    <version>0.3-2.3.2</version>
                     <scope>test</scope>
                     <exclusions>
                         <exclusion>
@@ -156,6 +156,10 @@ limitations under the License.
                         <exclusion>
                             <groupId>org.scala-lang</groupId>
                             <artifactId>scala-library</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.slf4j</groupId>
+                            <artifactId>slf4j-api</artifactId>
                         </exclusion>
                     </exclusions>
                 </dependency>
