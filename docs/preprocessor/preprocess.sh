@@ -36,6 +36,11 @@ do
   fi
 done
 
+netstat -an | awk '{print $4}' | grep -o '[0-9]*$' | grep 8182 > /dev/null && {
+  echo "The port 8182 is required for Gremlin Server, but already in use. Be sure to close the application that currently uses the port before processing the docs."
+  exit 1
+}
+
 if [ -e /tmp/neo4j ]; then
   echo "The directory '/tmp/neo4j' is required by the pre-processor, be sure to delete it before processing the docs."
   exit 1
@@ -69,14 +74,10 @@ HISTORY_FILE=`find . -name Console.groovy | xargs grep HISTORY_FILE | head -n1 |
 [ ${HISTORY_FILE} ] || HISTORY_FILE=".gremlin_groovy_history"
 [ -f ~/${HISTORY_FILE} ] && cp ~/${HISTORY_FILE} ${TMP_DIR}
 
-GREMLIN_SERVER=$(netstat -a | grep -o ':8182[0-9]*' | grep -cx ':8182')
-
-if [ ${GREMLIN_SERVER} -eq 0 ]; then
-  pushd gremlin-server/target/apache-gremlin-server-*-standalone > /dev/null
-  bin/gremlin-server.sh conf/gremlin-server-modern.yaml > /dev/null 2> /dev/null &
-  GREMLIN_SERVER_PID=$!
-  popd > /dev/null
-fi
+pushd gremlin-server/target/apache-gremlin-server-*-standalone > /dev/null
+bin/gremlin-server.sh conf/gremlin-server-modern.yaml > /dev/null 2> /dev/null &
+GREMLIN_SERVER_PID=$!
+popd > /dev/null
 
 function cleanup() {
   echo -ne "\r\n\n"
@@ -85,7 +86,7 @@ function cleanup() {
   find ${TP_HOME}/docs/src/ -name "*.asciidoc.groovy" | xargs rm -f
   [ -f ${TMP_DIR}/${HISTORY_FILE} ] &&  mv ${TMP_DIR}/${HISTORY_FILE} ~/
   rm -rf ${TMP_DIR}
-  [ ${GREMLIN_SERVER} -eq 0 ] && kill ${GREMLIN_SERVER_PID} &> /dev/null
+  kill ${GREMLIN_SERVER_PID} &> /dev/null
   popd &> /dev/null
 }
 
