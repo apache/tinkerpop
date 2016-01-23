@@ -88,18 +88,6 @@ public class CompareTest {
                 {Compare.lte, 100, 101, true},
                 {Compare.lte, "z", "a", false},
                 {Compare.lte, "a", "z", true},
-                {Compare.type, 1, Integer.class, true},
-                {Compare.type, 1, Long.class, false},
-                {Compare.type, 1, Number.class, true},
-                {Compare.type, 1, String.class, false},
-                {Compare.type, 1L, Integer.class, false},
-                {Compare.type, 1L, Long.class, true},
-                {Compare.type, 1L, Number.class, true},
-                {Compare.type, 1L, String.class, false},
-                {Compare.type, "1", Integer.class, false},
-                {Compare.type, "1", Long.class, false},
-                {Compare.type, "1", Number.class, false},
-                {Compare.type, "1", String.class, true},
         }));
         // Compare Numbers of mixed types.
         final List<Object> one = Arrays.asList(1, 1l, 1d, 1f, BigDecimal.ONE, BigInteger.ONE);

@@ -181,11 +181,7 @@ public class P<V> implements Predicate<V>, Serializable, Cloneable {
         return predicate.negate();
     }
 
-    public static <V> P<V> type(final Class<V> value) {
-        return new P(Compare.type, value);
-    }
-
-    public static <V> P<V> notType(final Class<V> value) {
-        return new P(Compare.notType, value);
+    public static <V> P<V> type(final Object value) {
+        return new P(Type.instanceOf, value);
     }
 }

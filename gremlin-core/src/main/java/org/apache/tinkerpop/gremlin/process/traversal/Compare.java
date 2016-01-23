@@ -169,47 +169,6 @@ public enum Compare implements BiPredicate<Object, Object> {
         public Compare negate() {
             return gt;
         }
-    },
-
-    /**
-     * Evaluates if the type of the first object is either an instance of the class provided in the second or
-     * a subclass of it.
-     */
-    type {
-        @Override
-        public boolean test(final Object first, final Object second) {
-            if (second != null && second instanceof Class) {
-                return first == null || ((Class) second).isAssignableFrom(first.getClass());
-            }
-            throw new IllegalArgumentException("The comparator must be an instance of java.lang.Class.");
-        }
-
-        /**
-         * The negative of {@code type} is {@link #notType}.
-         */
-        @Override
-        public Compare negate() {
-            return notType;
-        }
-    },
-
-    /**
-     * Evaluates if the type of the first object is neither an instance of the class provided in the second nor
-     * a subclass of it.
-     */
-    notType {
-        @Override
-        public boolean test(final Object first, final Object second) {
-            return !type.test(first, second);
-        }
-
-        /**
-         * The negative of {@code notType} is {@link #type}.
-         */
-        @Override
-        public Compare negate() {
-            return type;
-        }
     };
 
     /**
