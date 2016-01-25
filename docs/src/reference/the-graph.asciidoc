@@ -340,7 +340,7 @@ different threads operating within the same transaction, the above code could be
 
 [source,java]
 ----
-Graph threaded = graph.tx().newThreadedTx();
+Graph threaded = graph.tx().createThreadedTx();
 threaded.addVertex("name","stephen");
 
 Thread t1 = new Thread(() -> {
@@ -360,7 +360,7 @@ t2.join()
 threaded.tx().commit();
 ----
 
-In the above case, the call to `graph.tx().newThreadedTx()` creates a new `Graph` instance that is unbound from the
+In the above case, the call to `graph.tx().createThreadedTx()` creates a new `Graph` instance that is unbound from the
 `ThreadLocal` transaction, thus allowing each thread to operate on it in the same context.  In this case, there would
 be three separate vertices persisted to the `Graph`.
 
