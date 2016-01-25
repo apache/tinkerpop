@@ -26,6 +26,7 @@ import org.apache.tinkerpop.gremlin.TestHelper;
 import org.apache.tinkerpop.gremlin.hadoop.Constants;
 import org.apache.tinkerpop.gremlin.hadoop.structure.HadoopGraph;
 import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoInputFormat;
+import org.apache.tinkerpop.gremlin.hadoop.structure.io.gryo.GryoOutputFormat;
 import org.apache.tinkerpop.gremlin.process.computer.GraphComputer;
 import org.apache.tinkerpop.gremlin.process.computer.bulkloading.BulkLoaderVertexProgram;
 import org.apache.tinkerpop.gremlin.process.computer.ranking.pagerank.PageRankVertexProgram;
@@ -56,11 +57,32 @@ import static org.junit.Assert.assertTrue;
 public class PersistedInputOutputRDDTest extends AbstractSparkTest {
 
     @Test
+    public void shouldNotHaveDanglingPersistedComputeRDDs() throws Exception {
+        Spark.create("local[4]");
+        final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDTest.class, UUID.randomUUID().toString());
+        final Configuration configuration = super.getBaseConfiguration();
+        configuration.setProperty(Constants.GREMLIN_HADOOP_INPUT_LOCATION, SparkHadoopGraphProvider.PATHS.get("tinkerpop-modern.kryo"));
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_INPUT_FORMAT, GryoInputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_GRAPH_OUTPUT_FORMAT, GryoOutputFormat.class.getCanonicalName());
+        configuration.setProperty(Constants.GREMLIN_HADOOP_OUTPUT_LOCATION, rddName);
+        configuration.setProperty(Constants.GREMLIN_SPARK_PERSIST_CONTEXT, true);
+        Graph graph = GraphFactory.open(configuration);
+        assertEquals(6, graph.traversal(GraphTraversalSource.computer(SparkGraphComputer.class)).V().out().count().next().longValue());
+        ////////
+        assertFalse(Spark.hasRDD(Constants.getGraphLocation(rddName)));
+        assertEquals(0, Spark.getContext().getPersistentRDDs().size());
+        ///////
+        Spark.close();
+    }
+
+
+    @Test
     public void shouldPersistRDDBasedOnStorageLevel() throws Exception {
         Spark.create("local[4]");
         int counter = 0;
-        for (final String storageLevel : Arrays.asList("MEMORY_ONLY", "DISK_ONLY","MEMORY_ONLY_SER","MEMORY_AND_DISK_SER","OFF_HEAP")) {
+        for (final String storageLevel : Arrays.asList("MEMORY_ONLY", "DISK_ONLY", "MEMORY_ONLY_SER", "MEMORY_AND_DISK_SER", "OFF_HEAP")) {
             assertEquals(counter * 2, Spark.getRDDs().size());
+            assertEquals(counter * 2, Spark.getContext().getPersistentRDDs().size());
             counter++;
             final String rddName = TestHelper.makeTestDataDirectory(PersistedInputOutputRDDTest.class, UUID.randomUUID().toString());
             final Configuration configuration = new BaseConfiguration();
@@ -88,6 +110,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
             assertTrue(Spark.hasRDD(Constants.getMemoryLocation(rddName, Graph.Hidden.hide("traversers"))));
             assertEquals(StorageLevel.fromString(storageLevel), Spark.getRDD(Constants.getMemoryLocation(rddName, Graph.Hidden.hide("traversers"))).getStorageLevel());
             assertEquals(counter * 2, Spark.getRDDs().size());
+            assertEquals(counter * 2, Spark.getContext().getPersistentRDDs().size());
             //System.out.println(SparkContextStorage.open().ls());
         }
         Spark.close();
@@ -194,6 +217,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
                 .submit().get();
         ////
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
+        assertEquals(1, Spark.getContext().getPersistentRDDs().size());
         ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();
@@ -237,6 +261,7 @@ public class PersistedInputOutputRDDTest extends AbstractSparkTest {
         ////
         Spark.create(readConfiguration);
         assertTrue(Spark.hasRDD(Constants.getGraphLocation(rddName)));
+        assertEquals(1, Spark.getContext().getPersistentRDDs().size());
         ////
         final Graph graph = TinkerGraph.open();
         final GraphTraversalSource g = graph.traversal();

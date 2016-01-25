@@ -160,6 +160,6 @@ public final class SparkContextStorage implements Storage {
 
     @Override
     public String toString() {
-        return StringFactory.storageString(Spark.getContext().master());
+        return StringFactory.storageString(null == Spark.getContext() ? "spark:none" : Spark.getContext().master());
     }
 }
