@@ -166,8 +166,12 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     graphRDD = hadoopConfiguration.getClass(Constants.GREMLIN_SPARK_GRAPH_INPUT_RDD, InputFormatRDD.class, InputRDD.class)
                             .newInstance()
                             .readGraphRDD(apacheConfiguration, sparkContext);
-                    if (this.workersSet && graphRDD.partitions().size() > this.workers) // ensures that the graphRDD does not have more partitions than workers
-                        graphRDD = graphRDD.coalesce(this.workers);
+                    if (this.workersSet) {
+                        if (graphRDD.partitions().size() > this.workers) // ensures that the graphRDD does not have more partitions than workers
+                            graphRDD = graphRDD.coalesce(this.workers);
+                        else if (graphRDD.partitions().size() < this.workers) // ensures that the graphRDD does not have less partitions than workers
+                            graphRDD = graphRDD.repartition(this.workers);
+                    }
                     // persist the vertex program loaded graph as specified by configuration or else use default cache() which is MEMORY_ONLY
                     if (!inputFromSpark)
                         graphRDD = graphRDD.persist(StorageLevel.fromString(hadoopConfiguration.get(Constants.GREMLIN_SPARK_GRAPH_STORAGE_LEVEL, "MEMORY_ONLY")));
@@ -226,7 +230,7 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                     final JavaPairRDD<Object, VertexWritable> mapReduceGraphRDD = graphRDD.mapValues(vertexWritable -> {
                         vertexWritable.get().dropEdges();
                         return vertexWritable;
-                    }).cache();  // drop all the edges of the graph as they are not used in mapReduce processing
+                    });  // drop all the edges of the graph as they are not used in mapReduce processing
                     for (final MapReduce mapReduce : this.mapReducers) {
                         // execute the map reduce job
                         final HadoopConfiguration newApacheConfiguration = new HadoopConfiguration(apacheConfiguration);
@@ -246,7 +250,6 @@ public final class SparkGraphComputer extends AbstractHadoopGraphComputer {
                             throw new IllegalStateException(e.getMessage(), e);
                         }
                     }
-                    mapReduceGraphRDD.unpersist();
                 }
 
                 // unpersist the graphRDD if it will no longer be used

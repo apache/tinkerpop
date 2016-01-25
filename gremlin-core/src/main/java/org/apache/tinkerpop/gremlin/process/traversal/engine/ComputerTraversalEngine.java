@@ -68,11 +68,18 @@ public final class ComputerTraversalEngine implements TraversalEngine {
     public final static class Builder implements TraversalEngine.Builder {
 
         private Class<? extends GraphComputer> graphComputerClass;
+        private int workers = -1;
         private static final List<TraversalStrategy> WITH_STRATEGIES = Collections.singletonList(ComputerResultStrategy.instance());
+
 
         @Override
         public List<TraversalStrategy> getWithStrategies() {
             return WITH_STRATEGIES;
+        }
+
+        public Builder workers(final int workers) {
+            this.workers = workers;
+            return this;
         }
 
         public Builder computer(final Class<? extends GraphComputer> graphComputerClass) {
@@ -82,9 +89,10 @@ public final class ComputerTraversalEngine implements TraversalEngine {
 
 
         public ComputerTraversalEngine create(final Graph graph) {
-            return null == this.graphComputerClass ?
-                    new ComputerTraversalEngine(graph.compute()) :
-                    new ComputerTraversalEngine(graph.compute(this.graphComputerClass));
+            final GraphComputer graphComputer = null == this.graphComputerClass ? graph.compute() : graph.compute(this.graphComputerClass);
+            if (-1 != this.workers)
+                graphComputer.workers(this.workers);
+            return new ComputerTraversalEngine(graphComputer);
         }
     }
 

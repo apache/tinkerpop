@@ -197,7 +197,8 @@ public final class StarGraph implements Graph, Serializable {
 
         vertex.properties().forEachRemaining(vp -> {
             final VertexProperty<?> starVertexProperty = starVertex.property(VertexProperty.Cardinality.list, vp.key(), vp.value(), T.id, vp.id());
-            if (supportsMetaProperties) vp.properties().forEachRemaining(p -> starVertexProperty.property(p.key(), p.value()));
+            if (supportsMetaProperties)
+                vp.properties().forEachRemaining(p -> starVertexProperty.property(p.key(), p.value()));
         });
         vertex.edges(Direction.IN).forEachRemaining(edge -> {
             final Edge starEdge = starVertex.addInEdge(edge.label(), starGraph.addVertex(T.id, edge.outVertex().id()), T.id, edge.id());
@@ -273,6 +274,8 @@ public final class StarGraph implements Graph, Serializable {
         }
 
         public void dropEdges() {
+            if (null != this.outEdges) this.outEdges.clear();
+            if (null != this.inEdges) this.inEdges.clear();
             this.outEdges = null;
             this.inEdges = null;
         }
